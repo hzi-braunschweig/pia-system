@@ -1,0 +1,14 @@
+<div class="jumbotron">
+  <div class="back_button" fxLayout="row" fxLayoutAlign="space-between start">
+    <button mat-button (click)="onBackButtonClicked()">
+      <mat-icon>arrow_back_ios</mat-icon>
+      {{ 'LABRESULT_DETAILS.BACK' | translate }}
+    </button>
+  </div>
+
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <div class="page" *ngIf="!isLoading">
+    <div class="page-content" [innerHtml]="labResultHtml"></div>
+  </div>
+</div>

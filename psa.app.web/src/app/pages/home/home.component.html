@@ -1,0 +1,31 @@
+﻿<div class="jumbotron" data-e2e="e2e-home-content">
+  <div *ngIf="currentRole == 'Proband'" class="align-center">
+    <markdown *ngIf="welcomeText">{{ welcomeText }}</markdown>
+    <div class="store-link-container">
+      <a
+        [href]="androidLink"
+        target="_blank"
+        class="store-link"
+        data-e2e="e2e-android-link"
+      >
+        <img
+          class="store-badge"
+          alt="Play Store Download"
+          src="../../../assets/images/download-play-store.png"
+        />
+      </a>
+      <a
+        [href]="iOSLink"
+        target="_blank"
+        class="store-link"
+        data-e2e="e2e-iOS-link"
+      >
+        <img
+          class="store-badge"
+          alt="Apple Store Download"
+          src="../../../assets/images/download-apple-store.png"
+        />
+      </a>
+    </div>
+  </div>
+</div>

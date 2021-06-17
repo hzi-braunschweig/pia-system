@@ -1,0 +1,19 @@
+<mat-form-field>
+  <input
+    matInput
+    #textInput
+    type="text"
+    placeholder="{{ 'GENERAL.TIMESTAMP' | translate }}"
+    [ngModel]="timestamp | date: 'HH:mm dd.MM.yy'"
+    (blur)="textInputBlurred(textInput.value)"
+  />
+</mat-form-field>
+<button
+  *ngIf="!hideButton"
+  type="button"
+  mat-raised-button
+  color="primary"
+  (click)="setTimestamp()"
+>
+  {{ 'GENERAL.SET' | translate }}
+</button>

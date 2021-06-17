@@ -1,0 +1,384 @@
+import {
+  QuestionnaireInstance,
+  QuestionnaireStatus,
+} from '../models/questionnaireInstance';
+import {
+  QuestionnaireDbResult,
+  RepositoryHelper as QuestionnaireRepositoryHelper,
+} from './questionnaireRepository';
+import { db } from '../db';
+import {
+  CycleUnit,
+  Questionnaire,
+  QuestionnaireType,
+} from '../models/questionnaire';
+import { filterQuestionnaireOfInstance } from '../services/conditionCheckerService';
+import pgPromise from 'pg-promise';
+
+const pgp = pgPromise({ capSQL: true });
+
+interface QuestionnaireInstanceDbResult extends QuestionnaireDbResult {
+  questionnaire_instance?: QuestionnaireInstance;
+}
+
+class RepositoryHelper {
+  public static createQuestionnaireInstanceWithQuestionnaireQuery(
+    filter = '',
+    order = ''
+  ): string {
+    return (
+      `SELECT ROW_TO_JSON(qi.*)   AS questionnaire_instance,
+                    ROW_TO_JSON(qa.*)   AS questionnaire,
+                    ROW_TO_JSON(c_qa.*) AS questionnaire_cond,
+                    ROW_TO_JSON(q.*)    AS question,
+                    ROW_TO_JSON(c_q.*)  AS question_cond,
+                    ROW_TO_JSON(ao.*)   AS answer_option,
+                    ROW_TO_JSON(c_ao.*) AS answer_option_cond
+             FROM questionnaire_instances AS qi
+                      JOIN questionnaires AS qa
+                           ON qi.questionnaire_id = qa.id AND qi.questionnaire_version = qa.version
+                      LEFT OUTER JOIN conditions AS c_qa
+                                      ON qa.id = c_qa.condition_questionnaire_id AND
+                                         qa.version = c_qa.condition_questionnaire_version
+                      LEFT OUTER JOIN questions AS q
+                                      ON qa.id = q.questionnaire_id AND qa.version = q.questionnaire_version
+                      LEFT OUTER JOIN conditions AS c_q ON q.id = c_q.condition_question_id
+                      LEFT OUTER JOIN answer_options ao ON q.id = ao.question_id
+                      LEFT OUTER JOIN conditions AS c_ao ON ao.id = c_ao.condition_answer_option_id
+            ` +
+      filter +
+      '\n' +
+      order
+    );
+  }
+
+  /**
+   * It resolves the questionnaire instances of a result of joined questionnaire instances with their  questionnaires,
+   * questions, answer options and conditions
+   * @param result
+   * @return A Map with all of the questionnaire instances identified by their id
+   */
+  public static resolveDbResultToQuestionnaireInstanceMap(
+    result: QuestionnaireInstanceDbResult[]
+  ): Map<number, QuestionnaireInstance> {
+    const questionnaires =
+      QuestionnaireRepositoryHelper.resolveDbResultToQuestionnaireMap(result);
+    const questionnaireInstances = new Map<number, QuestionnaireInstance>();
+    result.forEach((row) => {
+      // questionnaire instance
+      if (
+        row.questionnaire_instance &&
+        !questionnaireInstances.has(row.questionnaire_instance.id)
+      ) {
+        row.questionnaire_instance.questionnaire = questionnaires.get(
+          row.questionnaire_instance.questionnaire_id.toString() +
+            '_' +
+            row.questionnaire_instance.questionnaire_version.toString()
+        );
+        questionnaireInstances.set(
+          row.questionnaire_instance.id,
+          row.questionnaire_instance
+        );
+      }
+    });
+    return questionnaireInstances;
+  }
+}
+
+export class QuestionnaireInstanceRepository {
+  /**
+   * gets the questionnaire instance with the specified id
+   * @param id the id of the questionnaire instance to find
+   * @returns a resolved promise with the found questionnaire instance or a rejected promise with the error
+   */
+  public static async getQuestionnaireInstanceForResearcher(
+    id: number
+  ): Promise<QuestionnaireInstance> {
+    return db.one<QuestionnaireInstance>(
+      'SELECT * FROM questionnaire_instances WHERE id = ${id}',
+      {
+        id: id,
+      }
+    );
+  }
+
+  public static async getQuestionnaireInstanceForInvestigator(
+    id: number
+  ): Promise<QuestionnaireInstance> {
+    return db.one<QuestionnaireInstance>(
+      `SELECT qi.*
+         FROM questionnaire_instances AS qi
+                JOIN questionnaires q ON qi.questionnaire_id = q.id AND qi.questionnaire_version = q.version
+         WHERE qi.id = $(id)
+           AND qi.status != 'deleted'
+           AND q.type = 'for_research_team'`,
+      {
+        id: id,
+      }
+    );
+  }
+
+  public static async getQuestionnaireInstanceForProband(
+    id: number
+  ): Promise<QuestionnaireInstance> {
+    return db.one<QuestionnaireInstance>(
+      `SELECT qi.*
+         FROM questionnaire_instances AS qi
+                JOIN questionnaires q ON qi.questionnaire_id = q.id AND qi.questionnaire_version = q.version
+         WHERE qi.id = $(id)
+           AND qi.status != 'deleted'
+           AND q.type = 'for_probands'`,
+      {
+        id: id,
+      }
+    );
+  }
+
+  /**
+   * Gets the questionnaire instance with the specified id filtered for probands answers
+   * @param id the id of the questionnaire instance to find
+   * @returns a resolved promise with the found questionnaire instance or a rejected promise with the error
+   */
+  public static async getQuestionnaireInstanceWithQuestionnaire(
+    id: number
+  ): Promise<QuestionnaireInstance> {
+    const filter = `WHERE qi.id = $(id)`;
+    const order = `ORDER BY q.position, ao.position`;
+    const query =
+      RepositoryHelper.createQuestionnaireInstanceWithQuestionnaireQuery(
+        filter,
+        order
+      );
+    const result = await db.many(query, { id });
+    // if db.many runs without error there will be a qInstance -> no need to check null
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const qInstance =
+      RepositoryHelper.resolveDbResultToQuestionnaireInstanceMap(result).get(
+        id
+      )!;
+    qInstance.questionnaire = (await filterQuestionnaireOfInstance(
+      qInstance
+    )) as Questionnaire | undefined;
+    if (qInstance.questionnaire) {
+      return qInstance;
+    } else
+      throw new Error(
+        'questionnaire result is empty, because all conditions are not met'
+      );
+  }
+
+  /**
+   * gets the questionnaire instances with the specified user id
+   * @returns a resolved promise with the found questionnaire instances or a rejected promise with the error
+   */
+  public static async getQuestionnaireInstancesWithQuestionnaireAsResearcher(
+    user_id: string
+  ): Promise<QuestionnaireInstance[]> {
+    const actualQInstances = [];
+    const resultQInstances =
+      await QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireForUserStatusAndType(
+        user_id,
+        [
+          'released_once',
+          'released_twice',
+          'released',
+          'active',
+          'in_progress',
+          'expired',
+          'deleted',
+        ],
+        ['for_probands', 'for_research_team']
+      );
+    for (const qi of resultQInstances) {
+      qi.questionnaire = (await filterQuestionnaireOfInstance(qi)) as
+        | undefined
+        | Questionnaire;
+      if (qi.questionnaire) {
+        actualQInstances.push(qi);
+      }
+    }
+    return actualQInstances;
+  }
+
+  /**
+   * gets the questionnaire instances with the specified user id as a proband
+   * @returns a resolved promise with the found questionnaire instances or a rejected promise with the error
+   */
+  public static async getQuestionnaireInstancesWithQuestionnaireAsProband(
+    user_id: string,
+    status: QuestionnaireStatus[]
+  ): Promise<QuestionnaireInstance[]> {
+    const actualQInstances = [];
+    const resultQInstances =
+      await QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireForUserStatusAndType(
+        user_id,
+        status,
+        'for_probands'
+      ).catch((e) => {
+        if (e instanceof pgp.errors.QueryResultError) {
+          return [];
+        } else {
+          throw e;
+        }
+      });
+    for (const qi of resultQInstances) {
+      qi.questionnaire = (await filterQuestionnaireOfInstance(qi)) as
+        | undefined
+        | Questionnaire;
+      if (qi.questionnaire) {
+        actualQInstances.push(qi);
+      }
+    }
+    return actualQInstances;
+  }
+
+  /**
+   * gets the questionnaire instances with the specified user id as a PM
+   * @returns a resolved promise with the found questionnaire instances or a rejected promise with the error
+   */
+  public static async getQuestionnaireInstancesWithQuestionnaireAsPM(
+    user_id: string
+  ): Promise<QuestionnaireInstance[]> {
+    const actualQInstances = [];
+    const resultQInstances =
+      await QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireForUserStatusAndType(
+        user_id,
+        ['released_once', 'released_twice'],
+        'for_probands'
+      );
+    for (const qi of resultQInstances) {
+      qi.questionnaire = (await filterQuestionnaireOfInstance(qi)) as
+        | undefined
+        | Questionnaire;
+      if (qi.questionnaire) {
+        qi.questionnaire = {
+          id: qi.questionnaire.id,
+          cycle_unit: qi.questionnaire.cycle_unit,
+        };
+        actualQInstances.push(qi);
+      }
+    }
+    return actualQInstances;
+  }
+
+  /**
+   * gets the questionnaire instances with the specified user id as a UT
+   * @returns a resolved promise with the found questionnaire instances or a rejected promise with the error
+   */
+  public static async getQuestionnaireInstancesAsInvestigator(
+    user_id: string
+  ): Promise<QuestionnaireInstance[]> {
+    const actualQInstances = [];
+    const resultQInstances =
+      await QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireForUserStatusAndType(
+        user_id,
+        ['released', 'active', 'in_progress'],
+        'for_research_team'
+      );
+    for (const qi of resultQInstances) {
+      qi.questionnaire = (await filterQuestionnaireOfInstance(qi)) as
+        | undefined
+        | Questionnaire;
+      if (qi.questionnaire) {
+        actualQInstances.push(qi);
+      }
+    }
+    return actualQInstances;
+  }
+
+  /**
+   * updates the questionnaire instance with the specified id
+   * @param id the id of the questionnaire instance to update
+   * @param status the new status of the questionnaire instance
+   * @param progress the new progress of the questionnaire instance
+   * @param release_version
+   */
+  public static async updateQuestionnaireInstance(
+    id: number,
+    status: QuestionnaireStatus | undefined,
+    progress: number,
+    release_version: number
+  ): Promise<QuestionnaireInstance> {
+    if (status === 'released_once') {
+      const questionnaire = await db.one<{ cycle_unit: CycleUnit }>(
+        'SELECT cycle_unit FROM questionnaires WHERE id=(SELECT questionnaire_id FROM questionnaire_instances WHERE id=$1) AND version=(SELECT questionnaire_version FROM questionnaire_instances WHERE id=$1)',
+        [id]
+      );
+      if (questionnaire.cycle_unit === 'spontan') {
+        return await db.one<QuestionnaireInstance>(
+          'UPDATE questionnaire_instances SET status=${status}, progress=${progress}, release_version=${release_version}, date_of_release_v1=${date_of_release}, date_of_issue=${date_of_release} WHERE id=${id} RETURNING *',
+          {
+            status: status,
+            progress: progress,
+            release_version: release_version,
+            date_of_release: new Date(),
+            id: id,
+          }
+        );
+      } else {
+        return await db.one<QuestionnaireInstance>(
+          'UPDATE questionnaire_instances SET status=${status}, progress=${progress}, release_version=${release_version}, date_of_release_v1=${date_of_release} WHERE id=${id} RETURNING *',
+          {
+            status: status,
+            progress: progress,
+            release_version: release_version,
+            date_of_release: new Date(),
+            id: id,
+          }
+        );
+      }
+    } else if (status === 'released_twice') {
+      return await db.one<QuestionnaireInstance>(
+        'UPDATE questionnaire_instances SET status=${status}, progress=${progress}, release_version=${release_version}, date_of_release_v2=${date_of_release} WHERE id=${id} RETURNING *',
+        {
+          status: status,
+          progress: progress,
+          release_version: release_version,
+          date_of_release: new Date(),
+          id: id,
+        }
+      );
+    } else if (!status) {
+      return await db.one<QuestionnaireInstance>(
+        'UPDATE questionnaire_instances SET progress=${progress} WHERE id=${id} RETURNING *',
+        { progress: progress, id: id }
+      );
+    } else {
+      return await db.one<QuestionnaireInstance>(
+        'UPDATE questionnaire_instances SET status=${status}, progress=${progress}, release_version=${release_version} WHERE id=${id} RETURNING *',
+        {
+          status: status,
+          progress: progress,
+          release_version: release_version,
+          id: id,
+        }
+      );
+    }
+  }
+
+  private static async getQuestionnaireInstancesWithQuestionnaireForUserStatusAndType(
+    user_id: string,
+    status: QuestionnaireStatus[],
+    type: QuestionnaireType | QuestionnaireType[]
+  ): Promise<QuestionnaireInstance[]> {
+    const filter = `WHERE qi.user_id = $(user_id)
+                         AND qi.status IN ($(status:csv))
+                         AND qa.type IN ($(type:csv))`;
+    const order = `ORDER BY qi.id, q.position, ao.position`;
+    const query =
+      RepositoryHelper.createQuestionnaireInstanceWithQuestionnaireQuery(
+        filter,
+        order
+      );
+    const result = await db.many<QuestionnaireDbResult>(query, {
+      user_id,
+      status,
+      type,
+    });
+    return Array.from(
+      RepositoryHelper.resolveDbResultToQuestionnaireInstanceMap(
+        result
+      ).values()
+    );
+  }
+}

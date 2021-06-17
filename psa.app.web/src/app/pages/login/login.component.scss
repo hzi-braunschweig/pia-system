@@ -1,0 +1,39 @@
+.form-container {
+  .mat-form-field {
+    width: 100%;
+    margin-bottom: 2rem;
+
+    input {
+      margin-top: 0.6rem;
+    }
+  }
+
+  div {
+    &.buttons-group {
+      button {
+        color: #225168;
+        text-decoration: underline;
+      }
+    }
+
+    &.info {
+      font-style: italic;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+  }
+}
+
+.lang-selection {
+  display: grid;
+  grid-template-columns: auto auto;
+}
+
+mat-icon.flag-icon {
+  margin-left: 4px;
+}
+
+.flag-container {
+  width: 100%;
+  text-align: right;
+}

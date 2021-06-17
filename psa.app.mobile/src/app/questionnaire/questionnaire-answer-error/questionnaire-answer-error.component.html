@@ -1,0 +1,5 @@
+<ion-item lines="none" *ngIf="control?.dirty && control?.hasError(errorCode)">
+  <ion-text color="danger" class="ion-margin-top">
+    <ng-content></ng-content>
+  </ion-text>
+</ion-item>

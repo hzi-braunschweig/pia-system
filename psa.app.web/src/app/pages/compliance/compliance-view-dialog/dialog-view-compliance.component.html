@@ -1,0 +1,21 @@
+<h3>
+  {{ 'COMPLIANCE.COMPLIANCE' | translate }}
+</h3>
+<mat-dialog-content>
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+  <app-template-viewer
+    [segments]="complianceWrapper.complianceTextObject"
+    [form]="complianceWrapper.form"
+    (usedFormControls)="complianceWrapper.usedFormControls = $event"
+  >
+  </app-template-viewer>
+  <button mat-raised-button color="primary" (click)="downloadPdf()">
+    {{ 'COMPLIANCE.DOWNLOAD_PDF' | translate }}
+  </button>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="dialogRef.close()">
+    {{ 'DIALOG.CLOSE' | translate }}
+  </button>
+</mat-dialog-actions>

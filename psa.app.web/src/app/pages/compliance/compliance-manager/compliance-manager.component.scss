@@ -1,0 +1,16 @@
+.btn-view-compliance {
+  margin-left: 15px;
+}
+
+.filter-section {
+  margin-bottom: 15px;
+
+  :nth-child(1) {
+    width: 250px;
+    margin-right: 50px;
+  }
+
+  :nth-child(2) {
+    width: 300px;
+  }
+}

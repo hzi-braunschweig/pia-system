@@ -1,0 +1,10 @@
+{
+  "require": [
+    "dotenv/config",
+    "ts-node/register",
+    "source-map-support/register",
+    "./tests/dbTeardown.hook.js"
+  ],
+  "reporter": "mocha-multi-reporters",
+  "reporter-option": "configFile=tests/mocha-reporters-config.json"
+}

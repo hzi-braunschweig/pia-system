@@ -1,0 +1,184 @@
+<div class="jumbotron" data-e2e="e2e-sample-management-component">
+  <!-- Fragoboegen filtern -->
+  <div class="questionnaire-header" align="left">
+    <mat-grid-list [cols]="cols | async" rowHeight="85px">
+      <mat-grid-tile>
+        <mat-form-field>
+          <input
+            matInput
+            #filter
+            placeholder="{{ 'GENERAL.FILTER' | translate }}"
+          />
+        </mat-form-field>
+      </mat-grid-tile>
+      <mat-grid-tile>
+        <mat-checkbox
+          [(ngModel)]="needsMaterialFilterCheckbox"
+          (change)="showOnlyProbandsWhoNeedsMaterial()"
+          color="primary"
+          >{{ 'SAMPLE_MANAGEMENT.MATERIAL_REQUIRED' | translate }}</mat-checkbox
+        >
+      </mat-grid-tile>
+      <mat-grid-tile>
+        <button
+          mat-raised-button
+          color="primary"
+          [disabled]="selection.selected.length == 0"
+          (click)="createLetters()"
+        >
+          {{ 'SAMPLE_MANAGEMENT.CREATE_COLLECTIVE_LETTERS' | translate }}
+        </button>
+      </mat-grid-tile>
+      <mat-grid-tile>
+        <mat-form-field>
+          <input
+            matInput
+            #filterInputSampleID
+            placeholder="{{ 'Proben-ID filtern' | translate }}"
+            (keyup.enter)="filterTableWithProbenID(filterInputSampleID.value)"
+            [formControl]="sample_id"
+          />
+          <mat-error *ngIf="sample_id.hasError('sampleWrongFormat')"
+            >{{ 'SAMPLES.WRONG_SAMPLE_FORMAT' | translate }}
+          </mat-error>
+          <button
+            mat-icon-button
+            matSuffix
+            *ngIf="filterInputSampleID.value"
+            (click)="filterTableWithProbenID('')"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            matSuffix
+            *ngIf="filterInputSampleID.value"
+            (click)="
+              sample_id.valid &&
+                filterTableWithProbenID(filterInputSampleID.value)
+            "
+          >
+            <mat-icon>spellcheck</mat-icon>
+          </button>
+        </mat-form-field>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </div>
+
+  <div class="probands-container mat-elevation-z8">
+    <mat-table
+      #table
+      [dataSource]="dataSource"
+      matSortActive="username"
+      matSortDirection="asc"
+      matSort
+    >
+      <!-- Checkbox Column -->
+      <ng-container matColumnDef="select">
+        <mat-header-cell *matHeaderCellDef>
+          <mat-checkbox
+            (change)="$event ? masterToggle() : null"
+            [checked]="selection.hasValue() && isAllSelected()"
+            [indeterminate]="selection.hasValue() && !isAllSelected()"
+          >
+          </mat-checkbox>
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <mat-checkbox
+            (click)="$event.stopPropagation()"
+            (change)="$event ? selection.toggle(row) : null"
+            [checked]="selection.isSelected(row)"
+          >
+          </mat-checkbox>
+        </mat-cell>
+      </ng-container>
+
+      <!-- L3 Needs Material Column -->
+      <ng-container matColumnDef="needs_material" matSortStart>
+        <mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          class="material-column"
+        ></mat-header-cell>
+        <mat-cell *matCellDef="let row" class="material-column">
+          <mat-icon *ngIf="row.needs_material">priority_high</mat-icon>
+        </mat-cell>
+      </ng-container>
+
+      <!-- L3 Pseudonym Column -->
+      <ng-container matColumnDef="username" matSortStart>
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'SAMPLE_MANAGEMENT.L3_PSEUDONYM' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row"> {{ row.username }} </mat-cell>
+      </ng-container>
+
+      <!-- IDS Column -->
+      <ng-container matColumnDef="ids" matSortStart>
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'SAMPLE_MANAGEMENT.IDS' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row"> {{ row.ids }} </mat-cell>
+      </ng-container>
+
+      <!-- Lastname Column -->
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'SAMPLE_MANAGEMENT.NACHNAME' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row"> {{ row.name }} </mat-cell>
+      </ng-container>
+
+      <!-- Firstname Column -->
+      <ng-container matColumnDef="vorname">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'SAMPLE_MANAGEMENT.VORNAME' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row"> {{ row.vorname }} </mat-cell>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'PROBANDEN.ACCOUNT_STATUS' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          {{ row.status | translate }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="view">
+        <mat-header-cell *matHeaderCellDef>
+          {{ 'SAMPLE_MANAGEMENT.DETAILS' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <button
+            id="viewicon"
+            #view
+            mat-icon-button
+            (click)="
+              onClickViewSampleListForUser(
+                row.username ? row.username : row.ids,
+                row.status
+              )
+            "
+            [disabled]="row.status === 'STUDIES.STATUS_DELETED'"
+          >
+            <mat-icon>visibility</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns"> </mat-row>
+    </mat-table>
+
+    <mat-paginator
+      #paginator
+      [pageIndex]="0"
+      [pageSize]="25"
+      [pageSizeOptions]="[5, 10, 25, 100]"
+    >
+    </mat-paginator>
+  </div>
+</div>

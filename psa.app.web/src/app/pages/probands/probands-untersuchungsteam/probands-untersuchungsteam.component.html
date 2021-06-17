@@ -1,0 +1,70 @@
+<div
+  class="page-header"
+  fxLayout="row"
+  fxLayout.lt-lg="row wrap"
+  fxLayoutAlign="space-between center"
+>
+  <div>
+    <button
+      id="createIDS"
+      mat-raised-button
+      color="primary"
+      (click)="createIDS()"
+      unit-create-ids
+    >
+      {{ 'PROBANDEN.NEW_IDS' | translate }}
+    </button>
+    <button
+      id="createProband"
+      mat-raised-button
+      color="primary"
+      (click)="addOrEditProband()"
+      unit-create-proband
+    >
+      {{ 'PROBANDEN.NEW_PROBAND' | translate }}
+    </button>
+  </div>
+</div>
+
+<app-probands-list>
+  <!-- Show lab results or details or register proband column -->
+  <app-probands-list-entry-action
+    columnName="view_labresults"
+    [actionHeader]="'PROBANDEN.VIEW_DETAILS' | translate"
+  >
+    <app-probands-list-entry-action-button
+      unit-view-labresults-for-proband
+      actionId="view_labresults_for_proband"
+      [actionLabel]="'PROBANDEN.VIEW_DETAILS' | translate"
+      [disableForDeletedAccounts]="true"
+      [showOnlyForIdAndUsernameInequality]="true"
+      (click)="viewDetailsForProband($event.username)"
+    >
+    </app-probands-list-entry-action-button>
+    <app-probands-list-entry-action-button
+      unit-view-labresults-add-pseudonym
+      actionId="view_labresults_add_pseudonym"
+      [actionLabel]="'PROBANDEN.NEW_PSEUDONYM' | translate"
+      actionIcon="account_circle"
+      [disableForDeletedAccounts]="true"
+      [showOnlyForIdAndUsernameEquality]="true"
+      (click)="addPseudonym($event.ids)"
+    >
+    </app-probands-list-entry-action-button>
+  </app-probands-list-entry-action>
+
+  <!-- Show questionnaires for ut -->
+  <app-probands-list-entry-action
+    columnName="view_questionnaires"
+    [actionHeader]="'PROBANDEN.VIEW_QUESTIONNAIRES' | translate"
+  >
+    <app-probands-list-entry-action-button
+      unit-view-questionnaires
+      actionId="view_questionnaires"
+      [actionLabel]="'PROBANDEN.VIEW_QUESTIONNAIRES' | translate"
+      [disableForDeletedAccounts]="true"
+      (click)="viewQuestionnaireInstancesForUT($event.username)"
+    >
+    </app-probands-list-entry-action-button>
+  </app-probands-list-entry-action>
+</app-probands-list>

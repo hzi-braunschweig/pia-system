@@ -1,0 +1,1 @@
+ALTER TABLE questionnaire_instances ALTER COLUMN date_of_issue TYPE TIMESTAMP;

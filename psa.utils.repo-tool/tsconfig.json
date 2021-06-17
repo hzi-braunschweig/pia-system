@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    /* Project Options */
+    "declaration": true,
+    "removeComments": true,
+    "target": "es2020",
+    "outDir": "./dist",
+    /* Strict Checks */
+    "strict": true,
+    /* Module Resolution */
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "./",
+    "module": "commonjs",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "types": ["node"],
+    /* Experimental */
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    /* Advanced */
+    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  }
+}

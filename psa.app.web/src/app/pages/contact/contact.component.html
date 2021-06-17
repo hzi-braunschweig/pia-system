@@ -1,0 +1,20 @@
+<div class="jumbotron" data-e2e="e2e-contact-content">
+  <div class="align-center">
+    <mat-card>
+      <h1>{{ 'SIDENAV.CONTACT' | translate }}</h1>
+      <div *ngFor="let address of addresses">
+        <div class="contact-heading">{{ address.name }}</div>
+        <mat-divider [inset]="true"></mat-divider>
+        <div [innerHTML]="address.address" class="contact-row"></div>
+        <mat-divider [inset]="true"></mat-divider>
+      </div>
+      <div *ngIf="noAddresses" [innerHTML]="noAddresses"></div>
+      <div>
+        <app-request-new-material
+          *ngIf="currentRole === 'Proband' && hasSampleCompliance"
+        >
+        </app-request-new-material>
+      </div>
+    </mat-card>
+  </div>
+</div>

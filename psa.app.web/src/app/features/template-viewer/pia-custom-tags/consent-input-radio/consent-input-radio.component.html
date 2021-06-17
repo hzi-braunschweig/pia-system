@@ -1,0 +1,15 @@
+<div class="radio-group-wrapper">
+  <mat-radio-group
+    [formControl]="formControl"
+    [class.form-field-invalid]="formControl.touched && !formControl.valid"
+    required
+    [attr.data-e2e]="consentName"
+  >
+    <mat-radio-button [value]="true">{{
+      'GENERAL.YES' | translate
+    }}</mat-radio-button>
+    <mat-radio-button [value]="false">{{
+      'GENERAL.NO' | translate
+    }}</mat-radio-button>
+  </mat-radio-group>
+</div>

@@ -1,0 +1,42 @@
+<ion-app>
+  <ion-split-pane content-id="main-content">
+    <ion-menu content-id="main-content" type="overlay">
+      <ion-content>
+        <ion-list id="menu-content">
+          <ion-list-header>PIA</ion-list-header>
+          <ion-note>{{ piaVersion }}</ion-note>
+
+          <ion-menu-toggle
+            auto-hide="false"
+            *ngFor="let page of appPages; let i = index"
+          >
+            <ion-item
+              routerDirection="root"
+              [routerLink]="[page.url]"
+              lines="none"
+              detail="false"
+              routerLinkActive="selected"
+            >
+              <ion-icon
+                slot="start"
+                [ios]="page.icon + '-outline'"
+                [md]="page.icon + '-sharp'"
+              ></ion-icon>
+              <ion-label>{{ page.title | translate }}</ion-label>
+            </ion-item>
+          </ion-menu-toggle>
+        </ion-list>
+      </ion-content>
+
+      <ion-footer>
+        <ion-item button color="primary" (click)="onLogout()">
+          <ion-icon name="log-out-outline" slot="start" color="dark"></ion-icon>
+          <ion-label slot="start" color="dark">{{
+            'GENERAL.LOGOUT' | translate
+          }}</ion-label>
+        </ion-item>
+      </ion-footer>
+    </ion-menu>
+    <ion-router-outlet id="main-content"></ion-router-outlet>
+  </ion-split-pane>
+</ion-app>

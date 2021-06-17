@@ -1,0 +1,35 @@
+accumulate-coverage:
+  stage: accumulate
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.coverage:$IMAGE_ID
+  script:
+    - mkdir -p coverage
+    - >
+      for JOB in $JOBS_UNIT; do
+        cp $JOB/coverage/coverage-unit.json coverage/$JOB-unit.json
+      done
+    - >
+      for JOB in $JOBS_INT; do
+        cp $JOB/coverage/coverage-int.json coverage/$JOB-int.json
+      done
+    - node /app/src/fix-report
+    - nyc report --reporter=lcov --reporter=text -t coverage | tee coverage.txt
+  variables:
+    GIT_STRATEGY: none
+  needs:
+    - job: build-docker
+      artifacts: false
+    - job: int
+      artifacts: true
+    - job: unit
+      artifacts: true
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: '$CI_COMMIT_BRANCH =~ /^develop/'
+    - if: '$CI_COMMIT_BRANCH =~ /^release/'
+  coverage: '/All files\s*\|\s*([0-9.]+)/'
+  artifacts:
+    paths:
+      - coverage.txt
+      - coverage/lcov.info
+    when: always

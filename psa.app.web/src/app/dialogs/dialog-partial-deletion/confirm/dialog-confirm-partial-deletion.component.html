@@ -1,0 +1,11 @@
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+<app-dialog-view-partial-deletion
+  *ngIf="!isLoading"
+  [headerData]="headerData"
+  [deleteLogs]="deleteLogs"
+  [labResults]="labResults"
+  [questionnaireInstances]="questionnaireInstances"
+  [cancelText]="'DIALOG.PARTIAL_DELETION.REJECT' | translate"
+  (cancel)="rejectDeletion()"
+  (confirm)="confirmDeletion()"
+></app-dialog-view-partial-deletion>

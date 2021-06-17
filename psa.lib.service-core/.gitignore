@@ -1,0 +1,4 @@
+authKey/
+node_modules/
+/.nyc_output/
+/tests/reports/

@@ -1,0 +1,42 @@
+.probands-container {
+  .mat-table {
+    .mat-icon {
+      color: #039be5;
+    }
+  }
+
+  .mobile {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 1279px) {
+  .page-header {
+    margin-bottom: 0.4rem;
+  }
+
+  .probands-container {
+    .column {
+      &.icon {
+        min-width: 105px;
+      }
+    }
+
+    .mobile {
+      display: flex !important;
+    }
+
+    .browser {
+      display: none;
+    }
+  }
+}
+
+@media screen and (max-width: 410px) {
+  .page-header {
+    .radio-button-group,
+    button:not(:last-child) {
+      margin-bottom: 0.4rem;
+    }
+  }
+}

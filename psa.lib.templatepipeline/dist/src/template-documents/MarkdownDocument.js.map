@@ -1,0 +1,1 @@
+{"version":3,"file":"MarkdownDocument.js","sourceRoot":"","sources":["../../../src/template-documents/MarkdownDocument.ts"],"names":[],"mappings":";;;AAAA,yDAA0D;AAC1D,yEAAsE;AAEtE,MAAa,gBAAiB,SAAQ,mDAAwB;IAI5D,YAAmB,YAAsC;QACvD,KAAK,EAAE,CAAC;QAJM,SAAI,GAAG,uCAAoB,CAAC,QAAQ,CAAC;QAKnD,IAAI,CAAC,YAAY,GAAG,OAAO,CAAC,OAAO,CAAC,YAAY,CAAC,CAAC;IACpD,CAAC;CACF;AARD,4CAQC"}

@@ -1,0 +1,67 @@
+/* Structure */
+.probands-container {
+  display: flex;
+  flex-direction: column;
+  min-width: 300px;
+  opacity: 0.8;
+
+  .material-column {
+    max-width: 40px;
+
+    .mat-icon {
+      color: red;
+      font-weight: bold;
+    }
+  }
+}
+
+.probands-header {
+  min-height: 56px;
+  max-height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 8px 24px 0;
+  font-size: 20px;
+  justify-content: space-between;
+  border-bottom: 1px solid transparent;
+}
+
+.mat-form-field {
+  font-size: 14px;
+  flex-grow: 1;
+  margin-top: 8px;
+  margin-bottom: 30px;
+  max-width: 150px;
+}
+
+.mat-cell {
+  display: flex;
+  justify-content: flex-start;
+  text-align: start;
+}
+
+.mat-header-cell {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.questionnaire-header {
+  margin-bottom: 10px;
+
+  .mat-checkbox {
+    margin-bottom: 30px;
+  }
+
+  .mat-grid-tile {
+    button:only-child {
+      width: 250px;
+      margin-bottom: 30px;
+    }
+
+    &:last-child {
+      .mat-form-field {
+        max-width: 200px;
+      }
+    }
+  }
+}

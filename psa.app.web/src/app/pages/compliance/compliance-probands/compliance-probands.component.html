@@ -1,0 +1,10 @@
+<div class="jumbotron" data-e2e="e2e-compliance-probands-content">
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+  <mat-card *ngIf="!isLoading">
+    <h1>{{ 'SIDENAV.COMPLIANCE' | translate }}</h1>
+    <app-compliance-edit-proband
+      [username]="username"
+      [study]="study"
+    ></app-compliance-edit-proband>
+  </mat-card>
+</div>

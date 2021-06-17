@@ -1,0 +1,25 @@
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+<div class="jumbotron" data-e2e="e2e-questionnaires-proband-content">
+  <mat-card>
+    <mat-tab-group (selectedTabChange)="switchTab($event.index)">
+      <mat-tab
+        [label]="'QUESTIONNAIRES_PROBAND.OPEN_QUESTIONNAIRES' | translate"
+      >
+        <app-questionnaire-instances-list
+          data-e2e="e2e-proband-open-questionnaire-table"
+          *ngIf="!isLoading"
+          [questionnaireInstances]="openQuestionnaireInstances"
+        ></app-questionnaire-instances-list>
+      </mat-tab>
+      <mat-tab
+        [label]="'QUESTIONNAIRES_PROBAND.CLOSED_QUESTIONNAIRES' | translate"
+      >
+        <app-questionnaire-instances-list
+          data-e2e="e2e-proband-completed-questionnaire-table"
+          *ngIf="!isLoading"
+          [questionnaireInstances]="closedQuestionnaireInstances"
+        ></app-questionnaire-instances-list>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card>
+</div>

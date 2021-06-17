@@ -1,0 +1,51 @@
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+<div class="component-container" *ngIf="!isLoading">
+  <div class="file-container">
+    <div *ngIf="fileName">
+      <button
+        type="button"
+        mat-button
+        matSuffix
+        aria-label="Download File"
+        (click)="openFile()"
+      >
+        <mat-icon>attach_file</mat-icon>
+        {{ fileName }}
+      </button>
+      <button
+        *ngIf="!isReadOnly"
+        type="button"
+        mat-button
+        matSuffix
+        mat-icon-button
+        aria-label="Clear"
+        (click)="deleteFile()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+  <div *ngIf="!isReadOnly">
+    <input
+      #fileInput
+      (click)="fileInput.value = null"
+      value=""
+      type="file"
+      (change)="onFileSelected($event)"
+      accept="application/pdf, text/csv, application/csv, .csv"
+      #fileAnswerTypeFileInput
+    />
+    <div>
+      <button
+        type="button"
+        mat-raised-button
+        (click)="fileAnswerTypeFileInput.click()"
+      >
+        {{ 'ANSWERS_PROBAND.SELECT_FILE' | translate }}
+      </button>
+      <button type="button" mat-button *ngIf="url" (click)="saveFile()">
+        {{ 'GENERAL.DOWNLOAD' | translate }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,62 @@
+<app-header [title]="'LAB_RESULT.TITLE' | translate"></app-header>
+
+<ion-content color="primary-light">
+  <div class="pia-message-centered" *ngIf="isEmpty()">
+    <p>{{ 'LAB_RESULT.NO_RESULTS' | translate }}</p>
+  </div>
+
+  <ion-list lines="full" *ngIf="!isEmpty()">
+    <ion-item-group *ngIf="labResults">
+      <ng-container *ngFor="let labResult of labResults; index as i">
+        <ion-item
+          button
+          *ngIf="labResult.status === 'analyzed'"
+          [routerLink]="[labResult.id]"
+        >
+          <ion-icon slot="start" name="flask"></ion-icon>
+          <ion-label>
+            <h2>{{ labResult.id }}</h2>
+            <ion-note
+              >{{ 'LAB_RESULT.ANALYSED' | translate }}: {{
+              labResult.date_of_sampling | date:'shortDate' }}</ion-note
+            >
+          </ion-label>
+
+          <ion-icon slot="end" name="eye"></ion-icon>
+        </ion-item>
+
+        <ion-item *ngIf="labResult.status !== 'analyzed'">
+          <ion-icon slot="start" name="flask"></ion-icon>
+          <ion-label>
+            <h2>{{ labResult.id }}</h2>
+            <ion-note
+              >{{ 'LAB_RESULT.ANALYSED' | translate }}: {{
+              labResult.date_of_sampling | date:'shortDate' }}</ion-note
+            >
+          </ion-label>
+        </ion-item>
+      </ng-container>
+    </ion-item-group>
+
+    <ion-item-group *ngIf="!labResults">
+      <ion-item *ngFor="let item of [].constructor(10)">
+        <ion-skeleton-text
+          animated
+          style="width: 27px; height: 27px"
+          slot="start"
+        ></ion-skeleton-text>
+        <ion-label>
+          <h3>
+            <ion-skeleton-text animated style="width: 50%"></ion-skeleton-text>
+          </h3>
+          <p>
+            <ion-skeleton-text animated style="width: 95%"></ion-skeleton-text>
+          </p>
+          <p>
+            <ion-skeleton-text animated style="width: 15%"></ion-skeleton-text>
+          </p>
+        </ion-label>
+      </ion-item>
+    </ion-item-group>
+  </ion-list>
+</ion-content>

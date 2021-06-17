@@ -1,0 +1,12 @@
+<app-header [title]="labResultId" isChildPageOf="lab-result"></app-header>
+<ion-progress-bar
+  color="success"
+  type="indeterminate"
+  *ngIf="isLoading"
+></ion-progress-bar>
+
+<ion-content class="ion-padding">
+  <div class="page" *ngIf="!isLoading && labResultHtml">
+    <div class="page-content" [innerHtml]="labResultHtml"></div>
+  </div>
+</ion-content>

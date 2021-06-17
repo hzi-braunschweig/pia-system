@@ -1,0 +1,65 @@
+<div class="sidenav-content" data-e2e="e2e-sidenav-content">
+  <div class="sidenav-top">
+    <img class="logo" src="assets/images/logo-hzi.jpeg" />
+    <mat-list>
+      <mat-button-toggle-group
+        #group="matButtonToggleGroup"
+        vertical="true"
+        [(value)]="selectedPage"
+      >
+        <mat-divider></mat-divider>
+        <mat-button-toggle
+          *ngFor="let page of pages"
+          (click)="openPage(page)"
+          [value]="page"
+        >
+          <h3 mat-line>
+            <span>{{ page.name | translate }}</span>
+          </h3>
+        </mat-button-toggle>
+        <mat-button-toggle (click)="logout()" data-e2e="e2e-logout">
+          <span>{{ 'SIDENAV.LOGOUT' | translate }}</span>
+        </mat-button-toggle>
+        <mat-divider></mat-divider>
+      </mat-button-toggle-group>
+    </mat-list>
+  </div>
+  <div class="sidenav-bottom">
+    <div class="info-item-label" *ngIf="selectedPseudonymUI || selectedIDSUI">
+      {{ 'SIDENAV.PROBAND' | translate }}
+    </div>
+    <div class="info-item-value" *ngIf="selectedPseudonymUI || selectedIDSUI">
+      <div *ngIf="selectedPseudonymUI">
+        {{ 'PROBAND.PSEUDONYM' | translate }}: {{ selectedPseudonymUI }}
+      </div>
+      <div *ngIf="selectedIDSUI">
+        {{ 'PROBAND.IDS' | translate }}: {{ selectedIDSUI }}
+      </div>
+    </div>
+    <div class="info-item-label" *ngIf="currentUser && currentUser.username">
+      {{ 'SIDENAV.USER' | translate }}
+    </div>
+    <div
+      data-e2e="e2e-username"
+      class="info-item-value"
+      *ngIf="currentUser && currentUser.username"
+    >
+      {{ currentUser.username }}
+    </div>
+    <div class="info-item-label" *ngIf="currentRoleUI">
+      {{ 'SIDENAV.ROLE' | translate }}
+    </div>
+    <div
+      data-e2e="e2e-current-role"
+      class="info-item-value"
+      *ngIf="currentRoleUI"
+    >
+      {{ currentRoleUI | translate }}
+    </div>
+    <br />
+    <br />
+    <a class="info-item-value" [routerLink]="['licenses']">
+      {{ 'GENERAL.LICENSES' | translate }}
+    </a>
+  </div>
+</div>

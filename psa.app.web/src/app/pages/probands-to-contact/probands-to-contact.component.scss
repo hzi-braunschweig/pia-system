@@ -1,0 +1,73 @@
+mat-grid-list {
+  button {
+    &:nth-child(2) {
+      margin: 0 10px;
+    }
+
+    span {
+      font-size: 24px;
+      color: red;
+    }
+  }
+}
+
+mat-form-field {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.big-container {
+  background: white;
+}
+
+.search-container {
+  max-height: 26vh;
+  padding: 5px;
+  overflow: auto;
+}
+
+.table-container {
+  height: 67vh;
+  margin-top: 10px;
+}
+
+mat-table {
+  max-height: 62vh;
+}
+
+/*username column*/
+mat-cell:nth-child(1),
+mat-header-cell:nth-child(1) {
+  flex: 0 0 10%;
+}
+
+/*questionnaire title column*/
+mat-cell:nth-child(6),
+mat-header-cell:nth-child(6) {
+  flex: 0 0 10%;
+}
+
+/*questionnaire title column*/
+mat-cell:nth-child(8),
+mat-header-cell:nth-child(8) {
+  flex: 0 0 10%;
+}
+
+mat-cell {
+  &.account-status-value {
+    text-align: start;
+  }
+}
+
+mat-table .marker {
+  text-align: center;
+  font-size: 20px;
+}
+
+mat-table .marker-date {
+  text-align: center;
+}
+
+mat-table .marker-date small {
+  vertical-align: super;
+}

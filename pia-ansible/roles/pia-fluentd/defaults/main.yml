@@ -1,0 +1,12 @@
+---
+# defaults file for pia-fluentd
+
+# Fluentd configuration
+pia_fluentd_enabled: false
+pia_fluentd_path: /root/fluentd
+pia_fluentd_output_options: ['file', 'loki']
+pia_fluentd_output: file
+pia_fluentd_feature: this_should_be_changed_for_each_feature
+loki_ip_address: localhost
+loki_port: 3100
+pia_docker_tag: latest

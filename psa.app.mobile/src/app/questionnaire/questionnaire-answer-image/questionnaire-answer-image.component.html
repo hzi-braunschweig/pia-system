@@ -1,0 +1,15 @@
+<ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
+  <ion-label class="ion-text-wrap">{{ label }}</ion-label>
+  <ion-img
+    class="image"
+    *ngIf="control.value?.file"
+    [src]="control.value?.file"
+    [alt]="label"
+  ></ion-img>
+</ion-item>
+<ion-button type="button" [disabled]="disabled" (click)="onOpenCamera()">
+  <ion-icon slot="icon-only" name="camera"></ion-icon>
+</ion-button>
+<ion-button type="button" [disabled]="disabled" (click)="onOpenChooser()">
+  <ion-icon slot="icon-only" name="folder"></ion-icon>
+</ion-button>

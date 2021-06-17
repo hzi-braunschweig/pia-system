@@ -1,0 +1,138 @@
+<div class="jumbotron">
+  <div id="page-container">
+    <div class="back_button" fxLayout="row" fxLayoutAlign="space-between start">
+      <button id="arrowback" mat-button (click)="backClicked()">
+        <i class="material-icons">arrow_back</i>
+      </button>
+      <button mat-icon-button (click)="printPage()">
+        <mat-icon>print</mat-icon>
+      </button>
+    </div>
+
+    <div id="print-section">
+      <div *ngFor="let plannedProband of plannedProbands; let i = index">
+        <div id="pf1" class="pf w0 h0" data-page-no="1">
+          <div class="pc pc1 w0 h0">
+            <img
+              class="bi x0 y0 w1 h1"
+              alt=""
+              src="../../../assets/images/bgLoginLetter.png"
+            />
+            <div class="t m0 x1 h2 y1 ff1 fs0 fc0 sc0 ls0 ws0"></div>
+            <div class="t m0 x2 h3 y2 ff1 fs1 fc0 sc0 ls0 ws0">
+              Login-Daten für PIA
+            </div>
+            <div class="t m0 x3 h4 y3 ff1 fs2 fc1 sc0 ls0 ws0">
+              Vielen Dank, dass Sie zur Teilnahme an unserer Zusatzstudie und
+              der Verwendung von PIA bereit sind!
+            </div>
+            <div class="t m0 x3 h5 y4 ff2 fs2 fc1 sc0 ls0 ws0">
+              Verwendung der mobilen App PIA mit Smartphone oder Tablet
+            </div>
+            <div class="t m0 x3 h5 y5 ff2 fs2 fc1 sc0 ls0 ws0">
+              Sie können die App unter
+              <span class="fc2">www.info-pia.de/download</span>
+              oder via QR-Code herunter-
+            </div>
+            <div class="t m0 x3 h5 y6 ff2 fs2 fc1 sc0 ls0 ws0">
+              laden. Nach dem Aufruf der Seite mit Ihrem Smartphone oder Tablet
+              muss das
+            </div>
+            <div class="t m0 x3 h5 y7 ff2 fs2 fc1 sc0 ls0 ws0">
+              Passwort <span class="ff1">pia</span> eingegeben werden. Dann
+              können Sie die App für Android- oder
+            </div>
+            <div class="t m0 x3 h5 y8 ff2 fs2 fc1 sc0 ls0 ws0">
+              Apple-Geräte herunterladen.
+            </div>
+            <div class="t m0 x3 h5 y9 ff2 fs2 fc1 sc0 ls0 ws0">
+              Eine Anleitung für die Installation finden Sie in Ihrer PIA-Tasche
+              oder auf der Webseite.
+            </div>
+            <div class="t m0 x3 h5 ya ff2 fs2 fc1 sc0 ls0 ws0">
+              Verwendung von PIA über einen Webbrowser am Computer oder
+              Smartphone/Tablet
+            </div>
+            <div class="t m0 x3 h5 yb ff2 fs2 fc1 sc0 ls0 ws0">
+              Bitte rufen Sie <span class="fc2">www.pia-app.de</span>
+              auf. Nach Eingabe Ihrer Zugangsdaten können Sie sofort mit den
+              ersten
+            </div>
+            <div class="t m0 x3 h5 yc ff2 fs2 fc1 sc0 ls0 ws0">
+              Fragebögen starten!
+            </div>
+            <div class="t m0 x3 h5 yd ff2 fs2 fc1 sc0 ls0 ws0">
+              Zugangsdaten
+            </div>
+            <div class="t m0 x3 h5 ye ff2 fs2 fc1 sc0 ls0 ws0">
+              Ihre persönlichen Zugangsdaten für PIA:
+            </div>
+            <div class="t m0 x3 h5 yf ff1 fs2 fc1 sc0 ls0 ws0">
+              Anmeldename:<span class="ff2">
+                <span class="fc1"> {{ plannedProband.user_id }}</span></span
+              >
+            </div>
+            <div class="t m0 x3 h5 y10 ff1 fs2 fc1 sc0 ls0 ws0">
+              Passwort für die Erstanmeldung:<span class="ff2">
+                <span class="fc1"> {{ plannedProband.password }}</span></span
+              >
+            </div>
+            <div class="t m0 x3 h5 y11 ff2 fs2 fc1 sc0 ls0 ws0">
+              Wenn Sie Fragen oder Schwierigkeiten haben, können Sie sich an uns
+              wenden.
+            </div>
+            <div class="t m0 x3 h5 y12 ff2 fs2 fc1 sc0 ls0 ws0">
+              Sie erreichen uns telefonisch unter der Rufnummer 0511-5350-8500
+              oder per Mail:
+            </div>
+            <div class="t m0 x3 h5 y13 ff2 fs2 fc1 sc0 ls0 ws0">
+              gesundheitsstudie@helmholtz-hzi.de
+            </div>
+            <div class="t m0 x3 h5 y19 ff2 fs2 fc1 sc0 ls0 ws0">
+              Ihr Studienteam
+            </div>
+            <div class="c x4 y14 w2 h6">
+              <div class="t m0 x5 h5 y15 ff2 fs2 fc1 sc0 ls0 ws0"></div>
+              <div class="t m0 x5 h5 y16 ff2 fs2 fc1 sc0 ls0 ws0"></div>
+              <div class="t m0 x5 h5 y17 ff2 fs2 fc1 sc0 ls0 ws0"></div>
+            </div>
+            <a class="l" href="http://www.info-pia.de/download">
+              <div class="d m1"></div>
+            </a>
+            <a class="l" href="https://www.pia-app.de/">
+              <div class="d m1"></div>
+            </a>
+          </div>
+          <div
+            class="pi"
+            data-data='{"ctm":[1.000000,0.000000,0.000000,1.000000,0.000000,0.000000]}'
+          ></div>
+        </div>
+        <div id="pf2" class="pf w0 h0" data-page-no="2">
+          <div class="pc pc2 w0 h0">
+            <img
+              class="bi x6 y18 w3 h7"
+              alt=""
+              src="../../../assets/images/bgZifcoLetter.png"
+            />
+            <div class="t m0 x3 h8 y1a ff1 fs3 fc0 sc0 ls0 ws0">
+              Formular zur Eingabe der E-Mail-Adresse
+            </div>
+            <div class="t m0 x3 h9 y1b ff1 fs4 fc1 sc0 ls0 ws0">IDS:</div>
+            <div class="t m0 x3 h9 y1c ff1 fs4 fc1 sc0 ls0 ws0">
+              Level-3 Nummer:<span class="fs2 fc0"> </span
+              ><span class="ff3 fc3"> {{ plannedProband.user_id }}</span>
+            </div>
+            <div class="t m0 x3 h9 y1d ff1 fs4 fc1 sc0 ls0 ws0">
+              E-Mail-Adresse:
+            </div>
+          </div>
+          <div
+            class="pi"
+            data-data='{"ctm":[1.000000,0.000000,0.000000,1.000000,0.000000,0.000000]}'
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

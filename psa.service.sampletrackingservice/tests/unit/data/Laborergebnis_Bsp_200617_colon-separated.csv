@@ -1,0 +1,10 @@
+Labor:Pseudonym:Proben-ID:Material:Analysedatum:Abnahmedatum:Eingang der Probe:Datum der Ergebnismitteilung:Untersuchung:Ergebnis (qualitativ):Ergebnis (quantitativ):Unit:Andere Unit:Kit/Firma:Bemerkung
+::::Datum:Datum:Datum:Datum::Positiv/negativ/grenzwertig/nicht durchgeführt/nicht durchführbar::AU/ml, OD/ml, RFU, andere::Freier Text:Freier Text
+::::::::::::::
+Plauen:xyz-12357765:x-1283855:Vollblut:21.06.20:19.06.20:20.06.20:22.06.20:Antikörper (IgG) gegen SARS-CoV-2:negative:0,7:.:ratio:Euroimmun Anti-SARS-CoV-2-ELISA (IgG) :.
+Plauen:xyz-12357765:x-1283855:Vollblut:21.06.20:19.06.20:20.06.20:22.06.20:Antikörper (IgG) gegen SARS-CoV-3:grenzwertig:1,0:.:ratio:Euroimmun Anti-SARS-CoV-2-ELISA (IgG) :Volumen grenzwertig
+Plauen:xyz-12357765:x-1283855:Vollblut:21.06.20:19.06.20:20.06.20:22.06.20:Antikörper (IgG) gegen SARS-CoV-4:positive:1,2:.:ratio:Euroimmun Anti-SARS-CoV-2-ELISA (IgG) :.
+Plauen:xyz-12357765:x-1283855:Vollblut:21.06.20:19.06.20:20.06.20:22.06.20:Antikörper (IgG) gegen SARS-CoV-5:negative:11,99:AU/ml:.:LIAISON SARS-CoV-2 S1/S2 IgG-Assay (Diasorin):nicht an den Probanden, nicht befundet
+Plauen:xyz-12357765:x-1283858:Vollblut:23.06.20:19.06.20:20.06.20:24.06.20:Antikörper (IgG) gegen SARS-CoV-6:grenzwertig:12,00:AU/ml:.:LIAISON SARS-CoV-2 S1/S2 IgG-Assay (Diasorin):nicht an den Probanden, nicht befundet
+Plauen:xyz-12357765:x-1283858:Vollblut:23.06.20:19.06.20:20.06.20:24.06.20:Antikörper (IgG) gegen SARS-CoV-7:grenzwertig:15,00:AU/ml:.:LIAISON SARS-CoV-2 S1/S2 IgG-Assay (Diasorin):nicht an den Probanden, nicht befundet
+Plauen:xyz-12357765:x-1283858:Vollblut:23.06.20:19.06.20:20.06.20:24.06.20:Antikörper (IgG) gegen SARS-CoV-8:positive:15,01:AU/ml:.:LIAISON SARS-CoV-2 S1/S2 IgG-Assay (Diasorin):nicht an den Probanden, nicht befundet

@@ -1,0 +1,125 @@
+<div class="jumbotron" data-e2e="e2e-contract-proband-component">
+  <div
+    *ngIf="isChildWindow"
+    class="back_button"
+    fxLayout="row"
+    fxLayoutAlign="space-between start"
+  >
+    <button mat-button (click)="goBackInHistory()">
+      <mat-icon>arrow_back_ios</mat-icon>
+      {{ 'LABRESULT_DETAILS.BACK' | translate }}
+    </button>
+  </div>
+  <form
+    (submit)="onSubmit()"
+    [formGroup]="messageFormGroup"
+    class="message-form-group"
+  >
+    <mat-card>
+      <h1>{{ 'CONTACT_PROBAND.HEADING' | translate }}</h1>
+      <div>
+        <mat-form-field class="demo-chip-list">
+          <mat-chip-list #chipList>
+            <mat-chip
+              *ngFor="let pseudonym of pseudonyms"
+              [selectable]="selectable"
+              [removable]="removable"
+              (removed)="remove(pseudonym)"
+            >
+              {{ pseudonym }}
+              <mat-icon matChipRemove *ngIf="removable">cancel</mat-icon>
+            </mat-chip>
+            <input
+              placeholder="{{ 'CONTACT_PROBAND.RECEIVER' | translate }}"
+              #pseudonymInput
+              [formControl]="receiver"
+              [matAutocomplete]="auto"
+              [matChipInputFor]="chipList"
+              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+              (matChipInputTokenEnd)="add($event)"
+              data-e2e="e2e-contact-proband-receiver-input"
+            />
+            <mat-error *ngIf="pseudonyms.length == 0 && !contactAll">
+              {{ 'CONTACT_PROBAND.RECIPIENT_IS_REQUIRED' | translate }}
+            </mat-error>
+          </mat-chip-list>
+          <mat-autocomplete
+            #auto="matAutocomplete"
+            (optionSelected)="selected($event)"
+          >
+            <mat-option
+              *ngFor="let pseudonym of autoCompletePseudonyms | async"
+              [value]="pseudonym"
+            >
+              {{ pseudonym }}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+      </div>
+      <div>
+        <mat-form-field>
+          <input
+            matInput
+            placeholder="{{ 'CONTACT_PROBAND.SUBJECT' | translate }}"
+            [formControl]="subject"
+            data-e2e="e2e-contact-proband-subject-input"
+          />
+
+          <mat-error *ngIf="subject.hasError('required')">
+            {{ 'CONTACT_PROBAND.SUBJECT_IS_REQUIRED' | translate }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <div>
+        <mat-form-field>
+          <textarea
+            matInput
+            placeholder="{{
+              'CONTACT_PROBAND.PLEASE_ENTER_YOUR_MESSAGE' | translate
+            }}"
+            matTextareaAutosize
+            matAutosizeMinRows="5"
+            matAutosizeMaxRows="10"
+            [formControl]="content"
+            data-e2e="e2e-contact-proband-message-textarea"
+          ></textarea>
+
+          <mat-error *ngIf="content.hasError('required')">
+            {{ 'CONTACT_PROBAND.MESSAGE_IS_REQUIRED' | translate }}
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div>
+        <mat-checkbox
+          [(ngModel)]="contactAll"
+          [ngModelOptions]="{ standalone: true }"
+          >{{ 'SIDENAV.CONTACT_ALL_PROBANDS' | translate }}</mat-checkbox
+        >
+        <mat-checkbox
+          [(ngModel)]="notifyByEmail"
+          [ngModelOptions]="{ standalone: true }"
+          data-e2e="e2e-contact-proband-email-checkbox"
+          >{{ 'CONTACT_PROBAND.EMAIL' | translate }}</mat-checkbox
+        >
+        <mat-checkbox
+          [(ngModel)]="notifyByNotification"
+          [ngModelOptions]="{ standalone: true }"
+          >{{ 'CONTACT_PROBAND.PUSH_NOTIFICATION' | translate }}</mat-checkbox
+        >
+      </div>
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        [disabled]="
+          submitButtonIsDisabled ||
+          (notifyByEmail === false && notifyByNotification === false)
+        "
+        data-e2e="e2e-contact-proband-send-button"
+      >
+        {{ 'GENERAL.SEND' | translate }}
+      </button>
+    </mat-card>
+  </form>
+</div>

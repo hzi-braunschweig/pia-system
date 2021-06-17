@@ -1,0 +1,12 @@
+.md {
+  ion-icon[slot='start'],
+  ion-badge[slot='start'] {
+    min-width: 36px;
+  }
+}
+.ios {
+  ion-icon[slot='start'],
+  ion-badge[slot='start'] {
+    min-width: 44px;
+  }
+}

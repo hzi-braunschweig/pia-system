@@ -1,0 +1,11 @@
+{
+  "name": "psa.test.load",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "k6 run --out csv=test-results_scenario-01.csv --verbose ./scenarios/01_login-and-show-questionnaires.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/k6": "^0.30.0"
+  }
+}

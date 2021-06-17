@@ -1,0 +1,20 @@
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-gap: 1rem;
+  align-items: baseline;
+  width: 100%;
+
+  .researcher-hint,
+  .at-least-one-error {
+    grid-column-end: span 2;
+  }
+
+  .researcher-hint {
+    padding-top: 5rem;
+  }
+}
+
+mat-dialog-actions {
+  justify-content: center;
+}

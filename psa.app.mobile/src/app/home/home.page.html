@@ -1,0 +1,9 @@
+<app-header [title]="'HOME.TITLE' | translate"></app-header>
+
+<ion-content color="primary-light">
+  <ion-card *ngIf="welcomeText">
+    <ion-card-content class="pia-welcome-card" unit-welcome-text>
+      <markdown>{{ welcomeText }}</markdown>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

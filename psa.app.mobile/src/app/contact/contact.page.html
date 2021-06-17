@@ -1,0 +1,27 @@
+<app-header [title]="'STUDY_CONTACT.TITLE' | translate"></app-header>
+
+<ion-content color="primary-light">
+  <ion-list>
+    <ion-item class="ion-text-wrap" *ngFor="let address of addresses">
+      <ion-label class="ion-text-wrap">
+        <h2>{{ address.name }}</h2>
+        <p [innerHTML]="address.address"></p>
+      </ion-label>
+    </ion-item>
+    <ion-item *ngIf="!addresses || !addresses.length">
+      <ion-label class="ion-text-wrap"
+        >{{ 'STUDY_CONTACT.NO_ADDRESS_TEXT' | translate }}</ion-label
+      >
+    </ion-item>
+    <ion-item
+      button
+      color="primary"
+      (click)="presentConfirmNewMaterial()"
+      *ngIf="currentUser.compliance_samples"
+    >
+      <ion-label
+        >{{ 'STUDY_CONTACT.NEW_NASAL_SWAB_TO_SEND' | translate }}</ion-label
+      >
+    </ion-item>
+  </ion-list>
+</ion-content>

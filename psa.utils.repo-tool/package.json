@@ -1,0 +1,42 @@
+{
+  "name": "repo-tool",
+  "version": "1.6.0",
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "lint": "eslint . --ext .ts",
+    "build": "tsc -p tsconfig.build.json",
+    "help": "node ./dist/index.js --help",
+    "check-merge-requests": "node ./dist/index.js check-merge-requests",
+    "start": "PUPPETEER_SKIP_DOWNLOAD=1 TARGET_FILE=../ci/generated.yml REPO_DIR=../ node ./dist/index.js",
+    "generate": "npm start -- generate",
+    "update": "npm start -- update",
+    "outdated": "npm start -- outdated",
+    "license": "npm start -- license",
+    "scan-routes": "npm start -- scan-routes",
+    "test": "npm start -- test"
+  },
+  "devDependencies": {
+    "@types/cli-progress": "^3.9.1",
+    "@types/command-line-args": "^5.0.0",
+    "@types/csv-stringify": "^3.1.0",
+    "@types/license-checker": "^25.0.1",
+    "@types/node": "^14.17.0",
+    "@types/node-fetch": "^2.5.10",
+    "@typescript-eslint/eslint-plugin": "^4.24.0",
+    "@typescript-eslint/parser": "^4.24.0",
+    "commander": "^7.2.0",
+    "eslint": "^7.26.0",
+    "eslint-config-prettier": "^8.3.0",
+    "typescript": "^4.2.4"
+  },
+  "dependencies": {
+    "chalk": "^4.1.1",
+    "cli-progress": "^3.8.2",
+    "command-line-args": "^5.1.1",
+    "csv-stringify": "^5.6.2",
+    "license-checker": "^25.0.1",
+    "node-fetch": "^2.6.1",
+    "openapi3-ts": "^2.0.1",
+    "yaml": "^1.10.2"
+  }
+}

@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+
+PGPASSWORD=$POSTGRES_PASSWORD exec vacuumdb -U $POSTGRES_USER $POSTGRES_DB --full --echo

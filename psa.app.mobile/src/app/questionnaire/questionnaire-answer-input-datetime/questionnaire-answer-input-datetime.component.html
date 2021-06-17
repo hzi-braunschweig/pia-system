@@ -1,0 +1,17 @@
+<ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
+  <ion-label class="ion-text-wrap">{{ label }}</ion-label>
+</ion-item>
+<ion-item lines="inset">
+  <ion-datetime
+    [formControl]="control"
+    [placeholder]="'QUESTIONNAIRE_QUESTIONS.PLEASE_CLICK' | translate"
+    [disabled]="disabled"
+    [name]="name"
+    [cancelText]="'GENERAL.CANCEL_TEXT' | translate"
+    [doneText]="'GENERAL.DONE_TEXT' | translate"
+    [min]="minDate?.toISOString() || undefined"
+    [max]="maxDate?.toISOString() || undefined"
+    displayFormat="DD.MM.YYYY"
+  >
+  </ion-datetime>
+</ion-item>

@@ -1,0 +1,38 @@
+.page {
+  background: white;
+  width: 21cm;
+  height: 29.7cm;
+  display: block;
+  margin: 0 auto;
+  margin-bottom: 0.5cm;
+  box-shadow: 0 0 0.5cm rgba(0, 0, 0, 0.5);
+  font-size: 11pt;
+
+  .page-content {
+    padding: 2.5cm 2.5cm 2.5cm 2.5cm;
+
+    td {
+      padding: 1px 15px 1px 0;
+    }
+
+    .pia-laboratory-result-table {
+      min-width: 420px;
+      padding: 10px 0 10px 0;
+
+      td,
+      th {
+        border: 1px solid #dddddd;
+        text-align: left;
+      }
+
+      tr:nth-child(even) {
+        background-color: #dddddd;
+      }
+    }
+  }
+}
+
+.back_button {
+  width: 95%;
+  padding-bottom: 20px;
+}

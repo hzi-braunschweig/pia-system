@@ -1,0 +1,51 @@
+{
+  "name": "questionnaireservice",
+  "version": "1.6.0",
+  "description": "Provides access to questionnaires and answers",
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node --insecure-http-parser --max-old-space-size=4096 src/index.js",
+    "test.int": "DOTENV_CONFIG_PATH=tests/test.env nyc mocha -r '../psa.utils.scripts/test.int/setup.hook' 'tests/integration/**/*.spec.{js,ts}' --timeout 10000",
+    "test.unit": "IGNORE_MISSING_CONFIG=1 nyc mocha 'src/**/*.spec.{js,ts}' --timeout 5000",
+    "lint": "eslint . --ext .ts",
+    "postlint": "eslint . --ext .js -c .eslintrc.js.json --no-eslintrc # ONLY_FOR_JS: remove script after complete migration to ts"
+  },
+  "dependencies": {
+    "@hapi/boom": "^9.1.2",
+    "@hapi/hapi": "^20.1.3",
+    "@pia/lib-service-core": "file:../psa.lib.service-core",
+    "archiver": "^5.3.0",
+    "csv-stringify": "^5.6.2",
+    "date-fns": "^2.21.3",
+    "joi": "^17.3.0",
+    "node-fetch": "^2.6.1",
+    "pg-promise": "^10.10.2",
+    "pg-query-stream": "^4.1.0",
+    "q": "^1.5.1"
+  },
+  "devDependencies": {
+    "@pia/eslint-config": "file:../psa.eslint-config",
+    "@types/chai": "^4.2.18",
+    "@types/hapi__hapi": "^20.0.8",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^15.6.0",
+    "@typescript-eslint/eslint-plugin": "^4.24.0",
+    "@typescript-eslint/parser": "^4.24.0",
+    "chai": "^4.3.4",
+    "chai-http": "^4.3.0",
+    "dotenv": "^9.0.2",
+    "eslint": "^7.26.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-no-only-tests": "^2.6.0",
+    "eslint-plugin-security": "^1.4.0",
+    "jsonwebtoken": "^8.5.1",
+    "mocha": "^8.4.0",
+    "mocha-multi-reporters": "^1.5.1",
+    "nyc": "^15.1.0",
+    "sinon": "^10.0.0",
+    "source-map-support": "^0.5.19",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
+  }
+}

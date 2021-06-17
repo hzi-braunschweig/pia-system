@@ -1,0 +1,8 @@
+.gitlab-ci.yml
+dist/
+out-tsc/
+.nyc_output/
+coverage/
+psa.app.mobile/platforms/
+psa.app.mobile/www/
+psa.app.mobile/plugins/

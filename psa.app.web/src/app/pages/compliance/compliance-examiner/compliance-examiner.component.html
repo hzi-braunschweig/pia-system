@@ -1,0 +1,12 @@
+<div class="jumbotron">
+  <app-probands-list>
+    <app-probands-list-entry-action columnName="view_compliance">
+      <app-probands-list-entry-action-button
+        actionId="view_compliance"
+        [actionLabel]="'COMPLIANCE.COMPLIANCE' | translate"
+        (click)="showCompliance($event)"
+      >
+      </app-probands-list-entry-action-button>
+    </app-probands-list-entry-action>
+  </app-probands-list>
+</div>

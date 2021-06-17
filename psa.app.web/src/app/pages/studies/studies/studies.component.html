@@ -1,0 +1,188 @@
+<div class="jumbotron">
+  <div fxLayout="row wrap">
+    <div
+      fxFlex="50"
+      fxLayoutAlign="start center"
+      *ngIf="currentRole == 'SysAdmin'"
+    >
+      <button
+        id="createStudy"
+        mat-raised-button
+        color="primary"
+        (click)="addOrEditStudy()"
+      >
+        {{ 'STUDIES.NEW_STUDY' | translate }}
+      </button>
+    </div>
+    <div [fxHide]="!selection.isEmpty()">
+      <mat-form-field floatPlaceholder="never">
+        <input
+          matInput
+          #filter
+          placeholder="{{ 'DIALOG.FILTER' | translate }}"
+        />
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="probands-container mat-elevation-z8">
+    <mat-table
+      #table
+      [dataSource]="dataSource"
+      matSortActive="name"
+      matSortDirection="asc"
+      matSort
+    >
+      <!-- Name Column -->
+      <ng-container matColumnDef="name" matSortStart>
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="column name">
+          {{ 'STUDIES.STUDY_NAME' | translate }}
+        </mat-header-cell>
+        <mat-cell
+          *matCellDef="let row"
+          class="column name"
+          data-e2e="e2e-forscher-studies-study-name"
+        >
+          {{ row.name }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Description Column -->
+      <ng-container matColumnDef="description">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="column name">
+          {{ 'QUESTIONNAIRE_FORSCHER.DESCRIPTION' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row" class="column name">
+          {{ row.description }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Study status Column -->
+      <ng-container matColumnDef="status">
+        <mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          fxLayoutAlign="center center"
+        >
+          {{ 'QUESTIONNAIRES_PROBAND.STATUS' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row" fxLayoutAlign="center center">
+          {{ row.status | translate }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Access level Column -->
+      <ng-container matColumnDef="access_level">
+        <mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          appShowColumn
+          showInput="none"
+        ></mat-header-cell>
+        <mat-cell
+          *matCellDef="let row"
+          appShowColumn
+          showInput="none"
+        ></mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="view">
+        <mat-header-cell
+          *matHeaderCellDef
+          fxFlex="1 0 40px"
+          fxLayoutAlign="center center"
+        ></mat-header-cell>
+        <mat-cell
+          *matCellDef="let row"
+          fxFlex="1 0 40px"
+          fxLayoutAlign="center center"
+        >
+          <button
+            id="viewicon"
+            #view
+            mat-icon-button
+            (click)="viewAllUsersInStudy(row.name)"
+            *ngIf="
+              currentRole == 'SysAdmin' || currentRole == 'Untersuchungsteam'
+            "
+            [disabled]="row.status === 'STUDIES.STATUS_DELETED'"
+          >
+            <mat-icon>visibility</mat-icon>
+          </button>
+          <button
+            id="deleteicon"
+            #delete
+            mat-icon-button
+            (click)="openDialog(row.name, 'study')"
+            *ngIf="currentRole == 'SysAdmin'"
+            [disabled]="row.status !== 'STUDIES.STATUS_ACTIV'"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+          <button
+            id="editicon"
+            #delete
+            mat-icon-button
+            (click)="addOrEditStudy(row.name)"
+            *ngIf="currentRole == 'SysAdmin'"
+            [disabled]="row.status === 'STUDIES.STATUS_DELETED'"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="openDialogChangeStudy(row)"
+            [disabled]="
+              row.pendingStudyChange || row.status === 'STUDIES.STATUS_DELETED'
+            "
+            matTooltip="{{ 'STUDIES.REQUEST_CHANGES' | translate }}"
+            [matTooltipDisabled]="row.pendingStudyChange"
+            *ngIf="
+              !row.pendingStudyChange &&
+              currentRole == 'Forscher' &&
+              row.access_level == 'admin'
+            "
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="openDialogChangeStudy(row)"
+            [disabled]="
+              !row.pendingStudyChange ||
+              row.pendingStudyChange.requested_for != currentUser.username ||
+              row.status === 'STUDIES.STATUS_DELETED'
+            "
+            matTooltip="{{ 'STUDIES.CONFIRM_CHANGES' | translate }}"
+            *ngIf="
+              row.pendingStudyChange &&
+              currentRole == 'Forscher' &&
+              row.access_level == 'admin'
+            "
+          >
+            <mat-icon>check_circle_outline</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns"> </mat-row>
+    </mat-table>
+
+    <div
+      class="table-no-results"
+      [style.display]="dataSource.renderedData.length == 0 ? '' : 'none'"
+    >
+      {{ 'QUESTIONNAIRES_FORSCHER.FILTER_NO_RESULTS' | translate }}
+    </div>
+
+    <mat-paginator
+      #paginator
+      [length]="dataSource.filteredData.length"
+      [pageIndex]="0"
+      [pageSize]="25"
+      [pageSizeOptions]="[5, 10, 25, 100]"
+    >
+    </mat-paginator>
+  </div>
+</div>

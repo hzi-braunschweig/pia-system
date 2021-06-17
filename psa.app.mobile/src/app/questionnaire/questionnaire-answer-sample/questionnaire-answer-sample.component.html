@@ -1,0 +1,126 @@
+<form [formGroup]="form">
+  <app-questionnaire-answer-error
+    [control]="form"
+    [errorCode]="QuestionnaireAnswerValidationErrors.SAMPLES_NOT_MATCH_ERROR"
+  >
+    {{ 'QUESTIONNAIRE_QUESTIONS.SAMPLE_INPUT_MSG_PROBES_NO_MATCH' | translate }}
+  </app-questionnaire-answer-error>
+
+  <ion-item lines="none" *ngIf="putSampleError === 'already_scanned'">
+    <ion-text color="danger" class="ion-margin-top">
+      {{
+        'QUESTIONNAIRE_QUESTIONS.SAMPLE_INPUT_MSG_PROBE_ALREADY_SCANNED'
+          | translate
+      }}
+    </ion-text>
+  </ion-item>
+
+  <ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
+    <ion-label class="ion-text-wrap">{{ label }}</ion-label>
+  </ion-item>
+  <ion-item lines="inset">
+    <ion-input
+      type="text"
+      formControlName="sampleId1"
+      [placeholder]="label"
+      [disabled]="form.get('sampleId1').disabled"
+      [name]="name"
+      (keyup.enter)="hideKeyboard($event)"
+    >
+    </ion-input>
+  </ion-item>
+
+  <app-questionnaire-answer-error
+    [control]="form.get('sampleId1')"
+    [errorCode]="
+      QuestionnaireAnswerValidationErrors.WRONG_FORMAT_SAMPLE_ID_ERROR
+    "
+  >
+    {{ 'QUESTIONNAIRE_QUESTIONS.SAMPLE_INPUT_MSG_PROBE_EXISTS' | translate }}
+    '{{ samplePrefix ? samplePrefix + '-' : 'XXX' }}' +
+    {{ sampleSuffixLength ? sampleSuffixLength : '0-N' }}
+    {{ 'QUESTIONNAIRE_QUESTIONS.NUMBERS' | translate }}.
+  </app-questionnaire-answer-error>
+
+  <ion-item
+    lines="none"
+    *ngIf="putSampleError === 'sample_id_1_does_not_exist'"
+  >
+    <ion-text color="danger" class="ion-margin-top">
+      {{ 'QUESTIONNAIRE_QUESTIONS.SAMPLE_INPUT_MSG_DOESNT_EXIST' | translate }}
+    </ion-text>
+  </ion-item>
+
+  <ion-button
+    type="button"
+    color="light"
+    expand="block"
+    class="ion-margin-horizontal ion-margin-top"
+    [disabled]="form.disabled"
+    (click)="onScanningBarcode('sampleId1')"
+  >
+    <ion-icon slot="start" name="scan"></ion-icon>
+    {{ 'QUESTIONNAIRE_QUESTIONS.SAMPLE_INPUT_SCAN_BARCODE' | translate }}
+  </ion-button>
+
+  <span *ngIf="hasRnaSamples">
+    <ion-item lines="inset">
+      <ion-input
+        type="text"
+        formControlName="sampleId2"
+        [placeholder]="label"
+        [disabled]="form.get('sampleId2').disabled"
+        [name]="name"
+        (keyup.enter)="hideKeyboard($event)"
+      >
+      </ion-input>
+    </ion-item>
+
+    <app-questionnaire-answer-error
+      [control]="form.get('sampleId2')"
+      [errorCode]="
+        QuestionnaireAnswerValidationErrors.WRONG_FORMAT_SAMPLE_ID_ERROR
+      "
+    >
+      {{ 'QUESTIONNAIRE_QUESTIONS.SAMPLE_INPUT_MSG_PROBE_EXISTS' | translate }}
+      '{{ samplePrefix ? samplePrefix + '-' : 'XXX' }}' +
+      {{ sampleSuffixLength ? sampleSuffixLength : '0-N' }}
+      {{ 'QUESTIONNAIRE_QUESTIONS.NUMBERS' | translate }}.
+    </app-questionnaire-answer-error>
+
+    <ion-item
+      lines="none"
+      *ngIf="putSampleError === 'sample_id_2_does_not_exist'"
+    >
+      <ion-text color="danger" class="ion-margin-top">
+        {{
+          'QUESTIONNAIRE_QUESTIONS.SAMPLE_INPUT_MSG_PROBE_ALREADY_IN_SYSTEM'
+            | translate
+        }}
+      </ion-text>
+    </ion-item>
+
+    <ion-button
+      type="button"
+      color="light"
+      expand="block"
+      class="ion-margin-horizontal ion-margin-top"
+      [disabled]="form.disabled"
+      (click)="onScanningBarcode('sampleId2')"
+    >
+      <ion-icon slot="start" name="scan"></ion-icon>
+      {{ 'QUESTIONNAIRE_QUESTIONS.SAMPLE_INPUT_SCAN_BARCODE' | translate }}
+    </ion-button>
+  </span>
+
+  <ion-button
+    type="button"
+    expand="block"
+    class="ion-margin-horizontal ion-margin-top"
+    [disabled]="!canSubmit()"
+    (click)="submitSample()"
+  >
+    <ion-icon slot="start" name="checkmark"></ion-icon>
+    {{ 'QUESTIONNAIRE_QUESTIONS.CONFIRM' | translate }}
+  </ion-button>
+</form>

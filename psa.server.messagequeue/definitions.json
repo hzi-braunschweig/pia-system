@@ -1,0 +1,37 @@
+{
+  "users": [
+    {
+      "name": "app",
+      "password": "$MESSAGEQUEUE_APP_PASSWORD",
+      "tags": ""
+    },
+    {
+      "name": "admin",
+      "password": "$MESSAGEQUEUE_ADMIN_PASSWORD",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "app",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "admin",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "parameters": [],
+  "policies": []
+}

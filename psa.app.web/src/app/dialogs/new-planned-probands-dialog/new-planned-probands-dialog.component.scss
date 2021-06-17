@@ -1,0 +1,46 @@
+.add-btn-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-content: flex-end;
+  align-items: flex-end;
+
+  button {
+    color: #45a3d1;
+  }
+}
+
+form {
+  mat-icon {
+    font-size: 30px;
+  }
+
+  .small-grid-tile {
+    padding: 0px;
+    margin: 0px;
+
+    mat-icon {
+      &.warning {
+        color: orange;
+      }
+
+      &.error {
+        color: red;
+      }
+    }
+
+    button {
+      color: #45a3d1;
+    }
+  }
+}
+
+mat-dialog-actions {
+  margin-top: 15px;
+
+  button {
+    &:first-child {
+      padding-left: 0px;
+    }
+  }
+}

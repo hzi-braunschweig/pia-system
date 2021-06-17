@@ -1,0 +1,17 @@
+<h3>
+  {{ 'COMPLIANCE.DIALOG_EDIT_HEADER' | translate }}
+  <em>{{ user?.username }}</em>
+</h3>
+
+<mat-dialog-content>
+  <app-compliance-edit-examiner
+    [username]="user?.username"
+    [study]="user?.study_accesses[0].study_id"
+  ></app-compliance-edit-examiner>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="dialogRef.close()">
+    {{ 'DIALOG.CLOSE' | translate }}
+  </button>
+</mat-dialog-actions>

@@ -1,0 +1,44 @@
+/* Structure */
+.probands-container {
+  display: flex;
+  flex-direction: column;
+  min-width: 300px;
+  opacity: 0.8;
+}
+
+.probands-header {
+  min-height: 56px;
+  max-height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 8px 24px 0;
+  font-size: 20px;
+  justify-content: space-between;
+  border-bottom: 1px solid transparent;
+}
+
+.mat-form-field {
+  font-size: 14px;
+  flex-grow: 1;
+  margin-top: 8px;
+}
+
+/** Selection styles */
+.mat-cell {
+  display: flex;
+  justify-content: flex-start;
+  text-align: start;
+}
+
+.mat-header-cell {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.mat-icon {
+  margin-left: 20px;
+}
+
+.mat-form-field {
+  max-width: 150px;
+}

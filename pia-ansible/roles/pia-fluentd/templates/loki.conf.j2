@@ -1,0 +1,34 @@
+ <source>
+   @type forward
+ </source>
+
+<filter pia.*>
+  @type record_transformer
+  remove_keys container_id,container_name,source, log
+  <record>
+    time ${time}
+    tag ${tag}
+    message ${record["log"]}
+  </record>
+</filter>
+
+<match pia.*>
+  @type copy
+
+  <store>
+    @type loki
+    endpoint_url "http://{{loki_ip_address}}:{{loki_port}}"
+    labels {"pia_feature":"{{pia_fluentd_feature}}"}
+    flush_at_shutdown true
+    raise_on_error  false
+
+    <buffer>
+      @type file
+      path /logs/loki-buffer
+      chunk_limit_size 1m
+      flush_interval 10s
+    </buffer>
+
+  </store>
+
+</match>

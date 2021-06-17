@@ -1,0 +1,83 @@
+<div class="jumbotron">
+  <mat-card class="d-flex justify-content-center">
+    <mat-card-title>
+      <h3>
+        {{ pseudonym }}
+      </h3>
+    </mat-card-title>
+    <mat-card-content class="proband-details">
+      <div *ngIf="isDataReady && probandExists">
+        <table>
+          <tr>
+            <td>{{ 'PROBAND.EXAMINATION_WAVE' | translate }}</td>
+            <td>{{ proband.examination_wave }}</td>
+          </tr>
+          <tr>
+            <td>{{ 'PROBAND.STUDY_CENTER' | translate }}</td>
+            <td>{{ proband.study_center }}</td>
+          </tr>
+          <tr>
+            <td>{{ 'PROBAND.COMPLIANCE_LABRESULTS' | translate }}</td>
+            <td>
+              {{
+                (proband.compliance_labresults
+                  ? 'PROBAND.TRUE'
+                  : 'PROBAND.FALSE'
+                ) | translate
+              }}
+            </td>
+          </tr>
+          <tr>
+            <td>{{ 'PROBAND.COMPLIANCE_SAMPLES' | translate }}</td>
+            <td>
+              {{
+                (proband.compliance_samples ? 'PROBAND.TRUE' : 'PROBAND.FALSE')
+                  | translate
+              }}
+            </td>
+          </tr>
+          <tr>
+            <td>{{ 'PROBAND.COMPLIANCE_BLOODSAMPLES' | translate }}</td>
+            <td>
+              {{
+                (proband.compliance_bloodsamples
+                  ? 'PROBAND.TRUE'
+                  : 'PROBAND.FALSE'
+                ) | translate
+              }}
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div *ngIf="probandExists === false">
+        {{ 'PROBAND.NOT_EXIST' | translate }}
+      </div>
+      <div *ngIf="probandExists">
+        <mat-checkbox
+          class="checkbox-big"
+          [(ngModel)]="isTestProband"
+          (change)="changeTestprobandState($event)"
+          >{{ 'PROBAND.TEST_PROBAND' | translate }}</mat-checkbox
+        >
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button
+        [disabled]="!probandExists"
+        mat-raised-button
+        color="primary"
+        (click)="openSampleManagement()"
+      >
+        {{ 'PROBAND.OPEN_SAMPLES' | translate }}
+      </button>
+      <button
+        [disabled]="!plannedProband"
+        mat-raised-button
+        color="primary"
+        (click)="openLoginLetter()"
+      >
+        {{ 'PROBAND.OPEN_LOGIN_LETTER' | translate }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

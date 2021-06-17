@@ -1,0 +1,38 @@
+.git/
+.gitlab-ci.yml
+
+psa.app.mobile/www
+psa.app.mobile/platforms
+psa.app.mobile/plugins
+
+psa.app.web/dist
+psa.app.web/pacts
+psa.app.web/out-tsc
+
+psa.lib.templatepipeline/.local-chromium
+
+# Common Stuff
+**/.gitignore
+**/node_modules
+**/Dockerfile
+**/.dockerignore
+**/README.md
+**/LICENSE.md
+**/.incremental
+
+# IDE
+**/.idea
+**/*.iml
+**/.vscode
+
+# Test
+**/e2e/
+**/tests/
+**/pacts/
+**/coverage/
+**/.nyc_output/
+**/logs/
+**/*.spec.ts
+**/*.spec.js
+**/*.spec.js.map
+

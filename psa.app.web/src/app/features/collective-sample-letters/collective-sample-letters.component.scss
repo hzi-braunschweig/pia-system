@@ -1,0 +1,850 @@
+/*!
+ * Base CSS
+ * Copyright 2012,2013 Lu Wang <coolwanglu@gmail.com>
+ * https://github.com/coolwanglu/pdf2htmlEX/blob/master/share/LICENSE
+ */
+
+#sidebar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 250px;
+  padding: 0;
+  margin: 0;
+  overflow: auto;
+}
+
+#page-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  .back_button {
+    width: 95%;
+    padding-top: 20px;
+
+    button {
+      &#arrowback {
+        color: #45a3d1;
+        float: left;
+        margin-bottom: 20px;
+
+        i {
+          font-size: 40px;
+        }
+      }
+    }
+  }
+}
+
+#print-section {
+  .l {
+    .d {
+      &.m1 {
+        border-style: none;
+        position: absolute;
+        left: 453.611816px;
+        bottom: 389.043976px;
+        width: 120.054993px;
+        height: 8.623993px;
+        background-color: rgba(255, 255, 255, 0.000001);
+      }
+    }
+  }
+}
+
+@media screen {
+  #sidebar.opened + #page-container {
+    left: 250px;
+  }
+  #page-container {
+    bottom: 0;
+    right: 0;
+    overflow: auto;
+  }
+  .loading-indicator {
+    display: none;
+  }
+  .loading-indicator.active {
+    display: block;
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    top: 50%;
+    left: 50%;
+    margin-top: -32px;
+    margin-left: -32px;
+  }
+  .loading-indicator img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+  }
+}
+
+@media print {
+  @page {
+    margin: 0;
+  }
+  html {
+    margin: 0;
+  }
+  body {
+    margin: 0;
+    -webkit-print-color-adjust: exact;
+  }
+  #sidebar {
+    display: none;
+  }
+  #page-container {
+    width: auto;
+    height: auto;
+    overflow: visible;
+    background-color: transparent;
+  }
+  .d {
+    display: none;
+  }
+}
+
+.pf {
+  position: relative;
+  background-color: white;
+  overflow: hidden;
+  margin: 0;
+  border: 0;
+}
+
+.pc {
+  position: absolute;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: block;
+  transform-origin: 0 0;
+  -ms-transform-origin: 0 0;
+  -webkit-transform-origin: 0 0;
+}
+
+.pc.opened {
+  display: block;
+}
+
+.bf {
+  position: absolute;
+  border: 0;
+  margin: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  -ms-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.bi {
+  position: absolute;
+  border: 0;
+  margin: 0;
+  -ms-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+@media print {
+  .pf {
+    margin: 0;
+    display: block;
+    box-shadow: none;
+    page-break-after: always;
+    page-break-inside: avoid;
+  }
+  @-moz-document url-prefix() {
+    .pf {
+      overflow: visible;
+      border: 1px solid #fff;
+    }
+    .pc {
+      overflow: visible;
+    }
+  }
+}
+
+.c {
+  position: absolute;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  display: block;
+}
+
+.t {
+  position: absolute;
+  white-space: pre;
+  font-size: 1px;
+  transform-origin: 0 100%;
+  -ms-transform-origin: 0 100%;
+  -webkit-transform-origin: 0 100%;
+  unicode-bidi: bidi-override;
+  -moz-font-feature-settings: 'liga' 0;
+}
+
+.t:after {
+  content: '';
+}
+
+.t:before {
+  content: '';
+  display: inline-block;
+}
+
+.t span {
+  position: relative;
+  unicode-bidi: bidi-override;
+}
+
+._ {
+  display: inline-block;
+  color: transparent;
+  z-index: -1;
+}
+
+::selection {
+  background: rgba(127, 255, 255, 0.4);
+}
+
+::-moz-selection {
+  background: rgba(127, 255, 255, 0.4);
+}
+
+.pi {
+  display: none;
+}
+
+.d {
+  position: absolute;
+  transform-origin: 0 100%;
+  -ms-transform-origin: 0 100%;
+  -webkit-transform-origin: 0 100%;
+}
+
+.it {
+  border: 0;
+  background-color: rgba(255, 255, 255, 0);
+}
+
+.ir:hover {
+  cursor: pointer;
+}
+
+/*!
+ * Fancy styles
+ * Copyright 2012,2013 Lu Wang <coolwanglu@gmail.com>
+ * https://github.com/coolwanglu/pdf2htmlEX/blob/master/share/LICENSE
+ */
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media screen {
+  #sidebar {
+    background-color: #2f3236;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjNDAzYzNmIj48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDBMNCA0Wk00IDBMMCA0WiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2U9IiMxZTI5MmQiPjwvcGF0aD4KPC9zdmc+');
+  }
+  #outline {
+    font-family: Georgia, Times, 'Times New Roman', serif;
+    font-size: 13px;
+    margin: 2em 1em;
+  }
+  #outline ul {
+    padding: 0;
+  }
+  #outline li {
+    list-style-type: none;
+    margin: 1em 0;
+  }
+  #outline li > ul {
+    margin-left: 1em;
+  }
+  #outline a,
+  #outline a:visited,
+  #outline a:hover,
+  #outline a:active {
+    line-height: 1.2;
+    color: #e8e8e8;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-decoration: none;
+    display: block;
+    overflow: hidden;
+    outline: 0;
+  }
+  #outline a:hover {
+    color: #0cf;
+  }
+  #page-container {
+    background-color: #9e9e9e;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjOWU5ZTllIj48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM4ODgiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=');
+    -webkit-transition: left 500ms;
+    transition: left 500ms;
+  }
+  .pf {
+    margin: 13px auto;
+    box-shadow: 1px 1px 3px 1px #333;
+    border-collapse: separate;
+  }
+  .pc.opened {
+    -webkit-animation: fadein 100ms;
+    animation: fadein 100ms;
+  }
+  .loading-indicator.active {
+    -webkit-animation: swing 1.5s ease-in-out 0.01s infinite alternate none;
+    animation: swing 1.5s ease-in-out 0.01s infinite alternate none;
+  }
+  .checked {
+    background: no-repeat
+      url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3goQDSYgDiGofgAAAslJREFUOMvtlM9LFGEYx7/vvOPM6ywuuyPFihWFBUsdNnA6KLIh+QPx4KWExULdHQ/9A9EfUodYmATDYg/iRewQzklFWxcEBcGgEplDkDtI6sw4PzrIbrOuedBb9MALD7zv+3m+z4/3Bf7bZS2bzQIAcrmcMDExcTeXy10DAFVVAQDksgFUVZ1ljD3yfd+0LOuFpmnvVVW9GHhkZAQcxwkNDQ2FSCQyRMgJxnVdy7KstKZpn7nwha6urqqfTqfPBAJAuVymlNLXoigOhfd5nmeiKL5TVTV+lmIKwAOA7u5u6Lped2BsbOwjY6yf4zgQQkAIAcedaPR9H67r3uYBQFEUFItFtLe332lpaVkUBOHK3t5eRtf1DwAwODiIubk5DA8PM8bYW1EU+wEgCIJqsCAIQAiB7/u253k2BQDDMJBKpa4mEon5eDx+UxAESJL0uK2t7XosFlvSdf0QAEmlUnlRFJ9Waho2Qghc1/U9z3uWz+eX+Wr+lL6SZfleEAQIggA8z6OpqSknimIvYyybSCReMsZ6TislhCAIAti2Dc/zejVNWwCAavN8339j27YbTg0AGGM3WltbP4WhlRWq6Q/btrs1TVsYHx+vNgqKoqBUKn2NRqPFxsbGJzzP05puUlpt0ukyOI6z7zjOwNTU1OLo6CgmJyf/gA3DgKIoWF1d/cIY24/FYgOU0pp0z/Ityzo8Pj5OTk9PbwHA+vp6zWghDC+VSiuRSOQgGo32UErJ38CO42wdHR09LBQK3zKZDDY2NupmFmF4R0cHVlZWlmRZ/iVJUn9FeWWcCCE4ODjYtG27Z2Zm5juAOmgdGAB2d3cBADs7O8uSJN2SZfl+WKlpmpumaT6Yn58vn/fs6XmbhmHMNjc3tzDGFI7jYJrm5vb29sDa2trPC/9aiqJUy5pOp4f6+vqeJ5PJBAB0dnZe/t8NBajx/z37Df5OGX8d13xzAAAAAElFTkSuQmCC);
+  }
+}
+
+.ff0 {
+  font-family: sans-serif;
+  visibility: hidden;
+}
+
+.ff1 {
+  font-family: ff1;
+  line-height: 0.939453;
+  font-style: normal;
+  font-weight: normal;
+  visibility: visible;
+}
+
+.ff2 {
+  font-family: ff2;
+  line-height: 0.938477;
+  font-style: normal;
+  font-weight: normal;
+  visibility: visible;
+}
+
+.ff3 {
+  font-family: ff3;
+  line-height: 0.971191;
+  font-style: normal;
+  font-weight: normal;
+  visibility: visible;
+}
+
+.ff4 {
+  font-family: ff4;
+  line-height: 0.690918;
+  font-style: normal;
+  font-weight: normal;
+  visibility: visible;
+}
+
+.ff5 {
+  font-family: ff5;
+  line-height: 0.677246;
+  font-style: normal;
+  font-weight: normal;
+  visibility: visible;
+}
+
+.m0 {
+  transform: matrix(0.25, 0, 0, 0.25, 0, 0);
+  -ms-transform: matrix(0.25, 0, 0, 0.25, 0, 0);
+  -webkit-transform: matrix(0.25, 0, 0, 0.25, 0, 0);
+}
+
+.m1 {
+  transform: none;
+  -ms-transform: none;
+  -webkit-transform: none;
+}
+
+.v0 {
+  vertical-align: 0px;
+}
+
+.ls0 {
+  letter-spacing: 0px;
+}
+
+.sc_ {
+  text-shadow: none;
+}
+
+.sc0 {
+  text-shadow: -0.015em 0 transparent, 0 0.015em transparent,
+    0.015em 0 transparent, 0 -0.015em transparent;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .sc_ {
+    -webkit-text-stroke: 0px transparent;
+  }
+  .sc0 {
+    -webkit-text-stroke: 0.015em transparent;
+    text-shadow: none;
+  }
+}
+
+.ws0 {
+  word-spacing: 0px;
+}
+
+._0 {
+  margin-left: -1.17px;
+}
+
+._2 {
+  width: 1.408px;
+}
+
+._6 {
+  width: 2.816px;
+}
+
+._4 {
+  width: 4.796px;
+}
+
+._5 {
+  width: 8.58px;
+}
+
+._3 {
+  width: 11.572px;
+}
+
+._7 {
+  width: 14.652px;
+}
+
+._1 {
+  width: 778.756px;
+}
+
+.fc2 {
+  color: rgb(0, 0, 0);
+}
+
+.fc1 {
+  color: rgb(0, 0, 0);
+}
+
+.fc0 {
+  color: rgb(99, 100, 99);
+}
+
+.fs0 {
+  font-size: 30px;
+}
+
+.fs1 {
+  font-size: 34px;
+}
+
+.fs2 {
+  font-size: 48px;
+}
+
+.y0 {
+  bottom: 0px;
+}
+
+.y4 {
+  bottom: 10.817003px;
+}
+
+.ya {
+  bottom: 15.199001px;
+}
+
+.y3 {
+  bottom: 19.441002px;
+}
+
+.y9 {
+  bottom: 27.702995px;
+}
+
+.y2 {
+  bottom: 28.065002px;
+}
+
+.y8 {
+  bottom: 40.207001px;
+}
+
+.y7 {
+  bottom: 52.711px;
+}
+
+.y26 {
+  bottom: 64.82901px;
+}
+
+.y6 {
+  bottom: 65.215px;
+}
+
+.y25 {
+  bottom: 75.177002px;
+}
+
+.y24 {
+  bottom: 85.524994px;
+}
+
+.yb {
+  bottom: 87.799988px;
+}
+
+.y23 {
+  bottom: 95.872986px;
+}
+
+.y22 {
+  bottom: 106.221008px;
+}
+
+.y21 {
+  bottom: 116.569px;
+}
+
+.y20 {
+  bottom: 137.264984px;
+}
+
+.y1f {
+  bottom: 147.612991px;
+}
+
+.y44 {
+  bottom: 157.885009px;
+}
+
+.y1e {
+  bottom: 157.960999px;
+}
+
+.y1d {
+  bottom: 168.30899px;
+}
+
+.y43 {
+  bottom: 171.312987px;
+}
+
+.y1c {
+  bottom: 178.656982px;
+}
+
+.y42 {
+  bottom: 184.740996px;
+}
+
+.y1b {
+  bottom: 189.004974px;
+}
+
+.y41 {
+  bottom: 198.168997px;
+}
+
+.y1a {
+  bottom: 209.700989px;
+}
+
+.y40 {
+  bottom: 212.182006px;
+}
+
+.y19 {
+  bottom: 220.048996px;
+}
+
+.y3f {
+  bottom: 225.610015px;
+}
+
+.y18 {
+  bottom: 230.397003px;
+}
+
+.y17 {
+  bottom: 240.744995px;
+}
+
+.y3e {
+  bottom: 245.037993px;
+}
+
+.y16 {
+  bottom: 251.093002px;
+}
+
+.y15 {
+  bottom: 261.440994px;
+}
+
+.y3d {
+  bottom: 264.466002px;
+}
+
+.y14 {
+  bottom: 271.789001px;
+}
+
+.y3c {
+  bottom: 291.32199px;
+}
+
+.y13 {
+  bottom: 302.832993px;
+}
+
+.y12 {
+  bottom: 313.181px;
+}
+
+.y3b {
+  bottom: 318.177994px;
+}
+
+.y11 {
+  bottom: 323.529007px;
+}
+
+.y3a {
+  bottom: 331.605988px;
+}
+
+.y10 {
+  bottom: 333.876999px;
+}
+
+.yf {
+  bottom: 344.224998px;
+}
+
+.y39 {
+  bottom: 345.033993px;
+}
+
+.ye {
+  bottom: 354.573002px;
+}
+
+.y38 {
+  bottom: 358.46199px;
+}
+
+.yd {
+  bottom: 364.920998px;
+}
+
+.y37 {
+  bottom: 371.889992px;
+}
+
+.yc {
+  bottom: 375.269001px;
+}
+
+.y36 {
+  bottom: 385.317992px;
+}
+
+.y35 {
+  bottom: 412.173996px;
+}
+
+.y34 {
+  bottom: 425.601997px;
+}
+
+.y33 {
+  bottom: 439.029998px;
+}
+
+.y32 {
+  bottom: 465.886002px;
+}
+
+.y31 {
+  bottom: 479.314003px;
+}
+
+.y30 {
+  bottom: 492.742003px;
+}
+
+.y2f {
+  bottom: 519.598006px;
+}
+
+.y2e {
+  bottom: 546.454001px;
+}
+
+.y5 {
+  bottom: 564.5px;
+}
+
+.y2d {
+  bottom: 573.578998px;
+}
+
+.y2c {
+  bottom: 587.957999px;
+}
+
+.y2b {
+  bottom: 601.385998px;
+}
+
+.y2a {
+  bottom: 614.813998px;
+}
+
+.y29 {
+  bottom: 628.242px;
+}
+
+.y28 {
+  bottom: 641.669999px;
+}
+
+.y27 {
+  bottom: 655.098px;
+}
+
+.y1 {
+  bottom: 670.799992px;
+}
+
+.h5 {
+  height: 21.84082px;
+}
+
+.h2 {
+  height: 21.870117px;
+}
+
+.h7 {
+  height: 32.625px;
+}
+
+.h6 {
+  height: 34.890625px;
+}
+
+.h1 {
+  height: 35.100002px;
+}
+
+.h3 {
+  height: 72.25px;
+}
+
+.h4 {
+  height: 403px;
+}
+
+.h0 {
+  height: 842px;
+}
+
+.w2 {
+  width: 31.85px;
+}
+
+.w3 {
+  width: 166.899994px;
+}
+
+.w1 {
+  width: 185.150009px;
+}
+
+.w0 {
+  width: 595px;
+}
+
+.x0 {
+  left: 0px;
+}
+
+.x4 {
+  left: 25.511812px;
+}
+
+.x1 {
+  left: 70.849998px;
+}
+
+.x6 {
+  left: 99.450001px;
+}
+
+.xa {
+  left: 121.313px;
+}
+
+.x9 {
+  left: 144.213005px;
+}
+
+.x8 {
+  left: 147.745003px;
+}
+
+.x7 {
+  left: 188.845001px;
+}
+
+.x2 {
+  left: 323.200012px;
+}
+
+.x5 {
+  left: 361.500008px;
+}
+
+.x3 {
+  left: 428.100006px;
+}

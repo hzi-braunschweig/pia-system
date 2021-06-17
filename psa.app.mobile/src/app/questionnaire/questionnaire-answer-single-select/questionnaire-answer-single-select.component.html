@@ -1,0 +1,18 @@
+<ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
+  <ion-label class="ion-text-wrap">{{ label }}</ion-label>
+</ion-item>
+<ion-radio-group
+  [formControl]="control"
+  [name]="name"
+  allowEmptySelection="true"
+>
+  <ion-item *ngFor="let value of values" lines="none">
+    <ion-label class="ion-text-wrap">{{ value }}</ion-label>
+    <ion-radio
+      [value]="value"
+      [disabled]="disabled"
+      color="dark"
+      mode="md"
+    ></ion-radio>
+  </ion-item>
+</ion-radio-group>

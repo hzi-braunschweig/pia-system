@@ -1,0 +1,61 @@
+<app-header [title]="'SETTINGS.TITLE' | translate"></app-header>
+
+<ion-content color="primary-light">
+  <ion-item-group>
+    <ion-item-divider>
+      <ion-label class="settings-item-divider">
+        {{ 'SETTINGS.GROUP_TITLE_GENERAL' | translate }}
+      </ion-label>
+    </ion-item-divider>
+    <ion-item lines="inset">
+      <ion-label class="ion-text-wrap"
+        >{{ 'SETTINGS.HINT' | translate }}</ion-label
+      >
+      <ion-datetime
+        placeholder="{{ 'SETTINGS.PLEASE_TYPE' | translate }}"
+        displayFormat="HH:mm"
+        [(ngModel)]="notificationTime"
+        cancelText="{{ 'GENERAL.CANCEL_TEXT' | translate }}"
+        doneText="{{ 'GENERAL.DONE_TEXT' | translate }}"
+      >
+      </ion-datetime>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-label class="ion-text-wrap"
+        >{{ 'SETTINGS.RECORDING_LOGS' | translate }}</ion-label
+      >
+      <ion-checkbox slot="end" [(ngModel)]="loggingActive"></ion-checkbox>
+    </ion-item>
+  </ion-item-group>
+  <ion-item-group>
+    <ion-item-divider>
+      <ion-label class="settings-item-divider">
+        {{ 'SETTINGS.GROUP_TITLE_ACCOUNT' | translate }}
+      </ion-label>
+    </ion-item-divider>
+    <ion-item
+      lines="none"
+      button
+      [routerLink]="['..', 'auth', 'change-password']"
+      [queryParams]="{ isUserIntent: true, returnTo: 'settings' }"
+    >
+      <ion-label>{{ 'SETTINGS.MANAGE_PASSWORD' | translate }}</ion-label>
+    </ion-item>
+  </ion-item-group>
+  <ion-item-group>
+    <ion-item-divider>
+      <ion-label class="settings-item-divider">
+        {{ 'SETTINGS.GROUP_TITLE_ABOUT' | translate }}
+      </ion-label>
+    </ion-item-divider>
+    <ion-item lines="none" button [routerLink]="['licenses']">
+      <ion-label>{{ 'SETTINGS.LICENSES' | translate }}</ion-label>
+    </ion-item>
+  </ion-item-group>
+</ion-content>
+
+<ion-footer>
+  <ion-button (click)="saveSettings()">
+    {{ 'GENERAL.SAVE' | translate }}
+  </ion-button>
+</ion-footer>

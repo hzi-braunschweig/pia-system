@@ -1,0 +1,288 @@
+---
+pia_docker_tag: develop
+pia_disable_hairpinning: false
+pia_multi_host: false
+
+survey_docker_user: user
+survey_docker_password: password
+
+# this flag should only be used for local development of pia (on a developer machine)
+pia_local_development: false
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# NEVER SET THIS ON ANY SYSTEM THAT COULD CONTAIN SENSITIVE DATA
+# this will allow the deployment service to run, so that the database
+# can be exported and imported
+pia_is_development_system: false
+pia_enable_db_import: false
+pia_enable_db_export: false
+pia_deployment_user: deployer
+pia_deployment_password: deployer
+
+#pia_url: 10.210.11.100
+
+pia_expose_http_ports: true
+
+pia_external_protocol: https
+pia_external_port: 443
+
+pia_has_sormas: false
+pia_has_externaldataservice: true
+
+pia_ssl_country_name: 'DE'
+pia_ssl_state_or_province_name: 'RLP'
+pia_ssl_locality_name: 'HZI'
+pia_ssl_organization_name: 'HZI'
+pia_ssl_organizational_unit_name: 'HZI'
+
+pia_ssh_key_directory: /etc/pia/ssh
+pia_auth_key_directory: /etc/pia/authKey
+pia_ssl_directory: /etc/pia/ssl
+pia_firebase_directory: /etc/pia/firebase/
+
+pia_qpia_data_directory: /srv/dockerdata/qpia/
+pia_ewpia_data_directory: /srv/dockerdata/ewpia/
+pia_ipia_data_directory: /srv/dockerdata/ipia/
+pia_messagequeue_data_directory: /srv/dockerdata/messagequeue/
+
+# Required for external services that can create probands. Not used by sormas.
+# Use a complex unique key on productive systems (also for sormas)!
+pia_api_key: 66w66666-w666-666w-www6-666w6w666w66
+# If set to true, random api key will be generated
+generate_random_key: false
+
+pia_mail_user: pia@some-faked-domain-that-hopefully-will-never-exist.faked
+pia_mail_password: emailpassword
+pia_mail_host: some-faked-domain-that-hopefully-will-never-exist.faked
+pia_mail_port: 465
+pia_mail_from_address: pia@some-faked-domain-that-hopefully-will-never-exist.faked
+pia_mail_from_name: PIA App
+
+# should always be true on productive systems
+pia_mail_require_tls: true
+
+# the password that sormas is using to access pia; only relevant for systems with pia but always required! Use a complex unique password on productive systems!
+pia_sormas_on_pia_password: ohH3eiji5VaetoreeR4xiFi5aiteic7a
+# the username that sormas is using to access pia; only relevant for systems with pia but always required!
+pia_sormas_on_pia_user: sormas
+
+pia_pia_on_sormas_user: pia
+pia_pia_on_sormas_password: aithohPheic1roor0iel
+
+# use localhost and random passwords if not used
+pia_mhh_ftpservice_host: labresultssftpserver
+pia_mhh_ftpservice_port: 22
+pia_mhh_ftpservice_password: pass
+pia_mhh_ftpservice_user: testmhh
+
+# use localhost and random passwords if not used
+pia_hzi_ftpservice_host: labresultssftpserver
+pia_hzi_ftpservice_port: 22
+pia_hzi_ftpservice_password: superpass
+pia_hzi_ftpservice_user: testhzi
+
+# use localhost and random passwords if not used
+pia_modys_user: superuser
+pia_modys_password: superpassword
+pia_modys_db: modys_NG
+pia_modys_host: localhost
+pia_modys_port: 3308
+pia_modys_ssl: true
+
+# The X-frame-options Header that should be set
+# https://developer.mozilla.org/de/docs/Web/HTTP/Headers/X-Frame-Options
+# NatCoEdc / SORMAS has to be allowed on productive systems
+# https://edc.hgw.nationale-kohorte.de/
+# https://edc-hd.nationale-kohorte.de/
+# ALLOW-FROM is deprecated and doesn't support multiple domains!
+# So using CSP is probably prefered
+# X-Frame-Options could be specified for older browsers when
+# sameorigin is a valid solution.
+pia_x_frame_options: ''
+
+# The Content-Security-Policy Header that sould be set
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy
+# NatCoEdc / SORMAS has to be allowed on productive systems
+# https://edc.hgw.nationale-kohorte.de/
+# https://edc-hd.nationale-kohorte.de/
+# Example:
+# CONTENT_SECURITY_POLICY="frame-ancestors edc.hgw.nationale-kohorte.de edc-hd.nationale-kohorte.de 'self';"
+# CONTENT_SECURITY_POLICY="frame-ancestors 'none';"
+# CONTENT_SECURITY_POLICY="frame-ancestors 'self';"
+pia_content_security_policy: ''
+
+# README!
+# These credentials are FAKED!
+# we need real credentials for productive systems!
+pia_firebase_credentials: '{"project_id":"dummy","private_key":"-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJBANhJwDUYSz1IxchJfGEs2p3Mgb2oPPaklt8Vi00Tyg3+XJa0UAIW\nH8SFPDmBK1JA7wptMi2ap+JIO6XWguYsB6sCAwEAAQJAK9PF/vxNQr3cVhmN+qL8\nKb2nDKdqsw/nAo17DMNVzj+9SOn7MTqzMEF3a7Cr+9sZj30nRAUCwg18fkclcXQP\nAQIhAPcaIEsxwgxWX8eDEsdMkPp2SWwbuPp1WBgvNU8dRbZXAiEA4BOSFsuWnMfP\nkDfRQACdp0QgQC/fFE5l/P2nTJoknM0CIH0fFJUex/R5VBxxaXPTeGHqvXjpfLwN\n6SKt3N+HogIXAiBAuEZcwSbaV7fyzrxogQUIF9w8zdbf9ZjtjpHwxSDIDQIhAOOf\nE98HAl2qmhVb8tB2TG3wbAsg6ud07d71XzzotXNA\n-----END RSA PRIVATE KEY-----\n","client_email":"dummy"}'
+
+pia_services:
+  - {
+      fullName: ewpiaservice,
+      variableName: EWPIA,
+      port: 5432,
+      name: 'ewpia',
+      qpia: false,
+      ewpia: true,
+      ipia: false,
+    }
+  - {
+      fullName: ipiaservice,
+      # on ipia all services are already using DB_* aliases
+      # so we don't need the QPIA variable set for host and port
+      name: 'ipia',
+      qpia: false,
+      ewpia: false,
+      ipia: true,
+    }
+  - {
+      fullName: externaldataservice,
+      variableName: EXTERNALDATASERVICE,
+      portOffset: 9,
+      name: 'ex',
+      qpia: false,
+      ewpia: false,
+      ipia: true,
+    }
+  - {
+      fullName: databaseservice,
+      variableName: QPIA,
+      port: 5432,
+      name: 'qpia',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: analyzerservice,
+      variableName: ANALYZERSERVICE,
+      portOffset: 12,
+      name: 'an',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: userservice,
+      variableName: USERSERVICE,
+      portOffset: 1,
+      name: 'us',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: authservice,
+      variableName: AUTHSERVICE,
+      portOffset: 2,
+      name: 'auth',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: complianceservice,
+      variableName: COMPLIANCESERVICE,
+      portOffset: 10,
+      name: 'cs',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: loggingservice,
+      variableName: LOGGINGSERVICE,
+      portOffset: 8,
+      name: 'lo',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: notificationservice,
+      variableName: NOTIFICATIONSERVICE,
+      portOffset: 5,
+      name: 'no',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: personaldataservice,
+      variableName: PERSONALDATASERVICE,
+      portOffset: 7,
+      name: 'pe',
+      qpia: false,
+      ewpia: false,
+      ipia: true,
+    }
+  - {
+      fullName: questionnaireservice,
+      variableName: QUESTIONNAIRESERVICE,
+      portOffset: 3,
+      name: 'qu',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: sampletrackingservice,
+      variableName: SAMPLETRACKINGSERVICE,
+      portOffset: 6,
+      name: 'sa',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: webappserver,
+      name: 'web',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - { fullName: localhost, name: 'lh', qpia: true, ewpia: false, ipia: false }
+  - { fullName: apigateway, name: 'api', qpia: true, ewpia: false, ipia: false }
+  - {
+      fullName: metricsproxy,
+      name: 'metrics',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: sormasservice,
+      variableName: SORMASSERVICE,
+      portOffset: 13,
+      name: 'so',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: deploymentservice,
+      variableName: DEPLOYMENTSERVICE,
+      portOffset: 20,
+      name: 'de',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: mobileappasset,
+      name: 'mo',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: messagequeue,
+      variableName: MESSAGEQUEUE,
+      port: 5672,
+      name: 'mq',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+
+pia_fluentd_enabled: false

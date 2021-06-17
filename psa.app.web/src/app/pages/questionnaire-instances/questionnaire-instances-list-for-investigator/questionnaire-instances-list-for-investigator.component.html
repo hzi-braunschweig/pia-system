@@ -1,0 +1,7 @@
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+<div class="jumbotron" data-e2e="e2e-questionnaires-proband-content">
+  <app-questionnaire-instances-list
+    *ngIf="!isLoading"
+    [questionnaireInstances]="currentQuestionnaireInstances"
+  ></app-questionnaire-instances-list>
+</div>

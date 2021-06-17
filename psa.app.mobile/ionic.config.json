@@ -1,0 +1,8 @@
+{
+  "name": "psa.app.mobile",
+  "id": "5be00d76",
+  "integrations": {
+    "cordova": {}
+  },
+  "type": "angular"
+}

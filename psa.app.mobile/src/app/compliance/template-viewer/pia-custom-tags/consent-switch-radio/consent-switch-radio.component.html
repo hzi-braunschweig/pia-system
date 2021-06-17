@@ -1,0 +1,8 @@
+<div *ngFor="let aCase of cases; index as i">
+  <app-template-viewer
+    [segments]="aCase.segments"
+    [form]="form"
+    (usedFormControls)="updateUsedFormControls(i, $event)"
+    *ngIf="this.formControl.value === aCase.value"
+  ></app-template-viewer>
+</div>

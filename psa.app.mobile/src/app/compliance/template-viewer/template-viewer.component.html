@@ -1,0 +1,109 @@
+<ion-list>
+  <ng-container *ngFor="let segment of segments; index as i">
+    <p
+      class="text-style ion-padding-horizontal"
+      *ngIf="segment.type === 'HTML'"
+      [innerHTML]="segment.html"
+    ></p>
+    <ng-container *ngIf="segment.type === 'CUSTOM_TAG'">
+      <ng-container [ngSwitch]="segment.tagName">
+        <app-consent-input-radio
+          *ngSwitchCase="'pia-consent-input-radio-generic'"
+          [form]="form"
+          [segment]="segment"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentGeneric"
+        ></app-consent-input-radio>
+        <app-consent-input-radio
+          *ngSwitchCase="'pia-consent-input-radio-app'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentSystem"
+          consentName="app"
+        ></app-consent-input-radio>
+        <app-consent-input-radio
+          *ngSwitchCase="'pia-consent-input-radio-bloodsamples'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentSystem"
+          consentName="bloodsamples"
+        ></app-consent-input-radio>
+        <app-consent-input-radio
+          *ngSwitchCase="'pia-consent-input-radio-labresults'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentSystem"
+          consentName="labresults"
+        ></app-consent-input-radio>
+        <app-consent-input-radio
+          *ngSwitchCase="'pia-consent-input-radio-samples'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentSystem"
+          consentName="samples"
+        ></app-consent-input-radio>
+        <app-consent-input-text
+          *ngSwitchCase="'pia-consent-input-text-generic'"
+          [form]="form"
+          [segment]="segment"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="textGeneric"
+        ></app-consent-input-text>
+        <app-consent-input-text
+          *ngSwitchCase="'pia-consent-input-text-firstname'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="textSystem"
+          consentName="firstname"
+          label="{{ 'COMPLIANCE.FIRSTNAME' | translate }}"
+        ></app-consent-input-text>
+        <app-consent-input-text
+          *ngSwitchCase="'pia-consent-input-text-lastname'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="textSystem"
+          consentName="lastname"
+          label="{{ 'COMPLIANCE.LASTNAME' | translate }}"
+        ></app-consent-input-text>
+        <app-consent-input-text
+          *ngSwitchCase="'pia-consent-input-text-location'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="textSystem"
+          consentName="location"
+          label="{{ 'COMPLIANCE.LOCATION' | translate }}"
+        ></app-consent-input-text>
+        <app-consent-input-date
+          *ngSwitchCase="'pia-consent-input-text-birthdate'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="textSystem"
+          consentName="birthdate"
+          label="{{ 'COMPLIANCE.BIRTHDATE' | translate }}"
+        ></app-consent-input-date>
+        <app-consent-input-date
+          *ngSwitchCase="'pia-consent-input-text-date'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="textSystem"
+          consentName="date"
+          label="{{ 'COMPLIANCE.DATE' | translate }}"
+        ></app-consent-input-date>
+        <app-consent-switch-radio
+          *ngSwitchCase="'pia-consent-switch-radio-system'"
+          [form]="form"
+          [segment]="segment"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentSystem"
+        ></app-consent-switch-radio>
+        <app-consent-switch-radio
+          *ngSwitchCase="'pia-consent-switch-radio-generic'"
+          [form]="form"
+          [segment]="segment"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentGeneric"
+        ></app-consent-switch-radio>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</ion-list>

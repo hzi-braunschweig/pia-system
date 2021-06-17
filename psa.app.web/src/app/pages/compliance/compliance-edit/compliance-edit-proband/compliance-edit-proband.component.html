@@ -1,0 +1,36 @@
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+<div *ngIf="!isLoading" data-e2e="e2e-compliance-edit-component">
+  <h2 data-e2e="e2e-compliance-edit-component-header">{{ study }}</h2>
+  <p *ngIf="!studyWrapper.complianceTextObject">
+    {{ 'COMPLIANCE.NO_COMPLIANCE_FROM_UT_FOR_THIS_STUDY' | translate }}
+  </p>
+  <form
+    *ngIf="studyWrapper.complianceTextObject"
+    [formGroup]="studyWrapper.form"
+    (ngSubmit)="onSubmit(studyWrapper)"
+  >
+    <app-template-viewer
+      [segments]="studyWrapper.complianceTextObject"
+      [form]="studyWrapper.form"
+      (usedFormControls)="studyWrapper.usedFormControls = $event"
+    >
+    </app-template-viewer>
+    <button
+      data-e2e="e2e-compliance-edit-ok-button"
+      mat-raised-button
+      type="submit"
+      color="primary"
+      [disabled]="!studyWrapper.editMode"
+    >
+      {{ 'GENERAL.OK' | translate }}
+    </button>
+    <button
+      mat-raised-button
+      color="primary"
+      *ngIf="!studyWrapper.editMode"
+      (click)="downloadPdf(studyWrapper.studyName)"
+    >
+      {{ 'COMPLIANCE.DOWNLOAD_PDF' | translate }}
+    </button>
+  </form>
+</div>

@@ -1,0 +1,30 @@
+.contact-row {
+  text-align: start;
+}
+
+.contact-heading {
+  font-size: 20px;
+  font-weight: bold;
+  padding-top: 15px;
+}
+
+mat-card.mat-card {
+  mat-divider.mat-divider {
+    border-top-color: #45a3d1;
+    border-width: 2px;
+
+    &:nth-child(even) {
+      margin-top: 10px;
+      margin-bottom: 15px;
+    }
+
+    &:nth-child(odd) {
+      margin-top: 15px;
+      margin-bottom: 10px;
+    }
+  }
+
+  div:last-of-type {
+    margin-top: 20px;
+  }
+}

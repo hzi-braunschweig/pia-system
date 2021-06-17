@@ -1,0 +1,328 @@
+<div class="jumbotron">
+  <div class="back_button" fxLayout="row" fxLayoutAlign="space-between start">
+    <button mat-button (click)="goBackInHistory()">
+      <mat-icon>arrow_back_ios</mat-icon>
+      {{ 'LABRESULT_DETAILS.BACK' | translate }}
+    </button>
+  </div>
+  <mat-card *ngIf="probandForm">
+    <mat-card-header>
+      <mat-card-title
+        >{{ 'PROBAND_PERSONAL_INFO.PERSONAL_INFO_FOR_PROBAND' | translate }}
+        {{ probandId }}</mat-card-title
+      >
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="probandForm" novalidate>
+        <div class="grid-container">
+          <mat-form-field>
+            <mat-select
+              disableOptionCentering
+              id="selectanrede"
+              placeholder="{{ 'PROBAND_PERSONAL_INFO.SALUTATION' | translate }}"
+              formControlName="anrede"
+            >
+              <mat-option *ngFor="let anrede of anreden" [value]="anrede">
+                {{ anrede }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field>
+            <input
+              matInput
+              placeholder="{{ 'PROBAND_PERSONAL_INFO.TITLE' | translate }}"
+              formControlName="titel"
+            />
+            <mat-error *ngIf="probandForm.get('titel').hasError('maxlength')"
+              >{{
+                'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
+                  | translate
+                    : {
+                        maxLength: probandForm
+                          .get('titel')
+                          .getError('maxlength').requiredLength
+                      }
+              }}
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field>
+            <input
+              matInput
+              placeholder="{{ 'SAMPLE_MANAGEMENT.VORNAME' | translate }}"
+              formControlName="vorname"
+            />
+            <mat-error *ngIf="probandForm.get('vorname').hasError('maxlength')"
+              >{{
+                'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
+                  | translate
+                    : {
+                        maxLength: probandForm
+                          .get('vorname')
+                          .getError('maxlength').requiredLength
+                      }
+              }}
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field>
+            <input
+              matInput
+              placeholder="{{ 'SAMPLE_MANAGEMENT.NACHNAME' | translate }}"
+              formControlName="name"
+            />
+            <mat-error *ngIf="probandForm.get('name').hasError('maxlength')"
+              >{{
+                'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
+                  | translate
+                    : {
+                        maxLength: probandForm.get('name').getError('maxlength')
+                          .requiredLength
+                      }
+              }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="grid-container">
+          <div class="double-input-street-house-no">
+            <mat-form-field>
+              <input
+                matInput
+                placeholder="{{ 'GENERAL.STREET' | translate }}"
+                formControlName="strasse"
+              />
+              <mat-error
+                *ngIf="probandForm.get('strasse').hasError('maxlength')"
+                >{{
+                  'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
+                    | translate
+                      : {
+                          maxLength: probandForm
+                            .get('strasse')
+                            .getError('maxlength').requiredLength
+                        }
+                }}
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field>
+              <input
+                matInput
+                placeholder="{{ 'GENERAL.HOUSE_NR' | translate }}"
+                formControlName="haus_nr"
+              />
+              <mat-error
+                *ngIf="probandForm.get('haus_nr').hasError('maxlength')"
+                >{{
+                  'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
+                    | translate
+                      : {
+                          maxLength: probandForm
+                            .get('haus_nr')
+                            .getError('maxlength').requiredLength
+                        }
+                }}
+              </mat-error>
+            </mat-form-field>
+          </div>
+          <mat-form-field>
+            <input
+              matInput
+              placeholder="{{ 'GENERAL.ZIP_CODE' | translate }}"
+              formControlName="plz"
+            />
+            <mat-error *ngIf="probandForm.get('plz').hasError('pattern')"
+              >{{ 'PROBAND_PERSONAL_INFO.ZIP_CODE_ERROR_TEXT' | translate }}
+            </mat-error>
+            <mat-error *ngIf="probandForm.get('plz').hasError('maxlength')"
+              >{{
+                'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
+                  | translate
+                    : {
+                        maxLength: probandForm.get('plz').getError('maxlength')
+                          .requiredLength
+                      }
+              }}
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field>
+            <input
+              matInput
+              placeholder="{{ 'GENERAL.DISTRICT' | translate }}"
+              formControlName="landkreis"
+            />
+            <mat-error
+              *ngIf="probandForm.get('landkreis').hasError('maxlength')"
+              >{{
+                'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
+                  | translate
+                    : {
+                        maxLength: probandForm
+                          .get('landkreis')
+                          .getError('maxlength').requiredLength
+                      }
+              }}
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field>
+            <input
+              matInput
+              placeholder="{{ 'GENERAL.CITY' | translate }}"
+              formControlName="ort"
+            />
+            <mat-error *ngIf="probandForm.get('ort').hasError('maxlength')"
+              >{{
+                'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
+                  | translate
+                    : {
+                        maxLength: probandForm.get('ort').getError('maxlength')
+                          .requiredLength
+                      }
+              }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="grid-container">
+          <mat-form-field class="example-full-width">
+            <input
+              matInput
+              placeholder="{{ 'GENERAL.EMAIL' | translate }}"
+              formControlName="email"
+            />
+            <mat-error *ngIf="probandForm.get('email').hasError('email')">{{
+              'PROBAND_PERSONAL_INFO.EMAIL_ERROR_TEXT' | translate
+            }}</mat-error>
+            <mat-error *ngIf="probandForm.get('email').hasError('maxlength')"
+              >{{
+                'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
+                  | translate
+                    : {
+                        maxLength: probandForm
+                          .get('email')
+                          .getError('maxlength').requiredLength
+                      }
+              }}
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field>
+            <input
+              matInput
+              type="tel"
+              placeholder="{{
+                'PROBAND_PERSONAL_INFO.PRIVATE_PHONENUMBER' | translate
+              }}"
+              formControlName="telefon_privat"
+            />
+            <mat-error
+              *ngIf="probandForm.get('telefon_privat').hasError('pattern')"
+              >{{ 'PROBAND_PERSONAL_INFO.PHONENUMBER_ERROR_TEXT' | translate }}
+            </mat-error>
+            <mat-error
+              *ngIf="probandForm.get('telefon_privat').hasError('maxlength')"
+              >{{
+                'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
+                  | translate
+                    : {
+                        maxLength:
+                          probandForm.controls['telefon_privat'].getError(
+                            'maxlength'
+                          ).requiredLength
+                      }
+              }}
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field>
+            <input
+              matInput
+              type="tel"
+              placeholder="{{
+                'PROBAND_PERSONAL_INFO.BUSINESS_PHONENUMBER' | translate
+              }}"
+              formControlName="telefon_dienst"
+            />
+            <mat-error
+              *ngIf="probandForm.get('telefon_dienst').hasError('pattern')"
+              >{{ 'PROBAND_PERSONAL_INFO.PHONENUMBER_ERROR_TEXT' | translate }}
+            </mat-error>
+            <mat-error
+              *ngIf="probandForm.get('telefon_dienst').hasError('maxlength')"
+              >{{
+                'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
+                  | translate
+                    : {
+                        maxLength:
+                          probandForm.controls['telefon_dienst'].getError(
+                            'maxlength'
+                          ).requiredLength
+                      }
+              }}
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field>
+            <input
+              matInput
+              type="tel"
+              placeholder="{{
+                'PROBAND_PERSONAL_INFO.MOBILE_PHONENUMBER' | translate
+              }}"
+              formControlName="telefon_mobil"
+            />
+            <mat-error
+              *ngIf="probandForm.get('telefon_mobil').hasError('pattern')"
+              >{{ 'PROBAND_PERSONAL_INFO.PHONENUMBER_ERROR_TEXT' | translate }}
+            </mat-error>
+            <mat-error
+              *ngIf="probandForm.get('telefon_mobil').hasError('maxlength')"
+              >{{
+                'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
+                  | translate
+                    : {
+                        maxLength:
+                          probandForm.controls['telefon_mobil'].getError(
+                            'maxlength'
+                          ).requiredLength
+                      }
+              }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="grid-container">
+          <mat-form-field class="comment">
+            <textarea
+              matInput
+              #comment
+              placeholder="{{
+                'PROBAND_PERSONAL_INFO.COMMENT_FIELD' | translate
+              }}"
+              maxlength="3000"
+              matTextareaAutosize
+              matAutosizeMinRows="5"
+              matAutosizeMaxRows="10"
+              formControlName="comment"
+            ></textarea>
+            <mat-error *ngIf="probandForm.get('comment').hasError('maxlength')"
+              >{{
+                'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
+                  | translate
+                    : {
+                        maxLength: probandForm
+                          .get('comment')
+                          .getError('maxlength').requiredLength
+                      }
+              }}
+            </mat-error>
+            <mat-hint align="end">{{ comment.value.length }} / 3000</mat-hint>
+          </mat-form-field>
+        </div>
+      </form>
+    </mat-card-content>
+    <mat-card-actions>
+      <button
+        id="buttonconfirm"
+        mat-raised-button
+        color="primary"
+        [disabled]="probandForm.invalid"
+        (click)="saveChanges()"
+      >
+        {{ 'PROBAND_PERSONAL_INFO.SAVE_CHANGES' | translate }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

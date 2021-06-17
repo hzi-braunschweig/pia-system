@@ -1,0 +1,51 @@
+{
+  "name": "Import this questionnaire",
+  "type": "for_probands",
+  "cycle_amount": 1,
+  "activate_at_date": null,
+  "cycle_unit": "once",
+  "cycle_per_day": null,
+  "cycle_first_hour": null,
+  "publish": "allaudiences",
+  "keep_answers": false,
+  "activate_after_days": 0,
+  "deactivate_after_days": 1,
+  "notification_tries": 0,
+  "notification_title": "",
+  "notification_weekday": "",
+  "notification_interval": 0,
+  "notification_interval_unit": "",
+  "notification_body_new": "",
+  "notification_body_in_progress": "",
+  "compliance_needed": false,
+  "notify_when_not_filled": false,
+  "notify_when_not_filled_time": null,
+  "notify_when_not_filled_day": null,
+  "expires_after_days": 2,
+  "finalises_after_days": 5,
+  "questions": [
+    {
+      "text": "Where are you from?",
+      "label": "",
+      "id": -1,
+      "position": 1,
+      "is_mandatory": false,
+      "condition_error": null,
+      "answer_options": [
+        {
+          "id": -1,
+          "position": 1,
+          "text": "",
+          "label": "",
+          "answer_type_id": 4,
+          "condition_error": null,
+          "is_notable": [],
+          "values": [],
+          "values_code": []
+        }
+      ]
+    }
+  ],
+  "condition_error": null,
+  "id": -1
+}

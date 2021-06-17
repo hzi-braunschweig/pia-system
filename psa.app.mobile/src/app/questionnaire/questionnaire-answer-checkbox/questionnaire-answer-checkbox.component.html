@@ -1,0 +1,13 @@
+<ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
+  <ion-label class="ion-text-wrap">{{ label }}</ion-label>
+</ion-item>
+<ion-item *ngFor="let value of values; index as i" lines="none">
+  <ion-label class="ion-text-wrap">{{ value }}</ion-label>
+  <ion-checkbox
+    [disabled]="disabled"
+    [formControl]="form.at(i)"
+    [name]="name + '-' + value"
+    slot="end"
+  >
+  </ion-checkbox>
+</ion-item>

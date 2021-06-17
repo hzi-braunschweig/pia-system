@@ -1,0 +1,18 @@
+npm-install:
+  stage: prepare
+  image: docker:20.10.7@sha256:7a49f42626fed01146792e5add6e48e2c9f1eb3550a6840356757e55cc36ba25
+  script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - >
+      for JOB in $JOBS_INSTALL; do
+        docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB-npm-install:$IMAGE_ID --build-arg DIR=$JOB -f psa.utils.repo-tool/generated/npm-install-$JOB.dockerfile .
+      done
+    - >
+      for JOB in $JOBS_INSTALL; do
+        docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB-npm-install:$IMAGE_ID
+      done
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH =~ /^develop/
+    - if: $CI_COMMIT_BRANCH =~ /^release/

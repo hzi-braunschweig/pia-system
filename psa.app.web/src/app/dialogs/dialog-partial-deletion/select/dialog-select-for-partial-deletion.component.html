@@ -1,0 +1,136 @@
+<div>
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <h1 mat-dialog-title>{{ 'DIALOG.FILTER_DELETE_DATA' | translate }}</h1>
+
+  <mat-dialog-content>
+    <form [formGroup]="form" class="grid-container">
+      <mat-form-field>
+        <mat-label>{{ 'DIALOG.FROM' | translate }}</mat-label>
+        <input
+          matInput
+          [max]="currentDate"
+          [matDatepicker]="pickerStart"
+          formControlName="startDate"
+          placeholder="{{
+            'DIALOG.PARTIAL_DELETION.DATE_FROM_EMPTY' | translate
+          }}"
+          (dateChange)="onDateRangeChanged($event.value)"
+        />
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="pickerStart"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #pickerStart></mat-datepicker>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'DIALOG.TO' | translate }}</mat-label>
+        <input
+          matInput
+          [max]="currentDate"
+          [matDatepicker]="pickerEnd"
+          formControlName="endDate"
+          placeholder="{{
+            'DIALOG.PARTIAL_DELETION.DATE_TO_EMPTY' | translate
+          }}"
+          (dateChange)="onDateRangeChanged($event.value)"
+        />
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="pickerEnd"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #pickerEnd></mat-datepicker>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>
+          {{ 'DIALOG.PARTIAL_DELETION.QUESTIONNAIRES' | translate }}
+        </mat-label>
+        <mat-select [multiple]="true" formControlName="questionnaires">
+          <mat-select-search
+            [formControl]="questionnairesFilterCtrl"
+          ></mat-select-search>
+          <mat-option
+            value="allQuestionnairesCheckbox"
+            (click)="onSelectAllQuestionnairesClicked()"
+          >
+            {{ 'DIALOG.PARTIAL_DELETION.SELECT_ALL' | translate }}
+          </mat-option>
+          <mat-option
+            *ngFor="let questionnaire of filteredQuestionnaires"
+            [value]="questionnaire"
+          >
+            {{ questionnaire.name }} ({{ questionnaire.version }})
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{
+          'DIALOG.PARTIAL_DELETION.LABORATORY_RESULTS' | translate
+        }}</mat-label>
+        <mat-select [multiple]="true" formControlName="labResults">
+          <mat-select-search
+            [formControl]="labResultsFilterCtrl"
+          ></mat-select-search>
+          <mat-option
+            value="allLabResultsCheckbox"
+            (click)="onSelectAllLabResultsClicked()"
+            *ngIf="filteredLabResults.length > 1"
+            >{{ 'DIALOG.PARTIAL_DELETION.SELECT_ALL' | translate }}</mat-option
+          >
+          <mat-option
+            *ngFor="let labResult of filteredLabResults"
+            [value]="labResult"
+          >
+            {{ labResult.id }}
+          </mat-option>
+        </mat-select>
+        <mat-hint *ngIf="filteredLabResults.length == 0">
+          {{ 'DIALOG.PARTIAL_DELETION.NO_RESULT' | translate }}
+        </mat-hint>
+      </mat-form-field>
+      <mat-checkbox formControlName="deleteLogs">
+        {{ 'DIALOG.PARTIAL_DELETION.DELETE_USER_LOGS' | translate }}
+      </mat-checkbox>
+      <span class="researcher-hint"
+        >{{ 'DIALOG.PARTIAL_DELETION.CHOSE_RESEARCHER' | translate }}
+      </span>
+      <mat-form-field>
+        <mat-select
+          placeholder="{{ 'ROLES.RESEARCHER' | translate }}"
+          formControlName="userForApprove"
+        >
+          <mat-select-search
+            [formControl]="researcherFilterCtrl"
+          ></mat-select-search>
+          <mat-option
+            *ngFor="let username of filteredResearchers"
+            [value]="username"
+          >
+            {{ username }}
+          </mat-option>
+        </mat-select>
+        <mat-hint *ngIf="filteredResearchers.length == 0">
+          {{ 'DIALOG.PARTIAL_DELETION.NO_PARTNERS' | translate }}</mat-hint
+        >
+        <mat-error *ngIf="userForApproveFC.hasError('required')">
+          {{ 'DIALOG.PARTIAL_DELETION.RESEARCHER_REQUIRED' | translate }}
+        </mat-error>
+      </mat-form-field>
+      <mat-error
+        *ngIf="form.hasError('oneRequired')"
+        class="at-least-one-error"
+      >
+        {{ 'DIALOG.PARTIAL_DELETION.AT_LEAST_ONE_REQUIRED' | translate }}
+      </mat-error>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <button mat-raised-button type="button" [mat-dialog-close]>
+      {{ 'DIALOG.CANCEL' | translate }}
+    </button>
+    <button mat-raised-button color="primary" [disabled]="" (click)="submit()">
+      {{ 'DIALOG.PARTIAL_DELETION.REVIEW' | translate }}
+    </button>
+  </mat-dialog-actions>
+</div>

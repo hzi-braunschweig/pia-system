@@ -1,0 +1,77 @@
+<div>
+  <mat-card>
+    <mat-card-title class="placeholder-list-label"
+      >{{ 'COMPLIANCE.PLACEHOLDER' | translate }}
+    </mat-card-title>
+    <mat-divider></mat-divider>
+    <mat-card-content>
+      <mat-action-list dense>
+        <button
+          mat-list-item
+          (click)="
+            onSelectSystemCompliance(systemCompliancePlaceholder.placeholder)
+          "
+          *ngFor="
+            let systemCompliancePlaceholder of systemCompliancePlaceholders
+          "
+        >
+          {{ systemCompliancePlaceholder.name | translate }}
+        </button>
+        <button
+          mat-list-item
+          (click)="
+            onSelectQuestionnaireCompliance(questionnaireCompliancePlaceholder)
+          "
+          *ngFor="
+            let questionnaireCompliancePlaceholder of questionnaireCompliancePlaceholders
+          "
+          data-e2e="e2e-add-compliance-field-to-consent"
+        >
+          {{ questionnaireCompliancePlaceholder.placeholder }}
+        </button>
+      </mat-action-list>
+    </mat-card-content>
+    <mat-divider></mat-divider>
+    <p class="generic-field-label">
+      {{ 'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER' | translate }}
+    </p>
+    <mat-card-content>
+      <form>
+        <mat-form-field>
+          <mat-label>{{
+            'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_NAME' | translate
+          }}</mat-label>
+          <input
+            matInput
+            [placeholder]="
+              'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_EXAMPLE' | translate
+            "
+            [formControl]="newGenericRadioFieldForm"
+            data-e2e="e2e-compliance-input"
+          />
+          <mat-error *ngIf="newGenericRadioFieldForm.hasError('minLength')">
+            {{
+              'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_NOT_EMPTY' | translate
+            }}
+          </mat-error>
+          <mat-error
+            *ngIf="newGenericRadioFieldForm.hasError('mustNotContain')"
+          >
+            {{
+              'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_NO_TAG_SYMBOL'
+                | translate
+            }}
+          </mat-error>
+        </mat-form-field>
+      </form>
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="addGenericRadioField()"
+        data-e2e="e2e-add-compliance-button"
+      >
+        {{ 'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_ADD_BUTTON' | translate }}
+      </button>
+    </mat-card-content>
+  </mat-card>
+</div>

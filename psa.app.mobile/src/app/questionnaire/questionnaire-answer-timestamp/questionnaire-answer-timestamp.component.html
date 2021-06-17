@@ -1,0 +1,25 @@
+<ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
+  <ion-label class="ion-text-wrap">{{ label }}</ion-label>
+</ion-item>
+<ion-item lines="inset">
+  <ion-input
+    type="text"
+    [placeholder]="'QUESTIONNAIRE_QUESTIONS.TIME_INPUT_TIMESTAMP' | translate"
+    [disabled]="true"
+    [name]="name"
+    [formControl]="control"
+    (keyup.enter)="hideKeyboard($event)"
+  >
+  </ion-input>
+</ion-item>
+<ion-button
+  type="button"
+  color="light"
+  expand="block"
+  class="ion-margin-horizontal ion-margin-top"
+  [disabled]="control.disabled"
+  (click)="setTimestamp()"
+>
+  <ion-icon slot="start" name="time"></ion-icon>
+  {{ 'GENERAL.SET' | translate }}
+</ion-button>

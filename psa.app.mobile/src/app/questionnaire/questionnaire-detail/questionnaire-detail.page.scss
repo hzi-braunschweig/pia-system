@@ -1,0 +1,98 @@
+.pia-slide-content {
+  width: 100%;
+
+  .pia-fab-button-spacer {
+    width: 100%;
+    height: 74px;
+  }
+
+  // increase answer font size on iOS
+  ion-item ion-label.ion-text-wrap.sc-ion-label-ios-h {
+    line-height: 1.5;
+    font-size: 16px;
+  }
+}
+
+.md .pia-slide-content {
+  /**
+   * Increases the touchable slider area to the screen height
+   * on Android devices.
+   *
+   * Full view height - toolbar height - progress bar height
+   */
+  min-height: calc(100vh - 56px - 4px);
+}
+
+.ios .pia-slide-content {
+  /**
+   * Increases the touchable slider area to the screen height
+   * on iOS devices.
+   *
+   * Full view height - toolbar height - progress bar height
+   */
+  min-height: calc(100vh - 44px - 3px);
+}
+
+ion-fab .pia-fab-button-label {
+  position: absolute;
+  top: 12px;
+  right: 64px;
+  color: var(--ion-color-light);
+  background-color: rgba(var(--ion-color-dark-rgb), 0.7);
+  line-height: 24px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.pia-questionnaire-question {
+  margin-bottom: 10px;
+
+  text-align: left;
+  font-size: 1.2em;
+  color: var(--ion-color-dark-tint);
+
+  ion-label {
+    font-weight: 500;
+  }
+
+  h1 {
+    font-size: 2em;
+  }
+
+  h2 {
+    font-size: 1.5em;
+  }
+
+  h3 {
+    font-size: 1.17em;
+  }
+
+  h4 {
+    font-size: 1em;
+  }
+
+  h5 {
+    font-size: 0.83em;
+  }
+
+  h6 {
+    font-size: 0.75em;
+  }
+}
+
+.pia-questionnaire-question-header {
+  --background: var(--ion-color-light);
+}
+
+.pia-questionnaire-question-divider {
+  width: 100%;
+  min-height: 30px;
+  border-bottom: 1px solid var(--ion-color-primary-tint);
+  margin-bottom: 5px;
+
+  &:last-child {
+    min-height: 5px;
+    border-bottom: none;
+  }
+}

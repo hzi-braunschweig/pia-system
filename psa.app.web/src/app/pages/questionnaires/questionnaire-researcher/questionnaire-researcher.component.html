@@ -1,0 +1,3144 @@
+<div class="jumbotron">
+  <div *ngIf="myForm" class="page-wrapper">
+    <ngx-material-timepicker
+      #picker
+      [ngxMaterialTimepickerTheme]="timepickerTheme"
+      (timeSet)="
+        myForm.controls['notify_when_not_filled'].updateValueAndValidity()
+      "
+    >
+    </ngx-material-timepicker>
+    <form class="form-container" [formGroup]="myForm" novalidate>
+      <span *ngIf="isImportedQuestionnaire">{{
+        'QUESTIONNAIRE_FORSCHER.FIRST_SAVE_QUESTIONNAIRE' | translate
+      }}</span>
+      <!-- Questionnaire settings -->
+      <mat-card class="questionnaire-card">
+        <div class="grid-container">
+          <mat-form-field>
+            <mat-select
+              disableOptionCentering
+              id="selectstudy"
+              placeholder="{{ 'QUESTIONNAIRE_FORSCHER.STUDY' | translate }}"
+              formControlName="study_id"
+              (selectionChange)="selectStudy($event.value)"
+              data-e2e="e2e-select-study-dropdown"
+            >
+              <mat-option *ngFor="let studie of studies" [value]="studie.name">
+                {{ studie.name }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="myForm.controls['study_id'].hasError('required')">
+              {{ 'DIALOG.STUDY_REQUIRED' | translate }}
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field>
+            <input
+              id="questionnairenameinput"
+              matInput
+              placeholder="{{
+                'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_NAME' | translate
+              }}"
+              formControlName="name"
+              data-e2e="e2e-questionnaire-name-input"
+            />
+            <mat-error *ngIf="myForm.controls['name'].hasError('required')">
+              {{
+                'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_NAME_REQUIRED' | translate
+              }}
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-select
+              disableOptionCentering
+              id="questionnairetypeselect"
+              placeholder="{{
+                'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_TYPE' | translate
+              }}"
+              formControlName="type"
+              (selectionChange)="setQuestionnaireType()"
+              data-e2e="e2e-questionnaire-type-select"
+            >
+              <mat-option
+                *ngFor="let questionnaireType of questionnaireTypes"
+                [value]="questionnaireType.value"
+                (click)="setQuestionnaireType()"
+              >
+                {{ questionnaireType.viewValue | translate }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="myForm.controls['type'].hasError('required')">
+              {{
+                'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_TYPE_REQUIRED' | translate
+              }}
+            </mat-error>
+          </mat-form-field>
+
+          <ng-container
+            *ngIf="myForm.controls['type'].value != 'for_research_team'"
+            class="not-research-team"
+          >
+            <div class="double-input">
+              <mat-form-field
+                *ngIf="
+                  myForm.controls['cycle_unit'].value != 'once' &&
+                  myForm.controls['cycle_unit'].value != 'date' &&
+                  myForm.controls['cycle_unit'].value != 'spontan'
+                "
+              >
+                <input
+                  id="cycleamountinput"
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.CYCLE_AMOUNT' | translate
+                  }}"
+                  matInput
+                  (keyup)="setDeactivateMinDays()"
+                  type="number"
+                  formControlName="cycle_amount"
+                />
+                <mat-error
+                  *ngIf="myForm.controls['cycle_amount'].hasError('min')"
+                >
+                  {{ 'QUESTIONNAIRE_FORSCHER.JUMP_STEP_MIN' | translate }}
+                </mat-error>
+              </mat-form-field>
+              <mat-form-field>
+                <mat-select
+                  disableOptionCentering
+                  id="cycleunitselect"
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.CYCLE_UNIT' | translate
+                  }}"
+                  formControlName="cycle_unit"
+                  data-e2e="e2e-cycle-unit-select-dropdown"
+                >
+                  <mat-option
+                    *ngFor="let cycleUnit of cycleUnits"
+                    [value]="cycleUnit.value"
+                    (click)="checkCycleUnit()"
+                  >
+                    {{ cycleUnit.viewValue | translate }}
+                  </mat-option>
+                </mat-select>
+                <mat-error
+                  *ngIf="myForm.controls['cycle_unit'].hasError('required')"
+                >
+                  {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <!-- cycle per day and start hour controls, only if cycle_unit=hour -->
+            <div
+              *ngIf="myForm.controls['cycle_unit'].value == 'hour'"
+              class="double-input"
+            >
+              <mat-form-field style="width: 43%">
+                <mat-select
+                  disableOptionCentering
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.CYCLE_PER_DAY' | translate
+                  }}"
+                  formControlName="cycle_per_day"
+                >
+                  <mat-option *ngFor="let hour of hoursPerDay" [value]="hour">
+                    {{ hour }}
+                  </mat-option>
+                </mat-select>
+                <mat-error
+                  *ngIf="myForm.controls['cycle_per_day'].hasError('required')"
+                >
+                  {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+                </mat-error>
+              </mat-form-field>
+              <mat-form-field style="width: 43%">
+                <mat-select
+                  disableOptionCentering
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.CYCLE_FIRST_HOUR' | translate
+                  }}"
+                  formControlName="cycle_first_hour"
+                >
+                  <mat-option
+                    *ngFor="let hourOfDay of hoursOfDay"
+                    [value]="hourOfDay.value"
+                  >
+                    {{ hourOfDay.viewValue }}
+                  </mat-option>
+                </mat-select>
+                <mat-error
+                  *ngIf="
+                    myForm.controls['cycle_first_hour'].hasError('required')
+                  "
+                >
+                  {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <mat-form-field
+              *ngIf="myForm.controls['cycle_unit'].value == 'date'"
+            >
+              <input
+                formControlName="activate_at_date"
+                matInput
+                [matDatepicker]="picker"
+                placeholder="{{
+                  'QUESTIONNAIRE_FORSCHER.DATEPICKER' | translate
+                }}"
+                (dateChange)="onDateChange($event)"
+                [readonly]="true"
+              />
+              <mat-datepicker-toggle
+                matSuffix
+                [for]="picker"
+              ></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error
+                *ngIf="myForm.controls['activate_at_date'].hasError('required')"
+              >
+                {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field
+              *ngIf="myForm.controls['cycle_unit'].value != 'date'"
+            >
+              <input
+                id="activateafterdaysinput"
+                placeholder="{{
+                  'QUESTIONNAIRE_FORSCHER.ACTIVATE_AFTER_DAYS' | translate
+                }}"
+                matInput
+                type="number"
+                formControlName="activate_after_days"
+                data-e2e="e2e-activate-after-days-input"
+              />
+              <mat-error
+                *ngIf="
+                  myForm.controls['activate_after_days'].hasError('required')
+                "
+              >
+                {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+              </mat-error>
+              <mat-error
+                *ngIf="myForm.controls['activate_after_days'].hasError('min')"
+              >
+                {{
+                  'QUESTIONNAIRE_FORSCHER.ACTIVATE_AFTER_DAYS_MIN' | translate
+                }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field
+              *ngIf="
+                myForm.controls['cycle_unit'].value != 'once' &&
+                myForm.controls['cycle_unit'].value != 'date' &&
+                myForm.controls['cycle_unit'].value != 'spontan'
+              "
+            >
+              <input
+                id="deactivateafterdaysinput"
+                placeholder="{{
+                  'QUESTIONNAIRE_FORSCHER.DEACTIVATE_AFTER_DAYS' | translate
+                }}"
+                matInput
+                type="number"
+                formControlName="deactivate_after_days"
+              />
+              <mat-error
+                *ngIf="
+                  myForm.controls['deactivate_after_days'].hasError('required')
+                "
+              >
+                {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+              </mat-error>
+              <mat-error
+                *ngIf="myForm.controls['deactivate_after_days'].hasError('min')"
+              >
+                {{
+                  'QUESTIONNAIRE_FORSCHER.DEACTIVE_AFTER_DAYS_MIN'
+                    | translate: translationData
+                }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field
+              *ngIf="myForm.controls['cycle_unit'].value != 'spontan'"
+            >
+              <input
+                id="expires_after_days"
+                placeholder="{{
+                  'QUESTIONNAIRE_FORSCHER.EXPIRES_AFTER_DAYS' | translate
+                }}"
+                matInput
+                type="number"
+                formControlName="expires_after_days"
+              />
+              <mat-error
+                *ngIf="
+                  myForm.controls['expires_after_days'].hasError('required')
+                "
+              >
+                {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+              </mat-error>
+              <mat-error
+                *ngIf="myForm.controls['expires_after_days'].hasError('min')"
+              >
+                {{
+                  'QUESTIONNAIRE_FORSCHER.EXPIRES_AFTER_DAYS_MIN' | translate
+                }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field>
+              <input
+                id="finalises_after_days"
+                placeholder="{{
+                  'QUESTIONNAIRE_FORSCHER.FINALISES_AFTER_DAYS' | translate
+                }}"
+                matInput
+                type="number"
+                formControlName="finalises_after_days"
+              />
+              <mat-error
+                *ngIf="
+                  myForm.controls['finalises_after_days'].hasError('required')
+                "
+              >
+                {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+              </mat-error>
+              <mat-error
+                *ngIf="myForm.controls['finalises_after_days'].hasError('min')"
+              >
+                {{
+                  'QUESTIONNAIRE_FORSCHER.FINALISES_AFTER_DAYS_MIN' | translate
+                }}
+              </mat-error>
+            </mat-form-field>
+
+            <ng-container
+              *ngIf="myForm.controls['cycle_unit'].value != 'spontan'"
+            >
+              <mat-form-field>
+                <input
+                  id="notification_tries"
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.NOTIFICATION_TRIES' | translate
+                  }}"
+                  matInput
+                  type="number"
+                  min="0"
+                  (click)="setNotificationControls()"
+                  (keyup)="setNotificationControls()"
+                  formControlName="notification_tries"
+                  data-e2e="e2e-notification-tries"
+                />
+                <mat-error
+                  *ngIf="
+                    myForm.controls['notification_tries'].hasError('required')
+                  "
+                >
+                  {{
+                    'QUESTIONNAIRE_FORSCHER.NOTIFICATION_TRIES_REQUIRED'
+                      | translate
+                  }}
+                </mat-error>
+              </mat-form-field>
+
+              <!-- Notification weekday -->
+              <mat-form-field
+                *ngIf="
+                  myForm.controls['notification_tries'].value > 0 &&
+                  (myForm.controls['cycle_unit'].value == 'week' ||
+                    myForm.controls['cycle_unit'].value == 'month')
+                "
+              >
+                <mat-select
+                  disableOptionCentering
+                  id="notification_weekday"
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.NOTIFICATION_DAY' | translate
+                  }}"
+                  matInput
+                  formControlName="notification_weekday"
+                  [(value)]="selectedWeekday"
+                >
+                  <mat-option value="monday">{{
+                    'QUESTIONNAIRE_FORSCHER.MONDAY' | translate
+                  }}</mat-option>
+                  <mat-option value="tuesday">{{
+                    'QUESTIONNAIRE_FORSCHER.TUESDAY' | translate
+                  }}</mat-option>
+                  <mat-option value="wednesday">{{
+                    'QUESTIONNAIRE_FORSCHER.WEDNESDAY' | translate
+                  }}</mat-option>
+                  <mat-option value="thursday">{{
+                    'QUESTIONNAIRE_FORSCHER.THURSDAY' | translate
+                  }}</mat-option>
+                  <mat-option value="friday">{{
+                    'QUESTIONNAIRE_FORSCHER.FRIDAY' | translate
+                  }}</mat-option>
+                  <mat-option value="saturday">{{
+                    'QUESTIONNAIRE_FORSCHER.SATURDAY' | translate
+                  }}</mat-option>
+                  <mat-option value="sunday">{{
+                    'QUESTIONNAIRE_FORSCHER.SUNDAY' | translate
+                  }}</mat-option>
+
+                  <mat-error
+                    *ngIf="
+                      myForm.controls['notification_weekday'].hasError(
+                        'required'
+                      )
+                    "
+                  >
+                    {{
+                      'QUESTIONNAIRE_FORSCHER.NOTIFICATION_WEEKDAY_REQUIRED'
+                        | translate
+                    }}
+                  </mat-error>
+                </mat-select>
+              </mat-form-field>
+
+              <!-- notification interval -->
+              <div
+                class="double-input"
+                *ngIf="
+                  myForm.controls['notification_tries'].value > 1 &&
+                  (myForm.controls['cycle_unit'].value == 'hour' ||
+                    myForm.controls['cycle_unit'].value == 'day' ||
+                    myForm.controls['cycle_unit'].value == 'week' ||
+                    myForm.controls['cycle_unit'].value == 'month')
+                "
+              >
+                <mat-form-field>
+                  <input
+                    id="notification_interval"
+                    placeholder="{{
+                      'QUESTIONNAIRE_FORSCHER.INTERVAL' | translate
+                    }}"
+                    matInput
+                    formControlName="notification_interval"
+                    type="number"
+                    min="0"
+                  />
+                  <mat-error
+                    *ngIf="
+                      myForm.controls['notification_interval'].hasError(
+                        'required'
+                      )
+                    "
+                  >
+                    {{
+                      'QUESTIONNAIRE_FORSCHER.NOTIFICATION_INTERVAL_REQUIRED'
+                        | translate
+                    }}
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-select
+                    disableOptionCentering
+                    id="notification_interval_unit"
+                    placeholder="{{
+                      'QUESTIONNAIRE_FORSCHER.UNIT' | translate
+                    }}"
+                    matInput
+                    formControlName="notification_interval_unit"
+                    [(value)]="selectedUnit"
+                  >
+                    <mat-option
+                      *ngIf="
+                        myForm.controls['cycle_unit'].value == 'week' ||
+                        myForm.controls['cycle_unit'].value == 'month'
+                      "
+                      value="days"
+                      >{{
+                        'QUESTIONNAIRE_FORSCHER.DAYS' | translate
+                      }}</mat-option
+                    >
+                    <mat-option value="hours">{{
+                      'QUESTIONNAIRE_FORSCHER.HOURS' | translate
+                    }}</mat-option>
+
+                    <mat-error
+                      *ngIf="
+                        myForm.controls['notification_interval_unit'].hasError(
+                          'required'
+                        )
+                      "
+                    >
+                      {{
+                        'QUESTIONNAIRE_FORSCHER.NOTIFICATION_INTERVAL_UNIT_REQUIRED'
+                          | translate
+                      }}
+                    </mat-error>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <mat-form-field
+                *ngIf="myForm.controls['notification_tries'].value != 0"
+              >
+                <input
+                  id="notification_title"
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.NOTIFICATION_TITLE' | translate
+                  }}"
+                  matInput
+                  formControlName="notification_title"
+                  data-e2e="e2e-notification-title"
+                />
+                <mat-error
+                  *ngIf="
+                    myForm.controls['notification_title'].hasError('required')
+                  "
+                >
+                  {{
+                    'QUESTIONNAIRE_FORSCHER.NOTIFICATION_TITLE_REQUIRED'
+                      | translate
+                  }}
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field
+                *ngIf="myForm.controls['notification_tries'].value != 0"
+              >
+                <input
+                  id="notification_body_new"
+                  matInput
+                  formControlName="notification_body_new"
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.NOTIFICATION_BODY_NEW' | translate
+                  }}"
+                  data-e2e="e2e-notification-body-new"
+                />
+                <mat-error
+                  *ngIf="
+                    myForm.controls['notification_body_new'].hasError(
+                      'required'
+                    )
+                  "
+                >
+                  {{
+                    'QUESTIONNAIRE_FORSCHER.NOTIFICATION_BODY_NEW_REQUIRED'
+                      | translate
+                  }}
+                </mat-error>
+              </mat-form-field>
+
+              <mat-form-field
+                *ngIf="myForm.controls['notification_tries'].value != 0"
+              >
+                <input
+                  id="notification_body_in_progress"
+                  matInput
+                  formControlName="notification_body_in_progress"
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.NOTIFICATION_BODY_IN_PROGRESS'
+                      | translate
+                  }}"
+                  data-e2e="e2e-notification-body-in-progress"
+                />
+                <mat-error
+                  *ngIf="
+                    myForm.controls['notification_body_in_progress'].hasError(
+                      'required'
+                    )
+                  "
+                >
+                  {{
+                    'QUESTIONNAIRE_FORSCHER.NOTIFICATION_BODY_IN_PROGRESS_REQUIRED'
+                      | translate: translationData
+                  }}
+                </mat-error>
+              </mat-form-field>
+            </ng-container>
+          </ng-container>
+          <mat-checkbox formControlName="compliance_needed">
+            {{ 'QUESTIONNAIRE_FORSCHER.COMPLIANCE_NEEDED' | translate }}
+          </mat-checkbox>
+          <mat-form-field
+            *ngIf="myForm.controls['type'].value != 'for_research_team'"
+          >
+            <mat-select
+              disableOptionCentering
+              id="publishselect"
+              formControlName="publish"
+              placeholder="{{
+                'QUESTIONNAIRE_FORSCHER.PUBLISHINGSTATE' | translate
+              }}"
+              data-e2e="e2e-publishing-state-select"
+            >
+              <mat-option
+                *ngFor="let publishOption of publishOptions"
+                [value]="publishOption.value"
+              >
+                {{ publishOption.viewValue | translate }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div
+          class="study-notifications-options"
+          [hidden]="!selectedStudy || !selectedStudy.has_answers_notify_feature"
+        >
+          <mat-checkbox formControlName="notify_when_not_filled">
+            {{ 'QUESTIONNAIRE_FORSCHER.NOTIFY_WHEN_NOT_FILLED' | translate }}
+          </mat-checkbox>
+          &nbsp;
+          <input
+            placeholder="{{ 'SETTINGS.TIME_PLACEHOLDER' | translate }}"
+            [format]="24"
+            readonly
+            [ngxTimepicker]="picker"
+            mat-button
+            type="text"
+            formControlName="notify_when_not_filled_time"
+          />
+          <span>{{ 'SETTINGS.TIME_UNIT' | translate }}</span>
+          <span> - {{ 'QUESTIONNAIRE_FORSCHER.AFTER' | translate }}</span>
+          <mat-form-field>
+            <input
+              matInput
+              type="number"
+              placeholder="0 = am selben Tag"
+              formControlName="notify_when_not_filled_day"
+              (change)="
+                myForm.controls[
+                  'notify_when_not_filled'
+                ].updateValueAndValidity()
+              "
+            />
+          </mat-form-field>
+          <span>{{ 'QUESTIONNAIRE_FORSCHER.DAYS' | translate }}</span>
+          <mat-error
+            *ngIf="
+              myForm.controls['notify_when_not_filled'].errors?.emptyHourOrDay
+            "
+            >{{
+              'QUESTIONNAIRE_FORSCHER.NOTIFICATION_TIME_DAY_CANNOT_NOT_BE_EMPTY'
+                | translate
+            }}</mat-error
+          >
+        </div>
+
+        <mat-card *ngIf="supportsKeepAnswers">
+          <mat-checkbox formControlName="keep_answers">
+            {{ 'QUESTIONNAIRE_FORSCHER.KEEP_ANSWERS' | translate }}
+          </mat-checkbox>
+        </mat-card>
+
+        <mat-card
+          class="condition-questionnaire"
+          [ngClass]="{ 'import-view': isImportedQuestionnaire }"
+        >
+          <mat-card-title fxLayout="row" fxLayoutAlign="space-between start">
+            <span *ngIf="showQuestionnaireCondition" flex
+              >{{ 'QUESTIONNAIRE_FORSCHER.CONDITION' | translate }}
+            </span>
+            <button
+              *ngIf="!showQuestionnaireCondition"
+              class="left"
+              mat-raised-button
+              type="button"
+              color="primary"
+              (click)="addQuestionnaireCondition()"
+              data-e2e="e2e-questionnaire-condition-set-button"
+            >
+              {{
+                'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_CONDITION_SET' | translate
+              }}
+            </button>
+            <button
+              *ngIf="showQuestionnaireCondition"
+              type="button"
+              mat-icon-button
+              class="right"
+              (click)="removeQuestionnaireCondition()"
+            >
+              <mat-icon>clear</mat-icon>
+            </button>
+            <div
+              *ngIf="
+                myForm.controls['condition_error'].value ===
+                'reference-not-found'
+              "
+            >
+              <mat-error>
+                <small>{{
+                  'QUESTIONNAIRE_FORSCHER.CONDITION_ERROR_REF_NOT_FOUND'
+                    | translate
+                }}</small>
+              </mat-error>
+              <br />
+              <span *ngIf="currentQuestionnaire.condition_postview">
+                {{
+                  currentQuestionnaire.condition_postview
+                    .condition_target_questionnaire_name
+                }}
+                &#8594;
+                {{
+                  currentQuestionnaire.condition_postview
+                    .condition_target_question_text
+                }}
+                &#8594; UF{{
+                  currentQuestionnaire.condition_postview
+                    .condition_target_answer_option_pos
+                }}
+                {{ currentQuestionnaire.condition_postview.condition_operand }}
+                {{ '{'
+                }}{{ currentQuestionnaire.condition_postview.condition_value
+                }}{{ '}' }}
+                <span
+                  *ngIf="currentQuestionnaire.condition_postview.condition_link"
+                >
+                  {{ '{'
+                  }}{{ currentQuestionnaire.condition_postview.condition_link
+                  }}{{ '}' }}
+                </span>
+              </span>
+            </div>
+          </mat-card-title>
+          <mat-card-content *ngIf="showQuestionnaireCondition">
+            <div class="grid-container" formGroupName="condition">
+              <mat-form-field>
+                <mat-select
+                  disableOptionCentering
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.CONDITION_TYPE' | translate
+                  }}"
+                  formControlName="condition_type"
+                  data-e2e="e2e-show-questionnaire-condition-select"
+                >
+                  <mat-option
+                    *ngFor="
+                      let type of conditionTypesForQuestionnaire;
+                      let questionnaireIndex = index
+                    "
+                    [value]="type.value"
+                    (click)="
+                      setSelectedConditionTypeQuestionnaireCondition(type.value)
+                    "
+                  >
+                    {{ type.viewValue | translate }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <div *ngIf="needToSentQuestionnaire">
+                <span>
+                  {{
+                    'QUESTIONNAIRE_FORSCHER.CONDITION_SEND_QUESTIONNAIRE'
+                      | translate
+                  }}</span
+                >
+              </div>
+
+              <mat-form-field *ngIf="selectedConditionType != undefined">
+                <mat-select
+                  disableOptionCentering
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_NAME' | translate
+                  }}"
+                  formControlName="condition_target_questionnaire"
+                  data-e2e="e2e-condition-target-questionnaire-select"
+                >
+                  <mat-option
+                    *ngFor="
+                      let questionnaire of questionnairesForConditionQuestionnaire;
+                      let questionnaireIndex = index
+                    "
+                    [value]="questionnaire.id + '-' + questionnaire.version"
+                    (click)="
+                      setSelectedQuestionnaireIndexQuestionnaireCondition(
+                        questionnaireIndex
+                      )
+                    "
+                    [title]="
+                      questionnaire.name + ' (' + questionnaire.version + ')'
+                    "
+                  >
+                    {{ questionnaire.name }} ({{ questionnaire.version }})
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field *ngIf="selectedQuestionnaireIndex != undefined">
+                <mat-select
+                  disableOptionCentering
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT' | translate
+                  }}"
+                  formControlName="condition_question_id"
+                  data-e2e="e2e-condition-question-id-select"
+                >
+                  <mat-option
+                    *ngFor="
+                      let question of questionnairesForConditionQuestionnaire[
+                        selectedQuestionnaireIndex
+                      ].questions;
+                      let questionIndex = index
+                    "
+                    [value]="question.id"
+                    (click)="
+                      setSelectedQuestionIndexQuestionnaireCondition(
+                        questionIndex
+                      )
+                    "
+                    [title]="question.text | stripMarkdown"
+                  >
+                    {{
+                      'QUESTIONNAIRE_FORSCHER.QUESTION_ABBREVIATION'
+                        | translate
+                    }}{{ question.position }}:
+                    {{ question.text | stripMarkdown }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field *ngIf="selectedQuestionIndex != undefined">
+                <mat-select
+                  disableOptionCentering
+                  placeholder="{{ 'QUESTIONNAIRE_FORSCHER.VALUE' | translate }}"
+                  formControlName="condition_target_answer_option"
+                  data-e2e="e2e-condition-target-answer-option-select"
+                >
+                  <mat-option
+                    *ngFor="
+                      let answer_option of questionnairesForConditionQuestionnaire[
+                        selectedQuestionnaireIndex
+                      ].questions[selectedQuestionIndex].answer_options;
+                      let answerOptionsIndex = index
+                    "
+                    [value]="answer_option.id"
+                    (click)="
+                      setSelectedAnswerOptionsIndexQuestionnaireCondition(
+                        answerOptionsIndex
+                      )
+                    "
+                    [title]="answer_option.text"
+                  >
+                    {{
+                      'QUESTIONNAIRE_FORSCHER.SUB-QUESTION_ABBREVIATION'
+                        | translate
+                    }}
+                    {{ answer_option.position }}:
+                    {{ answer_option.text }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field *ngIf="selectedAnswerOptionsIndex != undefined">
+                <mat-label for="selected-answer-options">{{
+                  'QUESTIONNAIRE_FORSCHER.IF_ANSWER_VALUE' | translate
+                }}</mat-label>
+                <mat-select
+                  disableOptionCentering
+                  id="selected-answer-options"
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.IF_ANSWER_VALUE' | translate
+                  }}"
+                  formControlName="condition_operand"
+                  data-e2e="e2e-condition-operand-select"
+                >
+                  <mat-option
+                    *ngFor="let condition_operand of condition_operands"
+                    [value]="condition_operand.viewValue"
+                  >
+                    {{ condition_operand.viewValue }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <!-- Main Question -->
+              <ng-container *ngIf="selectedAnswerOptionsIndex != undefined">
+                <mat-form-field
+                  *ngIf="
+                    questionnairesForConditionQuestionnaire[
+                      selectedQuestionnaireIndex
+                    ].questions[selectedQuestionIndex].answer_options[
+                      selectedAnswerOptionsIndex
+                    ].answer_type_id == 1 ||
+                    questionnairesForConditionQuestionnaire[
+                      selectedQuestionnaireIndex
+                    ].questions[selectedQuestionIndex].answer_options[
+                      selectedAnswerOptionsIndex
+                    ].answer_type_id == 2
+                  "
+                >
+                  <mat-select
+                    disableOptionCentering
+                    placeholder=" {{
+                      'QUESTIONNAIRE_FORSCHER.ANSWER_VALUE' | translate
+                    }}"
+                    formControlName="condition_value"
+                    multiple
+                  >
+                    <mat-option
+                      *ngFor="
+                        let answerValue of questionnairesForConditionQuestionnaire[
+                          selectedQuestionnaireIndex
+                        ].questions[selectedQuestionIndex].answer_options[
+                          selectedAnswerOptionsIndex
+                        ].values;
+                        let valueIndex = index
+                      "
+                      [value]="answerValue"
+                    >
+                      {{ answerValue }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field
+                  *ngIf="
+                    questionnairesForConditionQuestionnaire[
+                      selectedQuestionnaireIndex
+                    ].questions[selectedQuestionIndex].answer_options[
+                      selectedAnswerOptionsIndex
+                    ].answer_type_id == 4
+                  "
+                >
+                  <input
+                    matInput
+                    type="text"
+                    placeholder="{{
+                      'QUESTIONNAIRE_FORSCHER.ANSWER_VALUE' | translate
+                    }}"
+                    formControlName="condition_value"
+                  />
+                </mat-form-field>
+
+                <mat-form-field
+                  *ngIf="
+                    questionnairesForConditionQuestionnaire[
+                      selectedQuestionnaireIndex
+                    ].questions[selectedQuestionIndex].answer_options[
+                      selectedAnswerOptionsIndex
+                    ].answer_type_id == 3
+                  "
+                >
+                  <input
+                    matInput
+                    type="number"
+                    placeholder="{{
+                      'QUESTIONNAIRE_FORSCHER.ANSWER_VALUE' | translate
+                    }}"
+                    formControlName="condition_value"
+                    data-e2e="e2e-condition-numeric-value-input"
+                  />
+                </mat-form-field>
+
+                <mat-form-field
+                  *ngIf="
+                    questionnairesForConditionQuestionnaire[
+                      selectedQuestionnaireIndex
+                    ].questions[selectedQuestionIndex].answer_options[
+                      selectedAnswerOptionsIndex
+                    ].answer_type_id == 5
+                  "
+                >
+                  <input
+                    matInput
+                    [matDatepicker]="picker"
+                    placeholder="{{
+                      'QUESTIONNAIRE_FORSCHER.DATEPICKER' | translate
+                    }}"
+                    formControlName="condition_value"
+                  />
+                  <mat-datepicker-toggle
+                    matSuffix
+                    [for]="picker"
+                  ></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field
+                  *ngIf="
+                    questionnairesForConditionQuestionnaire[
+                      selectedQuestionnaireIndex
+                    ].questions[selectedQuestionIndex].answer_options[
+                      selectedAnswerOptionsIndex
+                    ].answer_type_id == 6
+                  "
+                >
+                  <input
+                    matInput
+                    type="text"
+                    placeholder="{{
+                      'QUESTIONNAIRE_FORSCHER.ANSWER_VALUE' | translate
+                    }}"
+                    formControlName="condition_value"
+                  />
+                </mat-form-field>
+              </ng-container>
+
+              <!--Main Question condition link -->
+              <mat-form-field
+                *ngIf="
+                  selectedAnswerOptionsIndex != undefined &&
+                  (questionnairesForConditionQuestionnaire[
+                    selectedQuestionnaireIndex
+                  ].questions[selectedQuestionIndex].answer_options[
+                    selectedAnswerOptionsIndex
+                  ].answer_type_id == 1 ||
+                    questionnairesForConditionQuestionnaire[
+                      selectedQuestionnaireIndex
+                    ].questions[selectedQuestionIndex].answer_options[
+                      selectedAnswerOptionsIndex
+                    ].answer_type_id == 2)
+                "
+              >
+                <mat-select
+                  disableOptionCentering
+                  placeholder="{{
+                    'QUESTIONNAIRE_FORSCHER.CONDITION_LINK' | translate
+                  }}"
+                  formControlName="condition_link"
+                >
+                  <mat-option
+                    *ngFor="let conditionLink of conditionLinks"
+                    [value]="conditionLink.value"
+                  >
+                    {{ conditionLink.viewValue }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </mat-card>
+
+      <!-- Questions -->
+      <mat-card
+        id="questionList"
+        formArrayName="questions"
+        [ngClass]="{ 'import-view': isImportedQuestionnaire }"
+        data-e2e="e2e-question-list"
+      >
+        <ul
+          cdkDropList
+          [cdkDropListData]="myForm.controls['questions'].controls"
+          (cdkDropListDropped)="dndDrop($event)"
+          class="list-group example-list"
+        >
+          <li
+            cdkDrag
+            class="list-group example-box"
+            *ngFor="
+              let question of myForm.controls['questions'].controls;
+              let i = index
+            "
+          >
+            <div class="dnd-placeholder" *cdkDragPlaceholder></div>
+            <div class="question-box" formGroupName="{{ i }}">
+              <mat-expansion-panel
+                id="questionexpansionpanel"
+                class="question-expansion-panel"
+                (opened)="panelDrag = false"
+                (closed)="panelDrag = true"
+                data-e2e="e2e-question-expansion-panel"
+              >
+                <mat-expansion-panel-header>
+                  <mat-panel-title
+                    >{{ 'QUESTIONNAIRE_FORSCHER.QUESTION' | translate }} :
+                    {{
+                      myForm.controls['questions'].controls[i].controls['text']
+                        .value | stripMarkdown
+                    }}
+                  </mat-panel-title>
+                  <mat-checkbox
+                    *ngIf="question.controls['answer_options'].length > 0"
+                    formControlName="is_mandatory"
+                    (click)="preventExpansion($event)"
+                  >
+                    {{ 'QUESTIONNAIRE_FORSCHER.QUESTION_REQUIRED' | translate }}
+                  </mat-checkbox>
+                </mat-expansion-panel-header>
+
+                <button
+                  type="button"
+                  mat-icon-button
+                  class="button-clear"
+                  (click)="removeQuestion(i)"
+                  data-e2e="e2e-remove-question-button"
+                >
+                  <mat-icon>clear</mat-icon>
+                </button>
+                <div class="form-group">
+                  <mat-grid-list
+                    [cols]="settingsCols"
+                    (window:resize)="onResize($event)"
+                    rowHeight="150px"
+                  >
+                    <!-- Fragentext Markdown -->
+                    <mat-grid-tile
+                      class="wide-tile question-text-tile"
+                      [colspan]="7"
+                    >
+                      <mat-form-field>
+                        <textarea
+                          #questionTextInput
+                          id="questiontextinput"
+                          matInput
+                          type="text"
+                          placeholder="{{
+                            'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_MARKDOWN'
+                              | translate
+                          }}"
+                          formControlName="text"
+                          cdkTextareaAutosize
+                          #autosize="cdkTextareaAutosize"
+                          cdkAutosizeMinRows="1"
+                          cdkAutosizeMaxRows="7"
+                          data-e2e="e2e-question-text-input"
+                        ></textarea>
+                        <mat-error
+                          *ngIf="question.controls['text'].hasError('required')"
+                        >
+                          {{
+                            'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_REQUIRED'
+                              | translate
+                          }}
+                        </mat-error>
+                        <mat-error
+                          *ngIf="
+                            !question.controls['text'].hasError('required') &&
+                            question.controls['text'].hasError('validVariable')
+                          "
+                        >
+                          {{
+                            'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_VARIABLE_NUMBER'
+                              | translate
+                          }}
+                        </mat-error>
+                      </mat-form-field>
+                      <button
+                        type="button"
+                        mat-icon-button
+                        matTooltip="{{
+                          'QUESTIONNAIRE_FORSCHER.ADD_VARIABLE' | translate
+                        }}"
+                        (click)="
+                          addCustomVariable(
+                            question.controls['text'],
+                            questionTextInput
+                          )
+                        "
+                      >
+                        <mat-icon>add_circle_outline</mat-icon>
+                      </button>
+                    </mat-grid-tile>
+
+                    <!-- Fragen Label -->
+                    <mat-grid-tile
+                      class="wide-tile question-label-tile"
+                      [colspan]="3"
+                    >
+                      <mat-form-field>
+                        <input
+                          type="text"
+                          matInput
+                          placeholder="{{
+                            'QUESTIONNAIRE_FORSCHER.LABEL' | translate
+                          }}"
+                          formControlName="label"
+                        />
+                      </mat-form-field>
+                    </mat-grid-tile>
+
+                    <!-- Fragentext Vorschau -->
+                    <mat-grid-tile class="wide-tile" [colspan]="4">
+                      <mat-card class="markdown-container">
+                        <mat-card-content>
+                          <h3>
+                            {{
+                              'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_PREVIEW'
+                                | translate
+                            }}
+                          </h3>
+                          <markdown
+                            ngPreserveWhitespaces
+                            [data]="question.controls['text'].value"
+                          >
+                          </markdown>
+                        </mat-card-content>
+                      </mat-card>
+                    </mat-grid-tile>
+                    <mat-grid-tile
+                      *ngIf="
+                        question.controls['condition_error'].value ===
+                        'reference-not-found'
+                      "
+                      class="wide-tile"
+                      [colspan]="8"
+                    >
+                      <div>
+                        <mat-error>
+                          {{
+                            'QUESTIONNAIRE_FORSCHER.CONDITION_ERROR_REF_NOT_FOUND'
+                              | translate
+                          }}
+                        </mat-error>
+                        <br />
+                        <span
+                          *ngIf="
+                            currentQuestionnaire.questions[i].condition_postview
+                          "
+                          class="condition-postview"
+                        >
+                          {{
+                            currentQuestionnaire.questions[i].condition_postview
+                              .condition_target_questionnaire_name
+                          }}
+                          &#8594;
+                          {{
+                            currentQuestionnaire.questions[i].condition_postview
+                              .condition_target_question_text
+                          }}
+                          &#8594; UF{{
+                            currentQuestionnaire.questions[i].condition_postview
+                              .condition_target_answer_option_pos
+                          }}
+                          {{
+                            currentQuestionnaire.questions[i].condition_postview
+                              .condition_operand
+                          }}
+                          {{ '{'
+                          }}{{
+                            currentQuestionnaire.questions[i].condition_postview
+                              .condition_value
+                          }}{{ '}' }}
+                          <span
+                            *ngIf="
+                              currentQuestionnaire.questions[i]
+                                .condition_postview.condition_link
+                            "
+                          >
+                            {{ '{'
+                            }}{{
+                              currentQuestionnaire.questions[i]
+                                .condition_postview.condition_link
+                            }}{{ '}' }}
+                          </span>
+                        </span>
+                      </div>
+                    </mat-grid-tile>
+                  </mat-grid-list>
+
+                  <button
+                    *ngIf="question.controls['has_condition'].value !== true"
+                    id="addQuestionCondition"
+                    mat-raised-button
+                    type="button"
+                    color="primary"
+                    (click)="addQuestionCondition(i)"
+                  >
+                    {{
+                      'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_CONDITION_SET'
+                        | translate
+                    }}
+                  </button>
+
+                  <mat-card
+                    *ngIf="question.controls['has_condition'].value == true"
+                    class="conditionQuestion"
+                  >
+                    <mat-card-title
+                      fxLayout="row"
+                      fxLayoutAlign="space-between start"
+                    >
+                      <span flex
+                        >{{ 'QUESTIONNAIRE_FORSCHER.CONDITION' | translate }}
+                      </span>
+                      <span
+                        flex
+                        *ngIf="
+                          myForm.dirty &&
+                          question.controls['condition'].controls[
+                            'condition_type'
+                          ].value != 'external'
+                        "
+                        >*
+                        {{
+                          'QUESTIONNAIRE_FORSCHER.CONDITION_MESSAGE' | translate
+                        }}
+                      </span>
+                      <button
+                        type="button"
+                        mat-icon-button
+                        (click)="removeQuestionCondition(i)"
+                      >
+                        <mat-icon>clear</mat-icon>
+                      </button>
+                    </mat-card-title>
+                    <mat-card-content>
+                      <mat-grid-list
+                        formGroupName="condition"
+                        [cols]="conditionCols"
+                        rowHeight="50px"
+                      >
+                        <mat-grid-tile>
+                          <mat-form-field>
+                            <mat-select
+                              disableOptionCentering
+                              id="conditionTypeQuestionCondition"
+                              placeholder="{{
+                                'QUESTIONNAIRE_FORSCHER.CONDITION_TYPE'
+                                  | translate
+                              }}"
+                              formControlName="condition_type"
+                            >
+                              <mat-option
+                                *ngFor="
+                                  let type of conditionTypes;
+                                  let questionnaireIndex = index
+                                "
+                                [value]="type.value"
+                                (click)="
+                                  setSelectedConditionTypeQuestionCondition(
+                                    i,
+                                    type.value
+                                  )
+                                "
+                              >
+                                {{ type.viewValue | translate }}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </mat-grid-tile>
+
+                        <mat-grid-tile
+                          *ngIf="
+                            question.controls['tmp_for_condition'].controls[
+                              'questionMessageNeedToSentQuestionnaire'
+                            ].value &&
+                            !question.controls['condition'].controls[
+                              'condition_target_answer_option_pos'
+                            ]
+                          "
+                        >
+                          <span>
+                            {{
+                              'QUESTIONNAIRE_FORSCHER.CONDITION_SEND_QUESTIONNAIRE'
+                                | translate
+                            }}</span
+                          >
+                        </mat-grid-tile>
+
+                        <mat-grid-tile
+                          *ngIf="
+                            question.controls['tmp_for_condition'].controls[
+                              'selectedConditionTypeQuestion'
+                            ].value != undefined
+                          "
+                        >
+                          <mat-form-field>
+                            <mat-select
+                              disableOptionCentering
+                              id="questionnaireIdQuestionCondition"
+                              placeholder="{{
+                                'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_NAME'
+                                  | translate
+                              }}"
+                              formControlName="condition_target_questionnaire"
+                            >
+                              <mat-option
+                                *ngFor="
+                                  let questionnaire of question.controls[
+                                    'tmp_for_condition'
+                                  ].controls[
+                                    'questionnairesForQuestionCondition'
+                                  ].value;
+                                  let questionnaireIndex = index
+                                "
+                                [value]="
+                                  questionnaire.id + '-' + questionnaire.version
+                                "
+                                (click)="
+                                  setSelectedQuestionnaireIndexQuestionCondition(
+                                    i,
+                                    questionnaireIndex
+                                  )
+                                "
+                                [title]="
+                                  questionnaire.name +
+                                  ' (' +
+                                  questionnaire.version +
+                                  ')'
+                                "
+                              >
+                                {{ questionnaire.name }} ({{
+                                  questionnaire.version
+                                }})
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </mat-grid-tile>
+
+                        <mat-grid-tile
+                          *ngIf="
+                            question.controls['tmp_for_condition'].controls[
+                              'selectedQuestionnaireIndexQuestion'
+                            ].value != undefined
+                          "
+                        >
+                          <mat-form-field>
+                            <mat-select
+                              disableOptionCentering
+                              id="questionIdQuestionCondition"
+                              placeholder="{{
+                                'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT'
+                                  | translate
+                              }}"
+                              formControlName="condition_question_id"
+                            >
+                              <mat-option
+                                *ngFor="
+                                  let question of question.controls[
+                                    'tmp_for_condition'
+                                  ].controls[
+                                    'questionnairesForQuestionCondition'
+                                  ].value[
+                                    question.controls['tmp_for_condition']
+                                      .controls[
+                                      'selectedQuestionnaireIndexQuestion'
+                                    ].value
+                                  ].questions;
+                                  let questionIndex = index
+                                "
+                                [value]="question.id"
+                                (click)="
+                                  setSelectedQuestionIndexQuestionCondition(
+                                    i,
+                                    questionIndex
+                                  )
+                                "
+                                [title]="question.text | stripMarkdown"
+                              >
+                                {{
+                                  'QUESTIONNAIRE_FORSCHER.QUESTION_ABBREVIATION'
+                                    | translate
+                                }}{{ question.position }}:
+                                {{ question.text | stripMarkdown }}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </mat-grid-tile>
+
+                        <mat-grid-tile
+                          *ngIf="
+                            question.controls['tmp_for_condition'].controls[
+                              'selectedQuestionIndexQuestion'
+                            ].value != undefined
+                          "
+                        >
+                          <mat-form-field>
+                            <mat-select
+                              disableOptionCentering
+                              id="answerOptionQuestionCondition"
+                              placeholder="{{
+                                'QUESTIONNAIRE_FORSCHER.VALUE' | translate
+                              }}"
+                              formControlName="condition_target_answer_option"
+                            >
+                              <mat-option
+                                *ngFor="
+                                  let answer_option of question.controls[
+                                    'tmp_for_condition'
+                                  ].controls[
+                                    'questionnairesForQuestionCondition'
+                                  ].value[
+                                    question.controls['tmp_for_condition']
+                                      .controls[
+                                      'selectedQuestionnaireIndexQuestion'
+                                    ].value
+                                  ].questions[
+                                    question.controls['tmp_for_condition']
+                                      .controls['selectedQuestionIndexQuestion']
+                                      .value
+                                  ].answer_options;
+                                  let answerOptionsIndex = index
+                                "
+                                [value]="answer_option.id"
+                                (click)="
+                                  setSelectedAnswerOptionsIndexQuestionCondition(
+                                    i,
+                                    answerOptionsIndex
+                                  )
+                                "
+                                [title]="answer_option.text"
+                              >
+                                {{
+                                  'QUESTIONNAIRE_FORSCHER.SUB-QUESTION_ABBREVIATION'
+                                    | translate
+                                }}
+                                {{ answer_option.position }}:
+                                {{ answer_option.text }}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </mat-grid-tile>
+                        <mat-grid-tile
+                          *ngIf="
+                            question.controls['tmp_for_condition'].controls[
+                              'selectedAnswerOptionsIndexQuestion'
+                            ].value != undefined
+                          "
+                        >
+                          <span>
+                            {{
+                              'QUESTIONNAIRE_FORSCHER.IF_ANSWER_VALUE'
+                                | translate
+                            }}
+                          </span>
+                          <mat-form-field class="w60">
+                            <mat-select
+                              disableOptionCentering
+                              id="conditionOperandQuestionCondition"
+                              placeholder="{{
+                                'QUESTIONNAIRE_FORSCHER.COMPARISON_SIGN'
+                                  | translate
+                              }}"
+                              formControlName="condition_operand"
+                            >
+                              <mat-option
+                                *ngFor="
+                                  let condition_operand of condition_operands
+                                "
+                                [value]="condition_operand.viewValue"
+                              >
+                                {{ condition_operand.viewValue }}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </mat-grid-tile>
+
+                        <!-- Sub question -->
+                        <mat-grid-tile
+                          class="sub-question"
+                          *ngIf="
+                            question.controls['tmp_for_condition'].controls[
+                              'selectedAnswerOptionsIndexQuestion'
+                            ].value != undefined
+                          "
+                        >
+                          <mat-form-field
+                            *ngIf="
+                              question.controls['tmp_for_condition'].controls[
+                                'questionnairesForQuestionCondition'
+                              ].value[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionnaireIndexQuestion'
+                                ].value
+                              ].questions[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionIndexQuestion'
+                                ].value
+                              ].answer_options[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedAnswerOptionsIndexQuestion'
+                                ].value
+                              ].answer_type_id == 1 ||
+                              question.controls['tmp_for_condition'].controls[
+                                'questionnairesForQuestionCondition'
+                              ].value[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionnaireIndexQuestion'
+                                ].value
+                              ].questions[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionIndexQuestion'
+                                ].value
+                              ].answer_options[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedAnswerOptionsIndexQuestion'
+                                ].value
+                              ].answer_type_id == 2
+                            "
+                          >
+                            <mat-select
+                              disableOptionCentering
+                              id="conditionValueQuestionCondition"
+                              placeholder="{{
+                                'QUESTIONNAIRE_FORSCHER.ANSWER_VALUE'
+                                  | translate
+                              }} "
+                              formControlName="condition_value"
+                              multiple
+                            >
+                              <mat-option
+                                *ngFor="
+                                  let answerValue of question.controls[
+                                    'tmp_for_condition'
+                                  ].controls[
+                                    'questionnairesForQuestionCondition'
+                                  ].value[
+                                    question.controls['tmp_for_condition']
+                                      .controls[
+                                      'selectedQuestionnaireIndexQuestion'
+                                    ].value
+                                  ].questions[
+                                    question.controls['tmp_for_condition']
+                                      .controls['selectedQuestionIndexQuestion']
+                                      .value
+                                  ].answer_options[
+                                    question.controls['tmp_for_condition']
+                                      .controls[
+                                      'selectedAnswerOptionsIndexQuestion'
+                                    ].value
+                                  ].values;
+                                  let valueIndex = index
+                                "
+                                [value]="answerValue"
+                              >
+                                {{ answerValue }}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+
+                          <mat-form-field
+                            class="w60p"
+                            *ngIf="
+                              question.controls['tmp_for_condition'].controls[
+                                'questionnairesForQuestionCondition'
+                              ].value[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionnaireIndexQuestion'
+                                ].value
+                              ].questions[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionIndexQuestion'
+                                ].value
+                              ].answer_options[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedAnswerOptionsIndexQuestion'
+                                ].value
+                              ].answer_type_id == 4
+                            "
+                          >
+                            <input
+                              matInput
+                              type="text"
+                              placeholder="{{
+                                'QUESTIONNAIRE_FORSCHER.ANSWER_VALUE'
+                                  | translate
+                              }}"
+                              formControlName="condition_value"
+                            />
+                          </mat-form-field>
+                          <mat-form-field
+                            class="w60p"
+                            *ngIf="
+                              question.controls['tmp_for_condition'].controls[
+                                'questionnairesForQuestionCondition'
+                              ].value[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionnaireIndexQuestion'
+                                ].value
+                              ].questions[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionIndexQuestion'
+                                ].value
+                              ].answer_options[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedAnswerOptionsIndexQuestion'
+                                ].value
+                              ].answer_type_id == 3
+                            "
+                          >
+                            <input
+                              matInput
+                              type="number"
+                              placeholder="{{
+                                'QUESTIONNAIRE_FORSCHER.ANSWER_VALUE'
+                                  | translate
+                              }}"
+                              formControlName="condition_value"
+                            />
+                          </mat-form-field>
+
+                          <mat-form-field
+                            *ngIf="
+                              question.controls['tmp_for_condition'].controls[
+                                'questionnairesForQuestionCondition'
+                              ].value[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionnaireIndexQuestion'
+                                ].value
+                              ].questions[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionIndexQuestion'
+                                ].value
+                              ].answer_options[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedAnswerOptionsIndexQuestion'
+                                ].value
+                              ].answer_type_id == 5
+                            "
+                          >
+                            <input
+                              matInput
+                              [matDatepicker]="picker"
+                              placeholder="{{
+                                'QUESTIONNAIRE_FORSCHER.DATEPICKER' | translate
+                              }}"
+                              formControlName="condition_value"
+                            />
+                            <mat-datepicker-toggle
+                              matSuffix
+                              [for]="picker"
+                            ></mat-datepicker-toggle>
+                            <mat-datepicker #picker></mat-datepicker>
+                          </mat-form-field>
+
+                          <mat-form-field
+                            class="w60p"
+                            *ngIf="
+                              question.controls['tmp_for_condition'].controls[
+                                'questionnairesForQuestionCondition'
+                              ].value[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionnaireIndexQuestion'
+                                ].value
+                              ].questions[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionIndexQuestion'
+                                ].value
+                              ].answer_options[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedAnswerOptionsIndexQuestion'
+                                ].value
+                              ].answer_type_id == 6
+                            "
+                          >
+                            <input
+                              matInput
+                              type="text"
+                              placeholder="{{
+                                'QUESTIONNAIRE_FORSCHER.ANSWER_VALUE'
+                                  | translate
+                              }}"
+                              formControlName="condition_value"
+                            />
+                          </mat-form-field>
+                        </mat-grid-tile>
+
+                        <mat-grid-tile
+                          *ngIf="
+                            question.controls['tmp_for_condition'].controls[
+                              'selectedAnswerOptionsIndexQuestion'
+                            ].value != undefined
+                          "
+                        >
+                          <mat-form-field
+                            *ngIf="
+                              question.controls['tmp_for_condition'].controls[
+                                'questionnairesForQuestionCondition'
+                              ].value[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionnaireIndexQuestion'
+                                ].value
+                              ].questions[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionIndexQuestion'
+                                ].value
+                              ].answer_options[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedAnswerOptionsIndexQuestion'
+                                ].value
+                              ].answer_type_id == 1 ||
+                              question.controls['tmp_for_condition'].controls[
+                                'questionnairesForQuestionCondition'
+                              ].value[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionnaireIndexQuestion'
+                                ].value
+                              ].questions[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedQuestionIndexQuestion'
+                                ].value
+                              ].answer_options[
+                                question.controls['tmp_for_condition'].controls[
+                                  'selectedAnswerOptionsIndexQuestion'
+                                ].value
+                              ].answer_type_id == 2
+                            "
+                          >
+                            <mat-select
+                              disableOptionCentering
+                              placeholder="{{
+                                'QUESTIONNAIRE_FORSCHER.CONDITION_LINK'
+                                  | translate
+                              }}"
+                              formControlName="condition_link"
+                            >
+                              <mat-option
+                                *ngFor="let conditionLink of conditionLinks"
+                                [value]="conditionLink.value"
+                              >
+                                {{ conditionLink.viewValue }}
+                              </mat-option>
+                            </mat-select>
+                          </mat-form-field>
+                        </mat-grid-tile>
+                      </mat-grid-list>
+                    </mat-card-content>
+                  </mat-card>
+                </div>
+                <!-- Answer Options -->
+                <div class="answer-options">
+                  <div formArrayName="answer_options">
+                    <div
+                      *ngFor="
+                        let answer of question.controls['answer_options']
+                          .controls;
+                        let j = index
+                      "
+                    >
+                      <div formGroupName="{{ j }}">
+                        <mat-card class="answer-card">
+                          <mat-card-title
+                            fxLayout="row"
+                            fxLayoutAlign="space-between start"
+                          >
+                            <div flex>
+                              <span
+                                >{{
+                                  'QUESTIONNAIRE_FORSCHER.SUB-QUESTION'
+                                    | translate
+                                }}
+                                {{ j + 1 }}</span
+                              >
+                              <button
+                                type="button"
+                                mat-icon-button
+                                (click)="moveAnswerUp(i, j)"
+                              >
+                                <mat-icon>keyboard_arrow_up</mat-icon>
+                              </button>
+                              <button
+                                type="button"
+                                mat-icon-button
+                                (click)="moveAnswerDown(i, j)"
+                              >
+                                <mat-icon>keyboard_arrow_down</mat-icon>
+                              </button>
+                            </div>
+                            <span
+                              flex
+                              *ngIf="
+                                answer.controls['is_condition_target'].value ==
+                                true
+                              "
+                            >
+                              {{
+                                'QUESTIONNAIRE_FORSCHER.CONDITION_WARNING'
+                                  | translate
+                              }}
+                            </span>
+                            <button
+                              type="button"
+                              mat-icon-button
+                              (click)="removeAnswer(i, j)"
+                            >
+                              <mat-icon>clear</mat-icon>
+                            </button>
+                          </mat-card-title>
+                          <mat-card-content>
+                            <mat-grid-list
+                              [cols]="settingsCols"
+                              rowHeight="75px"
+                              *ngIf="!answer.controls['has_condition'].value"
+                            >
+                              <mat-grid-tile [colspan]="3">
+                                <button
+                                  *ngIf="
+                                    answer.controls['has_condition'].value !==
+                                    true
+                                  "
+                                  mat-raised-button
+                                  type="button"
+                                  color="primary"
+                                  (click)="addAnswerCondition(i, j)"
+                                >
+                                  {{
+                                    'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_CONDITION_SET'
+                                      | translate
+                                  }}
+                                </button>
+                              </mat-grid-tile>
+                              <mat-grid-tile
+                                *ngIf="
+                                  answer.controls['condition_error'].value ===
+                                  'reference-not-found'
+                                "
+                                class="wide-tile"
+                                [colspan]="8"
+                              >
+                                <div>
+                                  <mat-error>
+                                    {{
+                                      'QUESTIONNAIRE_FORSCHER.CONDITION_ERROR_REF_NOT_FOUND'
+                                        | translate
+                                    }}
+                                  </mat-error>
+                                  <br />
+                                  <span
+                                    *ngIf="
+                                      currentQuestionnaire.questions[i]
+                                        .answer_options[j].condition_postview
+                                    "
+                                  >
+                                    {{
+                                      currentQuestionnaire.questions[i]
+                                        .answer_options[j].condition_postview
+                                        .condition_target_questionnaire_name
+                                    }}
+                                    &#8594;
+                                    {{
+                                      currentQuestionnaire.questions[i]
+                                        .answer_options[j].condition_postview
+                                        .condition_target_question_text
+                                    }}
+                                    &#8594; UF{{
+                                      currentQuestionnaire.questions[i]
+                                        .answer_options[j].condition_postview
+                                        .condition_target_answer_option_pos
+                                    }}
+                                    {{
+                                      currentQuestionnaire.questions[i]
+                                        .answer_options[j].condition_postview
+                                        .condition_operand
+                                    }}
+                                    {{ '{'
+                                    }}{{
+                                      currentQuestionnaire.questions[i]
+                                        .answer_options[j].condition_postview
+                                        .condition_value
+                                    }}{{ '}' }}
+                                    <span
+                                      *ngIf="
+                                        currentQuestionnaire.questions[i]
+                                          .answer_options[j].condition_postview
+                                          .condition_link
+                                      "
+                                    >
+                                      {{ '{'
+                                      }}{{
+                                        currentQuestionnaire.questions[i]
+                                          .answer_options[j].condition_postview
+                                          .condition_link
+                                      }}{{ '}' }}
+                                    </span>
+                                  </span>
+                                </div>
+                              </mat-grid-tile>
+                            </mat-grid-list>
+
+                            <mat-card
+                              *ngIf="
+                                answer.controls['has_condition'].value == true
+                              "
+                              class="condition-card"
+                            >
+                              <mat-card-title
+                                fxLayout="row"
+                                fxLayoutAlign="space-between start"
+                              >
+                                <span flex
+                                  >{{
+                                    'QUESTIONNAIRE_FORSCHER.CONDITION'
+                                      | translate
+                                  }}
+                                </span>
+                                <span
+                                  flex
+                                  *ngIf="
+                                    myForm.dirty &&
+                                    answer.controls['condition'].controls[
+                                      'condition_type'
+                                    ].value != 'external'
+                                  "
+                                  >*
+                                  {{
+                                    'QUESTIONNAIRE_FORSCHER.CONDITION_MESSAGE'
+                                      | translate
+                                  }}
+                                </span>
+                                <button
+                                  type="button"
+                                  mat-icon-button
+                                  (click)="removeAnswerOptionCondition(i, j)"
+                                >
+                                  <mat-icon>clear</mat-icon>
+                                </button>
+                              </mat-card-title>
+                              <mat-card-content>
+                                <mat-grid-list
+                                  formGroupName="condition"
+                                  [cols]="conditionCols"
+                                  rowHeight="50px"
+                                >
+                                  <mat-grid-tile>
+                                    <mat-form-field>
+                                      <mat-select
+                                        disableOptionCentering
+                                        placeholder="{{
+                                          'QUESTIONNAIRE_FORSCHER.CONDITION_TYPE'
+                                            | translate
+                                        }}"
+                                        formControlName="condition_type"
+                                      >
+                                        <mat-option
+                                          class="auto"
+                                          *ngFor="
+                                            let type of conditionTypes;
+                                            let questionnaireIndex = index
+                                          "
+                                          [value]="type.value"
+                                          (click)="
+                                            setSelectedConditionTypeAnswerOptionCondition(
+                                              i,
+                                              j,
+                                              type.value
+                                            )
+                                          "
+                                        >
+                                          {{ type.viewValue | translate }}
+                                        </mat-option>
+                                      </mat-select>
+                                    </mat-form-field>
+                                  </mat-grid-tile>
+
+                                  <mat-grid-tile
+                                    *ngIf="
+                                      answer.controls['tmp_for_condition']
+                                        .controls[
+                                        'answerOptionMessageNeedToSentQuestionnaire'
+                                      ].value &&
+                                      !answer.controls['condition'].controls[
+                                        'condition_target_answer_option_pos'
+                                      ]
+                                    "
+                                  >
+                                    <span>
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.CONDITION_SEND_QUESTIONNAIRE'
+                                          | translate
+                                      }}</span
+                                    >
+                                  </mat-grid-tile>
+
+                                  <mat-grid-tile
+                                    *ngIf="
+                                      answer.controls['tmp_for_condition']
+                                        .controls[
+                                        'selectedConditionTypeAnswerOption'
+                                      ].value != undefined
+                                    "
+                                  >
+                                    <mat-form-field>
+                                      <mat-select
+                                        disableOptionCentering
+                                        placeholder="{{
+                                          'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_NAME'
+                                            | translate
+                                        }}"
+                                        formControlName="condition_target_questionnaire"
+                                      >
+                                        <mat-option
+                                          *ngFor="
+                                            let questionnaire of answer
+                                              .controls['tmp_for_condition']
+                                              .controls[
+                                              'questionnairesForAnswerOptionCondition'
+                                            ].value;
+                                            let questionnaireIndex = index
+                                          "
+                                          [value]="
+                                            questionnaire.id +
+                                            '-' +
+                                            questionnaire.version
+                                          "
+                                          (click)="
+                                            setSelectedQuestionnaireIndexAnswerOptionCondition(
+                                              i,
+                                              j,
+                                              questionnaireIndex
+                                            )
+                                          "
+                                          [title]="
+                                            questionnaire.name +
+                                            ' (' +
+                                            questionnaire.version +
+                                            ')'
+                                          "
+                                        >
+                                          {{ questionnaire.name }} ({{
+                                            questionnaire.version
+                                          }})
+                                        </mat-option>
+                                      </mat-select>
+                                    </mat-form-field>
+                                  </mat-grid-tile>
+
+                                  <mat-grid-tile
+                                    *ngIf="
+                                      answer.controls['tmp_for_condition']
+                                        .controls[
+                                        'selectedQuestionnaireIndexAnswerOption'
+                                      ].value != undefined
+                                    "
+                                  >
+                                    <mat-form-field>
+                                      <mat-select
+                                        disableOptionCentering
+                                        placeholder="{{
+                                          'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT'
+                                            | translate
+                                        }}"
+                                        formControlName="condition_question_id"
+                                      >
+                                        <mat-option
+                                          *ngFor="
+                                            let question of answer.controls[
+                                              'tmp_for_condition'
+                                            ].controls[
+                                              'questionnairesForAnswerOptionCondition'
+                                            ].value[
+                                              answer.controls[
+                                                'tmp_for_condition'
+                                              ].controls[
+                                                'selectedQuestionnaireIndexAnswerOption'
+                                              ].value
+                                            ].questions;
+                                            let questionIndex = index
+                                          "
+                                          [value]="question.id"
+                                          (click)="
+                                            setSelectedQuestionIndexAnswerOptionCondition(
+                                              i,
+                                              j,
+                                              questionIndex
+                                            )
+                                          "
+                                          [title]="
+                                            question.text | stripMarkdown
+                                          "
+                                        >
+                                          {{
+                                            'QUESTIONNAIRE_FORSCHER.QUESTION_ABBREVIATION'
+                                              | translate
+                                          }}{{ question.position }}
+                                          :
+                                          {{ question.text | stripMarkdown }}
+                                        </mat-option>
+                                      </mat-select>
+                                    </mat-form-field>
+                                  </mat-grid-tile>
+
+                                  <mat-grid-tile
+                                    *ngIf="
+                                      answer.controls['tmp_for_condition']
+                                        .controls[
+                                        'selectedQuestionIndexAnswerOption'
+                                      ].value != undefined
+                                    "
+                                  >
+                                    <mat-form-field>
+                                      <mat-select
+                                        disableOptionCentering
+                                        placeholder="{{
+                                          'QUESTIONNAIRE_FORSCHER.VALUE'
+                                            | translate
+                                        }}"
+                                        formControlName="condition_target_answer_option"
+                                      >
+                                        <mat-option
+                                          *ngFor="
+                                            let answer_option of answer
+                                              .controls['tmp_for_condition']
+                                              .controls[
+                                              'questionnairesForAnswerOptionCondition'
+                                            ].value[
+                                              answer.controls[
+                                                'tmp_for_condition'
+                                              ].controls[
+                                                'selectedQuestionnaireIndexAnswerOption'
+                                              ].value
+                                            ].questions[
+                                              answer.controls[
+                                                'tmp_for_condition'
+                                              ].controls[
+                                                'selectedQuestionIndexAnswerOption'
+                                              ].value
+                                            ].answer_options;
+                                            let answerOptionsIndex = index
+                                          "
+                                          [value]="answer_option.id"
+                                          (click)="
+                                            setSelectedAnswerOptionsIndexAnswerOptionCondition(
+                                              i,
+                                              j,
+                                              answerOptionsIndex
+                                            )
+                                          "
+                                          [title]="answer_option.text"
+                                        >
+                                          {{
+                                            'QUESTIONNAIRE_FORSCHER.SUB-QUESTION_ABBREVIATION'
+                                              | translate
+                                          }}{{ answer_option.position }}
+                                          :
+                                          {{ answer_option.text }}
+                                        </mat-option>
+                                      </mat-select>
+                                      <mat-hint
+                                        *ngIf="
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'questionnairesForAnswerOptionCondition'
+                                          ].value[
+                                            answer.controls['tmp_for_condition']
+                                              .controls[
+                                              'selectedQuestionnaireIndexAnswerOption'
+                                            ].value
+                                          ].questions[
+                                            answer.controls['tmp_for_condition']
+                                              .controls[
+                                              'selectedQuestionIndexAnswerOption'
+                                            ].value
+                                          ].answer_options.length == 0
+                                        "
+                                      >
+                                        {{
+                                          'QUESTIONNAIRE_FORSCHER.CONDITION_ON_THEMSELVES'
+                                            | translate
+                                        }}
+                                      </mat-hint>
+                                    </mat-form-field>
+                                  </mat-grid-tile>
+                                  <mat-grid-tile
+                                    *ngIf="
+                                      answer.controls['tmp_for_condition']
+                                        .controls[
+                                        'selectedAnswerOptionsIndexAnswerOption'
+                                      ].value != undefined
+                                    "
+                                  >
+                                    <span>{{
+                                      'QUESTIONNAIRE_FORSCHER.IF_ANSWER_VALUE'
+                                        | translate
+                                    }}</span>
+                                    <mat-form-field class="w60">
+                                      <mat-select
+                                        disableOptionCentering
+                                        placeholder="{{
+                                          'QUESTIONNAIRE_FORSCHER.COMPARISON_SIGN'
+                                            | translate
+                                        }}"
+                                        formControlName="condition_operand"
+                                      >
+                                        <mat-option
+                                          *ngFor="
+                                            let condition_operand of condition_operands
+                                          "
+                                          [value]="condition_operand.viewValue"
+                                        >
+                                          {{ condition_operand.viewValue }}
+                                        </mat-option>
+                                      </mat-select>
+                                    </mat-form-field>
+                                  </mat-grid-tile>
+
+                                  <!--Sub sub question (Unterfragen) multiple value-->
+                                  <mat-grid-tile
+                                    *ngIf="
+                                      answer.controls['tmp_for_condition']
+                                        .controls[
+                                        'selectedAnswerOptionsIndexAnswerOption'
+                                      ].value != undefined
+                                    "
+                                  >
+                                    <mat-form-field
+                                      *ngIf="
+                                        answer.controls['tmp_for_condition']
+                                          .controls[
+                                          'questionnairesForAnswerOptionCondition'
+                                        ].value[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionnaireIndexAnswerOption'
+                                          ].value
+                                        ].questions[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionIndexAnswerOption'
+                                          ].value
+                                        ].answer_options[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedAnswerOptionsIndexAnswerOption'
+                                          ].value
+                                        ].answer_type_id == 1 ||
+                                        answer.controls['tmp_for_condition']
+                                          .controls[
+                                          'questionnairesForAnswerOptionCondition'
+                                        ].value[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionnaireIndexAnswerOption'
+                                          ].value
+                                        ].questions[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionIndexAnswerOption'
+                                          ].value
+                                        ].answer_options[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedAnswerOptionsIndexAnswerOption'
+                                          ].value
+                                        ].answer_type_id == 2
+                                      "
+                                    >
+                                      <mat-select
+                                        disableOptionCentering
+                                        placeholder=" {{
+                                          'QUESTIONNAIRE_FORSCHER.ANSWER_VALUE'
+                                            | translate
+                                        }}"
+                                        formControlName="condition_value"
+                                        multiple
+                                      >
+                                        <mat-option
+                                          *ngFor="
+                                            let answerValue of answer.controls[
+                                              'tmp_for_condition'
+                                            ].controls[
+                                              'questionnairesForAnswerOptionCondition'
+                                            ].value[
+                                              answer.controls[
+                                                'tmp_for_condition'
+                                              ].controls[
+                                                'selectedQuestionnaireIndexAnswerOption'
+                                              ].value
+                                            ].questions[
+                                              answer.controls[
+                                                'tmp_for_condition'
+                                              ].controls[
+                                                'selectedQuestionIndexAnswerOption'
+                                              ].value
+                                            ].answer_options[
+                                              answer.controls[
+                                                'tmp_for_condition'
+                                              ].controls[
+                                                'selectedAnswerOptionsIndexAnswerOption'
+                                              ].value
+                                            ].values;
+                                            let valueIndex = index
+                                          "
+                                          [value]="answerValue"
+                                        >
+                                          {{ answerValue }}
+                                        </mat-option>
+                                      </mat-select>
+                                    </mat-form-field>
+
+                                    <mat-form-field
+                                      class="w60"
+                                      *ngIf="
+                                        answer.controls['tmp_for_condition']
+                                          .controls[
+                                          'questionnairesForAnswerOptionCondition'
+                                        ].value[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionnaireIndexAnswerOption'
+                                          ].value
+                                        ].questions[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionIndexAnswerOption'
+                                          ].value
+                                        ].answer_options[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedAnswerOptionsIndexAnswerOption'
+                                          ].value
+                                        ].answer_type_id == 4
+                                      "
+                                    >
+                                      <input
+                                        matInput
+                                        type="text"
+                                        placeholder="{{
+                                          'QUESTIONNAIRE_FORSCHER.ANSWER_VALUE'
+                                            | translate
+                                        }}"
+                                        formControlName="condition_value"
+                                      />
+                                    </mat-form-field>
+                                    <mat-form-field
+                                      class="w60"
+                                      *ngIf="
+                                        answer.controls['tmp_for_condition']
+                                          .controls[
+                                          'questionnairesForAnswerOptionCondition'
+                                        ].value[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionnaireIndexAnswerOption'
+                                          ].value
+                                        ].questions[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionIndexAnswerOption'
+                                          ].value
+                                        ].answer_options[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedAnswerOptionsIndexAnswerOption'
+                                          ].value
+                                        ].answer_type_id == 3
+                                      "
+                                    >
+                                      <input
+                                        matInput
+                                        type="number"
+                                        placeholder="{{
+                                          'QUESTIONNAIRE_FORSCHER.ANSWER_VALUE'
+                                            | translate
+                                        }}"
+                                        formControlName="condition_value"
+                                      />
+                                    </mat-form-field>
+
+                                    <mat-form-field
+                                      *ngIf="
+                                        answer.controls['tmp_for_condition']
+                                          .controls[
+                                          'questionnairesForAnswerOptionCondition'
+                                        ].value[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionnaireIndexAnswerOption'
+                                          ].value
+                                        ].questions[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionIndexAnswerOption'
+                                          ].value
+                                        ].answer_options[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedAnswerOptionsIndexAnswerOption'
+                                          ].value
+                                        ].answer_type_id == 5
+                                      "
+                                    >
+                                      <input
+                                        matInput
+                                        [matDatepicker]="picker"
+                                        placeholder="{{
+                                          'QUESTIONNAIRE_FORSCHER.DATEPICKER'
+                                            | translate
+                                        }}"
+                                        formControlName="condition_value"
+                                      />
+                                      <mat-datepicker-toggle
+                                        matSuffix
+                                        [for]="picker"
+                                      ></mat-datepicker-toggle>
+                                      <mat-datepicker #picker></mat-datepicker>
+                                    </mat-form-field>
+
+                                    <mat-form-field
+                                      class="w60"
+                                      *ngIf="
+                                        answer.controls['tmp_for_condition']
+                                          .controls[
+                                          'questionnairesForAnswerOptionCondition'
+                                        ].value[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionnaireIndexAnswerOption'
+                                          ].value
+                                        ].questions[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionIndexAnswerOption'
+                                          ].value
+                                        ].answer_options[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedAnswerOptionsIndexAnswerOption'
+                                          ].value
+                                        ].answer_type_id == 6
+                                      "
+                                    >
+                                      <input
+                                        matInput
+                                        type="text"
+                                        placeholder="{{
+                                          'QUESTIONNAIRE_FORSCHER.ANSWER_VALUE'
+                                            | translate
+                                        }}"
+                                        formControlName="condition_value"
+                                      />
+                                    </mat-form-field>
+                                  </mat-grid-tile>
+
+                                  <mat-grid-tile
+                                    *ngIf="
+                                      answer.controls['tmp_for_condition']
+                                        .controls[
+                                        'selectedAnswerOptionsIndexAnswerOption'
+                                      ].value != undefined
+                                    "
+                                  >
+                                    <mat-form-field
+                                      *ngIf="
+                                        answer.controls['tmp_for_condition']
+                                          .controls[
+                                          'questionnairesForAnswerOptionCondition'
+                                        ].value[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionnaireIndexAnswerOption'
+                                          ].value
+                                        ].questions[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionIndexAnswerOption'
+                                          ].value
+                                        ].answer_options[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedAnswerOptionsIndexAnswerOption'
+                                          ].value
+                                        ].answer_type_id == 1 ||
+                                        answer.controls['tmp_for_condition']
+                                          .controls[
+                                          'questionnairesForAnswerOptionCondition'
+                                        ].value[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionnaireIndexAnswerOption'
+                                          ].value
+                                        ].questions[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedQuestionIndexAnswerOption'
+                                          ].value
+                                        ].answer_options[
+                                          answer.controls['tmp_for_condition']
+                                            .controls[
+                                            'selectedAnswerOptionsIndexAnswerOption'
+                                          ].value
+                                        ].answer_type_id == 2
+                                      "
+                                    >
+                                      <mat-select
+                                        disableOptionCentering
+                                        placeholder="{{
+                                          'QUESTIONNAIRE_FORSCHER.CONDITION_LINK'
+                                            | translate
+                                        }}"
+                                        formControlName="condition_link"
+                                      >
+                                        <mat-option
+                                          *ngFor="
+                                            let conditionLink of conditionLinks
+                                          "
+                                          [value]="conditionLink.value"
+                                        >
+                                          {{ conditionLink.viewValue }}
+                                        </mat-option>
+                                      </mat-select>
+                                    </mat-form-field>
+                                  </mat-grid-tile>
+                                </mat-grid-list>
+                              </mat-card-content>
+                            </mat-card>
+
+                            <div>
+                              <hr />
+                            </div>
+                            <div>
+                              <mat-grid-list
+                                layout="row"
+                                [cols]="colsAns | async"
+                                rowHeight="75px"
+                                class="answer-type-select"
+                              >
+                                <mat-grid-tile flex="25">
+                                  <mat-form-field>
+                                    <mat-select
+                                      disableOptionCentering
+                                      id="answertypeselect"
+                                      placeholder="{{
+                                        'QUESTIONNAIRE_FORSCHER.ANSWER_TYPE'
+                                          | translate
+                                      }}"
+                                      formControlName="answer_type_id"
+                                      (selectionChange)="
+                                        checkRestrictions(i, j)
+                                      "
+                                      data-e2e="e2e-answer-type-select-dropdown"
+                                    >
+                                      <ng-container
+                                        *ngFor="let answerType of answerTypes"
+                                      >
+                                        <mat-option
+                                          *ngIf="
+                                            answerType.availableFor.includes(
+                                              myForm.get('type').value
+                                            )
+                                          "
+                                          (click)="
+                                            checkAnswerType(
+                                              i,
+                                              j,
+                                              false,
+                                              answerType.id
+                                            )
+                                          "
+                                          [value]="answerType.id"
+                                        >
+                                          {{ answerType.viewValue | translate }}
+                                        </mat-option>
+                                      </ng-container>
+                                    </mat-select>
+                                    <mat-error
+                                      *ngIf="
+                                        answer.controls[
+                                          'answer_type_id'
+                                        ].hasError('required')
+                                      "
+                                    >
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.ANSWER_TYPE_REQUIRED'
+                                          | translate
+                                      }}
+                                    </mat-error>
+                                    <div
+                                      style="color: black; font-size: 0.9em"
+                                      *ngIf="
+                                        answer.get('answer_type_id').value === 8
+                                      "
+                                    >
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.IMAGE_INPUT_TYPES_HINT'
+                                          | translate
+                                      }}
+                                    </div>
+                                    <div
+                                      style="color: black; font-size: 0.9em"
+                                      *ngIf="
+                                        answer.get('answer_type_id').value ===
+                                        10
+                                      "
+                                    >
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.FILE_INPUT_TYPES_HINT'
+                                          | translate
+                                      }}
+                                    </div>
+                                  </mat-form-field>
+                                  <button
+                                    type="button"
+                                    mat-icon-button
+                                    *ngIf="
+                                      answer.controls['answer_type_id']
+                                        .value === 3 ||
+                                      answer.controls['answer_type_id']
+                                        .value === 5
+                                    "
+                                    matTooltip="{{
+                                      'QUESTIONNAIRE_FORSCHER.RESTRICTED_VALUE'
+                                        | translate
+                                    }}"
+                                    (click)="addAnswerOptionsRestriction(i, j)"
+                                  >
+                                    <mat-icon>code</mat-icon>
+                                  </button>
+                                </mat-grid-tile>
+                                <mat-grid-tile flex="75" class="w500">
+                                  <mat-form-field class="w92p">
+                                    <input
+                                      #answeroptiontestinput
+                                      id="answeroptiontestinput"
+                                      type="text"
+                                      matInput
+                                      placeholder="{{
+                                        'QUESTIONNAIRE_FORSCHER.DESCRIPTION'
+                                          | translate
+                                      }}"
+                                      formControlName="text"
+                                      data-e2e="e2e-answer-option-test-input"
+                                    />
+                                    <mat-error
+                                      *ngIf="
+                                        answer.controls['text'].hasError(
+                                          'validVariable'
+                                        )
+                                      "
+                                    >
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_VARIABLE_NUMBER'
+                                          | translate
+                                      }}
+                                    </mat-error>
+                                  </mat-form-field>
+                                  <button
+                                    type="button"
+                                    mat-icon-button
+                                    class="button-add"
+                                    matTooltip="{{
+                                      'QUESTIONNAIRE_FORSCHER.ADD_VARIABLE'
+                                        | translate
+                                    }}"
+                                    (click)="
+                                      addCustomVariable(
+                                        answer.controls['text'],
+                                        answeroptiontestinput
+                                      )
+                                    "
+                                  >
+                                    <mat-icon>add_circle_outline</mat-icon>
+                                  </button>
+                                </mat-grid-tile>
+                                <mat-grid-tile flex="75" class="w500">
+                                  <mat-form-field class="w92p">
+                                    <input
+                                      type="text"
+                                      matInput
+                                      placeholder="{{
+                                        'QUESTIONNAIRE_FORSCHER.LABEL'
+                                          | translate
+                                      }}"
+                                      formControlName="label"
+                                    />
+                                  </mat-form-field>
+                                </mat-grid-tile>
+                                <mat-grid-tile
+                                  flex="20"
+                                  *ngIf="
+                                    answer.controls['answer_type_id'].value ==
+                                      1 ||
+                                    answer.controls['answer_type_id'].value == 2
+                                  "
+                                >
+                                  <button
+                                    id="createnewvaluebutton"
+                                    class="createValueButton"
+                                    mat-raised-button
+                                    type="button"
+                                    color="primary"
+                                    (click)="addValue(i, j)"
+                                    class="left"
+                                  >
+                                    {{
+                                      'QUESTIONNAIRE_FORSCHER.ADD_ANSWER'
+                                        | translate
+                                    }}
+                                  </button>
+                                </mat-grid-tile>
+                              </mat-grid-list>
+                            </div>
+
+                            <div
+                              *ngIf="
+                                (answer.controls['answer_type_id'].value ===
+                                  3 ||
+                                  answer.controls['answer_type_id'].value ===
+                                    5) &&
+                                answer.controls['restriction_min']
+                              "
+                            >
+                              <mat-grid-list
+                                layout="row"
+                                [cols]="colsAns | async"
+                                rowHeight="75px"
+                                class="answer-type-select"
+                              >
+                                <mat-grid-tile flex="25">
+                                  <span
+                                    *ngIf="
+                                      answer.controls['answer_type_id']
+                                        .value === 3
+                                    "
+                                    >{{
+                                      'QUESTIONNAIRE_FORSCHER.PLEASE_GIVE'
+                                        | translate
+                                    }}</span
+                                  >
+                                  <span
+                                    *ngIf="
+                                      answer.controls['answer_type_id']
+                                        .value === 5
+                                    "
+                                    >{{
+                                      'QUESTIONNAIRE_FORSCHER.DATE_RESTRICT'
+                                        | translate
+                                    }}</span
+                                  >
+                                </mat-grid-tile>
+                                <mat-grid-tile flex="20">
+                                  <mat-form-field>
+                                    <input
+                                      matInput
+                                      type="number"
+                                      placeholder="{{
+                                        'QUESTIONNAIRE_FORSCHER.MIN_VALUE'
+                                          | translate
+                                      }}"
+                                      formControlName="restriction_min"
+                                    />
+                                    <mat-error
+                                      *ngIf="
+                                        answer.controls[
+                                          'restriction_min'
+                                        ].hasError('valuesValidate') &&
+                                        answer.controls[
+                                          'restriction_max'
+                                        ].hasError('valuesValidate')
+                                      "
+                                    >
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.VALUES_VALIDATE'
+                                          | translate
+                                      }}
+                                    </mat-error>
+                                    <mat-error
+                                      *ngIf="
+                                        answer.controls[
+                                          'restriction_min'
+                                        ].hasError('notDecimalNumber')
+                                      "
+                                    >
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.VALUES_NOT_DECIMAL'
+                                          | translate
+                                      }}
+                                    </mat-error>
+                                    <mat-error
+                                      *ngIf="
+                                        answer.controls[
+                                          'restriction_min'
+                                        ].hasError('notNumber')
+                                      "
+                                    >
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.VALUES_NOT_INTEGER'
+                                          | translate
+                                      }}
+                                    </mat-error>
+                                  </mat-form-field>
+                                </mat-grid-tile>
+                                <mat-grid-tile flex="20">
+                                  <mat-form-field>
+                                    <input
+                                      matInput
+                                      type="number"
+                                      placeholder="{{
+                                        'QUESTIONNAIRE_FORSCHER.MAX_VALUE'
+                                          | translate
+                                      }}"
+                                      formControlName="restriction_max"
+                                    />
+                                    <mat-error
+                                      *ngIf="
+                                        answer.controls[
+                                          'restriction_max'
+                                        ].hasError('notDecimalNumber')
+                                      "
+                                    >
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.VALUES_NOT_DECIMAL'
+                                          | translate
+                                      }}
+                                    </mat-error>
+                                    <mat-error
+                                      *ngIf="
+                                        answer.controls[
+                                          'restriction_max'
+                                        ].hasError('notNumber')
+                                      "
+                                    >
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.VALUES_NOT_INTEGER'
+                                          | translate
+                                      }}
+                                    </mat-error>
+                                  </mat-form-field>
+                                </mat-grid-tile>
+                                <mat-grid-tile
+                                  *ngIf="
+                                    answer.controls['answer_type_id'].value ===
+                                    3
+                                  "
+                                  flex="30"
+                                  class="checkbox-decimal"
+                                >
+                                  <mat-checkbox
+                                    formControlName="is_decimal"
+                                    (click)="validateRestrictions(answer)"
+                                  >
+                                    {{
+                                      'QUESTIONNAIRE_FORSCHER.DECIMAL_VALUES'
+                                        | translate
+                                    }}
+                                  </mat-checkbox>
+                                </mat-grid-tile>
+                              </mat-grid-list>
+                            </div>
+
+                            <div
+                              class="item-class"
+                              formArrayName="values"
+                              *ngIf="
+                                answer.controls['answer_type_id'].value == 1 ||
+                                answer.controls['answer_type_id'].value == 2
+                              "
+                            >
+                              <div
+                                *ngFor="
+                                  let value of answer.controls['values']
+                                    .controls;
+                                  let k = index
+                                "
+                              >
+                                <div formGroupName="{{ k }}">
+                                  <mat-form-field>
+                                    <input
+                                      matInput
+                                      placeholder="{{
+                                        'QUESTIONNAIRE_FORSCHER.VALUE'
+                                          | translate
+                                      }} {{ k + 1 }}"
+                                      formControlName="value"
+                                    />
+                                    <mat-error
+                                      *ngIf="
+                                        value.controls['value'].hasError(
+                                          'required'
+                                        )
+                                      "
+                                    >
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED'
+                                          | translate
+                                      }}
+                                    </mat-error>
+                                    <mat-error
+                                      *ngIf="
+                                        !value.get('value').valid &&
+                                        !value.controls['value'].hasError(
+                                          'required'
+                                        )
+                                      "
+                                    >
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.CHARACTER_NOT_ALLOWED'
+                                          | translate
+                                      }}
+                                    </mat-error>
+                                  </mat-form-field>
+                                  <mat-form-field
+                                    *ngIf="
+                                      answer.controls['coding_enable'].value ==
+                                      true
+                                    "
+                                  >
+                                    <input
+                                      matInput
+                                      type="number"
+                                      matInput
+                                      placeholder="{{
+                                        'QUESTIONNAIRE_FORSCHER.CODE'
+                                          | translate
+                                      }} {{ k + 1 }}"
+                                      formControlName="value_coded"
+                                    />
+                                    <mat-error
+                                      *ngIf="
+                                        value.controls['value_coded'].hasError(
+                                          'required'
+                                        )
+                                      "
+                                    >
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED'
+                                          | translate
+                                      }}
+                                    </mat-error>
+                                    <mat-error
+                                      *ngIf="
+                                        !value.get('value_coded').valid &&
+                                        !value.controls['value_coded'].hasError(
+                                          'required'
+                                        )
+                                      "
+                                    >
+                                      {{
+                                        'QUESTIONNAIRE_FORSCHER.CHARACTER_NOT_ALLOWED'
+                                          | translate
+                                      }}
+                                    </mat-error>
+                                  </mat-form-field>
+                                  <mat-checkbox
+                                    *ngIf="
+                                      selectedStudy &&
+                                      selectedStudy.has_answers_notify_feature
+                                    "
+                                    formControlName="is_notable"
+                                  >
+                                    {{
+                                      'QUESTIONNAIRE_FORSCHER.NOTABLE_ANSWER'
+                                        | translate
+                                    }}
+                                  </mat-checkbox>
+                                  <button
+                                    type="button"
+                                    mat-icon-button
+                                    (click)="removeItem(i, j, k)"
+                                  >
+                                    <mat-icon>clear</mat-icon>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </mat-card-content>
+                        </mat-card>
+                      </div>
+                    </div>
+                    <div>
+                      <mat-divider></mat-divider>
+                    </div>
+                    <mat-card-actions
+                      fxLayout="row"
+                      fxLayoutAlign="space-between start"
+                    >
+                      <span flex>
+                        <button
+                          id="createanswerbutton"
+                          class="createAnswerButton"
+                          mat-raised-button
+                          type="button"
+                          color="primary"
+                          (click)="addAnswer(i)"
+                        >
+                          {{
+                            'QUESTIONNAIRE_FORSCHER.NEW_SUB-QUESTION'
+                              | translate
+                          }}
+                        </button>
+                      </span>
+                    </mat-card-actions>
+                  </div>
+                </div>
+              </mat-expansion-panel>
+            </div>
+          </li>
+        </ul>
+
+        <button
+          mat-raised-button
+          type="button"
+          color="primary"
+          (click)="addQuestion()"
+          data-e2e="e2e-add-new-question-button"
+        >
+          {{ 'QUESTIONNAIRE_FORSCHER.NEW_QUESTION' | translate }}
+        </button>
+      </mat-card>
+
+      <!-- Submit Save Update Cancel Button -->
+      <mat-card class="buttons-group">
+        <div class="col-xs-12">
+          <button
+            id="savequestionnairebutton"
+            mat-raised-button
+            color="accent"
+            type="button"
+            *ngIf="!editingStatus"
+            (click)="onSubmit('create')"
+            data-e2e="e2e-save-questionnaire-button"
+          >
+            {{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_SAVE' | translate }}
+          </button>
+          <button
+            id="updatequestionnairebutton"
+            mat-raised-button
+            color="accent"
+            type="button"
+            *ngIf="editingStatus"
+            [disabled]="disableUpdateButton()"
+            (click)="onSubmit('update')"
+            data-e2e="e2e-update-questionnaire-button"
+          >
+            {{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_UPDATE' | translate }}
+          </button>
+          <button
+            id="revisequestionnairebutton"
+            mat-raised-button
+            type="button"
+            *ngIf="editingStatus"
+            (click)="onSubmit('revise')"
+            data-e2e="e2e-questionnaire-revise-button"
+          >
+            {{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_REVISE' | translate }}
+          </button>
+          <button
+            id="cancelquestionnairebutton"
+            mat-raised-button
+            (click)="onCancel()"
+            type="button"
+          >
+            {{ 'QUESTIONNAIRE_FORSCHER.CANCEL' | translate }}
+          </button>
+          <button
+            id="exportquestionnairebutton"
+            *ngIf="editingStatus"
+            mat-raised-button
+            (click)="onClickExportFragebogen()"
+            type="button"
+            data-e2e="e2e-export-questionnaire-button"
+          >
+            {{ 'GENERAL.EXPORT' | translate }}
+          </button>
+          <button
+            id="importquestionnairebutton"
+            *ngIf="canImportQuestionnaire"
+            mat-raised-button
+            (click)="onClickImportFragebogen()"
+            type="button"
+            data-e2e="e2e-import-questionnaire-button"
+          >
+            {{ 'GENERAL.IMPORT' | translate }}
+          </button>
+
+          <!-- Hide this input field. Click on it from the code -->
+          <input
+            type="file"
+            id="myFileInputField"
+            accept="application/json, .json"
+            data-e2e="e2e-file-input"
+          />
+        </div>
+      </mat-card>
+
+      <!-- Warning hint -->
+      <mat-card *ngIf="editingStatus">
+        {{ 'QUESTIONNAIRE_FORSCHER.WARNING' | translate }}:
+        {{ 'QUESTIONNAIRE_FORSCHER.WARNING_UPDATE' | translate }}
+      </mat-card>
+    </form>
+  </div>
+</div>

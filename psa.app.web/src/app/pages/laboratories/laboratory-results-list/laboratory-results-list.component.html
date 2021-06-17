@@ -1,0 +1,73 @@
+<!-- Filtern -->
+<div fxLayout="row wrap">
+  <div fxFlex="50" fxLayoutAlign="start center">
+    <button mat-button (click)="backClicked()">
+      <mat-icon>arrow_back_ios</mat-icon
+      >{{ 'LABRESULT_DETAILS.BACK' | translate }}
+    </button>
+  </div>
+  <div>
+    <mat-form-field>
+      <input
+        matInput
+        placeholder="{{ 'DIALOG.FILTER' | translate }}"
+        (keyup)="applyFilter($event.target.value)"
+      />
+    </mat-form-field>
+  </div>
+</div>
+
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+<div class="laboratory-results-container mat-elevation-z8">
+  <mat-table #table [dataSource]="dataSource" matSort>
+    <!-- Laboratory results Column -->
+    <ng-container matColumnDef="id">
+      <mat-header-cell
+        *matHeaderCellDef
+        mat-sort-header
+        fxFlex="60"
+        fxFlex.gt-sm="30"
+      >
+        {{ 'LABRESULTS.LABORATORY_RESULTS' | translate }}
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element" fxFlex="60" fxFlex.gt-sm="30">
+        {{ element.id }}
+      </mat-cell>
+    </ng-container>
+
+    <!-- Date Column -->
+    <ng-container matColumnDef="date_of_sampling">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>
+        {{ 'LABRESULTS.DATE' | translate }}</mat-header-cell
+      >
+      <mat-cell *matCellDef="let element">
+        {{ element.date_of_sampling | date }}
+      </mat-cell>
+    </ng-container>
+
+    <!-- Action Column -->
+    <ng-container matColumnDef="action">
+      <mat-header-cell *matHeaderCellDef fxFlex.lt-md="40px">{{
+        'LABRESULTS.DETAILS' | translate
+      }}</mat-header-cell>
+      <mat-cell *matCellDef="let element" fxFlex.lt-md="40px">
+        <button
+          *ngIf="element.status === 'analyzed'"
+          mat-icon-button
+          (click)="onLaboratoryResultItemClicked(element.id)"
+        >
+          <mat-icon>details</mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+  </mat-table>
+  <mat-paginator
+    #paginator
+    [pageSizeOptions]="[20, 50, 100]"
+    showFirstLastButtons
+  ></mat-paginator>
+</div>

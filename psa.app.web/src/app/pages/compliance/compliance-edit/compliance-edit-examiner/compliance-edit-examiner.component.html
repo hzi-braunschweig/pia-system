@@ -1,0 +1,34 @@
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+<div *ngIf="!isLoading" data-e2e="e2e-compliance-edit-component">
+  <h2 data-e2e="e2e-compliance-edit-component-header">{{ study }}</h2>
+  <p *ngIf="!isComplianceNeeded">
+    {{ 'COMPLIANCE.NO_COMPLIANCE_NEEDED_FOR_THIS_STUDY' | translate }}
+  </p>
+  <p *ngIf="studyWrapper && !studyWrapper.complianceTextObject">
+    {{ 'COMPLIANCE.NO_COMPLIANCE_FROM_PROBAND_FOR_THIS_STUDY' | translate }}
+  </p>
+  <p *ngIf="isComplianceNeeded && !studyWrapper">
+    {{ 'COMPLIANCE.COMPLIANCE_ALREADY_FILLED_OUT' | translate }}
+  </p>
+  <form
+    *ngIf="studyWrapper?.complianceTextObject"
+    [formGroup]="studyWrapper.form"
+    (ngSubmit)="onSubmit(studyWrapper)"
+  >
+    <app-template-viewer
+      [segments]="studyWrapper.complianceTextObject"
+      [form]="studyWrapper.form"
+      (usedFormControls)="studyWrapper.usedFormControls = $event"
+    >
+    </app-template-viewer>
+    <button
+      data-e2e="e2e-compliance-edit-ok-button"
+      mat-raised-button
+      type="submit"
+      color="primary"
+      [disabled]="!studyWrapper.editMode"
+    >
+      {{ 'GENERAL.OK' | translate }}
+    </button>
+  </form>
+</div>

@@ -1,0 +1,502 @@
+<div *ngIf="form">
+  <form [formGroup]="form">
+    <h1 mat-dialog-title *ngIf="!data.study.pendingStudyChange">
+      {{ 'STUDIES.REQUEST_CHANGES' | translate }}
+    </h1>
+    <h1 mat-dialog-title *ngIf="data.study.pendingStudyChange">
+      {{ 'STUDIES.CONFIRM_CHANGES' | translate }}
+    </h1>
+    <h5 *ngIf="!data.study.pendingStudyChange">
+      {{
+        'DIALOG.CHANGE_STUDY_PARTNER' | translate: { study_id: data.study.name }
+      }}
+    </h5>
+    <h5 *ngIf="data.study.pendingStudyChange">
+      {{
+        'DIALOG.ACCEPT_CHANGE_STUDY'
+          | translate
+            : {
+                study_id: data.study.name,
+                user_id: data.study.pendingStudyChange.requested_by
+              }
+      }}
+    </h5>
+    <mat-dialog-content align="start">
+      <div [ngClass]="{ 'field-container': data.study.pendingStudyChange }">
+        <mat-form-field
+          [ngClass]="{
+            'study-form-field-wide': !data.study.pendingStudyChange,
+            'study-form-field': data.study.pendingStudyChange
+          }"
+        >
+          <input
+            matInput
+            formControlName="description_to"
+            placeholder="{{ 'STUDIES.DESCRIPTION' | translate }}"
+          />
+        </mat-form-field>
+        <ng-container
+          *ngIf="
+            data.study.pendingStudyChange &&
+            data.study.pendingStudyChange.description_to !==
+              data.study.description
+          "
+        >
+          <mat-icon class="study-form-icon">arrow_right_alt</mat-icon>
+          <mat-form-field class="study-form-field">
+            <input
+              matInput
+              [value]="data.study.pendingStudyChange.description_to"
+              [disabled]="true"
+            />
+          </mat-form-field>
+        </ng-container>
+      </div>
+
+      <div [ngClass]="{ 'field-container': data.study.pendingStudyChange }">
+        <mat-form-field
+          [ngClass]="{
+            'study-form-field-wide': !data.study.pendingStudyChange,
+            'study-form-field': data.study.pendingStudyChange
+          }"
+        >
+          <input
+            matInput
+            formControlName="sample_prefix_to"
+            placeholder="{{ 'STUDIES.SAMPLE_PREFIX' | translate }}"
+          />
+        </mat-form-field>
+        <ng-container
+          *ngIf="
+            data.study.pendingStudyChange &&
+            data.study.pendingStudyChange.sample_prefix_to !==
+              data.study.sample_prefix
+          "
+        >
+          <mat-icon class="study-form-icon">arrow_right_alt</mat-icon>
+          <mat-form-field class="study-form-field">
+            <input
+              matInput
+              [value]="data.study.pendingStudyChange.sample_prefix_to"
+              [disabled]="true"
+            />
+          </mat-form-field>
+        </ng-container>
+      </div>
+
+      <div [ngClass]="{ 'field-container': data.study.pendingStudyChange }">
+        <mat-form-field
+          [ngClass]="{
+            'study-form-field-wide': !data.study.pendingStudyChange,
+            'study-form-field': data.study.pendingStudyChange
+          }"
+        >
+          <input
+            matInput
+            type="number"
+            formControlName="sample_suffix_length_to"
+            placeholder="{{ 'STUDIES.SAMPLE_SUFFIX_LENGTH' | translate }}"
+          />
+        </mat-form-field>
+        <ng-container
+          *ngIf="
+            data.study.pendingStudyChange &&
+            data.study.pendingStudyChange.sample_suffix_length_to !==
+              data.study.sample_suffix_length
+          "
+        >
+          <mat-icon class="study-form-icon">arrow_right_alt</mat-icon>
+          <mat-form-field class="study-form-field">
+            <input
+              matInput
+              [value]="data.study.pendingStudyChange.sample_suffix_length_to"
+              [disabled]="true"
+            />
+          </mat-form-field>
+        </ng-container>
+      </div>
+
+      <div [ngClass]="{ 'field-container': data.study.pendingStudyChange }">
+        <mat-form-field
+          [ngClass]="{
+            'study-form-field-wide': !data.study.pendingStudyChange,
+            'study-form-field': data.study.pendingStudyChange
+          }"
+        >
+          <input
+            matInput
+            formControlName="pseudonym_prefix_to"
+            placeholder="{{ 'STUDIES.PSEUDONYM_PREFIX' | translate }}"
+          />
+        </mat-form-field>
+        <ng-container
+          *ngIf="
+            data.study.pendingStudyChange &&
+            data.study.pendingStudyChange.pseudonym_prefix_to !==
+              data.study.pseudonym_prefix
+          "
+        >
+          <mat-icon class="study-form-icon">arrow_right_alt</mat-icon>
+          <mat-form-field class="study-form-field">
+            <input
+              matInput
+              [value]="data.study.pendingStudyChange.pseudonym_prefix_to"
+              [disabled]="true"
+            />
+          </mat-form-field>
+        </ng-container>
+      </div>
+
+      <div [ngClass]="{ 'field-container': data.study.pendingStudyChange }">
+        <mat-form-field
+          [ngClass]="{
+            'study-form-field-wide': !data.study.pendingStudyChange,
+            'study-form-field': data.study.pendingStudyChange
+          }"
+        >
+          <input
+            matInput
+            type="number"
+            formControlName="pseudonym_suffix_length_to"
+            placeholder="{{ 'STUDIES.PSEUDONYM_SUFFIX_LENGTH' | translate }}"
+          />
+        </mat-form-field>
+        <ng-container
+          *ngIf="
+            data.study.pendingStudyChange &&
+            data.study.pendingStudyChange.pseudonym_suffix_length_to !==
+              data.study.pseudonym_suffix_length
+          "
+        >
+          <mat-icon class="study-form-icon">arrow_right_alt</mat-icon>
+          <mat-form-field class="study-form-field">
+            <input
+              matInput
+              [value]="data.study.pendingStudyChange.pseudonym_suffix_length_to"
+              [disabled]="true"
+            />
+          </mat-form-field>
+        </ng-container>
+      </div>
+
+      <div
+        [ngClass]="{ 'field-container': data.study.pendingStudyChange }"
+        class="field-container-pad"
+      >
+        <mat-checkbox
+          [ngClass]="{
+            'study-form-field-wide': !data.study.pendingStudyChange,
+            'study-form-field': data.study.pendingStudyChange
+          }"
+          matInput
+          formControlName="has_rna_samples_to"
+        >
+          {{ 'STUDIES.HAS_RNA_SAMPLES' | translate }}
+        </mat-checkbox>
+        <ng-container
+          *ngIf="
+            data.study.pendingStudyChange &&
+            data.study.pendingStudyChange.has_rna_samples_to !==
+              data.study.has_rna_samples
+          "
+        >
+          <mat-icon>arrow_right_alt</mat-icon>
+          <mat-checkbox
+            class="study-form-field study-form-check"
+            matInput
+            [disabled]="true"
+            [checked]="data.study.pendingStudyChange.has_rna_samples_to"
+          >
+            {{ 'STUDIES.HAS_RNA_SAMPLES' | translate }}
+          </mat-checkbox>
+        </ng-container>
+      </div>
+
+      <div
+        [ngClass]="{ 'field-container': data.study.pendingStudyChange }"
+        class="field-container-pad"
+      >
+        <mat-checkbox
+          [ngClass]="{
+            'study-form-field-wide': !data.study.pendingStudyChange,
+            'study-form-field': data.study.pendingStudyChange
+          }"
+          matInput
+          formControlName="has_answers_notify_feature_to"
+        >
+          {{ 'STUDIES.HAS_ANSWERS_NOTIFY_FEATURE' | translate }}
+        </mat-checkbox>
+        <ng-container
+          *ngIf="
+            data.study.pendingStudyChange &&
+            data.study.pendingStudyChange.has_answers_notify_feature_to !==
+              data.study.has_answers_notify_feature
+          "
+        >
+          <mat-icon>arrow_right_alt</mat-icon>
+          <mat-checkbox
+            class="study-form-field study-form-check"
+            matInput
+            [disabled]="true"
+            [checked]="
+              data.study.pendingStudyChange.has_answers_notify_feature_to
+            "
+          >
+            {{ 'STUDIES.HAS_ANSWERS_NOTIFY_FEATURE' | translate }}
+          </mat-checkbox>
+        </ng-container>
+      </div>
+
+      <div
+        [ngClass]="{ 'field-container': data.study.pendingStudyChange }"
+        class="field-container-pad"
+      >
+        <mat-checkbox
+          [ngClass]="{
+            'study-form-field-wide': !data.study.pendingStudyChange,
+            'study-form-field': data.study.pendingStudyChange
+          }"
+          matInput
+          formControlName="has_answers_notify_feature_by_mail_to"
+        >
+          {{ 'STUDIES.HAS_ANSWERS_NOTIFY_FEATURE_BY_MAIL' | translate }}
+        </mat-checkbox>
+        <ng-container
+          *ngIf="
+            data.study.pendingStudyChange &&
+            data.study.pendingStudyChange
+              .has_answers_notify_feature_by_mail_to !==
+              data.study.has_answers_notify_feature_by_mail
+          "
+        >
+          <mat-icon>arrow_right_alt</mat-icon>
+          <mat-checkbox
+            class="study-form-field study-form-check"
+            matInput
+            [disabled]="true"
+            [checked]="
+              data.study.pendingStudyChange
+                .has_answers_notify_feature_by_mail_to
+            "
+          >
+            {{ 'STUDIES.HAS_ANSWERS_NOTIFY_FEATURE_BY_MAIL' | translate }}
+          </mat-checkbox>
+        </ng-container>
+      </div>
+
+      <div
+        [ngClass]="{ 'field-container': data.study.pendingStudyChange }"
+        class="field-container-pad"
+      >
+        <mat-checkbox
+          [ngClass]="{
+            'study-form-field-wide': !data.study.pendingStudyChange,
+            'study-form-field': data.study.pendingStudyChange
+          }"
+          matInput
+          formControlName="has_four_eyes_opposition_to"
+        >
+          {{ 'STUDIES.HAS_FOUR_EYES_OPPOSITION' | translate }}
+        </mat-checkbox>
+        <ng-container
+          *ngIf="
+            data.study.pendingStudyChange &&
+            data.study.pendingStudyChange.has_four_eyes_opposition_to !==
+              data.study.has_four_eyes_opposition
+          "
+        >
+          <mat-icon>arrow_right_alt</mat-icon>
+          <mat-checkbox
+            class="study-form-field study-form-check"
+            matInput
+            [disabled]="true"
+            [checked]="
+              data.study.pendingStudyChange.has_four_eyes_opposition_to
+            "
+          >
+            {{ 'STUDIES.HAS_FOUR_EYES_OPPOSITION' | translate }}
+          </mat-checkbox>
+        </ng-container>
+      </div>
+
+      <div
+        [ngClass]="{ 'field-container': data.study.pendingStudyChange }"
+        class="field-container-pad"
+      >
+        <mat-checkbox
+          [ngClass]="{
+            'study-form-field-wide': !data.study.pendingStudyChange,
+            'study-form-field': data.study.pendingStudyChange
+          }"
+          matInput
+          formControlName="has_partial_opposition_to"
+        >
+          {{ 'STUDIES.HAS_PARTIAL_OPPOSITION' | translate }}
+        </mat-checkbox>
+        <ng-container
+          *ngIf="
+            data.study.pendingStudyChange &&
+            data.study.pendingStudyChange.has_partial_opposition_to !==
+              data.study.has_partial_opposition
+          "
+        >
+          <mat-icon>arrow_right_alt</mat-icon>
+          <mat-checkbox
+            class="study-form-field study-form-check"
+            matInput
+            [disabled]="true"
+            [checked]="data.study.pendingStudyChange.has_partial_opposition_to"
+          >
+            {{ 'STUDIES.HAS_PARTIAL_OPPOSITION' | translate }}
+          </mat-checkbox>
+        </ng-container>
+      </div>
+
+      <div
+        [ngClass]="{ 'field-container': data.study.pendingStudyChange }"
+        class="field-container-pad"
+      >
+        <mat-checkbox
+          [ngClass]="{
+            'study-form-field-wide': !data.study.pendingStudyChange,
+            'study-form-field': data.study.pendingStudyChange
+          }"
+          matInput
+          formControlName="has_total_opposition_to"
+        >
+          {{ 'STUDIES.HAS_TOTAL_OPPOSITION' | translate }}
+        </mat-checkbox>
+        <ng-container
+          *ngIf="
+            data.study.pendingStudyChange &&
+            data.study.pendingStudyChange.has_total_opposition_to !==
+              data.study.has_total_opposition
+          "
+        >
+          <mat-icon>arrow_right_alt</mat-icon>
+          <mat-checkbox
+            class="study-form-field study-form-check"
+            matInput
+            [disabled]="true"
+            [checked]="data.study.pendingStudyChange.has_total_opposition_to"
+          >
+            {{ 'STUDIES.HAS_TOTAL_OPPOSITION' | translate }}
+          </mat-checkbox>
+        </ng-container>
+      </div>
+
+      <div
+        [ngClass]="{ 'field-container': data.study.pendingStudyChange }"
+        class="field-container-pad"
+      >
+        <mat-checkbox
+          [ngClass]="{
+            'study-form-field-wide': !data.study.pendingStudyChange,
+            'study-form-field': data.study.pendingStudyChange
+          }"
+          matInput
+          formControlName="has_compliance_opposition_to"
+        >
+          {{ 'STUDIES.HAS_COMPLIANCE_OPPOSITION' | translate }}
+        </mat-checkbox>
+        <ng-container
+          *ngIf="
+            data.study.pendingStudyChange &&
+            data.study.pendingStudyChange.has_compliance_opposition_to !==
+              data.study.has_compliance_opposition
+          "
+        >
+          <mat-icon>arrow_right_alt</mat-icon>
+          <mat-checkbox
+            class="study-form-field study-form-check"
+            matInput
+            [disabled]="true"
+            [checked]="
+              data.study.pendingStudyChange.has_compliance_opposition_to
+            "
+          >
+            {{ 'STUDIES.HAS_COMPLIANCE_OPPOSITION' | translate }}
+          </mat-checkbox>
+        </ng-container>
+      </div>
+
+      <div
+        [ngClass]="{ 'field-container': data.study.pendingStudyChange }"
+        class="field-container-pad"
+      >
+        <mat-checkbox
+          [ngClass]="{
+            'study-form-field-wide': !data.study.pendingStudyChange,
+            'study-form-field': data.study.pendingStudyChange
+          }"
+          matInput
+          formControlName="has_logging_opt_in_to"
+        >
+          {{ 'STUDIES.HAS_LOGGING_OPT_IN' | translate }}
+        </mat-checkbox>
+        <ng-container
+          *ngIf="
+            data.study.pendingStudyChange &&
+            data.study.pendingStudyChange.has_logging_opt_in_to !==
+              data.study.has_logging_opt_in
+          "
+        >
+          <mat-icon>arrow_right_alt</mat-icon>
+          <mat-checkbox
+            class="study-form-field study-form-check"
+            matInput
+            [disabled]="true"
+            [checked]="data.study.pendingStudyChange.has_logging_opt_in_to"
+          >
+            {{ 'STUDIES.HAS_LOGGING_OPT_IN' | translate }}
+          </mat-checkbox>
+        </ng-container>
+      </div>
+
+      <mat-form-field
+        class="partner-form-field"
+        *ngIf="!data.study.pendingStudyChange"
+      >
+        <mat-select
+          placeholder="{{ 'DIALOG.USER_SAME_ROLE' | translate }}"
+          formControlName="requested_for"
+        >
+          <mat-select-search
+            [formControl]="usernameFilterCtrl"
+          ></mat-select-search>
+          <mat-option
+            *ngFor="let user of filteredUsers | async"
+            [value]="user.username"
+          >
+            {{ user.username }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="form.controls['requested_for'].hasError('required')">
+          {{ 'DIALOG.FORSCHER_REQUIRED' | translate }}
+        </mat-error>
+      </mat-form-field>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+      <button mat-button (click)="onCancelClick()">
+        {{ 'DIALOG.CANCEL' | translate }}
+      </button>
+      <button
+        mat-raised-button
+        class="button-refuse"
+        *ngIf="data.study.pendingStudyChange"
+        (click)="onNoClick()"
+      >
+        {{ 'DIALOG.REFUSE' | translate }}
+      </button>
+      <button
+        [disabled]="form && !form.valid && !data.study.pendingStudyChange"
+        mat-raised-button
+        color="primary"
+        (click)="confirmSelection(form)"
+      >
+        {{ 'DIALOG.CONFIRM' | translate }}
+      </button>
+    </mat-dialog-actions>
+  </form>
+</div>

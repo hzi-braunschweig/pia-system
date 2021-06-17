@@ -1,0 +1,104 @@
+check-sonarqube-feature:
+  stage: push
+  image:
+    name: sonarsource/sonar-scanner-cli:4.6@sha256:2a1d94db63265cda01c1cf4b4e112664200f1f89e597b3430b69fa87905715b4
+    entrypoint: ['']
+  needs:
+    - job: accumulate-coverage
+      artifacts: true
+  variables:
+    GIT_DEPTH: '1'
+    SONAR_USER_HOME: '${CI_PROJECT_DIR}/.sonar' # Defines the location of the analysis task cache
+  cache:
+    key: '${CI_JOB_NAME}'
+    paths:
+      - .sonar/cache
+  script:
+    # we have to remove the coverage dir or otherwise it will also be scanned -Dsonar.exclusions is somehow not working
+    - mv coverage/lcov.info lcov.info
+    - rm -rf coverage
+    - find . -name tsconfig.json -exec sed -i "s/@pia\/lib-service-core/..\/psa.lib.service-core\/tsconfig.global.json/g" {} \;
+    - sonar-scanner
+      -Dsonar.javascript.lcov.reportPaths=lcov.info
+      -Dsonar.qualitygate.wait=true
+      -Dsonar.sources=.
+      -Dsonar.host.url=$SONAR_HOST_URL
+      -Dsonar.login=$SONAR_LOGIN_TOKEN_FEATURE
+      -Dsonar.inclusions=**/src/**
+      -Dsonar.exclusions=psa.utils.*/**,psa.test.*/**
+      -Dsonar.test.inclusions=**/*.spec.*,**/tests/**,psa.app.*/e2e/**,psa.app.*/cypress/**
+      -Dsonar.projectKey=pia-system-feature
+      -Dsonar.coverage.exclusions=*service*/src/index.*
+  allow_failure: true
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+
+check-sonarqube-develop:
+  stage: push
+  image:
+    name: sonarsource/sonar-scanner-cli:4.6@sha256:2a1d94db63265cda01c1cf4b4e112664200f1f89e597b3430b69fa87905715b4
+    entrypoint: ['']
+  needs:
+    - job: accumulate-coverage
+      artifacts: true
+  variables:
+    GIT_DEPTH: '1'
+    SONAR_USER_HOME: '${CI_PROJECT_DIR}/.sonar' # Defines the location of the analysis task cache
+  cache:
+    key: '${CI_JOB_NAME}'
+    paths:
+      - .sonar/cache
+  script:
+    # we have to remove the coverage dir or otherwise it will also be scanned -Dsonar.exclusions is somehow not working
+    - mv coverage/lcov.info lcov.info
+    - rm -rf coverage
+    - find . -name tsconfig.json -exec sed -i "s/@pia\/lib-service-core/..\/psa.lib.service-core\/tsconfig.global.json/g" {} \;
+    - sonar-scanner
+      -Dsonar.javascript.lcov.reportPaths=lcov.info
+      -Dsonar.qualitygate.wait=true
+      -Dsonar.sources=.
+      -Dsonar.host.url=$SONAR_HOST_URL
+      -Dsonar.login=$SONAR_LOGIN_TOKEN_DEVELOP
+      -Dsonar.inclusions=**/src/**
+      -Dsonar.exclusions=psa.utils.*/**,psa.test.*/**
+      -Dsonar.test.inclusions=**/*.spec.*,**/tests/**,psa.app.*/e2e/**,psa.app.*/cypress/**
+      -Dsonar.projectKey=pia-system-develop
+      -Dsonar.coverage.exclusions=*service*/src/index.*
+  allow_failure: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^develop/'
+
+check-sonarqube-release:
+  stage: push
+  image:
+    name: sonarsource/sonar-scanner-cli:4.6@sha256:2a1d94db63265cda01c1cf4b4e112664200f1f89e597b3430b69fa87905715b4
+    entrypoint: ['']
+  needs:
+    - job: accumulate-coverage
+      artifacts: true
+  variables:
+    GIT_DEPTH: '1'
+    SONAR_USER_HOME: '${CI_PROJECT_DIR}/.sonar' # Defines the location of the analysis task cache
+  cache:
+    key: '${CI_JOB_NAME}'
+    paths:
+      - .sonar/cache
+  script:
+    # we have to remove the coverage dir or otherwise it will also be scanned -Dsonar.exclusions is somehow not working
+    - mv coverage/lcov.info lcov.info
+    - rm -rf coverage
+    - find . -name tsconfig.json -exec sed -i "s/@pia\/lib-service-core/..\/psa.lib.service-core\/tsconfig.global.json/g" {} \;
+    - sonar-scanner
+      -Dsonar.javascript.lcov.reportPaths=lcov.info
+      -Dsonar.qualitygate.wait=true
+      -Dsonar.sources=.
+      -Dsonar.host.url=$SONAR_HOST_URL
+      -Dsonar.login=$SONAR_LOGIN_TOKEN_RELEASE
+      -Dsonar.inclusions=**/src/**
+      -Dsonar.exclusions=psa.utils.*/**,psa.test.*/**
+      -Dsonar.test.inclusions=**/*.spec.*,**/tests/**,psa.app.*/e2e/**,psa.app.*/cypress/**
+      -Dsonar.projectKey=pia-system-release
+      -Dsonar.coverage.exclusions=*service*/src/index.*
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_TAG

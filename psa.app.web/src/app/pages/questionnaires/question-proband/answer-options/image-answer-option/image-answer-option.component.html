@@ -1,0 +1,37 @@
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+<div class="component-container" *ngIf="!isLoading">
+  <div class="image-container">
+    <img class="image" *ngIf="url" [src]="url" />
+  </div>
+  <div *ngIf="!isReadOnly">
+    <input
+      #fileInput
+      (click)="fileInput.value = null"
+      value=""
+      type="file"
+      (change)="onImageSelected($event)"
+      #imageAnswerTypeFileInput
+      accept="image/png, image/jpeg, .jpg,.jpeg"
+    />
+
+    <button
+      type="button"
+      mat-raised-button
+      (click)="imageAnswerTypeFileInput.click()"
+    >
+      {{ 'ANSWERS_PROBAND.SELECT_IMAGE' | translate }}
+    </button>
+    {{ imageName }}
+    <button
+      type="button"
+      mat-button
+      *ngIf="url"
+      matSuffix
+      mat-icon-button
+      aria-label="Clear"
+      (click)="deleteImage()"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</div>

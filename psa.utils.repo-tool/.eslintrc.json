@@ -1,0 +1,22 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "env": {
+    "commonjs": true,
+    "es2020": true,
+    "node": true,
+    "mocha": true
+  },
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "rules": {
+    "no-console": "off",
+    "no-var": "error",
+    "prefer-const": "error"
+  },
+  "ignorePatterns": ["dist"]
+}

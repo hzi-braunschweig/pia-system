@@ -1,0 +1,107 @@
+import { Component, Inject } from '@angular/core';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogRef,
+} from '@angular/material/dialog';
+import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
+import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
+
+@Component({
+  selector: 'app-request-new-material',
+  templateUrl: './request-new-material.component.html',
+  styleUrls: ['./request-new-material.component.scss'],
+})
+export class RequestNewMaterialComponent {
+  constructor(
+    public dialog: MatDialog,
+    private sampleTrackingService: SampleTrackingService
+  ) {}
+
+  onRequestMaterial(): void {
+    this.openConfirmMaterialRequestDialog();
+  }
+
+  openConfirmMaterialRequestDialog(): void {
+    const dialogRef = this.dialog.open(ConfirmNewMaterialRequestComponent, {
+      width: '500px',
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && result.shouldRequestNewMaterial) {
+        this.sampleTrackingService
+          .requestMaterialForCurrentUser()
+          .then((res) => {
+            this.showRequestWasSuccessDialog();
+          })
+          .catch((err) => {
+            console.log(err);
+            this.showRequestFailedDialog();
+          });
+      }
+    });
+  }
+
+  private showRequestWasSuccessDialog(): void {
+    this.dialog.open(DialogPopUpComponent, {
+      width: '500px',
+      data: {
+        data: '',
+        content: 'SAMPLE_MANAGEMENT.MATERIAL_REQUESTED',
+        isSuccess: true,
+      },
+    });
+  }
+
+  private showRequestFailedDialog(): void {
+    this.dialog.open(DialogPopUpComponent, {
+      width: '500px',
+      data: {
+        data: '',
+        content: 'SAMPLE_MANAGEMENT.ERROR_MATERIAL_REQUEST',
+        isSuccess: false,
+      },
+    });
+  }
+}
+
+@Component({
+  selector: 'confirm-new-material-request',
+  template: `
+    <h1 mat-dialog-title style=" display: flex; justify-content: center; ">
+      {{ 'SAMPLE_MANAGEMENT.SURE_REQUEST_MATERIAL' | translate }}
+    </h1>
+    <div>
+      <button
+        mat-raised-button
+        style="margin:10px;"
+        color="primary"
+        (click)="confirmSelection()"
+      >
+        Ja
+      </button>
+      <button
+        mat-raised-button
+        style="margin:10px;"
+        color="primary"
+        (click)="onNoClick()"
+      >
+        Nein
+      </button>
+    </div>
+  `,
+})
+export class ConfirmNewMaterialRequestComponent {
+  constructor(
+    public dialogRef: MatDialogRef<ConfirmNewMaterialRequestComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {}
+
+  onNoClick(): void {
+    this.dialogRef.close({ shouldRequestNewMaterial: false });
+  }
+
+  confirmSelection(): void {
+    this.dialogRef.close({ shouldRequestNewMaterial: true });
+  }
+}

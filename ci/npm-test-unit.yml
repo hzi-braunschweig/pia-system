@@ -1,0 +1,32 @@
+unit:
+  stage: test
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$FOLDER-npm-install:$IMAGE_ID
+  script:
+    - mkdir -p $FOLDER/tests/
+    - ln -s $NODE_PATH $FOLDER/node_modules
+    - cd $FOLDER
+    - npm run test.unit
+    - mv coverage/cobertura-coverage.xml coverage/coverage-unit.xml || true
+    - mv coverage/coverage-final.json coverage/coverage-unit.json || true
+    - mv tests/reports/xunit-test-report.xml
+      tests/reports/xunit-test-report-unit.xml || true
+  needs:
+    - job: npm-install
+      artifacts: true
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH =~ /^develop/
+    - if: $CI_COMMIT_BRANCH =~ /^release/
+  parallel:
+    matrix:
+      - FOLDER: !reference [.modules, array, unit]
+  artifacts:
+    paths:
+      - $FOLDER/coverage/coverage-unit.json
+      - $FOLDER/coverage/coverage-unit.xml
+      - $FOLDER/tests/reports/xunit-test-report-unit.xml
+    reports:
+      junit: $FOLDER/tests/reports/xunit-test-report-unit.xml
+      cobertura: $FOLDER/coverage/coverage-unit.xml
+    when: always

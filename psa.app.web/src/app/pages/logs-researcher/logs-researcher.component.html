@@ -1,0 +1,269 @@
+<div class="jumbotron">
+  <div class="page-wrapper">
+    <form
+      [formGroup]="form"
+      (ngSubmit)="f.form.valid && onSubmit(form, false)"
+      #f="ngForm"
+      novalidate
+      data-e2e="e2e-logs-research-component"
+    >
+      <h1>Logs</h1>
+      <mat-grid-list layout="row" [cols]="3" rowHeight="90px">
+        <mat-grid-tile>
+          <mat-form-field fxFlex class="m20">
+            <mat-select
+              id="selectproband"
+              [multiple]="true"
+              placeholder="{{ 'SIDENAV.PROBANDS' | translate }}"
+              formControlName="probands"
+              data-e2e="e2e-select-proband-select"
+            >
+              <mat-select-search
+                [formControl]="usernameFilterCtrl"
+              ></mat-select-search>
+              <mat-option
+                value="allProbandsCheckbox"
+                (click)="onSelectAllProbandsClicked()"
+                data-e2e="e2e-select-all-probands-checkbox"
+                >{{ 'CONTACTS.SELECT_ALL' | translate }}</mat-option
+              >
+              <mat-option
+                *ngFor="let proband of filteredUsers | async"
+                [value]="proband.username"
+                data-e2e="e2e-select-probands-checkbox"
+              >
+                {{ proband.username }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.controls['probands'].hasError('required')">{{
+              'DIALOG.PROBAND_REQUIRED' | translate
+            }}</mat-error>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <span>{{ 'DIALOG.FROM' | translate }} </span>
+          <mat-form-field class="mb30">
+            <input
+              [max]="currentDate"
+              matInput
+              [matDatepicker]="picker_start"
+              formControlName="start_date"
+              placeholder="{{
+                'QUESTIONNAIRE_FORSCHER.DATE_EMPTY' | translate
+              }}"
+              (dateChange)="onStartDateChange()"
+            />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="picker_start"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #picker_start></mat-datepicker>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <span>{{ 'DIALOG.TO' | translate }} </span>
+          <mat-form-field class="mb30">
+            <input
+              [min]="form.controls['start_date'].value"
+              [max]="currentDate"
+              matInput
+              [matDatepicker]="picker_end"
+              formControlName="end_date"
+              placeholder="{{
+                'QUESTIONNAIRE_FORSCHER.DATE_EMPTY' | translate
+              }}"
+            />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="picker_end"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #picker_end></mat-datepicker>
+          </mat-form-field>
+        </mat-grid-tile>
+      </mat-grid-list>
+      <mat-grid-list [cols]="3" rowHeight="80px">
+        <mat-grid-tile>
+          <mat-form-field fxFlex class="m20">
+            <mat-select
+              disableOptionCentering
+              id="activity"
+              [multiple]="true"
+              placeholder="{{ 'DIALOG.ACTIVITIES' | translate }} "
+              formControlName="activity_type"
+              data-e2e="e2e-activity-select"
+            >
+              <mat-option
+                *ngFor="let activity of activities"
+                [value]="activity.value"
+                data-e2e="e2e-activity-values"
+              >
+                {{ activity.viewValue | translate }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <mat-form-field fxFlex class="m20">
+            <mat-select
+              id="selectstudydialog"
+              placeholder="{{ 'QUESTIONNAIRE_FORSCHER.STUDY' | translate }}"
+              formControlName="study_name"
+              data-e2e="e2e-study-dialog-select"
+            >
+              <mat-select-search
+                [formControl]="studyFilterCtrl"
+              ></mat-select-search>
+              <mat-option
+                #checkbox
+                *ngFor="let studie of filteredStudies | async"
+                [value]="studie.name"
+                (click)="onChange(checkbox)"
+                data-e2e="e2e-study-to-select"
+              >
+                {{ studie.name }}
+              </mat-option>
+            </mat-select>
+            <mat-error
+              *ngIf="form.controls['study_name'].hasError('required')"
+              >{{ 'DIALOG.STUDY_REQUIRED' | translate }}</mat-error
+            >
+          </mat-form-field>
+        </mat-grid-tile>
+        <mat-grid-tile *ngIf="areQuestionnaireLogsSelected()">
+          <mat-form-field fxFlex class="m20">
+            <mat-select
+              id="selectquestionnaire"
+              [multiple]="true"
+              placeholder="{{ 'SIDENAV.QUESTIONNAIRES' | translate }}"
+              formControlName="questionnaires"
+            >
+              <mat-select-search
+                [formControl]="questionnaireFilterCtrl"
+              ></mat-select-search>
+              <mat-option
+                value="allQuestionnairesCheckbox"
+                (click)="onSelectAllQuestionnairesClicked()"
+                >{{ 'LOGS.SELECT_ALL' | translate }}
+              </mat-option>
+              <mat-option
+                *ngFor="let questionnaire of filteredQuestionnaires | async"
+                [value]="questionnaire.id"
+              >
+                {{ questionnaire.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </mat-grid-tile>
+      </mat-grid-list>
+      <mat-dialog-actions align="center">
+        <button
+          id="confirmbutton"
+          mat-raised-button
+          color="primary"
+          type="submit"
+          [disabled]="!form.valid"
+          data-e2e="e2e-request-logs-button"
+        >
+          {{ 'LOGS.REQUEST' | translate }}
+        </button>
+        <button
+          id="exportbutton"
+          mat-raised-button
+          color="primary"
+          type="button"
+          (click)="onSubmit(form, true)"
+          [disabled]="!form.valid"
+          data-e2e="e2e-export-logs-button"
+        >
+          {{ 'PROBANDEN.EXPORT_DATA' | translate }}
+        </button>
+      </mat-dialog-actions>
+    </form>
+  </div>
+
+  <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+  <div class="example-container mat-elevation-z8">
+    <div class="filter" align="left">
+      <mat-form-field>
+        <input
+          matInput
+          (keyup)="applyFilter($event.target.value)"
+          placeholder="{{ 'DIALOG.FILTER' | translate }}"
+          data-e2e="e2e-filter-input"
+        />
+      </mat-form-field>
+    </div>
+
+    <mat-table
+      #table
+      [dataSource]="dataSource"
+      matSort
+      matSortActive="user_id"
+      matSortDisableClear
+      matSortDirection="asc"
+    >
+      <!-- Proband Name Column -->
+      <ng-container matColumnDef="user_id">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'LOGS.PROBAND' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element" data-e2e="e2e-proband-name-column">
+          {{ element.user_id }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Activity type Column -->
+      <ng-container matColumnDef="activity.type">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'LOGS.ACTIVITY' | translate }}</mat-header-cell
+        >
+        <mat-cell
+          *matCellDef="let element"
+          data-e2e="e2e-proband-activity-column"
+        >
+          {{ element.activity.type | getActivityType | translate }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Timestamp type Column -->
+      <ng-container matColumnDef="timestamp">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'LOGS.TIMESTAMP' | translate }}</mat-header-cell
+        >
+        <mat-cell *matCellDef="let element">
+          {{ element.timestamp | date: 'dd.MM.yyyy HH:mm:ss' }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Questionnaire Name Column -->
+      <ng-container matColumnDef="app">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'LOGS.APP' | translate }}</mat-header-cell
+        >
+        <mat-cell *matCellDef="let element"> {{ element.app }}</mat-cell>
+      </ng-container>
+
+      <!-- Anhang Column -->
+      <ng-container matColumnDef="activity.questionnaireName">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'LOGS.ATTACHMENT' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          {{ element.activity.questionnaireName }}</mat-cell
+        >
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+    </mat-table>
+
+    <mat-paginator
+      #paginator
+      [pageSize]="50"
+      [pageSizeOptions]="[10, 50, 200]"
+      [showFirstLastButtons]="true"
+    >
+    </mat-paginator>
+  </div>
+</div>

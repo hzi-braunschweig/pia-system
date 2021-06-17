@@ -1,0 +1,137 @@
+﻿<div class="jumbotron">
+  <div class="align-center" *ngIf="form">
+    <form
+      class="form-container startForm"
+      [formGroup]="form"
+      (ngSubmit)="f.form.valid && login()"
+      #f="ngForm"
+      novalidate
+    >
+      <h2 data-e2e-login-title>{{ 'LOGIN.LOGIN' | translate }}</h2>
+      <mat-hint class="mat-error" *ngIf="showError">{{
+        'LOGIN.WRONG_DATA' | translate
+      }}</mat-hint>
+      <mat-hint class="mat-error" *ngIf="showBackendConnectionError">{{
+        'LOGIN.BACKEND_CONNECTION_ERROR' | translate
+      }}</mat-hint>
+      <mat-hint class="mat-error" *ngIf="show3WrongAttemptsError"
+        >{{ 'LOGIN.3WRONGATTEMPTS' | translate }} {{ message }}
+        min.
+      </mat-hint>
+      <mat-hint class="mat-error" *ngIf="showTokenExpired">{{
+        'LOGIN.TOKEN_EXPIRED' | translate
+      }}</mat-hint>
+      <div>
+        <div *ngIf="!token_login">
+          <mat-form-field>
+            <mat-label for="username">{{
+              'LOGIN.USERNAME' | translate
+            }}</mat-label>
+            <input
+              matInput
+              id="username"
+              (keypress)="changeState()"
+              type="text"
+              formControlName="username"
+              autocomplete="username"
+              data-e2e-login-input-username
+              required
+            />
+            <mat-icon matSuffix>person</mat-icon>
+            <mat-error *ngIf="!form.controls['username'].valid">{{
+              'LOGIN.USERNAME_REQUIRED' | translate
+            }}</mat-error>
+          </mat-form-field>
+        </div>
+        <div *ngIf="token_login" hidden>
+          <input
+            type="text"
+            [value]="token_login_username"
+            autocomplete="username"
+          />
+        </div>
+        <div>
+          <mat-form-field>
+            <mat-label for="password">{{
+              'LOGIN.PASSWORD' | translate
+            }}</mat-label>
+            <input
+              matInput
+              id="password"
+              (keypress)="changeState()"
+              type="password"
+              formControlName="password"
+              autocomplete="current-password"
+              data-e2e-login-input-password
+            />
+            <mat-icon matSuffix>lock</mat-icon>
+          </mat-form-field>
+        </div>
+        <div>
+          <mat-form-field data-2e2="select-language-dropdown">
+            <mat-label for="language">{{
+              'LOGIN.LANGUAGE' | translate
+            }}</mat-label>
+            <mat-select
+              id="language"
+              [(value)]="localeService.currentLocale"
+              #langSelect
+              (selectionChange)="localeService.currentLocale = langSelect.value"
+            >
+              <mat-option
+                *ngFor="let lang of localeService.supportedLanguages"
+                [value]="lang.locale"
+              >
+                <div class="lang-selection" data-e2e="language-dropdown-item">
+                  <div>{{ lang.language }}</div>
+                  <div class="flag-container">
+                    <span
+                      *ngFor="let flag of lang.flagIcons"
+                      class="flag-icon flag-icon-{{ flag }}"
+                    ></span>
+                  </div>
+                </div>
+              </mat-option>
+            </mat-select>
+            <mat-icon
+              *ngFor="let flag of localeService.currentFlagIcons"
+              fontSet="flag-icon-{{ flag }}"
+              class="flag-icon"
+              matSuffix
+            ></mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="buttons-group">
+        <button
+          type="button"
+          id="forgottenPW"
+          mat-button
+          (click)="showRequestPWDialog()"
+        >
+          {{ 'LOGIN.FORGOTTEN_PW' | translate }}
+        </button>
+        <button
+          *ngIf="other_account"
+          type="button"
+          id="changeaccount"
+          mat-button
+          (click)="showUsername()"
+        >
+          {{ 'LOGIN.ANOTHER_ACCOUNT' | translate }}
+        </button>
+      </div>
+      <div class="start-form-group">
+        <button
+          id="loginbutton"
+          data-e2e-login-button
+          mat-raised-button
+          color="primary"
+          [disabled]="loading"
+        >
+          {{ 'LOGIN.LOGIN' | translate }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

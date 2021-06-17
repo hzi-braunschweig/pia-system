@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "fix-report": "node src/fix-report"
+  }
+}

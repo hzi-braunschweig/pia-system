@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Sormas iFrame Loader</title>
+</head>
+<body>
+<script>
+    localStorage.setItem('currentUser', JSON.stringify( <%-JSON.stringify(data.user)%> ));
+    localStorage.setItem('sormasProband', JSON.stringify( <%-JSON.stringify(data.sormasProband)%> ));
+    window.location.href="/sormas-iframe";
+</script>
+
+</body>
+</html>

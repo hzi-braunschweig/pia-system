@@ -1,0 +1,873 @@
+version: "3.5"
+
+x-logging: &default-logging
+{% if pia_fluentd_enabled %}
+{% raw %}
+  driver: "fluentd"
+  options:
+    tag: "pia.{{.Name}}"
+    fluentd-async: "true"
+{% endraw %}
+{% else %}
+  driver: "json-file"
+{% endif %}
+
+x-extra_hosts: &default-extra_hosts
+  - localhost:127.0.0.1
+{% for service in pia_services %}
+{%   if service.variableName is defined %}
+{%     if (pia_is_qpia and service.qpia) or (pia_is_ewpia and service.ewpia) or (pia_is_ipia and service.ipia) %}
+# {{ service.fullName }} is reachable internally
+{%     else %}
+{%       if service.qpia %}
+  - {{ service.fullName }}:{{ pia_qpia_ip }}
+{%       endif %}
+{%       if service.ewpia %}
+  - {{ service.fullName }}:{{ pia_ewpia_ip }}
+{%       endif %}
+{%       if service.ipia %}
+  - {{ service.fullName }}:{{ pia_ipia_ip }}
+{%       endif %}
+{%     endif %}
+{%   endif %}
+{% endfor %}
+
+networks:
+  pia:
+    name: pia
+{% if hostvars[inventory_hostname]['PIA_IS_SORMAS_ACTIVE'] is sameas true | default(pia_has_sormas) %}
+  sormas:
+    name: sormas
+{% endif %}
+
+volumes:
+  mobileappasset-browser:
+  labresult_testmhh:
+  labresult_testlab2:
+
+{% if pia_local_development %}
+  qpiadb:
+  ipiadb:
+  ewpiadb:
+  messagequeue:
+{% endif %}
+
+services:
+
+{% if pia_is_ewpia %}
+####################################################################################
+# ewpia
+####################################################################################
+  ewpiaservice:
+    image: "registry.netzlink.com/pia/psa.database.ewpia:${PIA_DOCKER_TAG}"
+    restart: unless-stopped
+    container_name: ewpiaservice
+    extra_hosts: *default-extra_hosts
+    environment:
+      - POSTGRES_USER=${EWPIA_USER}
+      - POSTGRES_PASSWORD=${EWPIA_PASSWORD}
+      - POSTGRES_DB=${EWPIA_DB}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.database.ewpia/Dockerfile
+      args:
+        DIR: psa.database.ewpia
+{% endif %}
+{% if pia_expose_postgres_ports %}
+    ports:
+      - "5432:5432"
+{% endif %}
+    volumes:
+      - "$SSL_DIRECTORY/ewpiaservice:/tmp_config/ssl"
+      - "$EWPIA_DATA_DIRECTORY:/var/lib/postgresql/data"
+    logging: *default-logging
+    networks:
+      pia:
+{% endif %}
+
+{% if pia_is_ipia %}
+####################################################################################
+# ipia
+####################################################################################
+  ipiaservice:
+    image: "registry.netzlink.com/pia/psa.database.ipia:${PIA_DOCKER_TAG}"
+    restart: unless-stopped
+    container_name: ipiaservice
+    extra_hosts: *default-extra_hosts
+    environment:
+      - POSTGRES_USER=${IPIA_USER}
+      - POSTGRES_PASSWORD=${IPIA_PASSWORD}
+      - POSTGRES_DB=${IPIA_DB}
+      # service users
+      - DB_PERSONALDATA_USER=${DB_PERSONALDATA_USER}
+      - DB_PERSONALDATA_PASSWORD=${DB_PERSONALDATA_PASSWORD}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.database.ipia/Dockerfile
+      args:
+        DIR: psa.database.ipia
+{% endif %}
+    volumes:
+      - $SSL_DIRECTORY/ipiaservice:/tmp_config/ssl
+      - "$IPIA_DATA_DIRECTORY:/var/lib/postgresql/data"
+    logging: *default-logging
+    networks:
+      pia:
+
+  personaldataservice:
+    image: registry.netzlink.com/pia/psa.service.personaldataservice:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
+      - WEBAPP_URL=${WEBAPP_URL}
+      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - DB_PERSONALDATA_HOST=${DB_PERSONALDATA_HOST}
+      - DB_PERSONALDATA_PORT=${DB_PERSONALDATA_PORT}
+      - DB_PERSONALDATA_USER=${DB_PERSONALDATA_USER}
+      - DB_PERSONALDATA_PASSWORD=${DB_PERSONALDATA_PASSWORD}
+      - DB_PERSONALDATA_DB=${DB_PERSONALDATA_DB}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USER=${MAIL_USER}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_REQUIRE_TLS=${MAIL_REQUIRE_TLS}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      - LOGGINGSERVICE_HOST=${LOGGINGSERVICE_HOST}
+      - LOGGINGSERVICE_INTERNAL_PORT=${LOGGINGSERVICE_INTERNAL_PORT}
+      - USERSERVICE_HOST=${USERSERVICE_HOST}
+      - USERSERVICE_INTERNAL_PORT=${USERSERVICE_INTERNAL_PORT}
+      - AUTHSERVICE_HOST=${AUTHSERVICE_HOST}
+      - AUTHSERVICE_INTERNAL_PORT=${AUTHSERVICE_INTERNAL_PORT}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.service.personaldataservice/Dockerfile
+      args:
+        DIR: psa.service.personaldataservice
+{% endif %}
+    container_name: personaldataservice
+    ports:
+      - "${PERSONALDATASERVICE_PORT_EXPOSED}:4000"
+      - "${PERSONALDATASERVICE_INTERNAL_PORT_EXPOSED}:5000"
+    volumes:
+      - $SSL_DIRECTORY/personaldataservice:/usr/src/node-app/ssl
+      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
+    logging: *default-logging
+    networks:
+      pia:
+
+{% if pia_has_externaldataservice %}
+  externaldataservice:
+    image: "registry.netzlink.com/pia/psa.service.externaldataservice:${PIA_DOCKER_TAG}"
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
+      - MODYS_USER=${MODYS_USER}
+      - MODYS_PASSWORD=${MODYS_PASSWORD}
+      - MODYS_DB=${MODYS_DB}
+      - MODYS_HOST=${MODYS_HOST}
+      - MODYS_PORT=${MODYS_PORT}
+      - MODYS_SSL=${MODYS_SSL}
+      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - PERSONALDATASERVICE_HOST=${PERSONALDATASERVICE_HOST}
+      - PERSONALDATASERVICE_INTERNAL_PORT=${PERSONALDATASERVICE_INTERNAL_PORT}
+      - USERSERVICE_HOST=${USERSERVICE_HOST}
+      - USERSERVICE_INTERNAL_PORT=${USERSERVICE_INTERNAL_PORT}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.service.externaldataservice/Dockerfile
+      args:
+        DIR: psa.service.externaldataservice
+{% endif %}
+    container_name: externaldataservice
+    ports:
+      - "${EXTERNALDATASERVICE_PORT_EXPOSED}:4000"
+      - "${EXTERNALDATASERVICE_INTERNAL_PORT_EXPOSED}:5000"
+    volumes:
+      - $SSL_DIRECTORY/externaldataservice:/usr/src/node-app/ssl
+    logging: *default-logging
+    networks:
+      pia:
+
+{% if hostvars[inventory_hostname]['PIA_IS_DEVELOPMENT_SYSTEM'] | default(pia_is_development_system) %}
+  modys:
+    image: "registry.netzlink.com/pia/psa.server.modys:${PIA_DOCKER_TAG}"
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MODYS_PASSWORD}
+      - MYSQL_USER=${MODYS_USER}
+      - MYSQL_PASSWORD=${MODYS_PASSWORD}
+      - MYSQL_DATABASE=${MODYS_DB}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.server.modys/Dockerfile
+      args:
+        DIR: psa.server.modys
+{% endif %}
+    container_name: ${MODYS_HOST}
+    volumes:
+      - $SSL_DIRECTORY/modys:/etc/mysql/ssl/
+    logging: *default-logging
+    networks:
+      pia:
+
+{% endif %}
+
+{% endif %}
+
+{% endif %}
+
+{% if pia_is_qpia %}
+####################################################################################
+# qpia
+####################################################################################
+  userservice:
+    image: registry.netzlink.com/pia/psa.service.userservice:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
+      - WEBAPP_URL=${WEBAPP_URL}
+      - API_KEY=${API_KEY}
+      - BACKEND_API_URL=${BACKEND_API_URL}
+      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - USER_PASSWORD_LENGTH=${USER_PASSWORD_LENGTH}
+      - LOGGINGSERVICE_HOST=${LOGGINGSERVICE_HOST}
+      - LOGGINGSERVICE_INTERNAL_PORT=${LOGGINGSERVICE_INTERNAL_PORT}
+      - PERSONALDATASERVICE_HOST=${PERSONALDATASERVICE_HOST}
+      - PERSONALDATASERVICE_INTERNAL_PORT=${PERSONALDATASERVICE_INTERNAL_PORT}
+      - SORMASSERVICE_HOST=${SORMASSERVICE_HOST}
+      - SORMASSERVICE_INTERNAL_PORT=${SORMASSERVICE_INTERNAL_PORT}
+      - IS_SORMAS_ACTIVE=${IS_SORMAS_ACTIVE}
+      - QPIA_HOST=${QPIA_HOST}
+      - QPIA_PORT=${QPIA_PORT}
+      - QPIA_USER=${QPIA_USER}
+      - QPIA_PASSWORD=${QPIA_PASSWORD}
+      - QPIA_DB=${QPIA_DB}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USER=${MAIL_USER}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_REQUIRE_TLS=${MAIL_REQUIRE_TLS}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      - AUTHSERVICE_HOST=${AUTHSERVICE_HOST}
+      - AUTHSERVICE_INTERNAL_PORT=${AUTHSERVICE_INTERNAL_PORT}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.service.userservice/Dockerfile
+      args:
+        DIR: psa.service.userservice
+{% endif %}
+    container_name: userservice
+    depends_on:
+      - databaseservice
+    ports:
+      - "${USERSERVICE_PORT_EXPOSED}:4000"
+      - "${USERSERVICE_INTERNAL_PORT_EXPOSED}:5000"
+    volumes:
+      - $SSL_DIRECTORY/userservice:/usr/src/node-app/ssl
+      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
+      - $AUTH_KEY_DIRECTORY/private.key:/usr/src/node-app/authKey/private.key
+    logging: *default-logging
+    networks:
+      pia:
+{% if hostvars[inventory_hostname]['PIA_IS_SORMAS_ACTIVE'] is sameas true | default(pia_has_sormas) %}
+      sormas:
+{% endif %}
+
+  authservice:
+    image: registry.netzlink.com/pia/psa.service.authservice:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
+      - WEBAPP_URL=${WEBAPP_URL}
+      - CERT_CHECK_ENABLED=${CERT_CHECK_ENABLED}
+      - IP_CHECK_ENABLED=${CERT_CHECK_ENABLED}
+      - LOGGINGSERVICE_HOST=${LOGGINGSERVICE_HOST}
+      - LOGGINGSERVICE_INTERNAL_PORT=${LOGGINGSERVICE_INTERNAL_PORT}
+      - PERSONALDATASERVICE_HOST=${PERSONALDATASERVICE_HOST}
+      - PERSONALDATASERVICE_INTERNAL_PORT=${PERSONALDATASERVICE_INTERNAL_PORT}
+      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - USER_PASSWORD_LENGTH=${USER_PASSWORD_LENGTH}
+      - QPIA_HOST=${QPIA_HOST}
+      - QPIA_PORT=${QPIA_PORT}
+      - QPIA_USER=${QPIA_USER}
+      - QPIA_PASSWORD=${QPIA_PASSWORD}
+      - QPIA_DB=${QPIA_DB}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USER=${MAIL_USER}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_REQUIRE_TLS=${MAIL_REQUIRE_TLS}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      - SORMAS_ON_PIA_USER=${SORMAS_ON_PIA_USER}
+      - SORMAS_ON_PIA_PASSWORD=${SORMAS_ON_PIA_PASSWORD}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.service.authservice/Dockerfile
+      args:
+        DIR: psa.service.authservice
+{% endif %}
+    container_name: authservice
+    depends_on:
+      - databaseservice
+    ports:
+      - "${AUTHSERVICE_PORT_EXPOSED}:4000"
+      - "${AUTHSERVICE_INTERNAL_PORT_EXPOSED}:5000"
+    volumes:
+      - $SSL_DIRECTORY/authservice:/usr/src/node-app/ssl
+      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
+      - $AUTH_KEY_DIRECTORY/private.key:/usr/src/node-app/authKey/private.key
+    logging: *default-logging
+    networks:
+      pia:
+
+  questionnaireservice:
+    image: registry.netzlink.com/pia/psa.service.questionnaireservice:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
+      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - LOGGINGSERVICE_HOST=${LOGGINGSERVICE_HOST}
+      - LOGGINGSERVICE_INTERNAL_PORT=${LOGGINGSERVICE_INTERNAL_PORT}
+      - QPIA_HOST=${QPIA_HOST}
+      - QPIA_PORT=${QPIA_PORT}
+      - QPIA_USER=${QPIA_USER}
+      - QPIA_PASSWORD=${QPIA_PASSWORD}
+      - QPIA_DB=${QPIA_DB}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.service.questionnaireservice/Dockerfile
+      args:
+        DIR: psa.service.questionnaireservice
+{% endif %}
+    container_name: questionnaireservice
+    depends_on:
+      - databaseservice
+    ports:
+      - "${QUESTIONNAIRESERVICE_PORT_EXPOSED}:4000"
+      - "${QUESTIONNAIRESERVICE_INTERNAL_PORT_EXPOSED}:5000"
+    volumes:
+      - $SSL_DIRECTORY/questionnaireservice:/usr/src/node-app/ssl
+      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
+    logging: *default-logging
+    networks:
+      pia:
+
+  complianceservice:
+    image: registry.netzlink.com/pia/psa.service.complianceservice:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
+      - WEBAPP_URL=${WEBAPP_URL}
+      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - EWPIA_HOST=${EWPIA_HOST}
+      - EWPIA_PORT=${EWPIA_PORT}
+      - EWPIA_USER=${EWPIA_USER}
+      - EWPIA_PASSWORD=${EWPIA_PASSWORD}
+      - EWPIA_DB=${EWPIA_DB}
+      - SORMASSERVICE_HOST=${SORMASSERVICE_HOST}
+      - SORMASSERVICE_INTERNAL_PORT=${SORMASSERVICE_INTERNAL_PORT}
+      - USERSERVICE_HOST=${USERSERVICE_HOST}
+      - USERSERVICE_INTERNAL_PORT=${USERSERVICE_INTERNAL_PORT}
+      - IS_SORMAS_ACTIVE=${IS_SORMAS_ACTIVE}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.service.complianceservice/Dockerfile
+      args:
+        DIR: psa.service.complianceservice
+{% endif %}
+    container_name: complianceservice
+    ports:
+      - "${COMPLIANCESERVICE_PORT_EXPOSED}:4000"
+      - "${COMPLIANCESERVICE_INTERNAL_PORT_EXPOSED}:5000"
+    volumes:
+      - $SSL_DIRECTORY/complianceservice:/usr/src/node-app/ssl
+      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
+    logging: *default-logging
+    networks:
+      pia:
+
+  analyzerservice:
+    image: registry.netzlink.com/pia/psa.service.analyzerservice:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
+      - IS_SORMAS_ACTIVE=${IS_SORMAS_ACTIVE}
+      - SORMASSERVICE_HOST=${SORMASSERVICE_HOST}
+      - SORMASSERVICE_INTERNAL_PORT=${SORMASSERVICE_INTERNAL_PORT}
+      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - QPIA_HOST=${QPIA_HOST}
+      - QPIA_PORT=${QPIA_PORT}
+      - QPIA_USER=${QPIA_USER}
+      - QPIA_PASSWORD=${QPIA_PASSWORD}
+      - QPIA_DB=${QPIA_DB}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.service.analyzerservice/Dockerfile
+      args:
+        DIR: psa.service.analyzerservice
+{% endif %}
+    container_name: analyzerservice
+    depends_on:
+      - databaseservice
+    ports:
+      - "${ANALYZERSERVICE_PORT_EXPOSED}:4000"
+      - "${ANALYZERSERVICE_INTERNAL_PORT_EXPOSED}:5000"
+    volumes:
+      - $SSL_DIRECTORY/analyzerservice:/usr/src/node-app/ssl
+      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
+    logging: *default-logging
+    networks:
+      pia:
+
+  notificationservice:
+    image: registry.netzlink.com/pia/psa.service.notificationservice:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
+      - WEBAPP_URL=${WEBAPP_URL}
+      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - PERSONALDATASERVICE_HOST=${PERSONALDATASERVICE_HOST}
+      - PERSONALDATASERVICE_INTERNAL_PORT=${PERSONALDATASERVICE_INTERNAL_PORT}
+      - USERSERVICE_HOST=${USERSERVICE_HOST}
+      - USERSERVICE_INTERNAL_PORT=${USERSERVICE_INTERNAL_PORT}
+      - QPIA_HOST=${QPIA_HOST}
+      - QPIA_PORT=${QPIA_PORT}
+      - QPIA_USER=${QPIA_USER}
+      - QPIA_PASSWORD=${QPIA_PASSWORD}
+      - QPIA_DB=${QPIA_DB}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USER=${MAIL_USER}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_REQUIRE_TLS=${MAIL_REQUIRE_TLS}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.service.notificationservice/Dockerfile
+      args:
+        DIR: psa.service.notificationservice
+{% endif %}
+    container_name: notificationservice
+    depends_on:
+      - databaseservice
+    ports:
+      - "${NOTIFICATIONSERVICE_PORT_EXPOSED}:4000"
+      - "${NOTIFICATIONSERVICE_INTERNAL_PORT_EXPOSED}:5000"
+    volumes:
+      - $SSL_DIRECTORY/notificationservice:/usr/src/node-app/ssl
+      # there should be a credential.json
+      - $FIREBASE_DIRECTORY:/usr/src/node-app/firebase/
+      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
+    logging: *default-logging
+    networks:
+      pia:
+
+  sampletrackingservice:
+    image: registry.netzlink.com/pia/psa.service.sampletrackingservice:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
+      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - QPIA_HOST=${QPIA_HOST}
+      - QPIA_PORT=${QPIA_PORT}
+      - QPIA_USER=${QPIA_USER}
+      - QPIA_PASSWORD=${QPIA_PASSWORD}
+      - QPIA_DB=${QPIA_DB}
+      - WEBAPP_URL=${WEBAPP_URL}
+      - MHH_FTPSERVICE_HOST
+      - MHH_FTPSERVICE_PORT
+      - MHH_FTPSERVICE_USER
+      - MHH_FTPSERVICE_PW
+      - HZI_FTPSERVICE_HOST
+      - HZI_FTPSERVICE_PORT
+      - HZI_FTPSERVICE_USER
+      - HZI_FTPSERVICE_PW
+      - COMPLIANCESERVICE_HOST=${COMPLIANCESERVICE_HOST}
+      - COMPLIANCESERVICE_INTERNAL_PORT=${COMPLIANCESERVICE_INTERNAL_PORT}
+      - USERSERVICE_HOST=${USERSERVICE_HOST}
+      - USERSERVICE_INTERNAL_PORT=${USERSERVICE_INTERNAL_PORT}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.service.sampletrackingservice/Dockerfile
+      args:
+        DIR: psa.service.sampletrackingservice
+{% endif %}
+    container_name: sampletrackingservice
+    depends_on:
+      - databaseservice
+    ports:
+      - "${SAMPLETRACKINGSERVICE_PORT_EXPOSED}:4000"
+      - "${SAMPLETRACKINGSERVICE_INTERNAL_PORT_EXPOSED}:5000"
+    volumes:
+      - $SSL_DIRECTORY/sampletrackingservice:/usr/src/node-app/ssl
+      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
+    logging: *default-logging
+    networks:
+      pia:
+
+  loggingservice:
+    image: registry.netzlink.com/pia/psa.service.loggingservice:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
+      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - DB_LOG_HOST=${DB_LOG_HOST}
+      - DB_LOG_PORT=${DB_LOG_PORT}
+      - DB_LOG_USER=${DB_LOG_USER}
+      - DB_LOG_PASSWORD=${DB_LOG_PASSWORD}
+      - DB_LOG_DB=${DB_LOG_DB}
+      - WEBAPP_URL=${WEBAPP_URL}
+      - USERSERVICE_HOST=${USERSERVICE_HOST}
+      - USERSERVICE_INTERNAL_PORT=${USERSERVICE_INTERNAL_PORT}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.service.loggingservice/Dockerfile
+      args:
+        DIR: psa.service.loggingservice
+{% endif %}
+    container_name: loggingservice
+    depends_on:
+      - databaseservice
+    ports:
+      - "${LOGGINGSERVICE_PORT_EXPOSED}:4000"
+      - "${LOGGINGSERVICE_INTERNAL_PORT_EXPOSED}:5000"
+    volumes:
+      - $SSL_DIRECTORY/loggingservice:/usr/src/node-app/ssl
+      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
+    logging: *default-logging
+    networks:
+      pia:
+
+  databaseservice:
+    image: registry.netzlink.com/pia/psa.database:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    volumes:
+      - "$QPIA_DATA_DIRECTORY:/var/lib/postgresql/data"
+      - "$SSL_DIRECTORY/databaseservice:/tmp_config/ssl"
+    environment:
+      - POSTGRES_USER=${QPIA_USER}
+      - POSTGRES_PASSWORD=${QPIA_PASSWORD}
+      - POSTGRES_DB=${QPIA_DB}
+      # service users
+      - DB_LOG_USER=${DB_LOG_USER}
+      - DB_LOG_PASSWORD=${DB_LOG_PASSWORD}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.database/Dockerfile
+      args:
+        DIR: psa.database
+{% endif %}
+    container_name: databaseservice
+    logging: *default-logging
+    networks:
+      pia:
+
+  webappserver:
+    image: registry.netzlink.com/pia/psa.app.web:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - IS_DEVELOPMENT_SYSTEM=${IS_DEVELOPMENT_SYSTEM}
+      - API_ADDRESS=${API_ADDRESS}
+      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - WEBAPPSERVER_HTTP_PORT=${WEBAPPSERVER_HTTP_PORT}
+      - WEBAPPSERVER_HTTPS_PORT=${WEBAPPSERVER_HTTPS_PORT}
+    # command: /bin/sh -c "node --max_old_space_size=4096 /app/node_modules/@angular/cli/bin/ng build --prod; node serve_app.js"
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.app.web/Dockerfile
+      args:
+        DIR: psa.app.web
+{% endif %}
+    container_name: webappserver
+    volumes:
+      - $SSL_DIRECTORY/webappserver:/etc/ssl
+      - "mobileappasset-browser:/usr/share/nginx/html/assets/browser/"
+    expose:
+      - "443"
+    depends_on:
+      - userservice
+      - mobileappasset
+    logging: *default-logging
+    networks:
+      pia:
+
+  mobileappasset:
+    image: registry.netzlink.com/pia/psa.app.mobile:${PIA_DOCKER_TAG}
+    container_name: mobileappasset
+    extra_hosts: *default-extra_hosts
+    environment:
+      - WEBAPP_URL=${WEBAPP_URL}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.app.mobile/Dockerfile
+      args:
+        DIR: psa.app.mobile
+{% endif %}
+    command: "sh -c 'cp -r /assets/browser/* /dest/browser/ && tail -f /dev/null'"
+    volumes:
+      - "mobileappasset-browser:/dest/browser/"
+    logging: *default-logging
+
+{% if hostvars[inventory_hostname]['PIA_IS_DEVELOPMENT_SYSTEM'] | default(pia_is_development_system) %}
+  # this service is ONLY for testing stages!
+  # NEVER DEPLOY IT TO A PRODUCTIVE SYSTEM!
+  deploymentservice:
+    image: registry.netzlink.com/pia/psa.utils.deploymentservice:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - QPIA_HOST=${QPIA_HOST}
+      - QPIA_PORT=${QPIA_PORT}
+      - QPIA_USER=${QPIA_USER}
+      - QPIA_PASSWORD=${QPIA_PASSWORD}
+      - QPIA_DB=${QPIA_DB}
+      - ENABLE_DB_IMPORT=${ENABLE_DB_IMPORT}
+      - ENABLE_DB_EXPORT=${ENABLE_DB_EXPORT}
+      - DEPLOYMENT_USER=${DEPLOYMENT_USER}
+      - DEPLOYMENT_PASSWORD=${DEPLOYMENT_PASSWORD}
+      - IS_DEVELOPMENT_SYSTEM=${IS_DEVELOPMENT_SYSTEM}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.utils.deploymentservice/Dockerfile
+      args:
+        DIR: psa.utils.deploymentservice
+{% endif %}
+    volumes:
+      # required to modify (e.g. restart) other containers
+      # ONCE AGAIN: NEVER DEPLOY IT TO A PRODUCTIVE SYSTEM!
+      - /var/run/docker.sock:/var/run/docker.sock
+    container_name: deploymentservice
+    networks:
+      pia:
+    logging: *default-logging
+{% endif %}
+
+{% if hostvars[inventory_hostname]['PIA_IS_SORMAS_ACTIVE'] | default(pia_has_sormas) %}
+  sormasservice:
+    image: registry.netzlink.com/pia/psa.service.sormasservice:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
+      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - USERSERVICE_HOST=${USERSERVICE_HOST}
+      - USERSERVICE_INTERNAL_PORT=${USERSERVICE_INTERNAL_PORT}
+      - WEBAPP_URL=${WEBAPP_URL}
+      - QPIA_HOST=${QPIA_HOST}
+      - QPIA_PORT=${QPIA_PORT}
+      - QPIA_USER=${QPIA_USER}
+      - QPIA_PASSWORD=${QPIA_PASSWORD}
+      - QPIA_DB=${QPIA_DB}
+      - SORMAS_SERVER=${SORMAS_SERVER_URL}
+      - PIA_ON_SORMAS_USER=${PIA_ON_SORMAS_USER}
+      - PIA_ON_SORMAS_PASSWORD=${PIA_ON_SORMAS_PASSWORD}
+      - VERBOSE=${VERBOSE}
+# this is just a workaround!
+# NLI should find a solution for a valid certificate setup!
+{% if pia_disable_hairpinning %}
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    extra_hosts:
+      - ${SORMAS_SERVER_URL}:{{ hostvars[inventory_hostname]['ansible_ssh_host'] | default(new_host_ipv4) }}
+{% endif %}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.service.sormasservice/Dockerfile
+      args:
+        DIR: psa.service.sormasservice
+{% endif %}
+    container_name: sormasservice
+    depends_on:
+      - databaseservice
+    volumes:
+      # for newer Version (probably 1.7.0) the workdir will change!
+      # old path:
+      - $SSL_DIRECTORY/sormasservice:/ssl
+      # new path:
+      - $SSL_DIRECTORY/sormasservice:/usr/src/node-app/ssl
+      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
+    logging: *default-logging
+    networks:
+      pia:
+{% endif %}
+
+  labresultssftpserver:
+    image: registry.netzlink.com/pia/psa.server.sftpserver:${PIA_DOCKER_TAG}
+    container_name: labresultssftpserver
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+{% if not pia_local_development %}
+    volumes:
+      - labresult_testmhh:/home/testmhh/upload
+      - labresult_testlab2:/home/testlab2/upload
+      - labresult_testmhh:/home/sampletrackingservice/upload/testmhh
+      - labresult_testlab2:/home/sampletrackingservice/upload/testlab2
+      - /root/users.conf:/etc/sftp/users.conf:ro
+      - $SSH_KEY_DIRECTORY/sftpservice/ssh_host_ed25519_key:/etc/ssh/ssh_host_ed25519_key:ro
+      - $SSH_KEY_DIRECTORY/sftpservice/ssh_host_rsa_key:/etc/ssh/ssh_host_rsa_key:ro
+{% endif %}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.server.sftpserver/Dockerfile
+      args:
+        DIR: psa.server.sftpserver
+
+    # only set the command on development machines!
+    command: 'testhzi:superpass:::upload testmhh:pass:::upload'
+{% endif %}
+    ports:
+      - "2222:22"
+    networks:
+      pia:
+    logging: *default-logging
+
+  apigateway:
+    image: registry.netzlink.com/pia/psa.server.apigateway:${PIA_DOCKER_TAG}
+    container_name: apigateway
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      # the SSL key/cert that is used for the external traffic
+      - SSL_CERTIFICATE=/etc/ssl/api.cert
+      - SSL_CERTIFICATE_KEY=/etc/ssl/api.key
+      - WEBAPPSERVER_HTTP_PORT=${WEBAPPSERVER_HTTP_PORT}
+      - WEBAPPSERVER_HTTPS_PORT=${WEBAPPSERVER_HTTPS_PORT}
+      - USERSERVICE_PORT=${USERSERVICE_PORT}
+      - AUTHSERVICE_PORT=${AUTHSERVICE_PORT}
+      - QUESTIONNAIRESERVICE_PORT=${QUESTIONNAIRESERVICE_PORT}
+      - NOTIFICATIONSERVICE_PORT=${NOTIFICATIONSERVICE_PORT}
+      - SAMPLETRACKINGSERVICE_PORT=${SAMPLETRACKINGSERVICE_PORT}
+      - PERSONALDATASERVICE_PORT=${PERSONALDATASERVICE_PORT}
+      - LOGGINGSERVICE_PORT=${LOGGINGSERVICE_PORT}
+      - EXTERNALDATASERVICE_PORT=${EXTERNALDATASERVICE_PORT}
+      - COMPLIANCESERVICE_PORT=${COMPLIANCESERVICE_PORT}
+      - ANALYZERSERVICE_PORT=${ANALYZERSERVICE_PORT}
+      - SORMASSERVICE_PORT=${SORMASSERVICE_PORT}
+      - DEPLOYMENTSERVICE_PORT=${DEPLOYMENTSERVICE_PORT}
+      # the CA certificate that is used for checks against the communication to the internal services
+      - SSL_CA=/etc/ssl/ca.cert
+      - X_FRAME_OPTIONS=${X_FRAME_OPTIONS}
+      - CONTENT_SECURITY_POLICY=${CONTENT_SECURITY_POLICY}
+      # NEVER SET THIS ON ANY SYSTEM THAT COULD CONTAIN SENSITIVE DATA!
+      - IS_DEVELOPMENT_SYSTEM=${IS_DEVELOPMENT_SYSTEM}
+      - EXTERNAL_PROTOCOL=${EXTERNAL_PROTOCOL}
+      - EXTERNAL_PORT=${EXTERNAL_PORT}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.server.apigateway/Dockerfile
+      args:
+        DIR: psa.server.apigateway
+{% endif %}
+    volumes:
+      - $SSL_DIRECTORY/apigateway:/etc/ssl/
+    ports:
+{% if pia_expose_http_ports %}
+      - "443:443"
+      - "80:80"
+{% else %}
+      - "443"
+      - "80"
+{% endif %}
+    networks:
+      pia:
+    logging: *default-logging
+
+  messagequeue:
+    image: registry.netzlink.com/pia/psa.server.messagequeue:${PIA_DOCKER_TAG}
+    container_name: messagequeue
+    # do not change this name without a reason, the stored data will be lost!
+    hostname: messagequeue
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - "MESSAGEQUEUE_ADMIN_PASSWORD=${MESSAGEQUEUE_ADMIN_PASSWORD}"
+      - "MESSAGEQUEUE_APP_PASSWORD=${MESSAGEQUEUE_APP_PASSWORD}"
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.server.messagequeue/Dockerfile
+      args:
+        DIR: psa.server.messagequeue
+{% endif %}
+    volumes:
+      - "$MESSAGEQUEUE_DATA_DIRECTORY:/var/lib/rabbitmq/mnesia/"
+    ports:
+      - "5672:5672"
+    networks:
+      pia:
+    logging: *default-logging
+
+{% endif %}
+
+####################################################################################
+# all hosts
+####################################################################################
+
+  metrics-reverse-proxy:
+    image: registry.netzlink.com/pia/psa.utils.metrics:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    container_name: metrics-reverse-proxy
+    extra_hosts: *default-extra_hosts
+    environment:
+      - PROTOCOL=${PROTOCOL}
+      - METRICS_EXTERNAL_PROTOCOL=${METRICS_EXTERNAL_PROTOCOL}
+      - METRICS_ENABLED_FOR=${METRICS_ENABLED_FOR}
+      - AUTHSERVICE_PORT=$AUTHSERVICE_PORT
+      - EXTERNALDATASERVICE_PORT=$EXTERNALDATASERVICE_PORT
+      - QUESTIONNAIRESERVICE_PORT=$QUESTIONNAIRESERVICE_PORT
+      - NOTIFICATIONSERVICE_PORT=$NOTIFICATIONSERVICE_PORT
+      - COMPLIANCESERVICE_PORT=$COMPLIANCESERVICE_PORT
+      - PERSONALDATASERVICE_PORT=$PERSONALDATASERVICE_PORT
+      - SAMPLETRACKINGSERVICE_PORT=$SAMPLETRACKINGSERVICE_PORT
+      - USERSERVICE_PORT=$USERSERVICE_PORT
+      - LOGGINGSERVICE_PORT=$LOGGINGSERVICE_PORT
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.utils.metrics/Dockerfile
+      args:
+        DIR: psa.utils.metrics
+{% endif %}
+    ports:
+      - 9000:80
+    volumes:
+      - $SSL_DIRECTORY/metricsproxy:/ssl
+    networks:
+      pia:
+    logging: *default-logging

@@ -1,0 +1,18 @@
+<div class="ion-margin-top">
+  <ion-progress-bar
+    *ngIf="status === 'active' || status === 'in_progress'"
+    [value]="progress / 100"
+    color="secondary"
+  ></ion-progress-bar>
+  <ion-progress-bar
+    *ngIf="status === 'released_once'"
+    [value]="progress / 100"
+    color="tertiary"
+  ></ion-progress-bar>
+  <ion-progress-bar
+    *ngIf="status === 'released_twice'"
+    [value]="progress / 100"
+    color="medium"
+  ></ion-progress-bar>
+  <ion-note>{{ progress }}%</ion-note>
+</div>

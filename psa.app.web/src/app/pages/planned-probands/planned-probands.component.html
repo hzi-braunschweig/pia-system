@@ -1,0 +1,124 @@
+<div class="jumbotron">
+  <div
+    class="page-header"
+    fxLayout="row"
+    fxLayout.lt-lg="row wrap"
+    fxLayoutAlign="space-between center"
+  >
+    <div>
+      <mat-form-field>
+        <input
+          matInput
+          #filter
+          placeholder="{{ 'DIALOG.FILTER' | translate }}"
+        />
+      </mat-form-field>
+    </div>
+    <div>
+      <button mat-raised-button color="primary" (click)="addPlannedProbands()">
+        {{ 'PLANNED_PROBANDS.ADD' | translate }}
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        [disabled]="selection.selected.length == 0"
+        (click)="createLetters()"
+      >
+        {{ 'PLANNED_PROBANDS.CREATE_LOGIN_PDFS' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <div class="probands-container mat-elevation-z8">
+    <mat-table
+      #table
+      [dataSource]="dataSource"
+      matSortActive="user_id"
+      matSortDirection="asc"
+      matSort
+    >
+      <!-- Checkbox Column -->
+      <ng-container matColumnDef="select">
+        <mat-header-cell *matHeaderCellDef fxFlex="2 0 40px">
+          <mat-checkbox
+            (change)="$event ? masterToggle() : null"
+            [checked]="selection.hasValue() && isAllSelected()"
+            [indeterminate]="selection.hasValue() && !isAllSelected()"
+          >
+          </mat-checkbox>
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row" fxFlex="2 0 40px">
+          <mat-checkbox
+            (click)="$event.stopPropagation()"
+            (change)="$event ? selection.toggle(row) : null"
+            [checked]="selection.isSelected(row)"
+          >
+          </mat-checkbox>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Pseudonym Column -->
+      <ng-container matColumnDef="user_id" matSortStart>
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="column name">
+          {{ 'PLANNED_PROBANDS.USER_ID' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row" class="column name">
+          {{ row.user_id }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Study Column -->
+      <ng-container matColumnDef="study_id">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="column name">
+          {{ 'PLANNED_PROBANDS.STUDY_IDS' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row" class="column name">
+          {{ row.studies }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="activated_at">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'PLANNED_PROBANDS.STATUS' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row"> {{ row.activated_at }} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="delete">
+        <mat-header-cell
+          *matHeaderCellDef
+          fxFlex="2 0 40px"
+          fxLayoutAlign="center center"
+        ></mat-header-cell>
+        <mat-cell
+          *matCellDef="let row"
+          fxFlex="2 0 40px"
+          fxLayoutAlign="center center"
+        >
+          <button
+            id="deleteicon"
+            #delete
+            mat-icon-button
+            (click)="openDeleteDialog(row.user_id)"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns"> </mat-row>
+    </mat-table>
+
+    <mat-paginator
+      #paginator
+      [pageIndex]="0"
+      [pageSize]="100"
+      [pageSizeOptions]="[25, 100, 200, 500]"
+    >
+    </mat-paginator>
+  </div>
+</div>

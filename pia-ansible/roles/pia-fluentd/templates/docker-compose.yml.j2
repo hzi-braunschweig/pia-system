@@ -1,0 +1,12 @@
+version: '3.5'
+
+services:
+    fluentd:
+        image: registry.netzlink.com/pia/psa.utils.log-sink:${PIA_DOCKER_TAG}
+        ports:
+        - 127.0.0.1:24224:24224
+        environment:
+            - FLUENTD_CONF=pia.conf
+        volumes:
+            - {{ pia_fluentd_path }}/pia.conf:/fluentd/etc/pia.conf
+            - {{ pia_fluentd_path }}/logs:/logs

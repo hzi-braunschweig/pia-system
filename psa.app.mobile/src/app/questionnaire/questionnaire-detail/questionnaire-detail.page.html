@@ -1,0 +1,324 @@
+<app-header
+  [title]="questionnaireInstance?.questionnaire_name"
+  isChildPageOf="questionnaire"
+></app-header>
+<ion-progress-bar
+  color="success"
+  [value]="questionnaireInstance?.progress / 100"
+  *ngIf="!isLoading"
+></ion-progress-bar>
+<ion-progress-bar
+  color="success"
+  type="indeterminate"
+  *ngIf="isLoading"
+></ion-progress-bar>
+
+<ion-content color="primary-light">
+  <div class="pia-message-centered" *ngIf="isLoading">
+    <p>{{ 'GENERAL.LOADING' | translate }}</p>
+  </div>
+
+  <ion-slides
+    *ngIf="form"
+    [options]="slidesOptions"
+    (ionSlideDidChange)="afterSlideChange()"
+    (ionSlideWillChange)="beforeSlideChange()"
+    (ionSlidesDidLoad)="afterSlideInit()"
+  >
+    <ng-container *ngIf="!hasQuestionnaireStatus('released_twice')">
+      <ng-container
+        *ngFor="let question of questionnaireInstance?.questionnaire?.questions; index as questionIndex"
+      >
+        <ion-slide *ngIf="isConditionMet(question)">
+          <div class="pia-slide-content">
+            <ion-card>
+              <ion-card-header
+                class="
+                  pia-questionnaire-question pia-questionnaire-question-header
+                "
+              >
+                <markdown
+                  ngPreserveWhitespaces
+                  [data]="question.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+                >
+                </markdown>
+              </ion-card-header>
+              <ion-list>
+                <ng-container
+                  *ngFor="let answer of question.answer_options; index as answerIndex;"
+                >
+                  <ng-container *ngIf="isConditionMet(answer)">
+                    <ng-container
+                      *ngIf="getFormControlAtPosition(questionIndex, answerIndex) as formControl"
+                    >
+                      <ng-container [ngSwitch]="answer.answer_type_id">
+                        <ng-container *ngSwitchCase="AnswerType.SingleSelect">
+                          <app-questionnaire-answer-single-select
+                            [label]="answer?.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+                            [formControl]="formControl"
+                            [name]="answer.id"
+                            [values]="answer.values"
+                          >
+                          </app-questionnaire-answer-single-select>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="AnswerType.MultiSelect">
+                          <app-questionnaire-answer-checkbox
+                            [label]="answer?.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+                            [formControl]="formControl"
+                            [name]="answer.id"
+                            [values]="answer.values"
+                          >
+                          </app-questionnaire-answer-checkbox>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="AnswerType.Number">
+                          <app-questionnaire-answer-input-number
+                            [label]="answer?.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+                            [formControl]="formControl"
+                            [name]="answer.id"
+                          >
+                          </app-questionnaire-answer-input-number>
+                          <app-questionnaire-answer-error
+                            [control]="formControl"
+                            errorCode="min"
+                          >
+                            {{
+                            'QUESTIONNAIRE_QUESTIONS.NUMERIC_INPUT_MSG_NUMBER_BETWEEN'
+                            | translate : { restriction_min:
+                            answer.restriction_min, restriction_max:
+                            answer.restriction_max } }}
+                          </app-questionnaire-answer-error>
+                          <app-questionnaire-answer-error
+                            [control]="formControl"
+                            errorCode="max"
+                          >
+                            {{
+                            'QUESTIONNAIRE_QUESTIONS.NUMERIC_INPUT_MSG_NUMBER_BETWEEN'
+                            | translate : { restriction_min:
+                            answer.restriction_min, restriction_max:
+                            answer.restriction_max } }}
+                          </app-questionnaire-answer-error>
+                          <app-questionnaire-answer-error
+                            [control]="formControl"
+                            [errorCode]="QuestionnaireAnswerValidationErrors.INVALID_INTEGER_ERROR"
+                          >
+                            {{
+                            'QUESTIONNAIRE_QUESTIONS.NUMERIC_INPUT_MSG_MUST_FULL_NUMBER'
+                            | translate }}
+                          </app-questionnaire-answer-error>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="AnswerType.Text">
+                          <app-questionnaire-answer-input-text
+                            [label]="answer?.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+                            [formControl]="formControl"
+                            [name]="answer.id"
+                          >
+                          </app-questionnaire-answer-input-text>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="AnswerType.Date">
+                          <app-questionnaire-answer-input-datetime
+                            [label]="answer?.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+                            [formControl]="formControl"
+                            [minDate]="answer.restriction_min | restrictionDaysAsDate"
+                            [maxDate]="answer.restriction_max | restrictionDaysAsDate"
+                            [name]="answer.id"
+                          >
+                          </app-questionnaire-answer-input-datetime>
+                          <app-questionnaire-answer-error
+                            [control]="formControl"
+                            [errorCode]="QuestionnaireAnswerValidationErrors.DATE_MIN_MAX_ERROR"
+                          >
+                            {{ 'QUESTIONNAIRE_QUESTIONS.DATE_INPUT_MSG1' |
+                            translate : { restriction_min:
+                            answer.restriction_min | restrictionDaysAsDate |
+                            date: 'DD.MM.YYYY', restriction_max:
+                            answer.restriction_max | restrictionDaysAsDate |
+                            date: 'DD.MM.YYYY' } }}
+                          </app-questionnaire-answer-error>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="AnswerType.Sample">
+                          <app-questionnaire-answer-sample
+                            [label]="answer?.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+                            [formControl]="formControl"
+                            [userId]="questionnaireInstance.user_id"
+                            [samplePrefix]="study.sample_prefix"
+                            [sampleSuffixLength]="study.sample_suffix_length"
+                            [hasRnaSamples]="study.has_rna_samples"
+                            (sampleSaved)="save()"
+                          >
+                          </app-questionnaire-answer-sample>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="AnswerType.PZN">
+                          <app-questionnaire-answer-pzn
+                            [label]="answer?.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+                            [formControl]="formControl"
+                            [name]="answer.id"
+                          >
+                          </app-questionnaire-answer-pzn>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="AnswerType.Image">
+                          <app-questionnaire-answer-image
+                            [label]="answer?.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+                            [formControl]="formControl"
+                            [name]="answer.id"
+                          >
+                          </app-questionnaire-answer-image>
+                          <app-questionnaire-answer-error
+                            [control]="formControl"
+                            [errorCode]="QuestionnaireAnswerValidationErrors.DISALLOWED_FILE_SIZE"
+                          >
+                            {{
+                            'QUESTIONNAIRE_QUESTIONS.UPLOADED_IMAGE_TOO_LARGE' |
+                            translate }}
+                          </app-questionnaire-answer-error>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="AnswerType.Timestamp">
+                          <app-questionnaire-answer-timestamp
+                            [label]="answer?.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+                            [formControl]="formControl"
+                            [name]="answer.id"
+                          >
+                          </app-questionnaire-answer-timestamp>
+                        </ng-container>
+                      </ng-container>
+                      <div class="pia-questionnaire-question-divider"></div>
+                    </ng-container>
+                  </ng-container>
+                </ng-container>
+              </ion-list>
+            </ion-card>
+
+            <ion-button
+              color="light"
+              class="ion-margin-vertical"
+              (click)="save(true)"
+            >
+              <ion-icon name="save" slot="start" color="dark"></ion-icon>
+              <ion-label slot="end" color="dark">
+                {{ 'QUESTIONNAIRE_QUESTIONS.SAVE_LEAVE' | translate }}
+              </ion-label>
+            </ion-button>
+
+            <div class="pia-fab-button-spacer"></div>
+          </div>
+        </ion-slide>
+      </ng-container>
+    </ng-container>
+
+    <ion-slide>
+      <div class="pia-slide-content">
+        <ion-text color="tertiary-pale">
+          <h1 class="ion-margin-bottom">
+            {{ 'QUESTIONNAIRE_QUESTIONS.SUMMARY' | translate }}
+          </h1>
+        </ion-text>
+        <ion-card
+          *ngFor="let question of questionnaireInstance?.questionnaire?.questions; index as questionIndex"
+        >
+          <ion-card-header
+            *ngIf="isConditionMet(question)"
+            class="pia-questionnaire-question pia-questionnaire-question-header"
+          >
+            <markdown
+              ngPreserveWhitespaces
+              [data]="question.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+            >
+            </markdown>
+          </ion-card-header>
+          <ion-list *ngIf="isConditionMet(question)">
+            <ng-container
+              *ngFor="let answer of question.answer_options; index as answerIndex;"
+            >
+              <ion-item *ngIf="isConditionMet(answer)" lines="full">
+                <ion-label
+                  *ngIf="getFormControlAtPosition(questionIndex, answerIndex) as formControl"
+                >
+                  <ion-text color="medium" class="ion-text-wrap">
+                    <h2>
+                      {{ answer?.text |
+                      fillDatePlaceholders:questionnaireInstance.date_of_issue
+                      }}
+                    </h2>
+                  </ion-text>
+
+                  <ng-container
+                    *ngIf="!isEmptyFormControlValue(formControl.value)"
+                  >
+                    <ng-container [ngSwitch]="answer.answer_type_id">
+                      <ng-container *ngSwitchCase="AnswerType.MultiSelect">
+                        <p *ngFor="let value of formControl.value">
+                          {{ value }}
+                        </p>
+                      </ng-container>
+                      <ng-container *ngSwitchCase="AnswerType.Date">
+                        <p>{{ formControl.value | date }}</p>
+                      </ng-container>
+                      <ng-container *ngSwitchCase="AnswerType.Sample">
+                        <p *ngIf="formControl.value.sampleId1">
+                          {{ formControl.value.sampleId1 }}
+                        </p>
+                        <p *ngIf="formControl.value.sampleId2">
+                          {{ formControl.value.sampleId2 }}
+                        </p>
+                      </ng-container>
+                      <ng-container *ngSwitchCase="AnswerType.Image">
+                        <ion-thumbnail
+                          ><ion-img [src]="formControl.value.file"></ion-img
+                        ></ion-thumbnail>
+                      </ng-container>
+                      <ng-container *ngSwitchCase="AnswerType.Timestamp">
+                        <p>{{ formControl.value | date: 'HH:mm dd.MM.yy' }}</p>
+                      </ng-container>
+                      <ng-container *ngSwitchDefault>
+                        <p>{{ formControl.value }}</p>
+                      </ng-container>
+                    </ng-container>
+                  </ng-container>
+                  <p *ngIf="isEmptyFormControlValue(formControl.value)">
+                    {{ 'QUESTIONNAIRE_QUESTIONS.NOT_ANSWERED' | translate }}
+                  </p>
+                </ion-label>
+              </ion-item>
+            </ng-container>
+          </ion-list>
+        </ion-card>
+
+        <div class="pia-fab-button-spacer"></div>
+      </div>
+    </ion-slide>
+  </ion-slides>
+
+  <ion-fab
+    vertical="bottom"
+    horizontal="start"
+    slot="fixed"
+    *ngIf="canGoToPrevious"
+  >
+    <ion-fab-button color="tertiary" (click)="slides?.slidePrev()">
+      <ion-icon name="chevron-back"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="canGoToNext">
+    <ion-fab-button color="tertiary" (click)="slideNext()">
+      <ion-icon name="chevron-forward"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="canSubmit">
+    <ion-label
+      class="pia-fab-button-label"
+      *ngIf="hasQuestionnaireStatus('in_progress')"
+    >
+      {{ 'GENERAL.SEND' | translate }}
+    </ion-label>
+    <ion-label
+      class="pia-fab-button-label"
+      *ngIf="hasQuestionnaireStatus('released_once')"
+    >
+      {{ 'QUESTIONNAIRE_QUESTIONS.SHARE_CHANGES' | translate }}
+    </ion-label>
+    <ion-fab-button color="tertiary" (click)="submit()">
+      <ion-icon name="save"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

@@ -1,0 +1,97 @@
+<div>
+  <mat-card>
+    <mat-card-title class="placeholder-list-label"
+      >{{ 'COMPLIANCE.PLACEHOLDER_TEXTFIELD' | translate }}
+    </mat-card-title>
+    <mat-divider></mat-divider>
+    <mat-card-content>
+      <mat-action-list dense>
+        <button
+          mat-list-item
+          (click)="onSelectTextfield(textfieldPlaceholder.placeholder)"
+          *ngFor="let textfieldPlaceholder of textfieldPlaceholders"
+        >
+          {{ textfieldPlaceholder.name | translate }}
+        </button>
+        <button
+          mat-list-item
+          data-e2e="e2e-compliance-text-field-button"
+          (click)="
+            onSelectQuestionnaireComplianceTextfield(
+              questionnaireCompliancePlaceholder
+            )
+          "
+          *ngFor="
+            let questionnaireCompliancePlaceholder of questionnaireComplianceTextfieldPlaceholders
+          "
+        >
+          {{ questionnaireCompliancePlaceholder.label }}
+          ({{ questionnaireCompliancePlaceholder.placeholder }})
+        </button>
+      </mat-action-list>
+    </mat-card-content>
+    <mat-divider></mat-divider>
+    <p class="generic-field-label">
+      {{ 'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_TEXTFIELD' | translate }}
+    </p>
+    <mat-card-content>
+      <form [formGroup]="newGenericTextfieldForm">
+        <mat-form-field>
+          <mat-label>{{
+            'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_LABEL' | translate
+          }}</mat-label>
+          <input
+            matInput
+            placeholder="{{
+              'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_TEXTFIELD_LABEL_EXAMPLE'
+                | translate
+            }}"
+            formControlName="label"
+            data-e2e="e2e-label-new-textfield"
+          />
+          <mat-error *ngIf="newGenericTextfieldForm.hasError('mustNotContain')">
+            {{
+              'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_NO_TAG_SYMBOL'
+                | translate
+            }}
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>{{
+            'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_NAME' | translate
+          }}</mat-label>
+          <input
+            matInput
+            placeholder="{{
+              'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_TEXTFIELD_EXAMPLE'
+                | translate
+            }}"
+            formControlName="placeholder"
+            data-e2e="e2e-placeholder-new-textfield"
+          />
+          <mat-error *ngIf="newGenericTextfieldForm.hasError('minLength')">
+            {{
+              'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_NOT_EMPTY' | translate
+            }}
+          </mat-error>
+          <mat-error *ngIf="newGenericTextfieldForm.hasError('mustNotContain')">
+            {{
+              'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_NO_TAG_SYMBOL'
+                | translate
+            }}
+          </mat-error>
+        </mat-form-field>
+        <button
+          mat-raised-button
+          color="primary"
+          (click)="addGenericTextField()"
+          data-e2e="e2e-add-new-field-button"
+        >
+          {{
+            'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_ADD_BUTTON' | translate
+          }}
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

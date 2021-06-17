@@ -1,0 +1,104 @@
+.modules:
+  list:
+    docker: psa.app.mobile psa.app.web psa.database psa.database.ewpia
+      psa.database.ipia psa.server.apigateway psa.server.mailserver
+      psa.server.messagequeue psa.server.modys psa.server.sftpserver
+      psa.service.analyzerservice psa.service.authservice
+      psa.service.complianceservice psa.service.externaldataservice
+      psa.service.loggingservice psa.service.notificationservice
+      psa.service.personaldataservice psa.service.questionnaireservice
+      psa.service.sampletrackingservice psa.service.sormasservice
+      psa.service.userservice psa.utils.ci-git-mirror psa.utils.ci-release-image
+      psa.utils.codeformatter psa.utils.coverage psa.utils.deploymentservice
+      psa.utils.e2e-runner psa.utils.log-sink psa.utils.metrics
+      psa.utils.repo-tool
+    lint: psa.app.mobile psa.app.web psa.lib.messagequeue psa.lib.service-core
+      psa.lib.templatepipeline psa.server.apigateway psa.service.analyzerservice
+      psa.service.authservice psa.service.complianceservice
+      psa.service.externaldataservice psa.service.loggingservice
+      psa.service.notificationservice psa.service.personaldataservice
+      psa.service.questionnaireservice psa.service.sampletrackingservice
+      psa.service.sormasservice psa.service.userservice
+      psa.utils.deploymentservice psa.utils.repo-tool
+    install:
+      psa.app.mobile psa.app.web psa.lib.messagequeue psa.lib.service-core
+      psa.lib.templatepipeline psa.server.apigateway psa.service.analyzerservice
+      psa.service.authservice psa.service.complianceservice
+      psa.service.externaldataservice psa.service.loggingservice
+      psa.service.notificationservice psa.service.personaldataservice
+      psa.service.questionnaireservice psa.service.sampletrackingservice
+      psa.service.sormasservice psa.service.userservice
+      psa.utils.deploymentservice psa.utils.repo-tool
+    unit:
+      psa.app.mobile psa.app.web psa.lib.service-core psa.lib.templatepipeline
+      psa.server.apigateway psa.service.analyzerservice psa.service.authservice
+      psa.service.complianceservice psa.service.externaldataservice
+      psa.service.notificationservice psa.service.personaldataservice
+      psa.service.questionnaireservice psa.service.sampletrackingservice
+      psa.service.sormasservice psa.service.userservice
+      psa.utils.deploymentservice
+    int: psa.lib.messagequeue psa.lib.service-core psa.service.analyzerservice
+      psa.service.authservice psa.service.complianceservice
+      psa.service.externaldataservice psa.service.loggingservice
+      psa.service.notificationservice psa.service.personaldataservice
+      psa.service.questionnaireservice psa.service.sampletrackingservice
+      psa.service.sormasservice psa.service.userservice
+  array:
+    int:
+      - psa.lib.messagequeue
+      - psa.lib.service-core
+      - psa.service.analyzerservice
+      - psa.service.authservice
+      - psa.service.complianceservice
+      - psa.service.externaldataservice
+      - psa.service.loggingservice
+      - psa.service.notificationservice
+      - psa.service.personaldataservice
+      - psa.service.questionnaireservice
+      - psa.service.sampletrackingservice
+      - psa.service.sormasservice
+      - psa.service.userservice
+    e2e:
+      - proband1
+      - proband2
+      - forscher1
+      - forscher2
+      - forscher3
+      - forscher4
+    unit:
+      - psa.app.mobile
+      - psa.app.web
+      - psa.lib.service-core
+      - psa.lib.templatepipeline
+      - psa.server.apigateway
+      - psa.service.analyzerservice
+      - psa.service.authservice
+      - psa.service.complianceservice
+      - psa.service.externaldataservice
+      - psa.service.notificationservice
+      - psa.service.personaldataservice
+      - psa.service.questionnaireservice
+      - psa.service.sampletrackingservice
+      - psa.service.sormasservice
+      - psa.service.userservice
+      - psa.utils.deploymentservice
+    lint:
+      - psa.app.mobile
+      - psa.app.web
+      - psa.lib.messagequeue
+      - psa.lib.service-core
+      - psa.lib.templatepipeline
+      - psa.server.apigateway
+      - psa.service.analyzerservice
+      - psa.service.authservice
+      - psa.service.complianceservice
+      - psa.service.externaldataservice
+      - psa.service.loggingservice
+      - psa.service.notificationservice
+      - psa.service.personaldataservice
+      - psa.service.questionnaireservice
+      - psa.service.sampletrackingservice
+      - psa.service.sormasservice
+      - psa.service.userservice
+      - psa.utils.deploymentservice
+      - psa.utils.repo-tool

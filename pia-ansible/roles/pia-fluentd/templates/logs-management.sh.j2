@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for file in $(find {{ pia_fluentd_path }}/logs -maxdepth 1 -type f -mtime +7 -name "pia.log.*"); do
+    echo -n "Compressing --> ${file}.tgz."
+    tar czf ${file}.tgz $file 2>/dev/null
+    [ -f "${file}.tgz" ] && rm -I $file && echo " Original file removed" || echo ""
+done

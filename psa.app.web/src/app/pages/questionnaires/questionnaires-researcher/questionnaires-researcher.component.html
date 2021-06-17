@@ -1,0 +1,147 @@
+<div class="jumbotron" data-e2e="e2e-questionnaires-admin-component">
+  <div class="page-header" fxLayout="row wrap" fxLayoutAlign="start center">
+    <div [fxHide]="!selection.isEmpty()" fxFlex="50">
+      <mat-form-field floatPlaceholder="never">
+        <input
+          matInput
+          placeholder="{{ 'QUESTIONNAIRES_FORSCHER.FILTER' | translate }}"
+          (keyup)="applyFilter($event.target.value)"
+          data-e2e="e2e-filter-questionnaires-input"
+        />
+      </mat-form-field>
+    </div>
+    <div>
+      <button
+        id="createnewquestionnairebutton"
+        mat-raised-button
+        color="primary"
+        (click)="createNewQuestionnaire()"
+        *ngIf="currentRole == 'Forscher'"
+        data-e2e="e2e-create-new-questionnaire-button"
+      >
+        {{ 'QUESTIONNAIRES_FORSCHER.NEW_QUESTIONNAIRE' | translate }}
+      </button>
+    </div>
+  </div>
+
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <div class="questionnaire-container mat-elevation-z8">
+    <mat-table
+      #table
+      [dataSource]="dataSource"
+      matSortActive="id"
+      matSortDirection="asc"
+      matSort
+    >
+      <!-- ID Column -->
+      <ng-container matColumnDef="id" matSortStart>
+        <mat-header-cell *matHeaderCellDef mat-sort-header fxFlex="40px">
+          ID</mat-header-cell
+        >
+        <mat-cell *matCellDef="let row" fxFlex="40px"> {{ row.id }} </mat-cell>
+      </ng-container>
+
+      <!-- Version Column -->
+      <ng-container matColumnDef="version">
+        <mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          fxFlex="0 1 90px"
+          fxLayoutAlign="center center"
+        >
+          {{ 'QUESTIONNAIRES_FORSCHER.VERSION' | translate }}
+        </mat-header-cell>
+        <mat-cell
+          *matCellDef="let row"
+          fxFlex="0 1 90px"
+          fxLayoutAlign="center center"
+          data-e2e="e2e-questionnaire-version"
+        >
+          {{ row.version }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Study Column -->
+      <ng-container matColumnDef="study_id">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'QUESTIONNAIRES_FORSCHER.STUDY_ID' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row" data-e2e="e2e-study-name">
+          {{ row.study_id }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Name Column -->
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header class="column name">
+          {{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_NAME' | translate }}
+        </mat-header-cell>
+        <mat-cell
+          *matCellDef="let row"
+          class="column name"
+          data-e2e="e2e-questionnaire-name"
+        >
+          {{ row.name }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Numer of questions Column -->
+      <ng-container matColumnDef="no_questions">
+        <mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          fxLayoutAlign="center center"
+        >
+          {{ 'QUESTIONNAIRES_FORSCHER.QUESTIONS_NUMBER' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row" fxLayoutAlign="center center">
+          {{ row.no_questions }}
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="delete">
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <button
+            id="deleteicon"
+            mat-icon-button
+            (click)="openDialog(row.id, row.version)"
+            *ngIf="currentRole == 'Forscher'"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+          <button
+            id="editicon"
+            #delete
+            mat-icon-button
+            (click)="editQuestionnaire(row.id, row.version)"
+            *ngIf="currentRole == 'Forscher'"
+          >
+            <mat-icon>mode_edit</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns"> </mat-row>
+    </mat-table>
+
+    <div
+      class="table-no-results"
+      *ngIf="!isLoading"
+      [style.display]="dataSource.renderedData.length == 0 ? '' : 'none'"
+    >
+      {{ 'QUESTIONNAIRES_FORSCHER.FILTER_NO_RESULTS' | translate }}
+    </div>
+
+    <mat-paginator
+      #paginator
+      [length]="dataSource.filteredData.length"
+      [pageIndex]="0"
+      [pageSize]="25"
+      [pageSizeOptions]="[5, 10, 25, 100]"
+    >
+    </mat-paginator>
+  </div>
+</div>

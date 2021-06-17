@@ -1,0 +1,8 @@
+<div class="jumbotron">
+  <app-probands-forscher
+    *ngIf="auth.currentRole === 'Forscher'"
+  ></app-probands-forscher>
+  <app-probands-untersuchungsteam
+    *ngIf="auth.currentRole === 'Untersuchungsteam'"
+  ></app-probands-untersuchungsteam>
+</div>

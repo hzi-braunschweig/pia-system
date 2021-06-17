@@ -1,0 +1,778 @@
+---
+####################################################################################
+# generate passwords
+####################################################################################
+
+# we have to use separate tasks for each password
+# otherwise somehow the passwords are all the same
+# (even though thats not the case locally)
+
+- name: Generate postgres passwords
+  set_fact:
+    pia_ewpia_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate postgres passwords
+  set_fact:
+    pia_ipia_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate postgres passwords
+  set_fact:
+    pia_qpia_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate postgres passwords
+  set_fact:
+    pia_db_log_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate postgres passwords
+  set_fact:
+    pia_db_personaldata_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate messagequeue admin password
+  set_fact:
+    pia_messagequeue_admin_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate messagequeue app password
+  set_fact:
+    pia_messagequeue_app_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+####################################################################################
+# check default secrets
+####################################################################################
+
+- name: Include default variables
+  include_vars:
+    file: '{{ role_path }}/defaults/main.yml'
+    name: defaults
+
+- name: Check Secrets
+  fail:
+    msg: We don't want default secrets or unsecure settings to be deployed on production systems!
+  when: >
+    (pia_deployment_password == defaults.pia_deployment_password) or
+    (pia_sormas_on_pia_password == defaults.pia_sormas_on_pia_password) or
+    (pia_pia_on_sormas_password == defaults.pia_pia_on_sormas_password) or
+    (pia_api_key == defaults.pia_api_key) or
+    (pia_mhh_ftpservice_password == defaults.pia_mhh_ftpservice_password) or
+    (pia_hzi_ftpservice_password == defaults.pia_hzi_ftpservice_password) or
+    (pia_modys_password == defaults.pia_modys_password) or
+    (pia_mail_require_tls != true)
+
+####################################################################################
+# cleanup
+####################################################################################
+
+#  - name: Stop docker
+#    service:
+#      name: docker
+#      state: stopped
+
+#  - name: Delete old stuff
+#    file:
+#      path: "{{ item }}"
+#      state: absent
+#    with_items:
+#      - /etc/pia/
+
+####################################################################################
+# Install prerequisites
+####################################################################################
+
+- name: Install git, python3-setuptools, libselinux-python3
+  yum:
+    name: ['git-core', 'python3-setuptools', 'libselinux-python3']
+    state: installed
+  tags:
+    - prerequisites
+    - internet
+
+- name: Update pip3 via command
+  command: python3 -m pip install --upgrade pip
+  tags:
+    - prerequisites
+    - internet
+
+- name: Install cryptography
+  pip:
+    name: cryptography
+    executable: pip3.6
+  become: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tags:
+    - prerequisites
+    - internet
+
+- name: NO PROXY | Install virtualenv
+  pip:
+    name: virtualenv
+    executable: pip3.6
+  become: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tags:
+    - prerequisites
+    - internet
+
+- name: Create Symlink for virtualenv
+  file:
+    src: /usr/local/bin/virtualenv
+    dest: /bin/virtualenv
+    state: link
+  tags:
+    - prerequisites
+
+- name: Install python module docker-compose
+  pip:
+    name:
+      - docker-compose==1.24.1
+    virtualenv: /sormas/venv
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tags:
+    - prerequisites
+    - internet
+
+- name: Check that the /bin/docker-compose exists
+  stat:
+    path: /bin/docker-compose
+  register: docker_compose_result
+  tags:
+    - prerequisites
+
+- name: Create Symlink for docker-compose
+  file:
+    src: /sormas/venv/bin/docker-compose
+    dest: /bin/docker-compose
+    state: link
+  when: not docker_compose_result.stat.exists
+  tags:
+    - prerequisites
+
+- name: Check that docker-compose in virtualenv exists
+  stat:
+    path: /sormas/venv/bin/docker-compose
+  register: stat_result
+
+- name: Log into netzlink registry with virtualenv
+  docker_login:
+    registry: registry.netzlink.com
+    username: '{{ survey_docker_user }}'
+    password: '{{ survey_docker_password }}'
+  vars:
+    ansible_python_interpreter: /sormas/venv/bin/python
+  when: docker_host and stat_result.stat.exists
+  tags:
+    - prerequisites
+    - internet
+
+- name: Log into netzlink registry
+  docker_login:
+    registry: registry.netzlink.com
+    username: '{{ survey_docker_user }}'
+    password: '{{ survey_docker_password }}'
+  when: docker_host and not stat_result.stat.exists
+  tags:
+    - prerequisites
+    - internet
+
+####################################################################################
+# create certificates
+####################################################################################
+
+- name: Create directory
+  file:
+    path: '{{ pia_ssl_directory }}'
+    state: directory
+  tags:
+    - prerequisites
+
+- name: Create ca.key
+  openssl_privatekey:
+    path: '{{ pia_ssl_directory }}/ca.key'
+  when: pia_is_certificate_master
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tags:
+    - prerequisites
+
+- name: Generate the CSR file signed with the private key
+  openssl_csr:
+    basic_constraints: CA:TRUE
+    basic_constraints_critical: true
+    path: '{{ pia_ssl_directory }}/ca.csr'
+    privatekey_path: '{{ pia_ssl_directory }}/ca.key'
+    common_name: 'PIA-CA'
+  when: pia_is_certificate_master
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tags:
+    - prerequisites
+
+- name: Sign the CSR file as a CA to turn it into a certificate
+  openssl_certificate:
+    path: '{{ pia_ssl_directory }}/ca.cert'
+    privatekey_path: '{{ pia_ssl_directory }}/ca.key'
+    csr_path: '{{ pia_ssl_directory }}/ca.csr'
+    provider: selfsigned
+  when: pia_is_certificate_master
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tags:
+    - prerequisites
+
+- name: Create directory
+  file:
+    path: '{{ pia_ssl_directory }}/{{ item.fullName }}/'
+    state: directory
+  with_items: '{{ pia_services }}'
+  when:
+    - pia_is_certificate_master or (pia_is_qpia and item.qpia) or (pia_is_ipia and item.ipia) or (pia_is_ewpia and item.ewpia)
+  tags:
+    - prerequisites
+
+- name: Generate private key
+  openssl_privatekey:
+    path: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.key'
+    size: 4096
+  with_items: '{{ pia_services }}'
+  when: pia_is_certificate_master
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tags:
+    - prerequisites
+
+- name: Generate an OpenSSL Certificate Signing Request with a passphrase protected private key
+  openssl_csr:
+    path: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.csr'
+    privatekey_path: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.key'
+    country_name: '{{ pia_ssl_country_name }}'
+    state_or_province_name: '{{ pia_ssl_state_or_province_name }}'
+    locality_name: '{{ pia_ssl_locality_name }}'
+    organization_name: '{{ pia_ssl_organization_name }}'
+    organizational_unit_name: '{{ pia_ssl_organizational_unit_name }}'
+    common_name: '{{ item.fullName }}'
+    #subject_alt_name: "DNS:localhost,DNS:{{ item.fullName }},IP:{{ survey_IP }}"
+    subject_alt_name: 'DNS:localhost,DNS:{{ item.fullName }}'
+  with_items: '{{ pia_services }}'
+  when: pia_is_certificate_master
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tags:
+    - prerequisites
+
+- name: Generate an OpenSSL certificate signed with your own CA certificate
+  openssl_certificate:
+    path: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.cert'
+    csr_path: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.csr'
+    ownca_path: '{{ pia_ssl_directory }}/ca.cert'
+    ownca_privatekey_path: '{{ pia_ssl_directory }}/ca.key'
+    selfsigned_not_after: '+3650d'
+    provider: ownca
+  with_items: '{{ pia_services }}'
+  when: pia_is_certificate_master
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tags:
+    - prerequisites
+
+####################################################################################
+# fetching from certificate master
+####################################################################################
+
+- name: fetch ca.cert from certificate master
+  fetch:
+    src: '{{ pia_ssl_directory }}/ca.cert'
+    dest: '/tmp/shared/'
+  when: pia_is_certificate_master
+  tags:
+    - prerequisites
+
+- name: fetch servcie certificates from certificate master
+  fetch:
+    src: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.cert'
+    dest: '/tmp/shared/'
+  when: pia_is_certificate_master
+  with_items: '{{ pia_services }}'
+  tags:
+    - prerequisites
+
+- name: fetch service keys from certificate master
+  fetch:
+    src: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.key'
+    dest: '/tmp/shared/'
+  when: pia_is_certificate_master
+  with_items: '{{ pia_services }}'
+  tags:
+    - prerequisites
+
+####################################################################################
+# pushing
+####################################################################################
+
+- name: Copy ca.cert to services
+  copy:
+    src: '/tmp/shared/{{ pia_certificate_master }}{{ pia_ssl_directory }}/ca.cert'
+    dest: '{{ pia_ssl_directory }}/{{ item.fullName }}/ca.cert'
+    mode: '0644'
+  with_items: '{{ pia_services }}'
+  when:
+    - (pia_is_qpia and item.qpia) or (pia_is_ipia and item.ipia) or (pia_is_ewpia and item.ewpia)
+  tags:
+    - prerequisites
+
+- name: Copy servcie certificates to services
+  copy:
+    src: '/tmp/shared/{{ pia_certificate_master }}{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.cert'
+    dest: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.cert'
+  with_items: '{{ pia_services }}'
+  when:
+    - (pia_is_qpia and item.qpia) or (pia_is_ipia and item.ipia) or (pia_is_ewpia and item.ewpia)
+  tags:
+    - prerequisites
+
+- name: Copy servcie keys to services
+  copy:
+    src: '/tmp/shared/{{ pia_certificate_master }}{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.key'
+    dest: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.key'
+    mode: '0644'
+  with_items: '{{ pia_services }}'
+  when:
+    - (pia_is_qpia and item.qpia) or (pia_is_ipia and item.ipia) or (pia_is_ewpia and item.ewpia)
+  tags:
+    - prerequisites
+
+####################################################################################
+# generate authkey
+####################################################################################
+
+- name: Create authKey directory
+  file:
+    path: '{{ pia_auth_key_directory }}'
+    state: directory
+  tags:
+    - prerequisites
+
+- name: Generate authKey private
+  command: openssl genrsa -out {{ pia_auth_key_directory }}/private.key 4096
+  args:
+    creates: '{{ pia_auth_key_directory }}/private.key'
+  when: pia_is_certificate_master
+  tags:
+    - prerequisites
+
+- name: Generate authKey public
+  command: openssl rsa -in {{ pia_auth_key_directory }}/private.key -pubout -out {{ pia_auth_key_directory }}/public.pem
+  args:
+    creates: '{{ pia_auth_key_directory }}/public.pem'
+  when: pia_is_certificate_master
+  tags:
+    - prerequisites
+
+- name: Pull authKey private
+  fetch:
+    src: '{{ pia_auth_key_directory }}/private.key'
+    dest: '/tmp/shared/'
+  when: pia_is_certificate_master
+  tags:
+    - prerequisites
+
+- name: Pull authKey public
+  fetch:
+    src: '{{ pia_auth_key_directory }}/public.pem'
+    dest: '/tmp/shared/'
+  when: pia_is_certificate_master
+  tags:
+    - prerequisites
+
+- name: Push authKey private to qpia
+  copy:
+    src: '/tmp/shared/{{ pia_certificate_master }}{{ pia_auth_key_directory }}/private.key'
+    dest: '{{ pia_auth_key_directory }}/private.key'
+    mode: '0600'
+    owner: '1000'
+  when: pia_is_qpia
+  tags:
+    - prerequisites
+
+- name: Push authKey public to qpia, ewpia and ipia
+  copy:
+    src: '/tmp/shared/{{ pia_certificate_master }}{{ pia_auth_key_directory }}/public.pem'
+    dest: '{{ pia_auth_key_directory }}/public.pem'
+    mode: '0600'
+    owner: '1000'
+  when: (pia_is_qpia or pia_is_ipia or pia_is_ewpia)
+  tags:
+    - prerequisites
+
+####################################################################################
+# qpia
+####################################################################################
+
+- name: Create sftp-server directory
+  file:
+    path: '{{ pia_ssh_key_directory }}/sftpservice'
+    state: directory
+  when: pia_is_qpia
+  tags:
+    - prerequisites
+
+- name: Generate RSA host key
+  command: "ssh-keygen -q -t rsa -b 4096 -f {{ pia_ssh_key_directory }}/sftpservice/ssh_host_rsa_key -C '' -N ''"
+  args:
+    creates: '{{ pia_ssh_key_directory }}/sftpservice/ssh_host_rsa_key'
+  when: pia_is_qpia
+  tags:
+    - prerequisites
+
+- name: Generate ed25519 host key
+  command: "ssh-keygen -q -t ed25519 -f {{ pia_ssh_key_directory }}/sftpservice/ssh_host_ed25519_key -C '' -N ''"
+  args:
+    creates: '{{ pia_ssh_key_directory }}/sftpservice/ssh_host_ed25519_key'
+  when: pia_is_qpia
+  tags:
+    - prerequisites
+
+- name: Change permission for private key
+  file:
+    path: '{{ pia_ssh_key_directory }}/sftpservice/{{ item }}'
+    state: file
+    mode: '0600'
+  loop:
+    - ssh_host_rsa_key
+    - ssh_host_ed25519_key
+  when: pia_is_qpia
+  tags:
+    - prerequisites
+
+- name: Create firebase directory
+  file:
+    path: '{{ pia_firebase_directory }}'
+    state: directory
+  when: pia_is_qpia
+  tags:
+    - prerequisites
+
+- name: Write firebase credentials.json
+  copy:
+    content: '{{ pia_firebase_credentials }}'
+    dest: '{{ pia_firebase_directory }}/credential.json'
+  when: pia_is_qpia
+  tags:
+    - prerequisites
+
+####################################################################################
+# common
+####################################################################################
+
+#  - name: Start docker
+#    service:
+#      name: docker
+#      state: started
+#
+
+####################################################################################
+# docker compose
+####################################################################################
+
+- name: Docker-compose down (when using virtualenv)
+  docker_compose:
+    project_src: /root/
+    stopped: true
+  ignore_errors: yes
+  vars:
+    ansible_python_interpreter: /sormas/venv/bin/python
+  when: docker_host and stat_result.stat.exists
+
+- name: Docker-compose down
+  docker_compose:
+    project_src: /root/
+    stopped: true
+  ignore_errors: yes
+  when: docker_host and not stat_result.stat.exists
+
+- name: Copy docker-compose.yml
+  template:
+    src: ./templates/docker-compose.yml.j2
+    dest: /root/docker-compose.yml
+  when: docker_host
+
+- name: Template env.j2
+  template:
+    src: ./templates/env.j2
+    dest: /root/.env
+  when: docker_host
+
+- name: Generate random UUID API_KEY
+  lineinfile:
+    path: /root/.env
+    regexp: '^API_KEY='
+    line: "API_KEY={{ (999999999999999999999 | random | string + (lookup('pipe', 'date +%s%N'))) | to_uuid() }}"
+  when:
+    - docker_host
+    - generate_random_key
+    - hostvars[inventory_hostname]['PIA_API_KEY'] is not defined
+
+# only on qpia
+- name: Template user.conf.j2
+  template:
+    src: ./templates/users.conf.j2
+    dest: /root/users.conf
+  when: docker_host and pia_is_qpia
+
+- name: Docker-compose pull (when using virtualenv)
+  docker_compose:
+    project_src: /root/
+    pull: yes
+  vars:
+    ansible_python_interpreter: /sormas/venv/bin/python
+  when: docker_host and stat_result.stat.exists
+  tags:
+    - internet
+
+- name: Docker-compose up (when using virtualenv)
+  docker_compose:
+    project_src: /root/
+    restarted: true
+  vars:
+    ansible_python_interpreter: /sormas/venv/bin/python
+  when: docker_host and stat_result.stat.exists
+
+- name: Docker-compose pull
+  docker_compose:
+    project_src: /root/
+    pull: yes
+  when: docker_host and not stat_result.stat.exists
+  tags:
+    - internet
+
+- name: Docker-compose up
+  docker_compose:
+    project_src: /root/
+    restarted: true
+  when: docker_host and not stat_result.stat.exists
+
+- name: Check that the /root/sormas-pia/docker-compose.yml exists
+  stat:
+    path: /root/sormas-pia/docker-compose.yml
+  register: sormas_pia_result
+
+- name: virtualenv | Restart local reverse proxy for sormas-sb
+  docker_compose:
+    project_src: /root/sormas-pia
+    pull: yes
+    restarted: yes
+  vars:
+    ansible_python_interpreter: /sormas/venv/bin/python
+  when: docker_host and sormas_pia_result.stat.exists and stat_result.stat.exists
+
+- name: Restart local reverse proxy for sormas-sb
+  docker_compose:
+    project_src: /root/sormas-pia
+    restarted: yes
+  when: docker_host and sormas_pia_result.stat.exists and not stat_result.stat.exists
+
+####################################################################################
+# ansible tower
+####################################################################################
+
+- name: Get all environments from .env file and register as variable
+  shell: "cat /root/.env | grep '^{{ item }}' |  sed -r 's/^{{ item }}=//'"
+  with_items:
+    - API_ADDRESS
+    - IS_DEVELOPMENT_SYSTEM
+    - ENABLE_DB_EXPORT
+    - ENABLE_DB_IMPORT
+    - DEPLOYMENT_USER
+    - DEPLOYMENT_PASSWORD
+    - EWPIA_PASSWORD
+    - IPIA_PASSWORD
+    - API_KEY
+    - QPIA_PASSWORD
+    - MAIL_USER
+    - MAIL_PASSWORD
+    - MAIL_HOST
+    - MAIL_PORT
+    - MAIL_REQUIRE_TLS
+    - MODYS_DB
+    - MODYS_HOST
+    - SORMAS_ON_PIA_USER
+    - SORMAS_ON_PIA_PASSWORD
+    - SORMAS_SERVER_URL
+    - PIA_ON_SORMAS_USER
+    - PIA_ON_SORMAS_PASSWORD
+    - IS_SORMAS_ACTIVE
+    - DB_LOG_PASSWORD
+    - DB_PERSONALDATA_PASSWORD
+    - MHH_FTPSERVICE_PW
+    - HZI_FTPSERVICE_PW
+  register: pia_environment_vars
+  tags:
+    - ansible-tower
+  when: pia_is_qpia
+
+- name: IPIA | Get all environments from .env file and register as variable
+  shell: "cat /root/.env | grep '^{{ item }}' |  sed -r 's/^{{ item }}=//'"
+  with_items:
+    - IPIA_PASSWORD
+  register: ipia_environment_vars
+  tags:
+    - ansible-tower
+  when:
+    - pia_multi_host|bool
+    - not pia_is_qpia|bool
+    - pia_is_ipia|bool
+    - not pia_is_ewpia|bool
+
+- name: EWPIA | Get all environments from .env file and register as variable
+  shell: "cat /root/.env | grep '^{{ item }}' |  sed -r 's/^{{ item }}=//'"
+  with_items:
+    - EWPIA_PASSWORD
+  register: ewpia_environment_vars
+  when:
+    - pia_multi_host|bool
+    - not pia_is_qpia|bool
+    - not pia_is_ipia|bool
+    - pia_is_ewpia|bool
+  tags:
+    - ansible-tower
+
+- name: SORMAS SB | Template new_host_var.yml.j2 to /tmp/
+  template:
+    src: new_host_var.yml.j2
+    dest: '/tmp/new_host_var{{ inventory_hostname }}.yml'
+  delegate_to: localhost
+  become: no
+  when:
+    - not pia_multi_host|bool
+    - pia_is_qpia|bool
+    - pia_is_ipia|bool
+    - pia_is_ewpia|bool
+  tags:
+    - ansible-tower
+
+- name: QPIA | Template new_host_var.yml.j2 to /tmp/
+  template:
+    src: qpia_host_var.yml.j2
+    dest: '/tmp/qpia_host_var{{ inventory_hostname }}.yml'
+  delegate_to: localhost
+  become: no
+  when:
+    - pia_multi_host|bool
+    - pia_is_qpia|bool
+    - not pia_is_ipia|bool
+    - not pia_is_ewpia|bool
+  tags:
+    - ansible-tower
+
+- name: IPIA | Template new_host_var.yml.j2 to /tmp/
+  template:
+    src: ipia_host_var.yml.j2
+    dest: '/tmp/ipia_host_var{{ inventory_hostname }}.yml'
+  delegate_to: localhost
+  become: no
+  when:
+    - pia_multi_host|bool
+    - not pia_is_qpia|bool
+    - pia_is_ipia|bool
+    - not pia_is_ewpia|bool
+  tags:
+    - ansible-tower
+
+- name: EWPIA | Template new_host_var.yml.j2 to /tmp/
+  template:
+    src: ewpia_host_var.yml.j2
+    dest: '/tmp/ewpia_host_var{{ inventory_hostname | default(pia_url) }}.yml'
+  delegate_to: localhost
+  become: no
+  when:
+    - pia_multi_host|bool
+    - not pia_is_qpia|bool
+    - not pia_is_ipia|bool
+    - pia_is_ewpia|bool
+  tags:
+    - ansible-tower
+
+- name: SORMAS-SB | Update hostvars to host
+  tower_host:
+    name: '{{ inventory_hostname }}'
+    validate_certs: no
+    inventory: '{{ tower_inventory_name }}'
+    state: present
+    variables: '@/tmp/new_host_var{{ inventory_hostname }}.yml'
+  delegate_to: localhost
+  become: no
+  when:
+    - not pia_multi_host|bool
+    - hostvars[inventory_hostname]['PIA_API_ADDRESS'] is defined
+  tags:
+    - ansible-tower
+
+- name: IPIA | Update hostvars to host
+  tower_host:
+    name: '{{ inventory_hostname }}'
+    validate_certs: no
+    inventory: '{{ tower_inventory_name }}'
+    state: present
+    variables: '@/tmp/ipia_host_var{{ inventory_hostname }}.yml'
+  delegate_to: localhost
+  become: no
+  when:
+    - pia_multi_host|bool
+    - pia_is_ipia
+  tags:
+    - ansible-tower
+
+- name: EWPIA | Update hostvars to host
+  tower_host:
+    name: '{{ inventory_hostname }}'
+    validate_certs: no
+    inventory: '{{ tower_inventory_name }}'
+    state: present
+    variables: '@/tmp/ewpia_host_var{{ inventory_hostname }}.yml'
+  delegate_to: localhost
+  become: no
+  when:
+    - pia_multi_host|bool
+    - pia_is_ewpia
+  tags:
+    - ansible-tower
+
+- name: QPIA | Update hostvars to host
+  tower_host:
+    name: '{{ inventory_hostname }}'
+    validate_certs: no
+    inventory: '{{ tower_inventory_name }}'
+    state: present
+    variables: '@/tmp/qpia_host_var{{ inventory_hostname }}.yml'
+  delegate_to: localhost
+  become: no
+  when:
+    - pia_multi_host|bool
+    - pia_is_qpia
+  tags:
+    - ansible-tower
+
+- name: SORMAS-SB | Add hostvars to new host
+  tower_host:
+    name: '{{ pia_url }}'
+    validate_certs: no
+    inventory: '{{ survey_inventory_pia }}'
+    state: present
+    variables: '@/tmp/new_host_var{{ inventory_hostname | default(pia_url) }}.yml'
+  delegate_to: localhost
+  become: no
+  when:
+    - hostvars[inventory_hostname]['PIA_API_ADDRESS'] is not defined
+    - pia_is_qpia|bool
+    - pia_is_ipia|bool
+    - pia_is_ewpia|bool
+    - not pia_multi_host|bool
+  tags:
+    - ansible-tower

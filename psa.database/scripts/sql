@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# this command is for convenience so that an operator can use `docker exec -it databaseservice sql` to explore the db.
+# Another benefit is that the operator is not tempted to exploit the DB password (while screensharing) by using `env` or `docker inspect`.
+
+PGPASSWORD=$POSTGRES_PASSWORD exec psql -U $POSTGRES_USER $POSTGRES_DB

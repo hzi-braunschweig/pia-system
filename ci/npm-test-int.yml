@@ -1,0 +1,97 @@
+int:
+  stage: test
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$FOLDER-npm-install:$IMAGE_ID
+  script:
+    - mkdir -p $FOLDER/tests/
+    - cp -r secrets/authKey/private.key $FOLDER/tests/
+    - cp -r secrets/* $FOLDER
+    - ln -s $NODE_PATH $FOLDER/node_modules
+    - cd $FOLDER
+    - npm run test.int
+    - mv coverage/cobertura-coverage.xml coverage/coverage-int.xml || true
+    - mv coverage/coverage-final.json coverage/coverage-int.json || true
+    - mv tests/reports/xunit-test-report.xml tests/reports/xunit-test-report-int.xml || true
+  needs:
+    - job: build-docker
+      artifacts: true
+    - job: npm-install
+      artifacts: true
+
+  parallel:
+    matrix:
+      - FOLDER: !reference [.modules, array, int]
+
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH =~ /^develop/
+    - if: $CI_COMMIT_BRANCH =~ /^release/
+  variables:
+    DB_LOG_USER: loggingservice
+    DB_LOG_PASSWORD: log
+    DB_LOG_DB: pia_database
+    DB_LOG_HOST: databaseservice
+    DB_LOG_PORT: '5432'
+
+    DB_PERSONALDATA_USER: personaldataservice
+    DB_PERSONALDATA_PASSWORD: personaldata
+    DB_PERSONALDATA_DB: pia_database
+    DB_PERSONALDATA_HOST: ipiaservice
+    DB_PERSONALDATA_PORT: '5432'
+
+    QPIA_USER: superuser
+    QPIA_PASSWORD: superpassword
+    QPIA_DB: pia_database
+    QPIA_HOST: databaseservice
+    QPIA_PORT: '5432'
+
+    EWPIA_USER: superuser
+    EWPIA_PASSWORD: superpassword
+    EWPIA_DB: pia_database
+    EWPIA_HOST: ewpiaservice
+    EWPIA_PORT: '5432'
+
+    POSTGRES_USER: $QPIA_USER
+    POSTGRES_PASSWORD: $QPIA_PASSWORD
+    POSTGRES_DB: $QPIA_DB
+
+    MHH_FTPSERVICE_HOST: sftpserver
+    MHH_FTPSERVICE_PORT: '22'
+    MHH_FTPSERVICE_USER: ftpuser
+    MHH_FTPSERVICE_PW: ftppassword
+
+    HZI_FTPSERVICE_HOST: sftpserver
+    HZI_FTPSERVICE_PORT: '22'
+    HZI_FTPSERVICE_USER: ftpuser
+    HZI_FTPSERVICE_PW: ftppassword
+
+    MESSAGEQUEUE_HOST: messagequeue
+    MESSAGEQUEUE_APP_USER: app
+    MESSAGEQUEUE_APP_PASSWORD: app
+  services:
+    # don't use a variable for alias - it doesn't get resolved!
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.sftpserver:$IMAGE_ID-with-faked-secrets
+      alias: sftpserver
+      command: ['ftpuser:ftppassword:::upload']
+
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.database:$IMAGE_ID-with-faked-secrets
+      alias: databaseservice
+
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.database.ipia:$IMAGE_ID-with-faked-secrets
+      alias: ipiaservice
+
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.database.ewpia:$IMAGE_ID-with-faked-secrets
+      alias: ewpiaservice
+
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.messagequeue:$IMAGE_ID-with-faked-secrets
+      alias: messagequeue
+
+  artifacts:
+    paths:
+      - $FOLDER/coverage/coverage-int.json
+      - $FOLDER/coverage/coverage-int.xml
+      - $FOLDER/tests/reports/xunit-test-report-int.xml
+    reports:
+      junit: $FOLDER/tests/reports/xunit-test-report-int.xml
+      cobertura: $FOLDER/coverage/coverage-int.xml
+    when: always

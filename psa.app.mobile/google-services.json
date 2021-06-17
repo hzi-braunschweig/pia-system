@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1012552142126",
+    "project_id": "pia-app-c50e8",
+    "storage_bucket": "pia-app-c50e8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1012552142126:android:6c352e6ee021af9ba83ebf",
+        "android_client_info": {
+          "package_name": "de.pia.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1012552142126-ifetmctnqqk9c27dv8hecb39iak38uts.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmodhI5C-tdYmfsiipO3i5prDyHUbRnF4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1012552142126-ifetmctnqqk9c27dv8hecb39iak38uts.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1012552142126-17h0nqfhqr4agtsrusidn9g3p92m7shm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "de.info-pia.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

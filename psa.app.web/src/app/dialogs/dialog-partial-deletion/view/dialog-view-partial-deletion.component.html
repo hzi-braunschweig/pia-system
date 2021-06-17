@@ -1,0 +1,67 @@
+<h3 mat-dialog-title *ngIf="containsData()">
+  {{ 'DIALOG.PARTIAL_DELETION.VIEW_DATA_DELETE' | translate: headerData }}
+</h3>
+<h3 mat-dialog-title *ngIf="!containsData()">
+  {{ 'DIALOG.PARTIAL_DELETION.NO_RESULT_FB_LB' | translate }}
+</h3>
+<mat-dialog-content *ngIf="containsData()">
+  <dl>
+    <dt *ngIf="questionnaireInstances.length > 0">
+      {{ 'DIALOG.PARTIAL_DELETION.QUESTIONNAIRES' | translate }}
+    </dt>
+    <dd *ngFor="let questionnaireInstance of questionnaireInstances">
+      {{ questionnaireInstance.questionnaire_name }}
+      {{ 'DIALOG.PARTIAL_DELETION.FROM' | translate }}
+      {{
+        (questionnaireInstance.date_of_release_v2
+          ? questionnaireInstance.date_of_release_v2
+          : questionnaireInstance.date_of_release_v1
+        ) | date
+      }}
+    </dd>
+    <dt *ngIf="labResults.length > 0">
+      {{ 'DIALOG.PARTIAL_DELETION.LABORATORY_RESULTS' | translate }}
+    </dt>
+    <dd *ngFor="let labResult of labResults">
+      {{ labResult.id }} {{ 'DIALOG.PARTIAL_DELETION.FROM' | translate }}
+      {{ labResult.date_of_sampling | date }}
+    </dd>
+    <dt *ngIf="deleteLogs">
+      {{ 'DIALOG.PARTIAL_DELETION.LOG_DATA' | translate }}
+    </dt>
+    <dd *ngIf="deleteLogs">
+      {{ 'DIALOG.PARTIAL_DELETION.FROM' | translate }}
+      {{ headerData.startDate }}
+    </dd>
+    <dd *ngIf="deleteLogs">
+      {{ 'DIALOG.PARTIAL_DELETION.TO' | translate }}
+      {{ headerData.endDate }}
+    </dd>
+  </dl>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button
+    mat-raised-button
+    type="button"
+    (click)="cancel.emit($event)"
+    *ngIf="containsData()"
+  >
+    {{ cancelText }}
+  </button>
+  <button
+    mat-raised-button
+    color="warn"
+    (click)="confirm.emit($event)"
+    *ngIf="containsData()"
+  >
+    {{ 'DIALOG.CONFIRM' | translate }}
+  </button>
+  <button
+    mat-raised-button
+    type="button"
+    [mat-dialog-close]
+    *ngIf="!containsData()"
+  >
+    {{ 'GENERAL.OK' | translate }}
+  </button>
+</mat-dialog-actions>

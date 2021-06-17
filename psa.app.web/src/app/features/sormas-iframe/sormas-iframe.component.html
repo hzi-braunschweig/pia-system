@@ -1,0 +1,61 @@
+<div class="jumbotron">
+  <div class="example-container mat-elevation-z8">
+    <div *ngIf="hasParseError" class="error-box">
+      {{ 'SORMAS.PROBAND_PARSING_ERROR' | translate }}
+    </div>
+    <div *ngIf="hasInvalidEmail" class="error-box">
+      <p style="white-space: pre-wrap">
+        {{ 'SORMAS.PROBAND_EMAIL_NOT_VALID_ERROR' | translate }}
+      </p>
+    </div>
+
+    <mat-table
+      *ngIf="!hasParseError && !hasInvalidEmail"
+      #table
+      [dataSource]="dataSource"
+    >
+      <ng-container matColumnDef="pseudonym">
+        <mat-header-cell *matHeaderCellDef>{{
+          'GENERAL.USER_ID' | translate
+        }}</mat-header-cell>
+        <mat-cell *matCellDef="let proband">
+          <span *ngIf="proband.pseudonym">{{ proband.pseudonym }}</span>
+          <button
+            *ngIf="!proband.pseudonym"
+            id="createSormasProband"
+            [disabled]="probandSuccess"
+            mat-raised-button
+            color="primary"
+            (click)="addSormasProband()"
+          >
+            {{ 'PROBANDEN.GENERATE_PSEUDONYM' | translate }}
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="firstname">
+        <mat-header-cell *matHeaderCellDef>{{
+          'GENERAL.FIRST_NAME' | translate
+        }}</mat-header-cell>
+        <mat-cell *matCellDef="let proband"> {{ proband.firstname }} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="lastname">
+        <mat-header-cell *matHeaderCellDef>{{
+          'GENERAL.NAME' | translate
+        }}</mat-header-cell>
+        <mat-cell *matCellDef="let proband"> {{ proband.lastname }} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="email">
+        <mat-header-cell *matHeaderCellDef>{{
+          'GENERAL.EMAIL' | translate
+        }}</mat-header-cell>
+        <mat-cell *matCellDef="let proband"> {{ proband.email }} </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+    </mat-table>
+  </div>
+</div>

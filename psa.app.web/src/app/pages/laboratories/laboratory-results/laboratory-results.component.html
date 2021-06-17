@@ -1,0 +1,15 @@
+<div class="jumbotron" data-e2e="e2e-laboratory-results-component">
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <app-laboratory-results-list
+    [labResultsList]="labResultsList"
+    [user_id]="user_id"
+    *ngIf="showLaboratoryResultTable"
+  ></app-laboratory-results-list>
+  <h1 *ngIf="showEmptyResultTable && currentRole === 'Proband'">
+    {{ 'LABRESULTS.EMPTY_RESULTS_MESSAGE_PROBAND' | translate }}
+  </h1>
+  <h1 *ngIf="showEmptyResultTable && currentRole === 'Forscher'">
+    {{ 'LABRESULTS.EMPTY_RESULTS_MESSAGE_FORSCHER' | translate }}
+  </h1>
+</div>

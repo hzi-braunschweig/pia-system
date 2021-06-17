@@ -1,0 +1,283 @@
+<div class="jumbotron">
+  <div id="page-container">
+    <div class="back_button" fxLayout="row" fxLayoutAlign="space-between start">
+      <button id="arrowback" mat-button (click)="backClicked()">
+        <i class="material-icons">arrow_back</i>
+      </button>
+      <button mat-icon-button (click)="printPage()">
+        <mat-icon>print</mat-icon>
+      </button>
+    </div>
+
+    <div id="print-section">
+      <div *ngFor="let proband of probands; let i = index">
+        <div id="pf1" class="pf w0 h0" data-page-no="1">
+          <div class="pc pc1 w0 h0">
+            <img
+              class="bi x0 y0 w0 h0"
+              alt=""
+              src="../../../assets/images/bgSampleLetter.png"
+            />
+            <div class="c x1 y1 w1 h1">
+              <div class="t m0 x0 h2 y2 ff1 fs0 fc0 sc0 ls0 ws0">
+                Studienzentrum des Helmholtz-Zentrums für
+              </div>
+              <div class="t m0 x0 h2 y3 ff1 fs0 fc0 sc0 ls0 ws0">
+                Infektionsforschung | NAKO Gesundheitsstudie
+              </div>
+              <div class="t m0 x0 h2 y4 ff1 fs0 fc0 sc0 ls0 ws0">
+                Feodor-Lynen-Straße 15 | 30625 Hannover
+              </div>
+            </div>
+            <div class="c x2 y5 w2 h3">
+              <div class="t m0 x0 h2 y6 ff1 fs0 fc0 sc0 ls0 ws0">Datum</div>
+              <div class="t m0 x0 h2 y7 ff1 fs0 fc0 sc0 ls0 ws0">Name</div>
+              <div class="t m0 x0 h2 y8 ff1 fs0 fc0 sc0 ls0 ws0">E-Mail</div>
+              <div class="t m0 x0 h2 y9 ff1 fs0 fc0 sc0 ls0 ws0">Telefon</div>
+              <div class="t m0 x0 h2 ya ff1 fs0 fc0 sc0 ls0 ws0">Bezug</div>
+            </div>
+            <div class="c x3 yb w3 h4">
+              <div class="t m0 x4 h5 yc ff2 fs0 fc0 sc0 ls0 ws0">
+                Studienzentrum des Helmholtz-
+              </div>
+              <div class="t m0 x4 h5 yd ff2 fs0 fc0 sc0 ls0 ws0">
+                Zentrums für Infektionsforschung
+              </div>
+              <div class="t m0 x4 h2 ye ff1 fs0 fc0 sc0 ls0 ws0">
+                Feodor-Lynen-Straße 15
+              </div>
+              <div class="t m0 x4 h2 yf ff1 fs0 fc0 sc0 ls0 ws0">
+                30625 Hannover
+              </div>
+              <div class="t m0 x4 h2 y10 ff1 fs0 fc0 sc0 ls0 ws0">
+                Telefon 0511 5350850-0
+              </div>
+              <div class="t m0 x4 h2 y11 ff1 fs0 fc0 sc0 ls0 ws0">
+                Telefax 0511 535085-99
+              </div>
+              <div class="t m0 x4 h2 y12 ff1 fs0 fc0 sc0 ls0 ws0">
+                gesundheitsstudie@helmholtz-hzi.de
+              </div>
+              <div class="t m0 x4 h2 y13 ff1 fs0 fc0 sc0 ls0 ws0">
+                www.helmholtz-hzi.de/studienzentrum
+              </div>
+              <div class="t m0 x4 h2 y14 ff1 fs0 fc0 sc0 ls0 ws0">
+                NAKO Gesundheitsstudie
+              </div>
+              <div class="t m0 x4 h2 y15 ff1 fs0 fc0 sc0 ls0 ws0">
+                Geschäftsstelle
+              </div>
+              <div class="t m0 x4 h2 y16 ff1 fs0 fc0 sc0 ls0 ws0">
+                Am Taubenfeld 21/2
+              </div>
+              <div class="t m0 x4 h2 y17 ff1 fs0 fc0 sc0 ls0 ws0">
+                69123 Heidelberg
+              </div>
+              <div class="t m0 x4 h2 y18 ff1 fs0 fc0 sc0 ls0 ws0">
+                Telefon 06221 42620-0
+              </div>
+              <div class="t m0 x4 h2 y19 ff1 fs0 fc0 sc0 ls0 ws0">
+                Telefax 06221 42620-99
+              </div>
+              <div class="t m0 x4 h2 y1a ff1 fs0 fc0 sc0 ls0 ws0">
+                gescha<span class="_ _0"></span>eftss<span class="_ _0"></span
+                >telle@<span class="_ _0"></span>nation<span class="_ _0"></span
+                >ale-ko<span class="_ _0"></span>horte.<span class="_ _0"></span
+                >de
+              </div>
+              <div class="t m0 x4 h2 y1b ff1 fs0 fc0 sc0 ls0 ws0">Vorstand</div>
+              <div class="t m0 x4 h2 y1c ff1 fs0 fc0 sc0 ls0 ws0">
+                Prof. Dr. Annette Peters (Vorsitzende)
+              </div>
+              <div class="t m0 x4 h2 y1d ff1 fs0 fc0 sc0 ls0 ws0">
+                Prof. Dr. Markus Löffler
+              </div>
+              <div class="t m0 x4 h2 y1e ff1 fs0 fc0 sc0 ls0 ws0">
+                Prof. Dr. Tobias Pischon
+              </div>
+              <div class="t m0 x4 h2 y1f ff1 fs0 fc0 sc0 ls0 ws0">
+                Prof. Dr. Henry Völzke
+              </div>
+              <div class="t m0 x4 h2 y20 ff1 fs0 fc0 sc0 ls0 ws0">
+                Martin Schmidt, Dipl.-Betriebswirt
+              </div>
+              <div class="t m0 x4 h2 y21 ff1 fs0 fc0 sc0 ls0 ws0">
+                NAKO e.V.
+              </div>
+              <div class="t m0 x4 h2 y22 ff1 fs0 fc0 sc0 ls0 ws0">
+                Amtsgericht Mannheim VR 333648
+              </div>
+              <div class="t m0 x4 h2 y23 ff1 fs0 fc0 sc0 ls0 ws0">
+                Steuer-Nr. 32489/49674
+              </div>
+              <div class="t m0 x4 h2 y24 ff1 fs0 fc0 sc0 ls0 ws0">
+                Sparkasse Heidelberg
+              </div>
+              <div class="t m0 x4 h2 y25 ff1 fs0 fc0 sc0 ls0 ws0">
+                IBAN DE16672500200009207155
+              </div>
+              <div class="t m0 x4 h2 y26 ff1 fs0 fc0 sc0 ls0 ws0">
+                BIC Code SOLADES1HDB
+              </div>
+            </div>
+            <div class="t m0 x1 h6 y27 ff3 fs1 fc1 sc0 ls0 ws0">
+              {{ proband.vorname }} {{ proband.name }}
+            </div>
+            <div class="t m0 x1 h6 y28 ff3 fs1 fc1 sc0 ls0 ws0">
+              {{ proband.strasse }} {{ proband.haus_nr }}
+            </div>
+            <div class="t m0 x1 h6 y29 ff3 fs1 fc1 sc0 ls0 ws0">
+              {{ proband.plz }} {{ proband.ort }}
+            </div>
+            <div class="t m0 x5 h6 y29 ff3 fs1 fc2 sc0 ls0 ws0">
+              {{ currentDate | date: 'mediumDate' }}
+            </div>
+            <div class="t m0 x5 h6 y2a ff3 fs1 fc2 sc0 ls0 ws0">
+              Studienzentrum Hannover
+            </div>
+            <div class="t m0 x5 h6 y2b ff3 fs1 fc2 sc0 ls0 ws0">
+              Gesundheitsstudie@helmholtz-hzi.de
+            </div>
+            <div class="t m0 x5 h6 y2c ff3 fs1 fc2 sc0 ls0 ws0">
+              0511-5350850-0
+            </div>
+            <div class="t m0 x1 h7 y2d ff4 fs2 fc2 sc0 ls0 ws0">
+              NAKO Gesundheitsstudie
+            </div>
+            <div class="t m0 x1 h6 y2e ff3 fs1 fc2 sc0 ls0 ws0">
+              Ihr L3-Pseudonym: <span class="fc1">{{ proband.username }}</span>
+            </div>
+            <div class="t m0 x1 h6 y2f ff3 fs1 fc2 sc0 ls0 ws0">
+              <span *ngIf="proband.anrede == 'Frau'"
+                >Sehr geehrte Frau
+                <span *ngIf="proband.titel">{{ proband.titel }} </span
+                >{{ proband.vorname }} {{ proband.name }}</span
+              ><span *ngIf="proband.anrede == 'Herr'"
+                >Sehr geehrter Herr
+                <span *ngIf="proband.titel">{{ proband.titel }} </span
+                >{{ proband.vorname }} {{ proband.name }}</span
+              ><span *ngIf="!proband.anrede"
+                >Sehr geehrte/r Frau/Herr
+                <span *ngIf="proband.titel">{{ proband.titel }} </span
+                >{{ proband.vorname }} {{ proband.name }}</span
+              >,
+            </div>
+            <div class="t m0 x1 h6 y30 ff3 fs1 fc2 sc0 ls0 ws0">
+              wir danken <span class="_ _2"></span>Ihnen für
+              <span class="_ _2"></span>Ihre Teilnahme
+              <span class="_ _2"></span>an der <span class="_ _2"></span>Level 3
+              <span class="_ _2"></span>– Untersuchung
+              <span class="_ _2"></span>„PIA“ des
+            </div>
+            <div class="t m0 x1 h6 y31 ff3 fs1 fc2 sc0 ls0 ws0">
+              Studienzentrums <span class="_ _3"> </span>Hannover
+              <span class="_ _3"> </span>im <span class="_ _3"> </span>Rahmen
+              <span class="_ _3"> </span>der
+              <span class="_ _3"> </span>Folgeuntersuchung
+              <span class="_ _3"> </span>der <span class="_ _3"> </span>NAKO
+            </div>
+            <div class="t m0 x1 h6 y32 ff3 fs1 fc2 sc0 ls0 ws0">
+              Gesundheitsstudie.
+            </div>
+            <div class="t m0 x1 h6 y33 ff3 fs1 fc2 sc0 ls0 ws0">
+              Anbei senden <span class="_ _2"></span>wir Ihn<span
+                class="_ _2"
+              ></span
+              >en neue <span class="_ _2"></span>Materialien zur
+              <span class="_ _2"></span>Entnahme eines
+              <span class="_ _2"></span>Nasenabstrichs
+            </div>
+            <div class="t m0 x1 h6 y34 ff3 fs1 fc2 sc0 ls0 ws0">
+              zu, <span class="_ _4"></span>damit <span class="_ _4"></span>Sie
+              <span class="_ _4"></span>bei <span class="_ _4"></span>einer
+              <span class="_ _4"></span>weiteren
+              <span class="_ _4"></span>Erkältung <span class="_ _4"></span>oder
+              <span class="_ _4"></span>Grippe <span class="_ _4"></span>einen
+              <span class="_ _4"></span>Nasenabstrich
+            </div>
+            <div class="t m0 x1 h6 y35 ff3 fs1 fc2 sc0 ls0 ws0">
+              entnehmen können.
+            </div>
+            <div class="t m0 x1 h6 y36 ff3 fs1 fc2 sc0 ls0 ws0">
+              Grundsätzlich <span class="_ _2"></span>gilt: Die
+              <span class="_ _2"></span>Teilnahme an
+              <span class="_ _2"></span>der
+              <span class="_ _2"></span>Zusatzstudie ist
+              <span class="_ _2"></span>freiwillig!
+              <span class="_ _2"></span>Sie können
+            </div>
+            <div class="t m0 x1 h6 y37 ff3 fs1 fc2 sc0 ls0 ws0">
+              die Verwendung <span class="_ _5"> </span>von PIA
+              <span class="_ _5"> </span>vorrübergehend unterbrechen
+              <span class="_ _5"> </span>oder die
+              <span class="_ _5"> </span>digitalen
+            </div>
+            <div class="t m0 x1 h6 y38 ff3 fs1 fc2 sc0 ls0 ws0">
+              Fragebögen <span class="_ _2"></span>nicht
+              <span class="_ _6"></span>oder <span class="_ _2"></span>nur
+              <span class="_ _6"></span>zum <span class="_ _2"></span>Teil
+              <span class="_ _6"></span>beantworten.
+              <span class="_ _2"></span>Ihnen
+              <span class="_ _6"></span>entstehen
+              <span class="_ _2"></span>durch <span class="_ _6"></span>die
+            </div>
+            <div class="t m0 x1 h6 y39 ff3 fs1 fc2 sc0 ls0 ws0">
+              Studienteilnahme <span class="_ _7"> </span>keinerlei
+              <span class="_ _7"> </span>Kosten.
+              <span class="_ _7"> </span>Darüber
+              <span class="_ _7"> </span>hinaus
+              <span class="_ _7"> </span>können <span class="_ _7"> </span>Sie
+              <span class="_ _7"> </span>Ihre <span class="_ _7"> </span>Ein-
+            </div>
+            <div class="t m0 x1 h6 y3a ff3 fs1 fc2 sc0 ls0 ws0">
+              willigung <span class="_ _2"></span>ganz oder
+              <span class="_ _2"></span>in Teil<span class="_ _2"></span>en
+              jederzeit <span class="_ _2"></span>ohne Angabe
+              <span class="_ _2"></span>von <span class="_ _2"></span>Gründen
+              widerrufen.
+            </div>
+            <div class="t m0 x1 h6 y3b ff3 fs1 fc2 sc0 ls0 ws0">
+              Bei Widerruf der Teilnahme verlieren Sie den Zugriff auf Ihre
+              Daten in PIA.
+            </div>
+            <div class="t m0 x1 h6 y3c ff3 fs1 fc2 sc0 ls0 ws0">
+              Für Rückfragen stehen wir Ihnen gerne zur Verfügung.
+            </div>
+            <div class="t m0 x1 h6 y3d ff3 fs1 fc2 sc0 ls0 ws0">
+              Mit freundlichen Grüßen
+            </div>
+            <div class="t m0 x1 h6 y3e ff3 fs1 fc2 sc0 ls0 ws0">
+              Ihr Studienzentrum Hannover
+            </div>
+            <div class="t m0 x6 h6 y3f ff3 fs1 fc2 sc0 ls0 ws0">
+              Studienzentrum des Helmholtz-Zentrums für Infektionsforschung
+            </div>
+            <div class="t m0 x7 h6 y40 ff3 fs1 fc2 sc0 ls0 ws0">
+              NAKO Gesundheitsstudie
+            </div>
+            <div class="t m0 x8 h6 y41 ff3 fs1 fc2 sc0 ls0 ws0">
+              Feodor-Lynen-Straße 15 <span class="ff5">•</span>
+              30625 Hannover
+            </div>
+            <div class="t m0 x9 h6 y42 ff3 fs1 fc2 sc0 ls0 ws0">
+              Tel.: 0511/5350850-0 • Fax: 0511/535085-99
+            </div>
+            <div class="t m0 xa h6 y43 ff3 fs1 fc2 sc0 ls0 ws0">
+              Mo. – Do. von 08:00 – 16:00 Uhr, Fr. 08:00 – 15:00 Uhr
+            </div>
+            <div class="t m0 x9 h6 y44 ff3 fs1 fc2 sc0 ls0 ws0">
+              E-Mail: gesundheitsstudie@helmholtz-hzi.de
+            </div>
+            <a class="l" href="http://www.helmholtz-hzi.de/">
+              <div class="d m1"></div>
+            </a>
+          </div>
+          <div
+            class="pi"
+            data-data='{"ctm":[1.000000,0.000000,0.000000,1.000000,0.000000,0.000000]}'
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

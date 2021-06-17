@@ -1,0 +1,29 @@
+<div fxLayout="column" fxLayoutGap="10px">
+  <app-compliance-view-list-entry
+    [name]="'COMPLIANCE.APP_USAGE' | translate"
+    [isChecked]="compliance.compliance_system.app"
+  >
+  </app-compliance-view-list-entry>
+  <app-compliance-view-list-entry
+    [name]="'COMPLIANCE.BLOOD_SAMPLES' | translate"
+    [isChecked]="compliance.compliance_system.bloodsamples"
+  >
+  </app-compliance-view-list-entry>
+  <app-compliance-view-list-entry
+    [name]="'COMPLIANCE.LAB_RESULTS' | translate"
+    [isChecked]="compliance.compliance_system.labresults"
+  >
+  </app-compliance-view-list-entry>
+  <app-compliance-view-list-entry
+    [name]="'COMPLIANCE.NASAL_SWABS' | translate"
+    [isChecked]="compliance.compliance_system.samples"
+  >
+  </app-compliance-view-list-entry>
+
+  <app-compliance-view-list-entry
+    *ngFor="let customCompliance of getBooleanQuestionnaireCompliances()"
+    [name]="customCompliance.name"
+    [isChecked]="customCompliance.value"
+  >
+  </app-compliance-view-list-entry>
+</div>

@@ -1,0 +1,25 @@
+mirror-github:
+  image:
+    name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.ci-git-mirror:$IMAGE_ID
+    entrypoint: ['/bin/sh', '-c']
+  stage: push
+  dependencies: []
+  script:
+    - mkdir ~/.ssh
+    - cp $GITHUB_SSH_KEY ~/.ssh/id_ed25519
+    - chmod og-rwx ~/.ssh/id_ed25519
+    - GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=accept-new" git clone git@github.com:hzi-braunschweig/pia-system.git pia-system-github
+    - rsync -av --delete --exclude=.git --exclude=pia-system-github . pia-system-github
+    - git config --global user.name "PIA CI"
+    - git config --global user.email "piatodo@helmholtz-hzi.de"
+    - cd pia-system-github
+    - git add .
+    - git commit -m "PIA Release $CI_COMMIT_TAG" --allow-empty
+    - echo GITHUB_COMMIT=`git rev-parse HEAD` > github.env
+    - git push
+  artifacts:
+    paths:
+      - pia-system-github/github.env
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+/
+  resource_group: mirror-github

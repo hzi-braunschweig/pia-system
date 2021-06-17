@@ -1,0 +1,10 @@
+check-merge-allowed:
+  image: bash:5.1.8@sha256:86861c0d08be2e91f2c1f5af12b17724161cccd278b0b620b68c68b1926d105d
+  stage: prepare
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - '[[ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "develop" ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^release ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^bugfix ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^hotfix ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^feature ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^renovate ]] || (>&2 echo -e "\e[1m\e[31mmerge requests from $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME to $CI_MERGE_REQUEST_TARGET_BRANCH_NAME are not allowed\e[0m"; false)'
+    - '[[ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "master" ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^release ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^bugfix ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^hotfix ]] || (>&2 echo -e "\e[1m\e[31mmerge requests from $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME to $CI_MERGE_REQUEST_TARGET_BRANCH_NAME are not allowed\e[0m"; false)'
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

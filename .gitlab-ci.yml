@@ -1,0 +1,41 @@
+stages:
+  - prepare
+  - test
+  - accumulate
+  - push
+  - deploy
+  - release
+  - undeploy
+
+default:
+  interruptible: true
+
+variables:
+  DOCKER_BUILDKIT: '1'
+  GIT_DEPTH: '1'
+  IMAGE_ID: $CI_PIPELINE_ID
+  JOBS_UNIT: !reference [.modules, list, unit]
+  JOBS_INT: !reference [.modules, list, int]
+  JOBS_DOCKER: !reference [.modules, list, docker]
+  JOBS_INSTALL: !reference [.modules, list, install]
+  JOBS_LINT: !reference [.modules, list, lint]
+
+include:
+  - ci/ionic.yml
+  - ci/npm-install.yml
+  - ci/npm-test-int.yml
+  - ci/deploy.yml
+  - ci/docker.yml
+  - ci/sonarqube.yml
+  - ci/collect-licenses.yml
+  - ci/accumulate-coverage.yml
+  - ci/tag-release.yml
+  - ci/check-merge-allowed.yml
+  - ci/npm-lint.yml
+  - ci/npm-test-unit.yml
+  - ci/check-format.yml
+  - ci/e2e.yml
+  - ci/generated.yml
+  - ci/npm-audit.yml
+  - ci/github.yml
+  - ci/create-release-mr.yml

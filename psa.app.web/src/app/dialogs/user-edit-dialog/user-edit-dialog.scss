@@ -1,0 +1,9 @@
+form {
+  mat-dialog-content {
+    > div,
+    mat-form-field {
+      margin-bottom: 20px;
+      margin-left: 20px;
+    }
+  }
+}

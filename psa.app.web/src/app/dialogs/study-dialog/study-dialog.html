@@ -1,0 +1,104 @@
+<div *ngIf="form">
+  <form [formGroup]="form" (ngSubmit)="submit(form)">
+    <h1 mat-dialog-title *ngIf="!data.name">
+      {{ 'STUDIES.NEW_STUDY' | translate }}
+    </h1>
+    <h1 mat-dialog-title *ngIf="data.name">
+      {{ 'STUDIES.CHANGE_STUDY' | translate }}
+    </h1>
+    <mat-dialog-content align="start">
+      <mat-form-field>
+        <input
+          id="studynameinput"
+          matInput
+          formControlName="name"
+          placeholder="{{ 'STUDIES.STUDY_NAME' | translate }}"
+        />
+      </mat-form-field>
+      <mat-form-field>
+        <input
+          id="studydescriptioninput"
+          matInput
+          formControlName="description"
+          placeholder="{{ 'STUDIES.DESCRIPTION' | translate }}"
+        />
+      </mat-form-field>
+      <mat-form-field>
+        <input
+          type="email"
+          id="pmemailinput"
+          matInput
+          formControlName="pm_email"
+          placeholder="{{ 'STUDIES.PM_MAIL' | translate }}"
+        />
+      </mat-form-field>
+      <mat-form-field>
+        <input
+          type="email"
+          id="hubemailinput"
+          matInput
+          formControlName="hub_email"
+          placeholder="{{ 'STUDIES.HUB_MAIL' | translate }}"
+        />
+      </mat-form-field>
+      <mat-form-field>
+        <input
+          matInput
+          formControlName="sample_prefix"
+          placeholder="{{ 'STUDIES.SAMPLE_PREFIX' | translate }}"
+        />
+      </mat-form-field>
+      <mat-form-field>
+        <input
+          matInput
+          type="number"
+          formControlName="sample_suffix_length"
+          placeholder="{{ 'STUDIES.SAMPLE_SUFFIX_LENGTH' | translate }}"
+        />
+      </mat-form-field>
+
+      <mat-form-field>
+        <input
+          matInput
+          formControlName="pseudonym_prefix"
+          placeholder="{{ 'STUDIES.PSEUDONYM_PREFIX' | translate }}"
+        />
+      </mat-form-field>
+      <mat-form-field>
+        <input
+          matInput
+          type="number"
+          formControlName="pseudonym_suffix_length"
+          placeholder="{{ 'STUDIES.PSEUDONYM_SUFFIX_LENGTH' | translate }}"
+        />
+      </mat-form-field>
+
+      <mat-checkbox matInput formControlName="has_rna_samples"
+        >{{ 'STUDIES.HAS_RNA_SAMPLES' | translate }}</mat-checkbox
+      >
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button type="button" (click)="dialogRef.close()">
+        {{ 'DIALOG.CANCEL' | translate }}
+      </button>
+      <button
+        *ngIf="!data.name"
+        id="confirmbutton"
+        mat-button
+        type="submit"
+        [disabled]="!form.valid"
+      >
+        {{ 'DIALOG.CREATE' | translate }}
+      </button>
+      <button
+        *ngIf="data.name"
+        id="confirmbutton"
+        mat-button
+        type="submit"
+        [disabled]="!form.valid"
+      >
+        {{ 'DIALOG.CHANGE' | translate }}
+      </button>
+    </mat-dialog-actions>
+  </form>
+</div>

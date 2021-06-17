@@ -1,0 +1,25 @@
+<ion-list>
+  <ion-radio-group
+    [formControl]="formControl"
+    [class.form-field-invalid]="formControl.touched && !formControl.valid"
+  >
+    <ion-item lines="none">
+      <ion-label>{{ 'GENERAL.YES' | translate }}</ion-label>
+      <ion-radio
+        [value]="true"
+        [disabled]="formControl.disabled"
+        color="dark"
+        mode="md"
+      ></ion-radio>
+    </ion-item>
+    <ion-item lines="none">
+      <ion-label>{{ 'GENERAL.NO' | translate }}</ion-label>
+      <ion-radio
+        [value]="false"
+        [disabled]="formControl.disabled"
+        color="dark"
+        mode="md"
+      ></ion-radio>
+    </ion-item>
+  </ion-radio-group>
+</ion-list>

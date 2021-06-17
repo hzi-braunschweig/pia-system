@@ -1,0 +1,24 @@
+<div class="jumbotron">
+  <h1>{{ 'GENERAL.LICENSES' | translate }}</h1>
+  <mat-card
+    *ngFor="let license of licenses | async"
+    data-unit="unit-license-card"
+  >
+    <mat-card-header>
+      <mat-card-title data-unit="unit-license-card-title">
+        {{ license.packageName }}
+      </mat-card-title>
+      <mat-card-subtitle data-unit="unit-license-card-subtitle">
+        {{ license.license }}
+      </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content data-unit="unit-license-card-content">
+      <p>{{ license.licenseText }}</p>
+    </mat-card-content>
+  </mat-card>
+
+  <app-loading-spinner
+    *ngIf="(licenses | async) === null"
+    data-unit="unit-loading-indicator"
+  ></app-loading-spinner>
+</div>

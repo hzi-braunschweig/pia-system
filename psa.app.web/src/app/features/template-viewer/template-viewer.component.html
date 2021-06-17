@@ -1,0 +1,118 @@
+<div class="template-viewer">
+  <ng-container *ngFor="let segment of segments; index as i">
+    <div *ngIf="segment.type === 'HTML'" [innerHTML]="segment.html"></div>
+    <ng-container *ngIf="segment.type === 'CUSTOM_TAG'">
+      <ng-container [ngSwitch]="segment.tagName">
+        <app-consent-input-radio
+          *ngSwitchCase="'pia-consent-input-radio-generic'"
+          [form]="form"
+          [segment]="segment"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentGeneric"
+          data-e2e="e2e-consent-generic-radio"
+        ></app-consent-input-radio>
+        <app-consent-input-radio
+          *ngSwitchCase="'pia-consent-input-radio-app'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentSystem"
+          consentName="app"
+          data-e2e="e2e-consent-name-app"
+        ></app-consent-input-radio>
+        <app-consent-input-radio
+          *ngSwitchCase="'pia-consent-input-radio-bloodsamples'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentSystem"
+          consentName="bloodsamples"
+          data-e2e="e2e-consent-name-bloodsamples"
+        ></app-consent-input-radio>
+        <app-consent-input-radio
+          *ngSwitchCase="'pia-consent-input-radio-labresults'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentSystem"
+          consentName="labresults"
+          data-e2e="e2e-consent-name-labresults"
+        ></app-consent-input-radio>
+        <app-consent-input-radio
+          *ngSwitchCase="'pia-consent-input-radio-samples'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentSystem"
+          consentName="samples"
+          data-e2e="e2e-consent-name-samples"
+        ></app-consent-input-radio>
+        <app-consent-input-text
+          *ngSwitchCase="'pia-consent-input-text-generic'"
+          [form]="form"
+          [segment]="segment"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="textGeneric"
+          data-e2e="e2e-consent-email-input"
+        ></app-consent-input-text>
+        <app-consent-input-text
+          *ngSwitchCase="'pia-consent-input-text-firstname'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="textSystem"
+          consentName="firstname"
+          data-e2e="e2e-consent-name-firstname"
+          label="{{ 'GENERAL.FIRST_NAME' | translate }}"
+        ></app-consent-input-text>
+        <app-consent-input-text
+          *ngSwitchCase="'pia-consent-input-text-lastname'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="textSystem"
+          consentName="lastname"
+          data-e2e="e2e-consent-name-lastname"
+          label="{{ 'GENERAL.NAME' | translate }}"
+        ></app-consent-input-text>
+        <app-consent-input-text
+          *ngSwitchCase="'pia-consent-input-text-location'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="textSystem"
+          consentName="location"
+          data-e2e="e2e-consent-name-location"
+          label="{{ 'GENERAL.PLACE' | translate }}"
+        ></app-consent-input-text>
+        <app-consent-input-date
+          *ngSwitchCase="'pia-consent-input-text-birthdate'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="textSystem"
+          consentName="birthdate"
+          data-e2e="e2e-consent-name-birthdate"
+          label="{{ 'GENERAL.BIRTHDAY' | translate }}"
+        ></app-consent-input-date>
+        <app-consent-input-date
+          *ngSwitchCase="'pia-consent-input-text-date'"
+          [form]="form"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="textSystem"
+          consentName="date"
+          data-e2e="e2e-consent-name-date"
+          label="{{ 'GENERAL.DATE' | translate }}"
+        ></app-consent-input-date>
+        <app-consent-switch-radio
+          *ngSwitchCase="'pia-consent-switch-radio-system'"
+          [form]="form"
+          [segment]="segment"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentSystem"
+          data-e2e="e2e-pia-consent-switch-radio-generic"
+        ></app-consent-switch-radio>
+        <app-consent-switch-radio
+          *ngSwitchCase="'pia-consent-switch-radio-generic'"
+          [form]="form"
+          [segment]="segment"
+          (usedFormControls)="updateUsedFormControls(i, $event)"
+          groupName="consentGeneric"
+          data-e2e="e2e-pia-consent-switch-radio-generic2"
+        ></app-consent-switch-radio>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</div>

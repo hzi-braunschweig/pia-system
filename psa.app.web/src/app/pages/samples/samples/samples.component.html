@@ -1,0 +1,387 @@
+<div class="jumbotron">
+  <div class="back_button" fxLayout="row" fxLayoutAlign="space-between start">
+    <button mat-button (click)="onBackButtonClicked()">
+      <i class="material-icons">arrow_back</i>
+    </button>
+    <button mat-raised-button color="primary" (click)="printTables()">
+      {{ 'PROBANDEN.EXPORT_DATA' | translate }}
+    </button>
+  </div>
+
+  <div class="spinner-wrapper">
+    <mat-spinner *ngIf="loading"></mat-spinner>
+  </div>
+
+  <div class="table-container">
+    <h1 class="table-header" #title1>
+      {{ 'PROBANDEN.NASAL_SWABS' | translate }} {{ pseudonym }}
+    </h1>
+    <!-- Filter nasal swabs -->
+    <mat-form-field
+      floatPlaceholder="never"
+      *ngIf="!loading && showProbenTable"
+    >
+      <input
+        matInput
+        #filterNasenabstrichen
+        placeholder="{{ 'SAMPLES.FILTER_NASAL_SWABS' | translate }}"
+        (keyup)="applyFilterNasenabstrichten($event.target.value)"
+      />
+    </mat-form-field>
+    <mat-table
+      class="mat-elevation-z8"
+      #table
+      [dataSource]="dataSourceNasenabstrichten"
+      matSortActive="proben_id"
+      matSortDirection="asc"
+      matSort
+      *ngIf="!loading && showProbenTable"
+    >
+      <!-- Probes ID -->
+      <ng-container matColumnDef="proben_id" matSortStart>
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'SAMPLES.VIREN_PROBE_ID' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row"> {{ row.id }}</mat-cell>
+      </ng-container>
+
+      <!-- Dummy Probe ID -->
+      <ng-container matColumnDef="dummy_proben_id">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'SAMPLES.BAKT_PROBE_ID' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row"> {{ row.dummy_sample_id }}</mat-cell>
+      </ng-container>
+
+      <!-- Scanned by participant -->
+      <ng-container matColumnDef="scanned_by_participant">
+        <mat-header-cell *matHeaderCellDef>
+          {{ 'SAMPLES.SCANNED_BY_PARTICIPANT' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          {{ row.status | statusCheckout2 | translate }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Lab results available -->
+      <ng-container matColumnDef="labresults_available">
+        <mat-header-cell *matHeaderCellDef>
+          {{ 'SAMPLES.LABRESULTS_AVAILABLE' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          {{ row.status | statusCheckout | translate }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Forwarding completed -->
+      <ng-container
+        *ngIf="currentRole == 'ProbandenManager'"
+        matColumnDef="forwarding_completed"
+        class="forwarding-completed-column"
+      >
+        <mat-header-cell *matHeaderCellDef>
+          {{ 'SAMPLES.FORWARDING_COMPLETED' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <mat-checkbox
+            *ngIf="row.new_samples_sent != null"
+            [disabled]="
+              row.status === 'inactive' ||
+              row.study_status === 'STUDIES.STATUS_DELETED' ||
+              disableScanSampleButton
+            "
+            [(ngModel)]="row.new_samples_sent"
+            (change)="onSamplesSentCheckBoxChecked(row)"
+          ></mat-checkbox>
+          <span *ngIf="row.new_samples_sent == null">{{
+            'SAMPLES.HANDED_OUT' | translate
+          }}</span>
+        </mat-cell>
+      </ng-container>
+
+      <!-- AccountStatus Column -->
+      <ng-container matColumnDef="study_status">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'SAMPLES.STUDY_STATUS' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          {{ row.study_status | translate }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Remarks -->
+      <ng-container
+        matColumnDef="remark"
+        flex
+        class="remark-column"
+        *ngIf="
+          currentRole == 'ProbandenManager' ||
+          currentRole == 'Untersuchungsteam'
+        "
+      >
+        <mat-header-cell *matHeaderCellDef>
+          {{ 'SAMPLES.REMARK' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <span> {{ row.remark }} </span>
+          <button
+            mat-icon-button
+            [disabled]="
+              row.study_status === 'STUDIES.STATUS_DELETED' ||
+              disableScanSampleButton
+            "
+            (click)="onEditCellClicked(row)"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Possible actions -->
+      <ng-container
+        matColumnDef="action"
+        flex
+        *ngIf="currentRole != 'Forscher'"
+      >
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <button
+            mat-icon-button
+            (click)="openDeleteSampleDialog(row.id, 'sample')"
+            matTooltip="{{ 'SAMPLES.DELETE_SAMPLE' | translate }}"
+            [disabled]="row.study_status !== 'STUDIES.STATUS_ACTIV'"
+            *ngIf="!row.pendingDeletionObject"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="
+              openDialogDeletePartner(
+                row.id,
+                'sample',
+                row.pendingDeletionObject.requested_by,
+                row.pendingDeletionObject.id
+              )
+            "
+            matTooltip="{{ 'SAMPLES.CONFIRM_DELETE_SAMPLE' | translate }}"
+            *ngIf="row.pendingDeletionObject"
+          >
+            <mat-icon>check_circle_outline</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Active/inactive -->
+      <ng-container
+        *ngIf="currentRole == 'ProbandenManager'"
+        matColumnDef="deactivate"
+      >
+        <mat-header-cell *matHeaderCellDef></mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <mat-slide-toggle
+            color="primary"
+            [checked]="row.status !== 'inactive'"
+            [disabled]="
+              row.study_status === 'STUDIES.STATUS_DELETED' ||
+              disableScanSampleButton
+            "
+            (change)="onDeactivateRow(pseudonym, row)"
+          ></mat-slide-toggle>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row
+        *matHeaderRowDef="
+          currentRole == 'ProbandenManager'
+            ? displayedColumnsPM
+            : currentRole == 'Untersuchungsteam'
+            ? displayedColumnsUT
+            : displayedColumnsForscher
+        "
+      >
+      </mat-header-row>
+      <mat-row
+        *matRowDef="
+          let row;
+          columns: currentRole == 'ProbandenManager'
+            ? displayedColumnsPM
+            : currentRole == 'Untersuchungsteam'
+            ? displayedColumnsUT
+            : displayedColumnsForscher
+        "
+        [style.background-color]="
+          row.status !== 'inactive' ? 'transparent' : 'grey'
+        "
+      >
+      </mat-row>
+    </mat-table>
+
+    <div class="proben-no-results" *ngIf="!showProbenTable">
+      {{ 'SAMPLES.PROBAND_SAMPLES_PERMISSION' | translate }}
+    </div>
+
+    <mat-paginator
+      #paginator1
+      [pageIndex]="0"
+      [pageSize]="25"
+      [pageSizeOptions]="[5, 10, 25, 100]"
+      *ngIf="showProbenTable"
+    >
+    </mat-paginator>
+  </div>
+  <button
+    mat-raised-button
+    (click)="onScanButtonClicked(false)"
+    *ngIf="
+      !loading &&
+      showProbenTable &&
+      currentRole != 'Forscher' &&
+      !disableScanSampleButton
+    "
+  >
+    {{ 'SAMPLES.SCAN_PROBEN_ID' | translate }}
+  </button>
+
+  <div class="spinner-wrapper">
+    <mat-spinner *ngIf="loading"></mat-spinner>
+  </div>
+
+  <div class="table-container">
+    <h1 class="table-header" #title2>
+      {{ 'PROBANDEN.BLOOD_SAMPLES' | translate }} {{ pseudonym }}
+    </h1>
+    <!-- Filter blood samples -->
+    <mat-form-field
+      floatPlaceholder="never"
+      *ngIf="!loading && showBlutProbenTable"
+    >
+      <input
+        matInput
+        #filterBluteproben
+        placeholder="{{ 'SAMPLES.FILTER_BLOOD_SAMPLES' | translate }}"
+        (keyup)="applyFilterBluteproben($event.target.value)"
+      />
+    </mat-form-field>
+    <mat-table
+      class="mat-elevation-z8"
+      #table
+      [dataSource]="dataSourceBluteproben"
+      matSortActive="proben_id"
+      matSortDirection="asc"
+      matSort
+      *ngIf="!loading && showBlutProbenTable"
+    >
+      <!-- Proben ID -->
+      <ng-container matColumnDef="proben_id" matSortStart>
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'SAMPLES.PROBEN_ID' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row"> {{ row.sample_id }}</mat-cell>
+      </ng-container>
+
+      <!-- Status -->
+      <ng-container matColumnDef="blood_sample_carried_out" matSortStart>
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'SAMPLES.STATUS' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <mat-select
+            disableOptionCentering
+            [(value)]="row.blood_sample_carried_out"
+            placeholder="{{
+              'SAMPLES.BLOOD_SAMPLE_NOT_YET_DETERMINED' | translate
+            }}"
+            *ngIf="currentRole === 'Untersuchungsteam'"
+          >
+            <mat-option
+              *ngFor="let status of statuses"
+              [value]="status.value"
+              (click)="onEditSampleClicked(row, true, status.value)"
+            >
+              {{ status.viewValue | translate }}
+            </mat-option>
+          </mat-select>
+          <span *ngIf="currentRole !== 'Untersuchungsteam'">{{
+            row.blood_sample_carried_out_value | translate
+          }}</span>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Remarks -->
+      <ng-container
+        matColumnDef="remark"
+        flex
+        *ngIf="currentRole != 'Forscher'"
+      >
+        <mat-header-cell *matHeaderCellDef>
+          {{ 'SAMPLES.REMARK' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          {{ row.remark }}
+          <button
+            mat-icon-button
+            *ngIf="currentRole == 'Untersuchungsteam'"
+            [disabled]="
+              row.study_status === 'STUDIES.STATUS_DELETED' ||
+              disableScanSampleButton
+            "
+            (click)="onEditSampleClicked(row, false, null)"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row
+        *matHeaderRowDef="
+          currentRole == 'ProbandenManager'
+            ? displayedBlutprobenColumnsPM
+            : currentRole == 'Untersuchungsteam'
+            ? displayedBlutprobenColumnsUT
+            : displayedBlutprobenColumnsForscher
+        "
+      >
+      </mat-header-row>
+      <mat-row
+        *matRowDef="
+          let row;
+          columns: currentRole == 'ProbandenManager'
+            ? displayedBlutprobenColumnsPM
+            : currentRole == 'Untersuchungsteam'
+            ? displayedBlutprobenColumnsUT
+            : displayedBlutprobenColumnsForscher
+        "
+        [style.background-color]="
+          row.status !== 'inactive' ? 'transparent' : 'grey'
+        "
+      >
+      </mat-row>
+    </mat-table>
+
+    <div class="proben-no-results" *ngIf="!showBlutProbenTable">
+      {{ 'SAMPLES.PROBAND_BLOOD_SAMPLES_PERMISSION' | translate }}
+    </div>
+
+    <mat-paginator
+      #paginator2
+      [pageIndex]="0"
+      [pageSize]="25"
+      [pageSizeOptions]="[5, 10, 25, 100]"
+      *ngIf="showBlutProbenTable"
+    >
+    </mat-paginator>
+  </div>
+  <button
+    mat-raised-button
+    (click)="onScanButtonClicked(true)"
+    *ngIf="
+      !loading &&
+      currentRole == 'Untersuchungsteam' &&
+      showBlutProbenTable &&
+      !disableScanSampleButton
+    "
+  >
+    {{ 'SAMPLES.SCAN_PROBEN_ID' | translate }}
+  </button>
+</div>

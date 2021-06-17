@@ -1,0 +1,44 @@
+{
+  "name": "externaldataservice",
+  "version": "1.6.0",
+  "description": "Imports data from external systems like MODYS",
+  "license": "AGPL-3.0-or-later",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node --insecure-http-parser src/index.js",
+    "test.int": "DOTENV_CONFIG_PATH=tests/test.env nyc mocha 'tests/integration/**/*.spec.{js,ts}' --timeout 10000",
+    "test.unit": "IGNORE_MISSING_CONFIG=1 nyc mocha 'src/**/*.spec.{js,ts}' --timeout 5000",
+    "lint": "eslint . --ext .ts",
+    "postlint": "eslint . --ext .js -c .eslintrc.js.json --no-eslintrc # ONLY_FOR_JS: remove script after complete migration to ts"
+  },
+  "dependencies": {
+    "@hapi/hapi": "^20.1.3",
+    "@pia/lib-service-core": "file:../psa.lib.service-core",
+    "node-fetch": "^2.6.1",
+    "node-schedule": "^2.0.0",
+    "promise-mysql": "^5.0.3"
+  },
+  "devDependencies": {
+    "@pia/eslint-config": "file:../psa.eslint-config",
+    "@types/chai": "^4.2.18",
+    "@types/hapi__hapi": "^20.0.8",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^15.6.0",
+    "@typescript-eslint/eslint-plugin": "^4.24.0",
+    "@typescript-eslint/parser": "^4.24.0",
+    "chai": "^4.3.4",
+    "chai-http": "^4.3.0",
+    "dotenv": "^9.0.2",
+    "eslint": "^7.26.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-no-only-tests": "^2.6.0",
+    "eslint-plugin-security": "^1.4.0",
+    "mocha": "^8.4.0",
+    "mocha-multi-reporters": "^1.5.1",
+    "nyc": "^15.1.0",
+    "sinon": "^10.0.0",
+    "source-map-support": "^0.5.19",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
+  }
+}

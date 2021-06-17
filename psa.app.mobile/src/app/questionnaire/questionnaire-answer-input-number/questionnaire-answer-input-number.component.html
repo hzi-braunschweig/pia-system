@@ -1,0 +1,16 @@
+<ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
+  <ion-label class="ion-text-wrap">{{ label }}</ion-label>
+</ion-item>
+<ion-item lines="inset">
+  <ion-input
+    type="number"
+    inputmode="decimal"
+    pattern="[0-9]*"
+    [placeholder]="label"
+    [disabled]="disabled"
+    [name]="name"
+    [formControl]="control"
+    (keyup.enter)="hideKeyboard($event)"
+  >
+  </ion-input>
+</ion-item>

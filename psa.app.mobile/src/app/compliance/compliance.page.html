@@ -1,0 +1,38 @@
+<app-header
+  title="{{'COMPLIANCE.TITLE' | translate}} {{ studyName }}"
+  [disableButtons]="!isUserIntent"
+></app-header>
+
+<ion-content class="ion-padding-top">
+  <p class="ion-margin" *ngIf="complianceTextEmpty()">
+    {{ 'COMPLIANCE.MSG_COMPLIANCE_FILLED_BY_RESEARCH_TEAM' | translate }}
+  </p>
+  <ion-text
+    color="danger"
+    class="ion-margin"
+    unit-app-usage-hint
+    *ngIf="showAppUsageHint"
+    >{{ 'COMPLIANCE.MSG_APP_COMPLIANCE_NEEDED' | translate }}</ion-text
+  >
+  <app-template-viewer
+    *ngIf="studyWrapper?.complianceTextObject"
+    [segments]="studyWrapper?.complianceTextObject"
+    [form]="studyWrapper?.form"
+    (usedFormControls)="studyWrapper.usedFormControls = $event"
+  >
+  </app-template-viewer>
+</ion-content>
+<ion-footer *ngIf="!complianceTextEmpty()">
+  <ion-button
+    style="margin: 10px"
+    *ngIf="!showAppUsageHint && !complianceSent"
+    (click)="submitCompliance()"
+    >{{ 'GENERAL.SAVE' | translate }}</ion-button
+  >
+  <ion-button
+    style="margin: 10px"
+    *ngIf="!showAppUsageHint && complianceSent"
+    (click)="downloadCompliance()"
+    >{{ 'COMPLIANCE.DOWNLOAD_PDF' | translate }}
+  </ion-button>
+</ion-footer>

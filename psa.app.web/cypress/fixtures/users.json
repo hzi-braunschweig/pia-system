@@ -1,0 +1,30 @@
+{
+  "new": {
+    "Forscher": {
+      "username": "e2eForscher@test.mail",
+      "role": "Forscher"
+    },
+    "ConfirmingForscher": {
+      "username": "e2eConfirmingForscher@test.mail",
+      "role": "Forscher"
+    },
+    "Untersuchungsteam": {
+      "username": "e2eUntersuchungsteam@test.mail",
+      "role": "Untersuchungsteam"
+    },
+    "ProbandenManager": {
+      "username": "e2eProbandenManager@test.mail",
+      "role": "ProbandenManager"
+    },
+    "EinwilligungsManager": {
+      "username": "e2eEinwilligungsManager@test.mail",
+      "role": "EinwilligungsManager"
+    }
+  },
+  "existing": {
+    "SysAdmin": {
+      "username": "Administrator",
+      "password": "CL3kACzGQqg"
+    }
+  }
+}

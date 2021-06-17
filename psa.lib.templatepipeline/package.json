@@ -1,0 +1,50 @@
+{
+  "name": "@pia/lib-templatepipeline",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "license": "AGPL-3.0-or-later",
+  "author": "",
+  "main": "./dist/src/index.js",
+  "files": [
+    "dist/src/**/*"
+  ],
+  "scripts": {
+    "lint": "eslint . --ext .ts",
+    "build": "tsc -p tsconfig.build.json",
+    "test.unit": "nyc mocha src/**/*.spec.ts tests/**/*.spec.ts"
+  },
+  "dependencies": {
+    "dompurify": "^2.2.8",
+    "jsdom": "^16.5.3",
+    "marked": "^2.0.3",
+    "mustache": "^4.2.0",
+    "parse5": "^6.0.1",
+    "puppeteer": "^9.1.1"
+  },
+  "devDependencies": {
+    "@pia/eslint-config": "file:../psa.eslint-config",
+    "@pia/lib-service-core": "file:../psa.lib.service-core",
+    "@types/chai": "^4.2.18",
+    "@types/dompurify": "^2.2.2",
+    "@types/jsdom": "^16.2.7",
+    "@types/marked": "^2.0.2",
+    "@types/mocha": "^8.2.1",
+    "@types/mustache": "^4.1.1",
+    "@types/node": "^14.14.44",
+    "@types/parse5": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.22.1",
+    "@typescript-eslint/parser": "^4.22.1",
+    "chai": "^4.3.3",
+    "eslint": "^7.26.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-no-only-tests": "^2.6.0",
+    "eslint-plugin-security": "^1.4.0",
+    "mocha": "^8.4.0",
+    "mocha-multi-reporters": "^1.5.1",
+    "nyc": "^15.1.0",
+    "source-map-support": "^0.5.19",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.2"
+  }
+}

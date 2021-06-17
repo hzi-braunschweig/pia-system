@@ -1,0 +1,15 @@
+check-format:
+  stage: test
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.codeformatter:$IMAGE_ID
+  needs:
+    - job: build-docker
+      artifacts: false
+  variables:
+    GIT_DEPTH: '1'
+  script:
+    - prettier --check .
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH =~ /^develop/
+    - if: $CI_COMMIT_BRANCH =~ /^release/

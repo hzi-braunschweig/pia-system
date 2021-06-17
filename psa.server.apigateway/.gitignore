@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.incremental
+.nyc_output/
+tests/reports/

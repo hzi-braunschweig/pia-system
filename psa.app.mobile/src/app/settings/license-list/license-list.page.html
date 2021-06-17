@@ -1,0 +1,52 @@
+<app-header
+  [title]="'SETTINGS.LICENSES' | translate"
+  isChildPageOf="settings"
+></app-header>
+
+<ion-content>
+  <ion-card
+    *ngFor="let license of licenses | async"
+    data-unit="unit-license-card"
+  >
+    <ion-card-header>
+      <ion-card-title data-unit="unit-license-card-title">
+        <h3>{{ license.packageName }}</h3>
+      </ion-card-title>
+      <ion-card-subtitle data-unit="unit-license-card-subtitle">
+        {{ license.license }}
+      </ion-card-subtitle>
+    </ion-card-header>
+    <ion-card-content data-unit="unit-license-card-content">
+      <p>{{ license.licenseText }}</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ng-container *ngIf="(licenses | async) === null">
+    <ion-card
+      *ngFor="let item of [].constructor(10)"
+      data-unit="unit-loading-indicator"
+    >
+      <ion-card-header>
+        <ion-card-title
+          ><h3>
+            <ion-skeleton-text
+              animated
+              style="width: 60%"
+            ></ion-skeleton-text></h3
+        ></ion-card-title>
+        <ion-card-subtitle
+          ><ion-skeleton-text animated style="width: 20%"></ion-skeleton-text
+        ></ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <p>
+          <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+          <ion-skeleton-text animated style="width: 100%"></ion-skeleton-text>
+        </p>
+      </ion-card-content>
+    </ion-card>
+  </ng-container>
+</ion-content>

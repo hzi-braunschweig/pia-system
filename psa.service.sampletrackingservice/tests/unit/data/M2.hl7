@@ -1,0 +1,17 @@
+MSH|^~\&|IMED^^MLABRESULTS|VIR|imed||201806010903||ORU^R01|00106249|P|2.3
+PID|1|X1062743|X1062743|ML1062743|QTestProband1^Test-12345679013^^^^^^^|||U|||^^^^^||^^^^^^^^^^|||||||||||||||
+PV1|1|?|^^^^^^^^^^brsgbf^0^0^3751^||||^^^^^^^^^^^^^^^^^^^||||||||||||ML1062743^ML1062743|||||?|||||||||||||||||||||
+ORC|XO|0001062743^VIR|1062743^VIR||CM||^^^000000000000^^||201806010903||||||201805311822||brsgbf||^^^^^^^^~^^^^^^^^|||||^^|0|1|
+OBR|0001||1062743|^^^^||||||||||201805311822||||||||201806010903|||CM||R|||||||||
+OBR|0002||1062743|g20469155^^^na^Nasenabstrich|||201805319999|||||||201805311822||||||||201806010903|||F||R|||||Glowacka||||
+OBX|0001|ST|521035^Adenovirus-PCR (resp.)^|1|neg|ct|||||F|||||
+OBX|0002|ST|521036^HMPV-NAT^|2|33/pos|ct|||||F|||||
+OBX|0003|ST|521037^Influenzavirus-A-NAT^|3|21/pos|ct|||||F|||||
+OBX|0004|ST|521038^Influenzavirus-B-NAT^|4|neg||||||F|||||
+OBX|0005|ST|521039^Parainfluenzavirus-1-NAT^|5|neg||||||F|||||
+OBX|0006|ST|521040^Parainfluenzavirus-2-NAT^|6|neg||||||F|||||
+OBX|0007|ST|521041^Parainfluenzavirus-3-NAT^|7|neg||||||F|||||
+OBX|0008|ST|521042^Parainfluenzavirus-4-NAT^|8|neg||||||F|||||
+OBX|0009|ST|521043^Rhinovirus-NAT^|9|neg|ct|||||F|||||
+OBX|0010|ST|521044^RSV-NAT^|10|neg||||||F|||||
+NTE|0001|L|Mittels RT-PCR konnte Influenza-A-RNA nachgewiesen werden Mittels PCR konnte HMPV A/B-RNA nachgewiesen werden, allerdings nur sehr schwach positiv. Klinische Relevanz des Befundes in Bezug auf aktuelle Symptomatik ist fraglich, evtl. Restbefund nach durchmachtem respiratorischen Infekt.|

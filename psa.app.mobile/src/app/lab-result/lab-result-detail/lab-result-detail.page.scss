@@ -1,0 +1,27 @@
+.page {
+  background: white;
+  display: block;
+  font-size: 11pt;
+
+  .page-content {
+    td {
+      padding: 1px 15px 1px 0;
+    }
+
+    .pia-laboratory-result-table {
+      padding: 10px 0 10px 0;
+      display: block;
+      overflow-y: auto;
+
+      td,
+      th {
+        border: 1px solid #dddddd;
+        text-align: left;
+      }
+
+      tr:nth-child(even) {
+        background-color: #dddddd;
+      }
+    }
+  }
+}

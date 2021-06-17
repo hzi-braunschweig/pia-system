@@ -1,0 +1,32 @@
+const fetch = require('node-fetch');
+const Boom = require('@hapi/boom');
+const { config } = require('../config');
+
+const serviceUrl = config.services.sormasservice.url;
+
+class SormasserviceClient {
+  static async setStatus(uuid, status) {
+    let res;
+    try {
+      res = await fetch.default(`${serviceUrl}/sormas/probands/setStatus`, {
+        method: 'post',
+        body: JSON.stringify({ uuid, status }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (e) {
+      throw Boom.serverUnavailable(
+        'sormasserviceClient setStatus: Did not receive a response',
+        e
+      );
+    }
+    if (!res.ok) {
+      throw Boom.internal(
+        'sormasserviceClient setStatus: received an Error',
+        await res.text(),
+        res.status
+      );
+    }
+  }
+}
+
+module.exports = SormasserviceClient;

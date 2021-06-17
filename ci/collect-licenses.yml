@@ -1,0 +1,21 @@
+collect-licenses:
+  stage: test
+  image: docker:20.10.7@sha256:7a49f42626fed01146792e5add6e48e2c9f1eb3550a6840356757e55cc36ba25
+  needs:
+    - job: build-docker
+      artifacts: false
+    - job: npm-install
+      artifacts: false
+  variables:
+    GIT_DEPTH: '1'
+  script:
+    - sh -c "docker login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
+    - DOCKER_BUILDKIT=1 docker build -f psa.utils.repo-tool/generated/license-collector.dockerfile -o . --build-arg VERSION=$IMAGE_ID .
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH =~ /^develop/
+    - if: $CI_COMMIT_BRANCH =~ /^release/
+  artifacts:
+    paths:
+      - licenses.csv

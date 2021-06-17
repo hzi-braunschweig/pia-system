@@ -1,0 +1,27 @@
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+chai.use(chaiHttp);
+const expect = chai.expect;
+
+const server = require('../../src/server');
+const apiAddress = 'http://localhost:' + process.env.PORT;
+const serverSandbox = require('sinon').createSandbox();
+
+describe('/metrics', async function () {
+  before(async function () {
+    await server.init();
+  });
+
+  after(async function () {
+    await server.stop();
+    serverSandbox.restore();
+  });
+
+  describe('GET /metrics', async function () {
+    it('should return http 200 with a string', async () => {
+      const result = await chai.request(apiAddress).get('/metrics');
+      expect(result).to.have.status(200);
+      expect(result.text).to.be.an('string');
+    });
+  });
+});

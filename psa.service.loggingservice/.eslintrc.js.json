@@ -1,0 +1,3 @@
+{
+  "extends": ["@pia/eslint-config/js-only"]
+}

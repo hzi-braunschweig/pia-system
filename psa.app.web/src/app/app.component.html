@@ -1,0 +1,34 @@
+﻿<mat-sidenav-container class="background-container">
+  <mat-sidenav
+    #sidenav
+    [mode]="navigationMode"
+    [opened]="navigationVisible && !isLtMd"
+  >
+    <div class="sidenav-action-buttons" *ngIf="navigationMode === 'over'">
+      <button mat-icon-button (click)="sidenav.toggle()">
+        <mat-icon *ngIf="sidenav.opened">clear</mat-icon>
+      </button>
+    </div>
+    <app-side-navigation
+      *ngIf="isLtMd"
+      [sidenav]="sidenav"
+    ></app-side-navigation>
+    <app-side-navigation *ngIf="!isLtMd"></app-side-navigation>
+  </mat-sidenav>
+
+  <mat-sidenav-content>
+    <!-- Main App container -->
+    <div class="container">
+      <div
+        class="sidenav-action-buttons"
+        *ngIf="navigationVisible && !sidenav.opened"
+      >
+        <button mat-icon-button (click)="sidenav.toggle()">
+          <mat-icon *ngIf="!sidenav.opened">notes</mat-icon>
+        </button>
+      </div>
+      <app-alert></app-alert>
+      <router-outlet mat-router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -1,0 +1,26 @@
+.back_button {
+  width: 95%;
+  padding-bottom: 20px;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-gap: 1rem;
+
+  .double-input-street-house-no {
+    display: grid;
+    grid-template-columns: 65% 30%;
+    grid-column-gap: 5%;
+  }
+}
+
+.comment {
+  max-width: 600px;
+  margin-right: 20px;
+}
+
+mat-card-actions {
+  display: flex;
+  justify-content: flex-end;
+}

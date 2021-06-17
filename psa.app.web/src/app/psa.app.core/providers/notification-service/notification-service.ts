@@ -1,0 +1,46 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import {
+  EmailRequest,
+  NotificationCreationRequest,
+  NotificationCreationResponse,
+  NotificationDto,
+} from '../../models/notification';
+
+@Injectable()
+export class NotificationService {
+  private readonly apiUrl = 'api/v1/notification/';
+
+  constructor(public http: HttpClient) {}
+
+  postFCMToken(token): Promise<string> {
+    return this.http
+      .post<string>(this.apiUrl + 'fcmToken', { fcm_token: token })
+      .toPromise();
+  }
+
+  /**
+   * Sends a mail to multiple probands. Returns a list of mail addresses to which
+   * the mail was successfully sent.
+   */
+  sendEmail(email: EmailRequest): Promise<string[]> {
+    return this.http.post<string[]>(this.apiUrl + 'email', email).toPromise();
+  }
+
+  sendNotification(
+    notification: NotificationCreationRequest
+  ): Promise<NotificationCreationResponse> {
+    return this.http
+      .post<NotificationCreationResponse>(
+        this.apiUrl + 'notification',
+        notification
+      )
+      .toPromise();
+  }
+
+  getNotificationById(id): Promise<NotificationDto> {
+    return this.http
+      .get<NotificationDto>(this.apiUrl + 'notification/' + id)
+      .toPromise();
+  }
+}

@@ -1,0 +1,14 @@
+ansible_ssh_host: {{ hostvars[inventory_hostname]['ansible_ssh_host'] | default(new_host_ipv4) }}
+docker_host: true
+provisioned: true
+pia_multi_host: false
+pia_is_ewpia: true
+pia_is_ipia: true
+pia_is_qpia: true
+pia_expose_postgres_ports: false
+pia_expose_http_ports: false
+pia_is_certificate_master: true
+pia_certificate_master: {{ hostvars[inventory_hostname]['PIA_API_ADDRESS'] | default(pia_url) }}
+{% for item in pia_environment_vars.results %}
+PIA_{{ item.item }}: {{ item.stdout }}
+{% endfor %}

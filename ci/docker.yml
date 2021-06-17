@@ -1,0 +1,57 @@
+build-docker:
+  stage: prepare
+  image: docker:20.10.7@sha256:7a49f42626fed01146792e5add6e48e2c9f1eb3550a6840356757e55cc36ba25
+  # downloads may fail
+  retry: 2
+  script:
+    # generate the secrets
+    - docker build --build-arg AUTH_KEY_SIZE=2048 --build-arg CA_KEY_SIZE=2048 --build-arg SERVICE_KEY_SIZE=2048 --build-arg CA_VALIDITY_DAYS=36500 --build-arg SERVICE_VALIDITY_DAYS=36500 -o secrets psa.utils.scripts/generate-secrets/
+    - sh -c "docker login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
+    - >
+      for JOB in $JOBS_DOCKER; do
+        docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$IMAGE_ID --build-arg DIR=$JOB --build-arg VERSION_INFO_PIPELINE_ID=$IMAGE_ID --build-arg VERSION_INFO_GIT_HASH=$CI_COMMIT_SHA --build-arg VERSION_INFO_GIT_REF=$CI_COMMIT_REF_SLUG -f $JOB/Dockerfile .
+        docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$IMAGE_ID-with-faked-secrets --build-arg BASE=$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$IMAGE_ID -f psa.utils.scripts/secrets-dockerfile/Dockerfile .
+      done
+    - >
+      for JOB in $JOBS_DOCKER; do
+        docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$IMAGE_ID
+        docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$IMAGE_ID-with-faked-secrets
+      done
+  tags:
+    - docker
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH =~ /^develop/
+    - if: $CI_COMMIT_BRANCH =~ /^release/
+  artifacts:
+    paths:
+      - secrets
+
+push-branch-images:
+  stage: push
+  image: docker:20.10.7@sha256:7a49f42626fed01146792e5add6e48e2c9f1eb3550a6840356757e55cc36ba25
+  variables:
+    GIT_STRATEGY: none
+  dependencies: []
+  script:
+    - sh -c "docker login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
+    - >
+      for JOB in $JOBS_DOCKER; do
+        docker pull $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$IMAGE_ID
+      done
+    - >
+      for JOB in $JOBS_DOCKER; do
+        docker tag $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$IMAGE_ID $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$CI_COMMIT_REF_SLUG
+      done
+    - >
+      for JOB in $JOBS_DOCKER; do
+        docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$CI_COMMIT_REF_SLUG
+      done
+  tags:
+    - docker
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH =~ /^develop/
+    - if: $CI_COMMIT_BRANCH =~ /^release/

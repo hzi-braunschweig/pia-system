@@ -1,0 +1,13 @@
+@media screen and (max-width: 599px) {
+  .page-header {
+    margin-bottom: 0.4rem;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .page-header {
+    button:not(:last-child) {
+      margin-bottom: 0.4rem;
+    }
+  }
+}

@@ -1,0 +1,152 @@
+<div class="jumbotron">
+  <mat-card>
+    <h1>Logs</h1>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <mat-card>
+        <mat-card-content class="grid-container">
+          <mat-form-field>
+            <mat-select
+              disableOptionCentering
+              id="activity"
+              [multiple]="true"
+              placeholder="{{ 'LOGS_DELETE.DELETE_TYPE' | translate }}"
+              formControlName="types"
+            >
+              <mat-option
+                value="alltypesCheckbox"
+                (click)="onSelectAllTypesClicked()"
+                >{{ 'CONTACTS.SELECT_ALL' | translate }}</mat-option
+              >
+              <mat-option
+                *ngFor="let theType of types | keyvalue"
+                [value]="theType.key"
+              >
+                {{ theType.value | translate }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>{{ 'DIALOG.FROM' | translate }}</mat-label>
+            <input
+              matInput
+              [max]="currentDate"
+              [matDatepicker]="pickerStart"
+              formControlName="start_date"
+              placeholder="{{
+                'QUESTIONNAIRE_FORSCHER.DATE_EMPTY' | translate
+              }}"
+              (dateChange)="onDateRangeChanged($event)"
+            />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="pickerStart"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #pickerStart></mat-datepicker>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>{{ 'DIALOG.TO' | translate }}</mat-label>
+            <input
+              matInput
+              [max]="currentDate"
+              [matDatepicker]="pickerEnd"
+              formControlName="end_date"
+              placeholder="{{
+                'QUESTIONNAIRE_FORSCHER.DATE_EMPTY' | translate
+              }}"
+              (dateChange)="onDateRangeChanged($event)"
+            />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="pickerEnd"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #pickerEnd></mat-datepicker>
+          </mat-form-field>
+        </mat-card-content>
+        <mat-card-actions>
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="!form.valid"
+          >
+            {{ 'LOGS.REQUEST' | translate }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </form>
+
+    <app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
+    <div [hidden]="!showTable">
+      <div>
+        <mat-form-field>
+          <input
+            matInput
+            (keyup)="applyFilter($event.target.value)"
+            placeholder="{{ 'GENERAL.FILTER' | translate }}"
+          />
+        </mat-form-field>
+      </div>
+
+      <mat-table
+        #table
+        [dataSource]="dataSource"
+        matSort
+        matSortActive="requestedBy"
+        matSortDisableClear
+        matSortDirection="asc"
+      >
+        <!-- Requested by username Column -->
+        <ng-container matColumnDef="requestedBy">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'LOGS_DELETE.REQUESTED_BY_USER' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element">
+            {{ element.requestedBy }}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Requested for username Column -->
+        <ng-container matColumnDef="requestedFor">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'LOGS_DELETE.REQUESTED_FOR_USER' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let element">
+            {{ element.requestedFor }}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Type Column -->
+        <ng-container matColumnDef="type">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'LOGS_DELETE.DELETION_TYPE' | translate }}</mat-header-cell
+          >
+          <mat-cell *matCellDef="let element">
+            {{ element.type | translate }}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Deletion time Column -->
+        <ng-container matColumnDef="timestamp">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'LOGS.TIMESTAMP' | translate }}</mat-header-cell
+          >
+          <mat-cell *matCellDef="let element">
+            {{ element.timestamp | date: 'dd.MM.yyyy HH:mm:ss' }}
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      </mat-table>
+
+      <mat-paginator
+        #paginator
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 20]"
+        [showFirstLastButtons]="true"
+      >
+      </mat-paginator>
+    </div>
+  </mat-card>
+</div>

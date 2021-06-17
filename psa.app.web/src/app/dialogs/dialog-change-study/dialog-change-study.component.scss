@@ -1,0 +1,52 @@
+::ng-deep .mat-form-field .mat-form-field-infix {
+  width: auto;
+}
+
+::ng-deep .mat-checkbox-layout {
+  white-space: normal !important;
+}
+
+.partner-form-field {
+  max-width: 90%;
+  width: 90%;
+}
+
+.field-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  max-width: 1100px;
+}
+
+.field-container-pad {
+  padding-top: 10px;
+}
+
+.study-form-field {
+  max-width: 45%;
+  width: 45%;
+  padding-right: 20px;
+}
+
+.study-form-field-wide {
+  max-width: 100%;
+  width: 100%;
+}
+
+.study-form-icon {
+  padding-top: 10px;
+  padding-right: 20px;
+}
+
+.study-form-check {
+  padding-left: 20px;
+}
+
+h5 {
+  margin: 25px;
+}
+
+.button-refuse {
+  background-color: red;
+}

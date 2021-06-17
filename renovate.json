@@ -1,0 +1,78 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base",
+    "group:allNonMajor",
+    "docker:enableMajor",
+    ":automergeMinor"
+  ],
+  "platform": "gitlab",
+  "gitLabAutomerge": true,
+  "pinDigests": true,
+  "rangeStrategy": "replace",
+  "branchPrefix": "renovate/",
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "gitlabci": {
+    "fileMatch": ["\\.gitlab-ci\\.yml$", "ci\\/.*\\.yml$"],
+    "pinDigests": true
+  },
+  "npm": {
+    "enabled": false
+  },
+  "packageRules": [
+    {
+      "matchPackagePrefixes": ["@pia/"],
+      "enabled": false
+    },
+    {
+      "matchSourceUrlPrefixes": ["https://github.com/angular/angular"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "angular major dependencies",
+      "groupSlug": "angular-main"
+    },
+    {
+      "matchPackagePrefixes": ["@angular/"],
+      "matchUpdateTypes": ["major"],
+      "groupName": "angular major dependencies",
+      "groupSlug": "angular-main"
+    },
+    {
+      "matchPackagePrefixes": ["@angular-devkit"],
+      "matchUpdateTypes": ["major", "minor"],
+      "groupName": "angular major dependencies",
+      "groupSlug": "angular-main"
+    },
+    {
+      "matchPackageNames": ["zone.js"],
+      "matchUpdateTypes": ["major", "minor"],
+      "groupName": "angular major dependencies",
+      "groupSlug": "angular-main"
+    },
+    {
+      "matchPackageNames": ["typescript"],
+      "matchPaths": ["psa.app.*/**"],
+      "matchUpdateTypes": ["major", "minor"],
+      "groupName": "angular major dependencies",
+      "groupSlug": "angular-main"
+    },
+    {
+      "matchPackageNames": ["jspdf"],
+      "groupName": "minor updates with breaking changes",
+      "groupSlug": "minor-breaking-changes"
+    },
+    {
+      "matchPackageNames": ["mysql"],
+      "allowedVersions": "<5.6.0"
+    },
+    {
+      "matchPackageNames": ["node"],
+      "allowedVersions": "<15.0.0"
+    },
+    {
+      "matchPackageNames": ["postgres"],
+      "allowedVersions": "<11.0"
+    }
+  ]
+}

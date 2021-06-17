@@ -1,0 +1,5 @@
+# backup files from merge conflicts
+*.orig
+.idea
+.project
+boilerplate.sql
