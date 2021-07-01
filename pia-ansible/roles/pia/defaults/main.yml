@@ -27,7 +27,7 @@ pia_external_protocol: https
 pia_external_port: 443
 
 pia_has_sormas: false
-pia_has_externaldataservice: true
+pia_has_modysservice: true
 
 pia_ssl_country_name: 'DE'
 pia_ssl_state_or_province_name: 'RLP'
@@ -82,12 +82,12 @@ pia_hzi_ftpservice_password: superpass
 pia_hzi_ftpservice_user: testhzi
 
 # use localhost and random passwords if not used
-pia_modys_user: superuser
-pia_modys_password: superpassword
-pia_modys_db: modys_NG
-pia_modys_host: localhost
-pia_modys_port: 3308
-pia_modys_ssl: true
+pia_modys_base_url: http://localhost:99999
+pia_modys_username: modysuser
+pia_modys_password: modyspassword
+pia_modys_study: Teststudy with MODYS
+pia_modys_identifier_type_id: 1
+pia_modys_request_concurrency: 5
 
 # The X-frame-options Header that should be set
 # https://developer.mozilla.org/de/docs/Web/HTTP/Headers/X-Frame-Options
@@ -136,10 +136,10 @@ pia_services:
       ipia: true,
     }
   - {
-      fullName: externaldataservice,
-      variableName: EXTERNALDATASERVICE,
+      fullName: modysservice,
+      variableName: MODYSSERVICE,
       portOffset: 9,
-      name: 'ex',
+      name: 'modys',
       qpia: false,
       ewpia: false,
       ipia: true,

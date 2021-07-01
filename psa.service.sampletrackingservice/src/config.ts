@@ -4,6 +4,20 @@ import {
   SslCerts,
   SupersetOfServiceConfig,
 } from '@pia/lib-service-core';
+import { SftpConfig } from './models/sftpConfig';
+
+const mhhftpserver: SftpConfig = {
+  host: ConfigUtils.getEnvVariable('MHH_FTPSERVICE_HOST'),
+  port: Number(ConfigUtils.getEnvVariable('MHH_FTPSERVICE_PORT')),
+  username: ConfigUtils.getEnvVariable('MHH_FTPSERVICE_USER'),
+  password: ConfigUtils.getEnvVariable('MHH_FTPSERVICE_PW'),
+};
+const hziftpserver: SftpConfig = {
+  host: ConfigUtils.getEnvVariable('HZI_FTPSERVICE_HOST'),
+  port: Number(ConfigUtils.getEnvVariable('HZI_FTPSERVICE_PORT')),
+  username: ConfigUtils.getEnvVariable('HZI_FTPSERVICE_USER'),
+  password: ConfigUtils.getEnvVariable('HZI_FTPSERVICE_PW'),
+};
 
 const SSL_CERTS: SslCerts = {
   cert: ConfigUtils.getFileContent('./ssl/sa.cert'),
@@ -19,18 +33,8 @@ const conf = {
     userservice: GlobalConfig.userservice,
   },
   servers: {
-    mhhftpserver: {
-      host: ConfigUtils.getEnvVariable('MHH_FTPSERVICE_HOST'),
-      port: Number(ConfigUtils.getEnvVariable('MHH_FTPSERVICE_PORT')),
-      username: ConfigUtils.getEnvVariable('MHH_FTPSERVICE_USER'),
-      password: ConfigUtils.getEnvVariable('MHH_FTPSERVICE_PW'),
-    },
-    hziftpserver: {
-      host: ConfigUtils.getEnvVariable('HZI_FTPSERVICE_HOST'),
-      port: Number(ConfigUtils.getEnvVariable('HZI_FTPSERVICE_PORT')),
-      username: ConfigUtils.getEnvVariable('HZI_FTPSERVICE_USER'),
-      password: ConfigUtils.getEnvVariable('HZI_FTPSERVICE_PW'),
-    },
+    mhhftpserver: mhhftpserver,
+    hziftpserver: hziftpserver,
   },
   publicAuthKey: GlobalConfig.publicAuthKey,
   webappUrl: GlobalConfig.webappUrl,

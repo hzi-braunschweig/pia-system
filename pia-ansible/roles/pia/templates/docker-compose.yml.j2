@@ -76,7 +76,11 @@ services:
 {% endif %}
 {% if pia_expose_postgres_ports %}
     ports:
+{% if pia_local_development %}
+      - "2346:5432"
+{% else %}
       - "5432:5432"
+{% endif %}
 {% endif %}
     volumes:
       - "$SSL_DIRECTORY/ewpiaservice:/tmp_config/ssl"
@@ -108,6 +112,10 @@ services:
       dockerfile: psa.database.ipia/Dockerfile
       args:
         DIR: psa.database.ipia
+{% endif %}
+{% if pia_expose_postgres_ports and pia_local_development %}
+    ports:
+      - "2345:5432"
 {% endif %}
     volumes:
       - $SSL_DIRECTORY/ipiaservice:/tmp_config/ssl
@@ -160,20 +168,20 @@ services:
     networks:
       pia:
 
-{% if pia_has_externaldataservice %}
-  externaldataservice:
-    image: "registry.netzlink.com/pia/psa.service.externaldataservice:${PIA_DOCKER_TAG}"
+{% if pia_has_modysservice %}
+  modysservice:
+    image: "registry.netzlink.com/pia/psa.service.modysservice:${PIA_DOCKER_TAG}"
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
       - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
-      - MODYS_USER=${MODYS_USER}
-      - MODYS_PASSWORD=${MODYS_PASSWORD}
-      - MODYS_DB=${MODYS_DB}
-      - MODYS_HOST=${MODYS_HOST}
-      - MODYS_PORT=${MODYS_PORT}
-      - MODYS_SSL=${MODYS_SSL}
       - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - MODYS_BASE_URL=${MODYS_BASE_URL}
+      - MODYS_USERNAME=${MODYS_USERNAME}
+      - MODYS_PASSWORD=${MODYS_PASSWORD}
+      - MODYS_STUDY=${MODYS_STUDY}
+      - MODYS_IDENTIFIER_TYPE_ID=${MODYS_IDENTIFIER_TYPE_ID}
+      - MODYS_REQUEST_CONCURRENCY=${MODYS_REQUEST_CONCURRENCY}
       - PERSONALDATASERVICE_HOST=${PERSONALDATASERVICE_HOST}
       - PERSONALDATASERVICE_INTERNAL_PORT=${PERSONALDATASERVICE_INTERNAL_PORT}
       - USERSERVICE_HOST=${USERSERVICE_HOST}
@@ -181,45 +189,19 @@ services:
 {% if pia_local_development %}
     build:
       context: "../../../"
-      dockerfile: psa.service.externaldataservice/Dockerfile
+      dockerfile: psa.service.modysservice/Dockerfile
       args:
-        DIR: psa.service.externaldataservice
+        DIR: psa.service.modysservice
 {% endif %}
-    container_name: externaldataservice
+    container_name: modysservice
     ports:
-      - "${EXTERNALDATASERVICE_PORT_EXPOSED}:4000"
-      - "${EXTERNALDATASERVICE_INTERNAL_PORT_EXPOSED}:5000"
+      - "${MODYSSERVICE_PORT_EXPOSED}:4000"
+      - "${MODYSSERVICE_INTERNAL_PORT_EXPOSED}:5000"
     volumes:
-      - $SSL_DIRECTORY/externaldataservice:/usr/src/node-app/ssl
+      - $SSL_DIRECTORY/modysservice:/usr/src/node-app/ssl
     logging: *default-logging
     networks:
       pia:
-
-{% if hostvars[inventory_hostname]['PIA_IS_DEVELOPMENT_SYSTEM'] | default(pia_is_development_system) %}
-  modys:
-    image: "registry.netzlink.com/pia/psa.server.modys:${PIA_DOCKER_TAG}"
-    restart: unless-stopped
-    extra_hosts: *default-extra_hosts
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MODYS_PASSWORD}
-      - MYSQL_USER=${MODYS_USER}
-      - MYSQL_PASSWORD=${MODYS_PASSWORD}
-      - MYSQL_DATABASE=${MODYS_DB}
-{% if pia_local_development %}
-    build:
-      context: "../../../"
-      dockerfile: psa.server.modys/Dockerfile
-      args:
-        DIR: psa.server.modys
-{% endif %}
-    container_name: ${MODYS_HOST}
-    volumes:
-      - $SSL_DIRECTORY/modys:/etc/mysql/ssl/
-    logging: *default-logging
-    networks:
-      pia:
-
-{% endif %}
 
 {% endif %}
 
@@ -587,6 +569,10 @@ services:
       args:
         DIR: psa.database
 {% endif %}
+{% if pia_expose_postgres_ports and pia_local_development %}
+    ports:
+      - "5432:5432"
+{% endif %}
     container_name: databaseservice
     logging: *default-logging
     networks:
@@ -774,7 +760,7 @@ services:
       - SAMPLETRACKINGSERVICE_PORT=${SAMPLETRACKINGSERVICE_PORT}
       - PERSONALDATASERVICE_PORT=${PERSONALDATASERVICE_PORT}
       - LOGGINGSERVICE_PORT=${LOGGINGSERVICE_PORT}
-      - EXTERNALDATASERVICE_PORT=${EXTERNALDATASERVICE_PORT}
+      - MODYSSERVICE_PORT=${MODYSSERVICE_PORT}
       - COMPLIANCESERVICE_PORT=${COMPLIANCESERVICE_PORT}
       - ANALYZERSERVICE_PORT=${ANALYZERSERVICE_PORT}
       - SORMASSERVICE_PORT=${SORMASSERVICE_PORT}
@@ -849,7 +835,7 @@ services:
       - METRICS_EXTERNAL_PROTOCOL=${METRICS_EXTERNAL_PROTOCOL}
       - METRICS_ENABLED_FOR=${METRICS_ENABLED_FOR}
       - AUTHSERVICE_PORT=$AUTHSERVICE_PORT
-      - EXTERNALDATASERVICE_PORT=$EXTERNALDATASERVICE_PORT
+      - MODYSSERVICE_PORT=MODYSSERVICE_PORT
       - QUESTIONNAIRESERVICE_PORT=$QUESTIONNAIRESERVICE_PORT
       - NOTIFICATIONSERVICE_PORT=$NOTIFICATIONSERVICE_PORT
       - COMPLIANCESERVICE_PORT=$COMPLIANCESERVICE_PORT
@@ -871,3 +857,31 @@ services:
     networks:
       pia:
     logging: *default-logging
+
+####################################################################################
+# only for development
+####################################################################################
+
+{% if pia_local_development %}
+  mailserver:
+    image: registry.netzlink.com/pia/psa.server.mailserver:${PIA_DOCKER_TAG}
+    container_name: mailserver
+    # do not change this name without a reason, the stored data will be lost!
+    hostname: mailserver
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.server.mailserver/Dockerfile
+      args:
+        DIR: psa.server.mailserver
+{% endif %}
+    ports:
+      - "8025:8025"
+    networks:
+      pia:
+    logging: *default-logging
+
+{% endif %}

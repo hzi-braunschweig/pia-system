@@ -8,7 +8,7 @@ INSERT INTO users (username, password, role, fcm_token, logged_in_with) VALUES
     ('QTestUntersuchungsteam', '', 'Untersuchungsteam', '', null),
     ('QTestSystemAdmin', '', 'SysAdmin', '', null);
 
-INSERT INTO studies VALUES ('ApiTestStudie', 'ApiTestStudie Beschreibung');
+INSERT INTO studies (name, description, has_answers_notify_feature) VALUES ('ApiTestStudie', 'ApiTestStudie Beschreibung', true);
 
 INSERT INTO study_users VALUES
     ('ApiTestStudie', 'QTestProband1', 'read'),
@@ -43,9 +43,10 @@ INSERT INTO questions VALUES
     (99991, 99999, 'Haben Sie Fieber?', 1, true),
     (99992, 99999, 'Wie fühlen Sie sich?', 1, true);
 
-INSERT INTO answer_options VALUES
-    (99991, 99991, '', 1, '{}', '{"Ja", "Nein", "Keine Angabe"}', null, 1, false),
-    (99992, 99992, 'Kopf?', 2, '{}', '{"Schlecht", "Mittel", "Gut", "Keine Angabe"}', null, 1, false);
+INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, values, values_code, position,is_condition_target)
+VALUES
+       (99991, 99991, '', 1, '{true, false, false}', '{"Ja", "Nein", "Keine Angabe"}', null, 1, false),
+       (99992, 99992, 'Kopf?', 2, '{}', '{"Schlecht", "Mittel", "Gut", "Keine Angabe"}', null, 1, false);
 
 INSERT INTO questionnaire_instances VALUES
     (
@@ -59,7 +60,23 @@ INSERT INTO questionnaire_instances VALUES
         null,
         1,
         'active'
+    ),
+    (
+        9999997,
+        'ApiTestStudie',
+        99999,
+        'ApiTestQuestionnaire',
+        'QTestProband1',
+        '08.08.2017',
+        null,
+        null,
+        1,
+        'in_progress'
     );
+
+INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value)
+VALUES (9999996, 99991, 99991, 1, 'Ja'),
+(9999996, 99992, 99992, 1, 'Schlecht');
 
 INSERT INTO notification_schedules VALUES
     (99996, 'QTestProband1', '2019-07-09 09:56:00', 'qReminder', 99995, null, null),

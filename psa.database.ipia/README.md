@@ -1,6 +1,6 @@
 # psa.database.ipia
 
-personal proband data from MODYS
+personal proband data
 
 Connect to DB in local container
 `export PGPASSWORD=superpassword && psql -h localhost -p 2345 -d ipia_database -U superuser`

@@ -1,6 +1,6 @@
 const schedule = require('node-schedule');
 
-const labResultImportHelper = require('./labResultImportHelper');
+const { LabResultImportHelper } = require('./labResultImportHelper');
 
 /**
  * @description helper methods to schedule recurring tasks
@@ -18,7 +18,7 @@ const taskScheduleHelper = (function () {
     rule.minute = 0;
 
     return schedule.scheduleJob(rule, function () {
-      labResultImportHelper.importHl7FromMhhSftp();
+      void LabResultImportHelper.importHl7FromMhhSftp();
     });
   }
 
@@ -34,7 +34,7 @@ const taskScheduleHelper = (function () {
     rule.minute = 0;
 
     return schedule.scheduleJob(rule, function () {
-      labResultImportHelper.importCsvFromHziSftp();
+      void LabResultImportHelper.importCsvFromHziSftp();
     });
   }
 

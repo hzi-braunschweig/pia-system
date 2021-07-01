@@ -29,10 +29,8 @@ const options = {
   },
 };
 
-if (options.start.qpia || options.start.ewpia || options.start.ipia) {
-  // Create the secrets
-  require('../test.common/secrets');
-}
+// Create the secrets
+require('../test.common/secrets');
 
 let qpiaConfig = qpia.configure();
 let ipiaConfig = ipia.configure();

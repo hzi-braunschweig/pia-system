@@ -1,4 +1,6 @@
-const ParseHl7FilesToLabrRsultsStream = require('./parseHl7FilesToLabResultsStream');
+const {
+  ParseHl7FilesToLabResultsStream,
+} = require('./parseHl7FilesToLabResultsStream');
 const { once } = require('events');
 const { PassThrough } = require('stream');
 const { expect } = require('chai');
@@ -15,7 +17,7 @@ describe('ParseHl7FilesToLabrRsultsStream', () => {
   });
 
   it('should parse a hl7 file with no error', async () => {
-    const stream = new ParseHl7FilesToLabrRsultsStream();
+    const stream = new ParseHl7FilesToLabResultsStream();
 
     const m1 = fs.readFileSync('tests/unit/data/M1.hl7', 'utf-8');
     stream.write({
@@ -29,7 +31,7 @@ describe('ParseHl7FilesToLabrRsultsStream', () => {
 
   it('should finish when everything is converted and end when everything is read.', async () => {
     const source = new PassThrough({ objectMode: true });
-    const stream = new ParseHl7FilesToLabrRsultsStream();
+    const stream = new ParseHl7FilesToLabResultsStream();
 
     source.pipe(stream);
 
@@ -50,7 +52,7 @@ describe('ParseHl7FilesToLabrRsultsStream', () => {
     const m2 = fs.readFileSync('tests/unit/data/M2.hl7', 'utf-8');
     const m3 = fs.readFileSync('tests/unit/data/M3.hl7', 'utf-8');
 
-    const stream = new ParseHl7FilesToLabrRsultsStream();
+    const stream = new ParseHl7FilesToLabResultsStream();
 
     // Act
     stream.write({ content: m2 });
@@ -70,11 +72,11 @@ describe('ParseHl7FilesToLabrRsultsStream', () => {
 function getExample1() {
   return {
     id: 'ZIFCO-1923456852',
-    order_id: '1117136',
+    order_id: 1117136,
     performing_doctor: 'Schmitt',
     lab_observations: [
       {
-        name_id: '521035',
+        name_id: 521035,
         name: 'Adenovirus-PCR (resp.)',
         result_string: 'negativ',
         result_value: null,
@@ -87,7 +89,7 @@ function getExample1() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521036',
+        name_id: 521036,
         name: 'HMPV-PCR',
         result_string: 'negativ',
         result_value: null,
@@ -100,7 +102,7 @@ function getExample1() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521037',
+        name_id: 521037,
         name: 'Influenza-A-PCR',
         result_string: 'negativ',
         result_value: null,
@@ -113,7 +115,7 @@ function getExample1() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521038',
+        name_id: 521038,
         name: 'Influenza-B-PCR',
         result_string: 'negativ',
         result_value: null,
@@ -126,7 +128,7 @@ function getExample1() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521039',
+        name_id: 521039,
         name: 'Parainfluenza-1-PCR',
         result_string: 'negativ',
         result_value: null,
@@ -139,7 +141,7 @@ function getExample1() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521040',
+        name_id: 521040,
         name: 'Parainfluenza-2-PCR',
         result_string: 'negativ',
         result_value: null,
@@ -152,7 +154,7 @@ function getExample1() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521041',
+        name_id: 521041,
         name: 'Parainfluenza-3-PCR',
         result_string: 'negativ',
         result_value: null,
@@ -165,7 +167,7 @@ function getExample1() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521042',
+        name_id: 521042,
         name: 'Parainfluenza-4-PCR',
         result_string: 'negativ',
         result_value: null,
@@ -178,7 +180,7 @@ function getExample1() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521043',
+        name_id: 521043,
         name: 'Rhinovirus-PCR',
         result_string: 'negativ',
         result_value: null,
@@ -191,7 +193,7 @@ function getExample1() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521044',
+        name_id: 521044,
         name: 'RSV-PCR',
         result_string: 'negativ',
         result_value: null,
@@ -210,11 +212,11 @@ function getExample1() {
 function getExample2() {
   return {
     id: 'TEST-12345679013',
-    order_id: '0001062743',
+    order_id: 1062743,
     performing_doctor: 'Glowacka',
     lab_observations: [
       {
-        name_id: '521035',
+        name_id: 521035,
         name: 'Adenovirus-PCR (resp.)',
         result_string: 'negativ',
         result_value: null,
@@ -227,7 +229,7 @@ function getExample2() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521036',
+        name_id: 521036,
         name: 'HMPV-NAT',
         result_string: 'positiv',
         result_value: '33',
@@ -240,7 +242,7 @@ function getExample2() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521037',
+        name_id: 521037,
         name: 'Influenzavirus-A-NAT',
         result_string: 'positiv',
         result_value: '21',
@@ -253,7 +255,7 @@ function getExample2() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521038',
+        name_id: 521038,
         name: 'Influenzavirus-B-NAT',
         result_string: 'negativ',
         result_value: null,
@@ -266,7 +268,7 @@ function getExample2() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521039',
+        name_id: 521039,
         name: 'Parainfluenzavirus-1-NAT',
         result_string: 'negativ',
         result_value: null,
@@ -279,7 +281,7 @@ function getExample2() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521040',
+        name_id: 521040,
         name: 'Parainfluenzavirus-2-NAT',
         result_string: 'negativ',
         result_value: null,
@@ -292,7 +294,7 @@ function getExample2() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521041',
+        name_id: 521041,
         name: 'Parainfluenzavirus-3-NAT',
         result_string: 'negativ',
         result_value: null,
@@ -305,7 +307,7 @@ function getExample2() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521042',
+        name_id: 521042,
         name: 'Parainfluenzavirus-4-NAT',
         result_string: 'negativ',
         result_value: null,
@@ -318,7 +320,7 @@ function getExample2() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521043',
+        name_id: 521043,
         name: 'Rhinovirus-NAT',
         result_string: 'negativ',
         result_value: null,
@@ -331,7 +333,7 @@ function getExample2() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521044',
+        name_id: 521044,
         name: 'RSV-NAT',
         result_string: 'negativ',
         result_value: null,
@@ -350,11 +352,11 @@ function getExample2() {
 function getExample3() {
   return {
     id: 'TEST-12345679012',
-    order_id: '0001062743',
+    order_id: 1062743,
     performing_doctor: 'Glowacka',
     lab_observations: [
       {
-        name_id: '521035',
+        name_id: 521035,
         name: 'Adenovirus-PCR (resp.)',
         result_string: 'negativ',
         result_value: null,
@@ -367,7 +369,7 @@ function getExample3() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521036',
+        name_id: 521036,
         name: 'HMPV-NAT',
         result_string: 'positiv',
         result_value: '33',
@@ -380,7 +382,7 @@ function getExample3() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521037',
+        name_id: 521037,
         name: 'Influenzavirus-A-NAT',
         result_string: 'positiv',
         result_value: '21',
@@ -393,7 +395,7 @@ function getExample3() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521038',
+        name_id: 521038,
         name: 'Influenzavirus-B-NAT',
         result_string: 'negativ',
         result_value: null,
@@ -406,7 +408,7 @@ function getExample3() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521039',
+        name_id: 521039,
         name: 'Parainfluenzavirus-1-NAT',
         result_string: 'negativ',
         result_value: null,
@@ -419,7 +421,7 @@ function getExample3() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521040',
+        name_id: 521040,
         name: 'Parainfluenzavirus-2-NAT',
         result_string: 'negativ',
         result_value: null,
@@ -432,7 +434,7 @@ function getExample3() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521041',
+        name_id: 521041,
         name: 'Parainfluenzavirus-3-NAT',
         result_string: 'negativ',
         result_value: null,
@@ -445,7 +447,7 @@ function getExample3() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521042',
+        name_id: 521042,
         name: 'Parainfluenzavirus-4-NAT',
         result_string: 'negativ',
         result_value: null,
@@ -458,7 +460,7 @@ function getExample3() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521043',
+        name_id: 521043,
         name: 'Rhinovirus-NAT',
         result_string: 'negativ',
         result_value: null,
@@ -471,7 +473,7 @@ function getExample3() {
         material: 'Nasenabstrich',
       },
       {
-        name_id: '521044',
+        name_id: 521044,
         name: 'RSV-NAT',
         result_string: 'negativ',
         result_value: null,

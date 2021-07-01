@@ -5,8 +5,11 @@ const expect = chai.expect;
 const sinon = require('sinon');
 const addMinutes = require('date-fns/addMinutes');
 
-const { ListeningDbClient } = require('@pia/lib-service-core');
-const fcmHelper = require('../../src/services/fcmHelper.js');
+const fcmHelper = require('../../src/services/fcmHelper');
+const notificationHelper = require('../../src/services/notificationHelper');
+const { dbWait, performAndWait } = require('./helper');
+
+const { db } = require('../../src/db');
 
 const { setup, cleanup } = require('./notification.spec.data/setup.helper');
 
@@ -82,16 +85,21 @@ const sysadminHeader = { authorization: sysadminToken };
 
 describe('/notification', function () {
   before(async function () {
-    serverSandbox.stub(ListeningDbClient.prototype);
     serverSandbox.stub(fcmHelper);
-    await setup();
     await server.init();
   });
 
   after(async function () {
     await server.stop();
-    await cleanup();
     serverSandbox.restore();
+  });
+
+  beforeEach(async function () {
+    await setup();
+  });
+
+  afterEach(async function () {
+    await cleanup();
   });
 
   describe('POST notification', function () {
@@ -325,6 +333,111 @@ describe('/notification', function () {
       expect(result.body.notification_type).to.equal('custom');
       expect(result.body.reference_id).to.equal('');
       expect(result.body.title).to.equal('I am custom title');
+    });
+  });
+
+  describe('Notifications handling', function () {
+    it('should update scheduled notification times if users table is updated', async function () {
+      const scheduleBeforeUpdate = await db.one(
+        'SELECT * FROM notification_schedules WHERE id=$1',
+        [99997]
+      );
+
+      await dbWait(
+        'UPDATE users SET logged_in_with=${logged_in_with}, notification_time=${notification_time} WHERE username=${username}',
+        {
+          logged_in_with: 'ios',
+          username: 'QTestProband1',
+          notification_time: '17:30:00',
+        }
+      );
+
+      const scheduleAfterUpdate = await db.one(
+        'SELECT * FROM notification_schedules WHERE id=$1',
+        [99997]
+      );
+      const differenceInMinutes =
+        ((scheduleAfterUpdate.send_on - scheduleBeforeUpdate.send_on) /
+          (3600 * 1000)) *
+        60;
+
+      expect(differenceInMinutes).to.equal(150);
+    });
+
+    it('should update users_to_contact table if a notable answer is sent', async function () {
+      await dbWait(
+        'UPDATE questionnaire_instances SET status=${status} WHERE id=${id}',
+        {
+          status: 'released_once',
+          id: 9999996,
+        }
+      );
+
+      const userToContact = await db.one(
+        "SELECT * FROM users_to_contact WHERE 9999996 = ANY(notable_answer_questionnaire_instances) AND (created_at>=NOW() - INTERVAL '24 HOURS')"
+      );
+
+      expect(userToContact.notable_answer_questionnaire_instances).to.include(
+        9999996
+      );
+    });
+
+    it('should insert a notification schedule if the lab results was updated', async function () {
+      await dbWait('UPDATE lab_results SET status=${status} WHERE id=${id}', {
+        status: 'analyzed',
+        id: 'LAB_RESULT-9999999999',
+      });
+
+      const schedules = await db.manyOrNone(
+        'SELECT * FROM notification_schedules WHERE reference_id = $1',
+        ['LAB_RESULT-9999999999']
+      );
+
+      expect(schedules.length).equals(2);
+    });
+
+    it('should send all open notifications', async function () {
+      const logSpy = sinon.spy(console, 'log');
+
+      await performAndWait(
+        async () => notificationHelper.sendAllOpenNotifications(),
+        [
+          'Successfully sent notification to user: QTestProband1 for sample id: LAB_RESULT-9999999999 and device: android',
+          'Successfully sent custom notification to user: QTestProband1',
+          'Successfully sent notification to user: QTestProband1 for instance id: 9999996 and device: android',
+        ]
+      );
+      expect(
+        logSpy.calledWith(
+          'Successfully sent custom notification to user: QTestProband1'
+        )
+      ).equal(true);
+
+      expect(
+        logSpy.calledWith(
+          'Successfully sent notification to user: QTestProband1 for sample id: LAB_RESULT-9999999999 and device: android'
+        )
+      ).equal(true);
+
+      expect(
+        logSpy.calledWith(
+          'Successfully sent notification to user: QTestProband1 for instance id: 9999996 and device: android'
+        )
+      ).equal(true);
+
+      logSpy.restore();
+    });
+
+    it('should check and schedule notifications', async function () {
+      const logSpy = sinon.spy(console, 'log');
+
+      await performAndWait(
+        async () => notificationHelper.checkAndScheduleNotifications(),
+        ['Found potential qIs: 2']
+      );
+      expect(logSpy.calledWith('Found potential qIs: 2')).equal(true);
+
+      logSpy.restore();
     });
   });
 });

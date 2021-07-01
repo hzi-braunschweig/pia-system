@@ -82,11 +82,6 @@ e2e:
     MAIL_FROM_ADDRESS: pia-noreply@example.de
     MAIL_FROM_NAME: PIA App
 
-    MODYS_HOST: ''
-    MODYS_USER: ''
-    MODYS_PASSWORD: ''
-    MODYS_DB: ''
-
     MHH_FTPSERVICE_HOST: sftpserver
     MHH_FTPSERVICE_PORT: '22'
     MHH_FTPSERVICE_USER: ftpuser

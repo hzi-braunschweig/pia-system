@@ -33,7 +33,8 @@ COMMANDS+="GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA $DB_LOG_
 COMMANDS+="GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA $DB_LOG_SCHEMA TO $DB_LOG_USER;\n"
 
 # update the search_path for the superuser
-COMMANDS+="ALTER ROLE $POSTGRES_USER SET search_path TO $DB_LOG_SCHEMA, public;\n"
+# "public" should be the primary search path!
+COMMANDS+="ALTER ROLE $POSTGRES_USER SET search_path TO public, $DB_LOG_SCHEMA;\n"
 
 COMMANDS+="COMMIT;\n"
 

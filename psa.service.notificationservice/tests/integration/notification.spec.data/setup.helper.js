@@ -1,7 +1,7 @@
 const QueryFile = require('pg-promise').QueryFile;
 const path = require('path');
-
 const { db } = require('../../../src/db');
+const trigger = require('../trigger.data/trigger.helper');
 
 const setupFile = new QueryFile(path.join(__dirname, 'setup.sql'), {
   minify: true,
@@ -11,10 +11,14 @@ const cleanupFile = new QueryFile(path.join(__dirname, 'cleanup.sql'), {
 });
 
 exports.setup = async function () {
+  await trigger.disable();
   await db.none(cleanupFile);
   await db.none(setupFile);
+  await trigger.enable();
 };
 
 exports.cleanup = async function () {
+  await trigger.disable();
   await db.none(cleanupFile);
+  await trigger.enable();
 };

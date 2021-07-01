@@ -1,0 +1,47 @@
+# create merge requests to master and develop when a tag is created
+merge-requests:
+  stage: push
+  image: curlimages/curl@sha256:6e0a786e3e5181df00eaf3a0a1749c18a6bb20b01c9bd192ea72176ce8a1c94b
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+/'
+  script:
+    - PROJECT_URL="${CI_SERVER_URL}/api/v4/projects/${CI_PROJECT_ID}"
+    # create a new branch to merge from release to develop
+    - >
+      curl --fail -X POST
+      --header "PRIVATE-TOKEN:${CI_PROJECT_TOKEN}"
+      "${PROJECT_URL}/repository/branches?branch=feature%2Frelease-${CI_COMMIT_TAG}&ref=${CI_COMMIT_REF_NAME}"
+    # create the merge request to develop
+    - >
+      BODY="{
+          \"id\": ${CI_PROJECT_ID},
+          \"source_branch\": \"feature/release-${CI_COMMIT_TAG}\",
+          \"target_branch\": \"develop\",
+          \"remove_source_branch\": true,
+          \"title\": \"merge release ${CI_COMMIT_TAG} to develop\",
+          \"assignee_id\":\"${GITLAB_USER_ID}\",
+          \"work_in_progress\": false,
+          \"merge_when_pipeline_succeeds\": true
+      }";
+    - >
+      curl --fail -X POST ${PROJECT_URL}/merge_requests
+      --header "PRIVATE-TOKEN:${CI_PROJECT_TOKEN}"
+      --header "Content-Type: application/json"
+      --data "${BODY}"
+    # create the merge request to master
+    - >
+      BODY="{
+          \"id\": ${CI_PROJECT_ID},
+          \"source_branch\": \"release/${CI_COMMIT_TAG}\",
+          \"target_branch\": \"master\",
+          \"remove_source_branch\": true,
+          \"title\": \"merge release ${CI_COMMIT_TAG} to master\",
+          \"assignee_id\":\"${GITLAB_USER_ID}\",
+          \"work_in_progress\": false,
+          \"merge_when_pipeline_succeeds\": true
+      }";
+    - >
+      curl --fail -X POST ${PROJECT_URL}/merge_requests
+      --header "PRIVATE-TOKEN:${CI_PROJECT_TOKEN}"
+      --header "Content-Type: application/json"
+      --data "${BODY}"

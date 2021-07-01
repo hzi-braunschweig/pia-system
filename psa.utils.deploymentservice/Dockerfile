@@ -1,4 +1,4 @@
-FROM node:14.17.0-alpine@sha256:f07ead757c93bc5e9e79978075217851d45a5d8e5c48eaf823e7f12d9bbc1d3c AS base
+FROM node:14.17.1-alpine@sha256:cc1a31b2f4a3b8e9cdc6f8dc0c39a3b946d7aa5d10a53439d960d4352b2acfc0 AS base
 RUN apk --update --no-cache add curl tzdata
 RUN apk --update --no-cache add postgresql-client
 
@@ -27,7 +27,7 @@ RUN npm run build
 
 FROM base AS final
 
-COPY --from=docker:20.10.7@sha256:7a49f42626fed01146792e5add6e48e2c9f1eb3550a6840356757e55cc36ba25 /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=docker:20.10.7@sha256:bfc499cef26daa22da31b76be1752813a6921ee1fa1dd1f56d4fdf19c701d332 /usr/local/bin/docker /usr/local/bin/docker
 
 ENV TZ=UTC
 

@@ -30,4 +30,7 @@ readStdin()
   .then(LicensesConverter.addKnownMissingLicenseTexts)
   .then(LicensesConverter.wrapArrayInObject)
   .then(writeJsonFile)
-  .catch(console.error);
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });

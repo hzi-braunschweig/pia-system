@@ -50,8 +50,12 @@ describe('HL7 Labresult import test', function () {
       '/upload/M1'
     );
     await client.put(
-      './tests/integration/hl7Import.spec.data/M2',
-      '/upload/M2'
+      './tests/integration/hl7Import.spec.data/M2-error',
+      '/upload/M2-error'
+    );
+    await client.put(
+      './tests/integration/hl7Import.spec.data/M3',
+      '/upload/M3'
     );
 
     await db.none(
@@ -77,7 +81,10 @@ describe('HL7 Labresult import test', function () {
 
   afterEach(async function () {
     await client.delete('/upload/M1', true).catch((err) => console.error(err));
-    await client.delete('/upload/M2', true).catch((err) => console.error(err));
+    await client
+      .delete('/upload/M2-error', true)
+      .catch((err) => console.error(err));
+    await client.delete('/upload/M3', true).catch((err) => console.error(err));
 
     await db.none(
       "DELETE FROM lab_results WHERE user_id='QTestProband1' OR id='TEST-12345679012'  OR id ='TEST-12345679013'"

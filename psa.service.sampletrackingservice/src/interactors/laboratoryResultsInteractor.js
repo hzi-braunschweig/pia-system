@@ -1,6 +1,6 @@
 const Boom = require('@hapi/boom');
 const postgresqlHelper = require('../services/postgresqlHelper');
-const labResultImportHelper = require('../services/labResultImportHelper');
+const { LabResultImportHelper } = require('../services/labResultImportHelper');
 const complianceserviceClient = require('../clients/complianceserviceClient');
 const userserviceClient = require('../clients/userserviceClient');
 
@@ -235,8 +235,8 @@ const laboratoryResultsInteractor = (function () {
       case 'ProbandenManager':
         try {
           const results = await Promise.all([
-            labResultImportHelper.importHl7FromMhhSftp(),
-            labResultImportHelper.importCsvFromHziSftp(),
+            LabResultImportHelper.importHl7FromMhhSftp(),
+            LabResultImportHelper.importCsvFromHziSftp(),
           ]);
           return results.every((result) => result === 'success')
             ? 'success'

@@ -1,14 +1,12 @@
-const postgresqlHelper = require('../services/postgresqlHelper.js');
-const searchesInteractor = require('../interactors/searchesInteractor.js');
+const { SearchesInteractor } = require('../interactors/searchesInteractor');
 
 const searchesHandler = (function () {
   async function createOne(request, h) {
     try {
       request.log(['export'], 'Start export');
-      const stream = await searchesInteractor.createSearch(
+      const stream = await SearchesInteractor.createSearch(
         request.auth.credentials,
-        request.payload,
-        postgresqlHelper
+        request.payload
       );
       stream.on('end', () => {
         request.log(['export'], 'Export finished.');

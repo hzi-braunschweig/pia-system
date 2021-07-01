@@ -1,6 +1,6 @@
 build-docker:
   stage: prepare
-  image: docker:20.10.7@sha256:7a49f42626fed01146792e5add6e48e2c9f1eb3550a6840356757e55cc36ba25
+  image: docker:20.10.7@sha256:bfc499cef26daa22da31b76be1752813a6921ee1fa1dd1f56d4fdf19c701d332
   # downloads may fail
   retry: 2
   script:
@@ -30,7 +30,7 @@ build-docker:
 
 push-branch-images:
   stage: push
-  image: docker:20.10.7@sha256:7a49f42626fed01146792e5add6e48e2c9f1eb3550a6840356757e55cc36ba25
+  image: docker:20.10.7@sha256:bfc499cef26daa22da31b76be1752813a6921ee1fa1dd1f56d4fdf19c701d332
   variables:
     GIT_STRATEGY: none
   dependencies: []

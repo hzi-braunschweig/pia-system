@@ -10,8 +10,8 @@ FROM registry.netzlink.com/pia/psa.server.apigateway-npm-install:${VERSION} as p
 FROM registry.netzlink.com/pia/psa.service.analyzerservice-npm-install:${VERSION} as psa.service.analyzerservice-npm-install
 FROM registry.netzlink.com/pia/psa.service.authservice-npm-install:${VERSION} as psa.service.authservice-npm-install
 FROM registry.netzlink.com/pia/psa.service.complianceservice-npm-install:${VERSION} as psa.service.complianceservice-npm-install
-FROM registry.netzlink.com/pia/psa.service.externaldataservice-npm-install:${VERSION} as psa.service.externaldataservice-npm-install
 FROM registry.netzlink.com/pia/psa.service.loggingservice-npm-install:${VERSION} as psa.service.loggingservice-npm-install
+FROM registry.netzlink.com/pia/psa.service.modysservice-npm-install:${VERSION} as psa.service.modysservice-npm-install
 FROM registry.netzlink.com/pia/psa.service.notificationservice-npm-install:${VERSION} as psa.service.notificationservice-npm-install
 FROM registry.netzlink.com/pia/psa.service.personaldataservice-npm-install:${VERSION} as psa.service.personaldataservice-npm-install
 FROM registry.netzlink.com/pia/psa.service.questionnaireservice-npm-install:${VERSION} as psa.service.questionnaireservice-npm-install
@@ -33,8 +33,8 @@ RUN \
 	--mount=type=bind,ro,from=psa.service.analyzerservice-npm-install,source=/dependencies/psa.service.analyzerservice,target=/dependencies/psa.service.analyzerservice \
 	--mount=type=bind,ro,from=psa.service.authservice-npm-install,source=/dependencies/psa.service.authservice,target=/dependencies/psa.service.authservice \
 	--mount=type=bind,ro,from=psa.service.complianceservice-npm-install,source=/dependencies/psa.service.complianceservice,target=/dependencies/psa.service.complianceservice \
-	--mount=type=bind,ro,from=psa.service.externaldataservice-npm-install,source=/dependencies/psa.service.externaldataservice,target=/dependencies/psa.service.externaldataservice \
 	--mount=type=bind,ro,from=psa.service.loggingservice-npm-install,source=/dependencies/psa.service.loggingservice,target=/dependencies/psa.service.loggingservice \
+	--mount=type=bind,ro,from=psa.service.modysservice-npm-install,source=/dependencies/psa.service.modysservice,target=/dependencies/psa.service.modysservice \
 	--mount=type=bind,ro,from=psa.service.notificationservice-npm-install,source=/dependencies/psa.service.notificationservice,target=/dependencies/psa.service.notificationservice \
 	--mount=type=bind,ro,from=psa.service.personaldataservice-npm-install,source=/dependencies/psa.service.personaldataservice,target=/dependencies/psa.service.personaldataservice \
 	--mount=type=bind,ro,from=psa.service.questionnaireservice-npm-install,source=/dependencies/psa.service.questionnaireservice,target=/dependencies/psa.service.questionnaireservice \

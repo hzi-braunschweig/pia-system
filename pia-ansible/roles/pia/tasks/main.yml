@@ -51,18 +51,38 @@
     file: '{{ role_path }}/defaults/main.yml'
     name: defaults
 
-- name: Check Secrets
-  fail:
-    msg: We don't want default secrets or unsecure settings to be deployed on production systems!
-  when: >
-    (pia_deployment_password == defaults.pia_deployment_password) or
-    (pia_sormas_on_pia_password == defaults.pia_sormas_on_pia_password) or
-    (pia_pia_on_sormas_password == defaults.pia_pia_on_sormas_password) or
-    (pia_api_key == defaults.pia_api_key) or
-    (pia_mhh_ftpservice_password == defaults.pia_mhh_ftpservice_password) or
-    (pia_hzi_ftpservice_password == defaults.pia_hzi_ftpservice_password) or
-    (pia_modys_password == defaults.pia_modys_password) or
-    (pia_mail_require_tls != true)
+- name: Check defaultness of secrets
+  assert:
+    that:
+      - pia_deployment_password != defaults.pia_deployment_password
+      - pia_sormas_on_pia_password != defaults.pia_sormas_on_pia_password
+      - pia_pia_on_sormas_password != defaults.pia_pia_on_sormas_password
+      - pia_api_key != defaults.pia_api_key
+      - pia_mhh_ftpservice_password != defaults.pia_mhh_ftpservice_password
+      - pia_hzi_ftpservice_password != defaults.pia_hzi_ftpservice_password
+      - pia_modys_password != defaults.pia_modys_password
+      - pia_mail_require_tls == true
+    fail_msg: >
+      'One of the variables has an undesired value.
+      We don't want default secrets or unsecure settings
+      to be deployed on production systems!'
+    success_msg: 'Variables are non default'
+
+- name: Check complexity of passwords
+  assert:
+    that:
+      - survey_docker_password is complex_enough(minimal_length=1, contains_upper_case=False, contains_digit=False)
+      - pia_mail_password is complex_enough(minimal_length=1, contains_upper_case=False, contains_digit=False)
+      - pia_deployment_password is complex_enough(minimal_length=1, contains_upper_case=False, contains_digit=False)
+      - pia_sormas_on_pia_password is complex_enough(minimal_length=1, contains_upper_case=False, contains_digit=False)
+      - pia_pia_on_sormas_password is complex_enough(minimal_length=1, contains_upper_case=False, contains_digit=False)
+      - pia_mhh_ftpservice_password is complex_enough(minimal_length=1, contains_upper_case=False, contains_digit=False)
+      - pia_hzi_ftpservice_password is complex_enough(minimal_length=1, contains_upper_case=False, contains_digit=False)
+      - pia_modys_password is complex_enough(minimal_length=1, contains_upper_case=False, contains_digit=False)
+      - pia_api_key is complex_enough(minimal_length=1, contains_upper_case=False, contains_digit=False)
+    fail_msg: 'One of passwords are not complex enough'
+    success_msg: 'Passwords are good to go!'
+  run_once: True
 
 ####################################################################################
 # cleanup
@@ -600,8 +620,6 @@
     - MAIL_HOST
     - MAIL_PORT
     - MAIL_REQUIRE_TLS
-    - MODYS_DB
-    - MODYS_HOST
     - SORMAS_ON_PIA_USER
     - SORMAS_ON_PIA_PASSWORD
     - SORMAS_SERVER_URL

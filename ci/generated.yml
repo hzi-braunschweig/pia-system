@@ -2,20 +2,20 @@
   list:
     docker: psa.app.mobile psa.app.web psa.database psa.database.ewpia
       psa.database.ipia psa.server.apigateway psa.server.mailserver
-      psa.server.messagequeue psa.server.modys psa.server.sftpserver
-      psa.service.analyzerservice psa.service.authservice
-      psa.service.complianceservice psa.service.externaldataservice
-      psa.service.loggingservice psa.service.notificationservice
-      psa.service.personaldataservice psa.service.questionnaireservice
-      psa.service.sampletrackingservice psa.service.sormasservice
-      psa.service.userservice psa.utils.ci-git-mirror psa.utils.ci-release-image
-      psa.utils.codeformatter psa.utils.coverage psa.utils.deploymentservice
-      psa.utils.e2e-runner psa.utils.log-sink psa.utils.metrics
-      psa.utils.repo-tool
+      psa.server.messagequeue psa.server.sftpserver psa.service.analyzerservice
+      psa.service.authservice psa.service.complianceservice
+      psa.service.loggingservice psa.service.modysservice
+      psa.service.notificationservice psa.service.personaldataservice
+      psa.service.questionnaireservice psa.service.sampletrackingservice
+      psa.service.sormasservice psa.service.userservice
+      psa.utils.ci-analyze-secret-report psa.utils.ci-git-mirror
+      psa.utils.ci-release-image psa.utils.codeformatter psa.utils.coverage
+      psa.utils.deploymentservice psa.utils.e2e-runner psa.utils.log-sink
+      psa.utils.metrics psa.utils.repo-tool
     lint: psa.app.mobile psa.app.web psa.lib.messagequeue psa.lib.service-core
       psa.lib.templatepipeline psa.server.apigateway psa.service.analyzerservice
       psa.service.authservice psa.service.complianceservice
-      psa.service.externaldataservice psa.service.loggingservice
+      psa.service.loggingservice psa.service.modysservice
       psa.service.notificationservice psa.service.personaldataservice
       psa.service.questionnaireservice psa.service.sampletrackingservice
       psa.service.sormasservice psa.service.userservice
@@ -24,7 +24,7 @@
       psa.app.mobile psa.app.web psa.lib.messagequeue psa.lib.service-core
       psa.lib.templatepipeline psa.server.apigateway psa.service.analyzerservice
       psa.service.authservice psa.service.complianceservice
-      psa.service.externaldataservice psa.service.loggingservice
+      psa.service.loggingservice psa.service.modysservice
       psa.service.notificationservice psa.service.personaldataservice
       psa.service.questionnaireservice psa.service.sampletrackingservice
       psa.service.sormasservice psa.service.userservice
@@ -32,14 +32,14 @@
     unit:
       psa.app.mobile psa.app.web psa.lib.service-core psa.lib.templatepipeline
       psa.server.apigateway psa.service.analyzerservice psa.service.authservice
-      psa.service.complianceservice psa.service.externaldataservice
+      psa.service.complianceservice psa.service.modysservice
       psa.service.notificationservice psa.service.personaldataservice
       psa.service.questionnaireservice psa.service.sampletrackingservice
       psa.service.sormasservice psa.service.userservice
       psa.utils.deploymentservice
     int: psa.lib.messagequeue psa.lib.service-core psa.service.analyzerservice
       psa.service.authservice psa.service.complianceservice
-      psa.service.externaldataservice psa.service.loggingservice
+      psa.service.loggingservice psa.service.modysservice
       psa.service.notificationservice psa.service.personaldataservice
       psa.service.questionnaireservice psa.service.sampletrackingservice
       psa.service.sormasservice psa.service.userservice
@@ -50,8 +50,8 @@
       - psa.service.analyzerservice
       - psa.service.authservice
       - psa.service.complianceservice
-      - psa.service.externaldataservice
       - psa.service.loggingservice
+      - psa.service.modysservice
       - psa.service.notificationservice
       - psa.service.personaldataservice
       - psa.service.questionnaireservice
@@ -74,7 +74,7 @@
       - psa.service.analyzerservice
       - psa.service.authservice
       - psa.service.complianceservice
-      - psa.service.externaldataservice
+      - psa.service.modysservice
       - psa.service.notificationservice
       - psa.service.personaldataservice
       - psa.service.questionnaireservice
@@ -92,8 +92,8 @@
       - psa.service.analyzerservice
       - psa.service.authservice
       - psa.service.complianceservice
-      - psa.service.externaldataservice
       - psa.service.loggingservice
+      - psa.service.modysservice
       - psa.service.notificationservice
       - psa.service.personaldataservice
       - psa.service.questionnaireservice

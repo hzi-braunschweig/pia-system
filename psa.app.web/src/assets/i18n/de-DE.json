@@ -106,8 +106,8 @@
     "STATUS": "Status",
     "ACTIVATED_AT": "aktiviert am ",
     "IN_PLANNING": "in Planung",
-    "ADD": "Pseudonyme einscannen",
-    "SCAN_OR_TYPE": "Pseudonym einscannen oder tippen",
+    "ADD": "Pseudonyme einscannen/eingeben",
+    "SCAN_OR_TYPE": "Pseudonym einscannen/eingeben",
     "STATUS_WAITING": "nicht gespeichert",
     "STATUS_PLANNED": "gespeichert",
     "STATUS_FAILED": "fehlgeschlagen",
@@ -721,8 +721,8 @@
     "NO": "nein",
     "SCAN_DIALOG": "Nasenabstrich Scan",
     "SCAN_DIALOG_BLOOD": "Blutproben Scan",
-    "SCAN": "EINSCANNEN",
-    "SCAN_PROBEN_ID": "Proben-ID einscannen",
+    "SCAN": "EINSCANNEN/EINGEBEN",
+    "SCAN_PROBEN_ID": "Proben-ID einscannen/eingeben",
     "WRONG_SAMPLE_FORMAT": "Die Proben-ID muss folgendes Format haben: '{{prefix}}' + {{length}} Zahlen.",
     "STUDY_SELECT": "Wählen sie bitte zunächst eine Studie",
     "PROBEN_ID_ALREADY_EXISTS": "Eine Probe mit dieser ID ist leider schon im System vergeben",
@@ -809,8 +809,8 @@
     "ERROR_STUDY": "Die Löschlogs von Studiendaten konnten leider nicht angefragt werden"
   },
   "QUESTION_PROBAND": {
-    "SCANNING_SUCCESS": "Einscannen war erfolgreich.",
-    "SCANNING_WRONG": "Einscannen fehlgeschlagen. Bitte überprüfen Sie die Proben ID und versuchen es erneut.",
+    "SCANNING_SUCCESS": "Einscannen/Eingabe war erfolgreich.",
+    "SCANNING_WRONG": "Einscannen/Eingabe fehlgeschlagen. Bitte überprüfen Sie die Proben ID und versuchen es erneut.",
     "VALUE_RANGES_NUMBER": "Bitte geben Sie einen Wert zwischen {{restriction_min}} und {{restriction_max}} an.",
     "VALUE_RANGES_DATE": "Bitte geben Sie ein Datum zwischen dem {{restriction_min}} und dem {{restriction_max}} an."
   },
@@ -822,7 +822,7 @@
     "PROCESSED": "Bearbeitet",
     "FILTER_BY_ALL": "Alles anzeigen",
     "FILTER_BY_NOTABLE": "Nur auffällige Antworten",
-    "FILTER_BY_NOT_FILLEDOUT": "Nur nicht ausgefüllte FBs",
+    "FILTER_BY_NOT_FILLEDOUT": "Nur nicht ausgefüllte FB",
     "PROCESSED_STATUS_CHANGED": "Der Bearbeitungsstatus wurde geändert"
   },
   "SORMAS": {

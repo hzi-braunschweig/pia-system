@@ -2,7 +2,9 @@ const { expect } = require('chai');
 const { once } = require('events');
 const fs = require('fs');
 
-const ParseCsvFilesToLabResultsStream = require('./parseCsvFilesToLabResultsStream');
+const {
+  ParseCsvFilesToLabResultsStream,
+} = require('./parseCsvFilesToLabResultsStream');
 
 describe('CSV Laboratory Result Parser', () => {
   it('should convert given csv to a list of labresult objects and persist it', async () => {

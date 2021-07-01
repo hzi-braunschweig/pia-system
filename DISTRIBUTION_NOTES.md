@@ -2,6 +2,28 @@
 
 This file contains notes about changes that are important to the operations team.
 
+## 1.22
+
+- new microservice: modysservice, replacement for externaldataservice
+  - removed configuration options:
+    - MODYS_USER
+    - MODYS_PASSWORD
+    - MODYS_DB
+    - MODYS_HOST
+    - MODYS_PORT
+    - MODYS_SSL
+    - pia_has_externaldataservice
+  - new configuration options:
+    - MODYS_BASE_URL (REST endpoint)
+    - MODYS_USERNAME (basic auth username)
+    - MODYS_PASSWORD (basic auth password)
+    - MODYS_STUDY (should be "ZIFCO-Studie")
+    - MODYS_IDENTIFIER_TYPE_ID
+    - MODYS_REQUEST_CONCURRENCY (Optional - default is: 5 => ca. 10 requests in parallel)
+    - pia_has_modysservice
+
+## 1.21
+
 ## 1.20
 
 - the migration scripts `pia_200_migrate_fill_study_column` and `pia_200_migrate_logs` got removed, version

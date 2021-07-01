@@ -22,5 +22,7 @@ __exportStar(require("./plugins/metrics"), exports);
 __exportStar(require("./plugins/version"), exports);
 __exportStar(require("./plugins/registerPlugins"), exports);
 __exportStar(require("./server/serverRunner"), exports);
+__exportStar(require("./utils/typeGuards"), exports);
 __exportStar(require("./utils/sanitizeHtml"), exports);
+__exportStar(require("./utils/writeIntoArrayStream"), exports);
 //# sourceMappingURL=index.js.map

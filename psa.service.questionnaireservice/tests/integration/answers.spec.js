@@ -266,9 +266,9 @@ const validAnswerOfTypeImage = {
 
 describe('/questionnaireInstances/{id}/answers', function () {
   before(async function () {
-    this.timeout(10000);
-    await server.init();
+    this.timeout(15000);
     await setup();
+    await server.init();
   });
 
   after(async function () {

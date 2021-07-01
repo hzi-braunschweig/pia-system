@@ -1,5 +1,5 @@
 # Stage 1: Build an Angular Docker Image
-FROM node:14.17.0-alpine@sha256:f07ead757c93bc5e9e79978075217851d45a5d8e5c48eaf823e7f12d9bbc1d3c AS build
+FROM node:14.17.1-alpine@sha256:cc1a31b2f4a3b8e9cdc6f8dc0c39a3b946d7aa5d10a53439d960d4352b2acfc0 AS build
 
 USER node
 WORKDIR /app
@@ -10,9 +10,9 @@ ENV PACT_SKIP_BINARY_INSTALL=true
 COPY $DIR/package*.json ./
 RUN npm ci
 
-COPY $DIR/*.json ./
-COPY $DIR/licenses ./licenses
-COPY $DIR/src ./src
+COPY --chown=node $DIR/*.json ./
+COPY --chown=node $DIR/licenses ./licenses
+COPY --chown=node $DIR/src ./src
 ARG configuration=production
 ARG nodeoptions
 ENV NODE_OPTIONS=$nodeoptions
@@ -22,7 +22,7 @@ RUN npm run build -- --outputPath=./dist/out --configuration $configuration
 RUN find /app/dist/out/ | xargs gzip -k -9
 
 # Stage 2, use the compiled app, ready for production with Nginx
-FROM nginx:1.21.0-alpine@sha256:0f8595aa040ec107821e0409a1dd3f7a5e989501d5c8d5b5ca1f955f33ac81a0 AS final
+FROM nginx:1.21.0-alpine@sha256:6d76a25a64f6a9a873bded796761bf7a1d18367570281d73d16750ce37fae297 AS final
 
 ARG DIR=.
 

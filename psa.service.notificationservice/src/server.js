@@ -90,35 +90,41 @@ exports.terminate = async () => {
 };
 
 async function registerDbNotifications(dbClient) {
-  dbClient.on('notification', function (msg) {
+  dbClient.on('notification', async function (msg) {
     if (msg.name === 'notification') {
-      const pl = JSON.parse(msg.payload);
-      if (msg.channel === 'table_update' && pl.table === 'lab_results') {
-        console.log('got table update for lab_results');
-        notificationHelper
-          .handleUpdatedLabResult(pl.row_old, pl.row_new)
-          .catch(function (err) {
-            console.log(err);
-          });
-      } else if (msg.channel === 'table_update' && pl.table === 'users') {
-        console.log('got table update for users');
-        notificationHelper
-          .handleUpdatedUser(pl.row_old, pl.row_new)
-          .catch(function (err) {
-            console.log(err);
-          });
-      } else if (
-        msg.channel === 'table_update' &&
-        pl.table === 'questionnaire_instances'
-      ) {
-        console.log('got table update for questionnaire_instances');
-        if (pl.row_new.status === 'released_once') {
-          notificationHelper
-            .questionnaireInstanceHasNotableAnswers(pl.row_new.id)
-            .catch(function (err) {
-              console.log(err);
-            });
+      try {
+        const pl = JSON.parse(msg.payload);
+        if (msg.channel === 'table_update' && pl.table === 'lab_results') {
+          console.log('got table update for lab_results');
+          await notificationHelper.handleUpdatedLabResult(
+            pl.row_old,
+            pl.row_new
+          );
+        } else if (msg.channel === 'table_update' && pl.table === 'users') {
+          console.log('got table update for users');
+          await notificationHelper.handleUpdatedUser(pl.row_old, pl.row_new);
+        } else if (
+          msg.channel === 'table_update' &&
+          pl.table === 'questionnaire_instances'
+        ) {
+          console.log('got table update for questionnaire_instances');
+          if (pl.row_new.status === 'released_once') {
+            await notificationHelper.questionnaireInstanceHasNotableAnswers(
+              pl.row_new.id
+            );
+          }
+        } else {
+          return;
         }
+        console.log(
+          "Processed '" +
+            msg.channel +
+            "' notification for table '" +
+            pl.table +
+            "'"
+        );
+      } catch (e) {
+        console.error(e);
       }
     }
   });

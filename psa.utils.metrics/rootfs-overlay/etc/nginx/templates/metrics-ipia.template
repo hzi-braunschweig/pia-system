@@ -1,5 +1,5 @@
-location /externaldataservice/metrics {
+location /modysservice/metrics {
     resolver 127.0.0.11 valid=1m;
-    set $service_externaldataservice externaldataservice;
-    proxy_pass ${PROTOCOL}://$service_externaldataservice:EXTERNALDATASERVICE_PORT/metrics;
+    set $service_modysservice modysservice;
+    proxy_pass ${PROTOCOL}://$service_modysservice:MODYSSERVICE_PORT/metrics;
 }

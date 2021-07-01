@@ -8,7 +8,7 @@ const packageJson = require('../package.json');
 const { db } = require('./db');
 const { config } = require('./config');
 const taskScheduleHelper = require('./services/taskScheduleHelper');
-const labResultImportHelper = require('./services/labResultImportHelper');
+const { LabResultImportHelper } = require('./services/labResultImportHelper');
 
 let server;
 let csvImportJob;
@@ -51,8 +51,8 @@ exports.init = async () => {
   // Start scheduled jobs
   csvImportJob = taskScheduleHelper.scheduleDailyHL7Import();
   hl7ImportJob = taskScheduleHelper.scheduleDailyCsvImport();
-  await labResultImportHelper.importHl7FromMhhSftp();
-  await labResultImportHelper.importCsvFromHziSftp();
+  await LabResultImportHelper.importHl7FromMhhSftp();
+  await LabResultImportHelper.importCsvFromHziSftp();
 };
 
 exports.stop = async () => {

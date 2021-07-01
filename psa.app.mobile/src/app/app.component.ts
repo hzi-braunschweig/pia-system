@@ -1,5 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, Inject, ViewEncapsulation } from '@angular/core';
 import { AlertController, Platform } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
@@ -13,6 +12,7 @@ import { ComplianceService } from './compliance/compliance-service/compliance.se
 import { NotificationService } from './shared/services/notification/notification.service';
 import { EndpointService } from './shared/services/endpoint/endpoint.service';
 import { BadgeService } from './shared/services/badge/badge.service';
+import { DOCUMENT } from '@angular/common';
 
 interface AppPage {
   title: string;
@@ -45,7 +45,7 @@ export class AppComponent {
     private notification: NotificationService,
     private endpoint: EndpointService,
     private badgeService: BadgeService,
-    private router: Router
+    @Inject(DOCUMENT) private document: Document
   ) {
     this.onAppStart();
     this.auth.loggedIn.subscribe(() => this.onLogin());
@@ -131,7 +131,9 @@ export class AppComponent {
     }
 
     this.auth.resetCurrentUser();
-    this.router.navigate(['auth', 'login']);
+
+    // do a full page reload in order to clear any cached views
+    this.document.defaultView.location.href = '/';
   }
 
   private async setupSideMenu() {

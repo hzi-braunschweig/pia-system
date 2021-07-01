@@ -18,6 +18,12 @@
     "fileMatch": ["\\.gitlab-ci\\.yml$", "ci\\/.*\\.yml$"],
     "pinDigests": true
   },
+  "dockerfile": {
+    "fileMatch": [
+      "(?i)(^|/|\\.)(D|d)ockerfile$",
+      "(^|/)(D|d)ockerfile\\.[^/]*$"
+    ]
+  },
   "npm": {
     "enabled": false
   },

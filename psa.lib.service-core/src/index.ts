@@ -10,4 +10,6 @@ export * from './plugins/metrics';
 export * from './plugins/version';
 export * from './plugins/registerPlugins';
 export * from './server/serverRunner';
+export * from './utils/typeGuards';
 export * from './utils/sanitizeHtml';
+export * from './utils/writeIntoArrayStream';

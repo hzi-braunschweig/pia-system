@@ -13,11 +13,11 @@
   },
   "dependencies": {
     "@hapi/boom": "^9.1.2",
-    "@hapi/hapi": "^20.1.3",
+    "@hapi/hapi": "^20.1.4",
     "@pia/lib-service-core": "file:../psa.lib.service-core",
     "archiver": "^5.3.0",
     "csv-stringify": "^5.6.2",
-    "date-fns": "^2.21.3",
+    "date-fns": "^2.22.1",
     "joi": "^17.3.0",
     "node-fetch": "^2.6.1",
     "pg-promise": "^10.10.2",
@@ -26,16 +26,17 @@
   },
   "devDependencies": {
     "@pia/eslint-config": "file:../psa.eslint-config",
+    "@types/archiver": "^5.1.0",
     "@types/chai": "^4.2.18",
     "@types/hapi__hapi": "^20.0.8",
     "@types/mocha": "^8.2.2",
-    "@types/node": "^15.6.0",
-    "@typescript-eslint/eslint-plugin": "^4.24.0",
-    "@typescript-eslint/parser": "^4.24.0",
+    "@types/node": "^15.12.2",
+    "@typescript-eslint/eslint-plugin": "^4.26.1",
+    "@typescript-eslint/parser": "^4.26.1",
     "chai": "^4.3.4",
     "chai-http": "^4.3.0",
     "dotenv": "^9.0.2",
-    "eslint": "^7.26.0",
+    "eslint": "^7.28.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-no-only-tests": "^2.6.0",
     "eslint-plugin-security": "^1.4.0",
@@ -46,6 +47,6 @@
     "sinon": "^10.0.0",
     "source-map-support": "^0.5.19",
     "ts-node": "^9.1.1",
-    "typescript": "^4.2.4"
+    "typescript": "^4.3.2"
   }
 }

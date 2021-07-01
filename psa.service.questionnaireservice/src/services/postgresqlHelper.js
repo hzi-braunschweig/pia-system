@@ -2106,7 +2106,7 @@ const postgresqlHelper = (function () {
      * @param {string} study_name
      * @returns {Promise} a resolved promise with the found probands or a rejected promise with the error
      */
-    findProbandNamesInStudy,
+    findProbandNamesInStudy: findProbandNamesInStudy,
 
     /**
      * @function
@@ -2119,7 +2119,7 @@ const postgresqlHelper = (function () {
      * @param {string} study_name
      * @returns {Readable} stream of the answers
      */
-    streamAnswers,
+    streamAnswers: streamAnswers,
 
     /**
      * @function
@@ -2130,7 +2130,7 @@ const postgresqlHelper = (function () {
      * @param {Date} end_date
      * @returns {Readable} stream of the lab results
      */
-    streamLabResults,
+    streamLabResults: streamLabResults,
 
     /**
      * @function
@@ -2139,7 +2139,7 @@ const postgresqlHelper = (function () {
      * @param {array} probands
      * @returns {Readable} stream of the blood samples
      */
-    streamSamples,
+    streamSamples: streamSamples,
 
     /**
      * @function
@@ -2148,7 +2148,7 @@ const postgresqlHelper = (function () {
      * @param {array} probands
      * @returns {Readable} stream of the blood settings
      */
-    streamBloodSamples,
+    streamBloodSamples: streamBloodSamples,
 
     /**
      * @function
@@ -2157,7 +2157,7 @@ const postgresqlHelper = (function () {
      * @param {array} the probands
      * @returns {Readable} stream of the settings
      */
-    streamSettings,
+    streamSettings: streamSettings,
 
     /**
      * @function
@@ -2166,7 +2166,7 @@ const postgresqlHelper = (function () {
      * @param {fileIDs} the ids of the files
      * @returns {Readable} stream of the files
      */
-    streamFiles,
+    streamFiles: streamFiles,
     /**
      * @function
      * @description get one image from the database

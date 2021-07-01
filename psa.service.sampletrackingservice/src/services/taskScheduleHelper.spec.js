@@ -2,7 +2,7 @@ const expect = require('chai').expect;
 const sinon = require('sinon');
 
 const taskScheduleHelper = require('./taskScheduleHelper');
-const labResultImportHelper = require('./labResultImportHelper');
+const { LabResultImportHelper } = require('./labResultImportHelper');
 
 describe('Task Schedule Helper', () => {
   let clock;
@@ -14,23 +14,23 @@ describe('Task Schedule Helper', () => {
 
   describe('scheduleDailyHL7Import()', () => {
     it('should schedule the daily HL7 import', () => {
-      sinon.stub(labResultImportHelper, 'importHl7FromMhhSftp');
+      sinon.stub(LabResultImportHelper, 'importHl7FromMhhSftp');
       taskScheduleHelper.scheduleDailyHL7Import();
 
-      expect(labResultImportHelper.importHl7FromMhhSftp.called).not.to.be.true;
+      expect(LabResultImportHelper.importHl7FromMhhSftp.called).not.to.be.true;
       clock.tick(fullDayInMilliseconds);
-      expect(labResultImportHelper.importHl7FromMhhSftp.calledOnce).to.be.true;
+      expect(LabResultImportHelper.importHl7FromMhhSftp.calledOnce).to.be.true;
     });
   });
 
   describe('scheduleDailyCsvImport()', () => {
     it('should schedule the daily csv import', () => {
-      sinon.stub(labResultImportHelper, 'importCsvFromHziSftp');
+      sinon.stub(LabResultImportHelper, 'importCsvFromHziSftp');
       taskScheduleHelper.scheduleDailyCsvImport();
 
-      expect(labResultImportHelper.importCsvFromHziSftp.called).not.to.be.true;
+      expect(LabResultImportHelper.importCsvFromHziSftp.called).not.to.be.true;
       clock.tick(fullDayInMilliseconds);
-      expect(labResultImportHelper.importCsvFromHziSftp.calledOnce).to.be.true;
+      expect(LabResultImportHelper.importCsvFromHziSftp.calledOnce).to.be.true;
     });
   });
 });

@@ -1,4 +1,4 @@
-FROM alpine:3.13.5@sha256:69e70a79f2d41ab5d637de98c1e0b055206ba40a8145e7bddb55ccc04e13cf8f AS openssl
+FROM alpine:3.14.0@sha256:234cb88d3020898631af0ccbbcca9a66ae7306ecd30c9720690858c1b007d2a0 AS openssl
 RUN apk add openssl
 
 FROM openssl AS authkey
@@ -43,21 +43,12 @@ RUN FILE_NAME=web CN=webappserver ./create_cert.sh
 RUN FILE_NAME=qu CN=questionnaireservice ./create_cert.sh
 RUN FILE_NAME=lo CN=loggingservice ./create_cert.sh
 RUN FILE_NAME=sa CN=sampletrackingservice ./create_cert.sh
-RUN FILE_NAME=ex CN=externaldataservice ./create_cert.sh
+RUN FILE_NAME=modys CN=modysservice ./create_cert.sh
 RUN FILE_NAME=lh CN=localhost ./create_cert.sh
 RUN FILE_NAME=no CN=notificationservice ./create_cert.sh
 RUN FILE_NAME=auth CN=authservice ./create_cert.sh
 RUN FILE_NAME=metrics CN=metricsproxy ./create_cert.sh
 RUN FILE_NAME=api CN=apigateway ./create_cert.sh
-
-# we are using the same ca for modys
-# AGAIN: DON'T USE THIS IN PRODUCTION!
-RUN FILE_NAME=modysServer CN=modys ./create_cert.sh
-RUN FILE_NAME=modysClient CN=externaldataservice ./create_cert.sh
-
-RUN chmod og+r modysServer.key
-
-RUN cp ca.cert modysCa.cert
 
 # create chain certificate for web
 RUN cat web.cert ca.cert > chain.cert

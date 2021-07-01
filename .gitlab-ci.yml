@@ -38,4 +38,7 @@ include:
   - ci/generated.yml
   - ci/npm-audit.yml
   - ci/github.yml
-  - ci/create-release-mr.yml
+  - ci/create-release-merge-requests.yml
+  - ci/detect-secrets.yml
+
+
