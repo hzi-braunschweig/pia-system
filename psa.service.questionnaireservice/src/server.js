@@ -3,6 +3,7 @@ const {
   registerPlugins,
   registerAuthStrategies,
 } = require('@pia/lib-service-core');
+const RequestLogger = require('./lib/plugins/requestLogger');
 
 const packageJson = require('../package.json');
 const { db } = require('./db');
@@ -40,6 +41,7 @@ exports.init = async () => {
     version: packageJson.version,
     routes: './src/routes/*.js',
   });
+  await server.register(RequestLogger);
 
   await server.start();
   server.log(['startup'], `Server running at ${server.info.uri}`);
