@@ -1,6 +1,6 @@
 npm-audit:
   stage: prepare
-  image: node:14.17.1-buster-slim@sha256:791eb1ac8e78c901601e2ab4b583bf2b5b739c108196068709d2e54250b31628
+  image: node:14.17.1-buster-slim@sha256:bbc445769f2dfb5ecbda6baece3601075ae0b5ee8068f062cecd2a0558d64c1f
   script:
     - >
       for JOB in $JOBS_INSTALL; do

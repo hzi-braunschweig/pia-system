@@ -2,10 +2,10 @@ const random = require('../test.common/random');
 const env = require('../test.common/env');
 
 const configSftp = {
-  configure: function () {
+  configure: function ({ registry }) {
     const config = {
       sftpContainer: 'pia-sftpserver-test.int',
-      sftpImage: 'registry.netzlink.com/pia/psa.server.sftpserver:test.int',
+      sftpImage: `${registry}/pia/psa.server.sftpserver:test.int`,
       sftpPath: '../psa.server.sftpserver',
       sftpPort: 22222,
       sftpUser: 'user_' + random.createRandomString(16),

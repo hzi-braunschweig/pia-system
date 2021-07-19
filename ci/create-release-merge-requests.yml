@@ -2,6 +2,7 @@
 merge-requests:
   stage: push
   image: curlimages/curl@sha256:6e0a786e3e5181df00eaf3a0a1749c18a6bb20b01c9bd192ea72176ce8a1c94b
+  needs: []
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+/'
   script:

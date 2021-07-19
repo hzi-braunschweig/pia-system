@@ -15,11 +15,8 @@ import { RouteMetaDataScanner } from './route-meta-data-scanner';
 class Program {
   private static async generate(jobs: IJobs, repoDir: string) {
     // Read our env variables
-    const templateDir = process.env.TEMPLATE_DIR || './templates/';
     const tagetFile =
       process.env.TARGET_FILE || path.join(repoDir, 'ci/generated.yml');
-    const generatedDockerfilesDir =
-      process.env.NPM_INSTALL_DOCKERFILES_DIR || './generated/';
 
     console.log(jobs);
 
@@ -28,20 +25,6 @@ class Program {
 
     // Write the resulting gitlab-ci.yml
     await Fs.writeYaml(tagetFile, gitlabCi);
-
-    // create npm install dockerfiles that are including the COPY for local dependencies
-    await Generator.createNpmInstallDockerfiles(
-      jobs,
-      repoDir,
-      templateDir,
-      generatedDockerfilesDir
-    );
-
-    await Generator.createLicenseCollectorDockerfile(
-      jobs,
-      templateDir,
-      generatedDockerfilesDir
-    );
   }
 
   public static handleError<T>(promise: Promise<T>) {
@@ -67,12 +50,6 @@ class Program {
       .description('runs tests on repo')
       .action(() => {
         Program.handleError(Runner.executeTests(jobs, repoDir));
-      });
-    program
-      .command('generate')
-      .description('generates ci stuff')
-      .action(() => {
-        Program.handleError(this.generate(jobs, repoDir));
       });
     program
       .command('update')

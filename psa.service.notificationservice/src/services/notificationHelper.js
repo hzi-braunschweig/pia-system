@@ -77,14 +77,14 @@ const notificationHelper = (function () {
     const labResults = await postgresqlHelper.getNewSampledSamplesForStudy(
       study.name
     );
-    console.log(
-      'found ' +
-        labResults.length +
-        ' sampled labresults from yesterday in study ' +
-        study.name +
-        ', which the PM will be informed about'
-    );
     if (labResults.length > 0) {
+      console.log(
+        'Found ' +
+          labResults.length +
+          ' sampled labresults from yesterday in study ' +
+          study.name +
+          ', which the PM will be informed about'
+      );
       const sampleReportMail = {
         subject: 'PIA – neue Proben sind auf dem Weg ins Labor!',
         text:
@@ -110,7 +110,7 @@ const notificationHelper = (function () {
     );
     if (labResults.length > 0) {
       console.log(
-        'found ' +
+        'Found ' +
           labResults.length +
           ' analyzed labresults from yesterday in study ' +
           study.name +
@@ -154,7 +154,7 @@ const notificationHelper = (function () {
       mailService.sendMail(study.hub_email, sampleReportMail);
     } else {
       console.log(
-        'found no new labresults in study: ' +
+        'Found no new labresults in study: ' +
           study.name +
           ', sending no email to hub'
       );

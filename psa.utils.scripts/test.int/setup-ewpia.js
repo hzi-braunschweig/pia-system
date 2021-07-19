@@ -2,12 +2,11 @@ const random = require('../test.common/random');
 const env = require('../test.common/env');
 
 const setupEwpia = {
-  configure: function () {
+  configure: function ({ registry }) {
     const config = {
       postgresContainer: 'pia-postgres-ewpia-test.int',
-      postgresImageBase:
-        'registry.netzlink.com/pia/psa.database.ewpia:test.int-base',
-      postgresImage: 'registry.netzlink.com/pia/psa.database.ewpia:test.int',
+      postgresImageBase: `${registry}/pia/psa.database.ewpia:test.int-base`,
+      postgresImage: `${registry}/pia/psa.database.ewpia:test.int`,
       postgresPath: '../psa.database.ewpia',
       postgresSecretsPath: '../psa.utils.scripts/secrets-dockerfile',
       dbUser: 'user_' + random.createRandomString(16),

@@ -4,8 +4,12 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 const sinon = require('sinon');
 const addMinutes = require('date-fns/addMinutes');
+const startOfToday = require('date-fns/startOfToday');
+const CronTime = require('cron').CronTime;
 
 const fcmHelper = require('../../src/services/fcmHelper');
+const mailer = require('../../src/services/mailService');
+
 const notificationHelper = require('../../src/services/notificationHelper');
 const { dbWait, performAndWait } = require('./helper');
 
@@ -86,6 +90,7 @@ const sysadminHeader = { authorization: sysadminToken };
 describe('/notification', function () {
   before(async function () {
     serverSandbox.stub(fcmHelper);
+    serverSandbox.stub(mailer);
     await server.init();
   });
 
@@ -402,9 +407,9 @@ describe('/notification', function () {
       await performAndWait(
         async () => notificationHelper.sendAllOpenNotifications(),
         [
-          'Successfully sent notification to user: QTestProband1 for sample id: LAB_RESULT-9999999999 and device: android',
+          'Successfully sent notification to user: QTestProband1 for sample id: LAB_RESULT-9999999999 and device: web',
           'Successfully sent custom notification to user: QTestProband1',
-          'Successfully sent notification to user: QTestProband1 for instance id: 9999996 and device: android',
+          'Successfully sent notification to user: QTestProband1 for instance id: 9999996 and device: web',
         ]
       );
       expect(
@@ -415,13 +420,48 @@ describe('/notification', function () {
 
       expect(
         logSpy.calledWith(
-          'Successfully sent notification to user: QTestProband1 for sample id: LAB_RESULT-9999999999 and device: android'
+          'Successfully sent notification to user: QTestProband1 for sample id: LAB_RESULT-9999999999 and device: web'
         )
       ).equal(true);
 
       expect(
         logSpy.calledWith(
-          'Successfully sent notification to user: QTestProband1 for instance id: 9999996 and device: android'
+          'Successfully sent notification to user: QTestProband1 for instance id: 9999996 and device: web'
+        )
+      ).equal(true);
+
+      logSpy.restore();
+    });
+
+    it('should send sample report mails', async function () {
+      await db.none(
+        "INSERT INTO lab_results VALUES ('LAB_RESULT-88888', 'QTestProband1', null, $1,'new','Das PM merkt an: bitte mit Vorsicht genießen!',false,'Dr. House',null)",
+        [startOfToday()]
+      );
+
+      await db.none(
+        "INSERT INTO lab_observations (lab_result_id, name_id, result_value, date_of_announcement) VALUES ('LAB_RESULT-88888', 0, '', $1)",
+        [startOfToday()]
+      );
+
+      const logSpy = sinon.spy(console, 'log');
+
+      await performAndWait(
+        async () => notificationHelper.sendSampleReportMails(),
+        [
+          'Found 1 sampled labresults from yesterday in study ApiTestStudie, which the PM will be informed about',
+          'Found 1 analyzed labresults from yesterday in study ApiTestStudie, which the hub will be informed about',
+        ]
+      );
+      expect(
+        logSpy.calledWith(
+          'Found 1 sampled labresults from yesterday in study ApiTestStudie, which the PM will be informed about'
+        )
+      ).equal(true);
+
+      expect(
+        logSpy.calledWith(
+          'Found 1 analyzed labresults from yesterday in study ApiTestStudie, which the hub will be informed about'
         )
       ).equal(true);
 
@@ -439,5 +479,33 @@ describe('/notification', function () {
 
       logSpy.restore();
     });
+
+    it('should run questionnaire cron jobs', async function () {
+      const jobs = server.checkForNotFilledQuestionnairesJobs();
+
+      // Force Cronjob to run faster
+      jobs.dueQuestionnairesJob.setTime(new CronTime('*/2 * * * * *'));
+      jobs.dueQuestionnairesJob.start();
+
+      // Force Cronjob to run faster
+      jobs.questionnaireStatusAggregatorJob.setTime(
+        new CronTime('*/5 * * * * *')
+      );
+      jobs.questionnaireStatusAggregatorJob.start();
+
+      // Wait until the cron jobs are executed at least one time
+      await new Promise((resolve) => setTimeout(resolve, 8000));
+
+      const usersToContact = await db.manyOrNone(
+        'SELECT * FROM users_to_contact'
+      );
+
+      expect(
+        usersToContact[0].not_filledout_questionnaire_instances
+      ).deep.equals([9999997, 9999996]);
+      expect(
+        usersToContact[0].notable_answer_questionnaire_instances
+      ).deep.equals([9999996]);
+    }).timeout(10000);
   });
 });

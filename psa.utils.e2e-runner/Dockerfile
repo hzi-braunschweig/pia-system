@@ -1,4 +1,4 @@
-FROM cypress/included:7.5.0@sha256:5ee6d1865bf721e7ee2c4902dd962f9bb3b14137d3eeacca74c827854a918248
+FROM cypress/included:7.6.0@sha256:62979cac102526de84da46d124f8a39dc7fdfed9919840dfd6e077f8c1da5186
 
 ENV DIR=psa.app.web
 

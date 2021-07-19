@@ -9,8 +9,23 @@ collect-licenses:
   variables:
     GIT_DEPTH: '1'
   script:
-    - sh -c "docker login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
-    - DOCKER_BUILDKIT=1 docker build -f psa.utils.repo-tool/generated/license-collector.dockerfile -o . --build-arg VERSION=$IMAGE_ID .
+    - export DOCKERFILE=license-collector.dockerfile
+    - echo "" > $DOCKERFILE
+    # it is (currently) not possible to use a variable inside the mount of a RUN.
+    - >
+      for JOB in $JOBS_INSTALL; do
+        echo "FROM $CI_REGISTRY/pia/$JOB-npm-install:$IMAGE_ID as $JOB-npm-install" >> $DOCKERFILE
+      done
+    - echo "FROM $CI_REGISTRY/pia/psa.utils.repo-tool:$IMAGE_ID AS base" >> $DOCKERFILE
+    - echo "RUN \\" >> $DOCKERFILE
+    - >
+      for JOB in $JOBS_INSTALL; do
+        echo "  --mount=type=bind,ro,from=$JOB-npm-install,source=/usr/src/node-app,target=/usr/src/$JOB \\" >> $DOCKERFILE
+      done
+    - echo "  REPO_DIR=/dependencies OUT_FILE=/licenses.csv npm run license" >> $DOCKERFILE
+    - echo "FROM scratch" >> $DOCKERFILE
+    - echo "COPY --from=base /licenses.csv /" >> $DOCKERFILE
+    - DOCKER_BUILDKIT=1 docker build -f $DOCKERFILE -o . .
   rules:
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG

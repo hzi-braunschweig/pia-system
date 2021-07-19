@@ -2,11 +2,10 @@ const random = require('../test.common/random');
 const env = require('../test.common/env');
 
 const setupMessagequeue = {
-  configure: function () {
+  configure: function ({ registry }) {
     const config = {
       messagequeueContainer: 'pia-messagequeue-test.int',
-      messagequeueImage:
-        'registry.netzlink.com/pia/psa.server.messagequeue:test.int',
+      messagequeueImage: `${registry}/pia/psa.server.messagequeue:test.int`,
       messagequeuePath: '../psa.server.messagequeue',
       messagequeuePort: 25672,
 

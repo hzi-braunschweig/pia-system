@@ -1,11 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "config:base",
-    "group:allNonMajor",
-    "docker:enableMajor",
-    ":automergeMinor"
-  ],
+  "extends": ["config:base", "docker:enableMajor", ":automergeMinor"],
   "platform": "gitlab",
   "gitLabAutomerge": true,
   "pinDigests": true,
@@ -28,6 +23,12 @@
     "enabled": false
   },
   "packageRules": [
+    {
+      "matchPackagePatterns": ["*"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch"
+    },
     {
       "matchPackagePrefixes": ["@pia/"],
       "enabled": false

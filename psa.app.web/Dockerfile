@@ -1,8 +1,38 @@
-# Stage 1: Build an Angular Docker Image
-FROM node:14.17.1-alpine@sha256:cc1a31b2f4a3b8e9cdc6f8dc0c39a3b946d7aa5d10a53439d960d4352b2acfc0 AS build
+FROM node:14.17.1-alpine@sha256:21b87afa5f267e50b806f696f754b15b37b4118bb0ef722192f27ddff78d8d67 AS base
+
+FROM base AS npm-install
+RUN apk --update --no-cache add curl tzdata
+RUN apk --update --no-cache add chromium ttf-dejavu ttf-liberation ttf-freefont
+ENV CHROME_BIN=/usr/bin/chromium-browser
+
+# Required packages for devDependencies (PACT)
+RUN apk --no-cache add --virtual build-dependencies build-base bash wget \
+    && wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
+    && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.33-r0/glibc-2.33-r0.apk \
+    && apk add glibc-2.33-r0.apk
+
+# required to prevent:
+# could not load the shared library:dso_dlfcn.c:185:filename(libssl_conf.so): libssl_conf.so: cannot open shared object file: No such file or directory
+ENV OPENSSL_CONF=/etc/ssl/
+
+WORKDIR /usr/src/node-app/
+
+ARG DIR=.
+ENV CYPRESS_INSTALL_BINARY=0
+COPY $DIR/package*.json ./
+RUN npm ci
+
+ENV NODE_PATH=/usr/src/node-app/node_modules
+ENV PATH=$PATH:/usr/src/node-app/node_modules/.bin
+
+WORKDIR /usr/src/workdir/
+
+################################################################
+
+FROM base AS build
 
 USER node
-WORKDIR /app
+WORKDIR /usr/src/node-app/
 
 ARG DIR=.
 ENV CYPRESS_INSTALL_BINARY=0
@@ -10,19 +40,21 @@ ENV PACT_SKIP_BINARY_INSTALL=true
 COPY $DIR/package*.json ./
 RUN npm ci
 
-COPY --chown=node $DIR/*.json ./
+COPY --chown=node $DIR/.browserslistrc $DIR/*.json ./
 COPY --chown=node $DIR/licenses ./licenses
 COPY --chown=node $DIR/src ./src
 ARG configuration=production
 ARG nodeoptions
 ENV NODE_OPTIONS=$nodeoptions
+
 RUN npm run build -- --outputPath=./dist/out --configuration $configuration
 
 # create the pre-compressed gzip files for faster serving
-RUN find /app/dist/out/ | xargs gzip -k -9
+RUN find /usr/src/node-app/dist/out/ | xargs gzip -k -9
 
-# Stage 2, use the compiled app, ready for production with Nginx
-FROM nginx:1.21.0-alpine@sha256:6d76a25a64f6a9a873bded796761bf7a1d18367570281d73d16750ce37fae297 AS final
+################################################################
+
+FROM nginx:1.21.0-alpine@sha256:cc8c413c74aba9fef9dae7f3da736725136bad1e3f24fbc93788aea1944f51c4 AS final
 
 ARG DIR=.
 
@@ -30,8 +62,8 @@ RUN rm -rf /usr/share/nginx/html/*
 ENV WEBAPPSERVER_HTTP_PORT=80 WEBAPPSERVER_HTTPS_PORT=443 DEFAULT_LANGUAGE=en-US
 COPY $DIR/envsubst-on-environment.sh /docker-entrypoint.d/40-envsubst-on-environment.sh
 COPY $DIR/nginx-site.conf /etc/nginx/templates/default.conf.template
-COPY --from=build /app/dist/out/ /usr/share/nginx/html
-COPY --from=build /app/dist/out/main*.js /usr/share/nginx/template/main.js.template
+COPY --from=build /usr/src/node-app/dist/out/ /usr/share/nginx/html
+COPY --from=build /usr/src/node-app/dist/out/main*.js /usr/share/nginx/template/main.js.template
 
 ARG VERSION_INFO_PIPELINE_ID=-
 ENV VERSION_INFO_PIPELINE_ID=$VERSION_INFO_PIPELINE_ID

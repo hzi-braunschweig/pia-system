@@ -3,6 +3,7 @@ e2e:
   image:
     name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.e2e-runner:$IMAGE_ID
     entrypoint: ['/bin/bash', '-c']
+  resource_group: only-one
   script:
     - cd psa.app.web
     - curl --fail -u deployer:deployer -X POST --data-binary @cypress/db-init.sql http://deploymentservice:$PORT/deployment/db/qpia?restartDb=false

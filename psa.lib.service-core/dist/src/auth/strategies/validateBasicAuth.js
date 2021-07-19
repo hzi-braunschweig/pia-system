@@ -30,7 +30,10 @@ function validateBasicAuth(basicUsername, basicPassword) {
     const blockedIPService = new blockedIPService_1.BlockedIPService(MAX_LRU_CACHE_SIZE);
     return function (request, username, password) {
         const xFF = request.headers['x-forwarded-for'];
-        const ip = xFF ? xFF.split(',')[0] : request.info.remoteAddress;
+        const forwardedForAdresses = xFF?.split(',');
+        const ip = forwardedForAdresses?.length && forwardedForAdresses[0]
+            ? forwardedForAdresses[0]
+            : request.info.remoteAddress;
         const blockedIP = blockedIPService.get(ip);
         if (blockedIP.number_of_wrong_attempts >= MAX_WRONG_ATTEMPTS &&
             blockedIP.third_wrong_password_at) {

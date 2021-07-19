@@ -23,29 +23,34 @@ WHERE user_id IN (
 DELETE
 FROM answers
 WHERE questionnaire_instance_id IN (
-                                    9999996
+    9999996
     );
 
 DELETE
 FROM answer_options
 WHERE id IN (
-    99991,
-    99992
+             99991, 99992, 99993, 99994, 99995
     );
+
+DELETE
+FROM conditions;
 
 
 DELETE
 FROM questions
 WHERE id IN (
              99991,
-             99992
+             99992,
+             99993,
+             99994
     );
 
 DELETE
 FROM questionnaire_instances
 WHERE id IN (
              9999996,
-             9999997
+             9999997,
+             9999998
     );
 
 
@@ -66,14 +71,14 @@ WHERE username IN (
 DELETE
 FROM questionnaires
 WHERE id IN (
-             99999
+             99999, 99998
     );
 
 DELETE
-FROM lab_results
-WHERE id IN (
-             'LAB_RESULT-9999999999'
-    );
+FROM lab_results;
+
+DELETE
+FROM lab_observations;
 
 
 DELETE

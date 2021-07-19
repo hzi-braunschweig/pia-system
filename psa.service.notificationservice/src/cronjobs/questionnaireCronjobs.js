@@ -68,6 +68,8 @@ const start = function () {
   questionnaireStatusAggregatorJob.start();
   console.log('Questionnaire cron jobs started');
   return {
+    dueQuestionnairesJob,
+    questionnaireStatusAggregatorJob,
     cancel: () => {
       dueQuestionnairesJob.stop();
       questionnaireStatusAggregatorJob.stop();

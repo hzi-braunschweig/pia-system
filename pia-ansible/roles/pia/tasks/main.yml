@@ -182,7 +182,7 @@
 
 - name: Log into netzlink registry with virtualenv
   docker_login:
-    registry: registry.netzlink.com
+    registry: '{{ pia_docker_registry }}'
     username: '{{ survey_docker_user }}'
     password: '{{ survey_docker_password }}'
   vars:
@@ -194,7 +194,7 @@
 
 - name: Log into netzlink registry
   docker_login:
-    registry: registry.netzlink.com
+    registry: '{{ pia_docker_registry }}'
     username: '{{ survey_docker_user }}'
     password: '{{ survey_docker_password }}'
   when: docker_host and not stat_result.stat.exists

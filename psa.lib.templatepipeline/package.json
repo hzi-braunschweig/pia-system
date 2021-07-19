@@ -15,36 +15,36 @@
     "test.unit": "nyc mocha src/**/*.spec.ts tests/**/*.spec.ts"
   },
   "dependencies": {
-    "dompurify": "^2.2.8",
-    "jsdom": "^16.5.3",
-    "marked": "^2.0.3",
+    "dompurify": "^2.2.9",
+    "jsdom": "^16.6.0",
+    "marked": "^2.1.2",
     "mustache": "^4.2.0",
     "parse5": "^6.0.1",
-    "puppeteer": "^9.1.1"
+    "puppeteer": "^10.0.0"
   },
   "devDependencies": {
     "@pia/eslint-config": "file:../psa.eslint-config",
     "@pia/lib-service-core": "file:../psa.lib.service-core",
-    "@types/chai": "^4.2.18",
+    "@types/chai": "^4.2.19",
     "@types/dompurify": "^2.2.2",
-    "@types/jsdom": "^16.2.7",
-    "@types/marked": "^2.0.2",
-    "@types/mocha": "^8.2.1",
+    "@types/jsdom": "^16.2.11",
+    "@types/marked": "^2.0.3",
+    "@types/mocha": "^8.2.2",
     "@types/mustache": "^4.1.1",
-    "@types/node": "^14.14.44",
+    "@types/node": "^14.17.4",
     "@types/parse5": "^6.0.0",
-    "@typescript-eslint/eslint-plugin": "^4.22.1",
-    "@typescript-eslint/parser": "^4.22.1",
-    "chai": "^4.3.3",
-    "eslint": "^7.26.0",
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "@typescript-eslint/parser": "^4.28.0",
+    "chai": "^4.3.4",
+    "eslint": "^7.29.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-no-only-tests": "^2.6.0",
     "eslint-plugin-security": "^1.4.0",
-    "mocha": "^8.4.0",
+    "mocha": "^9.0.1",
     "mocha-multi-reporters": "^1.5.1",
     "nyc": "^15.1.0",
     "source-map-support": "^0.5.19",
-    "ts-node": "^9.1.1",
-    "typescript": "^4.2.2"
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.4"
   }
 }

@@ -59,7 +59,7 @@ services:
 # ewpia
 ####################################################################################
   ewpiaservice:
-    image: "registry.netzlink.com/pia/psa.database.ewpia:${PIA_DOCKER_TAG}"
+    image: "${PIA_DOCKER_REGISTRY}/pia/psa.database.ewpia:${PIA_DOCKER_TAG}"
     restart: unless-stopped
     container_name: ewpiaservice
     extra_hosts: *default-extra_hosts
@@ -95,7 +95,7 @@ services:
 # ipia
 ####################################################################################
   ipiaservice:
-    image: "registry.netzlink.com/pia/psa.database.ipia:${PIA_DOCKER_TAG}"
+    image: "${PIA_DOCKER_REGISTRY}/pia/psa.database.ipia:${PIA_DOCKER_TAG}"
     restart: unless-stopped
     container_name: ipiaservice
     extra_hosts: *default-extra_hosts
@@ -125,7 +125,7 @@ services:
       pia:
 
   personaldataservice:
-    image: registry.netzlink.com/pia/psa.service.personaldataservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.personaldataservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -170,7 +170,7 @@ services:
 
 {% if pia_has_modysservice %}
   modysservice:
-    image: "registry.netzlink.com/pia/psa.service.modysservice:${PIA_DOCKER_TAG}"
+    image: "${PIA_DOCKER_REGISTRY}/pia/psa.service.modysservice:${PIA_DOCKER_TAG}"
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -212,7 +212,7 @@ services:
 # qpia
 ####################################################################################
   userservice:
-    image: registry.netzlink.com/pia/psa.service.userservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.userservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -268,7 +268,7 @@ services:
 {% endif %}
 
   authservice:
-    image: registry.netzlink.com/pia/psa.service.authservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.authservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -318,7 +318,7 @@ services:
       pia:
 
   questionnaireservice:
-    image: registry.netzlink.com/pia/psa.service.questionnaireservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.questionnaireservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -352,7 +352,7 @@ services:
       pia:
 
   complianceservice:
-    image: registry.netzlink.com/pia/psa.service.complianceservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.complianceservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -388,7 +388,7 @@ services:
       pia:
 
   analyzerservice:
-    image: registry.netzlink.com/pia/psa.service.analyzerservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.analyzerservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -423,7 +423,7 @@ services:
       pia:
 
   notificationservice:
-    image: registry.netzlink.com/pia/psa.service.notificationservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.notificationservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -469,7 +469,7 @@ services:
       pia:
 
   sampletrackingservice:
-    image: registry.netzlink.com/pia/psa.service.sampletrackingservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.sampletrackingservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -514,7 +514,7 @@ services:
       pia:
 
   loggingservice:
-    image: registry.netzlink.com/pia/psa.service.loggingservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.loggingservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -549,7 +549,7 @@ services:
       pia:
 
   databaseservice:
-    image: registry.netzlink.com/pia/psa.database:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.database:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     volumes:
@@ -579,7 +579,7 @@ services:
       pia:
 
   webappserver:
-    image: registry.netzlink.com/pia/psa.app.web:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.app.web:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -610,7 +610,7 @@ services:
       pia:
 
   mobileappasset:
-    image: registry.netzlink.com/pia/psa.app.mobile:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.app.mobile:${PIA_DOCKER_TAG}
     container_name: mobileappasset
     extra_hosts: *default-extra_hosts
     environment:
@@ -631,7 +631,7 @@ services:
   # this service is ONLY for testing stages!
   # NEVER DEPLOY IT TO A PRODUCTIVE SYSTEM!
   deploymentservice:
-    image: registry.netzlink.com/pia/psa.utils.deploymentservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.utils.deploymentservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -664,7 +664,7 @@ services:
 
 {% if hostvars[inventory_hostname]['PIA_IS_SORMAS_ACTIVE'] | default(pia_has_sormas) %}
   sormasservice:
-    image: registry.netzlink.com/pia/psa.service.sormasservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.sormasservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -712,7 +712,7 @@ services:
 {% endif %}
 
   labresultssftpserver:
-    image: registry.netzlink.com/pia/psa.server.sftpserver:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.server.sftpserver:${PIA_DOCKER_TAG}
     container_name: labresultssftpserver
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
@@ -743,7 +743,7 @@ services:
     logging: *default-logging
 
   apigateway:
-    image: registry.netzlink.com/pia/psa.server.apigateway:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.server.apigateway:${PIA_DOCKER_TAG}
     container_name: apigateway
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
@@ -795,7 +795,7 @@ services:
     logging: *default-logging
 
   messagequeue:
-    image: registry.netzlink.com/pia/psa.server.messagequeue:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.server.messagequeue:${PIA_DOCKER_TAG}
     container_name: messagequeue
     # do not change this name without a reason, the stored data will be lost!
     hostname: messagequeue
@@ -826,7 +826,7 @@ services:
 ####################################################################################
 
   metrics-reverse-proxy:
-    image: registry.netzlink.com/pia/psa.utils.metrics:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.utils.metrics:${PIA_DOCKER_TAG}
     restart: unless-stopped
     container_name: metrics-reverse-proxy
     extra_hosts: *default-extra_hosts
@@ -864,7 +864,7 @@ services:
 
 {% if pia_local_development %}
   mailserver:
-    image: registry.netzlink.com/pia/psa.server.mailserver:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/pia/psa.server.mailserver:${PIA_DOCKER_TAG}
     container_name: mailserver
     # do not change this name without a reason, the stored data will be lost!
     hostname: mailserver

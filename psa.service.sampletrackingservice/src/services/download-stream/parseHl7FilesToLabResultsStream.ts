@@ -48,14 +48,17 @@ export class ParseHl7FilesToLabResultsStream extends Transform {
       if (segment?.SegmentType !== 'OBX') return;
       const observationId = segment.ObservationIdentifier.split('^');
       const observationValues = segment.ObservationValue.split('/');
-      const result_bool =
-        observationValues.length > 1
-          ? ParseHl7FilesToLabResultsStream.stringToBool(observationValues[1]!)
-          : ParseHl7FilesToLabResultsStream.stringToBool(observationValues[0]!);
       const lab_observation: LabObservation = {
         name_id: Number(observationId[0]),
         name: observationId[1],
-        result_string: result_bool ? 'positiv' : 'negativ',
+        result_string:
+          observationValues.length > 1
+            ? ParseHl7FilesToLabResultsStream.stringToBool(
+                observationValues[1]!
+              )
+            : ParseHl7FilesToLabResultsStream.stringToBool(
+                observationValues[0]!
+              ),
         result_value:
           observationValues.length > 1 ? observationValues[0] : null,
         date_of_announcement: new Date(),
@@ -118,8 +121,14 @@ export class ParseHl7FilesToLabResultsStream extends Transform {
     return labResult;
   }
 
-  private static stringToBool(str: string): boolean {
-    return str !== 'neg';
+  private static stringToBool(str: string): string {
+    if (str === 'neg') {
+      return 'negativ';
+    } else if (str === 'pos') {
+      return 'positiv';
+    } else {
+      return 'NA';
+    }
   }
 
   private static parseDateFromSegment(dateString?: string): Date | null {

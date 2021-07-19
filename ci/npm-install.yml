@@ -5,7 +5,7 @@ npm-install:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - >
       for JOB in $JOBS_INSTALL; do
-        docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB-npm-install:$IMAGE_ID --build-arg DIR=$JOB -f psa.utils.repo-tool/generated/npm-install-$JOB.dockerfile .
+        docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB-npm-install:$IMAGE_ID --target=npm-install --build-arg DIR=$JOB -f $JOB/Dockerfile .
       done
     - >
       for JOB in $JOBS_INSTALL; do

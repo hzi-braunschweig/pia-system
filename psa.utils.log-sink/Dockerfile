@@ -1,4 +1,4 @@
-FROM fluent/fluentd:v1.13.0-1.0@sha256:cec4bde2c64e3a9d1363e0ec6678fdcc74eb24eb92b268d1bff252a6afb651ac
+FROM fluent/fluentd:v1.13.1-1.0@sha256:ca43df6a8fce89b502a27c983868263420547b851e3c6a9ae8ec00133244fc11
 
 USER root
 RUN gem install fluent-plugin-loki

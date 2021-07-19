@@ -68,7 +68,7 @@ export const registerPlugins = async (
             args: logSqueezeArgs,
           },
           {
-            module: GoodConsole,
+            module: GoodConsole as unknown,
             args: [
               {
                 format: 'HH:mm:ss DD.MM.YYYY',
@@ -84,7 +84,7 @@ export const registerPlugins = async (
             args: logSqueezeArgs,
           },
           {
-            module: SafeJson,
+            module: SafeJson as unknown,
           },
           {
             module: createStream,

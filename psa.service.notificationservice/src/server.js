@@ -17,7 +17,7 @@ let server;
 let instanceNotificationCreationJob;
 let notificationSendingJob;
 let dailySampleReportMailsJob;
-let checkForNotFilledQuestionnairesJob;
+let checkForNotFilledQuestionnairesJobs;
 let listeningDbClient;
 
 exports.init = async () => {
@@ -64,7 +64,7 @@ exports.init = async () => {
   listeningDbClient.connect();
 
   // Starting cronJobs once the database service connection is made
-  checkForNotFilledQuestionnairesJob = checkForNotFilledQuestionnaires.start();
+  checkForNotFilledQuestionnairesJobs = checkForNotFilledQuestionnaires.start();
   fcmHelper.initFBAdmin();
   instanceNotificationCreationJob =
     notificationHelper.scheduleInstanceNotificationCreation();
@@ -74,7 +74,7 @@ exports.init = async () => {
 };
 
 exports.stop = async () => {
-  checkForNotFilledQuestionnairesJob.cancel();
+  checkForNotFilledQuestionnairesJobs.cancel();
 
   instanceNotificationCreationJob.cancel();
   notificationSendingJob.cancel();
@@ -83,6 +83,11 @@ exports.stop = async () => {
   await listeningDbClient.disconnect();
   await server.stop();
   server.log(['startup'], `Server was stopped`);
+};
+
+// This Export is needed in the integration tests
+exports.checkForNotFilledQuestionnairesJobs = () => {
+  return checkForNotFilledQuestionnairesJobs;
 };
 
 exports.terminate = async () => {

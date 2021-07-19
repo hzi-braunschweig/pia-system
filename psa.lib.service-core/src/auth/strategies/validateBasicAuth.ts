@@ -23,8 +23,11 @@ export function validateBasicAuth(
     const xFF: string | undefined = request.headers['x-forwarded-for'];
     // if xFF is a string, split will always return an array with at least one element.
     // The first one is the ip of the client.
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const ip: string = xFF ? xFF.split(',')[0]! : request.info.remoteAddress;
+    const forwardedForAdresses = xFF?.split(',');
+    const ip: string =
+      forwardedForAdresses?.length && forwardedForAdresses[0]
+        ? forwardedForAdresses[0]
+        : request.info.remoteAddress;
 
     const blockedIP = blockedIPService.get(ip);
     if (

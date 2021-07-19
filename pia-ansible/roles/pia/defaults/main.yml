@@ -6,6 +6,8 @@ pia_multi_host: false
 survey_docker_user: user
 survey_docker_password: password
 
+pia_docker_registry: registry.netzlink.com
+
 # this flag should only be used for local development of pia (on a developer machine)
 pia_local_development: false
 

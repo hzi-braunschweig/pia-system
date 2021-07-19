@@ -2,7 +2,7 @@ version: '3.5'
 
 services:
     fluentd:
-        image: registry.netzlink.com/pia/psa.utils.log-sink:${PIA_DOCKER_TAG}
+        image: ${PIA_DOCKER_REGISTRY}/pia/psa.utils.log-sink:${PIA_DOCKER_TAG}
         ports:
         - 127.0.0.1:24224:24224
         environment:

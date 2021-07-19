@@ -27,16 +27,17 @@ const options = {
     messagequeue: process.env.KEEP_MESSAGEQUEUE === 'true',
     sftp: process.env.KEEP_SFTP === 'true',
   },
+  registry: process.env.DOCKER_REGISTRY || 'registry.netzlink.com',
 };
 
 // Create the secrets
 require('../test.common/secrets');
 
-let qpiaConfig = qpia.configure();
-let ipiaConfig = ipia.configure();
-let ewpiaConfig = ewpia.configure();
-let messagequeueConfig = configMessagequeue.configure();
-let sftpConfig = configSftp.configure();
+let qpiaConfig = qpia.configure(options);
+let ipiaConfig = ipia.configure(options);
+let ewpiaConfig = ewpia.configure(options);
+let messagequeueConfig = configMessagequeue.configure(options);
+let sftpConfig = configSftp.configure(options);
 
 // We do not want to setup the ci environment
 if (!process.env.CI) {

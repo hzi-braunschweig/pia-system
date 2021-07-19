@@ -1,12 +1,16 @@
-const {
-  ParseHl7FilesToLabResultsStream,
-} = require('./parseHl7FilesToLabResultsStream');
-const { once } = require('events');
-const { PassThrough } = require('stream');
-const { expect } = require('chai');
-const sinon = require('sinon');
+/* eslint-disable @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-non-null-assertion */
+import { ParseHl7FilesToLabResultsStream } from './parseHl7FilesToLabResultsStream';
+import { once } from 'events';
+import { PassThrough } from 'stream';
+import chai, { expect } from 'chai';
+import sinon from 'sinon';
+import sinonChai from 'sinon-chai';
+import fs from 'fs/promises';
+import { ImportFile } from '../../models/ImportFile';
+import { LabResult } from '../../models/LabResult';
+
 const sandbox = sinon.createSandbox();
-const fs = require('fs');
+chai.use(sinonChai);
 
 describe('ParseHl7FilesToLabrRsultsStream', () => {
   before(() => {
@@ -19,14 +23,16 @@ describe('ParseHl7FilesToLabrRsultsStream', () => {
   it('should parse a hl7 file with no error', async () => {
     const stream = new ParseHl7FilesToLabResultsStream();
 
-    const m1 = fs.readFileSync('tests/unit/data/M1.hl7', 'utf-8');
+    const m1 = await fs.readFile('tests/unit/data/M1.hl7', 'utf-8');
     stream.write({
       path: './no/where',
       content: m1,
     });
     stream.end();
     const eventArgs = await once(stream, 'data');
-    expect(eventArgs[0].result, eventArgs).to.deep.equal(getExample1());
+    expect(eventArgs[0].result, eventArgs.toString()).to.deep.equal(
+      getExample1()
+    );
   });
 
   it('should finish when everything is converted and end when everything is read.', async () => {
@@ -49,8 +55,8 @@ describe('ParseHl7FilesToLabrRsultsStream', () => {
 
   it('should convert multiple given HL7 files to lab result objects', async () => {
     // Arrange
-    const m2 = fs.readFileSync('tests/unit/data/M2.hl7', 'utf-8');
-    const m3 = fs.readFileSync('tests/unit/data/M3.hl7', 'utf-8');
+    const m2 = await fs.readFile('tests/unit/data/M2.hl7', 'utf-8');
+    const m3 = await fs.readFile('tests/unit/data/M3.hl7', 'utf-8');
 
     const stream = new ParseHl7FilesToLabResultsStream();
 
@@ -60,16 +66,36 @@ describe('ParseHl7FilesToLabrRsultsStream', () => {
     stream.end();
 
     // Assert
-    const results = [];
+    const results: ImportFile[] = [];
     stream.on('data', (data) => results.push(data));
     await once(stream, 'end');
 
-    expect(results[0].result).to.deep.equal(getExample2());
-    expect(results[1].result).to.deep.equal(getExample3());
+    expect(results[0]!.result).to.deep.equal(getExample2());
+    expect(results[1]!.result).to.deep.equal(getExample3());
+  });
+
+  it('should parse a hl7 file and log an error if observation value is neither pos nor neg', async () => {
+    const stream = new ParseHl7FilesToLabResultsStream();
+
+    const m1temp = await fs.readFile('tests/unit/data/M1.hl7', 'utf-8');
+    const m1 = m1temp.replace('neg', 'nB');
+    stream.write({
+      path: './no/where',
+      content: m1,
+    });
+    stream.end();
+    const results: ImportFile[] = [];
+    stream.on('data', (data) => results.push(data));
+    await once(stream, 'end');
+    const example1 = getExample1();
+    example1.lab_observations![0]!.result_string = 'NA';
+
+    expect(results).to.have.length(1);
+    expect(results[0]!.result).to.deep.equal(example1);
   });
 });
 
-function getExample1() {
+function getExample1(): LabResult {
   return {
     id: 'ZIFCO-1923456852',
     order_id: 1117136,
@@ -209,7 +235,7 @@ function getExample1() {
   };
 }
 
-function getExample2() {
+function getExample2(): LabResult {
   return {
     id: 'TEST-12345679013',
     order_id: 1062743,
@@ -349,7 +375,7 @@ function getExample2() {
   };
 }
 
-function getExample3() {
+function getExample3(): LabResult {
   return {
     id: 'TEST-12345679012',
     order_id: 1062743,

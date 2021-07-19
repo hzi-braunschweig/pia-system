@@ -1,4 +1,5 @@
-FROM node:14.17.1-alpine@sha256:cc1a31b2f4a3b8e9cdc6f8dc0c39a3b946d7aa5d10a53439d960d4352b2acfc0 AS base
+FROM node:14.17.1-alpine@sha256:21b87afa5f267e50b806f696f754b15b37b4118bb0ef722192f27ddff78d8d67 AS base
+
 RUN apk --update --no-cache add curl tzdata
 
 USER node
@@ -13,7 +14,9 @@ RUN npm ci --production
 #copy dependencies' source
 COPY --chown=node:node psa.lib.service-core/dist ../psa.lib.service-core/dist
 
-FROM base AS build
+################################################################
+
+FROM base AS install
 
 #copy dev dependencies' package.json
 COPY --chown=node:node psa.eslint-config/package.json ../psa.eslint-config/
@@ -23,9 +26,27 @@ RUN npm ci
 #copy dev dependencies' source
 COPY --chown=node:node psa.lib.service-core/tsconfig.global.json ../psa.lib.service-core/
 
+################################################################
+
+FROM install AS npm-install
+
+COPY --chown=node:node psa.eslint-config/*.js ../psa.eslint-config/
+
+ENV NODE_PATH=/usr/src/node-app/node_modules
+ENV PATH=$PATH:/usr/src/node-app/node_modules/.bin
+
+WORKDIR /usr/src/workdir/
+USER root
+
+################################################################
+
+FROM install AS build
+
 COPY $DIR/tsconfig*.json ./
 COPY $DIR/src ./src
 RUN npm run build
+
+################################################################
 
 FROM base AS final
 

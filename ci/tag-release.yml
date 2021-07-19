@@ -33,4 +33,4 @@ tag-release:
   when: manual
   environment:
     name: release-images
-    url: https://registry.netzlink.com/
+    url: https://$CI_REGISTRY/

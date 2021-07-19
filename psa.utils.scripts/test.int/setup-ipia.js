@@ -2,12 +2,11 @@ const random = require('../test.common/random');
 const env = require('../test.common/env');
 
 const setupIpia = {
-  configure: function () {
+  configure: function ({ registry }) {
     const config = {
       postgresContainer: 'pia-postgres-ipia-test.int',
-      postgresImageBase:
-        'registry.netzlink.com/pia/psa.database.ipia:test.int-base',
-      postgresImage: 'registry.netzlink.com/pia/psa.database.ipia:test.int',
+      postgresImageBase: `${registry}/pia/psa.database.ipia:test.int-base`,
+      postgresImage: `${registry}/pia/psa.database.ipia:test.int`,
       postgresPath: '../psa.database.ipia',
       postgresSecretsPath: '../psa.utils.scripts/secrets-dockerfile',
       dbUser: 'user_' + random.createRandomString(16),
