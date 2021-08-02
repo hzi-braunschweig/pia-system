@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { Questionnaire } from './questionnaire';
 
 export type QuestionnaireStatus =
@@ -23,6 +29,7 @@ export interface QuestionnaireInstance {
   date_of_issue: Date;
   date_of_release_v1: Date;
   date_of_release_v2: Date;
+  release_version?: number;
   cycle: number;
   notifications_scheduled: boolean;
   status: QuestionnaireStatus;

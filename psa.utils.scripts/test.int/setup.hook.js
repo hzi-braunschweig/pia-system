@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 const env = require('../test.common/env');
 const docker = require('../test.common/docker');
 const database = require('../test.common/setup-db');

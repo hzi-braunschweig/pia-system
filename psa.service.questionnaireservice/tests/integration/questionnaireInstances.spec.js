@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
@@ -437,6 +443,26 @@ describe('/questionnaireInstances', function () {
         .set(probandHeader3);
       expect(result).to.have.status(200);
       expect(result.body.questionnaireInstances.length).to.equal(8);
+
+      const qI100888892 = result.body.questionnaireInstances.find(
+        (qi) => qi.id === 100888892
+      );
+      expect(qI100888892.questionnaire.questions).to.have.length(3);
+
+      const q888889 = qI100888892.questionnaire.questions.find(
+        (q) => q.id === 888889
+      );
+      expect(q888889.answer_options).to.have.length(1);
+
+      const q888890 = qI100888892.questionnaire.questions.find(
+        (q) => q.id === 888890
+      );
+      expect(q888890.answer_options).to.have.length(2);
+
+      const q888891 = qI100888892.questionnaire.questions.find(
+        (q) => q.id === 888891
+      );
+      expect(q888891.answer_options).to.have.length(0);
 
       expect(result.body.links.self.href).to.equal('/questionnaireInstances');
     });

@@ -1,12 +1,14 @@
 npm-audit:
   stage: prepare
-  image: node:14.17.1-buster-slim@sha256:bbc445769f2dfb5ecbda6baece3601075ae0b5ee8068f062cecd2a0558d64c1f
+  image: node:14.17.3-buster-slim@sha256:12e2d4e68982ea48a4e5a865987f8aacbb1a5767a346f1279f676ef0f72c8cd2
   script:
     - >
       for JOB in $JOBS_INSTALL; do
         script -qefc "npm audit --audit-level=critical --prefix $JOB"
       done
   rules:
+    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+      when: never
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH =~ /^develop/

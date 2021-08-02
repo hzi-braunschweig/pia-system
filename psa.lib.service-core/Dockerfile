@@ -1,4 +1,4 @@
-FROM node:14.17.1-alpine@sha256:21b87afa5f267e50b806f696f754b15b37b4118bb0ef722192f27ddff78d8d67 AS npm-install
+FROM node:14.17.3-alpine@sha256:fb6cb918cc72869bd625940f42a7d8ae035c4e786d08187b94e8b91c6a534dfd AS npm-install
 
 ARG DIR=.
 WORKDIR /usr/src/node-app/
@@ -12,3 +12,6 @@ ENV NODE_PATH=/usr/src/node-app/node_modules
 ENV PATH=$PATH:/usr/src/node-app/node_modules/.bin
 
 WORKDIR /usr/src/workdir/
+
+FROM scratch AS final
+

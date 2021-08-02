@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Studie } from 'src/app/psa.app.core/models/studie';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';

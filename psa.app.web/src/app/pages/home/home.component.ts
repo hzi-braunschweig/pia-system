@@ -1,4 +1,10 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { NotificationService } from 'src/app/psa.app.core/providers/notification-service/notification-service';

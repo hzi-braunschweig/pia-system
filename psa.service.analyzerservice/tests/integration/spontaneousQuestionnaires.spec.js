@@ -1,7 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 const { expect } = require('chai');
 const pgp = require('pg-promise')({ capSQL: true });
 
-const server = require('../../src/server');
+const { Server } = require('../../src/server');
 
 const { db } = require('../../src/db');
 const {
@@ -13,11 +19,11 @@ const { dbWait } = require('./helper');
 
 describe('Spontaneous questionnaire instance creation', function () {
   before(async function () {
-    await server.init();
+    await Server.init();
   });
 
   after(async function () {
-    await server.stop();
+    await Server.stop();
   });
 
   beforeEach(async function () {

@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import {
   ConfigUtils,
   GlobalConfig,
@@ -34,6 +40,7 @@ const conf = {
   services: {
     userservice: GlobalConfig.userservice,
     personaldataservice: GlobalConfig.personaldataservice,
+    questionnaireservice: GlobalConfig.questionnaireservice,
   },
   servers: {
     mailserver: GlobalConfig.mailserver,

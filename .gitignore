@@ -8,6 +8,9 @@
 *.sublime-workspace
 .vscode
 **/*.iml
+
 secrets
 .docker
 coverage
+node_modules
+.npm

@@ -1,6 +1,8 @@
-const {
-  QuestionnaireRepository,
-} = require('../repositories/questionnaireRepository');
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 
 const QueryStream = require('pg-query-stream');
 const pgp = require('pg-promise')({ capSQL: true });
@@ -30,20 +32,16 @@ async function answerOptionExists(t, answerOptionId) {
   }
 }
 
-async function questionnaireExists(
+async function questionnaireIsActive(
   t,
   questionnaireId,
   questionnaireVersion = 1
 ) {
   const targetQuestionnaireIdRes = await t.oneOrNone(
-    'SELECT id FROM questionnaires WHERE id = ${id} AND version = ${version}',
+    'SELECT active FROM questionnaires WHERE id = ${id} AND version = ${version}',
     { id: questionnaireId, version: questionnaireVersion }
   );
-  if (targetQuestionnaireIdRes && targetQuestionnaireIdRes.id) {
-    return true;
-  } else {
-    return false;
-  }
+  return !!targetQuestionnaireIdRes?.active;
 }
 
 const latestQuestionnaireVersionQuery =
@@ -177,7 +175,7 @@ const postgresqlHelper = (function () {
                   t,
                   questionnaire.condition.condition_target_answer_option
                 )) &&
-                (await questionnaireExists(
+                (await questionnaireIsActive(
                   t,
                   questionnaire.condition.condition_target_questionnaire,
                   questionnaire.condition.condition_target_questionnaire_version
@@ -208,7 +206,7 @@ const postgresqlHelper = (function () {
                       t,
                       questionCondition.condition_target_answer_option
                     )) &&
-                    (await questionnaireExists(
+                    (await questionnaireIsActive(
                       t,
                       questionCondition.condition_target_questionnaire,
                       questionCondition.condition_target_questionnaire_version
@@ -280,7 +278,7 @@ const postgresqlHelper = (function () {
                         t,
                         curAnswerOption.condition.condition_target_answer_option
                       )) &&
-                      (await questionnaireExists(
+                      (await questionnaireIsActive(
                         t,
                         curAnswerOption.condition
                           .condition_target_questionnaire,
@@ -488,7 +486,7 @@ const postgresqlHelper = (function () {
                   t,
                   questionnaire.condition.condition_target_answer_option
                 )) &&
-                (await questionnaireExists(
+                (await questionnaireIsActive(
                   t,
                   questionnaire.condition.condition_target_questionnaire,
                   questionnaire.condition.condition_target_questionnaire_version
@@ -519,7 +517,7 @@ const postgresqlHelper = (function () {
                       t,
                       questionCondition.condition_target_answer_option
                     )) &&
-                    (await questionnaireExists(
+                    (await questionnaireIsActive(
                       t,
                       questionCondition.condition_target_questionnaire,
                       questionCondition.condition_target_questionnaire_version
@@ -597,7 +595,7 @@ const postgresqlHelper = (function () {
                         t,
                         curAnswerOption.condition.condition_target_answer_option
                       )) &&
-                      (await questionnaireExists(
+                      (await questionnaireIsActive(
                         t,
                         curAnswerOption.condition
                           .condition_target_questionnaire,
@@ -1815,25 +1813,6 @@ const postgresqlHelper = (function () {
      * @returns {Promise} a resolved promise with the revised questionnaire or a rejected promise with the error
      */
     reviseQuestionnaire: reviseQuestionnaire,
-
-    /**
-     * @function
-     * @description gets the questionnaire with the specified id
-     * @memberof module:postgresqlHelper
-     * @param {number} id the id of the questionnaire to find
-     * @returns {Promise} a resolved promise with the found questionnaire or a rejected promise with the error
-     */
-    getQuestionnaire: QuestionnaireRepository.getQuestionnaire,
-
-    /**
-     * @function
-     * @description gets the questionnairs with the specified study ids
-     * @memberof module:postgresqlHelper
-     * @param {array} ids the study ids of the questionnaires to find
-     * @returns {Promise} a resolved promise with the found questionnaires or a rejected promise with the error
-     */
-    getQuestionnairesByStudyIds:
-      QuestionnaireRepository.getQuestionnairesByStudyIds,
 
     /**
      * @function

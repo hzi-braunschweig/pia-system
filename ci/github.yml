@@ -21,5 +21,7 @@ mirror-github:
     paths:
       - pia-system-github/github.env
   rules:
+    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+      when: never
     - if: $CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+/
   resource_group: mirror-github

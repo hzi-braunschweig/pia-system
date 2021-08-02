@@ -1,6 +1,12 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 const Boom = require('@hapi/boom');
 const postgresqlHelper = require('../services/postgresqlHelper.js');
-const RESTPresenter = require('../services/RESTPresenter.js');
+const { RESTPresenter } = require('../services/RESTPresenter');
 
 /**
  * @description HAPI Handler for answertypes

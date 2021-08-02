@@ -1,8 +1,15 @@
 #!/bin/bash
 
+#
+# SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 set -e
 
 DB_LOG_SCHEMA=$DB_LOG_USER
+DB_SORMAS_SCHEMA=$DB_SORMAS_USER
 
 COMMANDS="BEGIN;\n"
 
@@ -12,6 +19,8 @@ COMMANDS+="ALTER ROLE $POSTGRES_USER WITH ENCRYPTED PASSWORD '$POSTGRES_PASSWORD
 # create schema
 COMMANDS+="CREATE SCHEMA IF NOT EXISTS $DB_LOG_SCHEMA;\n"
 
+COMMANDS+="CREATE SCHEMA IF NOT EXISTS $DB_SORMAS_SCHEMA;\n"
+
 # move tables to schema
 COMMANDS+="SELECT 'ALTER TABLE user_logs SET SCHEMA $DB_LOG_SCHEMA' WHERE NOT EXISTS (SELECT * FROM information_schema.tables where table_schema = '$DB_LOG_SCHEMA' and table_name = 'user_logs') \gexec\n"
 COMMANDS+="SELECT 'ALTER TABLE system_logs SET SCHEMA $DB_LOG_SCHEMA' WHERE NOT EXISTS (SELECT * FROM information_schema.tables where table_schema = '$DB_LOG_SCHEMA' and table_name = 'system_logs') \gexec\n"
@@ -19,22 +28,33 @@ COMMANDS+="SELECT 'ALTER TABLE system_logs SET SCHEMA $DB_LOG_SCHEMA' WHERE NOT 
 # create role for schema
 COMMANDS+="SELECT 'CREATE ROLE $DB_LOG_USER' WHERE NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$DB_LOG_USER') \gexec\n"
 
+COMMANDS+="SELECT 'CREATE ROLE $DB_SORMAS_USER' WHERE NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$DB_SORMAS_USER') \gexec\n"
+
 # allow login with password
 COMMANDS+="ALTER ROLE $DB_LOG_USER WITH ENCRYPTED PASSWORD '$DB_LOG_PASSWORD';\n"
 COMMANDS+="ALTER ROLE $DB_LOG_USER WITH LOGIN;\n"
 
+COMMANDS+="ALTER ROLE $DB_SORMAS_USER WITH ENCRYPTED PASSWORD '$DB_SORMAS_PASSWORD';\n"
+COMMANDS+="ALTER ROLE $DB_SORMAS_USER WITH LOGIN;\n"
+
 # allow usage of schema for new role
 COMMANDS+="GRANT USAGE ON SCHEMA $DB_LOG_SCHEMA TO $DB_LOG_USER;\n"
+
+COMMANDS+="GRANT USAGE ON SCHEMA $DB_SORMAS_SCHEMA TO $DB_SORMAS_USER;\n"
 
 # allow access to all tables in schema
 COMMANDS+="GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA $DB_LOG_SCHEMA TO $DB_LOG_USER;\n"
 
+COMMANDS+="GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA $DB_SORMAS_SCHEMA TO $DB_SORMAS_USER;\n"
+
 # allow to access the sequences in the schema
 COMMANDS+="GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA $DB_LOG_SCHEMA TO $DB_LOG_USER;\n"
 
+COMMANDS+="GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA $DB_SORMAS_SCHEMA TO $DB_SORMAS_USER;\n"
+
 # update the search_path for the superuser
 # "public" should be the primary search path!
-COMMANDS+="ALTER ROLE $POSTGRES_USER SET search_path TO public, $DB_LOG_SCHEMA;\n"
+COMMANDS+="ALTER ROLE $POSTGRES_USER SET search_path TO public, $DB_LOG_SCHEMA, $DB_SORMAS_SCHEMA;\n"
 
 COMMANDS+="COMMIT;\n"
 

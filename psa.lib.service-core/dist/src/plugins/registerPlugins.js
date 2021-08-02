@@ -34,6 +34,7 @@ const registerPlugins = async (server, options) => {
             plugin: hapi_router_1.default,
             options: {
                 routes: options.routes,
+                ignore: ['**/*.d.ts', '**/*.js.map'],
             },
         });
     }

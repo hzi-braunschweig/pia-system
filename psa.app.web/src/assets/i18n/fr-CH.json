@@ -305,6 +305,7 @@
     "QUESTIONNAIRE_SAVE": "Enregistrer le questionnaire",
     "QUESTIONNAIRE_UPDATE": "Mettre à jour le questionnaire",
     "QUESTIONNAIRE_REVISE": "Enregistrer la nouvelle version",
+    "QUESTIONNAIRE_DEACTIVATE": "Deaktivieren",
     "WARNING": "Avertissement",
     "WARNING_UPDATE": "La mise à jour d'un questionnaire entraîne la perte des réponses déjà saisies. Créez une nouvelle version lorsque les réponses doivent être conservées.",
     "CANCEL": "Annuler",
@@ -388,7 +389,9 @@
     "INTERVAL": "Intervalle",
     "O_CLOCK": "Heure",
     "FILE_INPUT_TYPES_HINT": "Seuls les fichiers PDF et CSV peuvent être téléchargés.",
-    "IMAGE_INPUT_TYPES_HINT": "Seuls les fichiers PNG et JPEG peuvent être téléchargés."
+    "IMAGE_INPUT_TYPES_HINT": "Seuls les fichiers PNG et JPEG peuvent être téléchargés.",
+    "DEACTIVATION_HINT": "Dieser Fragebogen ist deaktiviert und kann nicht mehr geändert werden.",
+    "DEACTIVATION_CONFIRMATION_HINT": "<p>Hinweis: Bei Deaktivierung des Fragebogens wird dieser Teilnehmenden nicht mehr angezeigt. Die bereits bestehenden Antworten bleiben erhalten. Nach Deaktivierung kann der Fragebogen <strong>nicht</strong> wieder aktiviert werden. Sind Sie sicher, dass Sie den Fragebogen deaktivieren wollen?</p>"
   },
   "QUESTIONNAIRES_FORSCHER": {
     "VERSION": "Version",
@@ -396,6 +399,9 @@
     "NEW_QUESTIONNAIRE": "Créer un nouveau questionnaire",
     "STUDY_ID": "Nom de l'étude",
     "QUESTIONS_NUMBER": " Nombre de questions",
+    "ACTIVE_STATUS": "Statut",
+    "ACTIVE": "aktiv",
+    "NOT_ACTIVE": "deaktiviert",
     "FILTER_NO_RESULTS": "Aucun questionnaire trouvé.",
     "ROLE": "Rôle",
     "EXPIRED": "Expiré",

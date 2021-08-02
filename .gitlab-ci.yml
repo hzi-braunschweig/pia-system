@@ -1,5 +1,6 @@
 stages:
   - prepare
+  - generate
   - test
   - accumulate
   - push
@@ -21,24 +22,25 @@ variables:
   JOBS_LINT: !reference [.modules, list, lint]
 
 include:
-  - ci/ionic.yml
-  - ci/npm-install.yml
-  - ci/npm-test-int.yml
-  - ci/deploy.yml
-  - ci/docker.yml
-  - ci/sonarqube.yml
-  - ci/collect-licenses.yml
-  - ci/accumulate-coverage.yml
-  - ci/tag-release.yml
-  - ci/check-merge-allowed.yml
-  - ci/npm-lint.yml
-  - ci/npm-test-unit.yml
-  - ci/check-format.yml
-  - ci/e2e.yml
-  - ci/generated.yml
-  - ci/npm-audit.yml
-  - ci/github.yml
-  - ci/create-release-merge-requests.yml
-  - ci/detect-secrets.yml
+  - /ci/ionic.yml
+  - /ci/npm-install.yml
+  - /ci/npm-test-int.yml
+  - /ci/deploy-stage.yml
+  - /ci/docker.yml
+  - /ci/sonarqube.yml
+  - /ci/collect-licenses.yml
+  - /ci/accumulate-coverage.yml
+  - /ci/tag-release.yml
+  - /ci/check-merge-allowed.yml
+  - /ci/copyright-lint.yml
+  - /ci/npm-lint.yml
+  - /ci/npm-test-unit.yml
+  - /ci/check-format.yml
+  - /ci/e2e.yml
+  - /ci/generated.yml
+  - /ci/npm-audit.yml
+  - /ci/github.yml
+  - /ci/create-release-merge-requests.yml
+  - /ci/detect-secrets.yml
 
 

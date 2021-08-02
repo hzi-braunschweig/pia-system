@@ -1,4 +1,10 @@
-﻿import { Injectable } from '@angular/core';
+﻿/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import { Injectable } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -68,6 +74,8 @@ export class AlertService {
         if (error.status === 401 && error.error.message === 'Expired token') {
           message = 'ERROR.ERROR_TOKEN_EXPIRED';
         }
+      } else {
+        message = 'ERROR.ERROR_UNKNOWN';
       }
     }
     console.error('AlertService:', this.translate.instant(message), error);

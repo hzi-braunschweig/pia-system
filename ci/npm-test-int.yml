@@ -33,6 +33,12 @@ int:
     DB_LOG_HOST: databaseservice
     DB_LOG_PORT: '5432'
 
+    DB_SORMAS_USER: sormasservice
+    DB_SORMAS_PASSWORD: sormas
+    DB_SORMAS_DB: pia_database
+    DB_SORMAS_HOST: databaseservice
+    DB_SORMAS_PORT: '5432'
+
     DB_PERSONALDATA_USER: personaldataservice
     DB_PERSONALDATA_PASSWORD: personaldata
     DB_PERSONALDATA_DB: pia_database

@@ -1,4 +1,10 @@
-﻿import { Injectable } from '@angular/core';
+﻿/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import { Injectable } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { User } from '../psa.app.core/models/user';
 import { BehaviorSubject, Observable } from 'rxjs';

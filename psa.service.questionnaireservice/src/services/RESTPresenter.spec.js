@@ -1,6 +1,18 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 const expect = require('chai').expect;
 
-const RESTPresenter = require('./RESTPresenter');
+const { RESTPresenter } = require('./RESTPresenter');
 
 const maliciousQuestionText =
   'Welche Symptome haben Sie? <img src=x onerror=alert(1)//>';
@@ -168,6 +180,7 @@ describe('RESTPresenter', function () {
     it('should return a links section', function () {
       const questionnaireInstanceObj = {
         id: 999,
+        version: 2,
         study_id: 1,
         questionnaire_id: 1,
         user_id: 'Testproband',
@@ -245,6 +258,7 @@ describe('RESTPresenter', function () {
           user_id: 'Testproband',
           date_of_issue: '2017-11-23T00:00:00.000Z',
           released: false,
+          questions: [],
         },
       ];
 

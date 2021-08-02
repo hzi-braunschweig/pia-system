@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { Question } from './question';
 
 export class QuestionnaireListResponse {
@@ -8,9 +14,9 @@ export class QuestionnaireListResponse {
 export interface Questionnaire {
   id: number;
   study_id: string;
+  active: boolean; // used to activate/deactivate the questionnaire as a whole
   no_questions: number;
   cycle_amount: number;
-  activate_at_date: string;
   cycle_unit: string;
   cycle_per_day?: number;
   cycle_first_hour?: number;
@@ -20,6 +26,7 @@ export interface Questionnaire {
   // may happen in a SORMAS context. Kept answers might deal with usage
   // satisfaction, for example.
   keep_answers: boolean;
+  activate_at_date: string;
   activate_after_days: number;
   deactivate_after_days: number;
   name: string;
@@ -44,8 +51,17 @@ export interface Questionnaire {
   version: number;
 }
 
-export class Condition {
-  condition_type: string;
+export enum ConditionType {
+  INTERNAL_THIS = 'internal_this',
+  INTERNAL_LAST = 'internal_last',
+  EXTERNAL = 'external',
+}
+
+export type ConditionOperand = '<' | '>' | '<=' | '>=' | '==' | '\\=';
+export type ConditionLink = 'AND' | 'OR' | 'XOR';
+
+export interface Condition {
+  condition_type: ConditionType | null;
   condition_answer_option_id: number;
   condition_question_id: number;
   condition_questionnaire_id: number;
@@ -55,7 +71,7 @@ export class Condition {
   condition_target_answer_option: number;
   condition_target_question_pos: number;
   condition_target_answer_option_pos: number;
-  condition_operand: string;
+  condition_operand: ConditionOperand | null;
   condition_value: string;
-  condition_link: string;
+  condition_link: ConditionLink | null;
 }

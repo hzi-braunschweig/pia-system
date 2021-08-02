@@ -1,7 +1,7 @@
 check-sonarqube-feature:
   stage: push
   image:
-    name: sonarsource/sonar-scanner-cli:4.6@sha256:2a1d94db63265cda01c1cf4b4e112664200f1f89e597b3430b69fa87905715b4
+    name: sonarsource/sonar-scanner-cli:4.6@sha256:e60bd25175f7d14020d0cf847ac07bf6f83db34fa127d4f34789dd8e4a981157
     entrypoint: ['']
   needs:
     - job: accumulate-coverage
@@ -36,7 +36,7 @@ check-sonarqube-feature:
 check-sonarqube-develop:
   stage: push
   image:
-    name: sonarsource/sonar-scanner-cli:4.6@sha256:2a1d94db63265cda01c1cf4b4e112664200f1f89e597b3430b69fa87905715b4
+    name: sonarsource/sonar-scanner-cli:4.6@sha256:e60bd25175f7d14020d0cf847ac07bf6f83db34fa127d4f34789dd8e4a981157
     entrypoint: ['']
   needs:
     - job: accumulate-coverage
@@ -66,12 +66,12 @@ check-sonarqube-develop:
       -Dsonar.coverage.exclusions=*service*/src/index.*
   allow_failure: true
   rules:
-    - if: '$CI_COMMIT_BRANCH =~ /^develop/'
+    - if: $CI_COMMIT_BRANCH =~ /^develop/
 
 check-sonarqube-release:
   stage: push
   image:
-    name: sonarsource/sonar-scanner-cli:4.6@sha256:2a1d94db63265cda01c1cf4b4e112664200f1f89e597b3430b69fa87905715b4
+    name: sonarsource/sonar-scanner-cli:4.6@sha256:e60bd25175f7d14020d0cf847ac07bf6f83db34fa127d4f34789dd8e4a981157
     entrypoint: ['']
   needs:
     - job: accumulate-coverage

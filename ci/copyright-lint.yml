@@ -1,0 +1,61 @@
+copyright-lint:
+  stage: test
+  image:
+    name: fsfe/reuse@sha256:1af0cdc9c9549cedd972eb5f0ff4a87428c278c8c4ba4ed2f11dcc678b37cf30
+    entrypoint: ['/bin/sh', '-c']
+
+  script:
+    - rm -rf psa.lib.templatepipeline/dist
+    - rm -rf psa.lib.service-core/dist
+    - rm -rf psa.lib.licensecollector/dist
+    - rm -rf psa.app.web/licenses
+    - rm -rf psa.app.mobile/licenses
+    - rm -rf secrets
+    - rm -rf psa.app.mobile/src/assets
+    - rm THIRD_PARTY_LICENSES
+    - find . -name "*.md" -type f -delete
+    - find . -name "*.json" -type f -delete
+    - find . -name "*.template" -type f -delete
+    - find . -name "Dockerfile" -type f -delete
+    - find . -name "*.svg" -type f -delete
+    - find . -name "*.png" -type f -delete
+    - find . -name "*.jpg" -type f -delete
+    - find . -name "*.jpeg" -type f -delete
+    - find . -name "*.gif" -type f -delete
+    - find . -name "*.env" -type f -delete
+    - find . -name "*.pem" -type f -delete
+    - find . -name "*.key" -type f -delete
+    - find . -name "*.conf" -type f -delete
+    - find . -name "*.patch" -type f -delete
+    - find . -name "*.woff" -type f -delete
+    - find . -name ".gitignore" -type f -delete
+    - find . -name "*.csv" -type f -delete
+    - find . -name "*.hl7" -type f -delete
+    - find . -name "M1" -type f -delete
+    - find . -name "M2-error" -type f -delete
+    - find . -name "M3" -type f -delete
+    - find . -name ".dockerignore" -type f -delete
+    - find . -name ".gitlab-ci.yml" -type f -delete
+    - find . -name ".prettierignore" -type f -delete
+    - find . -name ".browserslistrc" -type f -delete
+    - find . -name "browserslist" -type f -delete
+    - find . -name "*.j2" -type f -delete
+    - find . -name "*.xml" -type f -delete
+    - find . -name "*.plist" -type f -delete
+    - find . -name "*.sql" -type f -delete
+    - find . -name "*.ejs" -type f -delete
+    - find . -name "inventory" -type f -delete
+    - find . -name "*.yml" -type f -delete
+    - find . -name "karma.conf.js" -type f -delete
+    - find . -name "sql" -type f -delete
+    - find . -name "sql_vacuum_full" -type f -delete
+    - find . -name "complexity.py" -type f -delete
+    - find . -name "template.dockerfile" -type f -delete
+    - reuse lint
+  rules:
+    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+      when: never
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH =~ /^develop/
+    - if: $CI_COMMIT_BRANCH =~ /^release/

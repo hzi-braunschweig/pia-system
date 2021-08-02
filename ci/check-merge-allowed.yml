@@ -7,4 +7,4 @@ check-merge-allowed:
     - '[[ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "develop" ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^release ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^bugfix ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^hotfix ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^feature ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^renovate ]] || (>&2 echo -e "\e[1m\e[31mmerge requests from $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME to $CI_MERGE_REQUEST_TARGET_BRANCH_NAME are not allowed\e[0m"; false)'
     - '[[ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "master" ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^release ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^bugfix ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^hotfix ]] || (>&2 echo -e "\e[1m\e[31mmerge requests from $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME to $CI_MERGE_REQUEST_TARGET_BRANCH_NAME are not allowed\e[0m"; false)'
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"

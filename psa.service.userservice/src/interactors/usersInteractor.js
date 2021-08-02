@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 const Boom = require('@hapi/boom');
 const validator = require('email-validator');
 const { runTransaction } = require('../db');
@@ -271,6 +277,16 @@ const usersInteractor = (function () {
     };
 
     if (!requester || requester.role !== 'Untersuchungsteam') {
+      if (!requester) {
+        console.warn(
+          `Requester "${ut_email}" tried to create a proband with pseudonym ${data.pseudonym}, but requester could not be found.`
+        );
+      } else {
+        console.warn(
+          `Requester "${ut_email}" tried to create a proband with pseudonym ${data.pseudonym}, but requester has the wrong role:`,
+          requester.role
+        );
+      }
       return Boom.forbidden('Wrong role for this command', newUser);
     }
 

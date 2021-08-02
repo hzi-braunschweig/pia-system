@@ -305,6 +305,7 @@
     "QUESTIONNAIRE_SAVE": "Fragebogen speichern",
     "QUESTIONNAIRE_UPDATE": "Fragebogen aktualisieren",
     "QUESTIONNAIRE_REVISE": "Neue Version speichern",
+    "QUESTIONNAIRE_DEACTIVATE": "Deaktivieren",
     "WARNING": "Warnung",
     "WARNING_UPDATE": "Bei der Aktualisierung eines Fragebogens gehen bereits bestehende Antworten darauf verloren. Legen Sie eine neue Version an, wenn Antworten erhalten werden müssen.",
     "CANCEL": "Abbrechen",
@@ -388,7 +389,9 @@
     "INTERVAL": "Abstand",
     "O_CLOCK": "Uhr",
     "FILE_INPUT_TYPES_HINT": "Es können nur PDF- und CSV-Dateien hochgeladen werden.",
-    "IMAGE_INPUT_TYPES_HINT": "Es können nur PNG- und JPEG-Dateien hochgeladen werden."
+    "IMAGE_INPUT_TYPES_HINT": "Es können nur PNG- und JPEG-Dateien hochgeladen werden.",
+    "DEACTIVATION_HINT": "Dieser Fragebogen ist deaktiviert und kann nicht mehr geändert werden.",
+    "DEACTIVATION_CONFIRMATION_HINT": "<p>Hinweis: Bei Deaktivierung des Fragebogens wird dieser Teilnehmenden nicht mehr angezeigt. Die bereits bestehenden Antworten bleiben erhalten. Nach Deaktivierung kann der Fragebogen <strong>nicht</strong> wieder aktiviert werden. Sind Sie sicher, dass Sie den Fragebogen deaktivieren wollen?</p>"
   },
   "QUESTIONNAIRES_FORSCHER": {
     "VERSION": "Version",
@@ -396,6 +399,9 @@
     "NEW_QUESTIONNAIRE": "Neuen Fragebogen erstellen",
     "STUDY_ID": "Studienname",
     "QUESTIONS_NUMBER": " Anzahl der Fragen",
+    "ACTIVE_STATUS": "Status",
+    "ACTIVE": "aktiv",
+    "NOT_ACTIVE": "deaktiviert",
     "FILTER_NO_RESULTS": "Keine Fragebögen gefunden.",
     "ROLE": "Rolle",
     "EXPIRED": "Abgelaufen",

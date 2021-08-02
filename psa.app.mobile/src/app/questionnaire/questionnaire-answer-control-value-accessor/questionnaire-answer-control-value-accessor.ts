@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { ControlValueAccessor, FormControl } from '@angular/forms';
 import { Component, Input, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';

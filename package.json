@@ -1,0 +1,8 @@
+{
+  "name": "root",
+  "private": true,
+  "license": "AGPL-3.0-or-later",
+  "devDependencies": {
+    "lerna": "^4.0.0"
+  }
+}

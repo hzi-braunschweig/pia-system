@@ -21,7 +21,10 @@ Before you start App
 
 ### Run end-to-end tests
 
-`npm run e2e`
+Before running end-to-end tests locally, get sure a SysAdmin user exists whose credentials match those in
+`psa.app.web/cypress/fixtures/users.json`
+
+Start the tests with `npm run e2e`
 
 ### Run tests in a CI-pipeline
 

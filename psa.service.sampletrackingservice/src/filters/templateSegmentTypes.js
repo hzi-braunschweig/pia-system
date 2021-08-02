@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 const TemplateSegmentTypes = {
   MARKDOWN_TEMPLATE: 'MARKDOWN_TEMPLATE', // Template with Markdown, Mustache and placeholders
   HTML_TEMPLATE: 'HTML_TEMPLATE', // Template with HTML, Mustache and placeholders

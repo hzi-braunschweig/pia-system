@@ -1,6 +1,12 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { spawn } from 'child_process';
 
-export interface IExecResult {
+export interface ExecResult {
   code: number | null;
   signal: string | null;
   data: string;
@@ -8,11 +14,11 @@ export interface IExecResult {
 }
 
 export class Exec {
-  public static run(
+  public static async run(
     cmd: string,
     args: string[],
     cwd: string
-  ): Promise<IExecResult> {
+  ): Promise<ExecResult> {
     const child = spawn(cmd, args, {
       cwd,
       env: process.env,
@@ -27,7 +33,7 @@ export class Exec {
       data += out;
     });
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       child.on('exit', (code, signal) => {
         resolve({
           code,

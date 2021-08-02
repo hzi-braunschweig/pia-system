@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
@@ -266,7 +272,7 @@ const validAnswerOfTypeImage = {
 
 describe('/questionnaireInstances/{id}/answers', function () {
   before(async function () {
-    this.timeout(15000);
+    this.timeout(20000);
     await setup();
     await server.init();
   });
@@ -839,7 +845,7 @@ describe('/questionnaireInstances/{id}/answers', function () {
 
       expect(imgresult).to.be.an('array').that.is.empty;
       expect(answerResult.value).to.equal('');
-      expect(result).to.have.status(200);
+      expect(result).to.have.status(204);
     });
 
     it('should return HTTP 200 and delete the answer if a Proband tries for an active QI', async function () {
@@ -851,7 +857,7 @@ describe('/questionnaireInstances/{id}/answers', function () {
         )
         .set(probandHeader1)
         .send('');
-      expect(result1).to.have.status(200);
+      expect(result1).to.have.status(204);
       const result2 = await chai
         .request(apiAddress)
         .get('/questionnaireInstances/99998/answers')
@@ -958,7 +964,7 @@ describe('/questionnaireInstances/{id}/answers', function () {
         )
         .set(utHeader)
         .send('');
-      expect(result1).to.have.status(200);
+      expect(result1).to.have.status(204);
       const result2 = await chai
         .request(apiAddress)
         .get('/questionnaireInstances/7777771/answers')

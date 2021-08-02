@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
@@ -5,9 +11,11 @@ import { TranslateService } from '@ngx-translate/core';
 @Component({
   selector: 'dialog-yes-no',
   template: `
-    <h1 mat-dialog-title style=" display: flex; justify-content: center; ">
-      {{ data.content | translate }}
-    </h1>
+    <h1
+      mat-dialog-title
+      style=" display: flex; justify-content: center; "
+      [innerHTML]="data.content | translate"
+    ></h1>
     <div mat-dialog-content></div>
     <hr />
     <mat-dialog-actions align="center">

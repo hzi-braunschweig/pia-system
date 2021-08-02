@@ -121,9 +121,9 @@ VALUES
 
        (9999998, 'internal_last', null, 99994, null, '<=', '39', 99995, 99998, 'AND'),
 
-       (99999910, 'internal_last', 99992, null, null, '==', 'Ja', 99993, 99998, null),
+       (99999910, 'internal_last', 99992, null, null, '==', 'Ja', 99993, 99999, null),
 
-       (9999999, 'internal_this', 99991, null, null, '==', 'Ja', 99993, 99998, null);
+       (9999999, 'internal_this', 99991, null, null, '==', 'Ja', 99993, 99999, null);
 
 
 INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value)
@@ -131,7 +131,7 @@ VALUES (9999996, 99991, 99991, 1, 'Ja'),
        (9999996, 99992, 99992, 1, 'Schlecht'),
        (9999996, 99993, 99993, 1, 'Schlecht'),
        (9999998, 99994, 99994, 1, '37'),
-       (9999998, 99994, 99995, 1, 'Ja');
+       (9999998, 99994, 99995, 1, 'Nein');
 
 
 INSERT INTO notification_schedules

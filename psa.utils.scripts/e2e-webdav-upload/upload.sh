@@ -1,5 +1,11 @@
 #!/bin/bash
 
+#
+# SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+
 DEST_FOLDER=$CI_COMMIT_REF_SLUG
 PREFIX=$CI_PIPELINE_ID-$CI_JOB_ID
 

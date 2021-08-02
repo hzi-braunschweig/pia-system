@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 const schedule = require('node-schedule');
 const startOfToday = require('date-fns/startOfToday');
 const addDays = require('date-fns/addDays');
@@ -12,6 +18,9 @@ const fcmHelper = require('./fcmHelper.js');
 const mailService = require('./mailService.js');
 const { config } = require('../config');
 const personaldataserviceClient = require('../clients/personaldataserviceClient');
+const {
+  QuestionnaireserviceClient,
+} = require('../clients/questionnaireserviceClient');
 
 const defaultUserNotificationTime = '15:00';
 
@@ -28,7 +37,7 @@ const notificationHelper = (function () {
     return schedule.scheduleJob(
       rule,
       function () {
-        this.checkAndScheduleNotifications();
+        checkAndScheduleNotifications();
       }.bind(this)
     );
   }
@@ -41,7 +50,7 @@ const notificationHelper = (function () {
     return schedule.scheduleJob(
       rule,
       function () {
-        this.sendAllOpenNotifications();
+        sendAllOpenNotifications();
       }.bind(this)
     );
   }
@@ -55,7 +64,7 @@ const notificationHelper = (function () {
     return schedule.scheduleJob(
       rule,
       function () {
-        this.sendSampleReportMails();
+        sendSampleReportMails();
       }.bind(this)
     );
   }
@@ -64,13 +73,17 @@ const notificationHelper = (function () {
     const studiesPM = await postgresqlHelper.getStudiesWithPMEmail();
     const studiesHUB = await postgresqlHelper.getStudiesWithHUBEmail();
 
-    studiesPM.forEach(async (study) => {
-      await sendSampleReportToPM(study);
-    });
+    await Promise.all(
+      studiesPM.map(async (study) => {
+        await sendSampleReportToPM(study);
+      })
+    );
 
-    studiesHUB.forEach(async (study) => {
-      await sendSampleReportToHUB(study);
-    });
+    await Promise.all(
+      studiesHUB.map(async (study) => {
+        await sendSampleReportToHUB(study);
+      })
+    );
   }
 
   async function sendSampleReportToPM(study) {
@@ -196,6 +209,11 @@ const notificationHelper = (function () {
     }
   }
 
+  /**
+   * creates dates for push notifications
+   * @param {object} userSettings the user settings
+   * @param {object} questionnaireSettings the questionnaire settings
+   */
   function createDatesForUserNotification(
     userSettings,
     questionnaireSettings,
@@ -366,45 +384,49 @@ const notificationHelper = (function () {
     console.log(
       'Found ' + scheduledNotifications.length + ' scheduled notifications'
     );
-    scheduledNotifications.forEach((schedule) => {
-      if (schedule.notification_type === 'qReminder') {
-        try {
-          sendInstanceNotification(schedule);
-        } catch (e) {
-          console.log(e);
+    await Promise.all(
+      scheduledNotifications.map(async (schedule) => {
+        if (schedule.notification_type === 'qReminder') {
+          try {
+            await sendInstanceNotification(schedule);
+          } catch (e) {
+            console.log(e);
+          }
+        } else if (schedule.notification_type === 'sample') {
+          try {
+            await sendSampleNotification(schedule);
+          } catch (e) {
+            console.log(e);
+          }
+        } else if (schedule.notification_type === 'custom') {
+          try {
+            await processScheduledCustomNotification(schedule);
+          } catch (e) {
+            console.log(e);
+          }
+        } else if (
+          schedule.notification_type === 'questionnaires_stats_aggregator'
+        ) {
+          try {
+            await sendQuestionnairesStatsAggregatorNotification(schedule);
+          } catch (e) {
+            console.log(e);
+          }
         }
-      } else if (schedule.notification_type === 'sample') {
-        try {
-          sendSampleNotification(schedule);
-        } catch (e) {
-          console.log(e);
-        }
-      } else if (schedule.notification_type === 'custom') {
-        try {
-          processScheduledCustomNotification(schedule);
-        } catch (e) {
-          console.log(e);
-        }
-      } else if (
-        schedule.notification_type === 'questionnaires_stats_aggregator'
-      ) {
-        try {
-          sendQuestionnairesStatsAggregatorNotification(schedule);
-        } catch (e) {
-          console.log(e);
-        }
-      }
-    });
+      })
+    );
   }
 
   async function sendInstanceNotification(schedule) {
     try {
-      const qInstance = await postgresqlHelper.getQuestionnaireInstance(
-        schedule.reference_id
-      );
-      const questionnaire = qInstance
-        ? await postgresqlHelper.getFilteredQuestionnaireForInstance(qInstance)
-        : null;
+      const qInstance =
+        await QuestionnaireserviceClient.getQuestionnaireInstance(
+          schedule.reference_id
+        ).catch((err) => {
+          if (err.output?.statusCode === 404) {
+            return null;
+          } else throw err;
+        });
 
       if (!qInstance) {
         console.log(
@@ -414,7 +436,7 @@ const notificationHelper = (function () {
         await postgresqlHelper.deleteScheduledNotificationByInstanceId(
           schedule.reference_id
         );
-      } else if (!questionnaire) {
+      } else if (qInstance.questionnaire.questions.length === 0) {
         console.log(
           'The questionnaire of that notification schedule is empty because of conditions, postponing schedule for instance: ' +
             schedule.reference_id
@@ -440,12 +462,13 @@ const notificationHelper = (function () {
           sendMail = true;
 
         let notification_body = '';
-        const notification_title = questionnaire.notification_title;
+        const notification_title = qInstance.questionnaire.notification_title;
 
         if (qInstance.status === 'active') {
-          notification_body = questionnaire.notification_body_new;
+          notification_body = qInstance.questionnaire.notification_body_new;
         } else {
-          notification_body = questionnaire.notification_body_in_progress;
+          notification_body =
+            qInstance.questionnaire.notification_body_in_progress;
         }
 
         let didSendReminder = false;
@@ -733,6 +756,9 @@ const notificationHelper = (function () {
     }
   }
 
+  /**
+   * Processes a scheduled notification
+   */
   async function processScheduledCustomNotification(schedule) {
     const tokenResult = await postgresqlHelper.getTokenAndDeviceForUser(
       schedule.user_id
@@ -806,13 +832,6 @@ const notificationHelper = (function () {
 
     /**
      * @function
-     * @description processes a scheduled notification
-     * @memberof module:notificationHelper
-     */
-    processScheduledCustomNotification: processScheduledCustomNotification,
-
-    /**
-     * @function
      * @description sends all due notifications
      * @memberof module:notificationHelper
      */
@@ -824,15 +843,6 @@ const notificationHelper = (function () {
      * @memberof module:notificationHelper
      */
     checkAndScheduleNotifications: checkAndScheduleNotifications,
-
-    /**
-     * @function
-     * @description creates dates for push notifications
-     * @memberof module:notificationHelper
-     * @param {object} userSettings the user settings
-     * @param {object} questionnaireSettings the questionnaire settings
-     */
-    createDatesForUserNotification: createDatesForUserNotification,
 
     /**
      * @function

@@ -1,4 +1,10 @@
-﻿<div class="jumbotron" data-e2e="e2e-home-content">
+﻿<!--
+  ~ SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<div class="jumbotron" data-e2e="e2e-home-content">
   <div *ngIf="currentRole == 'Proband'" class="align-center">
     <markdown *ngIf="welcomeText">{{ welcomeText }}</markdown>
     <div class="store-link-container">

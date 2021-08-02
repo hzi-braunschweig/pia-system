@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 const compileMarkdownFilter = require('../filters/compileMarkdownFilter');
 const parsePlaceholdersFilter = require('../filters/parsePlaceholdersFilter');
 const compileTemplatesFilter = require('../filters/compileTemplatesFilter');

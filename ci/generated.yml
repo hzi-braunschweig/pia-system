@@ -1,36 +1,36 @@
 .modules:
   list:
     docker: psa.app.mobile psa.app.web psa.database psa.database.ewpia
-      psa.database.ipia psa.server.apigateway psa.server.mailserver
-      psa.server.messagequeue psa.server.sftpserver psa.service.analyzerservice
-      psa.service.authservice psa.service.complianceservice
-      psa.service.loggingservice psa.service.modysservice
-      psa.service.notificationservice psa.service.personaldataservice
-      psa.service.questionnaireservice psa.service.sampletrackingservice
-      psa.service.sormasservice psa.service.userservice
-      psa.utils.ci-analyze-secret-report psa.utils.ci-git-mirror
-      psa.utils.ci-release-image psa.utils.codeformatter psa.utils.coverage
-      psa.utils.deploymentservice psa.utils.e2e-runner psa.utils.log-sink
-      psa.utils.metrics psa.utils.repo-tool
-    lint: psa.app.mobile psa.app.web psa.lib.messagequeue psa.lib.service-core
-      psa.lib.templatepipeline psa.server.apigateway psa.service.analyzerservice
-      psa.service.authservice psa.service.complianceservice
-      psa.service.loggingservice psa.service.modysservice
-      psa.service.notificationservice psa.service.personaldataservice
-      psa.service.questionnaireservice psa.service.sampletrackingservice
-      psa.service.sormasservice psa.service.userservice
-      psa.utils.deploymentservice psa.utils.repo-tool
-    install:
-      psa.app.mobile psa.app.web psa.lib.messagequeue psa.lib.service-core
-      psa.lib.templatepipeline psa.server.apigateway psa.service.analyzerservice
-      psa.service.authservice psa.service.complianceservice
-      psa.service.loggingservice psa.service.modysservice
-      psa.service.notificationservice psa.service.personaldataservice
-      psa.service.questionnaireservice psa.service.sampletrackingservice
-      psa.service.sormasservice psa.service.userservice
-      psa.utils.deploymentservice psa.utils.repo-tool
-    unit:
-      psa.app.mobile psa.app.web psa.lib.service-core psa.lib.templatepipeline
+      psa.database.ipia psa.lib.licensecollector psa.lib.messagequeue
+      psa.lib.service-core psa.lib.templatepipeline psa.server.apigateway
+      psa.server.mailserver psa.server.messagequeue psa.server.sftpserver
+      psa.service.analyzerservice psa.service.authservice
+      psa.service.complianceservice psa.service.loggingservice
+      psa.service.modysservice psa.service.notificationservice
+      psa.service.personaldataservice psa.service.questionnaireservice
+      psa.service.sampletrackingservice psa.service.sormasservice
+      psa.service.userservice psa.utils.ci-analyze-secret-report
+      psa.utils.ci-git-mirror psa.utils.ci-release-image
+      psa.utils.ci-thirdparty-license-collector psa.utils.codeformatter
+      psa.utils.coverage psa.utils.deploymentservice psa.utils.e2e-runner
+      psa.utils.log-sink psa.utils.metrics psa.utils.repo-tool
+    lint: psa.app.mobile psa.app.web psa.lib.licensecollector psa.lib.messagequeue
+      psa.lib.service-core psa.lib.templatepipeline psa.server.apigateway
+      psa.service.analyzerservice psa.service.authservice
+      psa.service.complianceservice psa.service.loggingservice
+      psa.service.modysservice psa.service.notificationservice
+      psa.service.personaldataservice psa.service.questionnaireservice
+      psa.service.sampletrackingservice psa.service.sormasservice
+      psa.service.userservice psa.utils.deploymentservice psa.utils.repo-tool
+    install: psa.app.mobile psa.app.web psa.lib.licensecollector
+      psa.lib.messagequeue psa.lib.service-core psa.lib.templatepipeline
+      psa.server.apigateway psa.service.analyzerservice psa.service.authservice
+      psa.service.complianceservice psa.service.loggingservice
+      psa.service.modysservice psa.service.notificationservice
+      psa.service.personaldataservice psa.service.questionnaireservice
+      psa.service.sampletrackingservice psa.service.sormasservice
+      psa.service.userservice psa.utils.deploymentservice psa.utils.repo-tool
+    unit: psa.app.mobile psa.app.web psa.lib.service-core psa.lib.templatepipeline
       psa.server.apigateway psa.service.analyzerservice psa.service.authservice
       psa.service.complianceservice psa.service.modysservice
       psa.service.notificationservice psa.service.personaldataservice
@@ -85,6 +85,7 @@
     lint:
       - psa.app.mobile
       - psa.app.web
+      - psa.lib.licensecollector
       - psa.lib.messagequeue
       - psa.lib.service-core
       - psa.lib.templatepipeline

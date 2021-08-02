@@ -1,7 +1,13 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 const { expect } = require('chai');
 const df = require('date-fns');
 
-const server = require('../../src/server');
+const { Server } = require('../../src/server');
 
 const { db } = require('../../src/db');
 const {
@@ -360,11 +366,11 @@ function nextDayXOfWeek(date, day) {
 
 describe('Questionnaire instance creation', function () {
   before(async function () {
-    await server.init();
+    await Server.init();
   });
 
   after(async function () {
-    await server.stop();
+    await Server.stop();
   });
 
   beforeEach(async function () {
@@ -2121,6 +2127,172 @@ describe('Questionnaire instance creation', function () {
         { qId: 99999 }
       );
       expect(addedQI.length).to.equal(11);
+    });
+
+    it('should not delete or create any instances when questionnaire was deactivated', async function () {
+      // Arrange
+      const expectedQuestionnaireInstanceCount = 11;
+      await dbWait(
+        'UPDATE users SET first_logged_in_at=${date} WHERE username=${username}',
+        {
+          date: df.subDays(new Date(), 5),
+          username: 'QTestProband1',
+        }
+      );
+      await dbWait(
+        'INSERT INTO questionnaires(id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, created_at) VALUES (${id}, ${study_id}, ${name}, ${no_questions}, ${cycle_amount}, ${cycle_unit}, ${activate_after_days}, ${deactivate_after_days}, ${notification_tries}, ${notification_title}, ${notification_body_new}, ${notification_body_in_progress}, ${created_at})',
+        dayQuestionnaire
+      );
+      const addedQI = await db.manyOrNone(
+        'SELECT * FROM questionnaire_instances WHERE questionnaire_id=${qId}',
+        { qId: 99999 }
+      );
+      expect(addedQI.length).to.equal(expectedQuestionnaireInstanceCount);
+
+      // Act
+      await dbWait('UPDATE questionnaires SET active=false WHERE id=${qId}', {
+        qId: 99999,
+      });
+      const qis = await db.manyOrNone(
+        'SELECT * FROM questionnaire_instances WHERE questionnaire_id=${qId}',
+        { qId: 99999 }
+      );
+
+      // Assert
+      expect(qis.length).to.equal(expectedQuestionnaireInstanceCount);
+    });
+
+    it('should not create any instances of a deactivated questionnaire when a conditional questionnaire was answered', async function () {
+      // Arrange
+      await dbWait(
+        'UPDATE users SET first_logged_in_at=${date} WHERE username=${username}',
+        {
+          date: df.subDays(new Date(), 5),
+          username: 'QTestProband1',
+        }
+      );
+
+      // create external questionnaire
+      await txWait([
+        {
+          query:
+            'INSERT INTO questionnaires(id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, created_at) VALUES (${id}, ${study_id}, ${name}, ${no_questions}, ${cycle_amount}, ${cycle_unit}, ${activate_after_days}, ${deactivate_after_days}, ${notification_tries}, ${notification_title}, ${notification_body_new}, ${notification_body_in_progress}, ${created_at})',
+          arg: dayQuestionnaire,
+        },
+        {
+          query:
+            'INSERT INTO questions VALUES(${id},${questionnaire_id},${text},${position},${is_mandatory})',
+          arg: dayQuestion,
+        },
+        {
+          query:
+            'INSERT INTO answer_options(id, question_id, text, answer_type_id, values, position) VALUES(${id},${question_id},${text},${answer_type_id},${values},${position})',
+          arg: dayAnswerOption,
+        },
+      ]);
+
+      const addedExternalQuestionnaireQIs = await db.manyOrNone(
+        'SELECT * FROM questionnaire_instances WHERE questionnaire_id=${qId}',
+        { qId: dayQuestionnaire.id }
+      );
+
+      // create deactivated questionnaire with external condition
+      const deactivatedQuestionnaire = {
+        id: 123456,
+        study_id: 'ApiTestStudie',
+        name: 'TestDeactivatedQuestionnaire',
+        active: false,
+        no_questions: 2,
+        cycle_amount: 1,
+        cycle_unit: 'once',
+        activate_after_days: 0,
+        deactivate_after_days: 5,
+        notification_tries: 0,
+        notification_title: '',
+        notification_body_new: '',
+        notification_body_in_progress: '',
+        created_at: df.addDays(df.startOfToday(), -100),
+      };
+
+      const deactivatedQuestionnaireQuestion = {
+        id: 123456,
+        questionnaire_id: 123456,
+        text: 'I never have to be answered',
+        position: 1,
+        is_mandatory: false,
+      };
+
+      const deactivatedQuestionnaireAnswerOption = {
+        id: 123456,
+        question_id: 123456,
+        text: 'Beispielunterfrage',
+        answer_type_id: 1,
+        values: [{ value: 'Ja' }, { value: 'Nein' }],
+        position: 1,
+      };
+
+      const deactivatedQuestionnaireCondition = {
+        condition_type: 'external',
+        condition_questionnaire_id: deactivatedQuestionnaire.id,
+        condition_questionnaire_version: 1,
+        condition_operand: '==',
+        condition_value: 'Ja',
+        condition_target_questionnaire: dayQuestionnaire.id,
+        condition_target_questionnaire_version: 1,
+        condition_target_answer_option: dayAnswerOption.id,
+      };
+
+      await txWait([
+        {
+          query:
+            'INSERT INTO questionnaires(id, study_id, name, active, no_questions, cycle_amount, cycle_unit, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, created_at) VALUES (${id}, ${study_id}, ${name}, ${active}, ${no_questions}, ${cycle_amount}, ${cycle_unit}, ${activate_after_days}, ${deactivate_after_days}, ${notification_tries}, ${notification_title}, ${notification_body_new}, ${notification_body_in_progress}, ${created_at})',
+          arg: deactivatedQuestionnaire,
+        },
+        {
+          query:
+            'INSERT INTO questions VALUES(${id},${questionnaire_id},${text},${position},${is_mandatory})',
+          arg: deactivatedQuestionnaireQuestion,
+        },
+        {
+          query:
+            'INSERT INTO answer_options(id, question_id, text, answer_type_id, values, position) VALUES(${id},${question_id},${text},${answer_type_id},${values},${position})',
+          arg: deactivatedQuestionnaireAnswerOption,
+        },
+        {
+          query:
+            'INSERT INTO conditions(condition_type,condition_questionnaire_id,condition_target_questionnaire,condition_target_answer_option,condition_operand,condition_value) VALUES(${condition_type},${condition_questionnaire_id},${condition_target_questionnaire},${condition_target_answer_option},${condition_operand},${condition_value})',
+          arg: deactivatedQuestionnaireCondition,
+        },
+      ]);
+
+      // Act
+      // Answer and release external questionnaire
+      const externalAnswer = {
+        questionnaire_instance_id: addedExternalQuestionnaireQIs[0].id,
+        question_id: dayQuestion.id,
+        answer_option_id: dayAnswerOption.id,
+        value: 'Ja',
+      };
+
+      await dbWait(
+        'INSERT INTO answers(questionnaire_instance_id, question_id, answer_option_id, value) VALUES(${questionnaire_instance_id}, ${question_id}, ${answer_option_id}, ${value})',
+        externalAnswer
+      );
+      await dbWait(
+        'UPDATE questionnaire_instances SET status=${status},date_of_release_v1=${date} WHERE id=${id}',
+        {
+          status: 'released_once',
+          date: new Date(),
+          id: addedExternalQuestionnaireQIs[0].id,
+        }
+      );
+
+      // Assert
+      const addedDeactivatedQuestionnaireQIsResult = await db.manyOrNone(
+        'SELECT * FROM questionnaire_instances WHERE questionnaire_id=${qId}',
+        { qId: 123456 }
+      );
+      expect(addedDeactivatedQuestionnaireQIsResult).to.have.length(0);
     });
   });
 

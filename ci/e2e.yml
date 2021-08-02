@@ -38,6 +38,12 @@ e2e:
     DB_LOG_HOST: databaseservice
     DB_LOG_PORT: '5432'
 
+    DB_SORMAS_USER: sormasservice
+    DB_SORMAS_PASSWORD: sormas
+    DB_SORMAS_DB: pia_database
+    DB_SORMAS_HOST: databaseservice
+    DB_SORMAS_PORT: '5432'
+
     DB_PERSONALDATA_USER: personaldataservice
     DB_PERSONALDATA_PASSWORD: personaldata
     DB_PERSONALDATA_DB: pia_database
@@ -113,6 +119,8 @@ e2e:
     LOGGINGSERVICE_INTERNAL_PORT: 5000
     COMPLIANCESERVICE_HOST: complianceservice
     COMPLIANCESERVICE_INTERNAL_PORT: 5000
+    QUESTIONNAIRESERVICE_HOST: questionnaireservice
+    QUESTIONNAIRESERVICE_INTERNAL_PORT: 5000
 
     PIA_ON_SORMAS_USER: user
     PIA_ON_SORMAS_PASSWORD: password
@@ -202,7 +210,13 @@ e2e:
       alias: messagequeue
 
   rules:
-    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+      when: never
+    # e2e tests for non renovate merge requests should be triggered manually
+    - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME !~ /^renovate/
+      when: manual
+    # run e2e tests for renovate automatically
+    - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^renovate/
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH =~ /^develop/
     - if: $CI_COMMIT_BRANCH =~ /^release/

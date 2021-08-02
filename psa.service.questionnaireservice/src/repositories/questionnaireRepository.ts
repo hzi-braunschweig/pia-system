@@ -1,16 +1,23 @@
-import { db } from '../db';
-import { Questionnaire } from '../models/questionnaire';
-import { Condition } from '../models/condition';
-import { Question } from '../models/question';
-import { AnswerOption } from '../models/answerOption';
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import { DbQuestionnaire, Questionnaire } from '../models/questionnaire';
+import { DbCondition } from '../models/condition';
+import { DbQuestion, Question } from '../models/question';
+import { AnswerOption, DbAnswerOption } from '../models/answerOption';
+import { RepositoryOptions } from '@pia/lib-service-core';
+import { getDbTransactionFromOptionsOrDbConnection } from '../db';
 
 export interface QuestionnaireDbResult {
-  questionnaire?: Questionnaire;
-  questionnaire_cond?: Condition;
-  question?: Question;
-  question_cond?: Condition;
-  answer_option?: AnswerOption;
-  answer_option_cond?: Condition;
+  questionnaire: DbQuestionnaire | null;
+  questionnaire_cond: DbCondition | null;
+  question: DbQuestion | null;
+  question_cond: DbCondition | null;
+  answer_option: DbAnswerOption | null;
+  answer_option_cond: DbCondition | null;
 }
 
 export class RepositoryHelper {
@@ -63,35 +70,50 @@ export class RepositoryHelper {
             row.questionnaire.version.toString()
         )
       ) {
-        row.questionnaire.condition = row.questionnaire_cond;
-        row.questionnaire.questions = [];
+        const questionnaire: Questionnaire = {
+          ...row.questionnaire,
+          activate_at_date:
+            row.questionnaire.activate_at_date &&
+            new Date(row.questionnaire.activate_at_date),
+          created_at:
+            row.questionnaire.created_at &&
+            new Date(row.questionnaire.created_at),
+          condition: row.questionnaire_cond,
+          questions: [],
+        };
         questionnaires.set(
           row.questionnaire.id.toString() +
             '_' +
             row.questionnaire.version.toString(),
-          row.questionnaire
+          questionnaire
         );
       }
       // question
       if (row.question && !questions.has(row.question.id)) {
-        row.question.condition = row.question_cond;
-        row.question.answer_options = [];
-        questions.set(row.question.id, row.question);
+        const question: Question = {
+          ...row.question,
+          answer_options: [],
+          condition: row.question_cond,
+        };
+        questions.set(row.question.id, question);
         questionnaires
           .get(
             row.question.questionnaire_id.toString() +
               '_' +
               row.question.questionnaire_version.toString()
           )
-          ?.questions?.push(row.question);
+          ?.questions.push(question);
       }
       // answer option
       if (row.answer_option && !answer_options.has(row.answer_option.id)) {
-        row.answer_option.condition = row.answer_option_cond;
+        const answerOption: AnswerOption = {
+          ...row.answer_option,
+          condition: row.answer_option_cond,
+        };
+        answer_options.set(row.answer_option.id, answerOption);
         questions
           .get(row.answer_option.question_id)
-          ?.answer_options.push(row.answer_option);
-        answer_options.set(row.answer_option.id, row.answer_option);
+          ?.answer_options.push(answerOption);
       }
     });
     return questionnaires;
@@ -99,10 +121,28 @@ export class RepositoryHelper {
 }
 
 export class QuestionnaireRepository {
+  public static async deactivateQuestionnaire(
+    id: number,
+    version: number,
+    options?: RepositoryOptions
+  ): Promise<void> {
+    const db = getDbTransactionFromOptionsOrDbConnection(options);
+    const filter = {
+      id,
+      version,
+    };
+    await db.none(
+      'UPDATE questionnaires SET active = FALSE WHERE id = $(id) AND version = $(version)',
+      filter
+    );
+  }
+
   public static async getQuestionnaire(
     id: number,
-    version: number
-  ): Promise<Questionnaire | undefined> {
+    version?: number,
+    options?: RepositoryOptions
+  ): Promise<Questionnaire> {
+    const db = getDbTransactionFromOptionsOrDbConnection(options);
     return db.tx(async (t) => {
       if (!version) {
         version = (
@@ -119,13 +159,15 @@ export class QuestionnaireRepository {
       const result = await t.many(query, { id, version });
       return RepositoryHelper.resolveDbResultToQuestionnaireMap(result).get(
         id.toString() + '_' + version.toString()
-      );
+      )!;
     });
   }
 
   public static async getQuestionnairesByStudyIds(
-    ids: string
+    ids: string[],
+    options?: RepositoryOptions
   ): Promise<Questionnaire[]> {
+    const db = getDbTransactionFromOptionsOrDbConnection(options);
     const filter = `WHERE qa.study_id IN ($(ids:csv))`;
     const order = `ORDER BY qa.id, q.position, ao.position`;
     const query = RepositoryHelper.createQuestionnaireQuery(filter, order);

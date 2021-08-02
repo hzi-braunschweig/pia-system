@@ -1,9 +1,14 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import * as schedule from 'node-schedule';
 import { ModysImportService } from './modysImportService';
-import { Job } from 'node-schedule';
 
 export class TaskScheduler {
-  private static job: Job;
+  private static job: schedule.Job;
 
   public static init(): void {
     TaskScheduler.scheduleUpdatesFromModys();

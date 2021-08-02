@@ -20,6 +20,7 @@ build-docker:
   tags:
     - docker
   rules:
+    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH =~ /^develop/
@@ -34,6 +35,8 @@ push-branch-images:
   variables:
     GIT_STRATEGY: none
   dependencies: []
+  needs:
+    - job: accumulate-coverage
   script:
     - sh -c "docker login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
     - >
@@ -51,6 +54,8 @@ push-branch-images:
   tags:
     - docker
   rules:
+    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+      when: never
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH =~ /^develop/

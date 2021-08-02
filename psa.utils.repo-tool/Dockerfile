@@ -1,39 +1,18 @@
-FROM node:14.17.1-alpine@sha256:21b87afa5f267e50b806f696f754b15b37b4118bb0ef722192f27ddff78d8d67 AS base
-
-WORKDIR /usr/src/node-app/
+FROM node:14.17.3-alpine@sha256:fb6cb918cc72869bd625940f42a7d8ae035c4e786d08187b94e8b91c6a534dfd AS npm-install
 
 ARG DIR=.
-
+WORKDIR /usr/src/node-app/
 COPY $DIR/package*.json ./
 
-################################################################
-
-FROM base AS install
+COPY psa.eslint-config/package.json psa.eslint-config/*.js ../psa.eslint-config/
+COPY psa.lib.licensecollector/package.json ../psa.lib.licensecollector/
+COPY psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
 
 RUN npm ci
-
-################################################################
-
-FROM install AS npm-install
 
 ENV NODE_PATH=/usr/src/node-app/node_modules
 ENV PATH=$PATH:/usr/src/node-app/node_modules/.bin
 
-WORKDIR /workdir/
+WORKDIR /usr/src/workdir/
 
-################################################################
-
-FROM install AS build
-
-COPY $DIR/tsconfig.json $DIR/tsconfig.build.json ./
-COPY $DIR/src ./src
-
-RUN npm run build
-
-################################################################
-
-FROM base AS final
-
-RUN npm ci --production
-
-COPY --from=build /usr/src/node-app/dist/ /usr/src/node-app/dist/
+FROM scratch AS final

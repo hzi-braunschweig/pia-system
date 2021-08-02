@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { fetchPasswordForUserFromMailHog } from '../../support/user.commands';
 import {
   changePassword,
@@ -853,7 +859,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-release-questionnaire-1-button"]').click();
     cy.get('#confirmbutton').click();
   });
-  it('Fragebogen ändern möglich', () => {
+  it('should update a questionnaire', () => {
     cy.visit(appUrl);
     login(forscherCredentials.username, forscherCredentials.password);
     changePassword(forscherCredentials.password, newPassword);
@@ -1002,5 +1008,56 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('#confirmbutton').click();
 
     cy.get('#questionList').find('li').should('have.length', 9);
+  });
+  it('should deactivate a questionnaire', () => {
+    cy.visit(appUrl);
+    login(forscherCredentials.username, forscherCredentials.password);
+    changePassword(forscherCredentials.password, newPassword);
+
+    cy.get('[data-e2e="e2e-sidenav-content"]').click();
+    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
+
+    // Create sample questionnaire
+    cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
+    cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
+
+    cy.get('.mat-option').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type(
+      'Sample Questionnaire'
+    );
+
+    cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
+    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
+    cy.get('.mat-option').contains('Einmal').click();
+
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+
+    cy.get('#mat-expansion-panel-header-0').click();
+    cy.get('#cdk-accordion-child-0')
+      .find('[data-e2e="e2e-question-text-input"]')
+      .type('Where are you from?');
+    cy.get('#cdk-accordion-child-0')
+      .find('[data-e2e="e2e-answer-type-select-dropdown"]')
+      .click();
+    cy.get('.mat-option').contains('Freitext').click();
+
+    cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
+    cy.get('#confirmbutton').click();
+
+    // Deactivate questionnaire
+    cy.get('[data-e2e="e2e-questionnaire-deactivate-button"]').click();
+    cy.get('#confirmButton').click();
+
+    cy.get('[data-e2e="e2e-questionnaire-deactivation-hint"]').should('exist');
+
+    // Check visibility of action buttons
+    cy.get('[data-e2e="e2e-export-questionnaire-button"]').should('exist');
+    cy.get('[data-e2e="e2e-update-questionnaire-button"]').should('not.exist');
+    cy.get('[data-e2e="e2e-questionnaire-revise-button"]').should('not.exist');
+    cy.get('[data-e2e="e2e-questionnaire-deactivate-button"]').should(
+      'not.exist'
+    );
   });
 });

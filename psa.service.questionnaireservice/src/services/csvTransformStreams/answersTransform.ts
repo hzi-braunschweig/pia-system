@@ -1,4 +1,11 @@
-import { AnswerType, FullAnswer } from '../../models/answer';
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import { FullAnswer } from '../../models/answer';
+import { AnswerType } from '../../models/answerOption';
 import { CsvAnswerRow } from '../../models/csvExportRows';
 import { CsvTransform } from './csvTransform';
 
@@ -38,7 +45,7 @@ export class AnswersTransform extends CsvTransform<FullAnswer, CsvAnswerRow> {
     ) {
       // these answers were made by the proband after releasing the questionnaire instance for the first time,
       // but he has not yet released them a second time, so they are not relevant for the researchers
-      return;
+      return undefined;
     }
 
     if (answer.value) {

@@ -1,36 +1,42 @@
 collect-licenses:
-  stage: test
-  image: docker:20.10.7@sha256:bfc499cef26daa22da31b76be1752813a6921ee1fa1dd1f56d4fdf19c701d332
+  stage: generate
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.ci-thirdparty-license-collector:$IMAGE_ID
+  cache:
+    paths:
+      - .npm/
+  script:
+    - PROJECT_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}"
+    - git config --global user.name "${GITLAB_USER_NAME}"
+    - git config --global user.email "${GITLAB_USER_EMAIL}"
+    - git checkout -B feature/THIRD_PARTY_LICENSES-update
+    - npm ci
+    - PUPPETEER_SKIP_DOWNLOAD=1 CYPRESS_INSTALL_BINARY=0 lerna bootstrap --ci -- --cache $(pwd)/.npm --prefer-offline
+    - licensecollector -d -f text -t ./THIRD_PARTY_LICENSES .
+    - git add THIRD_PARTY_LICENSES
+    - CHANGED_FILES=$(git diff-index --name-only HEAD)
+    - >
+      if [ -n "$CHANGED_FILES" ]; then
+        git commit -m "chore: update THIRD_PARTY_LICENSES"
+        git push -f ${CI_SERVER_PROTOCOL}://${CI_PROJECT_USER}:${CI_PROJECT_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/${CI_PROJECT_PATH}.git feature/THIRD_PARTY_LICENSES-update
+        # create the merge request to develop
+        BODY="{
+            \"id\": ${CI_PROJECT_ID},
+            \"source_branch\": \"feature/THIRD_PARTY_LICENSES-update\",
+            \"target_branch\": \"${CI_COMMIT_BRANCH}\",
+            \"remove_source_branch\": true,
+            \"title\": \"chore: update THIRD_PARTY_LICENSES\",
+            \"assignee_id\":\"${GITLAB_USER_ID}\",
+            \"work_in_progress\": false,
+            \"merge_when_pipeline_succeeds\": false
+        }";
+        echo $PROJECT_URL
+        curl --fail -X POST ${PROJECT_URL}/merge_requests \
+            --header "PRIVATE-TOKEN:${CI_PROJECT_TOKEN}" \
+            --header "Content-Type: application/json" \
+            --data "${BODY}"
+      fi
   needs:
     - job: build-docker
       artifacts: false
-    - job: npm-install
-      artifacts: false
-  variables:
-    GIT_DEPTH: '1'
-  script:
-    - export DOCKERFILE=license-collector.dockerfile
-    - echo "" > $DOCKERFILE
-    # it is (currently) not possible to use a variable inside the mount of a RUN.
-    - >
-      for JOB in $JOBS_INSTALL; do
-        echo "FROM $CI_REGISTRY/pia/$JOB-npm-install:$IMAGE_ID as $JOB-npm-install" >> $DOCKERFILE
-      done
-    - echo "FROM $CI_REGISTRY/pia/psa.utils.repo-tool:$IMAGE_ID AS base" >> $DOCKERFILE
-    - echo "RUN \\" >> $DOCKERFILE
-    - >
-      for JOB in $JOBS_INSTALL; do
-        echo "  --mount=type=bind,ro,from=$JOB-npm-install,source=/usr/src/node-app,target=/usr/src/$JOB \\" >> $DOCKERFILE
-      done
-    - echo "  REPO_DIR=/dependencies OUT_FILE=/licenses.csv npm run license" >> $DOCKERFILE
-    - echo "FROM scratch" >> $DOCKERFILE
-    - echo "COPY --from=base /licenses.csv /" >> $DOCKERFILE
-    - DOCKER_BUILDKIT=1 docker build -f $DOCKERFILE -o . .
   rules:
-    - if: $CI_MERGE_REQUEST_IID
-    - if: $CI_COMMIT_TAG
-    - if: $CI_COMMIT_BRANCH =~ /^develop/
-    - if: $CI_COMMIT_BRANCH =~ /^release/
-  artifacts:
-    paths:
-      - licenses.csv
+    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"

@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { Component, ViewChild, OnInit, AfterViewInit } from '@angular/core';
 import {
   FormGroup,
@@ -100,53 +106,6 @@ export class LogsResearcherComponent implements OnInit, AfterViewInit {
     private translate: TranslateService,
     public snackBar: MatSnackBar
   ) {
-    this.questionnaireService.getStudies().then(
-      (result: any) => {
-        this.studies = result.studies;
-        this.filteredStudies.next(this.studies.slice());
-      },
-      (err: any) => {
-        this.alertService.errorObject(err);
-      }
-    );
-
-    this.authService.getUsers().then(
-      (result: any) => {
-        this.users = result.users;
-        this.users.forEach((user) => {
-          if (user.first_logged_in_at != null) {
-            user.first_logged_in_at = new Date(
-              user.first_logged_in_at
-            ).toLocaleDateString();
-          }
-          user.studyNamesArray = [];
-          user.study_accesses.forEach((study) => {
-            user.studyNamesArray.push(study.study_id);
-          });
-          if (user.role === 'Proband') {
-            this.probands.push(user);
-          }
-        });
-
-        this.studiesProbands = this.probands;
-        this.filteredProbandsArray = this.studiesProbands;
-      },
-      (err: any) => {
-        this.alertService.errorObject(err);
-      }
-    );
-
-    this.questionnaireService.getQuestionnaires().then(
-      (result) => {
-        this.questionnaires = result.questionnaires;
-        this.studiesQuestionnaires = this.questionnaires;
-        this.filteredQuestionnairesArray = this.studiesQuestionnaires;
-      },
-      (err: any) => {
-        this.alertService.errorObject(err);
-      }
-    );
-
     const jwtHelper: JwtHelperService = new JwtHelperService();
     const currentUser: User = JSON.parse(localStorage.getItem('currentUser'));
     // decode the token to get its payload
@@ -185,7 +144,7 @@ export class LogsResearcherComponent implements OnInit, AfterViewInit {
     this.dataSource.sort = this.matSort;
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.form = new FormGroup(
       {
         start_date: new FormControl(null),
@@ -199,6 +158,55 @@ export class LogsResearcherComponent implements OnInit, AfterViewInit {
         ]),
       },
       this.validateQuestionnaires
+    );
+
+    const requestPromises = [];
+
+    requestPromises[0] = this.questionnaireService.getStudies().then(
+      (result: any) => {
+        this.studies = result.studies;
+        this.filteredStudies.next(this.studies.slice());
+      },
+      (err: any) => {
+        this.alertService.errorObject(err);
+      }
+    );
+
+    requestPromises[1] = this.authService.getUsers().then(
+      (result: any) => {
+        this.users = result.users;
+        this.users.forEach((user) => {
+          if (user.first_logged_in_at != null) {
+            user.first_logged_in_at = new Date(
+              user.first_logged_in_at
+            ).toLocaleDateString();
+          }
+          user.studyNamesArray = [];
+          user.study_accesses.forEach((study) => {
+            user.studyNamesArray.push(study.study_id);
+          });
+          if (user.role === 'Proband') {
+            this.probands.push(user);
+          }
+        });
+
+        this.studiesProbands = this.probands;
+        this.filteredProbandsArray = this.studiesProbands;
+      },
+      (err: any) => {
+        this.alertService.errorObject(err);
+      }
+    );
+
+    requestPromises[2] = this.questionnaireService.getQuestionnaires().then(
+      (result) => {
+        this.questionnaires = result.questionnaires;
+        this.studiesQuestionnaires = this.questionnaires;
+        this.filteredQuestionnairesArray = this.studiesQuestionnaires;
+      },
+      (err: any) => {
+        this.alertService.errorObject(err);
+      }
     );
 
     // listen for search field value changes
@@ -216,16 +224,6 @@ export class LogsResearcherComponent implements OnInit, AfterViewInit {
       this.filterQuestionnaires();
     });
 
-    this.loggingService
-      .getLogs({})
-      .then((res) => {
-        this.updateLogTable([]);
-      })
-      .catch((err) => {
-        console.log(err);
-        this.openSnackBar('LOGS.COULD_NOT_LOAD', 'OK');
-      });
-
     // This is workaround to sort nested objects
     this.dataSource.sortingDataAccessor = (item: any, property) => {
       switch (property) {
@@ -237,6 +235,9 @@ export class LogsResearcherComponent implements OnInit, AfterViewInit {
           return item[property];
       }
     };
+
+    await Promise.all(requestPromises);
+    this.loading = false;
   }
 
   validateProbands(control: AbstractControl): any {
@@ -277,10 +278,11 @@ export class LogsResearcherComponent implements OnInit, AfterViewInit {
   }
 
   updateLogTable(newData: any[]): void {
-    this.loading = false;
     this.dataSource.data = newData;
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
     this.openSnackBar('LOGS.LOADED_SUCCESSFULLY', 'OK');
-    this.dataSource.paginator.firstPage();
   }
 
   generateQueryFrom(form): {
@@ -436,7 +438,6 @@ export class LogsResearcherComponent implements OnInit, AfterViewInit {
   }
 
   openSnackBar(message: string, action: string): void {
-    this.loading = false;
     message = this.translate.instant(message);
     this.snackBar.open(message, action, {
       duration: 2000,
@@ -478,6 +479,9 @@ export class LogsResearcherComponent implements OnInit, AfterViewInit {
       .catch((err) => {
         console.log(err);
         this.openSnackBar('LOGS.COULD_NOT_LOAD', 'OK');
+      })
+      .finally(() => {
+        this.loading = false;
       });
   }
 

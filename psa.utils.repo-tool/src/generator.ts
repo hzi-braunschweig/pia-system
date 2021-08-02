@@ -1,13 +1,31 @@
-import * as path from 'path';
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 
-import { Fs } from './fs';
-import { IJobs, IDockerBuild } from './definitions';
-import { IGitlabCiTemplate, IGitlabCiJob } from './gitlabci';
+import { RepoMetaData } from './models/repoMetaData';
 
-import { IHclTargets, Hcl } from './hcl';
+interface GitlabCiModules {
+  '.modules': {
+    list: {
+      docker: string;
+      lint: string;
+      install: string;
+      unit: string;
+      int: string;
+    };
+    array: {
+      lint: string[];
+      unit: string[];
+      int: string[];
+      e2e: string[];
+    };
+  };
+}
 
 export class Generator {
-  public static async createGitlabCiModules(jobs: IJobs) {
+  public static createGitlabCiModules(jobs: RepoMetaData): GitlabCiModules {
     return {
       '.modules': {
         list: {

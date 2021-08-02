@@ -51,13 +51,20 @@ npm run outdated
 
 ## Licensecollector
 
-The licensecollector is gathering all the licenses of the npm packages that are used in this project.
-It **does not** collect licenses for other tools that are used (e.g. PostgreSQL, native iOS or Android dependencies).
+The LicenceCollector collects all licenses of the npm packages used in this project and adds a list of the deposited
+licenses for the Docker images used.
 
-To run the licensecollector locally you first have to run `npm ci` in **ALL** directories.
-Then you can run `npm run build && npm run license` to generate the `licenses.csv`.
-Because the licensecollector is using the currently installed `node_modules` the `npm ci` command should always be executed after changing dependencies.
-Otherwiese there is a high risk that the `license.csv` is outdated.
+Since the licensecollector uses the currently installed `node_modules`, you should make sure that all dependencies have
+been installed beforehand. Otherwise, there is a high risk that the collected data will be outdated.
+To do this, first run `npm ci` in the root directory and then run `./node_modules/.bin/lerna --ci`.
+
+To run the LicenceCollector, you can then execute `npm run build && npm run license` in this directory.
+
+The LicenceCollector creates 3 files:
+
+- psa.app.mobile/src/assets/licenses.json (contains all prod-dependencies of the mobile-app)
+- psa.app.web/src/assets/licenses.json (contains all prod-dependencies of the web-app)
+- THIRD_PARTY_LICENSES (contains all dependencies of all modules and the Docker image licenses).
 
 ## Scan Routes
 

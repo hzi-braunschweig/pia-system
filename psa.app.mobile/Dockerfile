@@ -1,4 +1,4 @@
-FROM node:14.17.1-alpine@sha256:21b87afa5f267e50b806f696f754b15b37b4118bb0ef722192f27ddff78d8d67 AS base
+FROM node:14.17.3-alpine@sha256:fb6cb918cc72869bd625940f42a7d8ae035c4e786d08187b94e8b91c6a534dfd AS base
 
 FROM base AS npm-install
 RUN apk --update --no-cache add curl tzdata
@@ -13,6 +13,10 @@ WORKDIR /usr/src/node-app/
 
 ARG DIR=.
 COPY $DIR/package*.json ./
+#copy dev dependencies
+COPY psa.lib.licensecollector/package.json ../psa.lib.licensecollector/
+COPY psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
+
 RUN npm ci
 
 ENV NODE_PATH=/usr/src/node-app/node_modules
@@ -30,10 +34,13 @@ WORKDIR /usr/src/node-app/
 
 ARG DIR=.
 COPY $DIR/package*.json ./
+#copy dev dependencies
+COPY --chown=node psa.lib.licensecollector/package.json ../psa.lib.licensecollector/
+COPY --chown=node psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
+
 RUN npm ci
 
 COPY --chown=node $DIR/browserslist $DIR/*.json $DIR/config.xml $DIR/GoogleService-Info.plist ./
-COPY --chown=node $DIR/licenses ./licenses
 COPY --chown=node $DIR/src ./src
 ARG configuration=production
 ARG nodeoptions
@@ -43,6 +50,6 @@ RUN npm run build:browser
 
 ################################################################
 
-FROM busybox:1.33.1@sha256:930490f97e5b921535c153e0e7110d251134cc4b72bbb8133c6a5065cc68580d AS final
+FROM busybox:1.33.1@sha256:0f354ec1728d9ff32edcd7d1b8bbdfc798277ad36120dc3dc683be44524c8b60 AS final
 
 COPY --from=build-browser /usr/src/node-app/platforms/browser/www/ /assets/browser

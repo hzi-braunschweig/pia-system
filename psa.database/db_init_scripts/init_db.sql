@@ -63,6 +63,8 @@ CREATE TABLE questionnaires (
     notify_when_not_filled_day INT NULL,
     cycle_per_day INT NULL,
     cycle_first_hour INT NULL,
+    keep_answers BOOLEAN DEFAULT FALSE,
+    active BOOLEAN DEFAULT TRUE NOT NULL,
 
     CONSTRAINT fk_study_id
         FOREIGN KEY (study_id)

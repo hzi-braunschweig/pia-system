@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { Questionnaire } from '../../app/psa.app.core/models/questionnaire';
@@ -64,7 +70,13 @@ export class QuestionnaireDataSource extends DataSource<any> {
   }
 
   buildItemString(item: Questionnaire): string {
-    const str = item.id + item.study_id + item.name + item.no_questions;
+    const str =
+      item.id +
+      item.version +
+      item.study_id +
+      item.name +
+      item.no_questions +
+      item.active;
     return str.toLowerCase();
   }
 
@@ -88,6 +100,9 @@ export class QuestionnaireDataSource extends DataSource<any> {
         case 'id':
           [propertyA, propertyB] = [a.id, b.id];
           break;
+        case 'version':
+          [propertyA, propertyB] = [a.version, b.version];
+          break;
         case 'study_id':
           [propertyA, propertyB] = [a.study_id, b.study_id];
           break;
@@ -96,6 +111,9 @@ export class QuestionnaireDataSource extends DataSource<any> {
           break;
         case 'no_questions':
           [propertyA, propertyB] = [a.no_questions, b.no_questions];
+          break;
+        case 'active':
+          [propertyA, propertyB] = [Number(a.active), Number(b.active)];
           break;
       }
 

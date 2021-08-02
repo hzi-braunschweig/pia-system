@@ -1,54 +1,14 @@
 ## ionic stuff
 
-mirror-ionic:
-  image:
-    name: alpine/git:v2.30.2@sha256:1e76bc910d59a4915c941fa90271c00d71a66e6aec5e07da5b2cc93d6177f448
-    entrypoint: ['/bin/sh', '-c']
-  stage: prepare
-  dependencies: []
-  script:
-    - mkdir ~/.ssh
-    - cp $IONIC_SSH_KEY ~/.ssh/id_rsa
-    - chmod og-rwx ~/.ssh/id_rsa
-    - GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=accept-new" git clone git@git.ionicjs.com:helmholtz/pia-sideloading.git --origin=ionic
-    - rm -rf pia-sideloading/*
-    - cp -r psa.app.mobile/. pia-sideloading
-    - git config --global user.name "Gitlab CI"
-    - git config --global user.email "ci@gitlab.local"
-    - cd pia-sideloading
-    - git add .
-    - git commit -m "$CI_COMMIT_SHA@$CI_COMMIT_REF_NAME" --allow-empty
-    - echo IONIC_COMMIT=`git rev-parse HEAD` > ionic.env
-    - git push
-  artifacts:
-    paths:
-      - pia-sideloading/ionic.env
-  rules:
-    # we need to push always!
-    # otherwise the build jobs will be blocked forever
-    # https://gitlab.com/gitlab-org/gitlab/-/issues/31264
-    - if: $CI_MERGE_REQUEST_IID
-      #when: manual
-      #allow_failure: true
-    - if: $CI_COMMIT_TAG
-      #when: manual
-      #allow_failure: true
-    - if: $CI_COMMIT_BRANCH =~ /^develop/
-    - if: $CI_COMMIT_BRANCH =~ /^release/
-      #when: manual
-      #allow_failure: true
-  resource_group: mirror-ionic
-
 build-ionic-ios-store:
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
   needs:
-    - job: mirror-ionic
-      artifacts: true
+    - job: npm-install
+      artifacts: false
   script:
-    - export $(cat pia-sideloading/ionic.env | xargs)
     - cd psa.app.mobile
-    - ionic package build ios app-store --native-config="iOS-Store" --signing-certificate="PIA_Store" --commit="$IONIC_COMMIT"
+    - ionic package build ios app-store --native-config="iOS-Store" --signing-certificate="PIA_Store" --commit="$CI_COMMIT_SHA"
   rules:
     - if: $CI_MERGE_REQUEST_IID
       when: manual
@@ -67,12 +27,11 @@ build-and-push-ionic-ios-store:
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
   needs:
-    - job: mirror-ionic
-      artifacts: true
+    - job: npm-install
+      artifacts: false
   script:
-    - export $(cat pia-sideloading/ionic.env | xargs)
     - cd psa.app.mobile
-    - ionic package build ios app-store --native-config="iOS-Store" --signing-certificate="PIA_Store" --commit="$IONIC_COMMIT" --destination="Apple App Store"
+    - ionic package build ios app-store --native-config="iOS-Store" --signing-certificate="PIA_Store" --commit="$CI_COMMIT_SHA" --destination="Apple App Store"
   rules:
     - if: $CI_MERGE_REQUEST_IID
       when: manual
@@ -91,12 +50,11 @@ build-ionic-android-store:
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
   needs:
-    - job: mirror-ionic
-      artifacts: true
+    - job: npm-install
+      artifacts: false
   script:
-    - export $(cat pia-sideloading/ionic.env | xargs)
     - cd psa.app.mobile
-    - ionic package build android release --native-config="Android-Store" --signing-certificate="PIA_Android" --commit="$IONIC_COMMIT"
+    - ionic package build android release --native-config="Android-Store" --signing-certificate="PIA_Android" --commit="$CI_COMMIT_SHA"
   rules:
     - if: $CI_MERGE_REQUEST_IID
       when: manual
@@ -115,12 +73,11 @@ build-and-push-ionic-android-store:
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
   needs:
-    - job: mirror-ionic
-      artifacts: true
+    - job: npm-install
+      artifacts: false
   script:
-    - export $(cat pia-sideloading/ionic.env | xargs)
     - cd psa.app.mobile
-    - ionic package build android release --native-config="Android-Store" --signing-certificate="PIA_Android" --commit="$IONIC_COMMIT" --destination="Google Play Store, Produktion"
+    - ionic package build android release --native-config="Android-Store" --signing-certificate="PIA_Android" --commit="$CI_COMMIT_SHA" --destination="Google Play Store, Produktion"
   rules:
     - if: $CI_MERGE_REQUEST_IID
       when: manual

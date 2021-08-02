@@ -6,6 +6,7 @@ export declare class GlobalConfig {
     static get complianceservice(): HttpConnection;
     static get loggingservice(): HttpConnection;
     static get personaldataservice(): HttpConnection;
+    static get questionnaireservice(): HttpConnection;
     static get userservice(): HttpConnection;
     static get sormasservice(): HttpConnection;
     static get mailserver(): MailserverConnection;

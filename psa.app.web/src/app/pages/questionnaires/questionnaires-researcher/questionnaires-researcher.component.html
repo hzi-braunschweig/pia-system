@@ -1,3 +1,9 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
 <div class="jumbotron" data-e2e="e2e-questionnaires-admin-component">
   <div class="page-header" fxLayout="row wrap" fxLayoutAlign="start center">
     <div [fxHide]="!selection.isEmpty()" fxFlex="50">
@@ -97,6 +103,25 @@
         </mat-header-cell>
         <mat-cell *matCellDef="let row" fxLayoutAlign="center center">
           {{ row.no_questions }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Active Column -->
+      <ng-container matColumnDef="active">
+        <mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          fxLayoutAlign="center center"
+        >
+          {{ 'QUESTIONNAIRES_FORSCHER.ACTIVE_STATUS' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row" fxLayoutAlign="center center">
+          <ng-container *ngIf="row.active">
+            {{ 'QUESTIONNAIRES_FORSCHER.ACTIVE' | translate }}
+          </ng-container>
+          <ng-container *ngIf="!row.active">
+            {{ 'QUESTIONNAIRES_FORSCHER.NOT_ACTIVE' | translate }}
+          </ng-container>
         </mat-cell>
       </ng-container>
 

@@ -1,6 +1,11 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { Fs } from './fs';
-import * as util from 'util';
-import csv from 'csv-stringify';
+import csvStringify from 'csv-stringify/lib/sync';
 import fetch from 'node-fetch';
 import {
   OpenAPIObject,
@@ -8,8 +13,6 @@ import {
   PathItemObject,
   PathsObject,
 } from 'openapi3-ts';
-
-const csvStringify = util.promisify(csv as any);
 
 interface RouteMetaData {
   service: string;
@@ -26,13 +29,53 @@ export class RouteMetaDataScanner {
 
   private static readonly CSV_FILE_NAME = 'route-meta-data.csv';
 
-  private static readonly SUPPORTED_API_METHODS: Array<
-    Extract<keyof PathItemObject, string>
-  > = ['get', 'put', 'post', 'delete', 'patch'];
+  private static readonly SUPPORTED_API_METHODS: Extract<
+    keyof PathItemObject,
+    string
+  >[] = ['get', 'put', 'post', 'delete', 'patch'];
+
+  public static async scan(): Promise<void> {
+    let routeMetaData: RouteMetaData[] = [];
+    const initialTlsRejectUnauthorized =
+      process.env['NODE_TLS_REJECT_UNAUTHORIZED'];
+    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+    for (
+      let port = this.MICROSERVICES_PORT_START;
+      port < this.MICROSERVICES_PORT_END;
+      port++
+    ) {
+      try {
+        const url = 'https://localhost:' + port.toString() + '/swagger.json';
+        const response = await fetch(url);
+        if (response.ok) {
+          console.log('response ok: ', url);
+          const spec: OpenAPIObject = (await response.json()) as OpenAPIObject;
+          routeMetaData = [
+            ...routeMetaData,
+            ...this.mapSpecToRouteMetaData(spec),
+          ];
+        } else {
+          console.log('response NOT ok:', url);
+          console.log(await response.text());
+        }
+      } catch (e) {
+        // nothing
+      }
+    }
+    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = initialTlsRejectUnauthorized;
+    const csv = RouteMetaDataScanner.createCsv(routeMetaData);
+    await Fs.writeFile(process.env['OUT_FILE'] ?? this.CSV_FILE_NAME, csv);
+    console.log('------------------------------------');
+    console.log('wrote output to:', this.CSV_FILE_NAME);
+  }
 
   private static mapSpecToRouteMetaData(spec: OpenAPIObject): RouteMetaData[] {
     const serviceName = spec.info.title.replace('API Documentation ', '');
-    return this.mapApiPathToRouteMetaData(serviceName, spec.host, spec.paths);
+    return this.mapApiPathToRouteMetaData(
+      serviceName,
+      spec['host'],
+      spec.paths
+    );
   }
 
   private static mapApiPathToRouteMetaData(
@@ -82,43 +125,10 @@ export class RouteMetaDataScanner {
     };
   }
 
-  private static async createCsv(
-    routeMetaData: RouteMetaData[]
-  ): Promise<string> {
-    return (await csvStringify(routeMetaData, {
+  private static createCsv(routeMetaData: RouteMetaData[]): string {
+    return csvStringify(routeMetaData, {
       delimiter: ';',
       header: true,
-    })) as string;
-  }
-
-  public static async scan(): Promise<void> {
-    let routeMetaData: RouteMetaData[] = [];
-    for (
-      let port = this.MICROSERVICES_PORT_START;
-      port < this.MICROSERVICES_PORT_END;
-      port++
-    ) {
-      try {
-        const url = 'http://localhost:' + port + '/swagger.json';
-        const response = await fetch(url);
-        if (response.ok) {
-          console.log('response ok: ', url);
-          const spec: OpenAPIObject = await response.json();
-          routeMetaData = [
-            ...routeMetaData,
-            ...this.mapSpecToRouteMetaData(spec),
-          ];
-        } else {
-          console.log('response NOT ok:', url);
-          console.log(await response.text());
-        }
-      } catch (e) {
-        // nothing
-      }
-    }
-    const csv = await RouteMetaDataScanner.createCsv(routeMetaData);
-    await Fs.writeFile(process.env.OUT_FILE || this.CSV_FILE_NAME, csv);
-    console.log('------------------------------------');
-    console.log('wrote output to:', this.CSV_FILE_NAME);
+    });
   }
 }

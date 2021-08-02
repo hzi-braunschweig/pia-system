@@ -1,4 +1,10 @@
-const publisher = require('@pact-foundation/pact-node');
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+const { Publisher } = require('@pact-foundation/pact');
 const path = require('path');
 
 const opts = {
@@ -9,4 +15,4 @@ const opts = {
   consumerVersion: '2.0.0',
 };
 
-publisher.publishPacts(opts);
+new Publisher(opts).publishPacts().then(console.log);

@@ -6,3 +6,6 @@ coverage/
 psa.app.mobile/platforms/
 psa.app.mobile/www/
 psa.app.mobile/plugins/
+psa.app.mobile/src/assets/licenses.json
+psa.app.web/src/assets/licenses.json
+ci/generated.yml

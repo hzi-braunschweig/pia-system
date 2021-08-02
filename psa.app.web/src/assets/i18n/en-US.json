@@ -305,6 +305,7 @@
     "QUESTIONNAIRE_SAVE": "Save questionnaire",
     "QUESTIONNAIRE_UPDATE": "Update questionnaire",
     "QUESTIONNAIRE_REVISE": "Save new version",
+    "QUESTIONNAIRE_DEACTIVATE": "Deaktivieren",
     "WARNING": "Warning",
     "WARNING_UPDATE": "Whenever you update a questionnaire, existing answers are lost! If answers have to be preserved, save a new version.",
     "CANCEL": "Cancel",
@@ -388,7 +389,9 @@
     "INTERVAL": "Interval",
     "O_CLOCK": "o' clock",
     "FILE_INPUT_TYPES_HINT": "Only PDF and CSV files can be uploaded.",
-    "IMAGE_INPUT_TYPES_HINT": "Only PNG and JPEG files can be uploaded."
+    "IMAGE_INPUT_TYPES_HINT": "Only PNG and JPEG files can be uploaded.",
+    "DEACTIVATION_HINT": "Dieser Fragebogen ist deaktiviert und kann nicht mehr geändert werden.",
+    "DEACTIVATION_CONFIRMATION_HINT": "<p>Hinweis: Bei Deaktivierung des Fragebogens wird dieser Teilnehmenden nicht mehr angezeigt. Die bereits bestehenden Antworten bleiben erhalten. Nach Deaktivierung kann der Fragebogen <strong>nicht</strong> wieder aktiviert werden. Sind Sie sicher, dass Sie den Fragebogen deaktivieren wollen?</p>"
   },
   "QUESTIONNAIRES_FORSCHER": {
     "VERSION": "Version",
@@ -396,6 +399,9 @@
     "NEW_QUESTIONNAIRE": "Create a new questionnaire",
     "STUDY_ID": "Study name",
     "QUESTIONS_NUMBER": "Number of questions",
+    "ACTIVE_STATUS": "Status",
+    "ACTIVE": "aktiv",
+    "NOT_ACTIVE": "deaktiviert",
     "FILTER_NO_RESULTS": "No questionnaire found.",
     "ROLE": "Role",
     "EXPIRED": "Expired",

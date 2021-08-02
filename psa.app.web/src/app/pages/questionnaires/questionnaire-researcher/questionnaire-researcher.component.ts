@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { Questionnaire } from '../../../psa.app.core/models/questionnaire';
 import { Question } from '../../../psa.app.core/models/question';
 import { AnswerOption } from '../../../psa.app.core/models/answerOption';
@@ -14,7 +20,12 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { Component, HostListener, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  OnInit,
+} from '@angular/core';
 import { Studie } from '../../../psa.app.core/models/studie';
 import { TranslateService } from '@ngx-translate/core';
 import {
@@ -36,6 +47,9 @@ import { NgxMaterialTimepickerTheme } from 'ngx-material-timepicker';
 import { HttpErrorResponse } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { QuestionnaireEditOptions } from './questionnaire-edit-options';
+import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
+import { filter } from 'rxjs/operators';
 
 @Component({
   templateUrl: 'questionnaire-researcher.component.html',
@@ -114,133 +128,21 @@ export class QuestionnaireResearcherComponent implements OnInit {
   notify_when_not_filled_day: number = null;
   supportsKeepAnswers: boolean = environment.isSormasEnabled;
 
-  conditionLinks = [
-    { value: 'OR', viewValue: 'OR' },
-    { value: 'AND', viewValue: 'AND' },
-    { value: 'XOR', viewValue: 'XOR' },
-  ];
+  conditionLinks = QuestionnaireEditOptions.conditionLinks;
+  questionnaireTypes = QuestionnaireEditOptions.questionnaireTypes;
+  conditionTypes = QuestionnaireEditOptions.conditionTypes;
+  conditionTypesForQuestionnaire =
+    QuestionnaireEditOptions.conditionTypesForQuestionnaire;
+  answerTypes = QuestionnaireEditOptions.answerTypes;
+  conditionOperands = QuestionnaireEditOptions.conditionOperands;
+  cycleUnits = QuestionnaireEditOptions.cycleUnits;
+  publishOptions = QuestionnaireEditOptions.publishOptions;
 
-  questionnaireTypes = [
-    {
-      value: 'for_probands',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.TYPE_FOR_PROBANDS',
-    },
-    {
-      value: 'for_research_team',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.TYPE_FOR_RESEARCH_TEAM',
-    },
-  ];
+  hoursOfDay = QuestionnaireEditOptions.getHoursOfDay(
+    this.translate.instant('QUESTIONNAIRE_FORSCHER.O_CLOCK')
+  );
 
-  conditionTypes = [
-    { value: 'external', viewValue: 'QUESTIONNAIRE_FORSCHER.CONDITION_EXTERN' },
-    {
-      value: 'internal_last',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.CONDITION_LAST',
-    },
-    {
-      value: 'internal_this',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.CONDITION_THIS',
-    },
-  ];
-
-  conditionTypesForQuestionnaire = [
-    { value: 'external', viewValue: 'QUESTIONNAIRE_FORSCHER.CONDITION_EXTERN' },
-  ];
-
-  answerTypes = [
-    {
-      id: 1,
-      value: 'array_single',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.ARRAY_SINGLE',
-      availableFor: ['for_probands', 'for_research_team'],
-    },
-    {
-      id: 2,
-      value: 'array_multi',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.ARRAY_MULTI',
-      availableFor: ['for_probands', 'for_research_team'],
-    },
-    {
-      id: 3,
-      value: 'number',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.NUMBER',
-      availableFor: ['for_probands', 'for_research_team'],
-    },
-    {
-      id: 4,
-      value: 'string',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.STRING',
-      availableFor: ['for_probands', 'for_research_team'],
-    },
-    {
-      id: 5,
-      value: 'date',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.DATE',
-      availableFor: ['for_probands', 'for_research_team'],
-    },
-    {
-      id: 6,
-      value: 'sample',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.SAMPLE',
-      availableFor: ['for_probands', 'for_research_team'],
-    },
-    {
-      id: 7,
-      value: 'pzn',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.PZN',
-      availableFor: ['for_probands', 'for_research_team'],
-    },
-    {
-      id: 8,
-      value: 'image',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.IMAGE',
-      availableFor: ['for_probands', 'for_research_team'],
-    },
-    {
-      id: 9,
-      value: 'date_time',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.DATE_TIME',
-      availableFor: ['for_probands', 'for_research_team'],
-    },
-    {
-      id: 10,
-      value: 'file',
-      viewValue: 'QUESTIONNAIRE_FORSCHER.FILE',
-      availableFor: ['for_research_team'],
-    },
-  ];
-
-  condition_operands = [
-    { id: 1, viewValue: '<' },
-    { id: 2, viewValue: '<=' },
-    { id: 3, viewValue: '==' },
-    { id: 4, viewValue: '>' },
-    { id: 5, viewValue: '>=' },
-    { id: 6, viewValue: '\\=' },
-  ];
-
-  cycleUnits = [
-    { value: 'once', viewValue: 'QUESTIONNAIRE_FORSCHER.ONCE' },
-    { value: 'hour', viewValue: 'QUESTIONNAIRE_FORSCHER.HOUR' },
-    { value: 'day', viewValue: 'QUESTIONNAIRE_FORSCHER.DAY' },
-    { value: 'week', viewValue: 'QUESTIONNAIRE_FORSCHER.WEEK' },
-    { value: 'month', viewValue: 'QUESTIONNAIRE_FORSCHER.MONTH' },
-    { value: 'date', viewValue: 'QUESTIONNAIRE_FORSCHER.DATE' },
-    { value: 'spontan', viewValue: 'QUESTIONNAIRE_FORSCHER.SPONTANEOUS' },
-  ];
-
-  hoursOfDay = [];
-
-  hoursPerDay = [
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-    22, 23, 24,
-  ];
-
-  publishOptions = [
-    { value: 'hidden', viewValue: 'QUESTIONNAIRE_FORSCHER.HIDDEN' },
-    { value: 'testprobands', viewValue: 'QUESTIONNAIRE_FORSCHER.TESTPROBANDS' },
-    { value: 'allaudiences', viewValue: 'QUESTIONNAIRE_FORSCHER.ALLAUDIENCES' },
-  ];
+  hoursPerDay = QuestionnaireEditOptions.hoursPerDay;
 
   translationData = {
     deactivate_min_days: this.deactivate_min_days.toString(),
@@ -285,7 +187,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
     public dialog: MatDialog,
     private mediaObserver: MediaObserver,
     private alertService: AlertService,
-    private questionnaireService: QuestionnaireService
+    private questionnaireService: QuestionnaireService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     if ('id' in this.activatedRoute.snapshot.params) {
       this.editingStatus = true;
@@ -301,12 +204,6 @@ export class QuestionnaireResearcherComponent implements OnInit {
       ['lg', 3],
       ['xl', 4],
     ]);
-    let startCond2: any;
-    gridAns.forEach((colsAns, mqAlias) => {
-      if (this.mediaObserver.isActive(mqAlias)) {
-        startCond2 = colsAns;
-      }
-    });
     this.mediaObserver
       .asObservable()
       .subscribe((changes) =>
@@ -341,7 +238,6 @@ export class QuestionnaireResearcherComponent implements OnInit {
         } else {
           this.initForm();
         }
-        this.initHoursOfDay();
       },
       (err: any) => {
         this.alertService.errorObject(err);
@@ -349,16 +245,6 @@ export class QuestionnaireResearcherComponent implements OnInit {
     );
 
     this.onResize();
-  }
-
-  initHoursOfDay(): void {
-    const o_clock = this.translate.instant('QUESTIONNAIRE_FORSCHER.O_CLOCK');
-    for (let i = 0; i < 24; i++) {
-      this.hoursOfDay.push({
-        value: i + new Date().getTimezoneOffset() / 60,
-        viewValue: `${i < 10 ? '0' : ''}${i} ${o_clock}`,
-      });
-    }
   }
 
   selectStudy(study_id: string): void {
@@ -2446,6 +2332,33 @@ export class QuestionnaireResearcherComponent implements OnInit {
     ].setValue(index);
   }
 
+  onDeactivate(): void {
+    this.dialog
+      .open(DialogYesNoComponent, {
+        width: '500px',
+        data: {
+          content: 'QUESTIONNAIRE_FORSCHER.DEACTIVATION_CONFIRMATION_HINT',
+        },
+      })
+      .afterClosed()
+      .pipe(filter((result) => result === 'yes'))
+      .subscribe(() => this.deactivateQuestionnaire());
+  }
+
+  async deactivateQuestionnaire(): Promise<void> {
+    try {
+      this.currentQuestionnaire =
+        await this.questionnaireService.deactivateQuestionnaire(
+          this.study_id,
+          this.questionnaireId,
+          this.questionnaireVersion
+        );
+      this.changeDetectorRef.detectChanges();
+    } catch (error) {
+      this.alertService.errorObject(error);
+    }
+  }
+
   onCancel(): void {
     this.router.navigate(['/questionnaires/admin']);
   }
@@ -2912,7 +2825,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
     // What should happen after document is loaded
     reader.onload = (e) => {
-      const fragebogenObj: any = JSON.parse(reader.result as any);
+      const fragebogenObj: Questionnaire = JSON.parse(reader.result as string);
+      fragebogenObj.active = true;
 
       if (fragebogenObj.condition) {
         this.fixImportedCondition(fragebogenObj.condition);
@@ -3316,7 +3230,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     );
   }
 
-  disableUpdateButton(): boolean {
+  isUpdateButtonDisabled(): boolean {
     return this.editingStatus && this.publish === 'allaudiences';
   }
 

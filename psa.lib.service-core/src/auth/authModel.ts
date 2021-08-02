@@ -1,4 +1,10 @@
-import { Request } from '@hapi/hapi';
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import { AuthCredentials, Request } from '@hapi/hapi';
 
 export interface BasicValidationFn {
   (request: Request, username: string, password: string): ValidationResult;
@@ -34,7 +40,7 @@ export interface LoginToken extends AuthToken {
   id: LoginTokenId;
 }
 
-export interface AuthToken {
+export interface AuthToken extends AuthCredentials {
   id: AccessTokenId | LoginTokenId;
   username: string;
 }

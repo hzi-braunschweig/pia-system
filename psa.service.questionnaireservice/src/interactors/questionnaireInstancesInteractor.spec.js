@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 const sinon = require('sinon');
 const expect = require('chai').expect;
 
@@ -53,7 +59,7 @@ describe('questionnairesInstancesInteractor', function () {
     it('should not get the qi, if the user has role "Proband" but the qi is not for him', async function () {
       getQuestionnaireInstanceWithQuestionnaireStub.withArgs(1).resolves({
         user_id: 'NotTheTestProband',
-        questionnaire: { type: 'for_probands' },
+        questionnaire: { type: 'for_probands', questions: [{}] },
       });
 
       const session = { id: 1, role: 'Proband', username: 'Testproband' };
@@ -74,7 +80,7 @@ describe('questionnairesInstancesInteractor', function () {
       getQuestionnaireInstanceWithQuestionnaireStub.withArgs(1).resolves({
         user_id: 'Testproband',
         status: 'inactive',
-        questionnaire: { type: 'for_probands' },
+        questionnaire: { type: 'for_probands', questions: [{}] },
       });
 
       const session = { id: 1, role: 'Proband', username: 'Testproband' };
@@ -116,7 +122,7 @@ describe('questionnairesInstancesInteractor', function () {
       getQuestionnaireInstanceWithQuestionnaireStub.withArgs(1).resolves({
         id: 1,
         user_id: 'Testproband',
-        questionnaire: { type: 'for_probands' },
+        questionnaire: { type: 'for_probands', questions: [{}] },
       });
 
       const session = { id: 1, role: 'Proband', username: 'Testproband' };
@@ -131,9 +137,11 @@ describe('questionnairesInstancesInteractor', function () {
     });
 
     it('should get the qi, if the user has role "Forscher" and has read access in study', async function () {
-      getQuestionnaireInstanceWithQuestionnaireStub
-        .withArgs(1)
-        .resolves({ id: 1, study_id: 'teststudy' });
+      getQuestionnaireInstanceWithQuestionnaireStub.withArgs(1).resolves({
+        id: 1,
+        study_id: 'teststudy',
+        questionnaire: { questions: [{}] },
+      });
 
       const session = {
         id: 1,

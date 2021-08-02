@@ -27,10 +27,9 @@ tag-release:
         docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$TARGET_TAG
       done
     - release-cli create --description "Release $TARGET_TAG" --tag-name "$TARGET_TAG"
-  only:
-    variables:
-      - $CI_COMMIT_BRANCH =~ /^release/
-  when: manual
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release/
+      when: manual
   environment:
     name: release-images
     url: https://$CI_REGISTRY/

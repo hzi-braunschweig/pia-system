@@ -1,26 +1,25 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import * as path from 'path';
 
-import { IJobs } from './definitions';
+import { RepoMetaData } from './models/repoMetaData';
 import { Fs } from './fs';
+import { PackageJson } from './models/packageJson';
 
 export class Scanner {
-  private static getNpmInstallJobs(jobs: IJobs) {
-    return [...jobs.lint, ...jobs.testUnit, ...jobs.testInt].filter(
-      (value, index, array) => {
-        return array.indexOf(value) === index;
-      }
-    );
-  }
-
-  public static async scanRepo(repoDir: string): Promise<IJobs> {
-    // Jobs we support to create
+  public static async scanRepo(repoDir: string): Promise<RepoMetaData> {
+    // Needed information about the Repo
     const docker: string[] = [];
     const lint: string[] = [];
     const testUnit: string[] = [];
     const testInt: string[] = [];
     const testE2e: string[] = [];
 
-    // Scan the repo dir for jobs to create
+    // Scan the repo dir for information
     for (const name of await Fs.readdir(repoDir)) {
       const fullName = path.join(repoDir, name);
       // Look for docker builds
@@ -30,11 +29,11 @@ export class Scanner {
       // Look for npm packages
       const packageFileName = path.join(fullName, 'package.json');
       if (await Fs.exists(packageFileName)) {
-        const pack = await Fs.readJson(packageFileName);
+        const pack = await Fs.readJson<PackageJson>(packageFileName);
         if (!pack.scripts) {
           continue;
         }
-        if (pack.scripts.lint) {
+        if (pack.scripts['lint']) {
           lint.push(name);
         }
         if (pack.scripts['test.unit']) {
@@ -52,16 +51,15 @@ export class Scanner {
       }
     }
 
-    const result: IJobs = {
+    return {
       docker,
       lint,
       testUnit,
       testInt,
       testE2e,
-      npmInstall: [],
+      npmInstall: Array.from(
+        new Set<string>([...lint, ...testUnit, ...testInt])
+      ),
     };
-
-    result.npmInstall = this.getNpmInstallJobs(result);
-    return result;
   }
 }

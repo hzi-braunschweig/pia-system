@@ -1,10 +1,12 @@
-FROM cypress/included:7.6.0@sha256:62979cac102526de84da46d124f8a39dc7fdfed9919840dfd6e077f8c1da5186
+FROM cypress/included:8.0.0@sha256:0377268ac0ef9b0852297a4453d3cb46149b913c4e9890ed96a93e775956b858
 
 ENV DIR=psa.app.web
 
 WORKDIR /dependencies/$DIR/
 ENV PACT_SKIP_BINARY_INSTALL=true
 COPY $DIR/package*.json ./
+COPY psa.lib.licensecollector/package.json ../psa.lib.licensecollector/
+COPY psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
 
 RUN npm ci
 

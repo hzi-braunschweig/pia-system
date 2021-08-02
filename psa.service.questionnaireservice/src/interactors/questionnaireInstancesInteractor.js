@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 const {
   QuestionnaireInstanceRepository,
 } = require('../repositories/questionnaireInstanceRepository');
@@ -22,6 +28,10 @@ const questionnaireInstancesInteractor = (function () {
               'Could not get questionnaire instance, because it does not exist'
             );
           });
+        if (result.questionnaire.questions.length === 0)
+          throw new Error(
+            'Could not get questionnaire instance, because conditions are not fulfilled'
+          );
         if (result.questionnaire.type !== 'for_probands') {
           throw new Error(
             'Probands can only get instances with type for_probands'
@@ -50,6 +60,10 @@ const questionnaireInstancesInteractor = (function () {
               'Could not get questionnaire instance, because it does not exist'
             );
           });
+        if (qInstanceResult.questionnaire.questions.length === 0)
+          throw new Error(
+            'Could not get questionnaire instance, because conditions are not fulfilled'
+          );
         if (qInstanceResult.questionnaire.type !== 'for_research_team') {
           throw new Error(
             'UT can only get instances with type for_research_team'
@@ -83,6 +97,10 @@ const questionnaireInstancesInteractor = (function () {
               'Could not get questionnaire instance, because it does not exist'
             );
           });
+        if (qInstanceResult.questionnaire.questions.length === 0)
+          throw new Error(
+            'Could not get questionnaire instance, because conditions are not fulfilled'
+          );
         if (!userStudies.includes(qInstanceResult.study_id)) {
           throw new Error(
             'Could not get questionnaire instance, because user has no access to study'

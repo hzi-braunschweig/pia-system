@@ -1,24 +1,36 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import {
+  DbQuestionnaireInstance,
   QuestionnaireInstance,
+  QuestionnaireInstanceForPM,
   QuestionnaireStatus,
 } from '../models/questionnaireInstance';
 import {
   QuestionnaireDbResult,
   RepositoryHelper as QuestionnaireRepositoryHelper,
 } from './questionnaireRepository';
-import { db } from '../db';
+import { db, getDbTransactionFromOptionsOrDbConnection } from '../db';
 import {
   CycleUnit,
   Questionnaire,
   QuestionnaireType,
 } from '../models/questionnaire';
-import { filterQuestionnaireOfInstance } from '../services/conditionCheckerService';
 import pgPromise from 'pg-promise';
+import { RepositoryOptions } from '@pia/lib-service-core';
+import { QuestionnaireFilter } from '../services/questionnaireFilter';
+import { QuestionnaireInstanceNotFoundError } from '../models/errors';
+import QueryResultError = pgPromise.errors.QueryResultError;
+import queryResultErrorCode = pgPromise.errors.queryResultErrorCode;
 
 const pgp = pgPromise({ capSQL: true });
 
 interface QuestionnaireInstanceDbResult extends QuestionnaireDbResult {
-  questionnaire_instance?: QuestionnaireInstance;
+  questionnaire_instance: DbQuestionnaireInstance | null;
 }
 
 class RepositoryHelper {
@@ -70,18 +82,58 @@ class RepositoryHelper {
         row.questionnaire_instance &&
         !questionnaireInstances.has(row.questionnaire_instance.id)
       ) {
-        row.questionnaire_instance.questionnaire = questionnaires.get(
-          row.questionnaire_instance.questionnaire_id.toString() +
-            '_' +
-            row.questionnaire_instance.questionnaire_version.toString()
-        );
+        const questionnaireInstance: QuestionnaireInstance = {
+          ...row.questionnaire_instance,
+          date_of_issue: new Date(row.questionnaire_instance.date_of_issue),
+          date_of_release_v1:
+            row.questionnaire_instance.date_of_release_v1 &&
+            new Date(row.questionnaire_instance.date_of_release_v1),
+          date_of_release_v2:
+            row.questionnaire_instance.date_of_release_v2 &&
+            new Date(row.questionnaire_instance.date_of_release_v2),
+          transmission_ts_v1:
+            row.questionnaire_instance.transmission_ts_v1 &&
+            new Date(row.questionnaire_instance.transmission_ts_v1),
+          transmission_ts_v2:
+            row.questionnaire_instance.transmission_ts_v2 &&
+            new Date(row.questionnaire_instance.transmission_ts_v2),
+          questionnaire: RepositoryHelper.deepCloneQuestionnaire(
+            questionnaires.get(
+              row.questionnaire_instance.questionnaire_id.toString() +
+                '_' +
+                row.questionnaire_instance.questionnaire_version.toString()
+            )!
+          ),
+        };
         questionnaireInstances.set(
           row.questionnaire_instance.id,
-          row.questionnaire_instance
+          questionnaireInstance
         );
       }
     });
     return questionnaireInstances;
+  }
+
+  private static deepCloneQuestionnaire(
+    questionnaire: Questionnaire
+  ): Questionnaire {
+    return {
+      ...questionnaire,
+      questions: questionnaire.questions.map((question) => {
+        return {
+          ...question,
+          condition: question.condition && { ...question.condition },
+          answer_options: question.answer_options.map((answerOption) => {
+            return {
+              ...answerOption,
+              condition: answerOption.condition && {
+                ...answerOption.condition,
+              },
+            };
+          }),
+        };
+      }),
+    };
   }
 }
 
@@ -107,11 +159,11 @@ export class QuestionnaireInstanceRepository {
   ): Promise<QuestionnaireInstance> {
     return db.one<QuestionnaireInstance>(
       `SELECT qi.*
-         FROM questionnaire_instances AS qi
-                JOIN questionnaires q ON qi.questionnaire_id = q.id AND qi.questionnaire_version = q.version
-         WHERE qi.id = $(id)
-           AND qi.status != 'deleted'
-           AND q.type = 'for_research_team'`,
+             FROM questionnaire_instances AS qi
+                      JOIN questionnaires q ON qi.questionnaire_id = q.id AND qi.questionnaire_version = q.version
+             WHERE qi.id = $(id)
+               AND qi.status != 'deleted'
+               AND q.type = 'for_research_team'`,
       {
         id: id,
       }
@@ -123,11 +175,11 @@ export class QuestionnaireInstanceRepository {
   ): Promise<QuestionnaireInstance> {
     return db.one<QuestionnaireInstance>(
       `SELECT qi.*
-         FROM questionnaire_instances AS qi
-                JOIN questionnaires q ON qi.questionnaire_id = q.id AND qi.questionnaire_version = q.version
-         WHERE qi.id = $(id)
-           AND qi.status != 'deleted'
-           AND q.type = 'for_probands'`,
+             FROM questionnaire_instances AS qi
+                      JOIN questionnaires q ON qi.questionnaire_id = q.id AND qi.questionnaire_version = q.version
+             WHERE qi.id = $(id)
+               AND qi.status != 'deleted'
+               AND q.type = 'for_probands'`,
       {
         id: id,
       }
@@ -149,22 +201,22 @@ export class QuestionnaireInstanceRepository {
         filter,
         order
       );
-    const result = await db.many(query, { id });
+    const result = await db.many(query, { id }).catch((err) => {
+      if (
+        err instanceof QueryResultError &&
+        err.code === queryResultErrorCode.noData
+      )
+        throw new QuestionnaireInstanceNotFoundError();
+      else throw err;
+    });
     // if db.many runs without error there will be a qInstance -> no need to check null
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const qInstance =
       RepositoryHelper.resolveDbResultToQuestionnaireInstanceMap(result).get(
         id
       )!;
-    qInstance.questionnaire = (await filterQuestionnaireOfInstance(
-      qInstance
-    )) as Questionnaire | undefined;
-    if (qInstance.questionnaire) {
-      return qInstance;
-    } else
-      throw new Error(
-        'questionnaire result is empty, because all conditions are not met'
-      );
+    await QuestionnaireFilter.filterQuestionnaireOfInstance(qInstance);
+    return qInstance;
   }
 
   /**
@@ -190,10 +242,8 @@ export class QuestionnaireInstanceRepository {
         ['for_probands', 'for_research_team']
       );
     for (const qi of resultQInstances) {
-      qi.questionnaire = (await filterQuestionnaireOfInstance(qi)) as
-        | undefined
-        | Questionnaire;
-      if (qi.questionnaire) {
+      await QuestionnaireFilter.filterQuestionnaireOfInstance(qi);
+      if (qi.questionnaire.questions.length > 0) {
         actualQInstances.push(qi);
       }
     }
@@ -222,10 +272,8 @@ export class QuestionnaireInstanceRepository {
         }
       });
     for (const qi of resultQInstances) {
-      qi.questionnaire = (await filterQuestionnaireOfInstance(qi)) as
-        | undefined
-        | Questionnaire;
-      if (qi.questionnaire) {
+      await QuestionnaireFilter.filterQuestionnaireOfInstance(qi);
+      if (qi.questionnaire.questions.length > 0) {
         actualQInstances.push(qi);
       }
     }
@@ -238,8 +286,8 @@ export class QuestionnaireInstanceRepository {
    */
   public static async getQuestionnaireInstancesWithQuestionnaireAsPM(
     user_id: string
-  ): Promise<QuestionnaireInstance[]> {
-    const actualQInstances = [];
+  ): Promise<QuestionnaireInstanceForPM[]> {
+    const actualQInstances: QuestionnaireInstanceForPM[] = [];
     const resultQInstances =
       await QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireForUserStatusAndType(
         user_id,
@@ -247,15 +295,15 @@ export class QuestionnaireInstanceRepository {
         'for_probands'
       );
     for (const qi of resultQInstances) {
-      qi.questionnaire = (await filterQuestionnaireOfInstance(qi)) as
-        | undefined
-        | Questionnaire;
-      if (qi.questionnaire) {
-        qi.questionnaire = {
-          id: qi.questionnaire.id,
-          cycle_unit: qi.questionnaire.cycle_unit,
-        };
-        actualQInstances.push(qi);
+      await QuestionnaireFilter.filterQuestionnaireOfInstance(qi);
+      if (qi.questionnaire.questions.length > 0) {
+        actualQInstances.push({
+          ...qi,
+          questionnaire: {
+            id: qi.questionnaire.id,
+            cycle_unit: qi.questionnaire.cycle_unit,
+          },
+        });
       }
     }
     return actualQInstances;
@@ -276,10 +324,8 @@ export class QuestionnaireInstanceRepository {
         'for_research_team'
       );
     for (const qi of resultQInstances) {
-      qi.questionnaire = (await filterQuestionnaireOfInstance(qi)) as
-        | undefined
-        | Questionnaire;
-      if (qi.questionnaire) {
+      await QuestionnaireFilter.filterQuestionnaireOfInstance(qi);
+      if (qi.questionnaire.questions.length > 0) {
         actualQInstances.push(qi);
       }
     }
@@ -356,6 +402,24 @@ export class QuestionnaireInstanceRepository {
     }
   }
 
+  public static async deleteQuestionnaireInstancesByQuestionnaireId(
+    questionnaireId: number,
+    questionnaireVersion: number,
+    status: QuestionnaireStatus[],
+    options?: RepositoryOptions
+  ): Promise<void> {
+    const dbConnection = getDbTransactionFromOptionsOrDbConnection(options);
+    const filter = {
+      questionnaireId,
+      questionnaireVersion,
+      status,
+    };
+    await dbConnection.none(
+      'DELETE FROM questionnaire_instances WHERE questionnaire_id = $(questionnaireId) AND questionnaire_version = $(questionnaireVersion) AND status IN ($(status:csv))',
+      filter
+    );
+  }
+
   private static async getQuestionnaireInstancesWithQuestionnaireForUserStatusAndType(
     user_id: string,
     status: QuestionnaireStatus[],
@@ -370,7 +434,7 @@ export class QuestionnaireInstanceRepository {
         filter,
         order
       );
-    const result = await db.many<QuestionnaireDbResult>(query, {
+    const result = await db.many<QuestionnaireInstanceDbResult>(query, {
       user_id,
       status,
       type,

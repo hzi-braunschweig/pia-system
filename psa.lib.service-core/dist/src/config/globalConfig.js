@@ -22,6 +22,9 @@ class GlobalConfig {
     static get personaldataservice() {
         return GlobalConfig.getHttpConnection('PERSONALDATASERVICE');
     }
+    static get questionnaireservice() {
+        return GlobalConfig.getHttpConnection('QUESTIONNAIRESERVICE');
+    }
     static get userservice() {
         return GlobalConfig.getHttpConnection('USERSERVICE');
     }

@@ -1,4 +1,4 @@
-FROM node:14.17.1-alpine@sha256:21b87afa5f267e50b806f696f754b15b37b4118bb0ef722192f27ddff78d8d67 AS base
+FROM node:14.17.3-alpine@sha256:fb6cb918cc72869bd625940f42a7d8ae035c4e786d08187b94e8b91c6a534dfd AS base
 
 FROM base AS npm-install
 RUN apk --update --no-cache add curl tzdata
@@ -20,6 +20,10 @@ WORKDIR /usr/src/node-app/
 ARG DIR=.
 ENV CYPRESS_INSTALL_BINARY=0
 COPY $DIR/package*.json ./
+#copy dev dependencies
+COPY psa.lib.licensecollector/package.json ../psa.lib.licensecollector/
+COPY psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
+
 RUN npm ci
 
 ENV NODE_PATH=/usr/src/node-app/node_modules
@@ -38,10 +42,13 @@ ARG DIR=.
 ENV CYPRESS_INSTALL_BINARY=0
 ENV PACT_SKIP_BINARY_INSTALL=true
 COPY $DIR/package*.json ./
+#copy dev dependencies
+COPY --chown=node psa.lib.licensecollector/package.json ../psa.lib.licensecollector/
+COPY --chown=node psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
+
 RUN npm ci
 
 COPY --chown=node $DIR/.browserslistrc $DIR/*.json ./
-COPY --chown=node $DIR/licenses ./licenses
 COPY --chown=node $DIR/src ./src
 ARG configuration=production
 ARG nodeoptions
@@ -54,7 +61,7 @@ RUN find /usr/src/node-app/dist/out/ | xargs gzip -k -9
 
 ################################################################
 
-FROM nginx:1.21.0-alpine@sha256:cc8c413c74aba9fef9dae7f3da736725136bad1e3f24fbc93788aea1944f51c4 AS final
+FROM nginx:1.21.1-alpine@sha256:2c2dfbb9814318bc50578b5c60a1e3305f2ac217879a1c87a84418f5d9418ff6 AS final
 
 ARG DIR=.
 

@@ -1,3 +1,9 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
 <div class="jumbotron">
   <div *ngIf="myForm" class="page-wrapper">
     <ngx-material-timepicker
@@ -8,6 +14,12 @@
       "
     >
     </ngx-material-timepicker>
+    <mat-card
+      *ngIf="currentQuestionnaire && !currentQuestionnaire.active"
+      data-e2e="e2e-questionnaire-deactivation-hint"
+    >
+      {{ 'QUESTIONNAIRE_FORSCHER.DEACTIVATION_HINT' | translate }}
+    </mat-card>
     <form class="form-container" [formGroup]="myForm" novalidate>
       <span *ngIf="isImportedQuestionnaire">{{
         'QUESTIONNAIRE_FORSCHER.FIRST_SAVE_QUESTIONNAIRE' | translate
@@ -845,10 +857,10 @@
                   data-e2e="e2e-condition-operand-select"
                 >
                   <mat-option
-                    *ngFor="let condition_operand of condition_operands"
-                    [value]="condition_operand.viewValue"
+                    *ngFor="let conditionOperand of conditionOperands"
+                    [value]="conditionOperand.viewValue"
                   >
-                    {{ condition_operand.viewValue }}
+                    {{ conditionOperand.viewValue }}
                   </mat-option>
                 </mat-select>
               </mat-form-field>
@@ -1507,11 +1519,11 @@
                             >
                               <mat-option
                                 *ngFor="
-                                  let condition_operand of condition_operands
+                                  let conditionOperand of conditionOperands
                                 "
-                                [value]="condition_operand.viewValue"
+                                [value]="conditionOperand.viewValue"
                               >
-                                {{ condition_operand.viewValue }}
+                                {{ conditionOperand.viewValue }}
                               </mat-option>
                             </mat-select>
                           </mat-form-field>
@@ -2245,11 +2257,11 @@
                                       >
                                         <mat-option
                                           *ngFor="
-                                            let condition_operand of condition_operands
+                                            let conditionOperand of conditionOperands
                                           "
-                                          [value]="condition_operand.viewValue"
+                                          [value]="conditionOperand.viewValue"
                                         >
-                                          {{ condition_operand.viewValue }}
+                                          {{ conditionOperand.viewValue }}
                                         </mat-option>
                                       </mat-select>
                                     </mat-form-field>
@@ -3078,8 +3090,8 @@
             mat-raised-button
             color="accent"
             type="button"
-            *ngIf="editingStatus"
-            [disabled]="disableUpdateButton()"
+            *ngIf="editingStatus && currentQuestionnaire?.active"
+            [disabled]="isUpdateButtonDisabled()"
             (click)="onSubmit('update')"
             data-e2e="e2e-update-questionnaire-button"
           >
@@ -3089,11 +3101,21 @@
             id="revisequestionnairebutton"
             mat-raised-button
             type="button"
-            *ngIf="editingStatus"
+            *ngIf="editingStatus && currentQuestionnaire?.active"
             (click)="onSubmit('revise')"
             data-e2e="e2e-questionnaire-revise-button"
           >
             {{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_REVISE' | translate }}
+          </button>
+          <button
+            id="deactivatequestionnairebutton"
+            mat-raised-button
+            type="button"
+            *ngIf="editingStatus && currentQuestionnaire?.active"
+            (click)="onDeactivate()"
+            data-e2e="e2e-questionnaire-deactivate-button"
+          >
+            {{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_DEACTIVATE' | translate }}
           </button>
           <button
             id="cancelquestionnairebutton"

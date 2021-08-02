@@ -1,152 +1,36 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import * as path from 'path';
 
-import { IJobs } from './definitions';
+import { RepoMetaData } from './models/repoMetaData';
 
-import { Exec, IExecResult } from './exec';
+import { Exec, ExecResult } from './exec';
 import { Color } from './color';
 import { SingleBar } from 'cli-progress';
 import { Helper } from './helper';
 
-interface IJobSpec {
+interface JobSpec {
   name: string;
   args: string[];
   repoDir: string;
 }
 
-interface IJobsWithResult extends IJobSpec {
-  result: IExecResult;
+interface JobsWithResult extends JobSpec {
+  result: ExecResult;
 }
 
-interface IJobsSpec {
+interface JobsSpec {
   name: string;
-  jobs: IJobSpec[];
+  jobs: JobSpec[];
 }
 
 export class Runner {
-  private static printJobInfo(
-    name: string,
-    args: string[],
-    jobResult: IExecResult
-  ) {
-    if (jobResult.success) {
-      console.log(`${name}: ${Color.successString()}`);
-    } else {
-      console.error(jobResult.data);
-      console.log(`${name}: ${Color.failureString()}`);
-    }
-  }
-
-  private static async runJobsParallel(
-    specs: IJobsSpec
-  ): Promise<IJobsWithResult[]> {
-    const bar = new SingleBar({
-      format: `${Color.task(
-        specs.name
-      )} [{bar}] {percentage}% | {value}/{total}`,
-    });
-
-    bar.start(specs.jobs.length, 0);
-
-    const results: { spec: IJobSpec; jobResult: Promise<IExecResult> }[] = [];
-    for (const job of specs.jobs) {
-      results.push({
-        spec: job,
-        jobResult: Exec.run('npm', job.args, path.join(job.repoDir, job.name)),
-      });
-    }
-
-    let open = results.map((result) => result.jobResult);
-
-    while (open.length > 0) {
-      await Promise.race(open);
-      const stillOpen: Promise<IExecResult>[] = [];
-      for (const o of open) {
-        if (!(await Helper.isFinished(o))) {
-          stillOpen.push(o);
-        }
-      }
-      open = stillOpen;
-      bar.update(specs.jobs.length - open.length);
-    }
-    bar.stop();
-
-    const result: IJobsWithResult[] = [];
-
-    for (const job of results) {
-      const jobResult = await job.jobResult;
-      Runner.printJobInfo(job.spec.name, job.spec.args, jobResult);
-      result.push(
-        Object.assign(job.spec, {
-          result: jobResult,
-        })
-      );
-    }
-    return result;
-  }
-
-  private static async runJobsSerial(
-    specs: IJobsSpec
-  ): Promise<IJobsWithResult[]> {
-    const bar = new SingleBar({
-      format: `${Color.task(
-        specs.name
-      )} [{bar}] {percentage}% | {value}/{total}`,
-    });
-    bar.start(specs.jobs.length, 0);
-
-    const results: { spec: IJobSpec; jobResult: IExecResult }[] = [];
-    for (let i = 0; i < specs.jobs.length; i++) {
-      const job = specs.jobs[i];
-      results.push({
-        spec: job,
-        jobResult: await Exec.run(
-          'npm',
-          job.args,
-          path.join(job.repoDir, job.name)
-        ),
-      });
-      bar.update(i + 1, { name: job.name });
-    }
-    bar.stop();
-
-    const result: IJobsWithResult[] = [];
-    for (const job of results) {
-      Runner.printJobInfo(job.spec.name, job.spec.args, job.jobResult);
-      result.push(
-        Object.assign(job.spec, {
-          result: job.jobResult,
-        })
-      );
-    }
-    return result;
-  }
-
-  private static async runJobs(
-    name: string,
-    jobs: string[],
-    args: string[],
-    repoDir: string,
-    parallel: boolean
-  ): Promise<IJobsWithResult[]> {
-    const specs: IJobsSpec = {
-      name,
-      jobs: jobs.map((job) => {
-        return {
-          name: job,
-          args,
-          repoDir,
-        };
-      }),
-    };
-    if (parallel) {
-      return await Runner.runJobsParallel(specs);
-    } else {
-      return await Runner.runJobsSerial(specs);
-    }
-  }
-
   public static async executeTests(
-    jobs: IJobs,
+    jobs: RepoMetaData,
     repoDir: string
   ): Promise<void> {
     await Runner.runJobs(
@@ -174,7 +58,7 @@ export class Runner {
   }
 
   public static async executeNpmUpdate(
-    jobs: IJobs,
+    jobs: RepoMetaData,
     repoDir: string
   ): Promise<void> {
     // parallel runs of npm install can cause problems with local libraries :-/
@@ -194,8 +78,137 @@ export class Runner {
     await this.executeUpdateJobUntilSuccessfully(jobs, repoDir, ['update']);
   }
 
+  public static async executeNpmOutdate(
+    jobs: RepoMetaData,
+    repoDir: string
+  ): Promise<void> {
+    await Runner.runJobs('check', jobs.npmInstall, ['outdated'], repoDir, true);
+  }
+
+  private static printJobInfo(
+    name: string,
+    _args: string[],
+    jobResult: ExecResult
+  ): void {
+    if (jobResult.success) {
+      console.log(`${name}: ${Color.successString()}`);
+    } else {
+      console.error(jobResult.data);
+      console.log(`${name}: ${Color.failureString()}`);
+    }
+  }
+
+  private static async runJobsParallel(
+    specs: JobsSpec
+  ): Promise<JobsWithResult[]> {
+    const bar = new SingleBar({
+      format: `${Color.task(
+        specs.name
+      )} [{bar}] {percentage}% | {value}/{total}`,
+    });
+
+    bar.start(specs.jobs.length, 0);
+
+    const results: { spec: JobSpec; jobResult: Promise<ExecResult> }[] = [];
+    for (const job of specs.jobs) {
+      results.push({
+        spec: job,
+        jobResult: Exec.run('npm', job.args, path.join(job.repoDir, job.name)),
+      });
+    }
+
+    let open = results.map(async (result) => result.jobResult);
+
+    while (open.length > 0) {
+      await Promise.race(open);
+      const stillOpen: Promise<ExecResult>[] = [];
+      for (const o of open) {
+        if (!(await Helper.isFinished(o))) {
+          stillOpen.push(o);
+        }
+      }
+      open = stillOpen;
+      bar.update(specs.jobs.length - open.length);
+    }
+    bar.stop();
+
+    const result: JobsWithResult[] = [];
+
+    for (const job of results) {
+      const jobResult = await job.jobResult;
+      Runner.printJobInfo(job.spec.name, job.spec.args, jobResult);
+      result.push(
+        Object.assign(job.spec, {
+          result: jobResult,
+        })
+      );
+    }
+    return result;
+  }
+
+  private static async runJobsSerial(
+    specs: JobsSpec
+  ): Promise<JobsWithResult[]> {
+    const bar = new SingleBar({
+      format: `${Color.task(
+        specs.name
+      )} [{bar}] {percentage}% | {value}/{total}`,
+    });
+    bar.start(specs.jobs.length, 0);
+
+    const results: { spec: JobSpec; jobResult: ExecResult }[] = [];
+    for (let i = 0; i < specs.jobs.length; i++) {
+      const job = specs.jobs[i]!;
+      results.push({
+        spec: job,
+        jobResult: await Exec.run(
+          'npm',
+          job.args,
+          path.join(job.repoDir, job.name)
+        ),
+      });
+      bar.update(i + 1, { name: job.name });
+    }
+    bar.stop();
+
+    const result: JobsWithResult[] = [];
+    for (const job of results) {
+      Runner.printJobInfo(job.spec.name, job.spec.args, job.jobResult);
+      result.push(
+        Object.assign(job.spec, {
+          result: job.jobResult,
+        })
+      );
+    }
+    return result;
+  }
+
+  private static async runJobs(
+    name: string,
+    jobs: string[],
+    args: string[],
+    repoDir: string,
+    parallel: boolean
+  ): Promise<JobsWithResult[]> {
+    const specs: JobsSpec = {
+      name,
+      jobs: jobs.map((job) => {
+        return {
+          name: job,
+          args,
+          repoDir,
+        };
+      }),
+    };
+    if (parallel) {
+      return await Runner.runJobsParallel(specs);
+    } else {
+      return await Runner.runJobsSerial(specs);
+    }
+  }
+
   private static async executeUpdateJobUntilSuccessfully(
-    jobs: IJobs,
+    jobs: RepoMetaData,
     repoDir: string,
     args: string[]
   ): Promise<void> {
@@ -203,6 +216,7 @@ export class Runner {
     // So we are updating until there are no more messages about updates.
     let toInstall = [...jobs.npmInstall];
     let iterations = 0;
+    const maxIterations = 10;
     while (toInstall.length > 0) {
       const result = await Runner.runJobs(
         'update',
@@ -227,17 +241,10 @@ export class Runner {
         return job.result.data !== '';
       });
       iterations++;
-      if (iterations > 10) {
+      if (iterations > maxIterations) {
         console.log(Color.error('unable to update'));
         break;
       }
     }
-  }
-
-  public static async executeNpmOutdate(
-    jobs: IJobs,
-    repoDir: string
-  ): Promise<void> {
-    await Runner.runJobs('check', jobs.npmInstall, ['outdated'], repoDir, true);
   }
 }

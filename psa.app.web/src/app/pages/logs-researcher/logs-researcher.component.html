@@ -1,3 +1,11 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<app-loading-spinner *ngIf="loading"></app-loading-spinner>
+
 <div class="jumbotron">
   <div class="page-wrapper">
     <form
@@ -180,8 +188,6 @@
       </mat-dialog-actions>
     </form>
   </div>
-
-  <app-loading-spinner *ngIf="loading"></app-loading-spinner>
 
   <div class="example-container mat-elevation-z8">
     <div class="filter" align="left">

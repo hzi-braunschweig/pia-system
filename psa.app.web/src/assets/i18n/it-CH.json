@@ -305,6 +305,7 @@
     "QUESTIONNAIRE_SAVE": "Salva questionario",
     "QUESTIONNAIRE_UPDATE": "Aggiorna questionario",
     "QUESTIONNAIRE_REVISE": "Salva nuova versione",
+    "QUESTIONNAIRE_DEACTIVATE": "Deaktivieren",
     "WARNING": "Avviso",
     "WARNING_UPDATE": "Aggiornando un questionario, le risposte già immesse andranno perse. Creare una nuova versione se le risposte devono essere conservate.",
     "CANCEL": "Annulla",
@@ -388,7 +389,9 @@
     "INTERVAL": "Intervallo",
     "O_CLOCK": "Ora",
     "FILE_INPUT_TYPES_HINT": "È possibile caricare solo file PDF e CSV.",
-    "IMAGE_INPUT_TYPES_HINT": "È possibile caricare solo file PNG e JPEG."
+    "IMAGE_INPUT_TYPES_HINT": "È possibile caricare solo file PNG e JPEG.",
+    "DEACTIVATION_HINT": "Dieser Fragebogen ist deaktiviert und kann nicht mehr geändert werden.",
+    "DEACTIVATION_CONFIRMATION_HINT": "<p>Hinweis: Bei Deaktivierung des Fragebogens wird dieser Teilnehmenden nicht mehr angezeigt. Die bereits bestehenden Antworten bleiben erhalten. Nach Deaktivierung kann der Fragebogen <strong>nicht</strong> wieder aktiviert werden. Sind Sie sicher, dass Sie den Fragebogen deaktivieren wollen?</p>"
   },
   "QUESTIONNAIRES_FORSCHER": {
     "VERSION": "Versione",
@@ -396,6 +399,9 @@
     "NEW_QUESTIONNAIRE": "Crea nuovo questionario",
     "STUDY_ID": "Nome dello studio",
     "QUESTIONS_NUMBER": " Numero di domande",
+    "ACTIVE_STATUS": "Stato",
+    "ACTIVE": "aktiv",
+    "NOT_ACTIVE": "deaktiviert",
     "FILTER_NO_RESULTS": "Nessun questionario trovato.",
     "ROLE": "Ruolo",
     "EXPIRED": "Scaduto",

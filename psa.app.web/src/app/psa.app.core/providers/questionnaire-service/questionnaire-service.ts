@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { Injectable } from '@angular/core';
 import {
   Questionnaire,
@@ -100,6 +106,27 @@ export class QuestionnaireService {
       .toPromise();
   }
 
+  /**
+   * Currently Questionnaires can only be deactivated and not vice versa.
+   */
+  deactivateQuestionnaire(
+    studyName: string,
+    questionnaireId: number,
+    version: number
+  ): Promise<Questionnaire> {
+    return this.http
+      .patch<Questionnaire>(
+        this.apiUrl +
+          studyName +
+          '/questionnaires/' +
+          questionnaireId +
+          '/' +
+          version,
+        { active: false }
+      )
+      .toPromise();
+  }
+
   reviseQuestionnaire(
     questionnaireId: number,
     putData: object
@@ -162,9 +189,9 @@ export class QuestionnaireService {
   postAnswers(
     questionnaireInstanceId: number,
     postData: object
-  ): Promise<Answer[]> {
+  ): Promise<{ answers: Answer[] }> {
     return this.http
-      .post<Answer[]>(
+      .post<{ answers: Answer[] }>(
         this.apiUrl +
           'questionnaireInstances/' +
           questionnaireInstanceId +
@@ -174,9 +201,9 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  getAnswers(questionnaireInstanceId: number): Promise<Answer[]> {
+  getAnswers(questionnaireInstanceId: number): Promise<{ answers: Answer[] }> {
     return this.http
-      .get<Answer[]>(
+      .get<{ answers: Answer[] }>(
         this.apiUrl +
           'questionnaireInstances/' +
           questionnaireInstanceId +

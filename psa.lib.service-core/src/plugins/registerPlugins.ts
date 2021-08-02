@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { Plugin, Server } from '@hapi/hapi';
 import Inert from '@hapi/inert';
 import Vision from '@hapi/vision';
@@ -54,6 +60,7 @@ export const registerPlugins = async (
       plugin: Router as Plugin<unknown>,
       options: {
         routes: options.routes,
+        ignore: ['**/*.d.ts', '**/*.js.map'],
       },
     });
   }

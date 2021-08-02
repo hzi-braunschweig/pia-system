@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import {
   Component,
   HostListener,
@@ -10,6 +16,9 @@ import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnai
 import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
 import {
   Condition,
+  ConditionLink,
+  ConditionOperand,
+  ConditionType,
   Questionnaire,
 } from '../../../psa.app.core/models/questionnaire';
 import { Question } from '../../../psa.app.core/models/question';
@@ -19,7 +28,6 @@ import {
   FormArray,
   FormControl,
   FormGroup,
-  ValidationErrors,
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AnswerOption, Value } from '../../../psa.app.core/models/answerOption';
@@ -55,11 +63,46 @@ import { RequiredAnswerValidator } from './required-answer-validator';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SelectedProbandInfoService } from '../../../_services/selected-proband-info.service';
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
+import { AnswerType } from '../../../psa.app.core/models/answerType';
+import { QuestionnaireInstance } from '../../../psa.app.core/models/questionnaireInstance';
 
 enum DisplayStatus {
   QUESTIONS,
   OVERVIEW,
   HISTORY,
+}
+
+interface AnswerOptionFormValue {
+  answer_type_id: number;
+  show_answer_option: boolean;
+  values: FormArray;
+  hasValue: boolean;
+  text: string;
+  id: number;
+  question_id: number | string;
+  value: string | Date;
+  is_condition_target: string | boolean;
+  condition?: ConditionFormValue;
+}
+
+interface QuestionFormValue {
+  id: number;
+  text: string;
+  is_mandatory: boolean;
+  show_question: boolean;
+  show_question_answer_condition: boolean;
+  counterOfDisabledAnswerOptionsInQuestion: number;
+  answer_options: AnswerOptionFormValue[];
+  condition?: ConditionFormValue;
+}
+
+interface ConditionFormValue {
+  condition_type: ConditionType.INTERNAL_THIS | null;
+  condition_target_questionnaire: number;
+  condition_target_answer_option: number;
+  condition_operand: ConditionOperand | null;
+  condition_value: string;
+  condition_link: ConditionLink | null;
 }
 
 @Component({
@@ -81,25 +124,25 @@ export class QuestionProbandComponent
   implements ComponentCanDeactivate, OnInit, OnDestroy
 {
   public myForm: FormGroup;
-  public questionnaireId: any;
-  public questionnaireInstanceId: any;
-  questionnaire: Questionnaire;
-  studyOfQuestionnaire: Studie = null;
-  answer_type_id: number;
-  public answer_value: any;
-  public answers: Answer[] = [];
-  public questions: Question[];
-  @ViewChild('questionSwiper') questionSwiper: SwiperComponent;
-  DisplayStatus = DisplayStatus;
+  public questionnaireInstanceId: number | undefined;
+  private questionnaire: Questionnaire;
+  public studyOfQuestionnaire: Studie = null;
+  public readonly DisplayStatus = DisplayStatus;
   public displayStatus: DisplayStatus = DisplayStatus.QUESTIONS;
-  currentHistory: HistoryItem[] = [];
-  questionnaire_instance_status: string;
-  date_of_issue: Date;
-  isLoading: boolean = false;
-  progress: number;
-  allInternalConditionsInQuestionnaire: Condition[] = [];
-  answerIdsFromServer: number[] = [];
-  config: SwiperOptions = {
+  public currentHistory: HistoryItem[] = [];
+  public questionnaire_instance_status: string;
+  public date_of_issue: Date;
+  public isLoading: boolean = false;
+  public answerIdsFromServer: number[] = [];
+  public currentRole: string;
+  public user_id: string;
+  public answerVersionFromServer: number;
+  public release_version: number;
+  public proband: User;
+
+  @ViewChild('questionSwiper')
+  public questionSwiper: SwiperComponent;
+  public readonly config: SwiperOptions = {
     pagination: { el: '.swiper-pagination', clickable: false },
     navigation: {
       nextEl: '.swiper-button-next',
@@ -109,20 +152,14 @@ export class QuestionProbandComponent
     simulateTouch: false,
     spaceBetween: 30,
   };
-  currentRole: string;
-  user_id: string;
-  answerVersionFromServer: number;
-  release_version: number;
-  tools: Tools;
-  proband: User;
 
-  canDeactivate(): Observable<boolean> | boolean {
+  public canDeactivate(): Observable<boolean> | boolean {
     return this.myForm ? !this.myForm.dirty : true;
   }
 
   // @HostListener allows us to also guard against browser refresh, close, etc.
   @HostListener('window:beforeunload', ['$event'])
-  unloadNotification($event: any): void {
+  public unloadNotification($event: any): void {
     if (!this.canDeactivate()) {
       // This message is displayed to the user in IE and Edge when they navigate without using Angular routing (type another URL/close the browser/etc)
       $event.returnValue = this.translate.instant('WARNING.ANSWERS');
@@ -141,56 +178,53 @@ export class QuestionProbandComponent
     public dialog: MatDialog,
     private _location: Location
   ) {
-    this.tools = new Tools();
     const jwtHelper: JwtHelperService = new JwtHelperService();
     const currentUser: User = JSON.parse(localStorage.getItem('currentUser'));
     // decode the token to get its payload
     const tokenPayload = jwtHelper.decodeToken(currentUser.token);
     this.currentRole = tokenPayload.role;
-    if ('id' in this.activatedRoute.snapshot.params) {
-      this.questionnaireId = this.activatedRoute.snapshot.paramMap.get('id');
-      this.questionnaireInstanceId =
-        this.activatedRoute.snapshot.paramMap.get('instanceId');
+    if ('instanceId' in this.activatedRoute.snapshot.params) {
+      this.questionnaireInstanceId = Number(
+        this.activatedRoute.snapshot.paramMap.get('instanceId')
+      );
     }
   }
 
-  ngOnInit(): void {
+  public async ngOnInit(): Promise<void> {
     this.isLoading = true;
+    try {
+      const result: QuestionnaireInstance =
+        await this.questionnaireService.getQuestionnaireInstance(
+          this.questionnaireInstanceId
+        );
+      this.questionnaire_instance_status = result.status
+        ? result.status
+        : 'active';
+      this.date_of_issue = result.date_of_issue;
+      this.user_id = result.user_id;
+      this.release_version = result.release_version;
+      this.questionnaire = result.questionnaire;
 
-    this.questionnaireService
-      .getQuestionnaireInstance(this.questionnaireInstanceId)
-      .then(
-        async (result: any) => {
-          this.questionnaire_instance_status = result.status
-            ? result.status
-            : 'active';
-          this.date_of_issue = result.date_of_issue;
-          this.user_id = result.user_id;
-          this.release_version = result.release_version;
-          this.questionnaire = result.questionnaire;
-
-          // get study for sample configuration
-          this.studyOfQuestionnaire = await this.questionnaireService.getStudy(
-            this.questionnaire.study_id
-          );
-
-          if (this.currentRole === 'Untersuchungsteam') {
-            this.proband = await this.userService.getUser(this.user_id);
-            this.selectedProbandInfoService.updateSideNavInfoSelectedProband({
-              ids: this.proband['ids'],
-              pseudonym: this.proband['username'],
-            });
-          }
-          await this.initForm(this.questionnaire); // handles both the create and edit logic
-          this.isLoading = false;
-        },
-        (err: any) => {
-          this.alertService.errorObject(err);
-        }
+      // get study for sample configuration
+      this.studyOfQuestionnaire = await this.questionnaireService.getStudy(
+        this.questionnaire.study_id
       );
+
+      if (this.currentRole === 'Untersuchungsteam') {
+        this.proband = await this.userService.getUser(this.user_id);
+        this.selectedProbandInfoService.updateSideNavInfoSelectedProband({
+          ids: this.proband.ids,
+          pseudonym: this.proband.username,
+        });
+      }
+      await this.initForm(this.questionnaire); // handles both the create and edit logic
+    } catch (err) {
+      this.alertService.errorObject(err);
+    }
+    this.isLoading = false;
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     if (this.currentRole === 'Untersuchungsteam') {
       this.selectedProbandInfoService.updateSideNavInfoSelectedProband(null);
     }
@@ -200,27 +234,24 @@ export class QuestionProbandComponent
    * Initialises the myForm
    * @method initForm
    */
-  async initForm(questionnaire?: Questionnaire): Promise<void> {
-    const questions: FormArray = new FormArray([]);
+  private async initForm(questionnaire?: Questionnaire): Promise<void> {
     const name = this.questionnaire.name;
     this.myForm = new FormGroup({
       name: new FormControl(name),
-      questions,
+      questions: new FormArray([]),
     });
-    const result: any = await this.questionnaireService.getAnswers(
+    const result = await this.questionnaireService.getAnswers(
       this.questionnaireInstanceId
     );
-    this.answers = result.answers;
-    this.answerVersionFromServer = this.answers[0]
-      ? this.answers[0].versioning
-      : 0;
+    const answers = result.answers;
+    this.answerVersionFromServer = answers[0] ? answers[0].versioning : 0;
 
     questionnaire.questions.forEach((question, questionIndex) => {
       this.addQuestion(question);
       question.answer_options.forEach((answerOption, answerOptionIndex) => {
         const valueList: Value[] = [];
-        if (this.answers.length !== 0) {
-          this.answers.forEach((answer) => {
+        if (answers.length !== 0) {
+          answers.forEach((answer) => {
             if (answerOption.id === answer.answer_option_id) {
               this.answerIdsFromServer.push(answer.answer_option_id);
               if (answerOption.answer_type_id === 2) {
@@ -304,16 +335,14 @@ export class QuestionProbandComponent
   /**
    * Adds a question FormGroup to the questionnaire <FormArray>FormControl(questions)
    */
-  addQuestion(question?: Question): void {
+  private addQuestion(question?: Question): void {
     const text = question ? this.calculatAppropriateDate(question.text) : '';
     const is_mandatory =
       question && question.is_mandatory ? question.is_mandatory : false;
-    const answer_options = new FormArray([]);
     const id = question ? question.id : '';
-    const questionIndex = (this.myForm.controls['questions'] as FormArray)
-      .length;
+    const questionIndex = (this.myForm.get('questions') as FormArray).length;
 
-    (this.myForm.controls['questions'] as FormArray).push(
+    (this.myForm.get('questions') as FormArray).push(
       new FormGroup({
         id: new FormControl(id),
         text: new FormControl(text),
@@ -327,15 +356,14 @@ export class QuestionProbandComponent
         ),
         show_question_answer_condition: new FormControl(true),
         counterOfDisabledAnswerOptionsInQuestion: new FormControl(0),
-        answer_options,
+        answer_options: new FormArray([]),
       })
     );
     if (
       question.condition &&
       question.condition.condition_type === 'internal_this'
     ) {
-      this.allInternalConditionsInQuestionnaire.push(question.condition);
-      this.addQuestionCondition(questionIndex, question);
+      this.addQuestionCondition(questionIndex, question.condition);
     }
   }
 
@@ -344,7 +372,7 @@ export class QuestionProbandComponent
    *
    * @param inputText input string for convert vaues to dates
    */
-  calculatAppropriateDate(inputText: string): string {
+  private calculatAppropriateDate(inputText: string): string {
     const myRegex = /\(dat=(.*?)\)/g;
     let str = inputText ? inputText : '';
     while (true) {
@@ -360,42 +388,26 @@ export class QuestionProbandComponent
     return str;
   }
 
-  addQuestionCondition(questionIndex: number, question?: Question): void {
-    const questionControl = (this.myForm.controls['questions'] as FormArray)
-      .controls[questionIndex] as FormGroup;
-    const condition_type =
-      question && question.condition ? question.condition.condition_type : null;
-    const condition_questionnaire_id =
-      question && question.condition
-        ? question.condition.condition_target_questionnaire
-        : null;
-    const condition_answer_option_id =
-      question && question.condition
-        ? question.condition.condition_target_answer_option
-        : null;
-    const condition_operand =
-      question && question.condition
-        ? question.condition.condition_operand
-        : null;
-    const condition_value =
-      question && question.condition
-        ? question.condition.condition_value
-        : null;
-    const condition_question_id = undefined;
+  private addQuestionCondition(
+    questionIndex: number,
+    condition: Condition
+  ): void {
+    const questionControl =
+      this.getQuestionFormControlAtPosition(questionIndex);
 
     questionControl.addControl(
       'condition',
       new FormGroup({
-        condition_type: new FormControl(condition_type),
+        condition_type: new FormControl(condition.condition_type),
         condition_target_questionnaire: new FormControl(
-          condition_questionnaire_id
+          condition.condition_target_questionnaire
         ),
         condition_target_answer_option: new FormControl(
-          condition_answer_option_id
+          condition.condition_target_answer_option
         ),
-        condition_question_id: new FormControl(condition_question_id),
-        condition_operand: new FormControl(condition_operand),
-        condition_value: new FormControl(condition_value),
+        condition_operand: new FormControl(condition.condition_operand),
+        condition_value: new FormControl(condition.condition_value),
+        condition_link: new FormControl(condition.condition_link),
       })
     );
   }
@@ -403,44 +415,43 @@ export class QuestionProbandComponent
   /**
    * Adds a AnswerOption FormGroup to the question's <FormArray>FormControl(answer)
    */
-  addAnswer(questionIndex: number, answerOption?: AnswerOption): void {
+  private addAnswer(questionIndex: number, answerOption?: AnswerOption): void {
     const text = answerOption
       ? this.calculatAppropriateDate(answerOption.text)
       : '';
-    this.answer_type_id = answerOption ? answerOption.answer_type_id : null;
-    const answer_id = answerOption ? answerOption.id : '';
+    const answer_type_id: AnswerType = answerOption
+      ? answerOption.answer_type_id
+      : null;
+    const answer_id = answerOption ? answerOption.id : null;
     const question_id = answerOption ? answerOption.question_id : '';
     const is_condition_target = answerOption
       ? answerOption.is_condition_target
       : '';
     let hasValue = false;
 
+    let answer_value: string | Date;
     if (answerOption) {
-      this.answer_value = answerOption.answer_value
-        ? answerOption.answer_value
-        : '';
-      if (this.answer_value !== '' && this.answer_type_id === 5) {
-        this.answer_value = new Date(this.answer_value);
+      answer_value = answerOption.answer_value ? answerOption.answer_value : '';
+      if (answer_value !== '' && answer_type_id === AnswerType.Date) {
+        answer_value = new Date(answer_value);
       }
-      if (this.answer_type_id === 6) {
-        hasValue = !!this.answer_value;
+      if (answer_type_id === AnswerType.Sample) {
+        hasValue = !!answer_value;
       }
     } else {
-      this.answer_value = '';
+      answer_value = '';
     }
 
-    const answerOptions: FormArray = (
-      (this.myForm.controls['questions'] as FormArray).controls[
-        questionIndex
-      ] as FormArray
-    ).controls['answer_options'];
+    const answerOptions: FormArray = this.getQuestionFormControlAtPosition(
+      questionIndex
+    ).get('answer_options') as FormArray;
 
     answerOptions.push(
       new FormGroup({
         text: new FormControl(text),
         id: new FormControl(answer_id),
         question_id: new FormControl(question_id),
-        answer_type_id: new FormControl(this.answer_type_id),
+        answer_type_id: new FormControl(answer_type_id),
         show_answer_option: new FormControl(
           !(
             answerOption &&
@@ -449,29 +460,24 @@ export class QuestionProbandComponent
           )
         ),
         is_condition_target: new FormControl(is_condition_target),
-        value: new FormControl(this.answer_value),
+        value: new FormControl(answer_value),
         values: new FormArray([]),
         hasValue: new FormControl(hasValue),
       })
     );
 
     const answerIndex = answerOptions.length - 1;
-    const answerControl: FormGroup = answerOptions.controls[
-      answerIndex
-    ] as FormGroup;
-    const is_mandatory = (
-      (
-        (this.myForm.controls['questions'] as FormArray).controls[
-          questionIndex
-        ] as FormGroup
-      ).controls['is_mandatory'] as FormControl
-    ).value;
+    const answerControl: FormGroup = answerOptions.at(answerIndex) as FormGroup;
+    const is_mandatory =
+      this.getQuestionFormControlAtPosition(questionIndex).get(
+        'is_mandatory'
+      ).value;
 
     if (is_mandatory) {
       answerControl.setValidators(RequiredAnswerValidator.answerRequired);
     }
 
-    if (this.answer_type_id === 3) {
+    if (answer_type_id === AnswerType.Number) {
       answerControl.addControl(
         'restriction_min',
         new FormControl(answerOption.restriction_min)
@@ -484,20 +490,20 @@ export class QuestionProbandComponent
         answerOption.restriction_min != null &&
         answerOption.restriction_max != null
       ) {
-        answerControl.setValidators(this.checkValueRanges);
+        answerControl.setValidators(Tools.checkValueRanges);
       }
       answerControl.addControl(
         'is_decimal',
         new FormControl(answerOption.is_decimal)
       );
       if (answerOption.is_decimal) {
-        answerControl.get('value').setValidators(this.checkIfNumberIsDecimal);
+        answerControl.get('value').setValidators(Tools.checkIfNumberIsDecimal);
       } else {
-        answerControl.get('value').setValidators(this.checkIfNumberIsInteger);
+        answerControl.get('value').setValidators(Tools.checkIfNumberIsInteger);
       }
     }
 
-    if (this.answer_type_id === 6) {
+    if (answer_type_id === AnswerType.Sample) {
       const sample_ids: string[] = answerOption.answer_value
         ? answerOption.answer_value.split(';')
         : [null, null];
@@ -513,14 +519,14 @@ export class QuestionProbandComponent
       }
     }
 
-    if (this.answer_type_id === 5) {
+    if (answer_type_id === AnswerType.Date) {
       const restriction_min =
         answerOption.restriction_min !== null
-          ? this.countDateFromToday(answerOption.restriction_min)
+          ? Tools.countDateFromToday(answerOption.restriction_min)
           : null;
       const restriction_max =
         answerOption.restriction_max !== null
-          ? this.countDateFromToday(answerOption.restriction_max)
+          ? Tools.countDateFromToday(answerOption.restriction_max)
           : null;
       answerControl.addControl(
         'restriction_min',
@@ -534,7 +540,7 @@ export class QuestionProbandComponent
         answerOption.restriction_min != null &&
         answerOption.restriction_max != null
       ) {
-        answerControl.setValidators(this.checkValueRanges);
+        answerControl.setValidators(Tools.checkValueRanges);
       }
     }
 
@@ -542,160 +548,73 @@ export class QuestionProbandComponent
       answerOption.condition &&
       answerOption.condition.condition_type === 'internal_this'
     ) {
-      this.allInternalConditionsInQuestionnaire.push(answerOption.condition);
-      this.addAnswerCondition(questionIndex, answerIndex, answerOption);
+      this.addAnswerCondition(
+        questionIndex,
+        answerIndex,
+        answerOption.condition
+      );
     }
     answerControl.updateValueAndValidity();
   }
 
-  countDateFromToday(days: number): Date {
-    return new Date(Date.today().addDays(days).getTime());
+  private getQuestionFormControlAtPosition(
+    questionIndex: number
+  ): FormGroup & { value: QuestionFormValue } {
+    return (this.myForm.get('questions') as FormArray).at(
+      questionIndex
+    ) as FormGroup;
   }
 
-  checkIfNumberIsDecimal(control: FormControl): ValidationErrors {
-    const formControlText = control.value;
-    if (
-      formControlText &&
-      formControlText.toString().match(/^-?(0|[1-9]\d*)([\.\,]\d+)?$/) === null
-    ) {
-      return { notDecimalNumber: true };
-    } else {
-      return null;
-    }
+  private getAnswerOptionFormControlAtPosition(
+    questionIndex: number,
+    answerIndex: number
+  ): FormGroup & { value: AnswerOptionFormValue } {
+    return (
+      this.getQuestionFormControlAtPosition(questionIndex).get(
+        'answer_options'
+      ) as FormArray
+    ).at(answerIndex) as FormGroup;
   }
 
-  checkIfNumberIsInteger(control: FormControl): ValidationErrors {
-    const formControlText = control.value;
-    if (
-      formControlText &&
-      formControlText.toString().match(/^([+-]?[1-9]\d*|0)$/) === null
-    ) {
-      return { notNumber: true };
-    } else {
-      return null;
-    }
-  }
-
-  checkValueRanges(AC: AbstractControl): { valuesValidate: boolean } {
-    const formControlText = AC.get('value').value
-      ? AC.get('answer_type_id').value === 3
-        ? parseFloat(AC.get('value').value)
-        : AC.get('value').value
-      : null;
-    const restriction_min = AC.get('restriction_min').value;
-    const restriction_max = AC.get('restriction_max').value;
-
-    if (
-      formControlText === null ||
-      formControlText === undefined ||
-      formControlText === ''
-    ) {
-      return null;
-    } else {
-      if (
-        !Number.isNaN(formControlText) &&
-        !Number.isNaN(restriction_min) &&
-        !Number.isNaN(restriction_max) &&
-        restriction_min <= formControlText &&
-        formControlText <= restriction_max
-      ) {
-        return null;
-      } else {
-        AC.get('value').setErrors({ valuesValidate: true });
-        return { valuesValidate: true };
-      }
-    }
-  }
-
-  /**
-   * Check that the values inside (dat=) are only numbers
-   *
-   * @param control form control
-   */
-  validateFormControlTextVariableValue(control: FormControl): ValidationErrors {
-    const formControlText = control.value;
-    const myRegex = /\(dat=(.*?)\)/g;
-    const str = control.value ? control.value : '';
-    const counter = 0;
-    while (true) {
-      const myArray = myRegex.exec(str);
-      if (myArray === null) {
-        break;
-      }
-      if (myArray[1] === '' || myArray[1].match(/^-?[0-9,]*$/) === null) {
-        return { validVariable: true };
-      }
-    }
-    return null;
-  }
-
-  addAnswerCondition(
+  private addAnswerCondition(
     questionIndex: number,
     answerIndex: number,
-    answerOption?: AnswerOption
+    condition: Condition
   ): void {
-    const answerControl = (
-      (
-        (this.myForm.controls['questions'] as FormArray).controls[
-          questionIndex
-        ] as FormGroup
-      ).controls['answer_options'] as FormArray
-    ).controls[answerIndex] as FormGroup;
-
-    const condition_type = answerOption
-      ? answerOption.condition.condition_type
-      : null;
-    const condition_questionnaire_id = answerOption
-      ? answerOption.condition.condition_target_questionnaire
-      : null;
-    const condition_answer_option_id = answerOption
-      ? answerOption.condition.condition_target_answer_option
-      : null;
-    const condition_operand = answerOption
-      ? answerOption.condition.condition_operand
-      : null;
-    const condition_value = answerOption
-      ? answerOption.condition.condition_value
-      : null;
-    const condition_question_id = undefined;
+    const answerControl = this.getAnswerOptionFormControlAtPosition(
+      questionIndex,
+      answerIndex
+    );
 
     answerControl.addControl(
       'condition',
       new FormGroup({
-        condition_type: new FormControl(condition_type),
+        condition_type: new FormControl(condition.condition_type),
         condition_target_questionnaire: new FormControl(
-          condition_questionnaire_id
+          condition.condition_target_questionnaire
         ),
         condition_target_answer_option: new FormControl(
-          condition_answer_option_id
+          condition.condition_target_answer_option
         ),
-        condition_question_id: new FormControl(condition_question_id),
-        condition_operand: new FormControl(condition_operand),
-        condition_value: new FormControl(condition_value),
+        condition_operand: new FormControl(condition.condition_operand),
+        condition_value: new FormControl(condition.condition_value),
       })
     );
   }
 
-  addValue(
+  private addValue(
     questionIndex: number,
     answerIndex: number,
     value?: string,
     valueList?: Value
   ): void {
-    let text: any;
+    let text: string | Date;
     if (value) {
       if (
-        (
-          (
-            (
-              (
-                (this.myForm.controls['questions'] as FormArray).controls[
-                  questionIndex
-                ] as FormGroup
-              ).controls['answer_options'] as FormArray
-            ).controls[answerIndex] as FormGroup
-          ).controls['answer_type_id'] as FormControl
-        ).value === '5'
+        this.getAnswerOptionFormControlAtPosition(
+          questionIndex,
+          answerIndex
+        ).get('answer_type_id').value === '5'
       ) {
         text = new Date(value);
       } else {
@@ -708,15 +627,9 @@ export class QuestionProbandComponent
     }
     const isChecked = valueList ? valueList.isChecked : false;
     (
-      (
-        (
-          (
-            (this.myForm.controls['questions'] as FormArray).controls[
-              questionIndex
-            ] as FormGroup
-          ).controls['answer_options'] as FormArray
-        ).controls[answerIndex] as FormGroup
-      ).controls['values'] as FormArray
+      this.getAnswerOptionFormControlAtPosition(questionIndex, answerIndex).get(
+        'values'
+      ) as FormArray
     ).push(
       new FormGroup({
         value: new FormControl(text),
@@ -725,43 +638,23 @@ export class QuestionProbandComponent
     );
   }
 
-  onChange(
+  public onChange(
     input: HTMLInputElement,
     questionIndex: number,
     answerIndex: number
   ): void {
-    const answerValue = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).get('value') as FormControl as FormControl;
+    const answerValue = this.getAnswerOptionFormControlAtPosition(
+      questionIndex,
+      answerIndex
+    ).get('value');
     const answerValues =
-      (
-        (
-          (
-            (
-              (this.myForm.controls['questions'] as FormArray).controls[
-                questionIndex
-              ] as FormGroup
-            ).controls['answer_options'] as FormArray
-          ).controls[answerIndex] as FormGroup
-        ).controls['values'] as FormArray
+      this.getAnswerOptionFormControlAtPosition(questionIndex, answerIndex).get(
+        'values'
       ).value != null
-        ? (
-            (
-              (
-                (
-                  (this.myForm.controls['questions'] as FormArray).controls[
-                    questionIndex
-                  ] as FormGroup
-                ).controls['answer_options'] as FormArray
-              ).controls[answerIndex] as FormGroup
-            ).controls['values'] as FormArray
-          ).value
+        ? this.getAnswerOptionFormControlAtPosition(
+            questionIndex,
+            answerIndex
+          ).get('values').value
         : '';
     const stringValue: string =
       answerValue.value != null ? answerValue.value.toString() : '';
@@ -813,7 +706,7 @@ export class QuestionProbandComponent
     this.checkConditions(questionIndex, answerIndex);
   }
 
-  goToAnswersView(sendAnswers: boolean): void {
+  public goToAnswersView(sendAnswers: boolean): void {
     const questionIndex = this.questionSwiper.swiper.activeIndex;
     if (this.shouldLockActualSwipe(questionIndex)[0]) {
       this.questionSwiper.swiper.allowSlidePrev = false;
@@ -829,7 +722,7 @@ export class QuestionProbandComponent
     }
   }
 
-  async goToHistoryView(): Promise<void> {
+  public async goToHistoryView(): Promise<void> {
     const questionIndex = this.questionSwiper.swiper.activeIndex;
     if (this.shouldLockActualSwipe(questionIndex)[0]) {
       this.questionSwiper.swiper.allowSlidePrev = false;
@@ -844,7 +737,7 @@ export class QuestionProbandComponent
     }
   }
 
-  async buildCurrentHistory(): Promise<void> {
+  private async buildCurrentHistory(): Promise<void> {
     this.currentHistory = [];
     const histAnswers = await this.questionnaireService.getHistoricalAnswers(
       this.questionnaireInstanceId
@@ -931,11 +824,8 @@ export class QuestionProbandComponent
         newQuestionItem.subquestion_items.push({
           position: subquestion.position,
           description: subquestion.text,
-          value_old: this.presentAnswerValue(
-            lastAnswer.value,
-            subquestion as any
-          ),
-          value_new: this.presentAnswerValue(answer.value, subquestion as any),
+          value_old: this.presentAnswerValue(lastAnswer.value, subquestion),
+          value_new: this.presentAnswerValue(answer.value, subquestion),
         });
         if (
           new Date(lastAnswer.date_of_release).compareTo(
@@ -965,7 +855,7 @@ export class QuestionProbandComponent
     }
   }
 
-  presentAnswerValue(value: string, subquestion: AnswerOption): string {
+  private presentAnswerValue(value: string, subquestion: AnswerOption): string {
     let result = '';
     if (value === '') {
       return this.translate.instant('ANSWERS_HISTORY.NO_ANSWER');
@@ -1020,7 +910,7 @@ export class QuestionProbandComponent
     return result;
   }
 
-  getLastAnswer(id, curVersioning, histAnswers): Partial<Answer> {
+  private getLastAnswer(id, curVersioning, histAnswers): Partial<Answer> {
     const reversedHistAnswers = JSON.parse(JSON.stringify(histAnswers));
     reversedHistAnswers.reverse();
     const foundAnswer: Answer = reversedHistAnswers.find((answer: Answer) => {
@@ -1033,14 +923,14 @@ export class QuestionProbandComponent
       : { value: '', date_of_release: new Date(0), releasing_person: '' };
   }
 
-  getQuestionFromID(id): Question {
+  private getQuestionFromID(id): Question {
     return this.questionnaire.questions.find((question: Question) => {
       return question.id === id;
     });
   }
 
-  getSubquestionFromID(id): Question {
-    let foundSubQuestion = null;
+  private getSubquestionFromID(id: number): AnswerOption {
+    let foundSubQuestion: AnswerOption = null;
     this.questionnaire.questions.find((question: Question) => {
       const subQuestion = question.answer_options.find(
         (answer_option: AnswerOption) => {
@@ -1057,7 +947,7 @@ export class QuestionProbandComponent
     return foundSubQuestion;
   }
 
-  onClickQuestion(questionIndex: number): void {
+  public onClickQuestion(questionIndex: number): void {
     const questionActiveIndex = this.questionSwiper.swiper.activeIndex;
     this.questionSwiper.swiper.allowSlidePrev = true;
     this.questionSwiper.swiper.allowSlideNext = true;
@@ -1075,7 +965,7 @@ export class QuestionProbandComponent
     }
   }
 
-  onSwipeNext(): void {
+  public onSwipeNext(): void {
     if (this.isLoading) {
       return;
     }
@@ -1093,7 +983,7 @@ export class QuestionProbandComponent
     }
   }
 
-  onSwipePrev(): void {
+  public onSwipePrev(): void {
     if (this.isLoading) {
       return;
     }
@@ -1102,7 +992,7 @@ export class QuestionProbandComponent
     this.questionSwiper.swiper.allowSlidePrev = true;
     this.questionSwiper.swiper.allowSlideNext = true;
 
-    const questionControl = this.myForm.controls['questions'] as FormArray;
+    const questionControl = this.myForm.get('questions') as FormArray;
     if (this.shouldLockActualSwipe(questionIndex)[0]) {
       this.questionSwiper.swiper.allowSlidePrev = false;
       this.questionSwiper.swiper.allowSlideNext = false;
@@ -1110,14 +1000,13 @@ export class QuestionProbandComponent
     } else {
       this.postAllAnswers(false);
       for (let i = questionIndex; i >= 0; i--) {
-        if (questionControl.controls[i - 1] as FormGroup) {
+        if (questionControl.at(i - 1) as FormGroup) {
           if (
-            (questionControl.controls[i - 1] as FormGroup).controls[
-              'show_question'
-            ].value === true &&
-            (questionControl.controls[i - 1] as FormGroup).controls[
+            (questionControl.at(i - 1) as FormGroup).get('show_question')
+              .value === true &&
+            (questionControl.at(i - 1) as FormGroup).get(
               'show_question_answer_condition'
-            ].value === true
+            ).value === true
           ) {
             this.questionSwiper.swiper.slideTo(i);
             break;
@@ -1133,56 +1022,50 @@ export class QuestionProbandComponent
     }
   }
 
-  showLockWarning(message: string): void {
+  private showLockWarning(message: string): void {
     this.dialog.open(DialogPopUpComponent, {
       width: '350px',
       data: { content: message, isSuccess: false },
     });
   }
 
-  shouldLockActualSwipe(actualSwipeIndex): any[] {
+  private shouldLockActualSwipe(actualSwipeIndex): [boolean, string] {
     let actualSwipeShouldBeLocked = false;
     let message = 'ANSWERS_PROBAND.CURRENT_QUESTION';
-    const response = [];
-    const questions = this.myForm.controls['questions'] as FormArray;
+    const questions = this.myForm.get('questions') as FormArray;
     const actualQuestionIsMandatory = (
-      questions.controls[actualSwipeIndex] as FormGroup
-    ).controls['is_mandatory'].value;
+      questions.at(actualSwipeIndex) as FormGroup
+    ).get('is_mandatory').value;
     const answerOptionsControl = (
-      questions.controls[actualSwipeIndex] as FormGroup
-    ).controls['answer_options'] as FormArray;
+      questions.at(actualSwipeIndex) as FormGroup
+    ).get('answer_options') as FormArray;
 
     // check if there any answer options that are shown but not answered
     for (let i = 0; i < answerOptionsControl.length; i++) {
       const hasError =
-        (answerOptionsControl.controls[i] as FormGroup).controls[
-          'value'
-        ].hasError('valuesValidate') ||
-        (answerOptionsControl.controls[i] as FormGroup).controls[
-          'value'
-        ].hasError('notDecimalNumber') ||
-        (answerOptionsControl.controls[i] as FormGroup).controls[
-          'value'
-        ].hasError('notNumber');
+        (answerOptionsControl.at(i) as FormGroup)
+          .get('value')
+          .hasError('valuesValidate') ||
+        (answerOptionsControl.at(i) as FormGroup)
+          .get('value')
+          .hasError('notDecimalNumber') ||
+        (answerOptionsControl.at(i) as FormGroup)
+          .get('value')
+          .hasError('notNumber');
       const isNotAnswered =
-        (answerOptionsControl.controls[i] as FormGroup).controls['value']
-          .value === '';
-      const isShown = (answerOptionsControl.controls[i] as FormGroup).controls[
+        (answerOptionsControl.at(i) as FormGroup).get('value').value === '';
+      const isShown = (answerOptionsControl.at(i) as FormGroup).get(
         'show_answer_option'
-      ].value;
+      ).value;
 
       if (
-        (answerOptionsControl.controls[i] as FormGroup).controls[
-          'answer_type_id'
-        ].value === 6 &&
-        ((answerOptionsControl.controls[i] as FormGroup).controls['sample_id_1']
-          .value ||
+        (answerOptionsControl.at(i) as FormGroup).get('answer_type_id')
+          .value === 6 &&
+        ((answerOptionsControl.at(i) as FormGroup).get('sample_id_1').value ||
           (this.studyOfQuestionnaire.has_rna_samples &&
-            (answerOptionsControl.controls[i] as FormGroup).controls[
-              'sample_id_2'
-            ].value)) &&
-        !(answerOptionsControl.controls[i] as FormGroup).controls['hasValue']
-          .value
+            (answerOptionsControl.at(i) as FormGroup).get('sample_id_2')
+              .value)) &&
+        !(answerOptionsControl.at(i) as FormGroup).get('hasValue').value
       ) {
         actualSwipeShouldBeLocked = true;
         message = 'ANSWERS_PROBAND.CURRENT_SAMPLE_IDs';
@@ -1196,19 +1079,16 @@ export class QuestionProbandComponent
 
       if (actualQuestionIsMandatory && isShown) {
         if (
-          (answerOptionsControl.controls[i] as FormGroup).controls[
-            'answer_type_id'
-          ].value === 6 &&
-          !(answerOptionsControl.controls[i] as FormGroup).controls['hasValue']
-            .value
+          (answerOptionsControl.at(i) as FormGroup).get('answer_type_id')
+            .value === 6 &&
+          !(answerOptionsControl.at(i) as FormGroup).get('hasValue').value
         ) {
           actualSwipeShouldBeLocked = true;
           message = 'ANSWERS_PROBAND.CURRENT_SAMPLE_IDs';
           break;
         } else if (
-          (answerOptionsControl.controls[i] as FormGroup).controls[
-            'answer_type_id'
-          ].value !== 6 &&
+          (answerOptionsControl.at(i) as FormGroup).get('answer_type_id')
+            .value !== 6 &&
           isNotAnswered
         ) {
           actualSwipeShouldBeLocked = true;
@@ -1216,239 +1096,208 @@ export class QuestionProbandComponent
         }
       }
     }
-    response.push(actualSwipeShouldBeLocked);
-    response.push(message);
-    return response;
+    return [actualSwipeShouldBeLocked, message];
   }
 
-  checkConditions(questionIndex: number, answerIndex: number): void {
+  public checkConditions(questionIndex: number, answerIndex: number): void {
     const questionControl = this.myForm.get('questions') as FormArray;
     // answerOptions control for current question
-    const answerControlActiveQuestion = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormControl
-    ).value;
+    const answerControlActiveQuestion: AnswerOptionFormValue =
+      this.getAnswerOptionFormControlAtPosition(
+        questionIndex,
+        answerIndex
+      ).value;
     // answerControlActiveQuestion.updateValueAndValidity();
     const questionAndAnswerIndexesToCheckConditionAgain = [];
-    questionControl.getRawValue().forEach((question, questionIndexFromList) => {
-      const singleQuestionControl = questionControl.controls[
-        questionIndexFromList
-      ] as FormGroup;
-      if (
-        question.condition &&
-        question.condition.condition_type === 'internal_this' &&
-        question.condition.condition_target_answer_option ===
-          answerControlActiveQuestion.id
-      ) {
-        let conditionMatches = false;
-        if (answerControlActiveQuestion.value != null) {
-          conditionMatches = this.isConditionMet(
-            answerControlActiveQuestion,
-            question.condition
-          );
-        }
-        if (!conditionMatches) {
-          (
-            singleQuestionControl.controls['show_question'] as FormControl
-          ).setValue(false);
-          const answerOptionsControl = (
-            (this.myForm.controls['questions'] as FormArray).controls[
-              questionIndexFromList
-            ] as FormGroup
-          ).controls['answer_options'] as FormArray;
-          for (let i = 0; i < answerOptionsControl.length; i++) {
-            const answerOptionID = (
-              answerOptionsControl.controls[i] as FormGroup
-            ).controls['id'].value;
-            // delete answers if exist on server
-            if (
-              (answerOptionsControl.controls[i] as FormGroup).controls[
-                'answer_type_id'
-              ].value !== 6
-            ) {
-              (answerOptionsControl.controls[i] as FormGroup).controls[
-                'value'
-              ].setValue('');
-              const index = this.answerIdsFromServer.findIndex(
-                (answerOptionIDToCheck) =>
-                  answerOptionIDToCheck === answerOptionID
-              );
-              if (index !== -1) {
-                this.answerIdsFromServer.splice(index, 1);
-                this.questionnaireService.deleteAnswer(
-                  this.questionnaireInstanceId,
-                  answerOptionID
-                );
-              }
-            }
-            const answerCheckboxValues = (
-              (
-                (
-                  (this.myForm.controls['questions'] as FormArray).controls[
-                    questionIndexFromList
-                  ] as FormGroup
-                ).controls['answer_options'] as FormArray
-              ).controls[i] as FormGroup
-            ).controls['values'] as FormArray;
-            if (
-              answerCheckboxValues &&
-              (answerOptionsControl.controls[i] as FormGroup).controls[
-                'answer_type_id'
-              ].value === 2
-            ) {
-              answerCheckboxValues.value.forEach(
-                (answerCheckboxValue, answerCheckboxValueIndex) => {
-                  (
-                    answerCheckboxValues.controls[
-                      answerCheckboxValueIndex
-                    ] as FormGroup
-                  ).controls['isChecked'].setValue(false);
-                }
-              );
-            }
-
-            if (
-              (answerOptionsControl.controls[i] as FormGroup).controls[
-                'is_condition_target'
-              ].value
-            ) {
-              questionAndAnswerIndexesToCheckConditionAgain.push({
-                questionIndex: questionIndexFromList,
-                answerIndex: i,
-              });
-            }
+    questionControl
+      .getRawValue()
+      .forEach((question: QuestionFormValue, questionIndexFromList) => {
+        const singleQuestionControl = questionControl.at(
+          questionIndexFromList
+        ) as FormGroup;
+        if (
+          question.condition &&
+          question.condition.condition_type === 'internal_this' &&
+          question.condition.condition_target_answer_option ===
+            answerControlActiveQuestion.id
+        ) {
+          let conditionMatches = false;
+          if (answerControlActiveQuestion.value) {
+            conditionMatches = this.isConditionMet(
+              answerControlActiveQuestion,
+              question.condition
+            );
           }
-          singleQuestionControl.disable();
-        } else {
-          (
-            singleQuestionControl.controls['show_question'] as FormControl
-          ).setValue(true);
-          singleQuestionControl.enable();
-        }
-      }
-
-      const answers = async () => {
-        if (question.answer_options) {
-          question.answer_options.forEach(
-            async (answerOption, answerOptionIndex) => {
-              // answerOptions control for question from list
-              const answerOptionControl = (
-                (
-                  (this.myForm.controls['questions'] as FormArray).controls[
-                    questionIndexFromList
-                  ] as FormGroup
-                ).controls['answer_options'] as FormArray
-              ).controls[answerOptionIndex] as FormGroup;
+          if (!conditionMatches) {
+            singleQuestionControl.get('show_question').setValue(false);
+            const answerOptionsControl = singleQuestionControl.get(
+              'answer_options'
+            ) as FormArray;
+            for (let i = 0; i < answerOptionsControl.length; i++) {
+              const answerOptionID = (
+                answerOptionsControl.at(i) as FormGroup
+              ).get('id').value;
+              // delete answers if exist on server
               if (
-                answerOption.condition &&
-                answerOption.condition.condition_type === 'internal_this' &&
-                answerOption.condition.condition_target_answer_option ===
-                  answerControlActiveQuestion.id
+                (answerOptionsControl.at(i) as FormGroup).get('answer_type_id')
+                  .value !== 6
               ) {
-                // answer from question has a condition on answer option from current question
-                let conditionMatches = false;
-                if (answerControlActiveQuestion.value != null) {
-                  conditionMatches = this.isConditionMet(
-                    answerControlActiveQuestion,
-                    answerOption.condition
+                (answerOptionsControl.at(i) as FormGroup)
+                  .get('value')
+                  .setValue('');
+                const index = this.answerIdsFromServer.findIndex(
+                  (answerOptionIDToCheck) =>
+                    answerOptionIDToCheck === answerOptionID
+                );
+                if (index !== -1) {
+                  this.answerIdsFromServer.splice(index, 1);
+                  this.questionnaireService.deleteAnswer(
+                    this.questionnaireInstanceId,
+                    answerOptionID
                   );
                 }
-                if (!conditionMatches) {
-                  (
-                    answerOptionControl.controls[
-                      'show_answer_option'
-                    ] as FormControl
-                  ).setValue(false);
-                  (
-                    answerOptionControl.controls['value'] as FormControl
-                  ).setValue('');
-                  // delete answers if exist on server
-                  if (
-                    answerOptionControl.controls['answer_type_id'].value !== 6
-                  ) {
-                    const index = this.answerIdsFromServer.findIndex(
-                      (answerOptionIDToCheck) =>
-                        answerOptionIDToCheck === answerOption.id
-                    );
-                    if (index !== -1) {
-                      this.answerIdsFromServer.splice(index, 1);
-                      this.questionnaireService.deleteAnswer(
-                        this.questionnaireInstanceId,
-                        answerOption.id
-                      );
-                    }
-                  }
-                  const answerCheckboxValues = (
+              }
+              const answerCheckboxValues =
+                this.getAnswerOptionFormControlAtPosition(
+                  questionIndexFromList,
+                  i
+                ).get('values') as FormArray;
+              if (
+                answerCheckboxValues &&
+                (answerOptionsControl.at(i) as FormGroup).get('answer_type_id')
+                  .value === 2
+              ) {
+                answerCheckboxValues.value.forEach(
+                  (answerCheckboxValue, answerCheckboxValueIndex) => {
                     (
-                      (
-                        (this.myForm.controls['questions'] as FormArray)
-                          .controls[questionIndexFromList] as FormGroup
-                      ).controls['answer_options'] as FormArray
-                    ).controls[answerOptionIndex] as FormGroup
-                  ).controls['values'] as FormArray;
-                  if (
-                    answerCheckboxValues &&
-                    answerOptionControl.controls['answer_type_id'].value === 2
-                  ) {
-                    answerCheckboxValues.value.forEach(
-                      (answerCheckboxValue, answerCheckboxValueIndex) => {
-                        (
-                          answerCheckboxValues.controls[
-                            answerCheckboxValueIndex
-                          ] as FormGroup
-                        ).controls['isChecked'].setValue(false);
-                      }
-                    );
+                      answerCheckboxValues.at(
+                        answerCheckboxValueIndex
+                      ) as FormGroup
+                    )
+                      .get('isChecked')
+                      .setValue(false);
                   }
-                  answerOptionControl.disable();
-                  if (!singleQuestionControl.value.answer_options) {
-                    (
-                      singleQuestionControl.controls[
-                        'show_question_answer_condition'
-                      ] as FormControl
-                    ).setValue(false);
-                    singleQuestionControl.disable();
-                  }
+                );
+              }
 
-                  if (
-                    answerOptionControl.controls['is_condition_target'].value
-                  ) {
-                    questionAndAnswerIndexesToCheckConditionAgain.push({
-                      questionIndex: questionIndexFromList,
-                      answerIndex: answerOptionIndex,
-                    });
-                  }
-                } else {
-                  (
-                    answerOptionControl.controls[
-                      'show_answer_option'
-                    ] as FormControl
-                  ).setValue(true);
-                  if (answerOptionControl.disabled) {
-                    answerOptionControl.enable();
-                  }
-                  (
-                    singleQuestionControl.controls[
-                      'show_question_answer_condition'
-                    ] as FormControl
-                  ).setValue(true);
-                  if (singleQuestionControl.disabled) {
-                    singleQuestionControl.enable();
-                  }
-                }
-                singleQuestionControl.updateValueAndValidity();
+              if (
+                (answerOptionsControl.at(i) as FormGroup).get(
+                  'is_condition_target'
+                ).value
+              ) {
+                questionAndAnswerIndexesToCheckConditionAgain.push({
+                  questionIndex: questionIndexFromList,
+                  answerIndex: i,
+                });
               }
             }
-          );
+            singleQuestionControl.disable();
+          } else {
+            singleQuestionControl.get('show_question').setValue(true);
+            singleQuestionControl.enable();
+          }
         }
-      };
-      answers();
-    });
+
+        const answers = async () => {
+          if (question.answer_options) {
+            question.answer_options.forEach(
+              async (answerOption, answerOptionIndex) => {
+                // answerOptions control for question from list
+                const answerOptionControl =
+                  this.getAnswerOptionFormControlAtPosition(
+                    questionIndexFromList,
+                    answerOptionIndex
+                  );
+                if (
+                  answerOption.condition &&
+                  answerOption.condition.condition_type === 'internal_this' &&
+                  answerOption.condition.condition_target_answer_option ===
+                    answerControlActiveQuestion.id
+                ) {
+                  // answer from question has a condition on answer option from current question
+                  let conditionMatches = false;
+                  if (answerControlActiveQuestion.value != null) {
+                    conditionMatches = this.isConditionMet(
+                      answerControlActiveQuestion,
+                      answerOption.condition
+                    );
+                  }
+                  if (!conditionMatches) {
+                    answerOptionControl
+                      .get('show_answer_option')
+                      .setValue(false);
+                    answerOptionControl.get('value').setValue('');
+                    // delete answers if exist on server
+                    if (answerOptionControl.get('answer_type_id').value !== 6) {
+                      const index = this.answerIdsFromServer.findIndex(
+                        (answerOptionIDToCheck) =>
+                          answerOptionIDToCheck === answerOption.id
+                      );
+                      if (index !== -1) {
+                        this.answerIdsFromServer.splice(index, 1);
+                        this.questionnaireService.deleteAnswer(
+                          this.questionnaireInstanceId,
+                          answerOption.id
+                        );
+                      }
+                    }
+                    const answerCheckboxValues =
+                      this.getAnswerOptionFormControlAtPosition(
+                        questionIndexFromList,
+                        answerOptionIndex
+                      ).get('values') as FormArray;
+                    if (
+                      answerCheckboxValues &&
+                      answerOptionControl.get('answer_type_id').value === 2
+                    ) {
+                      answerCheckboxValues.value.forEach(
+                        (answerCheckboxValue, answerCheckboxValueIndex) => {
+                          (
+                            answerCheckboxValues.at(
+                              answerCheckboxValueIndex
+                            ) as FormGroup
+                          )
+                            .get('isChecked')
+                            .setValue(false);
+                        }
+                      );
+                    }
+                    answerOptionControl.disable();
+                    if (!singleQuestionControl.value.answer_options) {
+                      singleQuestionControl
+                        .get('show_question_answer_condition')
+                        .setValue(false);
+                      singleQuestionControl.disable();
+                    }
+
+                    if (answerOptionControl.get('is_condition_target').value) {
+                      questionAndAnswerIndexesToCheckConditionAgain.push({
+                        questionIndex: questionIndexFromList,
+                        answerIndex: answerOptionIndex,
+                      });
+                    }
+                  } else {
+                    answerOptionControl
+                      .get('show_answer_option')
+                      .setValue(true);
+                    if (answerOptionControl.disabled) {
+                      answerOptionControl.enable();
+                    }
+                    singleQuestionControl
+                      .get('show_question_answer_condition')
+                      .setValue(true);
+                    if (singleQuestionControl.disabled) {
+                      singleQuestionControl.enable();
+                    }
+                  }
+                  singleQuestionControl.updateValueAndValidity();
+                }
+              }
+            );
+          }
+        };
+        answers();
+      });
     if (questionAndAnswerIndexesToCheckConditionAgain.length !== 0) {
       questionAndAnswerIndexesToCheckConditionAgain.forEach(
         (questionAndAnswerIndexToCheckConditionAgain) => {
@@ -1462,10 +1311,10 @@ export class QuestionProbandComponent
     this.myForm.updateValueAndValidity();
   }
 
-  saveAndGoToOverview(questionIndex: number): void {
+  public saveAndGoToOverview(questionIndex: number): void {
     if (!this.shouldLockActualSwipe(questionIndex)[0]) {
-      this.postAllAnswers(false).then(
-        (result: any) => {
+      this.postAllAnswers(false)
+        .then(() => {
           this.dialog.open(DialogPopUpComponent, {
             width: '300px',
             data: {
@@ -1481,81 +1330,73 @@ export class QuestionProbandComponent
               queryParams: { user_id: this.user_id },
             });
           }
-        },
-        (err: any) => {
+        })
+        .catch((err) => {
           this.alertService.errorObject(err);
-        }
-      );
+        });
     } else {
       this.showLockWarning(this.shouldLockActualSwipe(questionIndex)[1]);
     }
   }
 
-  isQuestionnaireEmpty(): boolean {
-    return !(this.myForm.controls['questions'] as FormArray).value.some(
+  public isQuestionnaireEmpty(): boolean {
+    return !(this.myForm.get('questions') as FormArray).value.some(
       (question) => {
         return question.answer_options.some((answerOption) => {
-          return answerOption.value ? true : false;
+          return !!answerOption.value;
         });
       }
     );
   }
 
-  releaseAnswers(): void {
-    this.postAllAnswers(true).then(
-      (result: any) => {
-        if (this.currentRole === 'Proband') {
-          if (
-            this.questionnaire_instance_status === 'active' ||
-            this.questionnaire_instance_status === 'in_progress'
-          ) {
-            this.questionnaire_instance_status = 'released_once';
-          } else if (this.questionnaire_instance_status === 'released_once') {
-            this.questionnaire_instance_status = 'released_twice';
-          }
-        } else if (this.currentRole === 'Untersuchungsteam') {
-          this.questionnaire_instance_status = 'released';
+  public async releaseAnswers(): Promise<void> {
+    try {
+      await this.postAllAnswers(true);
+      if (this.currentRole === 'Proband') {
+        if (
+          this.questionnaire_instance_status === 'active' ||
+          this.questionnaire_instance_status === 'in_progress'
+        ) {
+          this.questionnaire_instance_status = 'released_once';
+        } else if (this.questionnaire_instance_status === 'released_once') {
+          this.questionnaire_instance_status = 'released_twice';
         }
-
-        this.dialog.open(DialogPopUpComponent, {
-          width: '300px',
-          data: {
-            data: '',
-            content: 'DIALOG.ANSWERS_SUBMMITED',
-            isSuccess: true,
-          },
-        });
-
-        this.questionnaireService
-          .putQuestionnaireInstance(this.questionnaireInstanceId, {
-            status: this.questionnaire_instance_status,
-            progress: this.progress,
-            release_version: this.release_version + 1,
-          })
-          .then(
-            () => {
-              if (this.currentRole === 'Proband') {
-                this.findAndOpenNextInstance();
-              } else {
-                this.router.navigate([
-                  'studies/:studyName/probands',
-                  this.user_id,
-                  'questionnaireInstances',
-                ]);
-              }
-            },
-            (err) => {
-              this.alertService.errorObject(err);
-            }
-          );
-      },
-      (err) => {
-        this.alertService.errorObject(err);
+      } else if (this.currentRole === 'Untersuchungsteam') {
+        this.questionnaire_instance_status = 'released';
       }
-    );
+
+      this.dialog.open(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          data: '',
+          content: 'DIALOG.ANSWERS_SUBMMITED',
+          isSuccess: true,
+        },
+      });
+
+      await this.questionnaireService.putQuestionnaireInstance(
+        this.questionnaireInstanceId,
+        {
+          status: this.questionnaire_instance_status,
+          progress: this.calculateProgress(),
+          release_version: this.release_version + 1,
+        }
+      );
+      if (this.currentRole === 'Proband') {
+        this.findAndOpenNextInstance();
+      } else {
+        this.router.navigate([
+          'studies/:studyName/probands',
+          this.user_id,
+          'questionnaireInstances',
+        ]);
+      }
+    } catch (err) {
+      this.alertService.errorObject(err);
+    }
   }
 
-  formatAnswerOption(answerOption): any {
+  private formatAnswerOption(answerOption): Answer {
     if (
       answerOption.answer_type_id === 6 &&
       answerOption.sample_id_1 &&
@@ -1582,42 +1423,122 @@ export class QuestionProbandComponent
     };
   }
 
-  async postAllAnswers(isRelease): Promise<void> {
-    this.answers = [];
-    const questions = (this.myForm.controls['questions'] as FormArray).value;
-    let number_answers = 0;
-    let number_answer_options = 0;
-    const request = { answers: [], version: 0, date_of_release: new Date() };
-    for (const question of questions) {
-      if (question.show_question) {
-        number_answer_options =
-          number_answer_options + question.answer_options.length;
+  private isConditionOfElementFulfilled(
+    element: QuestionFormValue | AnswerOptionFormValue
+  ): boolean {
+    if (element) {
+      if ('answer_options' in element && element.answer_options) {
+        const atLeastOneAnswerOptionIsShown = element.answer_options.some(
+          (answerOption) => {
+            return (
+              !answerOption.condition ||
+              this.isConditionMet(
+                this.getConditionTargetAnswer(answerOption.condition),
+                answerOption.condition
+              )
+            );
+          }
+        );
+
+        if (
+          !atLeastOneAnswerOptionIsShown &&
+          element.answer_options.length !== 0
+        ) {
+          return false;
+        }
       }
+      return (
+        !element.condition ||
+        this.isConditionMet(
+          this.getConditionTargetAnswer(element.condition),
+          element.condition
+        )
+      );
+    } else {
+      return false;
+    }
+  }
+
+  private getConditionTargetAnswer(
+    condition: ConditionFormValue
+  ): AnswerOptionFormValue | null {
+    for (const questionContorl of (this.myForm.get('questions') as FormArray)
+      .controls) {
+      for (const answerOptionContorl of (
+        questionContorl.get('answer_options') as FormArray
+      ).controls) {
+        const answerOption = answerOptionContorl.value;
+        if (answerOption.id === condition.condition_target_answer_option) {
+          return answerOption;
+        }
+      }
+    }
+    return null;
+  }
+
+  private calculateProgress(): number {
+    let totalAnswersCount = 0;
+    let answersCompletedCount = 0;
+
+    for (const questionControl of (this.myForm.get('questions') as FormArray)
+      .controls) {
+      const question: QuestionFormValue = questionControl.value;
+      if (
+        !question.condition ||
+        this.isConditionMet(
+          this.getConditionTargetAnswer(question.condition),
+          question.condition
+        )
+      ) {
+        for (const answerOptionControl of (
+          questionControl.get('answer_options') as FormArray
+        ).controls) {
+          const answerOption: AnswerOptionFormValue = answerOptionControl.value;
+          if (this.isConditionOfElementFulfilled(answerOption)) {
+            totalAnswersCount += 1;
+            if (
+              answerOptionControl &&
+              !!answerOption.value &&
+              answerOptionControl.valid
+            ) {
+              answersCompletedCount += 1;
+            }
+          }
+        }
+      }
+    }
+    return Math.round((answersCompletedCount / totalAnswersCount) * 100);
+  }
+
+  /**
+   * Sends all answers to the backend and updates the QI except when the answers are released
+   * @param isRelease if the answers are going to be released
+   */
+  private async postAllAnswers(isRelease: boolean): Promise<void> {
+    const answers = [];
+    const questions = this.myForm.get('questions').value as QuestionFormValue[];
+    for (const question of questions) {
       question.answer_options.forEach((answerOption) => {
-        if (!answerOption.show_answer_option) {
-          number_answer_options--;
-        }
-        if (answerOption.value) {
-          number_answers++;
-        }
-        this.answers.push(this.formatAnswerOption(answerOption));
+        answers.push(this.formatAnswerOption(answerOption));
       });
     }
-    this.progress = Math.round((number_answers / number_answer_options) * 100);
 
-    request.answers = this.answers;
-    request.version = this.tools.getAnswerVersion(
-      this.questionnaire_instance_status,
-      this.answerVersionFromServer,
-      this.release_version
-    );
+    const request = {
+      answers,
+      version: Tools.getAnswerVersion(
+        this.questionnaire_instance_status,
+        this.answerVersionFromServer,
+        this.release_version
+      ),
+      date_of_release: new Date(),
+    };
 
     if (isRelease && this.currentRole === 'Untersuchungsteam') {
       request.date_of_release = new Date();
     }
 
     try {
-      const result: any = await this.questionnaireService.postAnswers(
+      const result = await this.questionnaireService.postAnswers(
         this.questionnaireInstanceId,
         request
       );
@@ -1638,7 +1559,7 @@ export class QuestionProbandComponent
             this.questionnaireInstanceId,
             {
               status: 'in_progress',
-              progress: this.progress,
+              progress: this.calculateProgress(),
               release_version: this.release_version,
             }
           );
@@ -1646,7 +1567,7 @@ export class QuestionProbandComponent
         } else {
           await this.questionnaireService.putQuestionnaireInstance(
             this.questionnaireInstanceId,
-            { progress: this.progress }
+            { progress: this.calculateProgress() }
           );
         }
       }
@@ -1666,7 +1587,7 @@ export class QuestionProbandComponent
     }
   }
 
-  findAndOpenNextInstance(): void {
+  private findAndOpenNextInstance(): void {
     this.questionnaireService
       .getQuestionnaireInstanceQueues()
       .then(async (queuesResult: QuestionnaireInstanceQueue[]) => {
@@ -1723,7 +1644,9 @@ export class QuestionProbandComponent
       });
   }
 
-  validateSampleID(control: AbstractControl): any {
+  private validateSampleID(
+    control: AbstractControl
+  ): { sampleWrongFormat: boolean } | null {
     const regexp = new RegExp(
       (this.studyOfQuestionnaire.sample_prefix
         ? '^' + this.studyOfQuestionnaire.sample_prefix + '-'
@@ -1740,50 +1663,58 @@ export class QuestionProbandComponent
     }
   }
 
-  onSendSampleIdClicked(answerOption: FormGroup): void {
+  public onSendSampleIdClicked(answerOption: FormGroup): void {
     let sampleId = '';
     let dummySampleId = '';
 
     if (
-      !answerOption.controls['sample_id_1'].errors &&
+      !answerOption.get('sample_id_1').errors &&
       (!this.studyOfQuestionnaire.has_rna_samples ||
-        !answerOption.controls['sample_id_2'].errors)
+        !answerOption.get('sample_id_2').errors)
     ) {
       if (this.studyOfQuestionnaire.has_rna_samples) {
         if (
-          answerOption.controls['sample_id_1'].value.charAt(
-            this.studyOfQuestionnaire.sample_prefix.length +
-              1 +
-              (this.studyOfQuestionnaire.sample_prefix ? 1 : 0)
-          ) === '0' &&
-          answerOption.controls['sample_id_2'].value.charAt(
-            this.studyOfQuestionnaire.sample_prefix.length +
-              1 +
-              (this.studyOfQuestionnaire.sample_prefix ? 1 : 0)
-          ) === '1'
+          answerOption
+            .get('sample_id_1')
+            .value.charAt(
+              this.studyOfQuestionnaire.sample_prefix.length +
+                1 +
+                (this.studyOfQuestionnaire.sample_prefix ? 1 : 0)
+            ) === '0' &&
+          answerOption
+            .get('sample_id_2')
+            .value.charAt(
+              this.studyOfQuestionnaire.sample_prefix.length +
+                1 +
+                (this.studyOfQuestionnaire.sample_prefix ? 1 : 0)
+            ) === '1'
         ) {
-          sampleId = answerOption.controls['sample_id_1'].value;
-          dummySampleId = answerOption.controls['sample_id_2'].value;
+          sampleId = answerOption.get('sample_id_1').value;
+          dummySampleId = answerOption.get('sample_id_2').value;
         } else if (
-          answerOption.controls['sample_id_1'].value.charAt(
-            this.studyOfQuestionnaire.sample_prefix.length +
-              1 +
-              (this.studyOfQuestionnaire.sample_prefix ? 1 : 0)
-          ) === '1' &&
-          answerOption.controls['sample_id_2'].value.charAt(
-            this.studyOfQuestionnaire.sample_prefix.length +
-              1 +
-              (this.studyOfQuestionnaire.sample_prefix ? 1 : 0)
-          ) === '0'
+          answerOption
+            .get('sample_id_1')
+            .value.charAt(
+              this.studyOfQuestionnaire.sample_prefix.length +
+                1 +
+                (this.studyOfQuestionnaire.sample_prefix ? 1 : 0)
+            ) === '1' &&
+          answerOption
+            .get('sample_id_2')
+            .value.charAt(
+              this.studyOfQuestionnaire.sample_prefix.length +
+                1 +
+                (this.studyOfQuestionnaire.sample_prefix ? 1 : 0)
+            ) === '0'
         ) {
-          sampleId = answerOption.controls['sample_id_2'].value;
-          dummySampleId = answerOption.controls['sample_id_1'].value;
+          sampleId = answerOption.get('sample_id_2').value;
+          dummySampleId = answerOption.get('sample_id_1').value;
         } else {
           answerOption.setErrors({ wrong_format: true });
         }
       } else {
         // Do not check for 0 or 1 if we only have one sample
-        sampleId = answerOption.controls['sample_id_1'].value;
+        sampleId = answerOption.get('sample_id_1').value;
       }
 
       if (
@@ -1792,7 +1723,7 @@ export class QuestionProbandComponent
       ) {
         this.sampleTrackingService
           .updateSampleStatusAndSampleDateFor(sampleId, dummySampleId)
-          .then((res) => {
+          .then(() => {
             // Show success message
             this.dialog.open(DialogPopUpComponent, {
               width: '350px',
@@ -1804,7 +1735,7 @@ export class QuestionProbandComponent
             });
 
             // Disable Button and make input field uneditable
-            answerOption.controls['hasValue'].setValue(true);
+            answerOption.get('hasValue').setValue(true);
             this.postAllAnswers(false);
           })
           .catch((err: HttpErrorResponse) => {
@@ -1813,39 +1744,43 @@ export class QuestionProbandComponent
               'Dummy_sample_id does not match the one in the database'
             ) {
               // set error on dummy_sample_id
-              answerOption.controls['sample_id_1'].value.charAt(
-                this.studyOfQuestionnaire.sample_prefix.length +
-                  1 +
-                  (this.studyOfQuestionnaire.sample_prefix ? 1 : 0)
-              ) === '1' || !this.studyOfQuestionnaire.has_rna_samples
-                ? answerOption.controls['sample_id_1'].setErrors({
+              answerOption
+                .get('sample_id_1')
+                .value.charAt(
+                  this.studyOfQuestionnaire.sample_prefix.length +
+                    1 +
+                    (this.studyOfQuestionnaire.sample_prefix ? 1 : 0)
+                ) === '1' || !this.studyOfQuestionnaire.has_rna_samples
+                ? answerOption.get('sample_id_1').setErrors({
                     not_exist: true,
                   })
-                : answerOption.controls['sample_id_2'].setErrors({
+                : answerOption.get('sample_id_2').setErrors({
                     not_exist: true,
                   });
             } else if (err.error.message === 'Labresult does not exist') {
               // set error on sample_id
-              answerOption.controls['sample_id_1'].value.charAt(
-                this.studyOfQuestionnaire.sample_prefix.length +
-                  1 +
-                  (this.studyOfQuestionnaire.sample_prefix ? 1 : 0)
-              ) === '0' || !this.studyOfQuestionnaire.has_rna_samples
-                ? answerOption.controls['sample_id_1'].setErrors({
+              answerOption
+                .get('sample_id_1')
+                .value.charAt(
+                  this.studyOfQuestionnaire.sample_prefix.length +
+                    1 +
+                    (this.studyOfQuestionnaire.sample_prefix ? 1 : 0)
+                ) === '0' || !this.studyOfQuestionnaire.has_rna_samples
+                ? answerOption.get('sample_id_1').setErrors({
                     not_exist: true,
                   })
-                : answerOption.controls['sample_id_2'].setErrors({
+                : answerOption.get('sample_id_2').setErrors({
                     not_exist: true,
                   });
             } else if (
               err.error.message ===
               'Sample_id does not belong to Proband or it does not exist in db or update params are missing'
             ) {
-              answerOption.controls['sample_id_1'].setErrors({
+              answerOption.get('sample_id_1').setErrors({
                 already_scanned: true,
               });
               if (this.studyOfQuestionnaire.has_rna_samples) {
-                answerOption.controls['sample_id_2'].setErrors({
+                answerOption.get('sample_id_2').setErrors({
                   already_scanned: true,
                 });
               }
@@ -1863,32 +1798,22 @@ export class QuestionProbandComponent
     }
   }
 
-  updateState(event?, questionIndex?, answerIndex?): void {
+  public updateState(event?, questionIndex?, answerIndex?): void {
     if (event && questionIndex !== undefined) {
-      const answerValue = (
-        (
-          (
-            (this.myForm.controls['questions'] as FormArray).controls[
-              questionIndex
-            ] as FormGroup
-          ).controls['answer_options'] as FormArray
-        ).controls[answerIndex] as FormGroup
-      ).get('value') as FormControl as FormControl;
+      const answerValue = this.getAnswerOptionFormControlAtPosition(
+        questionIndex,
+        answerIndex
+      ).get('value');
       answerValue.setValue(event.value);
     }
     this.checkConditions(questionIndex, answerIndex);
   }
 
-  deselectSingleChoice(questionIndex, answerIndex): void {
-    const answerValue = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).get('value') as FormControl as FormControl;
+  public deselectSingleChoice(questionIndex, answerIndex): void {
+    const answerValue = this.getAnswerOptionFormControlAtPosition(
+      questionIndex,
+      answerIndex
+    ).get('value');
     answerValue.setValue('');
     if (questionIndex !== undefined) {
       this.checkConditions(questionIndex, answerIndex);
@@ -1896,7 +1821,7 @@ export class QuestionProbandComponent
     }
   }
 
-  isAnswerInArray(answer, answers_string): boolean {
+  public isAnswerInArray(answer, answers_string): boolean {
     const answers = answers_string.split(';');
     const foundAnswer = answers.find((item) => {
       return item === answer.value;
@@ -1904,79 +1829,76 @@ export class QuestionProbandComponent
     return !!foundAnswer;
   }
 
-  isConditionMet(answer, condition): boolean {
-    const type = answer.answer_type_id;
+  private isConditionMet(
+    answer: AnswerOptionFormValue,
+    condition: ConditionFormValue
+  ): boolean {
+    const targetAnswerType = answer.answer_type_id;
 
-    let answer_values = [];
-    let condition_values = [];
-    if (type === 3) {
-      answer_values = answer.value
+    let answerValues = [];
+    let conditionValues: (Date | string | number)[];
+    if (targetAnswerType === AnswerType.Number) {
+      answerValues = answer.value
         .toString()
         .split(';')
         .map((value) => {
           return parseFloat(value);
         });
-      condition_values = condition.condition_value
+      conditionValues = condition.condition_value
         .toString()
         .split(';')
         .map((value) => {
           return parseFloat(value);
         });
-    } else if (type === 5) {
-      answer_values = answer.value
+    } else if (targetAnswerType === AnswerType.Date) {
+      answerValues = answer.value
         .toString()
         .split(';')
         .map((answerValue) => {
           return answerValue ? new Date(answerValue) : '';
         });
-      condition_values = condition.condition_value
+      conditionValues = condition.condition_value
         .toString()
         .split(';')
         .map((conditionValue) => {
           return conditionValue ? new Date(conditionValue) : '';
         });
     } else {
-      answer_values = answer.value.toString().split(';');
-      condition_values = condition.condition_value.toString().split(';');
+      answerValues = answer.value.toString().split(';');
+      conditionValues = condition.condition_value.toString().split(';');
     }
 
-    const condition_link = condition.condition_link
+    const conditionLink = condition.condition_link
       ? condition.condition_link
       : 'OR';
 
     switch (condition.condition_operand) {
       case '<':
-        if (condition_link === 'AND') {
-          return condition_values.every((condition_value) => {
-            if (condition_value === '') {
+        if (conditionLink === 'AND') {
+          return conditionValues.every((conditionValue) => {
+            if (conditionValue === '') {
               return true;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? answer_value < condition_value
-                : false;
+            return answerValues.some((value) => {
+              return value !== '' ? value < conditionValue : false;
             });
           });
-        } else if (condition_link === 'OR') {
-          return condition_values.some((condition_value) => {
-            if (condition_value === '') {
+        } else if (conditionLink === 'OR') {
+          return conditionValues.some((conditionValue) => {
+            if (conditionValue === '') {
               return false;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? answer_value < condition_value
-                : false;
+            return answerValues.some((value) => {
+              return value !== '' ? value < conditionValue : false;
             });
           });
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter((condition_value) => {
-            if (condition_value === '') {
+        } else if (conditionLink === 'XOR') {
+          const count = conditionValues.filter((conditionValue) => {
+            if (conditionValue === '') {
               return false;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? answer_value < condition_value
-                : false;
+            return answerValues.some((value) => {
+              return value !== '' ? value < conditionValue : false;
             });
           }).length;
           return count === 1;
@@ -1984,37 +1906,31 @@ export class QuestionProbandComponent
         break;
 
       case '>':
-        if (condition_link === 'AND') {
-          return condition_values.every((condition_value) => {
-            if (condition_value === '') {
+        if (conditionLink === 'AND') {
+          return conditionValues.every((conditionValue) => {
+            if (conditionValue === '') {
               return true;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? answer_value > condition_value
-                : false;
+            return answerValues.some((value) => {
+              return value !== '' ? value > conditionValue : false;
             });
           });
-        } else if (condition_link === 'OR') {
-          return condition_values.some((condition_value) => {
-            if (condition_value === '') {
+        } else if (conditionLink === 'OR') {
+          return conditionValues.some((conditionValue) => {
+            if (conditionValue === '') {
               return false;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? answer_value > condition_value
-                : false;
+            return answerValues.some((value) => {
+              return value !== '' ? value > conditionValue : false;
             });
           });
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter((condition_value) => {
-            if (condition_value === '') {
+        } else if (conditionLink === 'XOR') {
+          const count = conditionValues.filter((conditionValue) => {
+            if (conditionValue === '') {
               return false;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? answer_value > condition_value
-                : false;
+            return answerValues.some((value) => {
+              return value !== '' ? value > conditionValue : false;
             });
           }).length;
           return count === 1;
@@ -2022,37 +1938,31 @@ export class QuestionProbandComponent
         break;
 
       case '<=':
-        if (condition_link === 'AND') {
-          return condition_values.every((condition_value) => {
-            if (condition_value === '') {
+        if (conditionLink === 'AND') {
+          return conditionValues.every((conditionValue) => {
+            if (conditionValue === '') {
               return true;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? answer_value <= condition_value
-                : false;
+            return answerValues.some((value) => {
+              return value !== '' ? value <= conditionValue : false;
             });
           });
-        } else if (condition_link === 'OR') {
-          return condition_values.some((condition_value) => {
-            if (condition_value === '') {
+        } else if (conditionLink === 'OR') {
+          return conditionValues.some((conditionValue) => {
+            if (conditionValue === '') {
               return false;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? answer_value <= condition_value
-                : false;
+            return answerValues.some((value) => {
+              return value !== '' ? value <= conditionValue : false;
             });
           });
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter((condition_value) => {
-            if (condition_value === '') {
+        } else if (conditionLink === 'XOR') {
+          const count = conditionValues.filter((conditionValue) => {
+            if (conditionValue === '') {
               return false;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? answer_value <= condition_value
-                : false;
+            return answerValues.some((value) => {
+              return value !== '' ? value <= conditionValue : false;
             });
           }).length;
           return count === 1;
@@ -2060,37 +1970,31 @@ export class QuestionProbandComponent
         break;
 
       case '>=':
-        if (condition_link === 'AND') {
-          return condition_values.every((condition_value) => {
-            if (condition_value === '') {
+        if (conditionLink === 'AND') {
+          return conditionValues.every((conditionValue) => {
+            if (conditionValue === '') {
               return true;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? answer_value >= condition_value
-                : false;
+            return answerValues.some((value) => {
+              return value !== '' ? value >= conditionValue : false;
             });
           });
-        } else if (condition_link === 'OR') {
-          return condition_values.some((condition_value) => {
-            if (condition_value === '') {
+        } else if (conditionLink === 'OR') {
+          return conditionValues.some((conditionValue) => {
+            if (conditionValue === '') {
               return false;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? answer_value >= condition_value
-                : false;
+            return answerValues.some((value) => {
+              return value !== '' ? value >= conditionValue : false;
             });
           });
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter((condition_value) => {
-            if (condition_value === '') {
+        } else if (conditionLink === 'XOR') {
+          const count = conditionValues.filter((conditionValue) => {
+            if (conditionValue === '') {
               return false;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? answer_value >= condition_value
-                : false;
+            return answerValues.some((value) => {
+              return value !== '' ? value >= conditionValue : false;
             });
           }).length;
           return count === 1;
@@ -2098,42 +2002,42 @@ export class QuestionProbandComponent
         break;
 
       case '==':
-        if (condition_link === 'AND') {
-          return condition_values.every((condition_value) => {
-            if (condition_value === '') {
+        if (conditionLink === 'AND') {
+          return conditionValues.every((conditionValue) => {
+            if (conditionValue === '') {
               return true;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? type === 5
-                  ? answer_value.equals(condition_value)
-                  : answer_value === condition_value
+            return answerValues.some((value) => {
+              return value !== ''
+                ? targetAnswerType === 5
+                  ? value.equals(conditionValue)
+                  : value === conditionValue
                 : false;
             });
           });
-        } else if (condition_link === 'OR') {
-          return condition_values.some((condition_value) => {
-            if (condition_value === '') {
+        } else if (conditionLink === 'OR') {
+          return conditionValues.some((conditionValue) => {
+            if (conditionValue === '') {
               return false;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? type === 5
-                  ? answer_value.equals(condition_value)
-                  : answer_value === condition_value
+            return answerValues.some((value) => {
+              return value !== ''
+                ? targetAnswerType === 5
+                  ? value.equals(conditionValue)
+                  : value === conditionValue
                 : false;
             });
           });
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter((condition_value) => {
-            if (condition_value === '') {
+        } else if (conditionLink === 'XOR') {
+          const count = conditionValues.filter((conditionValue) => {
+            if (conditionValue === '') {
               return false;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? type === 5
-                  ? answer_value.equals(condition_value)
-                  : answer_value === condition_value
+            return answerValues.some((value) => {
+              return value !== ''
+                ? targetAnswerType === 5
+                  ? value.equals(conditionValue)
+                  : value === conditionValue
                 : false;
             });
           }).length;
@@ -2142,42 +2046,42 @@ export class QuestionProbandComponent
         break;
 
       case '\\=':
-        if (condition_link === 'AND') {
-          return condition_values.every((condition_value) => {
-            if (condition_value === '') {
+        if (conditionLink === 'AND') {
+          return conditionValues.every((conditionValue) => {
+            if (conditionValue === '') {
               return true;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? type === 5
-                  ? !answer_value.equals(condition_value)
-                  : answer_value !== condition_value
+            return answerValues.some((value) => {
+              return value !== ''
+                ? targetAnswerType === 5
+                  ? !value.equals(conditionValue)
+                  : value !== conditionValue
                 : false;
             });
           });
-        } else if (condition_link === 'OR') {
-          return condition_values.some((condition_value) => {
-            if (condition_value === '') {
+        } else if (conditionLink === 'OR') {
+          return conditionValues.some((conditionValue) => {
+            if (conditionValue === '') {
               return false;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? type === 5
-                  ? !answer_value.equals(condition_value)
-                  : answer_value !== condition_value
+            return answerValues.some((value) => {
+              return value !== ''
+                ? targetAnswerType === 5
+                  ? !value.equals(conditionValue)
+                  : value !== conditionValue
                 : false;
             });
           });
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter((condition_value) => {
-            if (condition_value === '') {
+        } else if (conditionLink === 'XOR') {
+          const count = conditionValues.filter((conditionValue) => {
+            if (conditionValue === '') {
               return false;
             }
-            return answer_values.some((answer_value) => {
-              return answer_value !== ''
-                ? type === 5
-                  ? !answer_value.equals(condition_value)
-                  : answer_value !== condition_value
+            return answerValues.some((value) => {
+              return value !== ''
+                ? targetAnswerType === 5
+                  ? !value.equals(conditionValue)
+                  : value !== conditionValue
                 : false;
             });
           }).length;
@@ -2198,7 +2102,7 @@ export class QuestionProbandComponent
     const questionIndex = this.questionSwiper.swiper.activeIndex;
     const lastIndex = this.questionSwiper.swiper.slides.length - 1;
 
-    const questionControl = this.myForm.controls['questions'] as FormArray;
+    const questionControl = this.myForm.get('questions') as FormArray;
 
     if (questionIndex === lastIndex) {
       this.goToAnswersView(false);
@@ -2209,12 +2113,11 @@ export class QuestionProbandComponent
           break;
         }
         const nextQuestionIsShown =
-          (questionControl.controls[i + 1] as FormGroup).controls[
-            'show_question'
-          ].value === true &&
-          (questionControl.controls[i + 1] as FormGroup).controls[
+          (questionControl.at(i + 1) as FormGroup).get('show_question')
+            .value === true &&
+          (questionControl.at(i + 1) as FormGroup).get(
             'show_question_answer_condition'
-          ].value === true;
+          ).value === true;
         if (nextQuestionIsShown) {
           this.goToSlide(i);
           break;
@@ -2223,22 +2126,17 @@ export class QuestionProbandComponent
     }
   }
 
-  updateAnswerTypeValue(result: {
-    dataAsUrl: any;
+  public updateAnswerTypeValue(result: {
+    dataAsUrl: string;
     answer_option_id: number;
     answerOptionIndex: number;
     file_name: string;
   }): void {
     const questionIndex = this.questionSwiper.swiper.activeIndex;
-    const answerValue = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[result.answerOptionIndex] as FormGroup
-    ).get('value') as FormControl as FormControl;
+    const answerValue = this.getAnswerOptionFormControlAtPosition(
+      questionIndex,
+      result.answerOptionIndex
+    ).get('value');
 
     const value =
       result.dataAsUrl !== ''
@@ -2250,23 +2148,15 @@ export class QuestionProbandComponent
     answerValue.setValue(value);
   }
 
-  backClicked(): void {
+  public backClicked(): void {
     this._location.back();
   }
 
-  setAnswerTypeValue(answer, $event, i, j): void {
-    answer.controls['value'].value = $event;
-
-    const answerValue = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            i
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[j] as FormGroup
-    ).get('value') as FormControl as FormControl;
-
+  public setAnswerTypeValue(answer, $event, i, j): void {
+    answer.get('value').value = $event;
+    const answerValue = this.getAnswerOptionFormControlAtPosition(i, j).get(
+      'value'
+    );
     answerValue.setValue($event);
   }
 

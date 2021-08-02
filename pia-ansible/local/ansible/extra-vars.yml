@@ -12,6 +12,7 @@ pia_ipia_password: password
 pia_db_personaldata_password: password
 pia_qpia_password: password
 pia_db_log_password: password
+pia_db_sormas_password: password
 
 pia_qpia_ip: 172.17.0.1
 pia_ewpia_ip: 172.17.0.1

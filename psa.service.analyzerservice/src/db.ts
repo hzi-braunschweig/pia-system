@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import { config } from './config';
 import pgPromise, { IDatabase } from 'pg-promise';
 import {
@@ -7,7 +13,7 @@ import {
   TransactionRunnerFn,
 } from '@pia/lib-service-core';
 
-const pgp = pgPromise({ capSQL: true });
+const pgp = pgPromise({ capSQL: true, noLocking: config.isTestMode });
 
 export const db: IDatabase<unknown> = pgp(config.database);
 export const runTransaction: TransactionRunnerFn = createTransactionRunner(db);

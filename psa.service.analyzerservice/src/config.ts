@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 import {
   ConfigUtils,
   GlobalConfig,
@@ -19,6 +25,7 @@ const conf = {
   },
   publicAuthKey: GlobalConfig.publicAuthKey,
   isSormasActive: GlobalConfig.isSormasActive,
+  isTestMode: ConfigUtils.getEnvVariable('IS_TEST_MODE', 'false') === 'true',
 };
 
 export const config: SupersetOfServiceConfig<typeof conf> = conf;
