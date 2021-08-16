@@ -10,6 +10,9 @@ x-logging: &default-logging
 {% endraw %}
 {% else %}
   driver: "json-file"
+  options:
+      max-size: "20m"
+      max-file: "5"
 {% endif %}
 
 x-extra_hosts: &default-extra_hosts

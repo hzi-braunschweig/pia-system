@@ -7,8 +7,8 @@
 import { Component, forwardRef, Input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { map } from 'rxjs/operators';
-
-import { QuestionnaireAnswerControlValueAccessor } from '../questionnaire-answer-control-value-accessor/questionnaire-answer-control-value-accessor';
+import { AbstractControlValueAccessor } from '../../shared/components/abstract-control-value-accessor/abstract-control-value-accessor';
+import { FormControlValue } from '../questionnaire-form/questionnaire-form.service';
 
 const QUESTIONNAIRE_ANSWER_INPUT_DATETIME_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -21,7 +21,7 @@ const QUESTIONNAIRE_ANSWER_INPUT_DATETIME_ACCESSOR = {
   templateUrl: './questionnaire-answer-input-datetime.component.html',
   providers: [QUESTIONNAIRE_ANSWER_INPUT_DATETIME_ACCESSOR],
 })
-export class QuestionnaireAnswerInputDatetimeComponent extends QuestionnaireAnswerControlValueAccessor {
+export class QuestionnaireAnswerInputDatetimeComponent extends AbstractControlValueAccessor<FormControlValue> {
   /**
    * Min date as ISO string
    */

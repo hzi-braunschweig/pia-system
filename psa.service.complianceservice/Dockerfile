@@ -1,4 +1,4 @@
-FROM node:14.17.3-alpine@sha256:fb6cb918cc72869bd625940f42a7d8ae035c4e786d08187b94e8b91c6a534dfd AS base
+FROM node:14.17.4-alpine@sha256:0c80f9449d2690eef49aad35eeb42ed9f9bbe2742cd4e9766a7be3a1aae2a310 AS base
 
 RUN apk --update --no-cache add curl tzdata
 RUN apk --update --no-cache add chromium ttf-dejavu ttf-liberation ttf-freefont

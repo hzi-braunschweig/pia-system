@@ -4,6 +4,8 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
+<app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
+
 <div class="jumbotron" data-e2e="e2e-compliance-researcher-component">
   <div>
     <mat-card>
@@ -92,7 +94,7 @@
         <button
           mat-raised-button
           color="primary"
-          [disabled]="!complianceTextFG.controls.compliance_text.value"
+          [disabled]="!complianceTextFG.get('compliance_text').value"
           (click)="togglePreview()"
           data-e2e="e2e-compliance-researcher-preview-button"
         >

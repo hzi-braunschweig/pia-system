@@ -22,6 +22,7 @@ import { addMinutes, startOfToday } from 'date-fns';
 import { Condition } from '../models/condition';
 import { AnswerOption } from '../models/answerOption';
 import { asyncForEach } from '@pia/lib-service-core';
+import { LoggingService } from './loggingService';
 
 const pgp = pg();
 
@@ -35,6 +36,8 @@ interface QuestionnaireInstanceQueue {
  * @description handler methods that handle db notifications
  */
 export class NotificationHandlers {
+  private static readonly logger = new LoggingService('NotificationHandlers');
+
   private static readonly csQuestionnaireInstances = new pgp.helpers.ColumnSet(
     [
       'study_id',
@@ -80,14 +83,20 @@ export class NotificationHandlers {
             "DELETE FROM questionnaire_instances WHERE questionnaire_id=$(id) AND questionnaire_version < $(version) AND status IN ('active','inactive') AND NOT EXISTS (SELECT 1 FROM answers WHERE questionnaire_instance_id = questionnaire_instances.id) RETURNING id",
             questionnaire
           );
-          console.log(
-            `Deleted ${deletedQIs.length} QIs from DB before inserting new Questionnaire version: ${questionnaire.name}`
+          NotificationHandlers.logger.info(
+            `Deleted ${
+              deletedQIs.length
+            } QIs from DB before inserting new Questionnaire version: ${NotificationHandlers.logger.printQuestionnaire(
+              questionnaire
+            )}`
           );
         } else {
-          console.log(
-            'versioning of ' +
-              questionnaire.cycle_unit +
-              'does currently not support deletion of questionnaireInstances'
+          NotificationHandlers.logger.warn(
+            `Versioning of ${
+              questionnaire.cycle_unit
+            } does currently not support deletion of questionnaireInstances. Affected questionnaire: ${NotificationHandlers.logger.printQuestionnaire(
+              questionnaire
+            )}`
           );
         }
       }
@@ -158,8 +167,12 @@ export class NotificationHandlers {
           qVersion: q_old.version,
         }
       );
-      console.log(
-        `Deleted ${deletedQIs.length} QIs from DB before updating Questionnaire: ${q_new.name}`
+      NotificationHandlers.logger.info(
+        `Deleted ${
+          deletedQIs.length
+        } QIs from DB before updating Questionnaire ${NotificationHandlers.logger.printQuestionnaire(
+          q_new
+        )}`
       );
       if (q_new.publish === 'hidden') {
         return;
@@ -236,8 +249,8 @@ export class NotificationHandlers {
         'DELETE FROM questionnaire_instances WHERE user_id=$1 AND study_id=$2 RETURNING *',
         [study_user.user_id, study_user.study_id]
       );
-      console.log(
-        `deleted ${deletedQIs.length} questionnaire instances for user: ${study_user.user_id} because he was removed from study: ${study_user.study_id}`
+      NotificationHandlers.logger.info(
+        `Deleted ${deletedQIs.length} questionnaire instances for user: ${study_user.user_id} because he was removed from study: ${study_user.study_id}`
       );
     }
   }
@@ -462,8 +475,12 @@ export class NotificationHandlers {
                     '(SELECT id FROM questionnaire_instances WHERE questionnaire_id=$1 AND questionnaire_version=$2) ) RETURNING *',
                   [questionnaire.id, questionnaire.version]
                 );
-                console.log(
-                  `deleted ${result.length} questionnaire instances for questionnaire ${questionnaire.name} whos condition was met before but is not now`
+                NotificationHandlers.logger.info(
+                  `Deleted ${
+                    result.length
+                  } questionnaire instances for questionnaire ${NotificationHandlers.logger.printQuestionnaire(
+                    questionnaire
+                  )} whos condition was met before but is not met anymore`
                 );
               }
             }
@@ -531,7 +548,7 @@ export class NotificationHandlers {
         const insertedInstances: QuestionnaireInstance[] = await t.manyOrNone(
           qQuestionnaireInstances
         );
-        console.log(
+        NotificationHandlers.logger.info(
           `Added ${insertedInstances.length} questionnaire instances to db for conditional questionnaires for user: ${instance_new.user_id}`
         );
         const instancesForQueue = insertedInstances.filter(
@@ -575,7 +592,7 @@ export class NotificationHandlers {
           const insertedQueues = await t.manyOrNone(
             qQuestionnaireInstancesQueued
           );
-          console.log(
+          NotificationHandlers.logger.info(
             `Added ${insertedQueues.length} instance queues to db for external conditioned instances for user: ${instance_new.user_id}`
           );
         }
@@ -700,8 +717,12 @@ export class NotificationHandlers {
       });
 
       await NotificationHandlers.createQuestionnaireInstances(qInstances, t);
-      console.log(
-        `Added ${qInstances.length} questionnaire instances to db for inserted questionnaire: ${questionnaire.name}`
+      NotificationHandlers.logger.info(
+        `Added ${
+          qInstances.length
+        } questionnaire instances to db for inserted questionnaire: ${NotificationHandlers.logger.printQuestionnaire(
+          questionnaire
+        )}`
       );
     }
   }
@@ -754,7 +775,7 @@ export class NotificationHandlers {
       });
 
       await NotificationHandlers.createQuestionnaireInstances(qInstances, t);
-      console.log(
+      NotificationHandlers.logger.info(
         `Added ${qInstances.length} questionnaire instances to db for user ${user.username}`
       );
     });

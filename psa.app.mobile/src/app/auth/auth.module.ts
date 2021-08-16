@@ -14,6 +14,7 @@ import { LoginPage } from './login/login.page';
 import { ChangePasswordPage } from './change-password/change-password.page';
 import { AuthRoutingModule } from './auth-routing.module';
 import { SharedModule } from '../shared/shared.module';
+import { InputPasswordComponent } from './input-password/input-password.component';
 
 @NgModule({
   imports: [
@@ -25,6 +26,6 @@ import { SharedModule } from '../shared/shared.module';
     SharedModule,
     ReactiveFormsModule,
   ],
-  declarations: [LoginPage, ChangePasswordPage],
+  declarations: [LoginPage, ChangePasswordPage, InputPasswordComponent],
 })
 export class AuthModule {}

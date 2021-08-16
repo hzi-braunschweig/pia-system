@@ -10,6 +10,9 @@ const pwHashesHelper = require('../helpers/pwHashesHelper.js');
 const mailService = require('../services/mailService.js');
 const pgHelper = require('../services/postgresqlHelper.js');
 const personaldataserviceClient = require('../clients/personaldataserviceClient');
+const {
+  SecureRandomPasswordService,
+} = require('../services/secureRandomPasswordService');
 
 /**
  * @description HAPI Handler for change password
@@ -108,7 +111,7 @@ const changePasswordHandler = (function () {
         request.log('newPassword', 'There was no email address');
         return successfullyChanged;
       }
-      const newUserPw = pwHashesHelper.genRandomPw();
+      const newUserPw = SecureRandomPasswordService.generate();
       const newUserSecurity =
         pwHashesHelper.createHashedPasswordWithSaltAndPepper(newUserPw);
 

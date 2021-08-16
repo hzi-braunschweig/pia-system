@@ -6,6 +6,8 @@
 
 export interface UserSettings {
   username: string;
+  ids: string | null;
+  account_status: string | null;
   notification_time: string;
   compliance_labresults: boolean;
   compliance_samples: boolean;

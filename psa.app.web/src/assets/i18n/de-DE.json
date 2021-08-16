@@ -312,6 +312,7 @@
     "JUMP_STEP_MIN": "Muss größer als 0 sein",
     "JUMP_STEP_MAX": "Muss kleiner als 45 sein",
     "JUMP_STEP_REQUIRED": "Schrittzahl ist erforderlich",
+    "QUESTIONNAIRE_INSTANCE_COUNT_ERROR": "Je Teilnehmer:in darf der Fragebogen insgesamt nicht öfter als {{maxInstanceCount}} mal angezeigt werden. Bitte passen Sie den Zykluswert, die Zykluseinheit oder die Laufzeit (Deaktivieren nach x Tagen) entsprechend an.",
     "CHARACTER_NOT_ALLOWED": "Dieses Zeichen ist nicht erlaubt.",
     "VALUE_REQUIRED": "Wert ist erforderlich",
     "AFTER": "nach",

@@ -27,7 +27,8 @@ export class SampleTransform extends CsvTransform<
     return {
       Proben_ID: sample.id,
       Bakt_Proben_ID: sample.dummy_sample_id ? sample.dummy_sample_id : '.',
-      Proband: sample.user_id,
+      Proband: sample.account_status === 'no_account' ? '' : sample.user_id,
+      IDS: sample.ids ?? '',
       Status: status,
       Bemerkung: sample.remark ? sample.remark : '.',
     };

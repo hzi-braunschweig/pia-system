@@ -36,6 +36,10 @@ export class ChangePasswordComponent implements OnInit {
   currentUser: User = null;
   minPasswordLength = 12;
 
+  revealOldPassword = false;
+  revealNewPassword1 = false;
+  revealNewPassword2 = false;
+
   constructor(
     private router: Router,
     private matDialog: MatDialog,

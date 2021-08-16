@@ -43,6 +43,7 @@ export class SftpAllFilesDownloadStream extends Readable {
       this.filePaths = this.getFilePaths();
       this.initialized = true;
     } catch (err) {
+      console.log(SftpAllFilesDownloadStream.TAG, 'Connect failed', err);
       this.destroy(err);
     }
   }

@@ -6,6 +6,6 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@types/k6": "^0.32.0"
+    "@types/k6": "^0.32.2"
   }
 }

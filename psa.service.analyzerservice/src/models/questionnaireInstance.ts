@@ -8,9 +8,6 @@ import { CycleUnit, QuestionnaireType } from './questionnaire';
 
 export interface QuestionnaireInstance extends BaseQuestionnaireInstance {
   study_id: string;
-  questionnaire_id: number;
-  questionnaire_version: number;
-  questionnaire_name: string;
   cycle: number;
   date_of_release_v2: Date | null;
   release_version: number;
@@ -26,6 +23,9 @@ export interface BaseQuestionnaireInstance {
   expires_after_days: number;
   finalises_after_days: number;
   type: QuestionnaireType;
+  questionnaire_id: number;
+  questionnaire_version: number;
+  questionnaire_name: string;
   ids: string;
 }
 

@@ -6,8 +6,7 @@
 
 import { Component } from '@angular/core';
 import { Keyboard } from '@ionic-native/keyboard/ngx';
-
-import { QuestionnaireAnswerControlValueAccessor } from './questionnaire-answer-control-value-accessor';
+import { AbstractControlValueAccessor } from './abstract-control-value-accessor';
 
 /**
  * This abstract class needs to be declared as Component in order to be
@@ -18,7 +17,9 @@ import { QuestionnaireAnswerControlValueAccessor } from './questionnaire-answer-
  */
 @Component({ template: '' })
 // tslint:disable-next-line:component-class-suffix
-export abstract class QuestionnaireAnswerTextInputControlValueAccessor extends QuestionnaireAnswerControlValueAccessor {
+export abstract class AbstractTextInputControlValueAccessor<
+  V
+> extends AbstractControlValueAccessor<V> {
   constructor(protected keyboard: Keyboard) {
     super();
   }

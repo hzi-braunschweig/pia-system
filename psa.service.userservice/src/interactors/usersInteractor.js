@@ -11,7 +11,9 @@ const { runTransaction } = require('../db');
 const postgresqlHelper = require('../services/postgresqlHelper');
 const mailService = require('../services/mailService');
 const mailTemplateService = require('../services/mailTemplateService');
-const pwGenService = require('../services/pwGenService');
+const {
+  SecureRandomPasswordService,
+} = require('../services/secureRandomPasswordService');
 const { generateRandomPseudonym } = require('../helpers/pseudonym-generator');
 const { config } = require('../config');
 const sormasserviceClient = require('../clients/sormasserviceClient');
@@ -132,7 +134,7 @@ const usersInteractor = (function () {
           validator.validate(user.username)
         ) {
           try {
-            user.password = pwGenService.genRandomPw();
+            user.password = SecureRandomPasswordService.generate();
 
             const result = await authserviceClient.createUser({
               username: user.username,
@@ -219,7 +221,7 @@ const usersInteractor = (function () {
     data.pseudonym = generatedPseudonym;
 
     // Create a random password
-    const generatedPassword = pwGenService.genRandomPw();
+    const generatedPassword = SecureRandomPasswordService.generate();
     data.password = generatedPassword;
 
     const user = {

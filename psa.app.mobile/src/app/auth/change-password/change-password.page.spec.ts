@@ -8,13 +8,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule, LoadingController } from '@ionic/angular';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { MockPipe } from 'ng-mocks';
+import { MockComponent, MockPipe } from 'ng-mocks';
 import SpyObj = jasmine.SpyObj;
 
 import { ChangePasswordPage } from './change-password.page';
 import { AuthClientService } from '../auth-client.service';
 import { AuthService } from '../auth.service';
 import { ToastPresenterService } from '../../shared/services/toast-presenter/toast-presenter.service';
+import { InputPasswordComponent } from '../input-password/input-password.component';
 
 describe('ChangePasswordPage', () => {
   let component: ChangePasswordPage;
@@ -50,7 +51,11 @@ describe('ChangePasswordPage', () => {
     };
 
     TestBed.configureTestingModule({
-      declarations: [ChangePasswordPage, MockPipe(TranslatePipe)],
+      declarations: [
+        ChangePasswordPage,
+        MockPipe(TranslatePipe),
+        MockComponent(InputPasswordComponent),
+      ],
       imports: [IonicModule.forRoot()],
       providers: [
         { provide: AuthClientService, useValue: authClient },

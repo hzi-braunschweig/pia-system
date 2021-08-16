@@ -8,8 +8,6 @@ import { ControlValueAccessor, FormControl } from '@angular/forms';
 import { Component, Input, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 
-import { FormControlValue } from '../questionnaire-form/questionnaire-form.service';
-
 /**
  * This abstract class needs to be declared as Component in order to be
  * correctly picked up by the Angular compiler. Nevertheless it is not
@@ -19,7 +17,7 @@ import { FormControlValue } from '../questionnaire-form/questionnaire-form.servi
  */
 @Component({ template: '' })
 // tslint:disable-next-line:component-class-suffix
-export abstract class QuestionnaireAnswerControlValueAccessor
+export abstract class AbstractControlValueAccessor<V>
   implements ControlValueAccessor, OnDestroy
 {
   @Input()
@@ -40,7 +38,7 @@ export abstract class QuestionnaireAnswerControlValueAccessor
     }
   }
 
-  registerOnChange(onChange: (value: FormControlValue) => void) {
+  registerOnChange(onChange: (value: V) => void) {
     this.subscription = this.control.valueChanges.subscribe((value) =>
       onChange(value)
     );
@@ -48,7 +46,7 @@ export abstract class QuestionnaireAnswerControlValueAccessor
 
   registerOnTouched(fn) {}
 
-  writeValue(value: FormControlValue) {
+  writeValue(value: V) {
     this.control.patchValue(value);
   }
 

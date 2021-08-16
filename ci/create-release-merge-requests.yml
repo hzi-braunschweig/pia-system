@@ -1,7 +1,7 @@
 # create merge requests to master and develop when a tag is created
 merge-requests:
   stage: push
-  image: curlimages/curl@sha256:6e0a786e3e5181df00eaf3a0a1749c18a6bb20b01c9bd192ea72176ce8a1c94b
+  image: curlimages/curl@sha256:a37d88a5b626208146c6d58f75b74a93c35dfc00b6b4676c4e9d2c166ea41954
   needs: []
   rules:
     - if: $CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+/

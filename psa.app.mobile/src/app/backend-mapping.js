@@ -127,4 +127,9 @@ export const backendMapping = [
   { prefix: 'DOFN', url: 'https://qpia.imise.uni-leipzig.de' },
   { prefix: 'DFCO', url: 'https://qpia.imise.uni-leipzig.de' },
   { prefix: 'CNQG', url: 'https://qpia.imise.uni-leipzig.de' },
+  { prefix: 'VQBU', url: 'https://pia.ship-med.uni-greifswald.de' },
+  { prefix: 'RCHN', url: 'https://pia.ship-med.uni-greifswald.de' },
+  { prefix: 'RYEY', url: 'https://pia.ship-med.uni-greifswald.de' },
+  { prefix: 'ITPH', url: 'https://pia.ship-med.uni-greifswald.de' },
+  { prefix: 'JTHB', url: 'https://pia.ship-med.uni-greifswald.de' },
 ];

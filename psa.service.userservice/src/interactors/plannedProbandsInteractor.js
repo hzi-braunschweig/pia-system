@@ -4,7 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const pwGenService = require('../services/pwGenService.js');
+const {
+  SecureRandomPasswordService,
+} = require('../services/secureRandomPasswordService');
+
 /**
  * @description interactor that handles user requests based on users permissions
  */
@@ -63,7 +66,7 @@ const plannedProbandsInteractor = (function () {
               pseudonyms.forEach((pseudonym) => {
                 plannedProbandsToCreate.push([
                   pseudonym,
-                  pwGenService.genRandomPw(),
+                  SecureRandomPasswordService.generate(),
                   null,
                 ]);
               });

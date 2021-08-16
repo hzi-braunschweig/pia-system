@@ -1,4 +1,4 @@
-FROM postgres:10.17@sha256:b11325ae578ac26137018051803aad93acf67576b9349e97ec63a0b8c1a7f257 AS base
+FROM postgres:10.17@sha256:5122eb23a570b66e59cb11091c800f6298921fd736e085502f6adc21caf5bc36 AS base
 
 FROM busybox:1.33.1@sha256:0f354ec1728d9ff32edcd7d1b8bbdfc798277ad36120dc3dc683be44524c8b60 AS patch
 WORKDIR /
@@ -18,7 +18,7 @@ RUN patch docker-entrypoint.sh migration.patch
 # before spawning a child.
 # Therefore we would have a problem because inside the spawned cron child we don't
 # have the auth information (that is only inside the parent process).
-FROM golang:1.16.6-buster@sha256:777d13e40bc15456dceac9b37f926bd7b4c237645da9ff8e3c94d7a4916a909b AS build-jobber
+FROM golang:1.16.6-buster@sha256:f3923dc5a92a237db0f07a924a238a8a4a711e3b77a7b5bdb1b526e107dcb9d4 AS build-jobber
 
 WORKDIR /go
 RUN git clone https://github.com/dshearer/jobber.git

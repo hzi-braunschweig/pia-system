@@ -14,7 +14,7 @@ import {
 } from '@ionic/angular';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { MockPipe } from 'ng-mocks';
+import { MockComponent, MockPipe } from 'ng-mocks';
 import SpyObj = jasmine.SpyObj;
 
 import { LoginPage } from './login.page';
@@ -23,6 +23,7 @@ import { AuthService } from '../auth.service';
 import { ToastPresenterService } from '../../shared/services/toast-presenter/toast-presenter.service';
 import { AuthClientService } from '../auth-client.service';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
+import { InputPasswordComponent } from '../input-password/input-password.component';
 
 describe('LoginPage', () => {
   let component: LoginPage;
@@ -65,7 +66,11 @@ describe('LoginPage', () => {
     };
 
     TestBed.configureTestingModule({
-      declarations: [LoginPage, MockPipe(TranslatePipe)],
+      declarations: [
+        LoginPage,
+        MockPipe(TranslatePipe),
+        MockComponent(InputPasswordComponent),
+      ],
       imports: [IonicModule.forRoot()],
       providers: [
         { provide: LocaleService, useValue: localeService },

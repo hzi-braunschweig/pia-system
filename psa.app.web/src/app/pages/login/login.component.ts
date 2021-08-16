@@ -36,6 +36,7 @@ export class LoginComponent implements OnInit {
   message: any = 0;
   interval: any;
   returnUrl: string;
+  revealPassword = false;
 
   constructor(
     private route: ActivatedRoute,

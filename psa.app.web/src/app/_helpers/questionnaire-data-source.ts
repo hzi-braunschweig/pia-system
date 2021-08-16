@@ -71,12 +71,12 @@ export class QuestionnaireDataSource extends DataSource<any> {
 
   buildItemString(item: Questionnaire): string {
     const str =
-      item.id +
-      item.version +
+      item.id.toString() +
+      item.version.toString() +
       item.study_id +
       item.name +
-      item.no_questions +
-      item.active;
+      item.no_questions.toString() +
+      item.active.toString();
     return str.toLowerCase();
   }
 

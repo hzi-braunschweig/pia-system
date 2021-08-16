@@ -12,6 +12,10 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import csvParse from 'csv-parse/lib/sync';
 import { StatusCodes } from 'http-status-codes';
+import {
+  CsvAnswerRow,
+  CsvUserSettingsRow,
+} from '../../src/models/csvExportRows';
 
 import chaiHttp from 'chai-http';
 
@@ -39,25 +43,6 @@ const forscherToken1 = JWT.sign(forscherSession1, secretOrPrivateKey, {
 });
 const forscherHeader1 = { authorization: forscherToken1 };
 
-interface AnswerRow {
-  Antwort: string;
-  Antwort_Datum: string;
-  FB_Datum: string;
-  Frage: string;
-  Kodierung_Code: string;
-  Kodierung_Wert: string;
-  Proband: string;
-}
-
-interface SettingRow {
-  Proband: string;
-  'Benachrichtigung Uhrzeit': string;
-  'Einwilligung Ergebnismitteilung': string;
-  'Einwilligung Probenentnahme': string;
-  'Einwilligung Blutprobenentnahme': string;
-  Testproband: string;
-}
-
 const binaryParser = function (
   res: Response,
   cb: (err: Error | null, body: Buffer) => void
@@ -79,14 +64,17 @@ function convertDate(date?: string): string {
   return date.replace(/,/g, '');
 }
 
-function convertArray(array?: string): string {
+function convertArray(array?: string | string[]): string | string[] {
   if (!array) {
     return '';
+  }
+  if (typeof array !== 'string') {
+    return array;
   }
   return array.replace(/"/g, '');
 }
 
-function convertAnswerRow(row: AnswerRow): AnswerRow {
+function convertAnswerRow(row: CsvAnswerRow): CsvAnswerRow {
   return {
     Antwort: row.Antwort,
     Antwort_Datum: convertDate(row.Antwort_Datum),
@@ -95,16 +83,32 @@ function convertAnswerRow(row: AnswerRow): AnswerRow {
     Kodierung_Code: convertArray(row.Kodierung_Code),
     Kodierung_Wert: row.Kodierung_Wert,
     Proband: row.Proband,
+    IDS: undefined,
   };
 }
 
-async function loadAnswersCsv(content: string): Promise<AnswerRow[]> {
-  const rows = (await csvParse(content)) as AnswerRow[];
+function convertSettingsRow(row: CsvUserSettingsRow): CsvUserSettingsRow {
+  return {
+    Proband: row.Proband,
+    IDS: undefined,
+    'Benachrichtigung Uhrzeit': row['Benachrichtigung Uhrzeit'],
+    'Einwilligung Ergebnismitteilung': row['Einwilligung Ergebnismitteilung'],
+    'Einwilligung Probenentnahme': row['Einwilligung Probenentnahme'],
+    'Einwilligung Blutprobenentnahme': row['Einwilligung Blutprobenentnahme'],
+    Testproband: row.Testproband,
+  };
+}
+
+async function loadAnswersCsv(content: string): Promise<CsvAnswerRow[]> {
+  const rows = (await csvParse(content, { columns: true })) as CsvAnswerRow[];
   return rows.map(convertAnswerRow);
 }
 
-async function loadSettingsCsv(content: string): Promise<SettingRow[]> {
-  return (await csvParse(content)) as SettingRow[];
+async function loadSettingsCsv(content: string): Promise<CsvUserSettingsRow[]> {
+  const rows = (await csvParse(content, {
+    columns: true,
+  })) as CsvUserSettingsRow[];
+  return rows.map(convertSettingsRow);
 }
 
 function getFieldMapper<T>(field: keyof T): (row: T) => T[keyof T] {
@@ -119,11 +123,11 @@ const questionnaire3 = 298;
 const questionnaire4 = 299;
 
 describe('/dataExport/searches content should match the expected csv', function () {
-  let receivedAnswersRows: AnswerRow[];
-  let expectedAnswersRows: AnswerRow[];
+  let receivedAnswersRows: CsvAnswerRow[];
+  let expectedAnswersRows: CsvAnswerRow[];
 
-  let receivedSettingsRows: SettingRow[];
-  let expectedSettingsRows: SettingRow[];
+  let receivedSettingsRows: CsvUserSettingsRow[];
+  let expectedSettingsRows: CsvUserSettingsRow[];
 
   before(async () => {
     await server.init();
@@ -204,21 +208,23 @@ describe('/dataExport/searches content should match the expected csv', function 
     });
 
     it('should match the given csv data for field "Proband"', () => {
-      const mapper = getFieldMapper<SettingRow>('Proband');
+      const mapper = getFieldMapper<CsvUserSettingsRow>('Proband');
       expect(receivedSettingsRows.map(mapper)).to.deep.equal(
         expectedSettingsRows.map(mapper)
       );
     });
 
     it('should match the given csv data for field "Benachrichtigung Uhrzeit"', () => {
-      const mapper = getFieldMapper<SettingRow>('Benachrichtigung Uhrzeit');
+      const mapper = getFieldMapper<CsvUserSettingsRow>(
+        'Benachrichtigung Uhrzeit'
+      );
       expect(receivedSettingsRows.map(mapper)).to.deep.equal(
         expectedSettingsRows.map(mapper)
       );
     });
 
     it('should match the given csv data for field "Einwilligung Ergebnismitteilung"', () => {
-      const mapper = getFieldMapper<SettingRow>(
+      const mapper = getFieldMapper<CsvUserSettingsRow>(
         'Einwilligung Ergebnismitteilung'
       );
       expect(receivedSettingsRows.map(mapper)).to.deep.equal(
@@ -227,14 +233,16 @@ describe('/dataExport/searches content should match the expected csv', function 
     });
 
     it('should match the given csv data for field "Einwilligung Probenentnahme"', () => {
-      const mapper = getFieldMapper<SettingRow>('Einwilligung Probenentnahme');
+      const mapper = getFieldMapper<CsvUserSettingsRow>(
+        'Einwilligung Probenentnahme'
+      );
       expect(receivedSettingsRows.map(mapper)).to.deep.equal(
         expectedSettingsRows.map(mapper)
       );
     });
 
     it('should match the given csv data for field "Einwilligung Blutprobenentnahme"', () => {
-      const mapper = getFieldMapper<SettingRow>(
+      const mapper = getFieldMapper<CsvUserSettingsRow>(
         'Einwilligung Blutprobenentnahme'
       );
       expect(receivedSettingsRows.map(mapper)).to.deep.equal(
@@ -243,7 +251,7 @@ describe('/dataExport/searches content should match the expected csv', function 
     });
 
     it('should match the given csv data for field "Testproband"', () => {
-      const mapper = getFieldMapper<SettingRow>('Testproband');
+      const mapper = getFieldMapper<CsvUserSettingsRow>('Testproband');
       expect(receivedSettingsRows.map(mapper)).to.deep.equal(
         expectedSettingsRows.map(mapper)
       );
@@ -256,49 +264,49 @@ describe('/dataExport/searches content should match the expected csv', function 
     });
 
     it('should match the given csv data for field "Antwort"', () => {
-      const mapper = getFieldMapper<AnswerRow>('Antwort');
+      const mapper = getFieldMapper<CsvAnswerRow>('Antwort');
       expect(receivedAnswersRows.map(mapper)).to.deep.equal(
         expectedAnswersRows.map(mapper)
       );
     });
 
     it('should match the given csv data for field "Antwort_Datum"', () => {
-      const mapper = getFieldMapper<AnswerRow>('Antwort_Datum');
+      const mapper = getFieldMapper<CsvAnswerRow>('Antwort_Datum');
       expect(receivedAnswersRows.map(mapper)).to.deep.equal(
         expectedAnswersRows.map(mapper)
       );
     });
 
     it('should match the given csv data for field "FB_Datum"', () => {
-      const mapper = getFieldMapper<AnswerRow>('FB_Datum');
+      const mapper = getFieldMapper<CsvAnswerRow>('FB_Datum');
       expect(receivedAnswersRows.map(mapper)).to.deep.equal(
         expectedAnswersRows.map(mapper)
       );
     });
 
     it('should match the given csv data for field "Frage"', () => {
-      const mapper = getFieldMapper<AnswerRow>('Frage');
+      const mapper = getFieldMapper<CsvAnswerRow>('Frage');
       expect(receivedAnswersRows.map(mapper)).to.deep.equal(
         expectedAnswersRows.map(mapper)
       );
     });
 
     it('should match the given csv data for field "Kodierung_Code"', () => {
-      const mapper = getFieldMapper<AnswerRow>('Kodierung_Code');
+      const mapper = getFieldMapper<CsvAnswerRow>('Kodierung_Code');
       expect(receivedAnswersRows.map(mapper)).to.deep.equal(
         expectedAnswersRows.map(mapper)
       );
     });
 
     it('should match the given csv data for field "Kodierung_Wert"', () => {
-      const mapper = getFieldMapper<AnswerRow>('Kodierung_Wert');
+      const mapper = getFieldMapper<CsvAnswerRow>('Kodierung_Wert');
       expect(receivedAnswersRows.map(mapper)).to.deep.equal(
         expectedAnswersRows.map(mapper)
       );
     });
 
     it('should match the given csv data for field "Proband"', () => {
-      const mapper = getFieldMapper<AnswerRow>('Proband');
+      const mapper = getFieldMapper<CsvAnswerRow>('Proband');
       expect(receivedAnswersRows.map(mapper)).to.deep.equal(
         expectedAnswersRows.map(mapper)
       );

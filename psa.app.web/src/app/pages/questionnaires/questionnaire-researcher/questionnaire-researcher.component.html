@@ -4,6 +4,8 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
+<app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
+
 <div class="jumbotron">
   <div *ngIf="myForm" class="page-wrapper">
     <ngx-material-timepicker
@@ -274,6 +276,15 @@
                 }}
               </mat-error>
             </mat-form-field>
+            <mat-error
+              *ngIf="myForm.hasError('questionnaireInstanceCount')"
+              class="error-outside-of-form-field"
+            >
+              {{
+                'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_INSTANCE_COUNT_ERROR'
+                  | translate: translationData
+              }}
+            </mat-error>
 
             <mat-form-field
               *ngIf="myForm.controls['cycle_unit'].value != 'spontan'"

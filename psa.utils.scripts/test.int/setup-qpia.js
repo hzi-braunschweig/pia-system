@@ -23,6 +23,10 @@ const setupQpia = {
       dbLogUser: 'log_' + random.createRandomString(16),
       dbLogPassword: random.createRandomString(16),
       dbLogName: random.createRandomString(16),
+
+      dbSormasUser: 'sormas_' + random.createRandomString(16),
+      dbSormasPassword: random.createRandomString(16),
+      dbSormasName: random.createRandomString(16),
     };
 
     // In beforeAll it is too late to set the process.env, so we need to do everything sync!
@@ -42,6 +46,13 @@ const setupQpia = {
     config.env.DB_LOG_PASSWORD = config.dbLogPassword;
     config.env.DB_LOG_DB = config.dbName;
     config.env.DB_LOG_ACCEPT_UNAUTHORIZED = 'true';
+
+    config.env.DB_SORMAS_HOST = 'localhost';
+    config.env.DB_SORMAS_PORT = config.dbPort.toString();
+    config.env.DB_SORMAS_USER = config.dbSormasUser;
+    config.env.DB_SORMAS_PASSWORD = config.dbSormasPassword;
+    config.env.DB_SORMAS_DB = config.dbName;
+    config.env.DB_SORMAS_ACCEPT_UNAUTHORIZED = 'true';
 
     env.update(config.env);
 

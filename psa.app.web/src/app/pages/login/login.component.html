@@ -57,7 +57,7 @@
           />
         </div>
         <div>
-          <mat-form-field>
+          <mat-form-field appearance="standard">
             <mat-label for="password">{{
               'LOGIN.PASSWORD' | translate
             }}</mat-label>
@@ -65,12 +65,21 @@
               matInput
               id="password"
               (keypress)="changeState()"
-              type="password"
+              [type]="revealPassword ? 'text' : 'password'"
               formControlName="password"
               autocomplete="current-password"
               data-e2e-login-input-password
             />
-            <mat-icon matSuffix>lock</mat-icon>
+            <button
+              type="button"
+              matSuffix
+              mat-icon-button
+              color="primary"
+              (pointerdown)="revealPassword = true"
+              (pointerup)="revealPassword = false"
+            >
+              <mat-icon>visibility</mat-icon>
+            </button>
           </mat-form-field>
         </div>
         <div>

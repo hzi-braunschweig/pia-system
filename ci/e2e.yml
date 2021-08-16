@@ -3,7 +3,6 @@ e2e:
   image:
     name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.e2e-runner:$IMAGE_ID
     entrypoint: ['/bin/bash', '-c']
-  resource_group: only-one
   script:
     - cd psa.app.web
     - curl --fail -u deployer:deployer -X POST --data-binary @cypress/db-init.sql http://deploymentservice:$PORT/deployment/db/qpia?restartDb=false
@@ -99,7 +98,7 @@ e2e:
     HZI_FTPSERVICE_USER: ftpuser
     HZI_FTPSERVICE_PW: ftppassword
 
-    USER_PASSWORD_LENGTH: '12'
+    USER_PASSWORD_LENGTH: '10'
     SORMAS_ON_PIA_USER: sormas
     SORMAS_ON_PIA_PASSWORD: secret
     IS_SORMAS_ACTIVE: 'false'
@@ -217,6 +216,4 @@ e2e:
       when: manual
     # run e2e tests for renovate automatically
     - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^renovate/
-    - if: $CI_COMMIT_TAG
-    - if: $CI_COMMIT_BRANCH =~ /^develop/
     - if: $CI_COMMIT_BRANCH =~ /^release/

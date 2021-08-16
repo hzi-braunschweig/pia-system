@@ -50,6 +50,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { QuestionnaireEditOptions } from './questionnaire-edit-options';
 import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
 import { filter } from 'rxjs/operators';
+import { validateQuestionnaireInstanceCount } from './questionnaire-instance-count-validator';
 
 @Component({
   templateUrl: 'questionnaire-researcher.component.html',
@@ -144,8 +145,11 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
   hoursPerDay = QuestionnaireEditOptions.hoursPerDay;
 
+  private readonly maxInstanceCount = 1500;
+
   translationData = {
     deactivate_min_days: this.deactivate_min_days.toString(),
+    maxInstanceCount: this.maxInstanceCount.toString(),
   };
 
   timepickerTheme: NgxMaterialTimepickerTheme = {
@@ -162,6 +166,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
       clockFaceTimeInactiveColor: '#307292',
     },
   };
+
+  isLoading = false;
 
   canDeactivate(): Observable<boolean> | boolean {
     return this.myForm ? !this.myForm.dirty : true;
@@ -712,76 +718,79 @@ export class QuestionnaireResearcherComponent implements OnInit {
       this.finalises_after_days = 2;
     }
 
-    this.myForm = new FormGroup({
-      name: new FormControl(name, Validators.required),
-      type: new FormControl(this.type, Validators.required),
-      study_id: new FormControl(this.study_id, Validators.required),
-      cycle_amount: new FormControl(this.cycle_amount, Validators.required),
-      activate_at_date: new FormControl(this.activate_at_date, [
-        Validators.required,
-        Validators.min(1),
-      ]),
-      cycle_unit: new FormControl(this.cycle_unit, Validators.required),
-      cycle_per_day: new FormControl(this.cycle_per_day),
-      cycle_first_hour: new FormControl(this.cycle_first_hour),
-      publish: new FormControl(this.publish, Validators.required),
-      keep_answers: new FormControl(this.keepAnswers),
-      activate_after_days: new FormControl(activate_after_days, [
-        Validators.min(0),
-        Validators.required,
-      ]),
-      deactivate_after_days: new FormControl(this.deactivate_after_days, [
-        Validators.min(this.deactivate_min_days),
-        Validators.required,
-      ]),
-      notification_tries: new FormControl(
-        this.notification_tries,
-        Validators.required
-      ),
-      notification_title: new FormControl(
-        this.notification_title,
-        Validators.required
-      ),
-      notification_weekday: new FormControl(
-        this.notification_weekday,
-        Validators.required
-      ),
-      notification_interval: new FormControl(
-        this.notification_interval,
-        Validators.required
-      ),
-      notification_interval_unit: new FormControl(
-        this.notification_interval_unit,
-        Validators.required
-      ),
-      notification_body_new: new FormControl(
-        this.notification_body_new,
-        Validators.required
-      ),
-      notification_body_in_progress: new FormControl(
-        this.notification_body_in_progress,
-        Validators.required
-      ),
-      compliance_needed: new FormControl(this.compliance_needed),
-      notify_when_not_filled: new FormControl(this.notify_when_not_filled),
-      notify_when_not_filled_time: new FormControl(
-        this.notify_when_not_filled_time
-      ),
-      notify_when_not_filled_day: new FormControl(
-        this.notify_when_not_filled_day
-      ),
+    this.myForm = new FormGroup(
+      {
+        name: new FormControl(name, Validators.required),
+        type: new FormControl(this.type, Validators.required),
+        study_id: new FormControl(this.study_id, Validators.required),
+        cycle_amount: new FormControl(this.cycle_amount, Validators.required),
+        activate_at_date: new FormControl(this.activate_at_date, [
+          Validators.required,
+          Validators.min(1),
+        ]),
+        cycle_unit: new FormControl(this.cycle_unit, Validators.required),
+        cycle_per_day: new FormControl(this.cycle_per_day),
+        cycle_first_hour: new FormControl(this.cycle_first_hour),
+        publish: new FormControl(this.publish, Validators.required),
+        keep_answers: new FormControl(this.keepAnswers),
+        activate_after_days: new FormControl(activate_after_days, [
+          Validators.min(0),
+          Validators.required,
+        ]),
+        deactivate_after_days: new FormControl(this.deactivate_after_days, [
+          Validators.min(this.deactivate_min_days),
+          Validators.required,
+        ]),
+        notification_tries: new FormControl(
+          this.notification_tries,
+          Validators.required
+        ),
+        notification_title: new FormControl(
+          this.notification_title,
+          Validators.required
+        ),
+        notification_weekday: new FormControl(
+          this.notification_weekday,
+          Validators.required
+        ),
+        notification_interval: new FormControl(
+          this.notification_interval,
+          Validators.required
+        ),
+        notification_interval_unit: new FormControl(
+          this.notification_interval_unit,
+          Validators.required
+        ),
+        notification_body_new: new FormControl(
+          this.notification_body_new,
+          Validators.required
+        ),
+        notification_body_in_progress: new FormControl(
+          this.notification_body_in_progress,
+          Validators.required
+        ),
+        compliance_needed: new FormControl(this.compliance_needed),
+        notify_when_not_filled: new FormControl(this.notify_when_not_filled),
+        notify_when_not_filled_time: new FormControl(
+          this.notify_when_not_filled_time
+        ),
+        notify_when_not_filled_day: new FormControl(
+          this.notify_when_not_filled_day
+        ),
 
-      expires_after_days: new FormControl(this.expires_after_days, [
-        Validators.min(1),
-      ]),
-      finalises_after_days: new FormControl(this.finalises_after_days, [
-        Validators.min(1),
-      ]),
-      questions: new FormArray([]),
-      condition_error: new FormControl(
-        questionnaire ? questionnaire.condition_error : undefined
-      ),
-    });
+        expires_after_days: new FormControl(this.expires_after_days, [
+          Validators.min(1),
+        ]),
+        finalises_after_days: new FormControl(this.finalises_after_days, [
+          Validators.min(1),
+        ]),
+        questions: new FormArray([]),
+        condition_error: new FormControl(
+          questionnaire ? questionnaire.condition_error : undefined
+        ),
+      },
+      validateQuestionnaireInstanceCount(this.maxInstanceCount)
+    );
 
     this.myForm.controls['notify_when_not_filled'].setValidators(
       this.mustNotEmptyTimeAndDayIfEnabled(this.myForm)
@@ -1473,9 +1482,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
       this.deactivate_min_days = Math.round(
         this.myForm.value.cycle_amount * this.unitValue
       );
-      this.translationData = {
-        deactivate_min_days: this.deactivate_min_days.toString(),
-      };
+      this.translationData.deactivate_min_days =
+        this.deactivate_min_days.toString();
       (
         this.myForm.get('deactivate_after_days') as FormControl
       ).clearValidators();
@@ -1495,9 +1503,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
     this.deactivate_min_days = Math.round(
       this.myForm.value.cycle_amount * this.unitValue
     );
-    this.translationData = {
-      deactivate_min_days: this.deactivate_min_days.toString(),
-    };
+    this.translationData.deactivate_min_days =
+      this.deactivate_min_days.toString();
     (this.myForm.get('deactivate_after_days') as FormControl).clearValidators();
     (this.myForm.get('deactivate_after_days') as FormControl).setValidators([
       Validators.min(this.deactivate_min_days),
@@ -2346,6 +2353,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
   }
 
   async deactivateQuestionnaire(): Promise<void> {
+    this.isLoading = true;
     try {
       this.currentQuestionnaire =
         await this.questionnaireService.deactivateQuestionnaire(
@@ -2357,6 +2365,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     } catch (error) {
       this.alertService.errorObject(error);
     }
+    this.isLoading = false;
   }
 
   onCancel(): void {

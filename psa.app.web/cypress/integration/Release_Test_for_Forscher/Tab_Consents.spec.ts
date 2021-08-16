@@ -146,7 +146,9 @@ describe('Release Test, role: "Forscher", General', () => {
         { delay: 0 }
       );
 
-      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]').click();
+      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]')
+        .should('not.be.disabled')
+        .click();
       cy.get('#confirmbutton').click();
 
       // create consent for ut
@@ -160,7 +162,9 @@ describe('Release Test, role: "Forscher", General', () => {
         { delay: 0 }
       );
 
-      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]').click();
+      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]')
+        .should('not.be.disabled')
+        .click();
       cy.get('#confirmbutton').click();
 
       cy.contains('Abmelden').click();
@@ -272,7 +276,9 @@ describe('Release Test, role: "Forscher", General', () => {
         { delay: 0 }
       );
 
-      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]').click();
+      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]')
+        .should('not.be.disabled')
+        .click();
       cy.get('#confirmbutton').click();
 
       cy.contains('Abmelden').click();
@@ -359,7 +365,9 @@ describe('Release Test, role: "Forscher", General', () => {
         { delay: 0 }
       );
 
-      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]').click();
+      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]')
+        .should('not.be.disabled')
+        .click();
 
       // Add timout for the confirmation window element
       cy.wait(500);
@@ -536,7 +544,9 @@ describe('Release Test, role: "Forscher", General', () => {
         { delay: 0 }
       );
 
-      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]').click();
+      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]')
+        .should('not.be.disabled')
+        .click();
       cy.get('#confirmbutton').click();
 
       cy.contains('Abmelden').click();
@@ -574,7 +584,9 @@ describe('Release Test, role: "Forscher", General', () => {
         ' '
       );
 
-      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]').click();
+      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]')
+        .should('not.be.disabled')
+        .click();
       cy.get('#confirmbutton').click();
 
       cy.contains('Abmelden').click();

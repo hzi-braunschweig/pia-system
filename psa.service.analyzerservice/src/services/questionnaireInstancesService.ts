@@ -10,7 +10,6 @@ import {
   addHours,
   addMonths,
   addWeeks,
-  format,
   isEqual,
   set,
   setDay,
@@ -34,6 +33,7 @@ import { User } from '../models/user';
 import { Answer } from '../models/answer';
 import { Condition } from '../models/condition';
 import { AnswerType } from '../models/answerOption';
+import { LoggingService } from './loggingService';
 
 interface QuestionnaireInstanceStatusWithIdentifier {
   id: number;
@@ -52,6 +52,10 @@ interface CycleSettings {
  * @description check and create questionnaire instances
  */
 export class QuestionnaireInstancesService {
+  private static readonly logger = new LoggingService(
+    'QuestionnaireInstancesService'
+  );
+
   private static readonly HOURS_PER_DAY = 24;
 
   private static readonly DEFAULT_TIME_HOURS = 23;
@@ -59,16 +63,11 @@ export class QuestionnaireInstancesService {
   private static readonly DEFAULT_TIME_SEC = 59;
   private static readonly DEFAULT_TIME_MS = 0;
 
-  private static readonly DATE_TIME_STRING_FORMAT = 'dd.MM.yyyy HH:mm';
-
   /**
    * Activates all questionnaire instances that have to be activated
    */
   public static async checkAndUpdateQuestionnaireInstancesStatus(): Promise<void> {
-    console.log(
-      format(new Date(), this.DATE_TIME_STRING_FORMAT) +
-        ' - Checking Questionnaire Instances...'
-    );
+    this.logger.info('Checking Questionnaire Instances...');
     const csQuestionnaireInstances = new db.$config.pgp.helpers.ColumnSet(
       ['?id', 'status'],
       { table: 'questionnaire_instances' }
@@ -95,6 +94,9 @@ export class QuestionnaireInstancesService {
                        questionnaires.expires_after_days,
                        questionnaires.finalises_after_days,
                        questionnaires.type,
+                       questionnaires.id as questionnaire_id,
+                       qi.questionnaire_version as questionnaire_version,
+                       questionnaires.name as questionnaire_name,
                        users.ids
                 FROM questionnaire_instances as qi
                          JOIN questionnaires
@@ -110,6 +112,9 @@ export class QuestionnaireInstancesService {
       const instanceIdsToReleaseTwice: number[] = [];
       let deletedQueues = [];
       let deletedSchedules = [];
+
+      this.logger.info(`Found ${qInstances.length} instances to check`);
+
       if (qInstances.length > 0) {
         const curDate = new Date();
         await asyncForEach<BaseQuestionnaireInstance>(
@@ -172,18 +177,17 @@ export class QuestionnaireInstancesService {
             'DELETE FROM answers WHERE questionnaire_instance_id IN($1:csv) AND versioning=2',
             [instanceIdsToReleaseTwice]
           );
+          this.logger.info(
+            `Finalized ${instanceIdsToReleaseTwice.length} instances. New status is "released_twice".`
+          );
           if (v1Answers.length > 0) {
             const qAnswers = db.$config.pgp.helpers.insert(
               v1Answers,
               csAnswers
             );
             await t.none(qAnswers);
-            console.log(
-              `${format(new Date(), this.DATE_TIME_STRING_FORMAT)} - Copied ${
-                v1Answers.length
-              } answers as version 2 for ${
-                instanceIdsToReleaseTwice.length
-              } questionnaire instances that are finalized`
+            this.logger.info(
+              `Copied ${v1Answers.length} answers as version 2 for questionnaire instances that were finalized`
             );
           }
         }
@@ -207,20 +211,11 @@ export class QuestionnaireInstancesService {
           );
         }
       }
-      console.log(
-        `${format(new Date(), this.DATE_TIME_STRING_FORMAT)} - Deleted ${
-          deletedQueues.length
-        }  Queues and ${
-          deletedSchedules.length
-        } schedules for expired instances`
+      this.logger.info(
+        `Deleted ${deletedQueues.length} Queues and ${deletedSchedules.length} schedules for expired instances`
       );
-      console.log(
-        `${format(
-          new Date(),
-          this.DATE_TIME_STRING_FORMAT
-        )} - Activated or expired ${
-          vQuestionnaireInstances.length
-        } Questionnaire Instances!`
+      this.logger.info(
+        `Activated or expired ${vQuestionnaireInstances.length} Questionnaire Instances!`
       );
     });
   }

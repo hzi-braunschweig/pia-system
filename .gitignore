@@ -14,3 +14,5 @@ secrets
 coverage
 node_modules
 .npm
+
+**/__pycache__

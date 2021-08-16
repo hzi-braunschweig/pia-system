@@ -6,8 +6,8 @@
 
 import { Component, forwardRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
-
-import { QuestionnaireAnswerTextInputControlValueAccessor } from '../questionnaire-answer-control-value-accessor/questionnaire-answer-text-input-control-value-accessor';
+import { AbstractTextInputControlValueAccessor } from '../../shared/components/abstract-control-value-accessor/abstract-text-input-control-value-accessor';
+import { FormControlValue } from '../questionnaire-form/questionnaire-form.service';
 
 const QUESTIONNAIRE_ANSWER_INPUT_NUMBER_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -20,4 +20,4 @@ const QUESTIONNAIRE_ANSWER_INPUT_NUMBER_ACCESSOR = {
   templateUrl: './questionnaire-answer-input-number.component.html',
   providers: [QUESTIONNAIRE_ANSWER_INPUT_NUMBER_ACCESSOR],
 })
-export class QuestionnaireAnswerInputNumberComponent extends QuestionnaireAnswerTextInputControlValueAccessor {}
+export class QuestionnaireAnswerInputNumberComponent extends AbstractTextInputControlValueAccessor<FormControlValue> {}

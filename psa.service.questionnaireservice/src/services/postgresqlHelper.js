@@ -1678,7 +1678,9 @@ const postgresqlHelper = (function () {
                           ao.answer_type_id AS a_type,
                           a.versioning,
                           a.value,
-                          a.date_of_release
+                          a.date_of_release,
+                          u.ids,
+                          u.account_status
                    FROM questionnaires AS q
                           JOIN questions AS quest
                                ON quest.questionnaire_id = q.id AND quest.questionnaire_version = q.version
@@ -1686,6 +1688,8 @@ const postgresqlHelper = (function () {
                                ON ao.question_id = quest.id
                           JOIN questionnaire_instances AS qi
                                ON q.id = qi.questionnaire_id AND q.version = qi.questionnaire_version
+                          LEFT OUTER JOIN users AS u
+                               ON qi.user_id = u.username
                           LEFT OUTER JOIN answers AS a
                                           ON ao.id = a.answer_option_id AND
                                              qi.id = a.questionnaire_instance_id AND
@@ -1723,9 +1727,12 @@ const postgresqlHelper = (function () {
                               lo.date_of_delivery,
                               lr.date_of_sampling,
                               lo.date_of_announcement,
-                              lo.result_string
+                              lo.result_string,
+                              u.ids,
+                              u.account_status
                        FROM lab_results AS lr
                                 LEFT JOIN lab_observations AS lo ON lr.id = lo.lab_result_id
+                                LEFT OUTER JOIN users AS u ON lr.user_id = u.username
                        WHERE lr.status = 'analyzed'
                          AND lr.user_id IN ($(probands:csv))
                          AND lr.date_of_sampling >= $(start_date)
@@ -1740,8 +1747,9 @@ const postgresqlHelper = (function () {
 
   function streamSamples(probands) {
     const query =
-      'SELECT id, user_id, status, remark, dummy_sample_id, study_status FROM lab_results ' +
-      'WHERE user_id IN ($(probands:csv)) ORDER BY user_id, id, study_status, status';
+      'SELECT lr.id, lr.user_id, lr.status, lr.remark, lr.dummy_sample_id, lr.study_status, u.ids, u.account_status FROM lab_results AS lr ' +
+      'LEFT OUTER JOIN users AS u ON lr.user_id = u.username ' +
+      'WHERE lr.user_id IN ($(probands:csv)) ORDER BY lr.user_id, lr.id, lr.study_status, lr.status';
     return createQueryStream(query, {
       probands,
     });
@@ -1749,8 +1757,9 @@ const postgresqlHelper = (function () {
 
   function streamBloodSamples(probands) {
     const query =
-      'SELECT sample_id, user_id, remark, blood_sample_carried_out FROM blood_samples ' +
-      'WHERE user_id IN ($(probands:csv)) ORDER BY user_id, sample_id';
+      'SELECT bs.sample_id, bs.user_id, bs.remark, bs.blood_sample_carried_out, u.ids, u.account_status FROM blood_samples AS bs ' +
+      'LEFT OUTER JOIN users AS u ON bs.user_id = u.username ' +
+      'WHERE bs.user_id IN ($(probands:csv)) ORDER BY bs.user_id, bs.sample_id';
     return createQueryStream(query, {
       probands,
     });
@@ -1758,7 +1767,7 @@ const postgresqlHelper = (function () {
 
   function streamSettings(probands) {
     const query =
-      'SELECT username,notification_time,compliance_labresults,compliance_samples,compliance_bloodsamples,is_test_proband ' +
+      'SELECT username,notification_time,compliance_labresults,compliance_samples,compliance_bloodsamples,is_test_proband,ids,account_status ' +
       'FROM users ' +
       'WHERE username IN ($(probands:csv))';
     return createQueryStream(query, {

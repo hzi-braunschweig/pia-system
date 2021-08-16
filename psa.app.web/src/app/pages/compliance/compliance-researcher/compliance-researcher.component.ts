@@ -22,6 +22,7 @@ import { TemplateSegment } from '../../../psa.app.core/models/Segments';
   styleUrls: ['./compliance-researcher.component.scss'],
 })
 export class ComplianceResearcherComponent implements OnInit {
+  isLoading = true;
   studies: Studie[];
   newSelectedStudy: Studie;
   selectedStudy: Studie;
@@ -48,6 +49,7 @@ export class ComplianceResearcherComponent implements OnInit {
       .getStudies()
       .then((result: any) => result.studies)
       .catch((err) => this.alertService.errorObject(err));
+    this.isLoading = false;
   }
 
   /**
@@ -55,14 +57,17 @@ export class ComplianceResearcherComponent implements OnInit {
    */
   async onSelectStudy(selectedStudy: Studie): Promise<void> {
     this.selectedStudy = selectedStudy;
-    this.complianceService
-      .getComplianceTextForEditing(this.selectedStudy.name)
-      .then((result: ComplianceTextInEditMode) =>
-        this.updateComplianceTextFG(result)
-      )
-      .catch((err) => {
-        this.alertService.errorObject(err);
-      });
+    this.isLoading = true;
+    try {
+      const complianceTextObject =
+        await this.complianceService.getComplianceTextForEditing(
+          this.selectedStudy.name
+        );
+      this.updateComplianceTextFG(complianceTextObject);
+    } catch (err) {
+      this.alertService.errorObject(err);
+    }
+    this.isLoading = false;
   }
 
   /**

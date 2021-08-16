@@ -1,7 +1,7 @@
 {
   "require": [
     "dotenv/config",
-    "ts-node/register",
+    "ts-node/register/transpile-only",
     "source-map-support/register"
   ],
   "reporter": "mocha-multi-reporters",

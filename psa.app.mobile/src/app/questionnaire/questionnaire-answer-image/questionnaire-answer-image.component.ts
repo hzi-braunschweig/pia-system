@@ -8,7 +8,8 @@ import { Component, forwardRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
 import { Chooser, ChooserResult } from '@ionic-native/chooser/ngx';
-import { QuestionnaireAnswerControlValueAccessor } from '../questionnaire-answer-control-value-accessor/questionnaire-answer-control-value-accessor';
+import { AbstractControlValueAccessor } from '../../shared/components/abstract-control-value-accessor/abstract-control-value-accessor';
+import { FormControlValue } from '../questionnaire-form/questionnaire-form.service';
 
 const QUESTIONNAIRE_ANSWER_IMAGE_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -21,7 +22,7 @@ const QUESTIONNAIRE_ANSWER_IMAGE_ACCESSOR = {
   templateUrl: './questionnaire-answer-image.component.html',
   providers: [QUESTIONNAIRE_ANSWER_IMAGE_ACCESSOR],
 })
-export class QuestionnaireAnswerImageComponent extends QuestionnaireAnswerControlValueAccessor {
+export class QuestionnaireAnswerImageComponent extends AbstractControlValueAccessor<FormControlValue> {
   private readonly cameraOptions: CameraOptions = {
     destinationType: this.camera.DestinationType.DATA_URL,
     targetWidth: 1000,

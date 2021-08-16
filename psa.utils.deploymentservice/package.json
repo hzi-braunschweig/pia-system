@@ -12,21 +12,21 @@
   "devDependencies": {
     "@pia/eslint-config": "file:../psa.eslint-config",
     "@pia/lib-service-core": "file:../psa.lib.service-core",
-    "@types/chai": "^4.2.19",
-    "@types/mocha": "^8.2.2",
+    "@types/chai": "^4.2.21",
+    "@types/mocha": "^8.2.3",
     "@types/node": "^14.17.4",
-    "@typescript-eslint/eslint-plugin": "^4.28.0",
-    "@typescript-eslint/parser": "^4.28.0",
+    "@typescript-eslint/eslint-plugin": "^4.28.4",
+    "@typescript-eslint/parser": "^4.28.4",
     "chai": "^4.3.4",
-    "eslint": "^7.29.0",
+    "eslint": "^7.31.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-no-only-tests": "^2.6.0",
     "eslint-plugin-security": "^1.4.0",
-    "mocha": "^9.0.1",
+    "mocha": "^9.0.2",
     "mocha-multi-reporters": "^1.5.1",
     "nyc": "^15.1.0",
     "source-map-support": "^0.5.19",
-    "ts-node": "^10.0.0",
-    "typescript": "^4.3.4"
+    "ts-node": "^10.1.0",
+    "typescript": "^4.3.5"
   }
 }

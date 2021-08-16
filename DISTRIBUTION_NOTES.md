@@ -2,6 +2,15 @@
 
 This file contains notes about changes that are important to the operations team.
 
+## 1.25
+
+- the configuration variable USER_PASSWORD_LENGTH should be decreased to the value "10" on all PIA instances as a
+  consequence of business requirements
+
+## 1.24
+
+## 1.23
+
 ## 1.22
 
 - new microservice: modysservice, replacement for externaldataservice

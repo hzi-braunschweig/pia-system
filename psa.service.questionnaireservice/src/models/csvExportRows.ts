@@ -7,6 +7,7 @@
 export interface CsvAnswerRow {
   Antwort: string;
   Proband: string;
+  IDS: string;
   FB_Datum: string;
   Antwort_Datum: string;
   Kodierung_Wert: string | string[];
@@ -20,6 +21,7 @@ export interface CsvLabResultObservationRow {
   Auftragsnr: string;
   Bericht_ID: string;
   Proband: string;
+  IDS: string;
   Datum_Mitteilung: string;
   Datum_Abnahme: string;
   Arzt: string;
@@ -34,6 +36,7 @@ export interface CsvSampleRow {
   Proben_ID: string;
   Bakt_Proben_ID: string;
   Proband: string;
+  IDS: string;
   Status: string;
   Bemerkung: string;
 }
@@ -41,12 +44,14 @@ export interface CsvSampleRow {
 export interface CsvBloodSampleRow {
   Blutproben_ID: string;
   Proband: string;
+  IDS: string;
   Status: string;
   Bemerkung: string;
 }
 
 export interface CsvUserSettingsRow {
   Proband: string;
+  IDS: string;
   'Benachrichtigung Uhrzeit': string;
   'Einwilligung Ergebnismitteilung': string;
   'Einwilligung Probenentnahme': string;

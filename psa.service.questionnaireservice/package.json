@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "start": "node --insecure-http-parser --max-old-space-size=4096 src/index.js",
-    "test.int": "TZ=Europe/Berlin TS_NODE_PROJECT=tests/tsconfig.json DOTENV_CONFIG_PATH=tests/test.env nyc mocha -r '../psa.utils.scripts/test.int/setup.hook' 'tests/integration/**/*.spec.{js,ts}' --timeout 10000",
+    "test.int": "TZ=Europe/Berlin TS_NODE_PROJECT=tests/tsconfig.json DOTENV_CONFIG_PATH=tests/test.env nyc mocha -r '../psa.utils.scripts/test.int/setup.hook' 'tests/integration/**/*.spec.{js,ts}' --timeout 30000",
     "test.unit": "IGNORE_MISSING_CONFIG=1 IS_TEST_MODE=true nyc mocha 'src/**/*.spec.{js,ts}' --timeout 5000",
     "lint": "eslint . --ext .ts",
     "postlint": "eslint . --ext .js -c .eslintrc.js.json --no-eslintrc # ONLY_FOR_JS: remove script after complete migration to ts"
@@ -18,7 +18,7 @@
     "archiver": "^5.3.0",
     "csv-stringify": "^5.6.2",
     "date-fns": "^2.22.1",
-    "joi": "^17.4.0",
+    "joi": "^17.4.1",
     "node-fetch": "^2.6.1",
     "pg-error-enum": "^0.5.0",
     "pg-promise": "^10.10.2",
@@ -36,13 +36,13 @@
     "@types/mocha": "^8.2.3",
     "@types/node": "^14.17.4",
     "@types/sinon-chai": "^3.2.5",
-    "@typescript-eslint/eslint-plugin": "^4.28.2",
-    "@typescript-eslint/parser": "^4.28.2",
+    "@typescript-eslint/eslint-plugin": "^4.28.4",
+    "@typescript-eslint/parser": "^4.28.4",
     "chai": "^4.3.4",
     "chai-http": "^4.3.0",
     "csv-parse": "^4.16.0",
     "dotenv": "^10.0.0",
-    "eslint": "^7.30.0",
+    "eslint": "^7.31.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-no-only-tests": "^2.6.0",
     "eslint-plugin-security": "^1.4.0",
@@ -56,7 +56,7 @@
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.19",
     "superagent": "^6.1.0",
-    "ts-node": "^10.0.0",
+    "ts-node": "^10.1.0",
     "typescript": "^4.3.5"
   }
 }

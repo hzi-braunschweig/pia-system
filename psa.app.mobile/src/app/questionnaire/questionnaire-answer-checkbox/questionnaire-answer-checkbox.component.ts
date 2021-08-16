@@ -8,8 +8,8 @@ import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { filter } from 'rxjs/operators';
 import { merge, Subscription } from 'rxjs';
-
-import { QuestionnaireAnswerControlValueAccessor } from '../questionnaire-answer-control-value-accessor/questionnaire-answer-control-value-accessor';
+import { AbstractControlValueAccessor } from '../../shared/components/abstract-control-value-accessor/abstract-control-value-accessor';
+import { FormControlValue } from '../questionnaire-form/questionnaire-form.service';
 
 const QUESTIONNAIRE_ANSWER_CHECKBOX_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -23,7 +23,7 @@ const QUESTIONNAIRE_ANSWER_CHECKBOX_ACCESSOR = {
   providers: [QUESTIONNAIRE_ANSWER_CHECKBOX_ACCESSOR],
 })
 export class QuestionnaireAnswerCheckboxComponent
-  extends QuestionnaireAnswerControlValueAccessor
+  extends AbstractControlValueAccessor<FormControlValue>
   implements OnInit, OnDestroy
 {
   @Input()

@@ -5,8 +5,6 @@
  */
 
 const crypto = require('crypto');
-const generator = require('generate-password');
-const { config } = require('../config');
 
 const PEPPER = 'supersalt';
 
@@ -20,23 +18,6 @@ const pwHashesHelper = (function () {
       .toString('hex') /** convert to hexadecimal format */
       .slice(0, length) /** return required number of characters */
       .toUpperCase();
-  };
-
-  const genRandomPw = () => {
-    let passwordLength = 12;
-    if (config.userPasswordLength) {
-      const pwdLength = config.userPasswordLength;
-      passwordLength = pwdLength >= 12 ? pwdLength : 12;
-    }
-
-    return generator.generate({
-      length: passwordLength,
-      numbers: true,
-      symbols: true,
-      uppercase: true,
-      strict: true,
-      exclude: '\\^`´"\'IloO0[]| <>~',
-    });
   };
 
   const hashThePasswordWithPepper = (password) => {
@@ -105,14 +86,6 @@ const pwHashesHelper = (function () {
      * @returns {string} the created random string
      */
     genRandomString: genRandomString,
-
-    /**
-     * @function
-     * @description returns a random password with requirenments
-     * @memberof module:pwHashesHelper
-     * @returns {string} the created random password
-     */
-    genRandomPw: genRandomPw,
   };
 })();
 

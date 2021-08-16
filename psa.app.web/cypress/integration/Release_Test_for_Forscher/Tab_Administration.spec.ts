@@ -447,6 +447,11 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
 
+    // wait for this panel header!
+    // otherwise it COULD be that it doesn't get created and the next panel header will get that number
+    // and therefore it can not be found later...
+    cy.get('#mat-expansion-panel-header-1');
+
     // Create second questionnaire
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();

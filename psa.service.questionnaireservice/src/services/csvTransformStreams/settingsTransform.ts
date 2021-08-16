@@ -17,7 +17,8 @@ export class SettingsTransform extends CsvTransform<
    */
   protected convertToCsvRow(setting: UserSettings): CsvUserSettingsRow {
     return {
-      Proband: setting.username,
+      Proband: setting.account_status === 'no_account' ? '' : setting.username,
+      IDS: setting.ids ?? '',
       'Benachrichtigung Uhrzeit': setting.notification_time
         ? setting.notification_time
         : '',

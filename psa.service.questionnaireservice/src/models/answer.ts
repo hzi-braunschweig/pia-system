@@ -40,14 +40,6 @@ export interface FullAnswer {
   versioning: number | null;
   value: string | null;
   date_of_release: Date | null;
-}
-
-export interface Answer {
-  question_id: number;
-  questionnaire_instance_id: number;
-  answer_option_id: number;
-  versioning?: number;
-  value: string;
-  date_of_release?: Date;
-  releasing_person?: string;
+  ids: string | null;
+  account_status: string | null;
 }

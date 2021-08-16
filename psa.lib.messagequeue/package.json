@@ -10,7 +10,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build": "tsc -p tsconfig.build.json",
-    "test.int": "START_QPIA=false START_MESSAGEQUEUE=true nyc mocha --recursive --require '../psa.utils.scripts/test.int/setup.hook.js' --timeout 20000 tests/integration/**/*.spec.ts"
+    "test.int": "START_QPIA=false START_MESSAGEQUEUE=true nyc mocha --recursive --require '../psa.utils.scripts/test.int/setup.hook.js' 'tests/integration/**/*.spec.ts' --timeout 30000"
   },
   "dependencies": {
     "amqplib": "^0.8.0"
@@ -18,22 +18,22 @@
   "devDependencies": {
     "@pia/eslint-config": "file:../psa.eslint-config",
     "@pia/lib-service-core": "file:../psa.lib.service-core",
-    "@types/amqplib": "^0.8.0",
-    "@types/chai": "^4.2.19",
-    "@types/mocha": "^8.2.2",
+    "@types/amqplib": "^0.8.1",
+    "@types/chai": "^4.2.21",
+    "@types/mocha": "^8.2.3",
     "@types/node": "^14.17.4",
-    "@typescript-eslint/eslint-plugin": "^4.28.0",
-    "@typescript-eslint/parser": "^4.28.0",
+    "@typescript-eslint/eslint-plugin": "^4.28.4",
+    "@typescript-eslint/parser": "^4.28.4",
     "chai": "^4.3.4",
-    "eslint": "^7.29.0",
+    "eslint": "^7.31.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-no-only-tests": "^2.6.0",
     "eslint-plugin-security": "^1.4.0",
-    "mocha": "^9.0.1",
+    "mocha": "^9.0.2",
     "mocha-multi-reporters": "^1.5.1",
     "nyc": "^15.1.0",
     "source-map-support": "^0.5.19",
-    "ts-node": "^10.0.0",
-    "typescript": "^4.3.4"
+    "ts-node": "^10.1.0",
+    "typescript": "^4.3.5"
   }
 }

@@ -448,6 +448,10 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Startseite').click();
+
+    // make sure that the page got switched and therefore the content of the questionnaires gets reloaded
+    cy.get('[data-e2e="e2e-home-content"]');
+
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
     cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')

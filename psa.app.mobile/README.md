@@ -34,7 +34,7 @@ Further reading: https://ionicframework.com/docs/developing/ios
 
 ### Android
 
-Android Studio, the Android SDK and the Gradle build tool are needed to build the Android App.
+You need the Android SDK, Java JDK **8** and the Gradle build tool to build the Android App.
 
 You also need to install cordova globally:
 

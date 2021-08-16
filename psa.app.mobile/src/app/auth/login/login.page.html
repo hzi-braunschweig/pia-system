@@ -27,18 +27,12 @@
       </ion-input>
     </ion-item>
 
-    <ion-item>
-      <ion-label position="stacked"
-        >{{ 'LOGIN.PASSWORD' | translate }}</ion-label
-      >
-      <ion-input
-        type="password"
-        name="password"
-        placeholder="{{ 'LOGIN.PASSWORD' | translate }}"
-        [(ngModel)]="password"
-      >
-      </ion-input>
-    </ion-item>
+    <app-input-password
+      name="password"
+      [label]="'LOGIN.PASSWORD' | translate"
+      [(ngModel)]="password"
+    >
+    </app-input-password>
     <ion-item>
       <ion-label>{{ 'GENERAL.LANGUAGE' | translate }}</ion-label>
       <ion-select
