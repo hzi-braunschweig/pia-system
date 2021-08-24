@@ -2,6 +2,11 @@
 
 This file contains notes about changes that are important to the operations team.
 
+## 1.25.1
+
+- the ansible configuration variable `pia_mhh_ftpservice_allow_old_ssh2_kex` has to be set to `true` for PIA-Prod
+- please check if the connections to the HZI ftpservice are working and if there is a KEX problem, please set `pia_hzi_ftpservice_allow_old_ssh2_kex` to `true`
+
 ## 1.25
 
 - the configuration variable USER_PASSWORD_LENGTH should be decreased to the value "10" on all PIA instances as a

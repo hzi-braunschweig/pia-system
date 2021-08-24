@@ -1,3 +1,1 @@
-sampletrackingservice:superpass:2000:2000:upload
-testmhh:pass:2001:2000:upload
-testlab2:pass2:2002:2000:upload
+{{ hostvars[inventory_hostname]['PIA_HZI_FTPSERVICE_USER'] | default(pia_hzi_ftpservice_user) }}:{{ hostvars[inventory_hostname]['PIA_HZI_FTPSERVICE_PASSWORD'] | default(pia_hzi_ftpservice_password) }}:2000:2000:upload

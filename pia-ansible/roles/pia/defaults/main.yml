@@ -76,12 +76,14 @@ pia_mhh_ftpservice_host: labresultssftpserver
 pia_mhh_ftpservice_port: 22
 pia_mhh_ftpservice_password: pass
 pia_mhh_ftpservice_user: testmhh
+pia_mhh_ftpservice_allow_old_ssh2_kex: false
 
 # use localhost and random passwords if not used
 pia_hzi_ftpservice_host: labresultssftpserver
 pia_hzi_ftpservice_port: 22
 pia_hzi_ftpservice_password: superpass
 pia_hzi_ftpservice_user: testhzi
+pia_hzi_ftpservice_allow_old_ssh2_kex: false
 
 # use localhost and random passwords if not used
 pia_modys_base_url: http://localhost:99999
