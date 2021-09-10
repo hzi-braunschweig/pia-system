@@ -4,84 +4,88 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<div
-  class="page-header"
-  fxLayout="row"
-  fxLayout.lt-lg="row wrap"
-  fxLayoutAlign="space-between center"
->
-  <div>
-    <button
-      id="exportData"
-      mat-raised-button
-      color="primary"
-      (click)="openDialogExportData()"
-      unit-export-data
-    >
-      {{ 'PROBANDEN.EXPORT_DATA' | translate }}
-    </button>
+<app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
+
+<div class="jumbotron">
+  <div
+    class="page-header"
+    fxLayout="row"
+    fxLayout.lt-lg="row wrap"
+    fxLayoutAlign="space-between center"
+  >
+    <div>
+      <button
+        id="exportData"
+        mat-raised-button
+        color="primary"
+        (click)="openDialogExportData()"
+        unit-export-data
+      >
+        {{ 'PROBANDEN.EXPORT_DATA' | translate }}
+      </button>
+    </div>
   </div>
+
+  <app-probands-list (isLoading)="this.isLoading = $event">
+    <!-- Show answers -->
+    <app-probands-list-entry-action
+      columnName="view_answers"
+      [actionHeader]="'PROBANDEN.VIEW_ANSWERS' | translate"
+    >
+      <app-probands-list-entry-action-button
+        unit-view-answers
+        [actionLabel]="'PROBANDEN.VIEW_ANSWERS' | translate"
+        actionId="view_answers"
+        [disableForDeletedAccounts]="true"
+        (click)="viewQuestionnaireInstancesForUser($event.username)"
+      >
+      </app-probands-list-entry-action-button>
+    </app-probands-list-entry-action>
+
+    <!-- Show lab results or details or register proband column -->
+    <app-probands-list-entry-action
+      columnName="view_labresults"
+      [actionHeader]="'PROBANDEN.VIEW_LABRESULTS' | translate"
+    >
+      <app-probands-list-entry-action-button
+        unit-view-labresults
+        actionId="view_labresults_for_user"
+        [actionLabel]="'PROBANDEN.VIEW_LABRESULTS' | translate"
+        [disableForDeletedAccounts]="true"
+        (click)="viewLabResultsForUser($event.username)"
+      >
+      </app-probands-list-entry-action-button>
+    </app-probands-list-entry-action>
+
+    <!-- Show samples -->
+    <app-probands-list-entry-action
+      columnName="view_samples"
+      [actionHeader]="'PROBANDEN.VIEW_SAMPLES' | translate"
+    >
+      <app-probands-list-entry-action-button
+        unit-view-samples
+        actionId="view_samples"
+        [actionLabel]="'PROBANDEN.VIEW_SAMPLES' | translate"
+        [disableForDeletedAccounts]="true"
+        (click)="viewSamplesForUser($event.username)"
+      >
+      </app-probands-list-entry-action-button>
+    </app-probands-list-entry-action>
+
+    <!-- Delete proband column -->
+    <app-probands-list-entry-action
+      columnName="delete"
+      [actionHeader]="'PROBANDEN.DELETE_SPECIFIC_DATA' | translate"
+    >
+      <app-probands-list-entry-action-button
+        unit-delete
+        actionId="delete"
+        actionIcon="delete"
+        [actionLabel]="'PROBANDEN.DELETE_SPECIFIC_DATA' | translate"
+        [disableForDeletedAccounts]="true"
+        (click)="openSelectDataForPartialDeletionDialog($event.username)"
+      >
+      </app-probands-list-entry-action-button>
+    </app-probands-list-entry-action>
+  </app-probands-list>
 </div>
-
-<app-probands-list>
-  <!-- Show answers -->
-  <app-probands-list-entry-action
-    columnName="view_answers"
-    [actionHeader]="'PROBANDEN.VIEW_ANSWERS' | translate"
-  >
-    <app-probands-list-entry-action-button
-      unit-view-answers
-      [actionLabel]="'PROBANDEN.VIEW_ANSWERS' | translate"
-      actionId="view_answers"
-      [disableForDeletedAccounts]="true"
-      (click)="viewQuestionnaireInstancesForUser($event.username)"
-    >
-    </app-probands-list-entry-action-button>
-  </app-probands-list-entry-action>
-
-  <!-- Show lab results or details or register proband column -->
-  <app-probands-list-entry-action
-    columnName="view_labresults"
-    [actionHeader]="'PROBANDEN.VIEW_LABRESULTS' | translate"
-  >
-    <app-probands-list-entry-action-button
-      unit-view-labresults
-      actionId="view_labresults_for_user"
-      [actionLabel]="'PROBANDEN.VIEW_LABRESULTS' | translate"
-      [disableForDeletedAccounts]="true"
-      (click)="viewLabResultsForUser($event.username)"
-    >
-    </app-probands-list-entry-action-button>
-  </app-probands-list-entry-action>
-
-  <!-- Show samples -->
-  <app-probands-list-entry-action
-    columnName="view_samples"
-    [actionHeader]="'PROBANDEN.VIEW_SAMPLES' | translate"
-  >
-    <app-probands-list-entry-action-button
-      unit-view-samples
-      actionId="view_samples"
-      [actionLabel]="'PROBANDEN.VIEW_SAMPLES' | translate"
-      [disableForDeletedAccounts]="true"
-      (click)="viewSamplesForUser($event.username)"
-    >
-    </app-probands-list-entry-action-button>
-  </app-probands-list-entry-action>
-
-  <!-- Delete proband column -->
-  <app-probands-list-entry-action
-    columnName="delete"
-    [actionHeader]="'PROBANDEN.DELETE_SPECIFIC_DATA' | translate"
-  >
-    <app-probands-list-entry-action-button
-      unit-delete
-      actionId="delete"
-      actionIcon="delete"
-      [actionLabel]="'PROBANDEN.DELETE_SPECIFIC_DATA' | translate"
-      [disableForDeletedAccounts]="true"
-      (click)="openSelectDataForPartialDeletionDialog($event.username)"
-    >
-    </app-probands-list-entry-action-button>
-  </app-probands-list-entry-action>
-</app-probands-list>

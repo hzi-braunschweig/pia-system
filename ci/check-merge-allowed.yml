@@ -1,5 +1,5 @@
 check-merge-allowed:
-  image: bash:5.1.8@sha256:9287ab85220a2d9434c8c890b26ae79e831bc11bbe546f0bda154a9f9331799a
+  image: bash:5.1.8@sha256:d65409068b9ce1750be2e39a5eb6edc9ac2be7fcc0e536169c51c47e212806e1
   stage: prepare
   variables:
     GIT_STRATEGY: none

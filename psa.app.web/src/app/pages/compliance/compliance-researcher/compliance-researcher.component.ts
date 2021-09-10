@@ -45,10 +45,11 @@ export class ComplianceResearcherComponent implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    this.studies = await this.questionnaireService
-      .getStudies()
-      .then((result: any) => result.studies)
-      .catch((err) => this.alertService.errorObject(err));
+    try {
+      this.studies = (await this.questionnaireService.getStudies()).studies;
+    } catch (err) {
+      this.alertService.errorObject(err);
+    }
     this.isLoading = false;
   }
 

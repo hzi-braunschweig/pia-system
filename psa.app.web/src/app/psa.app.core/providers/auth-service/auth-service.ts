@@ -278,9 +278,7 @@ export class AuthService {
       .toPromise();
   }
 
-  getPendingComplianceChange(
-    pendingComplianceChangeId: string
-  ): Promise<object> {
+  getPendingComplianceChange(pendingComplianceChangeId: string): Promise<any> {
     return this.http
       .get(
         this.apiUrl + 'pendingcompliancechanges/' + pendingComplianceChangeId

@@ -5,43 +5,37 @@
   -->
 
 <div class="jumbotron">
-  <mat-grid-list [cols]="cols | async" rowHeight="50px">
-    <mat-grid-tile>
-      <mat-form-field>
-        <mat-select
-          disableOptionCentering
-          id="selectstudy"
-          (selectionChange)="filterSelectMethod()"
-          placeholder="{{ 'QUESTIONNAIRE_FORSCHER.STUDY' | translate }}"
-          [(ngModel)]="currentStudy"
-        >
-          <mat-option *ngFor="let studie of studies" [value]="studie.name">
-            {{ studie.name }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </mat-grid-tile>
-    <mat-grid-tile>
-      <mat-form-field>
-        <input
-          matInput
-          (keyup)="applyFilter()"
-          [(ngModel)]="filterKeyword"
-          placeholder="{{ 'DIALOG.FILTER' | translate }}"
-        />
-      </mat-form-field>
-    </mat-grid-tile>
-    <mat-grid-tile>
-      <button
-        id="resetFilter"
-        mat-raised-button
-        color="primary"
-        (click)="resetFilter()"
+  <div class="grid-container">
+    <mat-form-field>
+      <mat-select
+        disableOptionCentering
+        id="selectstudy"
+        (selectionChange)="filterSelectMethod()"
+        placeholder="{{ 'QUESTIONNAIRE_FORSCHER.STUDY' | translate }}"
+        [(ngModel)]="currentStudy"
       >
-        {{ 'PROBANDEN.RESET_FILTER' | translate }}
-      </button>
-    </mat-grid-tile>
-  </mat-grid-list>
+        <mat-option *ngFor="let studie of studies" [value]="studie.name">
+          {{ studie.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field>
+      <input
+        matInput
+        (keyup)="applyFilter()"
+        [(ngModel)]="filterKeyword"
+        placeholder="{{ 'DIALOG.FILTER' | translate }}"
+      />
+    </mat-form-field>
+    <button
+      id="resetFilter"
+      mat-raised-button
+      color="primary"
+      (click)="resetFilter()"
+    >
+      {{ 'PROBANDEN.RESET_FILTER' | translate }}
+    </button>
+  </div>
   <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
 
   <div *ngIf="isDataReady" class="probands-container mat-elevation-z8">
@@ -53,7 +47,7 @@
       matSort
     >
       <!-- Username Column -->
-      <ng-container matColumnDef="username" matSortStart>
+      <ng-container matColumnDef="username">
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           {{ 'PROBAND.PSEUDONYM' | translate }}
         </mat-header-cell>
@@ -61,7 +55,7 @@
       </ng-container>
 
       <!-- IDS Column -->
-      <ng-container matColumnDef="ids" matSortStart>
+      <ng-container matColumnDef="ids">
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           {{ 'PROBAND.IDS' | translate }}
         </mat-header-cell>
@@ -69,11 +63,13 @@
       </ng-container>
 
       <!-- Study Column -->
-      <ng-container matColumnDef="studyNamesArray">
+      <ng-container matColumnDef="studies">
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           {{ 'QUESTIONNAIRES_FORSCHER.STUDY_ID' | translate }}
         </mat-header-cell>
-        <mat-cell *matCellDef="let row"> {{ row.studyNamesArray }} </mat-cell>
+        <mat-cell *matCellDef="let row">
+          {{ row.studies.join(', ') }}
+        </mat-cell>
       </ng-container>
 
       <!-- Firstname Column -->
@@ -99,7 +95,6 @@
         <mat-cell *matCellDef="let row">
           <button
             id="editicon"
-            #delete
             mat-icon-button
             (click)="editPersonalData(row.username)"
             *ngIf="currentRole == 'ProbandenManager'"
@@ -149,7 +144,6 @@
           <!-- Total opposition buttons -->
           <button
             id="deleteicon"
-            #delete
             mat-icon-button
             (click)="openDialog(row, 'general')"
             [disabled]="

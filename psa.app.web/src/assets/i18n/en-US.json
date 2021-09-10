@@ -405,7 +405,8 @@
     "FILTER_NO_RESULTS": "No questionnaire found.",
     "ROLE": "Role",
     "EXPIRED": "Expired",
-    "IN_PROGRESS": "In progress"
+    "IN_PROGRESS": "In progress",
+    "UPDATED_AT": "Letzte Änderung"
   },
   "QUESTIONNAIRES_PROBAND": {
     "STATUS": "Status",

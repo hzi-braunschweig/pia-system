@@ -1052,6 +1052,7 @@ describe('questionnaireInstancesService', function () {
       cycle_per_day: 1,
       cycle_first_hour: 1,
       created_at: new Date(),
+      updated_at: new Date(),
       type: 'for_probands',
       version: 1,
       publish: 'string',

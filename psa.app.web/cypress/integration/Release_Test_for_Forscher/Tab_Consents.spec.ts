@@ -572,16 +572,20 @@ describe('Release Test, role: "Forscher", General', () => {
 
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
       cy.get('.mat-option-text').contains(study.name).click();
+
+      // wait for the form to be initialized with the current compliance text
+      cy.get('[data-e2e="e2e-compliance-researcher-compliance-text"]').should(
+        ($input) =>
+          expect($input.val()).to.include(consents.consent_tn.slice(2, 89))
+      );
+      // prevent "failed because the center of this element is hidden from view" error
       cy.get('[data-e2e="e2e-compliance-researcher-compliance-text"]').invoke(
         'val',
         ''
       );
-      cy.get('[data-e2e="e2e-compliance-researcher-compliance-text"]').invoke(
-        'val',
-        consents.consent_tn_less
-      );
       cy.get('[data-e2e="e2e-compliance-researcher-compliance-text"]').type(
-        ' '
+        consents.consent_tn_less,
+        { delay: 0 }
       );
 
       cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]')

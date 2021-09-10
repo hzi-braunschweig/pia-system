@@ -133,6 +133,7 @@ describe('QuestionnaireService', () => {
       keep_answers: false,
       condition: null,
       created_at: new Date(),
+      updated_at: new Date(),
       questions: [],
     };
   }

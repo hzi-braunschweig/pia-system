@@ -49,6 +49,7 @@ export interface Questionnaire {
   cycle_per_day: number | null;
   cycle_first_hour: number | null;
   created_at: Date;
+  readonly updated_at: Date;
   type: QuestionnaireType;
   version: number;
   publish: string;

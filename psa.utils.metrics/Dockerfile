@@ -1,3 +1,3 @@
-FROM nginx:1.21.1-alpine@sha256:23f08ba26a92a00d7368310ab3b4c46907feeebd485f716740e391aa90ad5904
+FROM nginx:1.21.1-alpine@sha256:8adf52321abdb31a00ce98888d4ac5e32fdeeabed0862ef2ff738618a38bdffc
 ARG DIR=
 COPY $DIR/rootfs-overlay/ /

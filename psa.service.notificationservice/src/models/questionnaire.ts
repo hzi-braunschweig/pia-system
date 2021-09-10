@@ -38,6 +38,7 @@ export interface DbQuestionnaire extends DbQuestionnaireForPM {
   expires_after_days: number;
   finalises_after_days: number;
   created_at: Date | null;
+  updated_at: Date | null;
   type: QuestionnaireType | null;
   publish: string | null;
   notify_when_not_filled: boolean | null;

@@ -1,7 +1,7 @@
 check-sonarqube-feature:
   stage: push
   image:
-    name: sonarsource/sonar-scanner-cli:4.6@sha256:2420f9a67519407aeaf16114d2c26e52b39a8876b2f57736ace586dd77beaa4b
+    name: sonarsource/sonar-scanner-cli:4.6@sha256:5615bd6da3691c598028e3c96d70ed31c7e8d0e0bd0d71959e8f6a31733f737e
     entrypoint: ['']
   needs:
     - job: accumulate-coverage
@@ -36,7 +36,7 @@ check-sonarqube-feature:
 check-sonarqube-develop:
   stage: push
   image:
-    name: sonarsource/sonar-scanner-cli:4.6@sha256:2420f9a67519407aeaf16114d2c26e52b39a8876b2f57736ace586dd77beaa4b
+    name: sonarsource/sonar-scanner-cli:4.6@sha256:5615bd6da3691c598028e3c96d70ed31c7e8d0e0bd0d71959e8f6a31733f737e
     entrypoint: ['']
   needs:
     - job: accumulate-coverage
@@ -71,7 +71,7 @@ check-sonarqube-develop:
 check-sonarqube-release:
   stage: push
   image:
-    name: sonarsource/sonar-scanner-cli:4.6@sha256:2420f9a67519407aeaf16114d2c26e52b39a8876b2f57736ace586dd77beaa4b
+    name: sonarsource/sonar-scanner-cli:4.6@sha256:5615bd6da3691c598028e3c96d70ed31c7e8d0e0bd0d71959e8f6a31733f737e
     entrypoint: ['']
   needs:
     - job: accumulate-coverage

@@ -1,4 +1,4 @@
-FROM node:14.17.4-alpine@sha256:0c80f9449d2690eef49aad35eeb42ed9f9bbe2742cd4e9766a7be3a1aae2a310 AS base
+FROM node:14.17.5-alpine@sha256:b8d48b515e3049d4b7e9ced6cedbe223c3bc4a3d0fd02332448f3cdb000faee1 AS base
 
 FROM base AS npm-install
 RUN apk --update --no-cache add curl tzdata
@@ -61,7 +61,7 @@ RUN find /usr/src/node-app/dist/out/ | xargs gzip -k -9
 
 ################################################################
 
-FROM nginx:1.21.1-alpine@sha256:23f08ba26a92a00d7368310ab3b4c46907feeebd485f716740e391aa90ad5904 AS final
+FROM nginx:1.21.1-alpine@sha256:8adf52321abdb31a00ce98888d4ac5e32fdeeabed0862ef2ff738618a38bdffc AS final
 
 ARG DIR=.
 

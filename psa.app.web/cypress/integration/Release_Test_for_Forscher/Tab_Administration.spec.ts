@@ -231,7 +231,11 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
     cy.get('[data-e2e="e2e-notification-tries"]').type('0');
 
-    cy.get('#mat-expansion-panel-header-0').click();
+    cy.get(
+      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
+    )
+      .first()
+      .click();
     cy.get('#cdk-accordion-child-0')
       .find('[data-e2e="e2e-question-text-input"]')
       .type('Wie alt sind Sie?');
@@ -280,7 +284,11 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
     cy.get('[data-e2e="e2e-condition-numeric-value-input"]').type('20');
 
-    cy.get('#mat-expansion-panel-header-2').click();
+    cy.get(
+      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
+    )
+      .first()
+      .click();
     cy.get('#cdk-accordion-child-2')
       .find('[data-e2e="e2e-question-text-input"]')
       .type('Bitte beschreiben sie Ihre Symptome');
@@ -349,7 +357,11 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
     cy.get('[data-e2e="e2e-notification-tries"]').type('0');
 
-    cy.get('#mat-expansion-panel-header-0').click();
+    cy.get(
+      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
+    )
+      .first()
+      .click();
     cy.get('#cdk-accordion-child-0')
       .find('[data-e2e="e2e-question-text-input"]')
       .type('What is your name?');
@@ -406,7 +418,10 @@ describe('Release Test, role: "Forscher", Administration', () => {
     );
     cy.get('[data-e2e="e2e-notification-tries"]').should('have.value', 0);
 
-    cy.get('#mat-expansion-panel-header-2')
+    cy.get(
+      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
+    )
+      .first()
       .contains('Frage : Where are you from?')
       .should('exist');
   });
@@ -435,7 +450,11 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
     cy.get('[data-e2e="e2e-notification-tries"]').type('0');
 
-    cy.get('#mat-expansion-panel-header-0').click();
+    cy.get(
+      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
+    )
+      .first()
+      .click();
     cy.get('#cdk-accordion-child-0')
       .find('[data-e2e="e2e-question-text-input"]')
       .type('What is your name?');
@@ -446,11 +465,6 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
-
-    // wait for this panel header!
-    // otherwise it COULD be that it doesn't get created and the next panel header will get that number
-    // and therefore it can not be found later...
-    cy.get('#mat-expansion-panel-header-1');
 
     // Create second questionnaire
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
@@ -472,7 +486,11 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
     cy.get('[data-e2e="e2e-notification-tries"]').type('0');
 
-    cy.get('#mat-expansion-panel-header-2').click();
+    cy.get(
+      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
+    )
+      .first()
+      .click();
     cy.get('#cdk-accordion-child-2')
       .find('[data-e2e="e2e-question-text-input"]')
       .type('Where are you from?');
@@ -504,7 +522,11 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
     cy.get('[data-e2e="e2e-notification-tries"]').type('0');
 
-    cy.get('#mat-expansion-panel-header-4').click();
+    cy.get(
+      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
+    )
+      .first()
+      .click();
     cy.get('#cdk-accordion-child-4')
       .find('[data-e2e="e2e-question-text-input"]')
       .type('How old are you?');
@@ -553,7 +575,11 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
     cy.get('[data-e2e="e2e-notification-tries"]').type('0');
 
-    cy.get('#mat-expansion-panel-header-0').click();
+    cy.get(
+      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
+    )
+      .first()
+      .click();
     cy.get('#cdk-accordion-child-0')
       .find('[data-e2e="e2e-question-text-input"]')
       .type('Where are you from?');
@@ -603,7 +629,11 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
     cy.get('[data-e2e="e2e-notification-tries"]').type('0');
 
-    cy.get('#mat-expansion-panel-header-0').click();
+    cy.get(
+      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
+    )
+      .first()
+      .click();
     cy.get('#cdk-accordion-child-0')
       .find('[data-e2e="e2e-question-text-input"]')
       .type('How old are you?');
@@ -765,7 +795,11 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
     cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
 
-    cy.get('#mat-expansion-panel-header-0').click();
+    cy.get(
+      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
+    )
+      .first()
+      .click();
     cy.get('#cdk-accordion-child-0')
       .find('[data-e2e="e2e-question-text-input"]')
       .type('Where are you from?');
@@ -1039,7 +1073,11 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
     cy.get('[data-e2e="e2e-notification-tries"]').type('0');
 
-    cy.get('#mat-expansion-panel-header-0').click();
+    cy.get(
+      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
+    )
+      .first()
+      .click();
     cy.get('#cdk-accordion-child-0')
       .find('[data-e2e="e2e-question-text-input"]')
       .type('Where are you from?');

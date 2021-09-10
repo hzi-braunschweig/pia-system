@@ -125,6 +125,20 @@
         </mat-cell>
       </ng-container>
 
+      <!-- Updated At Column -->
+      <ng-container matColumnDef="updated_at">
+        <mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          fxLayoutAlign="center center"
+        >
+          {{ 'QUESTIONNAIRES_FORSCHER.UPDATED_AT' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row" fxLayoutAlign="center center">
+          {{ row.updated_at | date: 'dd.MM.yyyy HH:mm:ss' }}
+        </mat-cell>
+      </ng-container>
+
       <ng-container matColumnDef="delete">
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
         <mat-cell *matCellDef="let row">

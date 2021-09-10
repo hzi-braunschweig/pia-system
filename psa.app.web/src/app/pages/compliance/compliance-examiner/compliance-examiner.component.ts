@@ -14,6 +14,8 @@ import { UserWithStudyAccess } from '../../../psa.app.core/models/user-with-stud
   templateUrl: './compliance-examiner.component.html',
 })
 export class ComplianceExaminerComponent {
+  isLoading = true;
+
   constructor(private readonly dialog: MatDialog) {}
 
   showCompliance(user: UserWithStudyAccess): void {

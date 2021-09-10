@@ -193,14 +193,17 @@ describe('Release Test, role: "Proband", Tab: Home', () => {
       cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
       cy.expectPathname('/questionnaires/user');
 
+      cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Einstellungen')
         .click();
       cy.expectPathname('/settings');
 
+      cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]').contains('Kontakt').click();
       cy.expectPathname('/contact');
 
+      cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]').contains('Startseite').click();
       cy.expectPathname('/home');
     });

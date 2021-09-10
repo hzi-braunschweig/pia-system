@@ -1,4 +1,4 @@
-FROM node:14.17.4-alpine@sha256:0c80f9449d2690eef49aad35eeb42ed9f9bbe2742cd4e9766a7be3a1aae2a310 AS base
+FROM node:14.17.5-alpine@sha256:b8d48b515e3049d4b7e9ced6cedbe223c3bc4a3d0fd02332448f3cdb000faee1 AS base
 
 FROM base AS npm-install
 RUN apk --update --no-cache add curl tzdata
@@ -50,6 +50,6 @@ RUN npm run build:browser
 
 ################################################################
 
-FROM busybox:1.33.1@sha256:0f354ec1728d9ff32edcd7d1b8bbdfc798277ad36120dc3dc683be44524c8b60 AS final
+FROM busybox:1.34.0@sha256:89375f1d01c0e5259fed25db29694e4bbb1ee36189fa4eba81a4f75f672df840 AS final
 
 COPY --from=build-browser /usr/src/node-app/platforms/browser/www/ /assets/browser

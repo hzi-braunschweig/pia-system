@@ -57,6 +57,7 @@ export class QuestionnairesResearcherComponent implements OnInit {
     'name',
     'no_questions',
     'active',
+    'updated_at',
     'delete',
   ];
   questionnaireDatabase = new QuestionnaireDatabase(

@@ -21,6 +21,8 @@ export class ProbandsUntersuchungsteamComponent {
   @ViewChild(ProbandsListComponent, { static: true })
   probandsList: ProbandsListComponent;
 
+  isLoading = true;
+
   constructor(private router: Router, private dialog: MatDialog) {}
 
   createIDS(): void {

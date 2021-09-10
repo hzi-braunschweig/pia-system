@@ -5,6 +5,13 @@
  */
 
 /* Structure */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 200px);
+  grid-gap: 1rem;
+  align-items: baseline;
+}
+
 .probands-container {
   display: flex;
   flex-direction: column;

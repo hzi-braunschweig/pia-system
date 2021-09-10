@@ -70,5 +70,7 @@ export class QuestionnaireserviceClient {
       new Date(questionnaire.activate_at_date);
     questionnaire.created_at =
       questionnaire.created_at && new Date(questionnaire.created_at);
+    questionnaire.updated_at =
+      questionnaire.updated_at && new Date(questionnaire.updated_at);
   }
 }

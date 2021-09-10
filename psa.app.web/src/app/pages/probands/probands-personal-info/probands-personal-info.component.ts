@@ -7,12 +7,10 @@
 import {
   ChangeDetectorRef,
   Component,
-  ElementRef,
   forwardRef,
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { SelectionModel } from '@angular/cdk/collections';
 import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -21,12 +19,10 @@ import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-se
 import { AlertService } from '../../../_services/alert.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Studie } from '../../../psa.app.core/models/studie';
-import { JwtHelperService } from '@auth0/angular-jwt';
 import { User } from '../../../psa.app.core/models/user';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { PersonalDataService } from 'src/app/psa.app.core/providers/personaldata-service/personaldata-service';
 import { MediaObserver } from '@angular/flex-layout';
-import { Observable } from 'rxjs';
 import { DialogDeleteComponent } from '../../../_helpers/dialog-delete';
 import {
   DeletionType,
@@ -42,6 +38,24 @@ import { DialogChangeComplianceComponent } from '../../../_helpers/dialog-change
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
 import { UserWithStudyAccess } from 'src/app/psa.app.core/models/user-with-study-access';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AuthenticationManager } from '../../../_services/authentication-manager.service';
+
+interface TableRow {
+  pendingComplianceChange: boolean;
+  has_total_opposition: boolean;
+  has_partial_opposition: boolean;
+  studies: string[];
+  vorname: string;
+  pendingComplianceChangeObject: any;
+  accountStatus: string;
+  has_compliance_opposition: boolean;
+  pendingDeletionPersonalObject: any;
+  pendingDeletionGeneralObject: any;
+  ids: string;
+  nachname: string;
+  has_four_eyes_opposition: boolean;
+  username: string;
+}
 
 @Component({
   templateUrl: 'probands-personal-info.component.html',
@@ -54,18 +68,14 @@ import { HttpErrorResponse } from '@angular/common/http';
   ],
 })
 export class ProbandsPersonalInfoComponent implements OnInit {
-  studies: Studie[];
-  currentRole: string;
-  currentUser: User;
-  dataSource: MatTableDataSource<any>;
-  public cols: Observable<number>;
-  probandIdToDelete: string;
-  type: DeletionType;
-  pendingComplianceChangeId: string;
-  displayedColumns = [
+  public studies: Studie[];
+  public currentRole: string;
+  public currentUser: User;
+  public dataSource: MatTableDataSource<TableRow>;
+  public displayedColumns = [
     'username',
     'ids',
-    'studyNamesArray',
+    'studies',
     'vorname',
     'nachname',
     'view',
@@ -73,20 +83,19 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     'view_answers',
     'delete',
   ];
-  selection = new SelectionModel<string>(true, []);
-  @ViewChild('filter') filter: ElementRef;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild(MatSort) sort: MatSort;
-  currentStudy: string;
-  isDataReady: boolean = false;
-  filterKeyword: string;
-  probands: UserWithStudyAccess[];
-  isLoading: boolean = true;
-  tableData: any[];
+  public currentStudy: string;
+  public isDataReady: boolean = false;
+  public filterKeyword: string;
+  public isLoading: boolean = true;
+  @ViewChild(MatPaginator) private paginator: MatPaginator;
+  @ViewChild(MatSort) private sort: MatSort;
+  private probands: UserWithStudyAccess[];
+  private tableData: TableRow[];
 
   constructor(
     private questionnaireService: QuestionnaireService,
     private authService: AuthService,
+    private auth: AuthenticationManager,
     private alertService: AlertService,
     private router: Router,
     private dialog: MatDialog,
@@ -95,47 +104,29 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private personalDataService: PersonalDataService
   ) {
-    const jwtHelper: JwtHelperService = new JwtHelperService();
-    this.currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    const tokenPayload = jwtHelper.decodeToken(this.currentUser.token);
-    this.currentRole = tokenPayload.role;
+    this.currentUser = this.auth.currentUser;
+    this.currentRole = this.auth.currentRole;
 
-    const gridAns = new Map([
-      ['xs', 1],
-      ['sm', 2],
-      ['md', 4],
-      ['lg', 5],
-      ['xl', 6],
-    ]);
-    let startCond2: number;
-    gridAns.forEach((cols, mqAlias) => {
-      if (this.mediaObserver.isActive(mqAlias)) {
-        startCond2 = cols;
-      }
-    });
-    this.cols = this.mediaObserver.media$
-      .map((change) => gridAns.get(change.mqAlias))
-      .startWith(startCond2);
-    this.probandIdToDelete =
+    const probandIdToDelete =
       this.activatedRoute.snapshot.queryParamMap.get('probandIdToDelete');
-    this.type = this.activatedRoute.snapshot.queryParamMap.get(
+    const type = this.activatedRoute.snapshot.queryParamMap.get(
       'type'
     ) as DeletionType;
-    this.pendingComplianceChangeId =
+    const pendingComplianceChangeId =
       this.activatedRoute.snapshot.queryParamMap.get(
         'pendingComplianceChangeId'
       );
 
-    if (this.probandIdToDelete) {
-      switch (this.type) {
+    if (probandIdToDelete) {
+      switch (type) {
         case 'personal':
           this.personalDataService
-            .getPendingDeletionForProbandId(this.probandIdToDelete)
-            .then((result: any) => {
+            .getPendingDeletionForProbandId(probandIdToDelete)
+            .then((result) => {
               if (result.requested_for && result.proband_id) {
                 this.openDialogDeletePartner(
                   result.proband_id,
-                  this.type,
+                  type,
                   result.requested_by,
                   result.id
                 );
@@ -172,12 +163,12 @@ export class ProbandsPersonalInfoComponent implements OnInit {
           break;
         case 'general':
           this.authService
-            .getPendingDeletionForProbandId(this.probandIdToDelete)
-            .then((result: any) => {
+            .getPendingDeletionForProbandId(probandIdToDelete)
+            .then((result) => {
               if (result.requested_for && result.for_id && result.type) {
                 this.openDialogDeletePartner(
                   result.for_id,
-                  this.type,
+                  type,
                   result.requested_by,
                   result.id
                 );
@@ -214,12 +205,12 @@ export class ProbandsPersonalInfoComponent implements OnInit {
           break;
       }
     }
-    if (this.pendingComplianceChangeId) {
+    if (pendingComplianceChangeId) {
       this.authService
-        .getPendingComplianceChange(this.pendingComplianceChangeId)
-        .then((result: any) => {
+        .getPendingComplianceChange(pendingComplianceChangeId)
+        .then((result) => {
           if (result.requested_for && result.proband_id) {
-            this.openDialogChangeCompliance(result.proband_id, result);
+            void this.openDialogChangeCompliance(result.proband_id, result);
           }
         })
         .catch((err: HttpErrorResponse) => {
@@ -253,48 +244,40 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     }
   }
 
-  ngOnInit(): void {
-    this.initTable();
+  public ngOnInit(): void {
+    void this.initTable();
   }
 
-  async getUsers(): Promise<void> {
+  private async getUsers(): Promise<void> {
     const probandenData = await this.authService.getUsers();
     this.probands = probandenData.users;
   }
 
-  async initTable(): Promise<void> {
-    const data = [];
+  public async initTable(): Promise<void> {
     this.tableData = [];
     try {
       const probandenPersonalData =
         await this.personalDataService.getPersonalDataAll();
-      const probandenData = await this.authService.getUsers();
+      this.probands = (await this.authService.getUsers()).users;
       this.studies = (await this.questionnaireService.getStudies()).studies;
-      this.probands = probandenData.users;
 
       for (const proband of this.probands) {
         const studyOfProband = this.getSuperStudyOfProband(proband);
 
         const personalDataForPseudonym = probandenPersonalData.find(
-          (res) => res.pseudonym === proband.username
+          (personalData) => personalData.pseudonym === proband.username
         );
-        let studyNamesArray = '';
-        let accountStatus = '';
         const vorname = personalDataForPseudonym
           ? personalDataForPseudonym.vorname
           : '';
         const name = personalDataForPseudonym
           ? personalDataForPseudonym.name
           : '';
-        const pendingComplianceChange = proband.pendingComplianceChange
-          ? true
-          : false;
-        for (const study_access of proband.study_accesses) {
-          if (studyNamesArray) {
-            studyNamesArray += ', ';
-          }
-          studyNamesArray += `${study_access.study_id} (${study_access.access_level})`;
-        }
+        const pendingComplianceChange = !!proband.pendingComplianceChange;
+        const studies = proband.study_accesses.map(
+          (study_access) => study_access.study_id
+        );
+        let accountStatus = '';
         if (
           proband.account_status === 'active' &&
           proband.study_status === 'active'
@@ -317,12 +300,12 @@ export class ProbandsPersonalInfoComponent implements OnInit {
         const pendingDeletionObject =
           await this.getPendingDeletionObjectForProband(proband);
 
-        const objectToPush = {
+        this.tableData.push({
           username: proband.username === proband.ids ? '' : proband.username,
           ids: proband.ids,
           vorname,
           nachname: name,
-          studyNamesArray,
+          studies,
           accountStatus,
           pendingComplianceChange,
           pendingComplianceChangeObject,
@@ -338,25 +321,24 @@ export class ProbandsPersonalInfoComponent implements OnInit {
           has_total_opposition: studyOfProband.has_total_opposition,
           has_compliance_opposition: studyOfProband.has_compliance_opposition,
           has_four_eyes_opposition: studyOfProband.has_four_eyes_opposition,
-        };
-
-        data.push(objectToPush);
+        });
       }
     } catch (e) {
       console.log(e);
     }
 
-    this.tableData = data;
-    this.initDatasource([]);
+    this.initDatasource();
   }
 
-  getSuperStudyOfProband(proband): Studie {
+  public getSuperStudyOfProband(proband): Studie {
     return this.studies.find(
       (study) => study.name === proband.study_accesses[0].study_id
     );
   }
 
-  async getPendingComplianceChangeObjectForProband(proband: any): Promise<any> {
+  private async getPendingComplianceChangeObjectForProband(
+    proband: UserWithStudyAccess
+  ): Promise<any> {
     try {
       const pendingComplianceChangeObject: any = proband.pendingComplianceChange
         ? await this.authService.getPendingComplianceChangeForProband(
@@ -377,7 +359,9 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     }
   }
 
-  async getPendingDeletionObjectForProband(proband: any): Promise<any> {
+  private async getPendingDeletionObjectForProband(
+    proband: UserWithStudyAccess
+  ): Promise<any> {
     try {
       const pendingDeletionObject: any =
         proband.study_status === 'deletion_pending'
@@ -402,8 +386,10 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     }
   }
 
-  initDatasource(data: any[]): void {
-    this.dataSource = new MatTableDataSource(data);
+  private initDatasource(): void {
+    this.dataSource = new MatTableDataSource([]);
+    this.dataSource.filterPredicate = (row, selectedStudyFilter) =>
+      row.studies.includes(selectedStudyFilter);
     this.isLoading = false;
     this.isDataReady = true;
     this.cdr.detectChanges();
@@ -413,7 +399,7 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     this.filterKeyword = '';
   }
 
-  filterSelectMethod(): void {
+  public filterSelectMethod(): void {
     if (!this.dataSource) {
       return;
     }
@@ -423,26 +409,25 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     this.dataSource.filter = this.currentStudy;
   }
 
-  applyFilter(): void {
+  public applyFilter(): void {
     this.dataSource.filter = this.filterKeyword.trim().toLowerCase();
   }
 
-  resetFilter(): void {
+  public resetFilter(): void {
     this.dataSource.data = [];
     this.dataSource.filter = '';
     this.currentStudy = undefined;
     this.filterKeyword = '';
   }
 
-  editPersonalData(username: any): void {
-    this.router.navigate(['/probands-personal-info/', username]);
+  public editPersonalData(username: string): void {
+    void this.router.navigate(['/probands-personal-info/', username]);
   }
 
-  openDialog(probandRow: any, type: DeletionType): void {
+  public openDialog(probandRow: TableRow, type: DeletionType): void {
     const username = probandRow.username ? probandRow.username : probandRow.ids;
-    this.type = type;
     const data =
-      this.type === 'personal'
+      type === 'personal'
         ? { data: 'die Kontaktdaten vom Probanden ' + username }
         : {
             data: 'alle Forschungs- und Kontaktdaten vom Probanden ' + username,
@@ -457,7 +442,7 @@ export class ProbandsPersonalInfoComponent implements OnInit {
         if (probandRow.has_four_eyes_opposition) {
           this.openDialogDeletePartner(username, type);
         } else {
-          this.doDeletion(this.type, username);
+          void this.doDeletion(type, username);
         }
       }
     });
@@ -507,7 +492,7 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     this.isLoading = false;
   }
 
-  openDialogDeletePartner(
+  public openDialogDeletePartner(
     usernameProband: string,
     type: DeletionType,
     usernamePM?: string,
@@ -588,13 +573,13 @@ export class ProbandsPersonalInfoComponent implements OnInit {
         }
         this.showResultDialog(data);
       }
-      this.router.navigate(['/probands-personal-info/']);
+      void this.router.navigate(['/probands-personal-info/']);
     });
   }
 
-  async openDialogChangeCompliance(
+  public async openDialogChangeCompliance(
     usernameProband: string,
-    response?: any
+    pendingComplianceChangeObject?: any
   ): Promise<void> {
     await this.getUsers();
     let compliance_labresults;
@@ -602,10 +587,12 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     let compliance_bloodsamples;
     let has_four_eyes_opposition;
 
-    if (response) {
-      compliance_labresults = response.compliance_labresults_to;
-      compliance_samples = response.compliance_samples_to;
-      compliance_bloodsamples = response.compliance_bloodsamples_to;
+    if (pendingComplianceChangeObject) {
+      compliance_labresults =
+        pendingComplianceChangeObject.compliance_labresults_to;
+      compliance_samples = pendingComplianceChangeObject.compliance_samples_to;
+      compliance_bloodsamples =
+        pendingComplianceChangeObject.compliance_bloodsamples_to;
       has_four_eyes_opposition = true;
     } else {
       for (const proband of this.probands) {
@@ -628,9 +615,13 @@ export class ProbandsPersonalInfoComponent implements OnInit {
         compliance_labresults,
         compliance_samples,
         compliance_bloodsamples,
-        requested_by: response ? response.requested_by : null,
+        requested_by: pendingComplianceChangeObject
+          ? pendingComplianceChangeObject.requested_by
+          : null,
         requested_for: this.currentUser.username,
-        deletePendingComplianceChangeId: response ? response.id : null,
+        deletePendingComplianceChangeId: pendingComplianceChangeObject
+          ? pendingComplianceChangeObject.id
+          : null,
       },
     });
 
@@ -683,15 +674,15 @@ export class ProbandsPersonalInfoComponent implements OnInit {
           this.showResultDialog(dataError);
         }
       }
-      this.router.navigate(['/probands-personal-info/']);
+      await this.router.navigate(['/probands-personal-info/']);
     });
   }
 
-  viewQuestionnaireInstancesForUser(username: string): void {
-    this.router.navigate(['/questionnaireInstances/', username]);
+  public viewQuestionnaireInstancesForUser(username: string): void {
+    void this.router.navigate(['/questionnaireInstances/', username]);
   }
 
-  showResultDialog(data): void {
+  private showResultDialog(data): void {
     this.dialog.open(DialogPopUpComponent, {
       width: '300px',
       data,

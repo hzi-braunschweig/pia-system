@@ -10,6 +10,7 @@ import {
   forwardRef,
   Input,
   OnInit,
+  Output,
   ViewChild,
 } from '@angular/core';
 import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
@@ -72,6 +73,12 @@ export class ProbandsListComponent implements OnInit {
     'account_status',
   ];
 
+  // tslint:disable-next-line:no-output-rename
+  @Output('isLoading')
+  isLoadingEvent = new EventEmitter<boolean>();
+
+  isLoading: boolean = true;
+
   dataSource: MatTableDataSource<TranslatedUser> =
     new MatTableDataSource<TranslatedUser>([]);
 
@@ -83,8 +90,6 @@ export class ProbandsListComponent implements OnInit {
     string,
     ProbandsListEntryActionConfig
   >();
-
-  isLoading = true;
 
   constructor(
     private readonly authService: AuthService,
@@ -147,6 +152,8 @@ export class ProbandsListComponent implements OnInit {
    * Configure DataSource. Has to be done on init as ViewChilds need to be available.
    */
   async fetchUsers(): Promise<void> {
+    this.isLoading = true;
+    this.isLoadingEvent.emit(this.isLoading);
     try {
       const response = await this.authService.getUsers();
       this.studyFilterValues = this.extractStudyFilterValues(response.users);
@@ -162,6 +169,7 @@ export class ProbandsListComponent implements OnInit {
       this.alertService.errorObject(error);
     }
     this.isLoading = false;
+    this.isLoadingEvent.emit(false);
   }
 
   /**

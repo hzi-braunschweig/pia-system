@@ -34,6 +34,7 @@ export interface Questionnaire {
   notification_body_in_progress: string;
   questions: Question[];
   condition: Condition;
+  readonly updated_at: string;
 }
 
 export interface Question {

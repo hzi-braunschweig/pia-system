@@ -4,8 +4,10 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
+<app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
+
 <div class="jumbotron">
-  <app-probands-list>
+  <app-probands-list (isLoading)="this.isLoading = $event">
     <app-probands-list-entry-action columnName="view_compliance">
       <app-probands-list-entry-action-button
         actionId="view_compliance"

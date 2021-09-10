@@ -65,6 +65,7 @@ CREATE TABLE questionnaires (
     cycle_first_hour INT NULL,
     keep_answers BOOLEAN DEFAULT FALSE,
     active BOOLEAN DEFAULT TRUE NOT NULL,
+    updated_at TIMESTAMPTZ,
 
     CONSTRAINT fk_study_id
         FOREIGN KEY (study_id)
@@ -766,3 +767,15 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER mark_condition_target_on_update AFTER UPDATE ON conditions FOR EACH ROW EXECUTE PROCEDURE mark_condition_target();
 CREATE TRIGGER mark_condition_target_on_insert AFTER INSERT ON conditions FOR EACH ROW EXECUTE PROCEDURE mark_condition_target();
 CREATE TRIGGER mark_condition_target_on_delete AFTER DELETE ON conditions FOR EACH ROW EXECUTE PROCEDURE mark_condition_target();
+
+-- automatically save update date in updated_at column
+
+CREATE OR REPLACE FUNCTION update_updated_at_column() RETURNS TRIGGER AS $$
+BEGIN
+   NEW.updated_at = now();
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_updated_at_column_on_insert BEFORE INSERT ON questionnaires FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
+CREATE TRIGGER update_updated_at_column_on_update BEFORE UPDATE ON questionnaires FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();

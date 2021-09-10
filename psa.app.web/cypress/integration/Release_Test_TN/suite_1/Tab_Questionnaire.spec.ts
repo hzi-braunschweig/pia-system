@@ -322,7 +322,6 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
 
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
-    cy.reload();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
     cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
@@ -382,6 +381,8 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
     cy.get('button').contains('Fragebogen abschicken').click();
 
     cy.get('#confirmbutton').click();
+
+    cy.expectPathname('/questionnaires/user');
 
     cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
       .find('.mat-row')
@@ -445,14 +446,8 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
 
     cy.get('#confirmbutton').click();
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
-
-    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Startseite').click();
-
-    // make sure that the page got switched and therefore the content of the questionnaires gets reloaded
-    cy.get('[data-e2e="e2e-home-content"]');
-
-    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
+    cy.expectPathname('/questionnaires/user');
+    cy.reload();
 
     cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
       .find('[data-e2e="e2e-questionnaire-name"]')
@@ -604,11 +599,10 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       .contains(q2.name)
       .should('not.exist');
     createQuestionnaire(q2, forscher.username).then((res) => {
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
-
-      cy.get('[data-e2e="e2e-sidenav-content"]').contains('Startseite').click();
       cy.wait(3000); // Wait till analyzerservice makes questionnaire available
-      cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
+
+      cy.expectPathname('/questionnaires/user');
+      cy.reload();
 
       cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
         .find('.mat-row')

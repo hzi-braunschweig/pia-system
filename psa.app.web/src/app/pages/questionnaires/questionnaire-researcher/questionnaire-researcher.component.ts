@@ -72,7 +72,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
   currentQuestionnaire: Questionnaire = null;
   questionnaireRequest: Questionnaire;
   public myForm: FormGroup;
-  editingStatus = false;
+  isEditMode = false;
   public questionnaireId: any;
   public questionnaireVersion: any;
   cycle_unit: string;
@@ -167,7 +167,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     },
   };
 
-  isLoading = false;
+  isLoading = true;
 
   canDeactivate(): Observable<boolean> | boolean {
     return this.myForm ? !this.myForm.dirty : true;
@@ -197,7 +197,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     private changeDetectorRef: ChangeDetectorRef
   ) {
     if ('id' in this.activatedRoute.snapshot.params) {
-      this.editingStatus = true;
+      this.isEditMode = true;
       this.questionnaireId = this.activatedRoute.snapshot.paramMap.get('id');
       this.questionnaireVersion =
         this.activatedRoute.snapshot.paramMap.get('version');
@@ -219,38 +219,29 @@ export class QuestionnaireResearcherComponent implements OnInit {
       );
   }
 
-  ngOnInit(): void {
-    this.questionnaireService.getQuestionnaires().then(
-      async (result) => {
-        this.questionnaires = result.questionnaires;
-        this.questionnairesForConditionQuestionnaire = this.questionnaires;
+  async ngOnInit(): Promise<void> {
+    try {
+      this.questionnaires = (
+        await this.questionnaireService.getQuestionnaires()
+      ).questionnaires;
+      this.questionnairesForConditionQuestionnaire = this.questionnaires;
+      this.studies = (await this.questionnaireService.getStudies()).studies;
 
-        this.studies = (
-          (await this.questionnaireService.getStudies()) as any
-        ).studies;
-
-        if (this.editingStatus) {
-          this.questionnaireService
-            .getQuestionnaire(this.questionnaireId, this.questionnaireVersion)
-            .then(
-              (result2: any) => {
-                this.currentQuestionnaire = result2;
-                this.initForm(this.currentQuestionnaire);
-              },
-              (err: any) => {
-                this.alertService.errorObject(err);
-              }
-            );
-        } else {
-          this.initForm();
-        }
-      },
-      (err: any) => {
-        this.alertService.errorObject(err);
+      if (this.isEditMode) {
+        this.currentQuestionnaire =
+          await this.questionnaireService.getQuestionnaire(
+            this.questionnaireId,
+            this.questionnaireVersion
+          );
+        this.initForm(this.currentQuestionnaire);
+      } else {
+        this.initForm();
       }
-    );
-
-    this.onResize();
+      this.onResize();
+    } catch (err) {
+      this.alertService.errorObject(err);
+    }
+    this.isLoading = false;
   }
 
   selectStudy(study_id: string): void {
@@ -536,60 +527,64 @@ export class QuestionnaireResearcherComponent implements OnInit {
     }
   }
 
-  createQuestionnaire(postData: Questionnaire): void {
+  async createQuestionnaire(postData: Questionnaire): Promise<void> {
     this.removeConditionErrors(postData);
-    this.questionnaireService
-      .postQuestionnaire(postData)
-      .then((result: any) => {
-        this.currentQuestionnaire = result;
-        this.myForm.enable();
-        this.myForm.markAsPristine();
-        this.editingStatus = true;
-        this.questionnaireId = this.currentQuestionnaire.id;
-        this.questionnaireVersion = this.currentQuestionnaire.version;
-        this.ngOnInit();
-        this.showSuccessDialog(this.currentQuestionnaire.name);
-      })
-      .catch((err: HttpErrorResponse) => {
-        this.showFailureDialog(err.error.message);
-      });
+    this.isLoading = true;
+    try {
+      this.currentQuestionnaire =
+        await this.questionnaireService.postQuestionnaire(postData);
+      this.myForm.enable();
+      this.myForm.markAsPristine();
+      this.isEditMode = true;
+      this.questionnaireId = this.currentQuestionnaire.id;
+      this.questionnaireVersion = this.currentQuestionnaire.version;
+      this.ngOnInit();
+      this.showSuccessDialog(this.currentQuestionnaire.name);
+    } catch (err) {
+      this.showFailureDialog(err.error.message);
+    }
+    this.isLoading = false;
   }
 
-  updateQuestionnaire(
+  async updateQuestionnaire(
     id: number,
     version: number,
     postData: Questionnaire,
     doRevise: boolean
-  ): void {
+  ): Promise<void> {
     this.removeConditionErrors(postData);
-    let p: Promise<unknown>;
-    if (doRevise) {
-      p = this.questionnaireService.reviseQuestionnaire(id, postData);
-    } else {
-      p = this.questionnaireService.putQuestionnaire(id, version, postData);
-    }
-    p.then((result: any) => {
+    this.isLoading = true;
+    try {
+      let savedQuestionnaire: Questionnaire;
+      if (doRevise) {
+        savedQuestionnaire =
+          await this.questionnaireService.reviseQuestionnaire(id, postData);
+      } else {
+        savedQuestionnaire = await this.questionnaireService.putQuestionnaire(
+          id,
+          version,
+          postData
+        );
+      }
       this.myForm.markAsPristine();
       this.dialog.open(DialogQuestionnaireSuccessComponent, {
         width: '500px',
-        data: { data: result.name },
+        data: { data: savedQuestionnaire.name },
       });
-      this.router
-        .navigateByUrl('/', { skipLocationChange: true })
-        .then(() =>
-          this.router.navigate([
-            '/questionnaire',
-            result.id,
-            result.version,
-            'edit',
-          ])
-        );
-    }).catch((err: HttpErrorResponse) => {
+      await this.router.navigateByUrl('/', { skipLocationChange: true });
+      this.router.navigate([
+        '/questionnaire',
+        savedQuestionnaire.id,
+        savedQuestionnaire.version,
+        'edit',
+      ]);
+    } catch (err) {
       this.dialog.open(DialogQuestionnaireFailComponent, {
         width: '500px',
         data: { data: err.error.message },
       });
-    });
+    }
+    this.isLoading = false;
   }
 
   public initForm(questionnaire?: Questionnaire): void {
@@ -3240,7 +3235,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
   }
 
   isUpdateButtonDisabled(): boolean {
-    return this.editingStatus && this.publish === 'allaudiences';
+    return this.isEditMode && this.publish === 'allaudiences';
   }
 
   mustNotEmptyTimeAndDayIfEnabled(form: FormGroup): ValidatorFn {

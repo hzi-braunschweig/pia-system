@@ -14,7 +14,7 @@ export COMPOSE_PROJECT_NAME=src
 
 NODE_USER_ID=1000
 
-if [[ $UID -ne NODE_USER_ID ]] && [[ -d $PWD/generated/secrets ]]; then
+if [[ $UID -ne $NODE_USER_ID ]] && [[ -d $PWD/generated/secrets ]]; then
     # we need to own the secrets folder because it is probably owned by the node user (in a previous call)
     docker run -it --rm -v $PWD/generated/:/data busybox chown -R $UID /data/secrets
 fi
@@ -22,7 +22,7 @@ fi
 # create weak secrets that are required to run this locally
 docker build --build-arg AUTH_KEY_SIZE=1024 --build-arg CA_KEY_SIZE=1024 --build-arg SERVICE_KEY_SIZE=1024 --build-arg CA_VALIDITY_DAYS=36500 --build-arg SERVICE_VALIDITY_DAYS=36500 -o generated/secrets/ ../../psa.utils.scripts/generate-secrets/
 
-if [[ $UID -ne NODE_USER_ID ]] && [[ -d secrets ]]; then
+if [[ $UID -ne $NODE_USER_ID ]] && [[ -d $PWD/generated/secrets ]]; then
     # own the secrets as the node user
     # only if it differs from our id
     docker run -it --rm -v $PWD/generated/:/data busybox chown -R $NODE_USER_ID /data/secrets

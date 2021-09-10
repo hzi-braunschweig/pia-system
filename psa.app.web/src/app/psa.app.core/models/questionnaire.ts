@@ -49,6 +49,7 @@ export interface Questionnaire {
   finalises_after_days: number;
   condition_postview: any;
   version: number;
+  updated_at: string | null;
 }
 
 export enum ConditionType {

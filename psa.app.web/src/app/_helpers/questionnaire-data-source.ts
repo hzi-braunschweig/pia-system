@@ -6,7 +6,7 @@
 
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { Questionnaire } from '../../app/psa.app.core/models/questionnaire';
+import { Questionnaire } from '../psa.app.core/models/questionnaire';
 import { DataSource } from '@angular/cdk/collections';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { QuestionnaireDatabase } from './questionnaire-database';
@@ -76,7 +76,8 @@ export class QuestionnaireDataSource extends DataSource<any> {
       item.study_id +
       item.name +
       item.no_questions.toString() +
-      item.active.toString();
+      item.active.toString() +
+      (item.updated_at ?? '').toString();
     return str.toLowerCase();
   }
 
@@ -115,6 +116,11 @@ export class QuestionnaireDataSource extends DataSource<any> {
         case 'active':
           [propertyA, propertyB] = [Number(a.active), Number(b.active)];
           break;
+        case 'updated_at':
+          [propertyA, propertyB] = [
+            new Date(a.updated_at).getTime(),
+            new Date(b.updated_at).getTime(),
+          ];
       }
 
       const valueA = isNaN(+propertyA) ? propertyA : +propertyA;

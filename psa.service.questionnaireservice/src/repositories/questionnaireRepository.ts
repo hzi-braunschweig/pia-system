@@ -78,6 +78,9 @@ export class RepositoryHelper {
           created_at:
             row.questionnaire.created_at &&
             new Date(row.questionnaire.created_at),
+          updated_at:
+            row.questionnaire.updated_at &&
+            new Date(row.questionnaire.updated_at),
           condition: row.questionnaire_cond,
           questions: [],
         };

@@ -48,8 +48,10 @@ export class PersonalDataService {
    * Get personal data for every proband in the database
    * @return Pesonal data for every proband in the database
    */
-  getPersonalDataAll(): Promise<any> {
-    return this.http.get(this.apiUrl + `personalData`).toPromise();
+  getPersonalDataAll(): Promise<PersonalData[]> {
+    return this.http
+      .get<PersonalData[]>(this.apiUrl + `personalData`)
+      .toPromise();
   }
 
   postPendingDeletion(postData: object): Promise<any> {

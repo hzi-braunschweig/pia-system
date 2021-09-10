@@ -3090,7 +3090,7 @@
             mat-raised-button
             color="accent"
             type="button"
-            *ngIf="!editingStatus"
+            *ngIf="!isEditMode"
             (click)="onSubmit('create')"
             data-e2e="e2e-save-questionnaire-button"
           >
@@ -3101,7 +3101,7 @@
             mat-raised-button
             color="accent"
             type="button"
-            *ngIf="editingStatus && currentQuestionnaire?.active"
+            *ngIf="isEditMode && currentQuestionnaire?.active"
             [disabled]="isUpdateButtonDisabled()"
             (click)="onSubmit('update')"
             data-e2e="e2e-update-questionnaire-button"
@@ -3112,7 +3112,7 @@
             id="revisequestionnairebutton"
             mat-raised-button
             type="button"
-            *ngIf="editingStatus && currentQuestionnaire?.active"
+            *ngIf="isEditMode && currentQuestionnaire?.active"
             (click)="onSubmit('revise')"
             data-e2e="e2e-questionnaire-revise-button"
           >
@@ -3122,7 +3122,7 @@
             id="deactivatequestionnairebutton"
             mat-raised-button
             type="button"
-            *ngIf="editingStatus && currentQuestionnaire?.active"
+            *ngIf="isEditMode && currentQuestionnaire?.active"
             (click)="onDeactivate()"
             data-e2e="e2e-questionnaire-deactivate-button"
           >
@@ -3138,7 +3138,7 @@
           </button>
           <button
             id="exportquestionnairebutton"
-            *ngIf="editingStatus"
+            *ngIf="isEditMode"
             mat-raised-button
             (click)="onClickExportFragebogen()"
             type="button"
@@ -3168,7 +3168,7 @@
       </mat-card>
 
       <!-- Warning hint -->
-      <mat-card *ngIf="editingStatus">
+      <mat-card *ngIf="isEditMode">
         {{ 'QUESTIONNAIRE_FORSCHER.WARNING' | translate }}:
         {{ 'QUESTIONNAIRE_FORSCHER.WARNING_UPDATE' | translate }}
       </mat-card>
