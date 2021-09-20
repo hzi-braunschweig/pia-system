@@ -6,7 +6,7 @@
 
 const Joi = require('joi');
 
-const probandsHandler = require('../handlers/probandsHandler.js');
+const probandsHandler = require('../handlers/probandsToContactHandler');
 
 module.exports = {
   path: '/user/probandstocontact/{id}',

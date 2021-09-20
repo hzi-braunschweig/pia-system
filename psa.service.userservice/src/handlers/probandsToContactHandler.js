@@ -7,14 +7,14 @@
 const Boom = require('@hapi/boom');
 const postgresqlHelper = require('../services/postgresqlHelper.js');
 const RESTPresenter = require('../services/RESTPresenter.js');
-const probandsInteractor = require('../interactors/probandsInteractor.js');
+const probandsToContactInteractor = require('../interactors/probandsToContactInteractor');
 
 /**
  * @description HAPI Handler for planned probands
  */
-const probandsHandler = (function () {
+const probandsToContactHandler = (function () {
   function getProbandsToContact(request) {
-    return probandsInteractor
+    return probandsToContactInteractor
       .getProbandsToContact(request.auth.credentials, postgresqlHelper)
       .then(function (result) {
         return RESTPresenter.presentProbandsToContact(result);
@@ -27,7 +27,7 @@ const probandsHandler = (function () {
 
   function updateOne(request) {
     const id = request.params.id;
-    return probandsInteractor
+    return probandsToContactInteractor
       .updateProbandsToContact(
         request.auth.credentials,
         id,
@@ -47,17 +47,17 @@ const probandsHandler = (function () {
     /**
      * @function
      * @description get all probands that need to be contacted
-     * @memberof module:probandsHandler
+     * @memberof module:probandsToContactHandler
      */
     getProbandsToContact: getProbandsToContact,
 
     /**
      * @function
      * @description updates the probands to contact
-     * @memberof module:probandsHandler
+     * @memberof module:probandsToContactHandler
      */
     updateOne: updateOne,
   };
 })();
 
-module.exports = probandsHandler;
+module.exports = probandsToContactHandler;

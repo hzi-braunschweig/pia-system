@@ -24,6 +24,7 @@ import {
   PendingPartialDeletionRequest,
   PendingPartialDeletionResponse,
 } from '../../models/pendingPartialDeletion';
+import { PendingComplianceChange } from '../../models/pendingComplianceChange';
 
 @Injectable()
 export class AuthService {
@@ -278,17 +279,23 @@ export class AuthService {
       .toPromise();
   }
 
-  getPendingComplianceChange(pendingComplianceChangeId: string): Promise<any> {
+  getPendingComplianceChange(
+    pendingComplianceChangeId: string
+  ): Promise<PendingComplianceChange> {
     return this.http
-      .get(
+      .get<PendingComplianceChange>(
         this.apiUrl + 'pendingcompliancechanges/' + pendingComplianceChangeId
       )
       .toPromise();
   }
 
-  getPendingComplianceChangeForProband(probandId: string): Promise<object> {
+  getPendingComplianceChangeForProband(
+    probandId: string
+  ): Promise<PendingComplianceChange> {
     return this.http
-      .get(this.apiUrl + 'pendingcompliancechanges/proband/' + probandId)
+      .get<PendingComplianceChange>(
+        this.apiUrl + 'pendingcompliancechanges/proband/' + probandId
+      )
       .toPromise();
   }
 

@@ -7,7 +7,7 @@
 /* Structure */
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, 200px);
+  grid-template-columns: repeat(auto-fit, 300px);
   grid-gap: 1rem;
   align-items: baseline;
 }
@@ -34,6 +34,7 @@
   font-size: 14px;
   flex-grow: 1;
   margin-top: 8px;
+  max-width: 250px;
 }
 
 /** Selection styles */
@@ -49,11 +50,7 @@
 }
 
 .mat-icon {
-  margin-left: 20px;
-}
-
-.mat-form-field {
-  max-width: 150px;
+  margin: 0 10px;
 }
 
 ::ng-deep .mat-tooltip {

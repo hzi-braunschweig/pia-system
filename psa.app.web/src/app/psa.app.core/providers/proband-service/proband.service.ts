@@ -8,12 +8,22 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { User } from '../../models/user';
 import { AuthenticationManager } from '../../../_services/authentication-manager.service';
+import { Proband } from '../../models/proband';
 
 @Injectable()
 export class ProbandService {
   private readonly apiUrl = 'api/v1/user/';
 
   constructor(public http: HttpClient, private auth: AuthenticationManager) {}
+
+  /**
+   * Get a list of all probands of a study
+   */
+  getProbandsByStudy(studyName: string): Promise<Proband[]> {
+    return this.http
+      .get<Proband[]>(`${this.apiUrl}studies/${studyName}/probands`)
+      .toPromise();
+  }
 
   /**
    * Get probands that need to be contacted

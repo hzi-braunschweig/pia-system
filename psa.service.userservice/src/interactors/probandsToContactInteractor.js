@@ -7,7 +7,7 @@
 /**
  * @description interactor that handles user requests based on users permissions
  */
-const probandsInteractor = (function () {
+const probandsToContactInteractor = (function () {
   async function getProbandsToContact(decodedToken, pgHelper) {
     const userRole = decodedToken.role;
     const requester = decodedToken.username;
@@ -69,4 +69,4 @@ const probandsInteractor = (function () {
   };
 })();
 
-module.exports = probandsInteractor;
+module.exports = probandsToContactInteractor;

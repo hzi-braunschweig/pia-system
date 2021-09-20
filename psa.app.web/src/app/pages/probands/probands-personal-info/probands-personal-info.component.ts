@@ -4,13 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import {
-  ChangeDetectorRef,
-  Component,
-  forwardRef,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, forwardRef, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -22,7 +16,6 @@ import { Studie } from '../../../psa.app.core/models/studie';
 import { User } from '../../../psa.app.core/models/user';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { PersonalDataService } from 'src/app/psa.app.core/providers/personaldata-service/personaldata-service';
-import { MediaObserver } from '@angular/flex-layout';
 import { DialogDeleteComponent } from '../../../_helpers/dialog-delete';
 import {
   DeletionType,
@@ -36,25 +29,22 @@ import {
 } from '../../../_helpers/dialog-pop-up';
 import { DialogChangeComplianceComponent } from '../../../_helpers/dialog-change-compliance';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
-import { UserWithStudyAccess } from 'src/app/psa.app.core/models/user-with-study-access';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthenticationManager } from '../../../_services/authentication-manager.service';
+import { ProbandService } from '../../../psa.app.core/providers/proband-service/proband.service';
+import { Proband } from '../../../psa.app.core/models/proband';
+import { PendingComplianceChange } from '../../../psa.app.core/models/pendingComplianceChange';
 
 interface TableRow {
-  pendingComplianceChange: boolean;
-  has_total_opposition: boolean;
-  has_partial_opposition: boolean;
-  studies: string[];
+  username: string;
+  ids: string;
   vorname: string;
-  pendingComplianceChangeObject: any;
+  nachname: string;
   accountStatus: string;
-  has_compliance_opposition: boolean;
+  pendingComplianceChange: boolean;
+  pendingComplianceChangeObject: PendingComplianceChange;
   pendingDeletionPersonalObject: any;
   pendingDeletionGeneralObject: any;
-  ids: string;
-  nachname: string;
-  has_four_eyes_opposition: boolean;
-  username: string;
 }
 
 @Component({
@@ -68,14 +58,18 @@ interface TableRow {
   ],
 })
 export class ProbandsPersonalInfoComponent implements OnInit {
+  @ViewChild(MatPaginator, { static: true }) private paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true }) private sort: MatSort;
+
   public studies: Studie[];
-  public currentRole: string;
-  public currentUser: User;
-  public dataSource: MatTableDataSource<TableRow>;
+  private probands: Proband[];
+  public currentUser: User = this.auth.currentUser;
+  public currentStudy: Studie | undefined;
+  public readonly dataSource: MatTableDataSource<TableRow> =
+    new MatTableDataSource();
   public displayedColumns = [
     'username',
     'ids',
-    'studies',
     'vorname',
     'nachname',
     'view',
@@ -83,30 +77,20 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     'view_answers',
     'delete',
   ];
-  public currentStudy: string;
-  public isDataReady: boolean = false;
-  public filterKeyword: string;
+  public filterKeyword: string = '';
   public isLoading: boolean = true;
-  @ViewChild(MatPaginator) private paginator: MatPaginator;
-  @ViewChild(MatSort) private sort: MatSort;
-  private probands: UserWithStudyAccess[];
-  private tableData: TableRow[];
 
   constructor(
     private questionnaireService: QuestionnaireService,
     private authService: AuthService,
+    private personalDataService: PersonalDataService,
+    private probandService: ProbandService,
     private auth: AuthenticationManager,
     private alertService: AlertService,
     private router: Router,
     private dialog: MatDialog,
-    private activatedRoute: ActivatedRoute,
-    private mediaObserver: MediaObserver,
-    private cdr: ChangeDetectorRef,
-    private personalDataService: PersonalDataService
+    private activatedRoute: ActivatedRoute
   ) {
-    this.currentUser = this.auth.currentUser;
-    this.currentRole = this.auth.currentRole;
-
     const probandIdToDelete =
       this.activatedRoute.snapshot.queryParamMap.get('probandIdToDelete');
     const type = this.activatedRoute.snapshot.queryParamMap.get(
@@ -210,7 +194,10 @@ export class ProbandsPersonalInfoComponent implements OnInit {
         .getPendingComplianceChange(pendingComplianceChangeId)
         .then((result) => {
           if (result.requested_for && result.proband_id) {
-            void this.openDialogChangeCompliance(result.proband_id, result);
+            void this.openPendingComplianceChangeDialog(
+              result.proband_id,
+              result
+            );
           }
         })
         .catch((err: HttpErrorResponse) => {
@@ -244,107 +231,105 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     }
   }
 
-  public ngOnInit(): void {
-    void this.initTable();
+  private static getAccountStatusTranslationString(proband: Proband): string {
+    if (
+      proband.accountStatus === 'active' &&
+      proband.studyStatus === 'active'
+    ) {
+      return 'PROBANDEN.STATUS_ACTIV';
+    } else if (proband.studyStatus === 'deletion_pending') {
+      return 'PROBANDEN.STATUS_DELETION_PENDING';
+    } else if (proband.studyStatus === 'deleted') {
+      return 'PROBANDEN.STATUS_DELETED';
+    } else if (proband.accountStatus === 'deactivation_pending') {
+      return 'PROBANDEN.STATUS_DEACTIVATION_PENDING';
+    } else if (proband.accountStatus === 'deactivated') {
+      return 'PROBANDEN.STATUS_DEACTIVATED';
+    } else if (proband.accountStatus === 'no_account') {
+      return 'PROBANDEN.STATUS_NO_ACCOUNT';
+    }
+    return null;
   }
 
-  private async getUsers(): Promise<void> {
-    const probandenData = await this.authService.getUsers();
-    this.probands = probandenData.users;
+  public async ngOnInit(): Promise<void> {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+
+    this.isLoading = true;
+    this.studies = (await this.questionnaireService.getStudies()).studies;
+    if (this.studies.length === 1) {
+      this.currentStudy = this.studies[0];
+      await this.initTable();
+    }
+    this.isLoading = false;
   }
 
   public async initTable(): Promise<void> {
-    this.tableData = [];
+    if (!this.currentStudy) {
+      this.dataSource.data = [];
+      return;
+    }
+    this.isLoading = true;
+    const tableData: TableRow[] = [];
     try {
       const probandenPersonalData =
         await this.personalDataService.getPersonalDataAll();
-      this.probands = (await this.authService.getUsers()).users;
-      this.studies = (await this.questionnaireService.getStudies()).studies;
+      this.probands = await this.probandService.getProbandsByStudy(
+        this.currentStudy.name
+      );
 
       for (const proband of this.probands) {
-        const studyOfProband = this.getSuperStudyOfProband(proband);
-
         const personalDataForPseudonym = probandenPersonalData.find(
           (personalData) => personalData.pseudonym === proband.username
         );
-        const vorname = personalDataForPseudonym
-          ? personalDataForPseudonym.vorname
-          : '';
-        const name = personalDataForPseudonym
-          ? personalDataForPseudonym.name
-          : '';
-        const pendingComplianceChange = !!proband.pendingComplianceChange;
-        const studies = proband.study_accesses.map(
-          (study_access) => study_access.study_id
-        );
-        let accountStatus = '';
-        if (
-          proband.account_status === 'active' &&
-          proband.study_status === 'active'
-        ) {
-          accountStatus = 'PROBANDEN.STATUS_ACTIV';
-        } else if (proband.study_status === 'deletion_pending') {
-          accountStatus = 'PROBANDEN.STATUS_DELETION_PENDING';
-        } else if (proband.study_status === 'deleted') {
-          accountStatus = 'PROBANDEN.STATUS_DELETED';
-        } else if (proband.account_status === 'deactivation_pending') {
-          accountStatus = 'PROBANDEN.STATUS_DEACTIVATION_PENDING';
-        } else if (proband.account_status === 'deactivated') {
-          accountStatus = 'PROBANDEN.STATUS_DEACTIVATED';
-        } else if (proband.account_status === 'no_account') {
-          accountStatus = 'PROBANDEN.STATUS_NO_ACCOUNT';
-        }
 
-        const pendingComplianceChangeObject =
-          await this.getPendingComplianceChangeObjectForProband(proband);
         const pendingDeletionObject =
           await this.getPendingDeletionObjectForProband(proband);
 
-        this.tableData.push({
+        tableData.push({
           username: proband.username === proband.ids ? '' : proband.username,
           ids: proband.ids,
-          vorname,
-          nachname: name,
-          studies,
-          accountStatus,
-          pendingComplianceChange,
-          pendingComplianceChangeObject,
+          vorname: personalDataForPseudonym
+            ? personalDataForPseudonym.vorname
+            : '',
+          nachname: personalDataForPseudonym
+            ? personalDataForPseudonym.name
+            : '',
+          accountStatus:
+            ProbandsPersonalInfoComponent.getAccountStatusTranslationString(
+              proband
+            ),
+          pendingComplianceChange: !!proband.pendingComplianceChange,
+          pendingComplianceChangeObject:
+            await this.getPendingComplianceChangeObjectForProband(proband),
           pendingDeletionPersonalObject:
-            proband.account_status === 'deactivation_pending'
+            proband.accountStatus === 'deactivation_pending'
               ? pendingDeletionObject
               : null,
           pendingDeletionGeneralObject:
-            proband.study_status === 'deletion_pending'
+            proband.studyStatus === 'deletion_pending'
               ? pendingDeletionObject
               : null,
-          has_partial_opposition: studyOfProband.has_partial_opposition,
-          has_total_opposition: studyOfProband.has_total_opposition,
-          has_compliance_opposition: studyOfProband.has_compliance_opposition,
-          has_four_eyes_opposition: studyOfProband.has_four_eyes_opposition,
         });
       }
     } catch (e) {
       console.log(e);
     }
 
-    this.initDatasource();
-  }
-
-  public getSuperStudyOfProband(proband): Studie {
-    return this.studies.find(
-      (study) => study.name === proband.study_accesses[0].study_id
-    );
+    this.dataSource.data = tableData;
+    this.isLoading = false;
   }
 
   private async getPendingComplianceChangeObjectForProband(
-    proband: UserWithStudyAccess
-  ): Promise<any> {
+    proband: Proband
+  ): Promise<PendingComplianceChange> {
     try {
-      const pendingComplianceChangeObject: any = proband.pendingComplianceChange
-        ? await this.authService.getPendingComplianceChangeForProband(
-            proband.username
-          )
-        : null;
+      const pendingComplianceChangeObject: PendingComplianceChange =
+        proband.pendingComplianceChange
+          ? await this.authService.getPendingComplianceChangeForProband(
+              proband.username
+            )
+          : null;
       if (
         pendingComplianceChangeObject &&
         pendingComplianceChangeObject.requested_for ===
@@ -360,15 +345,15 @@ export class ProbandsPersonalInfoComponent implements OnInit {
   }
 
   private async getPendingDeletionObjectForProband(
-    proband: UserWithStudyAccess
+    proband: Proband
   ): Promise<any> {
     try {
       const pendingDeletionObject: any =
-        proband.study_status === 'deletion_pending'
+        proband.studyStatus === 'deletion_pending'
           ? await this.authService.getPendingDeletionForProbandId(
               proband.username
             )
-          : proband.account_status === 'deactivation_pending'
+          : proband.accountStatus === 'deactivation_pending'
           ? await this.personalDataService.getPendingDeletionForProbandId(
               proband.username
             )
@@ -386,38 +371,13 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     }
   }
 
-  private initDatasource(): void {
-    this.dataSource = new MatTableDataSource([]);
-    this.dataSource.filterPredicate = (row, selectedStudyFilter) =>
-      row.studies.includes(selectedStudyFilter);
-    this.isLoading = false;
-    this.isDataReady = true;
-    this.cdr.detectChanges();
-
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
-    this.filterKeyword = '';
-  }
-
-  public filterSelectMethod(): void {
-    if (!this.dataSource) {
-      return;
-    }
-    if (this.tableData.length > 0) {
-      this.dataSource.data = this.tableData;
-    }
-    this.dataSource.filter = this.currentStudy;
-  }
-
   public applyFilter(): void {
     this.dataSource.filter = this.filterKeyword.trim().toLowerCase();
   }
 
   public resetFilter(): void {
-    this.dataSource.data = [];
-    this.dataSource.filter = '';
-    this.currentStudy = undefined;
     this.filterKeyword = '';
+    this.applyFilter();
   }
 
   public editPersonalData(username: string): void {
@@ -439,7 +399,7 @@ export class ProbandsPersonalInfoComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
-        if (probandRow.has_four_eyes_opposition) {
+        if (this.currentStudy.has_four_eyes_opposition) {
           this.openDialogDeletePartner(username, type);
         } else {
           void this.doDeletion(type, username);
@@ -481,7 +441,7 @@ export class ProbandsPersonalInfoComponent implements OnInit {
           };
           break;
       }
-      this.initTable().then(() => this.filterSelectMethod());
+      await this.initTable();
     } catch (err) {
       data = {
         content: 'DIALOG.ERROR_DELETE',
@@ -522,7 +482,7 @@ export class ProbandsPersonalInfoComponent implements OnInit {
       if (result) {
         let data: DialogPopUpData;
         if (result.success) {
-          this.initTable().then(() => this.filterSelectMethod());
+          void this.initTable();
           switch (result.action) {
             case 'confirmed':
               data = {
@@ -573,109 +533,109 @@ export class ProbandsPersonalInfoComponent implements OnInit {
         }
         this.showResultDialog(data);
       }
-      void this.router.navigate(['/probands-personal-info/']);
     });
   }
 
-  public async openDialogChangeCompliance(
-    usernameProband: string,
-    pendingComplianceChangeObject?: any
+  public async openPendingComplianceChangeDialog(
+    pseudonym: string,
+    pendingComplianceChangeObject: PendingComplianceChange
   ): Promise<void> {
-    await this.getUsers();
-    let compliance_labresults;
-    let compliance_samples;
-    let compliance_bloodsamples;
-    let has_four_eyes_opposition;
-
-    if (pendingComplianceChangeObject) {
-      compliance_labresults =
-        pendingComplianceChangeObject.compliance_labresults_to;
-      compliance_samples = pendingComplianceChangeObject.compliance_samples_to;
-      compliance_bloodsamples =
-        pendingComplianceChangeObject.compliance_bloodsamples_to;
-      has_four_eyes_opposition = true;
-    } else {
-      for (const proband of this.probands) {
-        if (usernameProband === proband.username) {
-          compliance_labresults = proband.compliance_labresults;
-          compliance_samples = proband.compliance_samples;
-          compliance_bloodsamples = proband.compliance_bloodsamples;
-          has_four_eyes_opposition =
-            this.getSuperStudyOfProband(proband).has_four_eyes_opposition;
-          break;
-        }
-      }
-    }
-
-    const dialogRef = this.dialog.open(DialogChangeComplianceComponent, {
-      width: '400px',
-      data: {
-        has_four_eyes_opposition,
-        usernameProband,
-        compliance_labresults,
-        compliance_samples,
-        compliance_bloodsamples,
-        requested_by: pendingComplianceChangeObject
-          ? pendingComplianceChangeObject.requested_by
-          : null,
-        requested_for: this.currentUser.username,
-        deletePendingComplianceChangeId: pendingComplianceChangeObject
-          ? pendingComplianceChangeObject.id
-          : null,
-      },
+    await this.openDialogChangeCompliance({
+      has_four_eyes_opposition: true,
+      usernameProband: pseudonym,
+      compliance_labresults:
+        pendingComplianceChangeObject.compliance_labresults_to,
+      compliance_samples: pendingComplianceChangeObject.compliance_samples_to,
+      compliance_bloodsamples:
+        pendingComplianceChangeObject.compliance_bloodsamples_to,
+      requested_by: pendingComplianceChangeObject.requested_by,
+      requested_for: this.currentUser.username,
+      deletePendingComplianceChangeId: pendingComplianceChangeObject.id,
     });
+  }
 
-    dialogRef.afterClosed().subscribe(async (result) => {
-      if (result) {
-        if (result[1] && result[1].proband_id) {
-          await this.initTable();
-          this.filterSelectMethod();
-          result[1].for_id = result[1].for_id
-            ? result[1].for_id
-            : result[1].proband_id;
-          let data;
-          if (result[0].acceptDelete || !has_four_eyes_opposition) {
-            data = result[0].changingRejected
-              ? {
-                  content: 'PROBANDEN.CHANGE_COMPLIANCES_REJECTED',
-                  values: { probandUsername: result[1].proband_id },
-                  isSuccess: false,
-                }
-              : {
-                  content: 'PROBANDEN.PROBAND_COMPLIANCES_CHANGED',
-                  values: { probandUsername: result[1].proband_id },
-                  isSuccess: true,
-                };
-          } else {
-            data = {
-              content: 'PROBANDEN.CHANGE_COMPLIANCES_REQUESTED',
-              isSuccess: true,
-            };
-          }
-          this.showResultDialog(data);
-        } else {
-          let dataError;
-          if (result[0] && result[0].acceptDelete) {
-            dataError = {
-              content: 'DIALOG.ERROR_COMPLIANCE_CONFIRMATION',
-              isSuccess: false,
-            };
-          } else if (result[0] && !result[0].acceptDelete) {
-            dataError = {
-              content: 'DIALOG.ERROR_COMPLIANCE_REQUEST',
-              isSuccess: false,
-            };
-          } else {
-            dataError = {
-              content: 'DIALOG.ERROR_COMPLIANCE',
-              isSuccess: false,
-            };
-          }
-          this.showResultDialog(dataError);
-        }
-      }
-      await this.router.navigate(['/probands-personal-info/']);
+  public async openComplianceChangeDialog(pseudonym: string): Promise<void> {
+    const foundProband = this.probands.find(
+      (proband) => proband.username === pseudonym
+    );
+
+    await this.openDialogChangeCompliance({
+      has_four_eyes_opposition: this.currentStudy.has_four_eyes_opposition,
+      usernameProband: pseudonym,
+      compliance_labresults: foundProband.complianceLabresults,
+      compliance_samples: foundProband.complianceSamples,
+      compliance_bloodsamples: foundProband.complianceBloodsamples,
+      requested_by: null,
+      requested_for: this.currentUser.username,
+      deletePendingComplianceChangeId: null,
     });
+  }
+
+  private async openDialogChangeCompliance(data: {
+    has_four_eyes_opposition: boolean;
+    usernameProband: string;
+    compliance_labresults: boolean;
+    compliance_samples: boolean;
+    compliance_bloodsamples: boolean;
+    requested_by: string;
+    requested_for: string;
+    deletePendingComplianceChangeId: number;
+  }): Promise<void> {
+    await this.dialog
+      .open(DialogChangeComplianceComponent, {
+        width: '400px',
+        data,
+      })
+      .afterClosed()
+      .subscribe(async (result) => {
+        if (result) {
+          if (result[1] && result[1].proband_id) {
+            await this.initTable();
+            result[1].for_id = result[1].for_id
+              ? result[1].for_id
+              : result[1].proband_id;
+            let response;
+            if (result[0].acceptDelete || !data.has_four_eyes_opposition) {
+              response = result[0].changingRejected
+                ? {
+                    content: 'PROBANDEN.CHANGE_COMPLIANCES_REJECTED',
+                    values: { probandUsername: result[1].proband_id },
+                    isSuccess: false,
+                  }
+                : {
+                    content: 'PROBANDEN.PROBAND_COMPLIANCES_CHANGED',
+                    values: { probandUsername: result[1].proband_id },
+                    isSuccess: true,
+                  };
+            } else {
+              response = {
+                content: 'PROBANDEN.CHANGE_COMPLIANCES_REQUESTED',
+                isSuccess: true,
+              };
+            }
+            this.showResultDialog(response);
+          } else {
+            let dataError;
+            if (result[0] && result[0].acceptDelete) {
+              dataError = {
+                content: 'DIALOG.ERROR_COMPLIANCE_CONFIRMATION',
+                isSuccess: false,
+              };
+            } else if (result[0] && !result[0].acceptDelete) {
+              dataError = {
+                content: 'DIALOG.ERROR_COMPLIANCE_REQUEST',
+                isSuccess: false,
+              };
+            } else {
+              dataError = {
+                content: 'DIALOG.ERROR_COMPLIANCE',
+                isSuccess: false,
+              };
+            }
+            this.showResultDialog(dataError);
+          }
+        }
+      });
   }
 
   public viewQuestionnaireInstancesForUser(username: string): void {
