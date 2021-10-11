@@ -28,7 +28,7 @@ check-sonarqube-feature:
       -Dsonar.coverage.exclusions=*service*/src/index.*
       -Dsonar.qualitygate.wait=true
   rules:
-    - if: $CI_MERGE_REQUEST_IID
+    - if: '$CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^develop/'
   resource_group: sonarqube
 
 check-sonarqube-develop:

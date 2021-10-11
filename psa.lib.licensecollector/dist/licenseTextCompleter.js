@@ -140,6 +140,7 @@ class LicenseTextCompleter {
             ['@ionic-native/file', LicenseTextCompleter.MIT_IONIC],
             ['@ionic-native/firebase-x', LicenseTextCompleter.MIT_IONIC],
             ['@ionic-native/keyboard', LicenseTextCompleter.MIT_IONIC],
+            ['@ionic-native/market', LicenseTextCompleter.MIT_IONIC],
             ['@ionic-native/network', LicenseTextCompleter.MIT_IONIC],
             ['@ionic-native/splash-screen', LicenseTextCompleter.MIT_IONIC],
             ['@ionic-native/status-bar', LicenseTextCompleter.MIT_IONIC],
