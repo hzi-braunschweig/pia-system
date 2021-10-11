@@ -12,23 +12,17 @@ import {
   HttpInterceptor,
   HttpRequest,
 } from '@angular/common/http';
-import { MenuController } from '@ionic/angular';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { AuthService } from '../../auth/auth.service';
-import { Router } from '@angular/router';
 
 /**
  * Logs user out and navigates back to login if backend returns unauthorized error
  */
 @Injectable()
 export class UnauthorizedInterceptor implements HttpInterceptor {
-  constructor(
-    private auth: AuthService,
-    private menuCtrl: MenuController,
-    private router: Router
-  ) {}
+  constructor(private auth: AuthService) {}
 
   intercept(
     request: HttpRequest<any>,
@@ -36,11 +30,8 @@ export class UnauthorizedInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        const currentUser = this.auth.getCurrentUser();
-        if (error.status === 401 && currentUser !== null) {
-          this.auth.resetCurrentUser();
-          this.menuCtrl.enable(false);
-          this.router.navigate(['auth', 'login']);
+        if (error.status === 401 && this.auth.getCurrentUser() !== null) {
+          void this.auth.logout();
         }
         return throwError(error);
       })

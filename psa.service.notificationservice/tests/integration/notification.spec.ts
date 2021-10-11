@@ -17,18 +17,19 @@ import { StatusCodes } from 'http-status-codes';
 import JWT from 'jsonwebtoken';
 import { DeepPartial } from '@pia/lib-service-core';
 
-import fcmHelper from '../../src/services/fcmHelper';
-import mailer from '../../src/services/mailService';
-import * as notificationHelperTemp from '../../src/services/notificationHelper';
+import { FcmHelper } from '../../src/services/fcmHelper';
+import { MailService } from '../../src/services/mailService';
+import { NotificationHelper as notificationHelperTemp } from '../../src/services/notificationHelper';
 import { dbWait } from './helper';
 import { db } from '../../src/db';
 import { cleanup, setup } from './notification.spec.data/setup.helper';
 import secretOrPrivateKey from '../secretOrPrivateKey';
-import server from '../../src/server';
+import { Server } from '../../src/server';
 import { config } from '../../src/config';
 import { DbNotificationSchedules } from '../../src/models/notification';
 import { DbUsersToContact } from '../../src/models/usersToContact';
 import { QuestionnaireInstance } from '../../src/models/questionnaireInstance';
+import { assert } from 'ts-essentials';
 
 const notificationHelper = notificationHelperTemp as {
   sendAllOpenNotifications(): Promise<void>;
@@ -43,31 +44,45 @@ const apiAddress =
   'http://localhost:' + config.public.port.toString() + '/notification';
 
 const fetchMock = fetchMocker.sandbox();
-const serverSandbox = sinon.createSandbox();
+const suiteSandbox = sinon.createSandbox();
 const testSandbox = sinon.createSandbox();
 
-const probandSession1 = { id: 1, role: 'Proband', username: 'QTestProband1' };
-const probandSession2 = { id: 1, role: 'Proband', username: 'QTestProband2' };
+const probandSession1 = {
+  id: 1,
+  role: 'Proband',
+  username: 'QTestProband1',
+  groups: ['ApiTestStudie'],
+};
+const probandSession2 = {
+  id: 1,
+  role: 'Proband',
+  username: 'QTestProband2',
+  groups: ['ApiTestStudie'],
+};
 
 const forscherSession1 = {
   id: 1,
   role: 'Forscher',
   username: 'QTestForscher1',
+  groups: ['ApiTestStudie'],
 };
 const utSession = {
   id: 1,
   role: 'Untersuchungsteam',
   username: 'QTestUntersuchungsteam',
+  groups: ['ApiTestStudie'],
 };
 const pmSession = {
   id: 1,
   role: 'ProbandenManager',
   username: 'QTestProbandenManager',
+  groups: ['ApiTestStudie'],
 };
 const sysadminSession = {
   id: 1,
   role: 'SysAdmin',
   username: 'QTestSystemAdmin',
+  groups: ['ApiTestStudie'],
 };
 
 const invalidToken = JWT.sign(probandSession1, 'thisIsNotAValidPrivateKey', {
@@ -107,16 +122,27 @@ const utHeader = { authorization: utToken };
 const pmHeader = { authorization: pmToken };
 const sysadminHeader = { authorization: sysadminToken };
 
+const FcmHelperMock = {
+  sendDefaultNotification: sinon.stub().resolves({
+    error: undefined,
+    exception: undefined,
+  }),
+};
+
 describe('/notification', function () {
   before(async function () {
-    serverSandbox.stub(fcmHelper);
-    serverSandbox.stub(mailer);
-    await server.init();
+    suiteSandbox
+      .stub(FcmHelper, 'sendDefaultNotification')
+      .callsFake(FcmHelperMock.sendDefaultNotification);
+    suiteSandbox.stub(FcmHelper, 'initFBAdmin');
+    suiteSandbox.stub(MailService, 'initService');
+    suiteSandbox.stub(MailService, 'sendMail');
+    await Server.init();
   });
 
   after(async function () {
-    await server.stop();
-    serverSandbox.restore();
+    await Server.stop();
+    suiteSandbox.restore();
   });
 
   beforeEach(async function () {
@@ -202,6 +228,11 @@ describe('/notification', function () {
     });
 
     it('should return a HTTP 200 with "success" === false', async function () {
+      fetchMock.get(
+        'express:/user/users/TestprobandWrong',
+        StatusCodes.NOT_FOUND
+      );
+
       const result = await chai
         .request(apiAddress)
         .post('/notification')
@@ -231,6 +262,8 @@ describe('/notification', function () {
     });
 
     it('should return HTTP 200 with "success" === false', async function () {
+      fetchMock.get('express:/user/users/QTestProband2', {});
+
       const result = await chai
         .request(apiAddress)
         .post('/notification')
@@ -382,9 +415,8 @@ describe('/notification', function () {
       );
 
       await dbWait(
-        'UPDATE users SET logged_in_with=${logged_in_with}, notification_time=${notification_time} WHERE username=${username}',
+        'UPDATE users SET notification_time=${notification_time} WHERE username=${username}',
         {
-          logged_in_with: 'ios',
           username: 'QTestProband1',
           notification_time: '17:30:00',
         }
@@ -394,9 +426,13 @@ describe('/notification', function () {
         'SELECT * FROM notification_schedules WHERE id=$1',
         [99997]
       );
+
+      assert(scheduleAfterUpdate.send_on);
+      assert(scheduleBeforeUpdate.send_on);
+
       const differenceInMinutes =
-        ((scheduleAfterUpdate.send_on!.getTime() -
-          scheduleBeforeUpdate.send_on!.getTime()) /
+        ((scheduleAfterUpdate.send_on.getTime() -
+          scheduleBeforeUpdate.send_on.getTime()) /
           (3600 * 1000)) *
         60;
 
@@ -447,15 +483,15 @@ describe('/notification', function () {
       await notificationHelper.sendAllOpenNotifications();
 
       expect(logSpy).to.have.been.calledWith(
-        'Successfully sent custom notification to user: QTestProband1'
+        'Successfully sent scheduled custom notification to: QTestProband1 (1/1 token notified successfull)'
       );
 
       expect(logSpy).to.have.been.calledWith(
-        'Successfully sent notification to user: QTestProband1 for sample id: LAB_RESULT-9999999999 and device: web'
+        'Successfully sent sample id (LAB_RESULT-9999999999) notification to: QTestProband1 (1/1 token notified successfull)'
       );
 
       expect(logSpy).to.have.been.calledWith(
-        'Successfully sent notification to user: QTestProband1 for instance id: 9999996 and device: web'
+        'Successfully sent instance id (9999996) notification to: QTestProband1 (1/1 token notified successfull)'
       );
     });
 
@@ -492,7 +528,7 @@ describe('/notification', function () {
     });
 
     it('should run questionnaire cron jobs', async function () {
-      const jobs = server.checkForNotFilledQuestionnairesJobs() as {
+      const jobs = Server.checkForNotFilledQuestionnairesJobs as unknown as {
         dueQuestionnairesJob: CronJob;
         questionnaireStatusAggregatorJob: CronJob;
       };

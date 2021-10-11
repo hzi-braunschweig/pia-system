@@ -17,12 +17,13 @@ import {
   getToken,
   login,
 } from '../../../support/commands';
+import { CreateProbandRequest } from '../../../../src/app/psa.app.core/models/proband';
 
 const short = require('short-uuid');
 const translator = short();
 
 let study;
-let proband;
+let proband: CreateProbandRequest;
 let ut;
 let forscher;
 const probandCredentials = { username: '', password: '' };
@@ -39,7 +40,7 @@ const appUrl = '/';
 describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwilligungen', () => {
   beforeEach(() => {
     study = generateRandomStudy();
-    proband = generateRandomProbandForStudy(study.name);
+    proband = generateRandomProbandForStudy();
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
       role: 'Untersuchungsteam',
@@ -58,7 +59,7 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
       .then(() => getToken(ut.username))
       .then((token) => createPlannedProband(proband.pseudonym, token))
       .then(() => getToken(ut.username))
-      .then((token) => createProband(proband, token))
+      .then((token) => createProband(proband, study.name, token))
       .then(() => getToken(forscher.username))
       .then((token) =>
         createConsentForStudy(testProbandConsent, study.name, token)

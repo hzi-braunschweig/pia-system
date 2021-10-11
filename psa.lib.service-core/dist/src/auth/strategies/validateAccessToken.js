@@ -9,7 +9,7 @@ function validateAccessToken(db) {
             'This is not allowed for services with qPIA DB access!');
     }
     return async function (decoded) {
-        if (!authModel_1.isAccessToken(decoded)) {
+        if (!(0, authModel_1.isAccessToken)(decoded)) {
             return { isValid: false };
         }
         if (!db) {

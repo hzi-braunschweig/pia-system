@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const usersHandler = require('../handlers/usersHandler.js');
+const { UsersHandler } = require('../handlers/usersHandler');
 
 module.exports = {
   path: '/user/users',
   method: 'GET',
-  handler: usersHandler.getAll,
+  handler: UsersHandler.getAll,
   config: {
     description: 'get all users the requester has access to',
     auth: 'jwt',

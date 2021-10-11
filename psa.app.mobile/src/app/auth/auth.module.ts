@@ -15,6 +15,8 @@ import { ChangePasswordPage } from './change-password/change-password.page';
 import { AuthRoutingModule } from './auth-routing.module';
 import { SharedModule } from '../shared/shared.module';
 import { InputPasswordComponent } from './input-password/input-password.component';
+import { Market } from '@ionic-native/market/ngx';
+import { AppVersion } from '@ionic-native/app-version/ngx';
 
 @NgModule({
   imports: [
@@ -27,5 +29,6 @@ import { InputPasswordComponent } from './input-password/input-password.componen
     ReactiveFormsModule,
   ],
   declarations: [LoginPage, ChangePasswordPage, InputPasswordComponent],
+  providers: [Market, AppVersion],
 })
 export class AuthModule {}

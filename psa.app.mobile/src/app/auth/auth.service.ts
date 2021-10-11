@@ -4,23 +4,32 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { Observable, Subject } from 'rxjs';
 
 import { User } from './auth.model';
+import { DOCUMENT } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  readonly loggedIn: Observable<void>;
-
+  public readonly loggedIn: Observable<void>;
   private loggedInSubject = new Subject<void>();
 
   private jwtHelper: JwtHelperService = new JwtHelperService();
 
-  constructor() {
+  private readonly beforeLogout: (() => Promise<void>)[] = [];
+
+  /**
+   * Register an async task which needs to be executed before logout
+   */
+  public onBeforeLogout(beforeLogout: () => Promise<void>) {
+    this.beforeLogout.push(beforeLogout);
+  }
+
+  constructor(@Inject(DOCUMENT) private document: Document) {
     this.loggedIn = this.loggedInSubject.asObservable();
   }
 
@@ -52,7 +61,26 @@ export class AuthService {
     localStorage.removeItem('currentUser');
   }
 
+  async logout(): Promise<void> {
+    for (const beforeLogout of this.beforeLogout) {
+      await beforeLogout();
+    }
+    this.beforeLogout.length = 0;
+    this.resetCurrentUser();
+    this.reloadApp();
+  }
+
   emitLogin() {
     this.loggedInSubject.next();
+  }
+
+  /**
+   * Executes a full page reload in order to clear any cached views.
+   *
+   * Please keep in mind that any running async task is going to stop
+   * immediately.
+   */
+  private reloadApp() {
+    this.document.defaultView.location.href = '/';
   }
 }

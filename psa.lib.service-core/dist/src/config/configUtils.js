@@ -21,6 +21,17 @@ class ConfigUtils {
         }
         return result;
     }
+    static getEnvVariableInt(key, fallback) {
+        const result = ConfigUtils.getEnvVariable(key, fallback?.toString());
+        const parsed = Number.parseInt(result);
+        if (result !== parsed.toString()) {
+            if (process.env['IGNORE_MISSING_CONFIG'] === '1') {
+                return 0;
+            }
+            throw new Error(`config variable '${key}' is not a valid number '${result}'`);
+        }
+        return parsed;
+    }
     static getFileContent(path) {
         try {
             return fs_1.default.readFileSync(path);

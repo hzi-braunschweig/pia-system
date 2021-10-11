@@ -12,8 +12,6 @@
 export const backendMapping = [
   { prefix: 'TCSG', url: 'https://train-sb.sormas.ch' },
   { prefix: 'SPTS', url: 'https://pentest-sb-pia.sormas-oegd.de' },
-  { prefix: 'DSTG', url: 'https://sb-pia-ch.sormas.netzlink.com' },
-  { prefix: 'RSTG', url: 'https://release-pia-ch.sormas.netzlink.com' },
   { prefix: 'TSSW', url: 'https://test-sb.sormas.ch' },
   { prefix: 'SSTG', url: 'https://test-sb.sormas.ch' },
   { prefix: 'Test', url: 'https://testpia-app.de' },

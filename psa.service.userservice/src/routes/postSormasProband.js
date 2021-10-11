@@ -6,12 +6,12 @@
 
 const Joi = require('joi');
 
-const usersHandler = require('../handlers/usersHandler.js');
+const { UsersHandler } = require('../handlers/usersHandler');
 
 module.exports = {
   path: '/user/sormasProbands',
   method: 'POST',
-  handler: usersHandler.createSormasProband,
+  handler: UsersHandler.createSormasProband,
   config: {
     description: 'creates a sormas proband',
     auth: 'jwt',

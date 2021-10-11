@@ -6,12 +6,12 @@
 
 const Joi = require('joi');
 
-const usersHandler = require('../handlers/usersHandler.js');
+const { UsersHandler } = require('../handlers/usersHandler');
 
 module.exports = {
   path: '/user/users/{username}',
   method: 'GET',
-  handler: usersHandler.getOne,
+  handler: UsersHandler.getOne,
   config: {
     description: 'get a user',
     auth: 'jwt',

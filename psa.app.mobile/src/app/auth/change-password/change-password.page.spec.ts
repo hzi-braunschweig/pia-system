@@ -16,6 +16,7 @@ import { AuthClientService } from '../auth-client.service';
 import { AuthService } from '../auth.service';
 import { ToastPresenterService } from '../../shared/services/toast-presenter/toast-presenter.service';
 import { InputPasswordComponent } from '../input-password/input-password.component';
+import { By } from '@angular/platform-browser';
 
 describe('ChangePasswordPage', () => {
   let component: ChangePasswordPage;
@@ -37,7 +38,7 @@ describe('ChangePasswordPage', () => {
     auth = jasmine.createSpyObj('AuthService', [
       'isAuthenticated',
       'getCurrentUser',
-      'resetCurrentUser',
+      'logout',
       'setPasswordNeeded',
     ]);
     toastPresenter = jasmine.createSpyObj('ToastPresenterService', [
@@ -73,7 +74,12 @@ describe('ChangePasswordPage', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('should be possible to logout', () => {
+    const logoutButtonElement = fixture.debugElement.query(
+      By.css('[data-unit="logout-button"]')
+    );
+    expect(logoutButtonElement).not.toBeNull();
+    logoutButtonElement.nativeElement.click();
+    expect(auth.logout).toHaveBeenCalledTimes(1);
   });
 });

@@ -15,7 +15,6 @@ const {
   SecureRandomPasswordService,
 } = require('../services/secureRandomPasswordService');
 const { generateRandomPseudonym } = require('../helpers/pseudonym-generator');
-const { config } = require('../config');
 const sormasserviceClient = require('../clients/sormasserviceClient');
 const authserviceClient = require('../clients/authserviceClient');
 const personaldataserviceClient = require('../clients/personaldataserviceClient');
@@ -271,147 +270,6 @@ const usersInteractor = (function () {
     }
   }
 
-  async function createProband(ut_email, data, pgHelper) {
-    const requester = await pgHelper.getUser(ut_email);
-    const newUser = {
-      pseudonym: data.pseudonym,
-      resultURL: createProbandCreatedResultUrl(data.pseudonym, false),
-    };
-
-    if (!requester || requester.role !== 'Untersuchungsteam') {
-      if (!requester) {
-        console.warn(
-          `Requester "${ut_email}" tried to create a proband with pseudonym ${data.pseudonym}, but requester could not be found.`
-        );
-      } else {
-        console.warn(
-          `Requester "${ut_email}" tried to create a proband with pseudonym ${data.pseudonym}, but requester has the wrong role:`,
-          requester.role
-        );
-      }
-      return Boom.forbidden('Wrong role for this command', newUser);
-    }
-
-    // Use and filter the supplied study accesses
-    if (data.study_accesses && data.study_accesses.length > 0) {
-      data.study_accesses = data.study_accesses.filter((study) => {
-        return (
-          requester.study_accesses.findIndex((accessR) => {
-            return accessR.study_id === study;
-          }) !== -1
-        );
-      });
-    }
-    // Else hard code ZIFCO-Studie as study_access
-    else {
-      data.study_accesses = ['ZIFCO-Studie'];
-    }
-
-    const plannedProband = await pgHelper.activatePlannedProband(
-      data,
-      ut_email
-    );
-
-    if (!plannedProband) {
-      return Boom.preconditionRequired(
-        'Could not find a related planned proband',
-        newUser
-      );
-    }
-
-    if (data.ids) {
-      const user = {
-        username: data.ids,
-        new_username: data.pseudonym,
-        password: plannedProband.password,
-        pw_change_needed: true,
-        initial_password_validity_date: generateInitialPasswordValidityDate(),
-        account_status: 'active',
-      };
-
-      // when the db is splitted (into user and proband).
-      // we will only create the user when the account gets activated.
-      await authserviceClient.updateUser(user);
-    } else {
-      const user = {
-        username: data.pseudonym,
-        password: plannedProband.password,
-        role: 'Proband',
-        pw_change_needed: true,
-        initial_password_validity_date: generateInitialPasswordValidityDate(),
-        account_status: 'active',
-      };
-
-      try {
-        await authserviceClient.createUser(user);
-      } catch (error) {
-        if (error.output && error.output.statusCode === 409) {
-          return Boom.conflict('The proband does already exist', newUser);
-        }
-        throw error;
-      }
-    }
-
-    const result = await pgHelper.createProband(data, ut_email).catch((err) => {
-      console.log(err);
-    });
-
-    if (!result) {
-      return Boom.conflict(
-        'Something went wrong while creating the new proband',
-        newUser
-      );
-    }
-
-    newUser.resultURL = createProbandCreatedResultUrl(newUser.pseudonym, true);
-    return newUser;
-  }
-
-  async function createIDSProband(decodedToken, data, pgHelper) {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
-
-    const requester = await pgHelper.getUser(userName);
-
-    if (userRole === 'Untersuchungsteam') {
-      // Use and filter the supplied study accesses
-      data.study_accesses = data.study_accesses.filter((study) => {
-        return (
-          requester.study_accesses.findIndex((accessR) => {
-            return accessR.study_id === study;
-          }) !== -1
-        );
-      });
-
-      const user = {
-        username: data.ids,
-        password: data.password,
-        role: 'Proband',
-        pw_change_needed: true,
-        account_status: 'no_account',
-      };
-
-      try {
-        // when the database is splitted we don't want to create a user
-        // for ids probands anymore. Just create them when the get activated.
-        await authserviceClient.createUser(user);
-      } catch (error) {
-        if (error.output && error.output.statusCode === 409) {
-          return Boom.conflict('The proband does already exist');
-        }
-        throw error;
-      }
-
-      return await pgHelper.createIDSProband(data);
-    } else {
-      return Boom.forbidden('only UT is allowed to create IDS');
-    }
-  }
-
-  function createProbandCreatedResultUrl(pseudonym, success) {
-    return config.webappUrl + `/probands/${pseudonym}?created=${success}`;
-  }
-
   async function updateUser(decodedToken, userName, userValues, pgHelper) {
     const userRole = decodedToken.role;
     const requester = decodedToken.username;
@@ -488,10 +346,6 @@ const usersInteractor = (function () {
     }
   }
 
-  async function getMobileVersion(pgHelper) {
-    return pgHelper.getMobileVersion();
-  }
-
   return {
     /**
      * @function
@@ -555,27 +409,6 @@ const usersInteractor = (function () {
 
     /**
      * @function
-     * @description creates the user in DB if it does not exist and the requester is allowed to
-     * @memberof module:usersInteractor
-     * @param {object} data the user object to create
-     * @param {object} pgHelper helper object to query postgres db
-     * @returns object promise a promise that will be resolved in case of success or rejected otherwise
-     */
-    createProband: createProband,
-
-    /**
-     * @function
-     * @description creates the ids user in DB if it does not exist and the requester is allowed to
-     * @memberof module:usersInteractor
-     * @param {object} decodedToken the decoded jwt of the request
-     * @param {object} data the ids user object to create
-     * @param {object} pgHelper helper object to query postgres db
-     * @returns object promise a promise that will be resolved in case of success or rejected otherwise
-     */
-    createIDSProband: createIDSProband,
-
-    /**
-     * @function
      * @description updates the user's age and gender in DB
      * @memberof module:usersInteractor
      * @param {object} decodedToken the decoded jwt of the request
@@ -595,16 +428,6 @@ const usersInteractor = (function () {
      * @returns object promise a promise that will be resolved in case of success or rejected otherwise
      */
     deleteUser: deleteUser,
-
-    /**
-     * @function
-     * @description gets a mobile app version
-     * @memberof module:usersInteractor
-     * @param {object} decodedToken the decoded jwt of the request
-     * @param {object} pgHelper helper object to query postgres db
-     * @returns object promise a promise that will be resolved in case of success or rejected otherwise
-     */
-    getMobileVersion: getMobileVersion,
   };
 })();
 

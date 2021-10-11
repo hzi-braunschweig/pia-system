@@ -7,16 +7,7 @@ exports.Metrics = void 0;
 const hapi_1 = require("@promster/hapi");
 const prom_client_1 = __importDefault(require("prom-client"));
 const boom_1 = __importDefault(require("@hapi/boom"));
-const upPlugin = hapi_1.createPlugin({
-    options: {
-        normalizeStatusCode: (statusCode, { response }) => {
-            if (response?.request?.response?.output?.statusCode && !statusCode) {
-                return response.request.response.output.statusCode;
-            }
-            return statusCode;
-        },
-    },
-});
+const upPlugin = (0, hapi_1.createPlugin)();
 exports.Metrics = {
     name: 'metrics',
     version: '1.0.0',
@@ -37,11 +28,11 @@ exports.Metrics = {
                         !(await server.settings.app.healthcheck())) {
                         throw new Error('healthcheck failed');
                     }
-                    hapi_1.signalIsUp();
+                    (0, hapi_1.signalIsUp)();
                 }
                 catch (err) {
                     console.error(err);
-                    hapi_1.signalIsNotUp();
+                    (0, hapi_1.signalIsNotUp)();
                 }
                 return h
                     .response(await prom_client_1.default.register.metrics())

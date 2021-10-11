@@ -1130,7 +1130,6 @@ describe('/pendingDeletions', function () {
         expect(proband.study_status).to.equal('deleted');
         expect(proband.account_status).to.equal('deactivated');
 
-        expect(proband.fcm_token).to.equal(null);
         expect(proband.first_logged_in_at).to.equal(null);
         expect(proband.notification_time).to.equal(null);
         expect(proband.logged_in_with).to.equal(null);

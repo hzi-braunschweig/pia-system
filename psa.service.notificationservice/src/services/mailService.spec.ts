@@ -8,7 +8,7 @@ import chai from 'chai';
 import { createSandbox, SinonStub } from 'sinon';
 import sinonChai from 'sinon-chai';
 import { config } from '../config';
-import mailService from './mailService';
+import { MailService } from './mailService';
 import nodemailer, { Transporter } from 'nodemailer';
 import { mock } from 'ts-mockito';
 
@@ -46,7 +46,7 @@ describe('MailService', () => {
       // Arrange
 
       // Act
-      mailService.initService();
+      MailService.initService();
 
       // Assert
       expect(createTransportStub).to.be.calledOnce;
@@ -55,7 +55,7 @@ describe('MailService', () => {
 
   describe('sendMail()', () => {
     beforeEach(() => {
-      mailService.initService();
+      MailService.initService();
     });
 
     it('should send a mail to the specified recipient', async () => {
@@ -68,7 +68,7 @@ describe('MailService', () => {
       };
 
       // Act
-      await mailService.sendMail(recipient, email);
+      await MailService.sendMail(recipient, email);
 
       // Assert
       expect(sendMailStub).to.be.calledOnce;
@@ -90,7 +90,7 @@ describe('MailService', () => {
       };
 
       // Act
-      await mailService.sendMail(recipient, email);
+      await MailService.sendMail(recipient, email);
 
       // Assert
       expect(sendMailStub).to.be.calledWithExactly({

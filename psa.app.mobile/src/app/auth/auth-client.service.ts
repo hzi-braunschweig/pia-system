@@ -55,12 +55,6 @@ export class AuthClientService {
       .toPromise();
   }
 
-  logout(username: string): Promise<void> {
-    return this.http
-      .post<void>(this.getApiUrl() + 'logout', { username })
-      .toPromise();
-  }
-
   getUsers(): Promise<any> {
     return this.http.get(this.getApiUrl() + 'users').toPromise();
   }

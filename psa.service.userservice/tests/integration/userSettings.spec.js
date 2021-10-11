@@ -95,40 +95,40 @@ describe('/userSettings', function () {
         'ApiTestMultiProband',
       ]);
 
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
-        'QTestProband1',
-        '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-        'Proband',
-        '',
-        new Date(),
+      await db.none('INSERT INTO users VALUES ($1:csv)', [
+        [
+          'QTestProband1',
+          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
+          'Proband',
+        ],
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
-        'QTestProband2',
-        '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-        'Proband',
-        '',
-        new Date(),
+      await db.none('INSERT INTO users VALUES ($1:csv)', [
+        [
+          'QTestProband2',
+          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
+          'Proband',
+        ],
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
-        'QTestForscher1',
-        '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-        'Forscher',
-        '',
-        new Date(),
+      await db.none('INSERT INTO users VALUES ($1:csv)', [
+        [
+          'QTestForscher1',
+          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
+          'Forscher',
+        ],
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
-        'QTestUntersuchungsteam',
-        '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-        'Untersuchungsteam',
-        '',
-        new Date(),
+      await db.none('INSERT INTO users VALUES ($1:csv)', [
+        [
+          'QTestUntersuchungsteam',
+          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
+          'Untersuchungsteam',
+        ],
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
-        'QTestSystemAdmin',
-        '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-        'SysAdmin',
-        '',
-        new Date(),
+      await db.none('INSERT INTO users VALUES ($1:csv)', [
+        [
+          'QTestSystemAdmin',
+          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
+          'SysAdmin',
+        ],
       ]);
 
       await db.none('INSERT INTO studies VALUES ($1, $2)', [
@@ -350,42 +350,44 @@ describe('/userSettings', function () {
       );
       await db.none('DELETE FROM studies WHERE name=$1', ['ApiTestStudie']);
 
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5, $6)', [
-        'QTestProband1',
-        '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-        'Proband',
-        '',
-        new Date(),
-        '17:30',
+      await db.none('INSERT INTO users VALUES ($1:csv)', [
+        [
+          'QTestProband1',
+          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
+          'Proband',
+          null,
+          '17:30',
+        ],
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5, $6)', [
-        'QTestProband2',
-        '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-        'Proband',
-        '',
-        new Date(),
-        '07:15',
+      await db.none('INSERT INTO users VALUES ($1:csv)', [
+        [
+          'QTestProband2',
+          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
+          'Proband',
+          null,
+          '07:15',
+        ],
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
-        'QTestForscher1',
-        '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-        'Forscher',
-        '',
-        new Date(),
+      await db.none('INSERT INTO users VALUES ($1:csv)', [
+        [
+          'QTestForscher1',
+          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
+          'Forscher',
+        ],
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
-        'QTestUntersuchungsteam',
-        '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-        'Untersuchungsteam',
-        '',
-        new Date(),
+      await db.none('INSERT INTO users VALUES ($1:csv)', [
+        [
+          'QTestUntersuchungsteam',
+          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
+          'Untersuchungsteam',
+        ],
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
-        'QTestSystemAdmin',
-        '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-        'SysAdmin',
-        '',
-        new Date(),
+      await db.none('INSERT INTO users VALUES ($1:csv)', [
+        [
+          'QTestSystemAdmin',
+          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
+          'SysAdmin',
+        ],
       ]);
 
       await db.none('INSERT INTO studies VALUES ($1, $2)', [

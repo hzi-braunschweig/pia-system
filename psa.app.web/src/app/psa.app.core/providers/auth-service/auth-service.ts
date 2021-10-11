@@ -25,6 +25,10 @@ import {
   PendingPartialDeletionResponse,
 } from '../../models/pendingPartialDeletion';
 import { PendingComplianceChange } from '../../models/pendingComplianceChange';
+import {
+  CreateIDSProbandRequest,
+  CreateProbandRequest,
+} from '../../models/proband';
 
 @Injectable()
 export class AuthService {
@@ -75,10 +79,6 @@ export class AuthService {
       .toPromise();
   }
 
-  logout(username: string): Promise<any> {
-    return this.http.post(this.apiUrl + 'logout', { username }).toPromise();
-  }
-
   getUsers(): Promise<UserListResponse> {
     return this.http.get<UserListResponse>(this.apiUrl + 'users').toPromise();
   }
@@ -89,7 +89,7 @@ export class AuthService {
       .toPromise();
   }
 
-  getUser(username: string): Promise<User & UserWithStudyAccess> {
+  getUser(username: string): Promise<UserWithStudyAccess> {
     return this.http
       .get<User & UserWithStudyAccess>(this.apiUrl + 'users/' + username)
       .toPromise();
@@ -124,13 +124,21 @@ export class AuthService {
       .toPromise();
   }
 
-  postProband(postData: object): Promise<User> {
-    return this.http.post<User>(this.apiUrl + 'probands', postData).toPromise();
+  postProband(
+    postData: CreateProbandRequest,
+    studyName: string
+  ): Promise<void> {
+    return this.http
+      .post<void>(this.apiUrl + 'studies/' + studyName + '/probands', postData)
+      .toPromise();
   }
 
-  postIDS(postData: object): Promise<User> {
+  postIDS(postData: CreateIDSProbandRequest, studyName: string): Promise<void> {
     return this.http
-      .post<User>(this.apiUrl + 'probandsIDS', postData)
+      .post<void>(
+        this.apiUrl + 'studies/' + studyName + '/probandsIDS',
+        postData
+      )
       .toPromise();
   }
 

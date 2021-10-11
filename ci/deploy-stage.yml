@@ -47,20 +47,6 @@ deploy-sb-pia:
     name: sormas-pia
     url: https://sb-pia.sormas.netzlink.com/
 
-deploy-sb-pia-ch:
-  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d
-  stage: deploy
-  variables:
-    GIT_STRATEGY: none
-  dependencies: []
-  script:
-    - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD job_templates launch --monitor --wait --inventory 45 --extra_vars "{\"pia_url\":"sb-pia-ch.sormas.netzlink.com",\"pia_docker_tag\":"$CI_COMMIT_REF_SLUG"}" --scm_branch "$CI_COMMIT_SHA" "PIA Ansible Role@PIASystem"
-  rules:
-    - if: $CI_COMMIT_BRANCH =~ /^develop/
-  environment:
-    name: sormas-pia-ch
-    url: https://sb-pia-ch.sormas.netzlink.com/
-
 deploy-sb-pia-de-release:
   image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d
   stage: deploy
@@ -78,23 +64,6 @@ deploy-sb-pia-de-release:
   environment:
     name: sormas-pia-de-release
     url: https://release-pia-de.sormas.netzlink.com
-
-deploy-sb-pia-ch-release:
-  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d
-  stage: deploy
-  variables:
-    GIT_STRATEGY: none
-  dependencies: []
-  script:
-    - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD job_templates launch --monitor --wait --inventory 45 --extra_vars "{\"pia_url\":\"release-pia-ch.sormas.netzlink.com\",\"pia_docker_tag\":\"$CI_COMMIT_REF_SLUG\"}" --scm_branch "$CI_COMMIT_SHA" "PIA Ansible Role@PIASystem"
-  rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_COMMIT_BRANCH =~ /^release/
-      allow_failure: true
-  environment:
-    name: sormas-pia-ch-release
-    url: https://release-pia-ch.sormas.netzlink.com/
 
 deploy-sb-pia-niedersachsen-release:
   image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d

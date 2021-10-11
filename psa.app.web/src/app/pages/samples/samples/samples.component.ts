@@ -54,6 +54,7 @@ import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
 import { Studie } from 'src/app/psa.app.core/models/studie';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BloodSample, LabResult } from '../../../psa.app.core/models/labresult';
+import { UserWithStudyAccess } from '../../../psa.app.core/models/user-with-study-access';
 
 interface BloodSampleRow extends BloodSample {
   blood_sample_carried_out_value: string;
@@ -203,7 +204,7 @@ export class SamplesComponent implements OnInit {
     'blood_sample_carried_out',
   ];
 
-  proband: User;
+  proband: UserWithStudyAccess;
 
   @ViewChild('filterBluteproben') filterBluteproben: ElementRef;
   @ViewChild('filterNasenabstrichen') filterNasenabstrichen: ElementRef;

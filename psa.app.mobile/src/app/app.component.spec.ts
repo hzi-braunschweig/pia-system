@@ -16,7 +16,6 @@ import { MockPipe, MockProvider } from 'ng-mocks';
 import { NEVER } from 'rxjs';
 
 import { AppComponent } from './app.component';
-import { AuthClientService } from './auth/auth-client.service';
 import { AuthService } from './auth/auth.service';
 import { ComplianceService } from './compliance/compliance-service/compliance.service';
 import { NotificationService } from './shared/services/notification/notification.service';
@@ -64,7 +63,6 @@ describe('AppComponent', () => {
         MockProvider(Platform, platformSpy),
         MockProvider(AlertController),
         MockProvider(TranslateService),
-        MockProvider(AuthClientService),
         MockProvider(ComplianceService, compliance),
         MockProvider(NotificationService),
         MockProvider(EndpointService),

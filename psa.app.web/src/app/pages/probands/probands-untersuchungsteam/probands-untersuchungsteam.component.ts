@@ -7,9 +7,11 @@
 import { Component, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { DialogNewProbandComponent } from '../../../dialogs/new-proband-dialog/new-proband-dialog';
+import {
+  DialogNewProbandComponent,
+  DialogNewProbandComponentData,
+} from '../../../dialogs/new-proband-dialog/new-proband-dialog';
 import { DialogNewIdsComponent } from 'src/app/dialogs/new-ids-dialog/new-ids-dialog';
-import { DialogNewPseudonymComponent } from 'src/app/dialogs/new-pseudonym-dialog/new-pseudonym-dialog';
 import { ProbandsListComponent } from '../../../features/probands-list/probands-list.component';
 
 @Component({
@@ -32,23 +34,27 @@ export class ProbandsUntersuchungsteamComponent {
       autoFocus: true,
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result !== undefined && result.pseudonym) {
+    dialogRef.afterClosed().subscribe((pseudonym) => {
+      if (pseudonym) {
         this.probandsList.fetchUsers();
       }
     });
   }
 
   addOrEditProband(): void {
-    const dialogRef = this.dialog.open(DialogNewProbandComponent, {
+    const dialogRef = this.dialog.open<
+      DialogNewProbandComponent,
+      undefined,
+      string
+    >(DialogNewProbandComponent, {
       width: '500px',
       disableClose: true,
       autoFocus: true,
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result !== undefined && result.pseudonym) {
-        this.viewDetailsForProband(result.pseudonym);
+    dialogRef.afterClosed().subscribe((pseudonym) => {
+      if (pseudonym) {
+        this.viewDetailsForProband(pseudonym);
       }
     });
   }
@@ -58,7 +64,11 @@ export class ProbandsUntersuchungsteamComponent {
   }
 
   addPseudonym(ids: string): void {
-    const dialogRef = this.dialog.open(DialogNewPseudonymComponent, {
+    const dialogRef = this.dialog.open<
+      DialogNewProbandComponent,
+      DialogNewProbandComponentData,
+      string
+    >(DialogNewProbandComponent, {
       width: '500px',
       disableClose: true,
       autoFocus: true,
@@ -67,9 +77,9 @@ export class ProbandsUntersuchungsteamComponent {
       },
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result !== undefined && result.pseudonym) {
-        this.viewDetailsForProband(result.pseudonym);
+    dialogRef.afterClosed().subscribe((pseudonym) => {
+      if (pseudonym) {
+        this.viewDetailsForProband(pseudonym);
       }
     });
   }

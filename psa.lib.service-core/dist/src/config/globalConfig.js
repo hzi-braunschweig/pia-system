@@ -83,6 +83,15 @@ class GlobalConfig {
             },
         };
     }
+    static getMessageQueue(serviceName) {
+        return {
+            host: configUtils_1.ConfigUtils.getEnvVariable('MESSAGEQUEUE_HOST'),
+            port: configUtils_1.ConfigUtils.getEnvVariableInt('MESSAGEQUEUE_PORT'),
+            serviceName,
+            username: configUtils_1.ConfigUtils.getEnvVariable('MESSAGEQUEUE_APP_USER'),
+            password: configUtils_1.ConfigUtils.getEnvVariable('MESSAGEQUEUE_APP_PASSWORD'),
+        };
+    }
     static getHttpConnection(servicePrefix) {
         return new configModel_1.HttpConnection(configUtils_1.ConfigUtils.getEnvVariable('INTERNAL_PROTOCOL', 'http'), configUtils_1.ConfigUtils.getEnvVariable(servicePrefix + '_HOST'), Number(configUtils_1.ConfigUtils.getEnvVariable(servicePrefix + '_INTERNAL_PORT')));
     }

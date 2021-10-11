@@ -1,5 +1,5 @@
 {
-  "require": ["ts-node/register/transpile-only", "source-map-support/register"],
+  "require": ["source-map-support/register", "ts-node/register/transpile-only"],
   "reporter": "mocha-multi-reporters",
   "reporter-option": "configFile=tests/mocha-reporters-config.json"
 }

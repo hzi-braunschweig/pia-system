@@ -4,56 +4,51 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<div *ngIf="form">
-  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
-  <form [formGroup]="form" (ngSubmit)="submit(form)">
-    <h1 mat-dialog-title>{{ 'PROBANDEN.NEW_IDS' | translate }}</h1>
-    <mat-dialog-content>
-      <mat-grid-list [cols]="1" rowHeight="2rem">
-        <mat-grid-tile [rowspan]="2">
-          <mat-form-field>
-            <input
-              matInput
-              formControlName="ids"
-              placeholder="{{ 'PROBAND.IDS' | translate }}"
-            />
-          </mat-form-field>
-        </mat-grid-tile>
-        <mat-grid-tile [rowspan]="2">
-          <mat-form-field>
-            <mat-select
-              id="selectstudies"
-              [multiple]="true"
-              placeholder="{{ 'PLANNED_PROBANDS.STUDY_IDS' | translate }}"
-              formControlName="study_accesses"
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+<form *ngIf="!isLoading" [formGroup]="form" (ngSubmit)="submit()">
+  <h1 mat-dialog-title>{{ 'PROBANDEN.NEW_IDS' | translate }}</h1>
+  <mat-dialog-content>
+    <mat-grid-list [cols]="1" rowHeight="2rem">
+      <mat-grid-tile [rowspan]="2">
+        <mat-form-field>
+          <input
+            matInput
+            formControlName="ids"
+            placeholder="{{ 'PROBAND.IDS' | translate }}"
+            data-unit="new-proband-ids"
+          />
+        </mat-form-field>
+      </mat-grid-tile>
+      <mat-grid-tile [rowspan]="2">
+        <mat-form-field>
+          <mat-select
+            id="selectstudies"
+            [multiple]="false"
+            placeholder="{{ 'PLANNED_PROBANDS.STUDY_ID' | translate }}"
+            formControlName="studyName"
+          >
+            <mat-select-search
+              [formControl]="studiesFilterCtrl"
+              [noEntriesFoundLabel]="null"
+              data-unit="new-proband-study-name"
+            ></mat-select-search>
+            <mat-option
+              *ngFor="let study of filteredStudies | async"
+              [value]="study"
             >
-              <mat-select-search
-                [formControl]="studiesFilterCtrl"
-              ></mat-select-search>
-              <mat-option
-                value="allStudiesCheckbox"
-                (click)="onSelectAllStudiesClicked()"
-              >
-                {{ 'CONTACTS.SELECT_ALL' | translate }}
-              </mat-option>
-              <mat-option
-                *ngFor="let study of filteredStudies | async"
-                [value]="study"
-              >
-                {{ study }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </mat-grid-tile>
-      </mat-grid-list>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button type="button" (click)="dialogRef.close()">
-        {{ 'DIALOG.CANCEL' | translate }}
-      </button>
-      <button mat-button type="submit" [disabled]="!form.valid || isLoading">
-        {{ 'DIALOG.REGISTER' | translate }}
-      </button>
-    </mat-dialog-actions>
-  </form>
-</div>
+              {{ study }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <button mat-button mat-dialog-close type="button">
+      {{ 'DIALOG.CANCEL' | translate }}
+    </button>
+    <button mat-button type="submit" [disabled]="!form.valid || isLoading">
+      {{ 'DIALOG.REGISTER' | translate }}
+    </button>
+  </mat-dialog-actions>
+</form>

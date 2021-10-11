@@ -14,7 +14,7 @@ import { MessageQueueClientHelper } from '../../src/messageQueueClientHelper';
 
 const delay = util.promisify(setTimeout);
 
-const hostname = process.env['MESSAGEQUEUE_HOST'] ?? 'localhost';
+const host = process.env['MESSAGEQUEUE_HOST'] ?? 'localhost';
 const port = process.env['MESSAGEQUEUE_PORT']
   ? Number.parseInt(process.env['MESSAGEQUEUE_PORT'])
   : undefined;
@@ -29,7 +29,7 @@ const topic = 'test-topic';
 const DELAY_TIME = 10;
 
 const options = {
-  hostname,
+  host,
   serviceName,
   port,
   username,
@@ -37,7 +37,7 @@ const options = {
 };
 
 const options2 = {
-  hostname,
+  host,
   serviceName: serviceName2,
   port,
   username,
@@ -45,7 +45,7 @@ const options2 = {
 };
 
 const connectionInfo = {
-  hostname,
+  hostname: host,
   port,
   username,
   password,
@@ -92,7 +92,7 @@ describe('MessageQueueClient Basics', () => {
 
   it('fail without waiting for availability for unreachable', async () => {
     const mq = new MessageQueueClient({
-      hostname: 'localhost',
+      host: 'localhost',
       port: 1,
       serviceName: 'asd',
       username,

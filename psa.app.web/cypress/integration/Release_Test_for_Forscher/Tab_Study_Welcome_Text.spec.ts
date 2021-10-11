@@ -17,13 +17,14 @@ import {
   getToken,
   login,
 } from '../../support/commands';
+import { CreateProbandRequest } from '../../../src/app/psa.app.core/models/proband';
 
 const short = require('short-uuid');
 const translator = short();
 
-let probandA;
-let probandB;
-let probandC;
+let probandA: CreateProbandRequest;
+let probandB: CreateProbandRequest;
+let probandC: CreateProbandRequest;
 
 let study;
 let study2;
@@ -47,9 +48,9 @@ describe('Release Test, role: "Forscher", Tab: Study Welcome Text', () => {
     study3 = generateRandomStudy();
     study4 = generateRandomStudy();
 
-    probandA = generateRandomProbandForStudy(study.name);
-    probandB = generateRandomProbandForStudy(study2.name);
-    probandC = generateRandomProbandForStudy(study3.name);
+    probandA = generateRandomProbandForStudy();
+    probandB = generateRandomProbandForStudy();
+    probandC = generateRandomProbandForStudy();
 
     forscher = {
       username: `e2e-f-${translator.new()}@testpia-app.de`,
@@ -100,7 +101,7 @@ describe('Release Test, role: "Forscher", Tab: Study Welcome Text', () => {
       .then(() => getToken(ut.username))
       .then((token) => createPlannedProband(probandA.pseudonym, token))
       .then(() => getToken(ut.username))
-      .then((token) => createProband(probandA, token))
+      .then((token) => createProband(probandA, study.name, token))
       .then(() => getToken(ut.username))
       .then((token) =>
         getCredentialsForProbandByUsername(probandA.pseudonym, token)
@@ -112,7 +113,7 @@ describe('Release Test, role: "Forscher", Tab: Study Welcome Text', () => {
       .then(() => getToken(ut.username))
       .then((token) => createPlannedProband(probandB.pseudonym, token))
       .then(() => getToken(ut.username))
-      .then((token) => createProband(probandB, token))
+      .then((token) => createProband(probandB, study2.name, token))
       .then(() => getToken(ut.username))
       .then((token) =>
         getCredentialsForProbandByUsername(probandB.pseudonym, token)
@@ -124,7 +125,7 @@ describe('Release Test, role: "Forscher", Tab: Study Welcome Text', () => {
       .then(() => getToken(ut.username))
       .then((token) => createPlannedProband(probandC.pseudonym, token))
       .then(() => getToken(ut.username))
-      .then((token) => createProband(probandC, token))
+      .then((token) => createProband(probandC, study3.name, token))
       .then(() => getToken(ut.username))
       .then((token) =>
         getCredentialsForProbandByUsername(probandC.pseudonym, token)

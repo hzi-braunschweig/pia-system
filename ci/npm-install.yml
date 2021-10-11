@@ -1,15 +1,21 @@
 npm-install:
   stage: prepare
-  image: docker:20.10.8@sha256:ddf0d732dcbc3e2087836e06e50cc97e21bfb002a49c7d0fe767f6c31e01d65f
+  image: docker:20.10.8@sha256:63107bd6ce718f130bb2668704239467b74f034c446f9e9c4ae1ffa5ddf4e3dd
   script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - >
       for JOB in $JOBS_INSTALL; do
+        echo Build Test Image $JOB
+        echo -------------------
         docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB-npm-install:$IMAGE_ID --target=npm-install --build-arg DIR=$JOB -f $JOB/Dockerfile .
+        echo -------------------
       done
     - >
       for JOB in $JOBS_INSTALL; do
+        echo Push Test Image $JOB
+        echo -------------------
         docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB-npm-install:$IMAGE_ID
+        echo -------------------
       done
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"

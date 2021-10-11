@@ -17,6 +17,7 @@ import {
   getToken,
   login,
 } from '../../support/commands';
+import { CreateProbandRequest } from '../../../src/app/psa.app.core/models/proband';
 
 const short = require('short-uuid');
 const translator = short();
@@ -27,8 +28,8 @@ let study3;
 let study4;
 let someRandomAnotherStudy;
 let forscher;
-let proband;
-let proband2;
+let proband: CreateProbandRequest;
+let proband2: CreateProbandRequest;
 let ut;
 let pm;
 const forscherCredentials = { username: '', password: '' };
@@ -56,8 +57,8 @@ describe('Release Test, role: "Forscher", General', () => {
         { study_id: study4.name, access_level: 'admin' },
       ],
     };
-    proband = generateRandomProbandForStudy(study.name);
-    proband2 = generateRandomProbandForStudy(study.name);
+    proband = generateRandomProbandForStudy();
+    proband2 = generateRandomProbandForStudy();
 
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
@@ -80,7 +81,7 @@ describe('Release Test, role: "Forscher", General', () => {
       .then(() => getToken(ut.username))
       .then((token) => createPlannedProband(proband.pseudonym, token))
       .then(() => getToken(ut.username))
-      .then((token) => createProband(proband, token))
+      .then((token) => createProband(proband, study.name, token))
       .then(() => getToken(ut.username))
       .then((token) =>
         getCredentialsForProbandByUsername(proband.pseudonym, token)

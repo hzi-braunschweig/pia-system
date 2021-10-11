@@ -14,5 +14,7 @@ secrets
 coverage
 node_modules
 .npm
+.sonar
+.scannerwork
 
 **/__pycache__

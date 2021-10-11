@@ -47,6 +47,12 @@ pia_ewpia_data_directory: /srv/dockerdata/ewpia/
 pia_ipia_data_directory: /srv/dockerdata/ipia/
 pia_messagequeue_data_directory: /srv/dockerdata/messagequeue/
 
+# NOTE: if both are enabled only one of both checks must succeed
+# specify if certificate checks are required for non proband users
+pia_ip_check_enabled: false
+# specify if ip checks are required for non proband users
+pia_cert_check_enabled: false
+
 # Required for external services that can create probands. Not used by sormas.
 # Use a complex unique key on productive systems (also for sormas)!
 pia_api_key: 66w66666-w666-666w-www6-666w6w666w66

@@ -106,13 +106,6 @@ const postgresqlHelper = (function () {
     );
   }
 
-  function updateUserOnLogout(username) {
-    return db.oneOrNone(
-      'UPDATE users SET fcm_token = $1 WHERE username = $2 RETURNING *',
-      ['', username]
-    );
-  }
-
   function updateUserLoginAttemptsAfterLogin(
     logged_in_with,
     first_logged_in_at,
@@ -210,15 +203,6 @@ const postgresqlHelper = (function () {
      * @returns {Promise} a resolved promise returning the complete user
      */
     updateUserPasswordOnLogin: updateUserPasswordOnLogin,
-
-    /**
-     * @function
-     * @description updates the user after logout
-     * @memberof module:postgresqlHelper
-     * @param {String} username of the user who used the logout function
-     * @returns {Promise} a resolved promise returning the complete user
-     */
-    updateUserOnLogout: updateUserOnLogout,
 
     /**
      * @function

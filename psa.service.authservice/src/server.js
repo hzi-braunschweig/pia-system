@@ -88,6 +88,11 @@ exports.init = async () => {
 
   await server.start();
   server.log(['startup'], `Server running at ${server.info.uri}`);
+  server.log(['startup'], {
+    ipCheckEnabled: config.ipCheckEnabled,
+    certCheckEnabled: config.certCheckEnabled,
+  });
+
   await serverInternal.start();
   serverInternal.log(
     ['startup'],

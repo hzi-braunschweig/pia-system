@@ -17,8 +17,10 @@ import {
   getToken,
   login,
 } from '../../support/commands';
-const path = require('path');
 import 'cypress-file-upload';
+import { CreateProbandRequest } from '../../../src/app/psa.app.core/models/proband';
+
+const path = require('path');
 
 const short = require('short-uuid');
 const translator = short();
@@ -29,8 +31,8 @@ let study3;
 let study4;
 let someRandomAnotherStudy;
 let forscher;
-let proband;
-let probandB;
+let proband: CreateProbandRequest;
+let probandB: CreateProbandRequest;
 let ut;
 let pm;
 const forscherCredentials = { username: '', password: '' };
@@ -62,8 +64,8 @@ describe('Release Test, role: "Forscher", Administration', () => {
         { study_id: study4.name, access_level: 'admin' },
       ],
     };
-    proband = generateRandomProbandForStudy(study.name);
-    probandB = generateRandomProbandForStudy(study.name);
+    proband = generateRandomProbandForStudy();
+    probandB = generateRandomProbandForStudy();
 
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
@@ -86,7 +88,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
       .then(() => getToken(ut.username))
       .then((token) => createPlannedProband(proband.pseudonym, token))
       .then(() => getToken(ut.username))
-      .then((token) => createProband(proband, token))
+      .then((token) => createProband(proband, study.name, token))
       .then(() => getToken(ut.username))
       .then((token) =>
         getCredentialsForProbandByUsername(proband.pseudonym, token)
@@ -98,7 +100,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
       .then(() => getToken(ut.username))
       .then((token) => createPlannedProband(probandB.pseudonym, token))
       .then(() => getToken(ut.username))
-      .then((token) => createProband(probandB, token))
+      .then((token) => createProband(probandB, study.name, token))
       .then(() => getToken(ut.username))
       .then((token) =>
         getCredentialsForProbandByUsername(probandB.pseudonym, token)
@@ -180,12 +182,12 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
     cy.get('#changeaccount').click();
 
-    const proband2 = generateRandomProbandForStudy(study.name);
+    const proband2 = generateRandomProbandForStudy();
     const proband2Credentials = { username: '', password: '' };
     getToken(ut.username)
       .then((token) => createPlannedProband(proband2.pseudonym, token))
       .then(() => getToken(ut.username))
-      .then((token) => createProband(proband2, token))
+      .then((token) => createProband(proband2, study.name, token))
       .then(() => getToken(ut.username))
       .then((token) =>
         getCredentialsForProbandByUsername(proband2.pseudonym, token)
@@ -728,7 +730,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('#confirmButton').click();
     cy.get('#changeaccount').click();
 
-    const proband1 = generateRandomProbandForStudy(study.name);
+    const proband1 = generateRandomProbandForStudy();
 
     const probandCredentials1 = { username: '', password: '' };
 
@@ -736,7 +738,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
     getToken(ut.username)
       .then((token) => createPlannedProband(proband1.pseudonym, token))
       .then(() => getToken(ut.username))
-      .then((token) => createProband(proband1, token))
+      .then((token) => createProband(proband1, study.name, token))
       .then(() => getToken(ut.username))
       .then((token) =>
         getCredentialsForProbandByUsername(proband1.pseudonym, token)

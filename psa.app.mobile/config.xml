@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="de.pia.app" version="1.25.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+<widget android-packageName="de.pia.app" id="de.pia.app" ios-CFBundleIdentifier="de.info-pia.app" version="1.27.0"
+        xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>PIA</name>
     <description>Mobile App for PIA</description>
     <author email="piapost@helmholtz-hzi.de" href="https://info-pia.de/">Helmholtz-Zentrum für Infektionsforschung GmbH</author>

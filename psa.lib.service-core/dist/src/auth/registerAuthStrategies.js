@@ -26,7 +26,7 @@ const registerAuthStrategies = async (server, options) => {
             verifyOptions: {
                 algorithms: ['RS512'],
             },
-            validate: validateAccessToken_1.validateAccessToken(options.db),
+            validate: (0, validateAccessToken_1.validateAccessToken)(options.db),
         });
     }
     if (options.strategies.includes('jwt_login')) {
@@ -35,7 +35,7 @@ const registerAuthStrategies = async (server, options) => {
             verifyOptions: {
                 algorithms: ['RS512'],
             },
-            validate: validateLoginToken_1.validateLoginToken(options.db),
+            validate: (0, validateLoginToken_1.validateLoginToken)(options.db),
         });
     }
     if (options.strategies.includes('simple')) {
@@ -44,7 +44,7 @@ const registerAuthStrategies = async (server, options) => {
             throw new Error('registerAuthStrategies: Cannot register simple auth without credentials!');
         }
         server.auth.strategy('simple', 'basic', {
-            validate: validateBasicAuth_1.validateBasicAuth(options.basicCredentials.username, options.basicCredentials.password),
+            validate: (0, validateBasicAuth_1.validateBasicAuth)(options.basicCredentials.username, options.basicCredentials.password),
         });
     }
 };

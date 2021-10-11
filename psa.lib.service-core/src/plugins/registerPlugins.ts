@@ -32,7 +32,7 @@ export interface ServicePluginOptions {
   name: string;
   version: string;
   routes?: string;
-  isInternal?: string;
+  isInternal?: boolean;
 }
 
 const logSqueezeArgs = [

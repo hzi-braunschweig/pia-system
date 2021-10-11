@@ -244,5 +244,8 @@ export default {
     isDevelopment:
       getEnvVariable('IS_DEVELOPMENT_SYSTEM', 'false').toLowerCase() === 'true',
   },
+  publicMetaData: {
+    minimalAppVersion: '1.27.0',
+  },
   routes,
 };

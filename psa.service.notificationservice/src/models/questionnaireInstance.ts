@@ -22,7 +22,7 @@ export interface DbQuestionnaireInstance {
   questionnaire_id: number;
   questionnaire_version: number;
   questionnaire_name: string;
-  user_id: string | null;
+  user_id: string;
   date_of_issue: Date;
   date_of_release_v1: Date | null;
   date_of_release_v2: Date | null;

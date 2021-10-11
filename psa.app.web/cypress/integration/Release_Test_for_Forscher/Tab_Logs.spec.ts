@@ -17,6 +17,7 @@ import {
   getToken,
   login,
 } from '../../support/commands';
+import { CreateProbandRequest } from '../../../src/app/psa.app.core/models/proband';
 
 const parse = require('csv-parse/lib/sync');
 const path = require('path');
@@ -29,7 +30,7 @@ let study3;
 let study4;
 let someRandomAnotherStudy;
 let forscher;
-let proband;
+let proband: CreateProbandRequest;
 let ut;
 let pm;
 const forscherCredentials = { username: '', password: '' };
@@ -60,7 +61,7 @@ describe('Release Test, role: "Forscher", General', () => {
         { study_id: study4.name, access_level: 'admin' },
       ],
     };
-    proband = generateRandomProbandForStudy(study.name);
+    proband = generateRandomProbandForStudy();
 
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
@@ -83,7 +84,7 @@ describe('Release Test, role: "Forscher", General', () => {
       .then(() => getToken(ut.username))
       .then((token) => createPlannedProband(proband.pseudonym, token))
       .then(() => getToken(ut.username))
-      .then((token) => createProband(proband, token))
+      .then((token) => createProband(proband, study.name, token))
       .then(() => getToken(ut.username))
       .then((token) =>
         getCredentialsForProbandByUsername(proband.pseudonym, token)
@@ -148,7 +149,7 @@ describe('Release Test, role: "Forscher", General', () => {
     cy.get('body').trigger('keyup', { keyCode: 27 });
 
     cy.get('[data-e2e="e2e-request-logs-button"]').click();
-    cy.get('[data-e2e="e2e-proband-name-column"]').should('have.length', 2);
+    cy.get('[data-e2e="e2e-proband-name-column"]').should('have.length', 1);
   });
   it('should not contain any login for proband after proband deactivated logg function', () => {
     cy.visit(appUrl);
@@ -310,7 +311,7 @@ describe('Release Test, role: "Forscher", General', () => {
         })
       )
       .then((res) => {
-        expect(res).to.have.length(2);
+        expect(res).to.have.length(1);
         expect(res[0]).to.have.all.keys(
           'Aktivität',
           'Anhang',

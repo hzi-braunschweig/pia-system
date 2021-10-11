@@ -11,6 +11,8 @@
 export const environment = {
   production: false,
   locale: 'en-US',
+  androidAppId: 'de.pia.app',
+  iOSAppId: 'id1510929221',
 };
 
 /*

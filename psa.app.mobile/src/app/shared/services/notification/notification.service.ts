@@ -83,6 +83,7 @@ export class NotificationService {
         .pipe(filter((data) => data.tap))
         .subscribe((data: PushNotification) => this.openNotification(data.id))
     );
+    this.auth.onBeforeLogout(() => this.fcm.unregister());
   }
 
   private async updateToken(token: string) {

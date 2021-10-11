@@ -17,28 +17,9 @@ declare module '@hapi/hapi' {
 }
 
 /**
- * A hapi plugin to the metrics of the current running service instance
+ * A hapi plugin for the metrics of the current running service instance
  */
-const upPlugin: Plugin<unknown> = createPlugin({
-  options: {
-    // The following ignores are needed as the response parameter is undocumented in hapi types
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    normalizeStatusCode: (statusCode: number, { response }) => {
-      // Boom places the statusCode under output
-      // but promster will only look under request
-      // therefore we have to workaround this
-
-      // As @promster/hapi does not declare the secound parameter correctly we need to ignore some lint errors
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (response?.request?.response?.output?.statusCode && !statusCode) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-return
-        return response.request.response.output.statusCode;
-      }
-      return statusCode;
-    },
-  },
-});
+const upPlugin: Plugin<unknown> = createPlugin();
 
 export const Metrics: Plugin<unknown> = {
   name: 'metrics',
@@ -47,7 +28,7 @@ export const Metrics: Plugin<unknown> = {
     const ipWhitelist = (process.env['METRICS_IP_WHITELIST'] ?? '').split(',');
     const allAllowed = ipWhitelist.includes('*');
 
-    // hapi route metrics collection
+    // Activate hapi route metrics collection
     void server.register(upPlugin);
 
     // Register prometheus endpoint

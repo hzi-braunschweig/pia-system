@@ -13,7 +13,7 @@ import { MockBuilder, MockRender } from 'ng-mocks';
 import { Subject } from 'rxjs';
 import { AppModule } from '../../../app.module';
 import { ProbandsListModule } from '../../../features/probands-list/probands-list.module';
-import { DialogNewPseudonymComponent } from '../../../dialogs/new-pseudonym-dialog/new-pseudonym-dialog';
+import { DialogNewProbandComponent } from '../../../dialogs/new-proband-dialog/new-proband-dialog';
 import SpyObj = jasmine.SpyObj;
 
 describe('ProbandsUntersuchungsteamComponent', () => {
@@ -22,7 +22,7 @@ describe('ProbandsUntersuchungsteamComponent', () => {
 
   let router: SpyObj<Router>;
   let dialog: SpyObj<MatDialog>;
-  let afterClosedSubject: Subject<{ pseudonym: string }>;
+  let afterClosedSubject: Subject<string>;
 
   beforeEach(async () => {
     router = jasmine.createSpyObj('Router', ['navigate']);
@@ -31,7 +31,7 @@ describe('ProbandsUntersuchungsteamComponent', () => {
     afterClosedSubject = new Subject();
     dialog.open.and.returnValue({
       afterClosed: () => afterClosedSubject.asObservable(),
-    } as MatDialogRef<DialogNewPseudonymComponent>);
+    } as MatDialogRef<DialogNewProbandComponent>);
 
     await MockBuilder(ProbandsUntersuchungsteamComponent, AppModule)
       .mock(ProbandsListModule)
@@ -48,7 +48,7 @@ describe('ProbandsUntersuchungsteamComponent', () => {
       const fetchUsersSpy = spyOn(component.probandsList, 'fetchUsers');
       clickButton('[unit-create-ids]');
       expect(dialog.open).toHaveBeenCalledTimes(1);
-      afterClosedSubject.next({ pseudonym: 'testuser' });
+      afterClosedSubject.next('testuser');
       tick();
       expect(fetchUsersSpy).toHaveBeenCalledTimes(1);
     }));
@@ -56,7 +56,7 @@ describe('ProbandsUntersuchungsteamComponent', () => {
     it('should present a button to navigate to proband creation', fakeAsync(() => {
       clickButton('[unit-create-proband]');
       expect(dialog.open).toHaveBeenCalledTimes(1);
-      afterClosedSubject.next({ pseudonym: 'testuser' });
+      afterClosedSubject.next('testuser');
       tick();
       expect(router.navigate).toHaveBeenCalledWith(['/probands/', 'testuser']);
     }));
@@ -71,7 +71,7 @@ describe('ProbandsUntersuchungsteamComponent', () => {
     it('should present a button to add pseudonyms', fakeAsync(() => {
       clickButton('[unit-view-labresults-add-pseudonym]');
       expect(dialog.open).toHaveBeenCalledTimes(1);
-      afterClosedSubject.next({ pseudonym: 'testuser' });
+      afterClosedSubject.next('testuser');
       tick();
       expect(router.navigate).toHaveBeenCalledWith(['/probands/', 'testuser']);
     }));

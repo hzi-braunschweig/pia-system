@@ -6,11 +6,16 @@
 
 import httpProxy from 'http-proxy';
 import { HttpServer, ISsl } from './httpServer';
-import { parse as parseUrl, format as formatUrl } from 'url';
-import { Headers, Header } from './headers';
+import { Header, Headers } from './headers';
 import { Logging } from './logging';
 import { Color } from './color';
-import { ProxyRoute } from './proxyRoute';
+import {
+  isProxyRoute,
+  isResponseRoute,
+  ProxyRoute,
+  ResponseRoute,
+  Route,
+} from './proxyRoute';
 import { StatusCode } from './statusCode';
 
 import * as http from 'http';
@@ -21,10 +26,11 @@ interface Context {
 }
 
 export class Proxy extends HttpServer<Context> {
+  private static readonly BASE = 'http://localhost';
   private readonly proxy = httpProxy.createProxyServer();
 
   public constructor(
-    private readonly routes: ProxyRoute[],
+    private readonly routes: Route[],
     externalSsl?: ISsl,
     private readonly internalCa?: Buffer,
     private readonly disableLogging: boolean = false,
@@ -62,50 +68,77 @@ export class Proxy extends HttpServer<Context> {
     req: http.IncomingMessage,
     res: http.ServerResponse
   ): void {
-    const url = parseUrl(req.url ?? '');
-    const pathname = url.pathname ?? '';
-    const path = url.path ?? '';
+    const route = this.routes.find((r) => req.url?.startsWith(r.path));
+    if (isProxyRoute(route)) {
+      this.handleProxyRoute(route, req, res);
+    } else if (isResponseRoute(route) && req.url === route.path) {
+      this.handleResponseRoute(route, req, res);
+    } else {
+      res.statusCode = StatusCode.NOT_FOUND;
+      res.end();
+    }
+  }
 
-    for (const route of this.routes) {
-      if (pathname.startsWith(route.path)) {
-        url.pathname = route.upstream.path + pathname.substr(route.path.length);
-        url.path = route.upstream.path + path.substr(route.path.length);
+  private handleResponseRoute(
+    route: ResponseRoute,
+    req: http.IncomingMessage,
+    res: http.ServerResponse
+  ): void {
+    if (req.method === 'OPTIONS') {
+      // cors config
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET');
+      res.setHeader('Access-Control-Allow-Headers', 'Accept,Content-Type');
+      res.setHeader('Access-Control-Max-Age', '86400');
+      res.setHeader('Content-Length', '0');
+      res.statusCode = 204;
+    } else {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      Object.keys(route.response.headers).forEach((key) =>
+        res.setHeader(key, route.response.headers[key]!)
+      );
+      res.write(route.response.body);
+    }
+    res.end();
+    this.logStatus(req, res.statusCode);
+  }
 
-        req.url = formatUrl(url);
+  private handleProxyRoute(
+    route: ProxyRoute,
+    req: http.IncomingMessage,
+    res: http.ServerResponse
+  ): void {
+    const url = new URL(req.url ?? '', Proxy.BASE);
+    url.pathname = route.upstream.path + url.pathname.substr(route.path.length);
+    req.url = url.toString().substr(Proxy.BASE.length);
 
-        const context = this.getContext(req);
-        context.received = Date.now();
-        context.route = route;
+    const context = this.getContext(req);
+    context.received = Date.now();
+    context.route = route;
 
-        if (this.headers) {
-          Header.addHeaders(res, this.headers);
-        }
-
-        this.proxy.web(
-          req,
-          res,
-          {
-            // changes the origin of the host header to the target URL
-            // required for successful SSL verification
-            changeOrigin: true,
-            target: {
-              host: route.upstream.host,
-              port: route.upstream.port,
-              hostname: route.upstream.host,
-              protocol: route.upstream.protocol + ':',
-              ca: this.internalCa ? this.internalCa.toString() : undefined,
-            },
-          },
-          (err, proxyReq, proxyRes) => {
-            this.handleError(err, proxyReq, proxyRes);
-          }
-        );
-        return;
-      }
+    if (this.headers) {
+      Header.addHeaders(res, this.headers);
     }
 
-    res.statusCode = StatusCode.NOT_FOUND;
-    res.end();
+    this.proxy.web(
+      req,
+      res,
+      {
+        // changes the origin of the host header to the target URL
+        // required for successful SSL verification
+        changeOrigin: true,
+        target: {
+          host: route.upstream.host,
+          port: route.upstream.port,
+          hostname: route.upstream.host,
+          protocol: route.upstream.protocol + ':',
+          ca: this.internalCa ? this.internalCa.toString() : undefined,
+        },
+      },
+      (err, proxyReq, proxyRes) => {
+        this.handleError(err, proxyReq, proxyRes);
+      }
+    );
   }
 
   private handleError(

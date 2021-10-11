@@ -14,12 +14,12 @@ const fetch = require('node-fetch');
 const mail = require('nodemailer');
 
 const { ListeningDbClient } = require('@pia/lib-service-core');
-const fcmHelper = require('../../src/services/fcmHelper.js');
+const { FcmHelper } = require('../../src/services/fcmHelper');
 
 const { setup, cleanup } = require('./email.spec.data/setup.helper');
 
 const secretOrPrivateKey = require('../secretOrPrivateKey');
-const server = require('../../src/server');
+const { Server } = require('../../src/server');
 
 const testSandbox = sinon.createSandbox();
 
@@ -27,7 +27,7 @@ const JWT = require('jsonwebtoken');
 
 const apiAddress = 'http://localhost:' + process.env.PORT + '/notification';
 
-const serverSandbox = sinon.createSandbox();
+const suiteSandbox = sinon.createSandbox();
 
 const pmSession = {
   id: 1,
@@ -42,17 +42,18 @@ const mailTransporter = {
 
 describe('/notification/email', () => {
   before(async function () {
-    serverSandbox.stub(ListeningDbClient.prototype);
-    serverSandbox.stub(fcmHelper);
-    serverSandbox.stub(mail, 'createTransport').returns(mailTransporter);
+    suiteSandbox.stub(ListeningDbClient.prototype);
+    suiteSandbox.stub(FcmHelper, 'sendDefaultNotification');
+    suiteSandbox.stub(FcmHelper, 'initFBAdmin');
+    suiteSandbox.stub(mail, 'createTransport').returns(mailTransporter);
     await setup();
-    await server.init();
+    await Server.init();
   });
 
   after(async function () {
-    await server.stop();
+    await Server.stop();
     await cleanup();
-    serverSandbox.restore();
+    suiteSandbox.restore();
   });
 
   beforeEach(async () => {

@@ -42,7 +42,6 @@ import { DialogExportDataComponent } from './dialogs/export-dialog/export-dialog
 import { DialogNewIdsComponent } from './dialogs/new-ids-dialog/new-ids-dialog';
 import { DialogNewPlannedProbandsComponent } from './dialogs/new-planned-probands-dialog/new-planned-probands-dialog.component';
 import { DialogNewProbandComponent } from './dialogs/new-proband-dialog/new-proband-dialog';
-import { DialogNewPseudonymComponent } from './dialogs/new-pseudonym-dialog/new-pseudonym-dialog';
 import { DialogNewUserComponent } from './dialogs/new-user-dialog/new-user-dialog.component';
 import { DialogStudyComponent } from './dialogs/study-dialog/study-dialog';
 import { DialogUserEditComponent } from './dialogs/user-edit-dialog/user-edit-dialog';
@@ -220,7 +219,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     DialogChangeStudyComponent,
     DialogNewProbandComponent,
     DialogNewIdsComponent,
-    DialogNewPseudonymComponent,
     DialogStudyComponent,
     DialogUserStudyAccessComponent,
     DialogUserEditComponent,
@@ -307,7 +305,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     DialogChangeStudyComponent,
     DialogNewProbandComponent,
     DialogNewIdsComponent,
-    DialogNewPseudonymComponent,
     DialogStudyComponent,
     DialogPopUpComponent,
     DialogUserStudyAccessComponent,

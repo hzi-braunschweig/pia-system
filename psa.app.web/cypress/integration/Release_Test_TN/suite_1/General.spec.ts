@@ -18,12 +18,13 @@ import {
   login,
   updateProbandData,
 } from '../../../support/commands';
+import { CreateProbandRequest } from '../../../../src/app/psa.app.core/models/proband';
 
 const short = require('short-uuid');
 const translator = short();
 
 let study;
-let proband;
+let proband: CreateProbandRequest;
 let ut;
 let pm;
 const probandCredentials = { username: '', password: '' };
@@ -34,7 +35,7 @@ const appUrl = '/';
 describe('Release Test, role: "Proband", General', () => {
   beforeEach(() => {
     study = generateRandomStudy();
-    proband = generateRandomProbandForStudy(study.name);
+    proband = generateRandomProbandForStudy();
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
       role: 'Untersuchungsteam',
@@ -53,7 +54,7 @@ describe('Release Test, role: "Proband", General', () => {
       .then(() => getToken(ut.username))
       .then((token) => createPlannedProband(proband.pseudonym, token))
       .then(() => getToken(ut.username))
-      .then((token) => createProband(proband, token))
+      .then((token) => createProband(proband, study.name, token))
       .then(() => getToken(pm.username))
       .then((token) =>
         updateProbandData(

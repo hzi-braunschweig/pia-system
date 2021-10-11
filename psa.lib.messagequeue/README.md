@@ -27,9 +27,45 @@ Producer -> [exchange]
 3. Create only one `Producer` using `createProducer` per topic.
 4. If a message could not be handled by a `Consumer`, throw an exception in the callback.
 5. The payload of a message should only contain the most basic infos (e.g. an ID of an DB-object or a username)
-6. The topic should be not too specific. For example `user-created` is fine, `user-of-study-${study}-created` would be too specific.
+6. The topic should not be too specific. For example `user-created` is fine, `user-of-study-${study}-created` would be too specific.
 7. The healthcheck of a service should use the `isConnected` result of the `MessageQueueClient`
 8. Disconnect the `MessageQueueClient` instance on service shutdown.
+
+## Topics
+
+### Naming Scheme
+
+All topics should use the naming scheme `<entity>.<event>` with the following definitions:
+
+#### Entity
+
+Name of the entity which is involved in the event triggering the message.
+
+Currently in use:
+
+- proband
+- compliance
+- questionnaire_instance
+
+#### Event
+
+Name of the event which triggered the message.
+
+Currently in use:
+
+- deleted
+- deactivated
+- created
+- released
+
+### Existing topics
+
+| Topic name                        | Description                                                                            |
+| --------------------------------- | -------------------------------------------------------------------------------------- |
+| `proband.deleted`                 | Published when a proband's data should be fully deleted                                |
+| `proband.deactivated`             | Published when a proband was deactivated and should not receive any new questionnaires |
+| `compliance.created`              | Published when a compliance was filled out by a proband                                |
+| `questionnaire_instance.released` | Published when a questionnaire instance moves to any "released[...]" status            |
 
 ## Example
 
@@ -44,7 +80,7 @@ const mq = new MessageQueueClient({
 await mq.connect();
 
 // create one consumer per topic the service is interested in
-await mq.createConsumer('test-topic', async (message) => {
+await mq.createConsumer('test.created', async (message) => {
   // handle the message payload
   console.log({
     received: message,
@@ -52,7 +88,7 @@ await mq.createConsumer('test-topic', async (message) => {
 });
 
 // create one producer per topic that can be emitted
-const producer = await mq.createProducer('test-topic');
+const producer = await mq.createProducer('test.created');
 
 // emit a message
 await producer.publish({

@@ -10,7 +10,7 @@ const { db, getDbTransactionFromOptionsOrDbConnection } = require('../db');
  * @description helper methods to access db
  */
 const postgresqlHelper = (function () {
-  function getUser(username) {
+  async function getUser(username) {
     return db.oneOrNone(
       `SELECT username,
                     role,
@@ -31,7 +31,7 @@ const postgresqlHelper = (function () {
     );
   }
 
-  function getUserExternalCompliance(username) {
+  async function getUserExternalCompliance(username) {
     return db.oneOrNone(
       'SELECT compliance_labresults, compliance_samples, compliance_bloodsamples FROM users WHERE username = $(username)',
       { username }
@@ -79,7 +79,7 @@ const postgresqlHelper = (function () {
       .then((row) => row.mapping_id);
   }
 
-  function getUserAllData(username) {
+  async function getUserAllData(username) {
     return db.oneOrNone('SELECT * FROM users WHERE username = $(username)', {
       username,
     });
@@ -89,13 +89,13 @@ const postgresqlHelper = (function () {
     return await db.one('SELECT * FROM studies WHERE name=$1', [study_id]);
   }
 
-  function getUserAsProfessional(username, requesterName) {
+  async function getUserAsProfessional(username, requesterName) {
     return db
       .one(
         'SELECT username,role,first_logged_in_at, study_center, examination_wave, compliance_samples, compliance_bloodsamples, compliance_labresults, is_test_proband, account_status, study_status, ids, logging_active FROM users WHERE username = $(username) AND username=ANY(SELECT user_id FROM study_users WHERE study_id=ANY(SELECT study_id FROM study_users WHERE user_id = $(requesterName)))',
         { username: username, requesterName: requesterName }
       )
-      .then(function (userResult) {
+      .then(async function (userResult) {
         return db
           .manyOrNone(
             'SELECT study_id,access_level FROM study_users WHERE user_id = $(username) ORDER BY study_id',
@@ -108,7 +108,7 @@ const postgresqlHelper = (function () {
       });
   }
 
-  function getUserAsProfessionalByIDS(ids, requesterName) {
+  async function getUserAsProfessionalByIDS(ids, requesterName) {
     return db.oneOrNone(
       'SELECT u.username, u.role, u.first_logged_in_at, u.study_center, u.examination_wave, u.compliance_samples, u.compliance_bloodsamples, u.compliance_labresults, u.is_test_proband, u.account_status, u.study_status, u.ids, u.logging_active ' +
         'FROM users as u ' +
@@ -119,12 +119,12 @@ const postgresqlHelper = (function () {
     );
   }
 
-  function getUsersForProfessional(username) {
+  async function getUsersForProfessional(username) {
     const queryString =
       'SELECT username,role,first_logged_in_at,compliance_labresults, needs_material,is_test_proband, account_status, study_status, ids, logging_active FROM users WHERE role=$(role) AND username=ANY(SELECT user_id FROM study_users WHERE study_id=ANY(SELECT study_id FROM study_users WHERE user_id = $(username)))';
     return db
       .manyOrNone(queryString, { role: 'Proband', username: username })
-      .then(function (usersResult) {
+      .then(async function (usersResult) {
         return db
           .manyOrNone(
             'SELECT * FROM study_users WHERE study_id=ANY(SELECT study_id FROM study_users WHERE user_id = $(username))',
@@ -184,7 +184,7 @@ const postgresqlHelper = (function () {
     return probands;
   }
 
-  function getUsersWithSameRole(username, role) {
+  async function getUsersWithSameRole(username, role) {
     if (role === 'SysAdmin') {
       return db
         .manyOrNone(
@@ -218,7 +218,7 @@ const postgresqlHelper = (function () {
     }
   }
 
-  function getUsersForSysAdmin() {
+  async function getUsersForSysAdmin() {
     return db
       .manyOrNone(
         'SELECT username, role, first_logged_in_at FROM users WHERE role IN ($1:csv)',
@@ -231,7 +231,7 @@ const postgresqlHelper = (function () {
           ],
         ]
       )
-      .then(function (usersResult) {
+      .then(async function (usersResult) {
         return db
           .manyOrNone('SELECT * FROM study_users')
           .then(function (studyAccessesResult) {
@@ -286,7 +286,7 @@ const postgresqlHelper = (function () {
     await insertStudyAccesses(user.study_accesses, user.pseudonym, t);
   }
 
-  function getPrimaryStudyOfProband(username) {
+  async function getPrimaryStudyOfProband(username) {
     return db.one(
       'SELECT s.* FROM studies as s JOIN study_users as su ON s.name = su.study_id WHERE su.user_id = $(username) LIMIT 1',
       { username }
@@ -309,13 +309,6 @@ const postgresqlHelper = (function () {
     }
   }
 
-  async function activatePlannedProband(user, requester) {
-    return await db.oneOrNone(
-      'UPDATE planned_probands SET activated_at=$1 WHERE user_id = $2 AND user_id=ANY(SELECT user_id FROM study_planned_probands WHERE study_id=ANY(SELECT study_id FROM study_users WHERE lower(user_id) = lower($3))) RETURNING *',
-      [new Date(), user.pseudonym, requester]
-    );
-  }
-
   async function insertStudyAccesses(study_accesses, user_id, t) {
     for (let i = 0; i < (study_accesses || []).length; i++) {
       await t.none('INSERT INTO study_users VALUES($1:csv)', [
@@ -334,95 +327,7 @@ const postgresqlHelper = (function () {
     });
   }
 
-  async function createProband(user) {
-    return await db.tx(async (t) => {
-      let existingAccesses = [];
-      let primaryStudy = null;
-
-      if (user.ids) {
-        // Existing proband received a pseudonym
-        existingAccesses = await t.manyOrNone(
-          'SELECT * FROM study_users WHERE user_id=$1',
-          [user.pseudonym]
-        );
-      }
-
-      // Get primary study to use opt-in-logging setting from study for new proband
-      // If proband had no studies before -> make sure to use opt-in-logging from new primary study
-      if (existingAccesses.length === 0) {
-        primaryStudy = await getPrimaryStudyFromStudyAccesses(
-          user.study_accesses,
-          t
-        );
-      }
-
-      const proband = await t.one(
-        `
-        UPDATE users SET 
-          compliance_labresults=$(compliance_labresults), 
-          compliance_samples=$(compliance_samples),
-          compliance_bloodsamples=$(compliance_bloodsamples), 
-          study_center=$(study_center),
-          examination_wave=$(examination_wave)
-          ${primaryStudy ? ', logging_active=$(logging_active)' : ''}
-        WHERE username=$(pseudonym) 
-        RETURNING username AS pseudonym
-        `,
-        {
-          compliance_labresults: user.compliance_labresults,
-          compliance_samples: user.compliance_samples,
-          compliance_bloodsamples: user.compliance_bloodsamples,
-          study_center: user.study_center,
-          examination_wave: user.examination_wave,
-          pseudonym: user.pseudonym,
-          logging_active: primaryStudy
-            ? !primaryStudy.has_logging_opt_in
-            : undefined,
-        }
-      );
-
-      const newStudyAccesses = user.study_accesses.filter(
-        (studyAccess) =>
-          !existingAccesses.find((ea) => ea.study_id === studyAccess)
-      );
-
-      await insertStudyAccesses(newStudyAccesses, user.pseudonym, t);
-      return proband;
-    });
-  }
-
-  async function createIDSProband(user) {
-    return await db.tx(async (t) => {
-      // Get primary study to use opt-in-logging setting from study for new proband
-      const primaryStudy = await getPrimaryStudyFromStudyAccesses(
-        user.study_accesses,
-        t
-      );
-
-      const newProband = await t.one(
-        `
-        UPDATE users SET 
-          username=$(username), 
-          ids=$(ids),
-          logging_active=$(logging_active)
-        WHERE username=$(ids) 
-        RETURNING username AS pseudonym
-        `,
-        {
-          username: user.ids,
-          ids: user.ids,
-          logging_active: primaryStudy
-            ? !primaryStudy.has_logging_opt_in
-            : true,
-        }
-      );
-
-      await insertStudyAccesses(user.study_accesses, user.ids, t);
-      return newProband;
-    });
-  }
-
-  function changeTestProbandState(userName, isTestProband, requester) {
+  async function changeTestProbandState(userName, isTestProband, requester) {
     return db.one(
       'UPDATE users set is_test_proband=$1 WHERE username=$2 AND account_status != $3 AND account_status != $4 AND username=ANY(SELECT user_id FROM study_users WHERE study_id=ANY(SELECT study_id FROM study_users WHERE user_id=$5)) RETURNING username',
       [isTestProband, userName, 'deleted', 'deactivated', requester]
@@ -478,7 +383,6 @@ const postgresqlHelper = (function () {
     return myDb.one(
       `UPDATE users
              SET password='',
-                 fcm_token=null,
                  first_logged_in_at=null,
                  notification_time=null,
                  logged_in_with=null,
@@ -1000,8 +904,8 @@ const postgresqlHelper = (function () {
     );
   }
 
-  function deleteUser(username) {
-    return db.tx((t) => {
+  async function deleteUser(username) {
+    return db.tx(async (t) => {
       return t
         .one('SELECT * FROM users WHERE username=$1 AND role IN ($2:csv)', [
           username,
@@ -1012,12 +916,12 @@ const postgresqlHelper = (function () {
             'EinwilligungsManager',
           ],
         ])
-        .then(function () {
+        .then(async function () {
           return t
             .none('DELETE FROM study_users WHERE user_id=$(user_id)', {
               user_id: username,
             })
-            .then(function () {
+            .then(async function () {
               return t
                 .one(
                   'DELETE FROM users WHERE username=$(user_id) RETURNING username,role,first_logged_in_at',
@@ -1056,8 +960,8 @@ const postgresqlHelper = (function () {
 
     if (status === 'deactivated') {
       await myDb.none(
-        'UPDATE users SET password=$1, fcm_token=$2 WHERE username=$3 AND account_status=$4 AND username=ANY(SELECT user_id FROM study_users WHERE study_id=ANY(SELECT study_id FROM study_users WHERE user_id=$5))',
-        ['', null, user_id, oldStatus, requester]
+        'UPDATE users SET password=$1 WHERE username=$2 AND account_status=$3 AND username=ANY(SELECT user_id FROM study_users WHERE study_id=ANY(SELECT study_id FROM study_users WHERE user_id=$4))',
+        ['', user_id, oldStatus, requester]
       );
     }
 
@@ -1067,21 +971,21 @@ const postgresqlHelper = (function () {
     );
   }
 
-  function updateUserSettings(userName, userSettings) {
+  async function updateUserSettings(userName, userSettings) {
     return db.one(
       'UPDATE users SET notification_time=$1, logging_active=$2 WHERE username=$3 RETURNING notification_time, logging_active',
       [userSettings.notification_time, userSettings.logging_active, userName]
     );
   }
 
-  function getUserSettings(userName) {
+  async function getUserSettings(userName) {
     return db.one(
       'SELECT notification_time, logging_active FROM users WHERE username=$1',
       [userName]
     );
   }
 
-  function getStudyAccessesForUser(userName) {
+  async function getStudyAccessesForUser(userName) {
     return db.many('SELECT * FROM study_users WHERE user_id=$1', [userName]);
   }
 
@@ -1188,12 +1092,6 @@ const postgresqlHelper = (function () {
       { sampleIds, userId }
     );
     return notAllowedSamples.length === sampleIds.length;
-  }
-
-  async function getMobileVersion() {
-    return await db.one(
-      'SELECT * FROM app_info WHERE release_date = ( SELECT MAX(release_date) FROM app_info) '
-    );
   }
 
   async function getProbandsToContact(requesterId) {
@@ -1395,22 +1293,6 @@ const postgresqlHelper = (function () {
      * @returns {Promise} a resolved promise with the created proband or a rejected promise with the error
      */
     createSormasProband: createSormasProband,
-
-    /**
-     * @function
-     * @description creates the proband
-     * @memberof module:postgresqlHelper
-     * @returns {Promise} a resolved promise with the created proband or a rejected promise with the error
-     */
-    createProband: createProband,
-
-    /**
-     * @function
-     * @description creates the ids proband
-     * @memberof module:postgresqlHelper
-     * @returns {Promise} a resolved promise with the created ids proband or a rejected promise with the error
-     */
-    createIDSProband: createIDSProband,
 
     /**
      * @function
@@ -1682,13 +1564,6 @@ const postgresqlHelper = (function () {
 
     /**
      * @function
-     * @description activates the planned proband
-     * @memberof module:postgresqlHelper
-     */
-    activatePlannedProband: activatePlannedProband,
-
-    /**
-     * @function
      * @description gets the planned proband
      * @memberof module:postgresqlHelper
      * @param {array} probands the array of planned probands to create
@@ -1734,14 +1609,6 @@ const postgresqlHelper = (function () {
      * @returns {Promise} true if all samples belong to the user, otherwise false
      */
     areSampleIdsFromUser: areSampleIdsFromUser,
-
-    /**
-     * @function
-     * @description gets the mobile app version
-     * @memberof module:postgresqlHelper
-     * @returns {Promise} a resolved promise with the found mobile version or a rejected promise with the error
-     */
-    getMobileVersion: getMobileVersion,
 
     /**
      * @function

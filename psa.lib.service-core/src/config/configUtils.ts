@@ -32,6 +32,25 @@ export class ConfigUtils {
     return result;
   }
 
+  /**
+   * Reads a numeric environment variable by its name. Throws error if it is not a valid number.
+   * @param key name of environment variable
+   * @param fallback value to use if variable is undefined
+   */
+  public static getEnvVariableInt(key: string, fallback?: number): number {
+    const result = ConfigUtils.getEnvVariable(key, fallback?.toString());
+    const parsed = Number.parseInt(result);
+    if (result !== parsed.toString()) {
+      if (process.env['IGNORE_MISSING_CONFIG'] === '1') {
+        return 0;
+      }
+      throw new Error(
+        `config variable '${key}' is not a valid number '${result}'`
+      );
+    }
+    return parsed;
+  }
+
   public static getFileContent(path: string): Buffer {
     try {
       // path is always a string which is literally defined wihtin this class

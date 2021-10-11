@@ -4,96 +4,132 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  AlertController,
-  IonicModule,
-  LoadingController,
-  MenuController,
-  Platform,
-} from '@ionic/angular';
-import { ActivatedRoute, Router } from '@angular/router';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { MockComponent, MockPipe } from 'ng-mocks';
-import SpyObj = jasmine.SpyObj;
+import { AlertController, LoadingController } from '@ionic/angular';
+import { Router } from '@angular/router';
+import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 
 import { LoginPage } from './login.page';
-import { LocaleService } from '../../shared/services/locale/locale.service';
-import { AuthService } from '../auth.service';
-import { ToastPresenterService } from '../../shared/services/toast-presenter/toast-presenter.service';
 import { AuthClientService } from '../auth-client.service';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
-import { InputPasswordComponent } from '../input-password/input-password.component';
+import { AuthModule } from '../auth.module';
+import { fakeAsync, tick } from '@angular/core/testing';
+import { User } from '../auth.model';
+import SpyObj = jasmine.SpyObj;
 
 describe('LoginPage', () => {
   let component: LoginPage;
-  let fixture: ComponentFixture<LoginPage>;
+  let fixture: MockedComponentFixture<LoginPage>;
 
-  let localeService: SpyObj<LocaleService>;
-  let platform: SpyObj<Platform>;
   let loadingCtrl: SpyObj<LoadingController>;
   let authClient: SpyObj<AuthClientService>;
-  let auth: SpyObj<AuthService>;
   let router: SpyObj<Router>;
-  let menuCtrl: SpyObj<MenuController>;
-  let toastPresenter: SpyObj<ToastPresenterService>;
   let alertCtrl: SpyObj<AlertController>;
-  let translate: SpyObj<TranslateService>;
   let endpoint: SpyObj<EndpointService>;
-  let activatedRoute;
 
-  beforeEach(() => {
-    localeService = jasmine.createSpyObj('LocaleService', ['currentLocale']);
-    platform = jasmine.createSpyObj('Platform', ['is']);
-    loadingCtrl = jasmine.createSpyObj('LoadingController', ['create']);
-    authClient = jasmine.createSpyObj('AuthClientService', [
+  beforeEach(async () => {
+    loadingCtrl = jasmine.createSpyObj(LoadingController, ['create']);
+    authClient = jasmine.createSpyObj(AuthClientService, [
       'login',
       'loginWithToken',
     ]);
-    auth = jasmine.createSpyObj('AuthService', ['emitLogin']);
-    router = jasmine.createSpyObj('Router', ['navigate']);
-    menuCtrl = jasmine.createSpyObj('MenuController', ['enable']);
-    toastPresenter = jasmine.createSpyObj('ToastPresenterService', [
-      'presentToast',
+    router = jasmine.createSpyObj(Router, ['navigate']);
+    alertCtrl = jasmine.createSpyObj(AlertController, ['create']);
+    endpoint = jasmine.createSpyObj(EndpointService, [
+      'setEndpointForUser',
+      'isEndpointCompatible',
     ]);
-    alertCtrl = jasmine.createSpyObj('AlertController', ['create']);
-    translate = jasmine.createSpyObj('TranslateService', ['instant']);
-    endpoint = jasmine.createSpyObj('EndpointService', ['isCustomEndpoint']);
-    activatedRoute = {
-      snapshot: {
-        queryParamMap: jasmine.createSpyObj('ActivatedRouteSnapshot', ['get']),
-      },
-    };
 
-    TestBed.configureTestingModule({
-      declarations: [
-        LoginPage,
-        MockPipe(TranslatePipe),
-        MockComponent(InputPasswordComponent),
-      ],
-      imports: [IonicModule.forRoot()],
-      providers: [
-        { provide: LocaleService, useValue: localeService },
-        { provide: Platform, useValue: platform },
-        { provide: LoadingController, useValue: loadingCtrl },
-        { provide: AuthClientService, useValue: authClient },
-        { provide: AuthService, useValue: auth },
-        { provide: Router, useValue: router },
-        { provide: MenuController, useValue: menuCtrl },
-        { provide: ToastPresenterService, useValue: toastPresenter },
-        { provide: AlertController, useValue: alertCtrl },
-        { provide: TranslateService, useValue: translate },
-        { provide: ActivatedRoute, useValue: activatedRoute },
-        { provide: EndpointService, useValue: endpoint },
-      ],
-    }).compileComponents();
+    const loading = {
+      present: () => Promise.resolve(),
+      dismiss: () => Promise.resolve(true),
+    } as HTMLIonLoadingElement;
+    loadingCtrl.create.and.resolveTo(loading);
 
-    fixture = TestBed.createComponent(LoginPage);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
+    const alert = {
+      present: () => Promise.resolve(),
+      dismiss: () => Promise.resolve(true),
+    } as HTMLIonAlertElement;
+    alertCtrl.create.and.resolveTo(alert);
+
+    await MockBuilder(LoginPage, AuthModule)
+      .mock(EndpointService, endpoint)
+      .mock(AlertController, alertCtrl)
+      .mock(LoadingController, loadingCtrl)
+      .mock(AuthClientService, authClient)
+      .mock(Router, router);
   });
+
+  beforeEach(fakeAsync(() => {
+    // Create component
+    fixture = MockRender(LoginPage);
+    component = fixture.point.componentInstance;
+    fixture.detectChanges();
+    tick(); // wait for init to finish
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  describe('login', () => {
+    it('should set the endpoint and send a login request', async () => {
+      const username = 'Test-1234567890';
+      endpoint.setEndpointForUser.and.returnValue(true);
+      endpoint.isEndpointCompatible.and.resolveTo(true);
+      authClient.login.and.resolveTo(createUser({ username }));
+      component.username = username;
+      await component.login();
+      expect(authClient.login).toHaveBeenCalled();
+      expect(router.navigate).toHaveBeenCalledOnceWith(['home']);
+    });
+  });
 });
+
+function createUser(overwrite: Partial<User> = {}): User {
+  return {
+    compliance_bloodsamples: false,
+    compliance_labresults: false,
+    compliance_samples: false,
+    examination_wave: 0,
+    first_logged_in_at: '',
+    id: 0,
+    logged_in_with: '',
+    logging_active: false,
+    needs_material: false,
+    password: '',
+    pw_change_needed: false,
+    role: '',
+    study_center: '',
+    token_login:
+      btoa(JSON.stringify({ alg: 'RS512', typ: 'JWT' })) +
+      '.' +
+      btoa(
+        JSON.stringify({
+          id: 2,
+          username: overwrite?.username ?? '',
+          iat: Date.now(),
+          exp: Date.now() + 60000,
+        })
+      ) +
+      '.' +
+      btoa('signature'),
+    username: '',
+    token:
+      btoa(JSON.stringify({ alg: 'RS512', typ: 'JWT' })) +
+      '.' +
+      btoa(
+        JSON.stringify({
+          id: 1,
+          role: 'Proband',
+          username: overwrite?.username ?? '',
+          groups: ['test study'],
+          locale: 'de-DE',
+          app: 'web',
+          iat: Date.now(),
+          exp: Date.now() + 60000,
+        })
+      ) +
+      '.' +
+      btoa('signature'),
+  };
+}

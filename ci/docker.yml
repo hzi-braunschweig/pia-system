@@ -1,6 +1,6 @@
 build-docker:
   stage: prepare
-  image: docker:20.10.8@sha256:ddf0d732dcbc3e2087836e06e50cc97e21bfb002a49c7d0fe767f6c31e01d65f
+  image: docker:20.10.8@sha256:63107bd6ce718f130bb2668704239467b74f034c446f9e9c4ae1ffa5ddf4e3dd
   # downloads may fail
   retry: 2
   script:
@@ -9,13 +9,19 @@ build-docker:
     - sh -c "docker login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
     - >
       for JOB in $JOBS_DOCKER; do
+        echo Build $JOB
+        echo -------------------
         docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$IMAGE_ID --build-arg DIR=$JOB --build-arg VERSION_INFO_PIPELINE_ID=$IMAGE_ID --build-arg VERSION_INFO_GIT_HASH=$CI_COMMIT_SHA --build-arg VERSION_INFO_GIT_REF=$CI_COMMIT_REF_SLUG -f $JOB/Dockerfile .
         docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$IMAGE_ID-with-faked-secrets --build-arg BASE=$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$IMAGE_ID -f psa.utils.scripts/secrets-dockerfile/Dockerfile .
+        echo -------------------
       done
     - >
       for JOB in $JOBS_DOCKER; do
+        echo Push $JOB
+        echo -------------------
         docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$IMAGE_ID
         docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB:$IMAGE_ID-with-faked-secrets
+        echo -------------------
       done
   tags:
     - docker
@@ -31,7 +37,7 @@ build-docker:
 
 push-branch-images:
   stage: push
-  image: docker:20.10.8@sha256:ddf0d732dcbc3e2087836e06e50cc97e21bfb002a49c7d0fe767f6c31e01d65f
+  image: docker:20.10.8@sha256:63107bd6ce718f130bb2668704239467b74f034c446f9e9c4ae1ffa5ddf4e3dd
   variables:
     GIT_STRATEGY: none
   dependencies: []

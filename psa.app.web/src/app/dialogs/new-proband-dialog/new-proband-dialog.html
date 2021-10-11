@@ -4,102 +4,102 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<div *ngIf="form">
-  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
-  <form [formGroup]="form" (ngSubmit)="submit(form)">
-    <h1 mat-dialog-title>{{ 'PROBANDEN.NEW_PROBAND' | translate }}</h1>
-    <mat-dialog-content>
-      <mat-grid-list [cols]="1" rowHeight="2rem">
-        <mat-grid-tile [rowspan]="2">
-          <mat-form-field>
-            <input
-              matInput
-              formControlName="pseudonym"
-              placeholder="{{ 'PROBAND.PSEUDONYM' | translate }}"
-            />
-          </mat-form-field>
-        </mat-grid-tile>
-        <mat-grid-tile [rowspan]="1">
-          <mat-checkbox
-            fxFlex
-            fxLayoutAlign="start center"
-            formControlName="compliance_labresults"
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+<form *ngIf="!isLoading" [formGroup]="form" (ngSubmit)="submit()">
+  <h1 mat-dialog-title>{{ 'PROBANDEN.NEW_PROBAND' | translate }}</h1>
+  <mat-dialog-content>
+    <mat-grid-list [cols]="1" rowHeight="2rem">
+      <mat-grid-tile [rowspan]="2">
+        <mat-form-field>
+          <input
+            matInput
+            formControlName="pseudonym"
+            placeholder="{{ 'PROBAND.PSEUDONYM' | translate }}"
+            data-unit="new-proband-pseudonym"
+          />
+        </mat-form-field>
+      </mat-grid-tile>
+      <mat-grid-tile [rowspan]="1">
+        <mat-checkbox
+          fxFlex
+          fxLayoutAlign="start center"
+          formControlName="complianceLabresults"
+          data-unit="new-proband-compliance-labresults"
+        >
+          {{'PROBAND.COMPLIANCE_LABRESULTS' | translate }}
+        </mat-checkbox>
+      </mat-grid-tile>
+      <mat-grid-tile [rowspan]="1">
+        <mat-checkbox
+          fxFlex
+          fxLayoutAlign="start center"
+          formControlName="complianceSamples"
+          data-unit="new-proband-compliance-samples"
+        >
+          {{'PROBAND.COMPLIANCE_SAMPLES' | translate }}
+        </mat-checkbox>
+      </mat-grid-tile>
+      <mat-grid-tile [rowspan]="1">
+        <mat-checkbox
+          fxFlex
+          fxLayoutAlign="start center"
+          formControlName="complianceBloodsamples"
+          data-unit="new-proband-compliance-bloodsamples"
+        >
+          {{'PROBAND.COMPLIANCE_BLOODSAMPLES' | translate }}
+        </mat-checkbox>
+      </mat-grid-tile>
+      <mat-grid-tile [rowspan]="2">
+        <mat-form-field>
+          <input
+            matInput
+            formControlName="studyCenter"
+            placeholder="{{ 'PROBAND.STUDY_CENTER' | translate }}"
+            data-unit="new-proband-study-center"
+          />
+        </mat-form-field>
+      </mat-grid-tile>
+      <mat-grid-tile [rowspan]="2">
+        <mat-form-field>
+          <input
+            matInput
+            formControlName="examinationWave"
+            type="number"
+            placeholder="{{ 'PROBAND.EXAMINATION_WAVE' | translate }}"
+            data-unit="new-proband-examination-wave"
+          />
+        </mat-form-field>
+      </mat-grid-tile>
+      <mat-grid-tile [rowspan]="2">
+        <mat-form-field>
+          <mat-select
+            id="selectstudies"
+            [multiple]="false"
+            placeholder="{{ 'PLANNED_PROBANDS.STUDY_ID' | translate }}"
+            formControlName="studyName"
           >
-            {{'PROBAND.COMPLIANCE_LABRESULTS' | translate }}
-          </mat-checkbox>
-        </mat-grid-tile>
-        <mat-grid-tile [rowspan]="1">
-          <mat-checkbox
-            fxFlex
-            fxLayoutAlign="start center"
-            formControlName="compliance_samples"
-          >
-            {{'PROBAND.COMPLIANCE_SAMPLES' | translate }}
-          </mat-checkbox>
-        </mat-grid-tile>
-        <mat-grid-tile [rowspan]="1">
-          <mat-checkbox
-            fxFlex
-            fxLayoutAlign="start center"
-            formControlName="compliance_bloodsamples"
-          >
-            {{'PROBAND.COMPLIANCE_BLOODSAMPLES' | translate }}
-          </mat-checkbox>
-        </mat-grid-tile>
-        <mat-grid-tile [rowspan]="2">
-          <mat-form-field>
-            <input
-              matInput
-              formControlName="study_center"
-              placeholder="{{ 'PROBAND.STUDY_CENTER' | translate }}"
-            />
-          </mat-form-field>
-        </mat-grid-tile>
-        <mat-grid-tile [rowspan]="2">
-          <mat-form-field>
-            <input
-              matInput
-              formControlName="examination_wave"
-              type="number"
-              placeholder="{{ 'PROBAND.EXAMINATION_WAVE' | translate }}"
-            />
-          </mat-form-field>
-        </mat-grid-tile>
-        <mat-grid-tile [rowspan]="2">
-          <mat-form-field>
-            <mat-select
-              id="selectstudies"
-              [multiple]="true"
-              placeholder="{{ 'PLANNED_PROBANDS.STUDY_IDS' | translate }}"
-              formControlName="study_accesses"
+            <mat-select-search
+              [formControl]="studiesFilterCtrl"
+              [noEntriesFoundLabel]="null"
+              data-unit="new-proband-study-name"
+            ></mat-select-search>
+            <mat-option
+              *ngFor="let study of filteredStudies | async"
+              [value]="study"
             >
-              <mat-select-search
-                [formControl]="studiesFilterCtrl"
-              ></mat-select-search>
-              <mat-option
-                value="allStudiesCheckbox"
-                (click)="onSelectAllStudiesClicked()"
-              >
-                {{ 'CONTACTS.SELECT_ALL' | translate }}
-              </mat-option>
-              <mat-option
-                *ngFor="let study of filteredStudies | async"
-                [value]="study"
-              >
-                {{ study }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </mat-grid-tile>
-      </mat-grid-list>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button type="button" (click)="dialogRef.close()">
-        {{ 'DIALOG.CANCEL' | translate }}
-      </button>
-      <button mat-button type="submit" [disabled]="!form.valid || isLoading">
-        {{ 'DIALOG.REGISTER' | translate }}
-      </button>
-    </mat-dialog-actions>
-  </form>
-</div>
+              {{ study }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <button mat-button mat-dialog-close type="button">
+      {{ 'DIALOG.CANCEL' | translate }}
+    </button>
+    <button mat-button type="submit" [disabled]="!form.valid || isLoading">
+      {{ 'DIALOG.REGISTER' | translate }}
+    </button>
+  </mat-dialog-actions>
+</form>

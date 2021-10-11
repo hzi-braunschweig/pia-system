@@ -18,13 +18,14 @@ export function validateQuestionnaireInstanceCount(
   return (formGroup: FormGroup): ValidationErrors | null => {
     const cycleAmount = formGroup.get('cycle_amount')?.value || fallbackValue;
     const cycleUnit = formGroup.get('cycle_unit').value;
+    const cyclePerDay = formGroup.get('cycle_per_day')?.value || fallbackValue;
     const deactivateAfterDays =
       formGroup.get('deactivate_after_days')?.value || fallbackValue;
 
     let expectedTotalInstances: number;
     switch (cycleUnit) {
       case 'hour':
-        expectedTotalInstances = deactivateAfterDays * (24 / cycleAmount);
+        expectedTotalInstances = deactivateAfterDays * cyclePerDay;
         break;
       case 'day':
         expectedTotalInstances = deactivateAfterDays / cycleAmount;

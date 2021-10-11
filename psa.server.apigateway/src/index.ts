@@ -5,25 +5,37 @@
  */
 
 import { Proxy } from './proxy';
-import { ISsl, HttpServer } from './httpServer';
+import { HttpServer, ISsl } from './httpServer';
 import config from './config';
 import { RouteMapper } from './routeMapper';
 import { Color } from './color';
 import { RedirectingHttpServer } from './redirectingHttpServer';
 import * as fs from 'fs';
+import { isProxyRoute, ResponseRoute } from './proxyRoute';
 
 const HTTP_PORT = 80;
 
 const isInternalSslEnabled = config.web.internal.protocol !== 'http';
 const isExternalSslEnabled = config.web.external.protocol !== 'http';
 
-const routes = RouteMapper.sortRoutes(
-  RouteMapper.mapConfigRoutes(config.routes, {
+const metaDataRoute: ResponseRoute = {
+  path: '/api/v1/',
+  response: {
+    headers: {
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(config.publicMetaData),
+  },
+};
+
+const routes = RouteMapper.sortRoutes([
+  metaDataRoute,
+  ...RouteMapper.mapConfigRoutes(config.routes, {
     isDevelopmentSystem: config.system.isDevelopment,
     isSslEnabled: isInternalSslEnabled,
     defaultPort: config.web.internal.port,
-  })
-);
+  }),
+]);
 
 RouteMapper.checkRoutes(routes);
 
@@ -45,6 +57,7 @@ console.log(
 );
 
 for (const route of routes) {
+  if (!isProxyRoute(route)) continue;
   const target = [
     Color.protocol(route.upstream.protocol),
     '://',

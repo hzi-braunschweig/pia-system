@@ -14,9 +14,23 @@ Run local development server
 
 - `npm run start:browser`
 
-### iOS
+### Device / Emulator
 
-A Mac with Xcode installed is needed to build the iOS App. To install XCode execute:
+To run the app on a device or an emulator you need to install the following packages globally:
+
+- `npm install -g native-run`
+- `npm install -g cordova`
+- `npm install -g @ionic/cli`
+
+After installing additional dependencies (see below) you can start the app by running
+`start:<plattform>:<emulator|device>`.
+
+- You can choose a device if you add ` -- --target <ID>`
+- You can get a list of supported devices by adding ` -- --list`
+
+#### iOS
+
+For building the iOS app you will need a Mac with Xcode installed. To install XCode execute:
 
 - `xcode-select --install`
 
@@ -30,23 +44,24 @@ Run the app with live reload:
 - Emulator: `npm run start:ios:emulator`
 - Device: `npm run start:ios:device`
 
+Debug in Safari:
+
+- open Safari
+- enable developer options in Safari settings
+- click on Developer
+- search for the emulator or device and click on the app
+
 Further reading: https://ionicframework.com/docs/developing/ios
 
-### Android
+#### Android
 
-You need the Android SDK, Java JDK **8** and the Gradle build tool to build the Android App.
-
-You also need to install cordova globally:
-
-- `npm install -g native-run`
-- `npm install -g cordova`
+For building the Android app you will need the Android SDK, Java JDK **8** and the Gradle build tool.
 
 In order to use livereload you need to allow cleartext traffic to your computer's local IP:
 
 - Open `/resources/android/xml/network_security_config.xml`
 - Add this `<domain includeSubdomains="true"><!-- YOUR IP HERE --></domain>` within domain-config
 - You must not add a protocol or port, only the pure IP
-- Change the widget id from pia.ionic.ios to de.pia.app
 - Do not commit these changes to git!
 
 Run the app with live reload:

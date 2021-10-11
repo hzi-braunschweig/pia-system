@@ -1,0 +1,7 @@
+- name: PIA Setup
+  become: yes
+  gather_facts: no
+  hosts: all
+
+  roles:
+    - role: 'roles/pia'

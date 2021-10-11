@@ -15,7 +15,7 @@ import {
   setDay,
   startOfToday,
 } from 'date-fns';
-import { db } from '../db';
+import { pgp, db } from '../db';
 import { asyncForEach, asyncMap } from '@pia/lib-service-core';
 import {
   CycleUnit,
@@ -63,25 +63,27 @@ export class QuestionnaireInstancesService {
   private static readonly DEFAULT_TIME_SEC = 59;
   private static readonly DEFAULT_TIME_MS = 0;
 
+  private static readonly csAnswers = new pgp.helpers.ColumnSet(
+    [
+      'questionnaire_instance_id',
+      'question_id',
+      'answer_option_id',
+      'versioning',
+      'value',
+    ],
+    { table: 'answers' }
+  );
+
+  private static readonly csQuestionnaireInstances = new pgp.helpers.ColumnSet(
+    ['?id', 'status'],
+    { table: 'questionnaire_instances' }
+  );
+
   /**
    * Activates all questionnaire instances that have to be activated
    */
   public static async checkAndUpdateQuestionnaireInstancesStatus(): Promise<void> {
     this.logger.info('Checking Questionnaire Instances...');
-    const csQuestionnaireInstances = new db.$config.pgp.helpers.ColumnSet(
-      ['?id', 'status'],
-      { table: 'questionnaire_instances' }
-    );
-    const csAnswers = new db.$config.pgp.helpers.ColumnSet(
-      [
-        'questionnaire_instance_id',
-        'question_id',
-        'answer_option_id',
-        'versioning',
-        'value',
-      ],
-      { table: 'answers' }
-    );
 
     await db.tx(async (t) => {
       const qInstances: BaseQuestionnaireInstance[] = await t.manyOrNone(`
@@ -94,17 +96,18 @@ export class QuestionnaireInstancesService {
                        questionnaires.expires_after_days,
                        questionnaires.finalises_after_days,
                        questionnaires.type,
-                       questionnaires.id as questionnaire_id,
-                       qi.questionnaire_version as questionnaire_version,
-                       questionnaires.name as questionnaire_name,
+                       questionnaires.id        AS questionnaire_id,
+                       qi.questionnaire_version AS questionnaire_version,
+                       questionnaires.name      AS questionnaire_name,
                        users.ids
-                FROM questionnaire_instances as qi
+                FROM questionnaire_instances AS qi
                          JOIN questionnaires
                               ON qi.questionnaire_id = questionnaires.id AND
                                  qi.questionnaire_version = questionnaires.version
                          JOIN users ON qi.user_id = users.username
                 WHERE (status = 'inactive' OR status = 'active' OR status = 'in_progress' OR
-                       status = 'released_once')`);
+                       status = 'released_once')
+                  AND date_of_issue <= NOW()`);
 
       const vQuestionnaireInstances: QuestionnaireInstanceStatusWithIdentifier[] =
         [];
@@ -170,7 +173,7 @@ export class QuestionnaireInstancesService {
             ['released_twice', instanceIdsToReleaseTwice]
           );
           const v1Answers = await t.manyOrNone(
-            'SELECT questionnaire_instance_id, question_id, answer_option_id, 2 versioning, value FROM answers WHERE questionnaire_instance_id IN($1:csv) AND versioning=1',
+            'SELECT questionnaire_instance_id, question_id, answer_option_id, 2 as versioning, value FROM answers WHERE questionnaire_instance_id IN($1:csv) AND versioning=1',
             [instanceIdsToReleaseTwice]
           );
           await t.none(
@@ -181,9 +184,9 @@ export class QuestionnaireInstancesService {
             `Finalized ${instanceIdsToReleaseTwice.length} instances. New status is "released_twice".`
           );
           if (v1Answers.length > 0) {
-            const qAnswers = db.$config.pgp.helpers.insert(
+            const qAnswers = pgp.helpers.insert(
               v1Answers,
-              csAnswers
+              QuestionnaireInstancesService.csAnswers
             );
             await t.none(qAnswers);
             this.logger.info(
@@ -193,9 +196,9 @@ export class QuestionnaireInstancesService {
         }
         if (vQuestionnaireInstances.length > 0) {
           const qUpdateQuestionnaireInstances = `${
-            db.$config.pgp.helpers.update(
+            pgp.helpers.update(
               vQuestionnaireInstances,
-              csQuestionnaireInstances
+              QuestionnaireInstancesService.csQuestionnaireInstances
             ) as string
           }WHERE v.id = t.id RETURNING *`;
           await t.many(qUpdateQuestionnaireInstances);
@@ -723,16 +726,7 @@ export class QuestionnaireInstancesService {
     if (cycleUnit === 'hour') {
       return QuestionnaireInstancesService.addHours;
     } else {
-      return (
-        date: Date,
-        amount: number,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        cycle_first_hour: number,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        dayLimitReached: boolean
-      ): Date => {
+      return (date: Date, amount: number): Date => {
         if (cycleUnit === 'day') {
           return addDays(date, amount);
           // a general else clause which catches all other values is not what we want here

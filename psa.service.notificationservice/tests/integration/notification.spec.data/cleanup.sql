@@ -9,6 +9,8 @@ WHERE user_id IN (
                   'QTestUntersuchungsteam'
     );
 
+DELETE FROM fcm_tokens;
+
 DELETE
 FROM study_users
 WHERE user_id IN (

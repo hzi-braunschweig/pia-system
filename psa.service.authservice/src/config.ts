@@ -35,6 +35,16 @@ const conf = {
     ConfigUtils.getEnvVariable('USER_PASSWORD_LENGTH'),
     10
   ),
+  ipCheckEnabled:
+    ConfigUtils.getEnvVariable(
+      'IP_CHECK_ENABLED',
+      'false'
+    ).toLocaleLowerCase() === 'true',
+  certCheckEnabled:
+    ConfigUtils.getEnvVariable(
+      'CERT_CHECK_ENABLED',
+      'false'
+    ).toLocaleLowerCase() === 'true',
   sormasOnPiaUser: ConfigUtils.getEnvVariable('SORMAS_ON_PIA_USER', ''),
   sormasOnPiaPassword: ConfigUtils.getEnvVariable('SORMAS_ON_PIA_PASSWORD', ''),
 };

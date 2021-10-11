@@ -31,8 +31,8 @@ export class ChangePasswordPage {
     this.activatedRoute.snapshot.queryParamMap.get('returnTo');
 
   constructor(
+    public auth: AuthService,
     private authClient: AuthClientService,
-    private auth: AuthService,
     private toastPresenter: ToastPresenterService,
     private translate: TranslateService,
     private loadingCtrl: LoadingController,
@@ -80,14 +80,6 @@ export class ChangePasswordPage {
     this.form.get('newPassword1').setValue('');
     this.form.get('newPassword2').setValue('');
     this.onChangePassword();
-  }
-
-  onLogout() {
-    if (this.auth.isAuthenticated()) {
-      this.authClient.logout(this.auth.getCurrentUser().username);
-    }
-    this.auth.resetCurrentUser();
-    this.router.navigate(['auth', 'login']);
   }
 
   private async changePassword(passwordChange: PasswordChange) {

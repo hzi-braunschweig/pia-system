@@ -278,15 +278,15 @@ VALUES ('internal_last', 777779, NULL, NULL, '==', 'Ja', 777777, 777777);
 INSERT INTO users
 VALUES ('QExportTestProband1',
         '8225433d40a33c8cad99d05697c599f5aad03bbf7f74a87a0a19dc5f01cd831fd73efc5ab4a8bc37ad994ad05bd5390821fc7a23d3cf7f9a1ac0e0472a7dce0e',
-        'Proband', '', NULL);
+        'Proband', NULL);
 INSERT INTO users
 VALUES ('QExportTestProband2',
         '8225433d40a33c8cad99d05697c599f5aad03bbf7f74a87a0a19dc5f01cd831fd73efc5ab4a8bc37ad994ad05bd5390821fc7a23d3cf7f9a1ac0e0472a7dce0e',
-        'Proband', '', NULL);
+        'Proband', NULL);
 INSERT INTO users
 VALUES ('QExportTestForscher',
         '9dd01c80bb400e844cba017d2c1a70ac4a13f890fd39d19cbe0b05a9b6cc5805c9b1e8003d41123144db039df6cb9ad1383d3a387a55776105c89c94c92c5e45',
-        'Forscher', '', NULL);
+        'Forscher', NULL);
 
 INSERT INTO studies(name, description, has_logging_opt_in)
 VALUES ('ExportTestStudie', 'ExportTestStudie Beschreibung', FALSE);

@@ -58,9 +58,6 @@ describe('AccountStatusPipe', () => {
       first_logged_in_at: '2020-04-20T00:00:00.000Z',
       ids: null,
       is_test_proband: false,
-      age: 20,
-      password: null,
-      sex: null,
       studyNamesArray: [],
       needs_material: false,
       role: 'Proband',
@@ -69,6 +66,8 @@ describe('AccountStatusPipe', () => {
       compliance_bloodsamples: false,
       compliance_labresults: false,
       compliance_samples: false,
+      examination_wave: 0,
+      study_center: '',
     };
   }
 });

@@ -13,7 +13,7 @@ export class MessageQueueClientConnection {
 
   public constructor(
     private readonly options: {
-      hostname: string;
+      host: string;
       port?: number;
       username: string;
       password: string;
@@ -37,7 +37,7 @@ export class MessageQueueClientConnection {
     }
 
     this.connection = await amqp.connect({
-      hostname: this.options.hostname,
+      hostname: this.options.host,
       port: this.options.port,
       username: this.options.username,
       password: this.options.password,

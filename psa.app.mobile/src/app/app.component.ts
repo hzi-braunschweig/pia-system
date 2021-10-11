@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, Inject, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { AlertController, Platform } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
@@ -12,13 +12,11 @@ import { AppVersion } from '@ionic-native/app-version/ngx';
 import { TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from './auth/auth.service';
-import { AuthClientService } from './auth/auth-client.service';
 import { ComplianceType } from './compliance/compliance.model';
 import { ComplianceService } from './compliance/compliance-service/compliance.service';
 import { NotificationService } from './shared/services/notification/notification.service';
 import { EndpointService } from './shared/services/endpoint/endpoint.service';
 import { BadgeService } from './shared/services/badge/badge.service';
-import { DOCUMENT } from '@angular/common';
 
 interface AppPage {
   title: string;
@@ -45,13 +43,11 @@ export class AppComponent {
     private statusBar: StatusBar,
     private alertCtrl: AlertController,
     private translate: TranslateService,
-    private authClient: AuthClientService,
     private auth: AuthService,
     private compliance: ComplianceService,
     private notification: NotificationService,
     private endpoint: EndpointService,
-    private badgeService: BadgeService,
-    @Inject(DOCUMENT) private document: Document
+    private badgeService: BadgeService
   ) {
     this.onAppStart();
     this.auth.loggedIn.subscribe(() => this.onLogin());
@@ -122,24 +118,11 @@ export class AppComponent {
         },
         {
           text: this.translate.instant('GENERAL.OK'),
-          handler: () => this.logout(),
+          handler: () => void this.auth.logout(),
         },
       ],
     });
     alert.present();
-  }
-
-  private logout() {
-    try {
-      this.authClient.logout(this.auth.getCurrentUser().username);
-    } catch (error) {
-      console.error('Logout / Deactivation of notifications failed.', error);
-    }
-
-    this.auth.resetCurrentUser();
-
-    // do a full page reload in order to clear any cached views
-    this.document.defaultView.location.href = '/';
   }
 
   private async setupSideMenu() {

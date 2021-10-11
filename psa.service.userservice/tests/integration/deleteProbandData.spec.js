@@ -37,12 +37,10 @@ describe('delete proband data', () => {
       .resolves();
 
     await cleanUp();
-    await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
+    await db.none('INSERT INTO users VALUES ($1, $2, $3)', [
       'QTestProband1',
       '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
       'Proband',
-      '',
-      new Date(),
     ]);
     await db.none('INSERT INTO studies VALUES ($1, $2)', [
       'ApiTestStudie',

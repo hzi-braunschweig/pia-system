@@ -11,6 +11,7 @@ const fakeUserService = require('../services/fakeUserService.js');
 const blockedIPService = require('../services/blockedIPService.js');
 const localeHelper = require('../helpers/localeHelper.js');
 const jwtService = require('../services/jwtService');
+const { config } = require('../config');
 
 /**
  * @description HAPI Handler for login
@@ -38,7 +39,7 @@ const loginHandler = (function () {
     let checkISEnabled = false;
 
     // Cert check
-    if (process.env.CERT_CHECK_ENABLED === 'true') {
+    if (config.certCheckEnabled) {
       checkISEnabled = true;
       const xCCU = request.headers['x-client-certificate-used']; // e.g. '1' => true, it is used
       const xCCV = request.headers['x-client-certificate-validated']; // e.g. '0' => valid, no error code
@@ -71,7 +72,7 @@ const loginHandler = (function () {
     }
 
     // IP check
-    if (process.env.IP_CHECK_ENABLED === 'true') {
+    if (config.ipCheckEnabled) {
       checkISEnabled = true;
       let remoteIPs = [request.info.remoteAddress];
       const xFF = request.headers['x-forwarded-for'];

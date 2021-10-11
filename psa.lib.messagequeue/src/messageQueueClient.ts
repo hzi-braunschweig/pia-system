@@ -9,7 +9,7 @@ import * as amqp from 'amqplib';
 import { MessageQueueClientConnection } from './messageQueueClientConnection';
 import { MessageQueueClientHelper } from './messageQueueClientHelper';
 
-interface Producer<M> {
+export interface Producer<M> {
   publish: (message: M) => Promise<boolean>;
 }
 
@@ -46,19 +46,19 @@ export class MessageQueueClient extends MessageQueueClientConnection {
 
   public constructor({
     serviceName,
-    hostname,
+    host,
     port,
     username,
     password,
   }: {
     serviceName: string;
-    hostname: string;
+    host: string;
     port?: number;
     username: string;
     password: string;
   }) {
     super({
-      hostname,
+      host,
       port,
       username,
       password,

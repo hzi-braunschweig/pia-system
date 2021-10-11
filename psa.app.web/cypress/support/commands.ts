@@ -4,11 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import {
-  fetchPasswordForUserFromMailHog,
-  UserCredentials,
-} from './user.commands';
-
+import { fetchPasswordForUserFromMailHog } from './user.commands';
+import { CreateProbandRequest } from '../../src/app/psa.app.core/models/proband';
 import Chainable = Cypress.Chainable;
 
 const short = require('short-uuid');
@@ -94,11 +91,15 @@ export function createPlannedProband(probandPseudonym, UTToken): Chainable {
   });
 }
 
-export function createProband(body, UTToken): Chainable {
+export function createProband(
+  body: CreateProbandRequest,
+  studyName: string,
+  UTToken: string
+): Chainable {
   return cy.request({
     headers: { Authorization: UTToken },
     method: 'POST',
-    url: '/api/v1/user/probands',
+    url: `/api/v1/user/studies/${studyName}/probands`,
     body,
   });
 }
@@ -161,16 +162,14 @@ export function createConsentForStudy(consent, studyId, token?): Chainable {
   }
 }
 
-export function generateRandomProbandForStudy(studyId: string): any {
+export function generateRandomProbandForStudy(): CreateProbandRequest {
   return {
     pseudonym: `e2e-tn-${translator.new()}`,
-    compliance_labresults: false,
-    email: '',
-    compliance_samples: false,
-    compliance_bloodsamples: false,
-    study_center: 'hzi',
-    examination_wave: 1,
-    study_accesses: [studyId],
+    complianceLabresults: false,
+    complianceSamples: false,
+    complianceBloodsamples: false,
+    studyCenter: 'hzi',
+    examinationWave: 1,
   };
 }
 

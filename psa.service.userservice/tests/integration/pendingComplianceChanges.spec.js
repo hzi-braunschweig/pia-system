@@ -146,8 +146,6 @@ describe('/pendingComplianceChanges', function () {
           'ApiTestProband1',
           '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
           'Proband',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -155,8 +153,6 @@ describe('/pendingComplianceChanges', function () {
           'ApiTestProband2',
           '8225433d40a33c8cad99d05697c599f5aad03bbf7f74a87a0a19dc5f01cd831fd73efc5ab4a8bc37ad994ad05bd5390821fc7a23d3cf7f9a1ac0e0472a7dce0e',
           'Proband',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -164,8 +160,6 @@ describe('/pendingComplianceChanges', function () {
           'forscher1@apitest.de',
           '9dd01c80bb400e844cba017d2c1a70ac4a13f890fd39d19cbe0b05a9b6cc5805c9b1e8003d41123144db039df6cb9ad1383d3a387a55776105c89c94c92c5e45',
           'Forscher',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -173,8 +167,6 @@ describe('/pendingComplianceChanges', function () {
           'forscher2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'Forscher',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -182,8 +174,6 @@ describe('/pendingComplianceChanges', function () {
           'ut1@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'Untersuchungsteam',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -191,8 +181,6 @@ describe('/pendingComplianceChanges', function () {
           'ut2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'Untersuchungsteam',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -200,8 +188,6 @@ describe('/pendingComplianceChanges', function () {
           'pm1@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -209,8 +195,6 @@ describe('/pendingComplianceChanges', function () {
           'pm2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -218,8 +202,6 @@ describe('/pendingComplianceChanges', function () {
           'pmNoEmail',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -227,8 +209,6 @@ describe('/pendingComplianceChanges', function () {
           'pm4@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -236,8 +216,6 @@ describe('/pendingComplianceChanges', function () {
           'sa1@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'SysAdmin',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -245,8 +223,6 @@ describe('/pendingComplianceChanges', function () {
           'sa2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'SysAdmin',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO studies VALUES ($1:csv)', [
@@ -505,8 +481,6 @@ describe('/pendingComplianceChanges', function () {
           'ApiTestProband1',
           '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
           'Proband',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -514,8 +488,6 @@ describe('/pendingComplianceChanges', function () {
           'ApiTestProband2',
           '8225433d40a33c8cad99d05697c599f5aad03bbf7f74a87a0a19dc5f01cd831fd73efc5ab4a8bc37ad994ad05bd5390821fc7a23d3cf7f9a1ac0e0472a7dce0e',
           'Proband',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -523,8 +495,6 @@ describe('/pendingComplianceChanges', function () {
           'ApiTestProband3',
           '8225433d40a33c8cad99d05697c599f5aad03bbf7f74a87a0a19dc5f01cd831fd73efc5ab4a8bc37ad994ad05bd5390821fc7a23d3cf7f9a1ac0e0472a7dce0e',
           'Proband',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -532,8 +502,6 @@ describe('/pendingComplianceChanges', function () {
           'forscher1@apitest.de',
           '9dd01c80bb400e844cba017d2c1a70ac4a13f890fd39d19cbe0b05a9b6cc5805c9b1e8003d41123144db039df6cb9ad1383d3a387a55776105c89c94c92c5e45',
           'Forscher',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -541,8 +509,6 @@ describe('/pendingComplianceChanges', function () {
           'forscher2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'Forscher',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -550,8 +516,6 @@ describe('/pendingComplianceChanges', function () {
           'ut1@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'Untersuchungsteam',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -559,8 +523,6 @@ describe('/pendingComplianceChanges', function () {
           'ut2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'Untersuchungsteam',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -568,8 +530,6 @@ describe('/pendingComplianceChanges', function () {
           'pm1@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -577,8 +537,6 @@ describe('/pendingComplianceChanges', function () {
           'pm2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -586,8 +544,6 @@ describe('/pendingComplianceChanges', function () {
           'pmNoEmail',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -595,8 +551,6 @@ describe('/pendingComplianceChanges', function () {
           'pm4@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -604,8 +558,6 @@ describe('/pendingComplianceChanges', function () {
           'sa1@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'SysAdmin',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -613,8 +565,6 @@ describe('/pendingComplianceChanges', function () {
           'sa2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'SysAdmin',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO studies VALUES ($1:csv)', [
@@ -1001,8 +951,6 @@ describe('/pendingComplianceChanges', function () {
           'ApiTestProband1',
           '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
           'Proband',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1010,8 +958,6 @@ describe('/pendingComplianceChanges', function () {
           'ApiTestProband2',
           '8225433d40a33c8cad99d05697c599f5aad03bbf7f74a87a0a19dc5f01cd831fd73efc5ab4a8bc37ad994ad05bd5390821fc7a23d3cf7f9a1ac0e0472a7dce0e',
           'Proband',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1019,8 +965,6 @@ describe('/pendingComplianceChanges', function () {
           'forscher1@apitest.de',
           '9dd01c80bb400e844cba017d2c1a70ac4a13f890fd39d19cbe0b05a9b6cc5805c9b1e8003d41123144db039df6cb9ad1383d3a387a55776105c89c94c92c5e45',
           'Forscher',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1028,8 +972,6 @@ describe('/pendingComplianceChanges', function () {
           'forscher2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'Forscher',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1037,8 +979,6 @@ describe('/pendingComplianceChanges', function () {
           'ut1@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'Untersuchungsteam',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1046,8 +986,6 @@ describe('/pendingComplianceChanges', function () {
           'ut2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'Untersuchungsteam',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1055,8 +993,6 @@ describe('/pendingComplianceChanges', function () {
           'pm1@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1064,8 +1000,6 @@ describe('/pendingComplianceChanges', function () {
           'pm2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1073,8 +1007,6 @@ describe('/pendingComplianceChanges', function () {
           'pmNoEmail',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1082,8 +1014,6 @@ describe('/pendingComplianceChanges', function () {
           'pm4@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1091,8 +1021,6 @@ describe('/pendingComplianceChanges', function () {
           'sa1@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'SysAdmin',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1100,8 +1028,6 @@ describe('/pendingComplianceChanges', function () {
           'sa2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'SysAdmin',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO studies VALUES ($1:csv)', [
@@ -1494,8 +1420,6 @@ describe('/pendingComplianceChanges', function () {
           'ApiTestProband1',
           '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
           'Proband',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1503,8 +1427,6 @@ describe('/pendingComplianceChanges', function () {
           'ApiTestProband2',
           '8225433d40a33c8cad99d05697c599f5aad03bbf7f74a87a0a19dc5f01cd831fd73efc5ab4a8bc37ad994ad05bd5390821fc7a23d3cf7f9a1ac0e0472a7dce0e',
           'Proband',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1512,8 +1434,6 @@ describe('/pendingComplianceChanges', function () {
           'forscher1@apitest.de',
           '9dd01c80bb400e844cba017d2c1a70ac4a13f890fd39d19cbe0b05a9b6cc5805c9b1e8003d41123144db039df6cb9ad1383d3a387a55776105c89c94c92c5e45',
           'Forscher',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1521,8 +1441,6 @@ describe('/pendingComplianceChanges', function () {
           'forscher2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'Forscher',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1530,8 +1448,6 @@ describe('/pendingComplianceChanges', function () {
           'ut1@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'Untersuchungsteam',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1539,8 +1455,6 @@ describe('/pendingComplianceChanges', function () {
           'ut2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'Untersuchungsteam',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1548,8 +1462,6 @@ describe('/pendingComplianceChanges', function () {
           'pm1@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1557,8 +1469,6 @@ describe('/pendingComplianceChanges', function () {
           'pm2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1566,8 +1476,6 @@ describe('/pendingComplianceChanges', function () {
           'pmNoEmail',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1575,8 +1483,6 @@ describe('/pendingComplianceChanges', function () {
           'pm4@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'ProbandenManager',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1584,8 +1490,6 @@ describe('/pendingComplianceChanges', function () {
           'sa1@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'SysAdmin',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1593,8 +1497,6 @@ describe('/pendingComplianceChanges', function () {
           'sa2@apitest.de',
           'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
           'SysAdmin',
-          '',
-          null,
         ],
       ]);
       await db.none('INSERT INTO studies VALUES ($1:csv)', [

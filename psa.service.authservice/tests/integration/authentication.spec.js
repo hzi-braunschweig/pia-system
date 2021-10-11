@@ -123,10 +123,6 @@ const changePasswordWrongNew = {
   newPassword2: '2aA$bbbbbbbb',
 };
 
-const username = { username: 'UTestProband1' };
-const usernameEmpty = { username: ' ' };
-const usernameWrong = { username: 'TestprobandWrong' };
-
 describe('/authentication', function () {
   before(async function () {
     await server.init();
@@ -257,46 +253,6 @@ describe('/authentication', function () {
       expect(response.body.username).to.equal('UTestProband1');
       expect(response.body.compliance_labresults).to.equal(true);
       expect(response.body.token).to.not.equal(null);
-    });
-  });
-
-  describe('/logout', function () {
-    it('logout with correct username', async function () {
-      const response = await chai
-        .request(apiAddress)
-        .post('/logout')
-        .send(username)
-        .set(probandHeader1);
-      expect(response).to.have.status(200);
-      expect(response.body.username).to.equal('UTestProband1');
-      expect(response.body.token).to.equal(null);
-    });
-
-    it('logout with empty username', async function () {
-      const response = await chai
-        .request(apiAddress)
-        .post('/logout')
-        .send(usernameEmpty)
-        .set(probandHeader1);
-      expect(response).to.have.status(403);
-    });
-
-    it('logout with wrong username', async function () {
-      const response = await chai
-        .request(apiAddress)
-        .post('/logout')
-        .send(usernameWrong)
-        .set(probandHeader1);
-      expect(response).to.have.status(403);
-    });
-
-    it('logout with wrong token', async function () {
-      const response = await chai
-        .request(apiAddress)
-        .post('/logout')
-        .send(username)
-        .set(invalidHeader);
-      expect(response).to.have.status(401);
     });
   });
 
@@ -579,53 +535,46 @@ describe('/authentication', function () {
         ],
       ]);
 
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
+      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4)', [
         'QTestProband1',
         '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
         'Proband',
-        '',
         null,
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
+      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4)', [
         'QTestProband2',
         '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
         'Proband',
-        '',
         null,
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
+      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4)', [
         'QTestForscher1',
         '9dd01c80bb400e844cba017d2c1a70ac4a13f890fd39d19cbe0b05a9b6cc5805c9b1e8003d41123144db039df6cb9ad1383d3a387a55776105c89c94c92c5e45',
         'Forscher',
-        '',
         null,
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
+      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4)', [
         'ut@test.de',
         'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
         'Untersuchungsteam',
-        '',
         null,
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
+      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4)', [
         'pm@test.de',
         'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
         'ProbandenManager',
-        '',
         null,
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
+      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4)', [
         'sysadmin@test.de',
         'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
         'SysAdmin',
-        '',
         null,
       ]);
-      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4, $5)', [
+      await db.none('INSERT INTO users VALUES ($1, $2, $3, $4)', [
         'forscher@test.de',
         'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
         'Forscher',
-        '',
         null,
       ]);
     });

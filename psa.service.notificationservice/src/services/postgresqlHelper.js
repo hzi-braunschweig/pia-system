@@ -72,35 +72,26 @@ const postgresqlHelper = (function () {
     );
   }
 
-  function getTokenAndDeviceForUser(user_id) {
-    return db.one(
-      'SELECT fcm_token,logged_in_with,first_logged_in_at FROM users WHERE username=$1',
-      [user_id]
+  function getToken(pseudonym) {
+    return db.manyOrNone(
+      'SELECT token, pseudonym, study FROM fcm_tokens WHERE pseudonym=$1',
+      [pseudonym]
     );
   }
 
-  function updateFCMToken(user_id, token) {
-    return db.one(
-      'UPDATE users SET fcm_token=$1 WHERE username=$2 RETURNING fcm_token',
-      [token, user_id]
+  function updateFCMToken(token, pseudonym, study) {
+    return db.none(
+      'INSERT INTO fcm_tokens (token, pseudonym, study) VALUES ($(token), $(pseudonym), $(study)) ON CONFLICT DO NOTHING',
+      { token, pseudonym, study }
     );
   }
 
-  async function getTokenAndDeviceForUserIfAllowed(requester, username) {
-    const role = await db.one('SELECT role FROM users WHERE username=$1', [
-      requester,
-    ]);
-    if (role.role === 'SysAdmin') {
-      return await db.one(
-        'SELECT fcm_token,logged_in_with FROM users WHERE username=$1 AND role!=$2',
-        [username, 'Proband']
-      );
-    } else {
-      return await db.one(
-        'SELECT fcm_token,logged_in_with FROM users WHERE username=${username} AND username=ANY(SELECT user_id FROM study_users WHERE study_id=ANY(SELECT study_id FROM study_users WHERE user_id=${requester}))',
-        { username: username, requester: requester }
-      );
-    }
+  function removeFCMToken(token) {
+    return db.none('DELETE FROM fcm_tokens WHERE token=$1', [token]);
+  }
+
+  function removeFCMTokenForPseudonym(pseudonym) {
+    return db.none('DELETE FROM fcm_tokens WHERE pseudonym=$1', [pseudonym]);
   }
 
   async function getStudiesWithPMEmail() {
@@ -509,32 +500,18 @@ const postgresqlHelper = (function () {
 
     /**
      * @function
-     * @description gets the fcm token of the specified user
+     * @description gets the fcm tokens of the specified user
      * @memberof module:postgresqlHelper
-     * @param {string} user_id the name of the user to get the token for
+     * @param {string} pseudonym the name of the user to get the token for
      * @returns {Promise} a resolved promise with the found token and device type or rejected promise otherwise
      */
-    getTokenAndDeviceForUser: getTokenAndDeviceForUser,
+    getToken: getToken,
 
-    /**
-     * @function
-     * @description updates the specified users fcm token
-     * @memberof module:postgresqlHelper
-     * @param {string} user_id the name of the user to get the token for
-     * @param {string} token the new token
-     * @returns {Promise} a resolved promise in case of success or a rejected promise otherwise
-     */
     updateFCMToken: updateFCMToken,
 
-    /**
-     * @function
-     * @description gets the requested fcm_token if the user is allowed to
-     * @memberof module:postgresqlHelper
-     * @param {string} requester the requesting user
-     * @param {string} username the requested user
-     * @returns {Promise} a resolved promise in case of success or a rejected promise otherwise
-     */
-    getTokenAndDeviceForUserIfAllowed: getTokenAndDeviceForUserIfAllowed,
+    removeFCMToken: removeFCMToken,
+
+    removeFCMTokenForPseudonym: removeFCMTokenForPseudonym,
 
     /**
      * @function

@@ -25,30 +25,36 @@ describe('validateQuestionnaireInstanceCount()', () => {
   describe('cycle_unit = "hour"', () => {
     it('should return null if inputs are below threshold', () => {
       // Arrange
-      const formGroup = createFormGroup(2, 'hour', 125);
+      const formGroup1 = createFormGroup(2, 'hour', 125, 12);
+      const formGroup2 = createFormGroup(1, 'hour', 1500, 1);
 
       // Act
-      const result = validate(formGroup);
+      const result1 = validate(formGroup1);
+      const result2 = validate(formGroup2);
 
       // Assert
-      expect(result).toBeNull();
+      expect(result1).toBeNull();
+      expect(result2).toBeNull();
     });
 
     it('should return error if inputs are above threshold', () => {
       // Arrange
-      const formGroup = createFormGroup(2, 'hour', 126);
+      const formGroup1 = createFormGroup(2, 'hour', 126, 12);
+      const formGroup2 = createFormGroup(1, 'hour', 1501, 1);
 
       // Act
-      const result = validate(formGroup);
+      const result1 = validate(formGroup1);
+      const result2 = validate(formGroup2);
 
       // Assert
-      expect(result).toEqual({ questionnaireInstanceCount: true });
+      expect(result1).toEqual({ questionnaireInstanceCount: true });
+      expect(result2).toEqual({ questionnaireInstanceCount: true });
     });
 
-    it('should handle empty cycle_amount input', () => {
+    it('should handle empty cyclePerDay input', () => {
       // Arrange
-      const formGroup1 = createFormGroup(undefined, 'hour', 62);
-      const formGroup2 = createFormGroup(undefined, 'hour', 63);
+      const formGroup1 = createFormGroup(undefined, 'hour', 1500, undefined);
+      const formGroup2 = createFormGroup(undefined, 'hour', 1501, undefined);
 
       // Act
       const result1 = validate(formGroup1);
@@ -221,12 +227,14 @@ describe('validateQuestionnaireInstanceCount()', () => {
   function createFormGroup(
     cylce_amount: number,
     cycle_unit: string,
-    deactivate_after_days: number
+    deactivate_after_days: number,
+    cycle_per_day = 1
   ): FormGroup {
     return new FormGroup({
       cycle_amount: new FormControl(cylce_amount),
       cycle_unit: new FormControl(cycle_unit),
       deactivate_after_days: new FormControl(deactivate_after_days),
+      cycle_per_day: new FormControl(cycle_per_day),
     });
   }
 });

@@ -6,12 +6,12 @@
 
 const Joi = require('joi');
 
-const usersHandler = require('../../handlers/usersHandler.js');
+const internalUsersHandler = require('../../handlers/internal/internalUsersHandler');
 
 module.exports = {
   path: '/user/users/{username}/externalcompliance',
   method: 'GET',
-  handler: usersHandler.getUserExternalCompliance,
+  handler: internalUsersHandler.getUserExternalCompliance,
   config: {
     description: 'get a user',
     tags: ['api'],

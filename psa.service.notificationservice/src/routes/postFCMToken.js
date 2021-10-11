@@ -6,12 +6,12 @@
 
 const Joi = require('joi');
 
-const fcmTokenHandler = require('../handlers/fcmTokenHandler.js');
+const { FcmTokenHandler } = require('../handlers/fcmTokenHandler');
 
 module.exports = {
   path: '/notification/fcmToken',
   method: 'POST',
-  handler: fcmTokenHandler.postOne,
+  handler: FcmTokenHandler.postOne,
   config: {
     description: 'posts the users fcm token',
     auth: 'jwt',

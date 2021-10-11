@@ -6,12 +6,12 @@
 
 const Joi = require('joi');
 
-const usersHandler = require('../handlers/usersHandler.js');
+const { UsersHandler } = require('../handlers/usersHandler');
 
 module.exports = {
   path: '/user/users/{username}',
   method: 'PUT',
-  handler: usersHandler.updateOne,
+  handler: UsersHandler.updateOne,
   config: {
     description: 'updates user data',
     auth: 'jwt',

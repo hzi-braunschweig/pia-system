@@ -74,6 +74,7 @@ int:
     MESSAGEQUEUE_HOST: messagequeue
     MESSAGEQUEUE_APP_USER: app
     MESSAGEQUEUE_APP_PASSWORD: app
+    MESSAGEQUEUE_PORT: '5672'
   services:
     # don't use a variable for alias - it doesn't get resolved!
     - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.sftpserver:$IMAGE_ID-with-faked-secrets
@@ -98,6 +99,6 @@ int:
       - $FOLDER/coverage/coverage-int.xml
       - $FOLDER/tests/reports/xunit-test-report-int.xml
     reports:
-      junit: $FOLDER/tests/reports/xunit-test-report-int.xml
-      cobertura: $FOLDER/coverage/coverage-int.xml
+      junit: $FOLDER/tests/reports/xunit-test-report*.xml
+      cobertura: $FOLDER/coverage/*.xml
     when: always

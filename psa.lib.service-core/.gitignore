@@ -1,4 +1,30 @@
-authKey/
+# Logs
+logs
+
+# Dependency directories
 node_modules/
-/.nyc_output/
-/tests/reports/
+.npm
+
+# dotenv environment variables file
+.env
+
+# Test reports
+tests/reports
+coverage
+.nyc_output
+
+# IDEs and editors
+.idea
+.project
+.classpath
+.c9
+*.launch
+.settings/
+*.sublime-workspace
+.vscode
+
+# Secrets
+authKey
+firebase
+ssl
+tests/private.key

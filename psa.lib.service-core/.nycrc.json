@@ -3,5 +3,5 @@
   "reporter": ["text", "cobertura", "json"],
   "extension": [".ts"],
   "include": ["src/**/*.*"],
-  "exclude": ["**/*.spec.*", "index.*"]
+  "exclude": ["**/*.spec.*", "src/index.*"]
 }

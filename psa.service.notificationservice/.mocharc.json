@@ -1,8 +1,8 @@
 {
   "require": [
     "dotenv/config",
-    "ts-node/register/transpile-only",
     "source-map-support/register",
+    "ts-node/register/transpile-only",
     "./tests/dbTeardown.hook.js"
   ],
   "reporter": "mocha-multi-reporters",

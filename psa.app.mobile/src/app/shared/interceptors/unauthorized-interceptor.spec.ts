@@ -11,8 +11,6 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import { fakeAsync, tick } from '@angular/core/testing';
-import { Router } from '@angular/router';
-import { MenuController } from '@ionic/angular';
 import { onErrorResumeNext, Subject } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
 
@@ -25,8 +23,6 @@ describe('UnauthorizedInterceptor', () => {
   let handler: SpyObj<HttpHandler>;
   let handleSubject: Subject<HttpEvent<any>>;
   let authMock: SpyObj<AuthService>;
-  let menuCtrlMock: SpyObj<MenuController>;
-  let routerMock: SpyObj<Router>;
 
   beforeEach(() => {
     request = new HttpRequest('GET', 'some/url/');
@@ -37,63 +33,43 @@ describe('UnauthorizedInterceptor', () => {
     handler.handle.and.returnValue(handleSubject.asObservable());
     authMock = jasmine.createSpyObj('AuthManagerService', [
       'getCurrentUser',
-      'resetCurrentUser',
+      'logout',
     ]);
-    menuCtrlMock = jasmine.createSpyObj<SpyObj<MenuController>>(
-      'MenuController',
-      ['enable']
-    );
-    routerMock = jasmine.createSpyObj('Router', ['navigate']);
   });
 
   it('should log user out if a 401 response was received', fakeAsync(() => {
     const error = new HttpErrorResponse({ status: 401 });
     authMock.getCurrentUser.and.returnValue({} as User);
-    const interceptor = new UnauthorizedInterceptor(
-      authMock,
-      menuCtrlMock,
-      routerMock
-    );
+    const interceptor = new UnauthorizedInterceptor(authMock);
     onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
     handleSubject.error(error);
     tick();
 
     expect(handler.handle).toHaveBeenCalledWith(request);
-    expect(authMock.resetCurrentUser).toHaveBeenCalledTimes(1);
-    expect(menuCtrlMock.enable).toHaveBeenCalledWith(false);
+    expect(authMock.logout).toHaveBeenCalledTimes(1);
   }));
 
   it('should only pass the error if a non 401 response was received', fakeAsync(() => {
     const error = new HttpErrorResponse({ status: 404 });
     authMock.getCurrentUser.and.returnValue({} as User);
-    const interceptor = new UnauthorizedInterceptor(
-      authMock,
-      menuCtrlMock,
-      routerMock
-    );
+    const interceptor = new UnauthorizedInterceptor(authMock);
     onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
     handleSubject.error(error);
     tick();
 
     expect(handler.handle).toHaveBeenCalledWith(request);
-    expect(authMock.resetCurrentUser).not.toHaveBeenCalled();
-    expect(menuCtrlMock.enable).not.toHaveBeenCalled();
+    expect(authMock.logout).not.toHaveBeenCalled();
   }));
 
   it('should only pass the error if no user is logged in', fakeAsync(() => {
     const error = new HttpErrorResponse({ status: 401 });
     authMock.getCurrentUser.and.returnValue(null);
-    const interceptor = new UnauthorizedInterceptor(
-      authMock,
-      menuCtrlMock,
-      routerMock
-    );
+    const interceptor = new UnauthorizedInterceptor(authMock);
     onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
     handleSubject.error(error);
     tick();
 
     expect(handler.handle).toHaveBeenCalledWith(request);
-    expect(authMock.resetCurrentUser).not.toHaveBeenCalled();
-    expect(menuCtrlMock.enable).not.toHaveBeenCalled();
+    expect(authMock.logout).not.toHaveBeenCalled();
   }));
 });

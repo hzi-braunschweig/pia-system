@@ -3,7 +3,7 @@
   "private": true,
   "license": "AGPL-3.0-or-later",
   "scripts": {
-    "update-packages": "ncu --deep -i -x \"/@types/node$|.*angular.*/\"",
+    "update-packages": "ncu --packageFile 'psa.*/package.json' -i -x '/@types/node$|@types/node-fetch|node-fetch|ngx-.*|ng-.*|karma|rxjs|zone.js|jspdf.*|webpack|.*angular.*/'",
     "update-packagelock": "lerna clean --yes && rm -f psa.*/package-lock.json && lerna exec \"npm install --ignore-scripts --package-lock-only --no-audit\""
   },
   "devDependencies": {

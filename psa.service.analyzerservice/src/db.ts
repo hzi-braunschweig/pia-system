@@ -13,7 +13,7 @@ import {
   TransactionRunnerFn,
 } from '@pia/lib-service-core';
 
-const pgp = pgPromise({ capSQL: true, noLocking: config.isTestMode });
+export const pgp = pgPromise({ capSQL: true, noLocking: config.isTestMode });
 
 export const db: IDatabase<unknown> = pgp(config.database);
 export const runTransaction: TransactionRunnerFn = createTransactionRunner(db);

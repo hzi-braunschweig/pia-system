@@ -6,19 +6,26 @@
 
 import { Component, Inject, OnInit } from '@angular/core';
 import {
-  MatDialogRef,
   MAT_DIALOG_DATA,
   MatDialog,
+  MatDialogRef,
 } from '@angular/material/dialog';
-import { FormGroup, Validators, FormControl } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AlertService } from '../../_services/alert.service';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
-import { JwtHelperService } from '@auth0/angular-jwt';
-import { User } from '../../psa.app.core/models/user';
-import { TranslateService } from '@ngx-translate/core';
-import { DialogPopUpComponent } from 'src/app/_helpers/dialog-pop-up';
-import { ReplaySubject } from 'rxjs';
+import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
+import {
+  DialogPopUpComponent,
+  DialogPopUpData,
+} from 'src/app/_helpers/dialog-pop-up';
+import { Observable } from 'rxjs';
+import { CreateProbandRequest } from '../../psa.app.core/models/proband';
+import { UserWithStudyAccess } from '../../psa.app.core/models/user-with-study-access';
+import { map, shareReplay, startWith } from 'rxjs/operators';
+
+export interface DialogNewProbandComponentData {
+  ids: string;
+}
 
 @Component({
   selector: 'dialog-new-proband',
@@ -26,122 +33,101 @@ import { ReplaySubject } from 'rxjs';
   templateUrl: 'new-proband-dialog.html',
 })
 export class DialogNewProbandComponent implements OnInit {
-  form: FormGroup;
-  currentRole: string;
-  studies: string[];
-  filteredStudiesArray = [];
-  isLoading: boolean = false;
+  public form: FormGroup;
+  public isLoading: boolean = false;
+  public studiesFilterCtrl: FormControl = new FormControl('');
+  public filteredStudies: Observable<string[]>;
 
-  public studiesFilterCtrl: FormControl = new FormControl();
-  public filteredStudies: ReplaySubject<string[]> = new ReplaySubject<string[]>(
-    1
-  );
-
-  constructor(
-    public dialogRef: MatDialogRef<DialogNewProbandComponent>,
+  public constructor(
+    private dialogRef: MatDialogRef<DialogNewProbandComponent>,
     private authService: AuthService,
     private alertService: AlertService,
-    private translate: TranslateService,
     private questionnaireService: QuestionnaireService,
-    public dialog: MatDialog,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    private dialog: MatDialog,
+    @Inject(MAT_DIALOG_DATA) public data?: DialogNewProbandComponentData
   ) {
-    const jwtHelper: JwtHelperService = new JwtHelperService();
-    const currentUser: User = JSON.parse(localStorage.getItem('currentUser'));
-    const tokenPayload = jwtHelper.decodeToken(currentUser.token);
-    this.currentRole = tokenPayload.role;
+    this.form = new FormGroup({
+      pseudonym: new FormControl('', Validators.required),
+      complianceLabresults: new FormControl(false, Validators.required),
+      complianceSamples: new FormControl(false, Validators.required),
+      complianceBloodsamples: new FormControl(false, Validators.required),
+      studyCenter: new FormControl('', Validators.required),
+      examinationWave: new FormControl(1, Validators.required),
+      studyName: new FormControl(null, Validators.required),
+    });
   }
 
-  ngOnInit(): void {
+  public async ngOnInit(): Promise<void> {
     this.isLoading = true;
-    this.questionnaireService.getStudies().then(
-      (result: any) => {
+    let studies: string[] = [];
+    try {
+      if (this.data) {
+        const idsUser: UserWithStudyAccess = await this.authService.getUser(
+          this.data.ids
+        );
+        studies = idsUser.study_accesses.map((sa) => sa.study_id);
+      } else {
+        const result = await this.questionnaireService.getStudies();
         // Hard coded filtering of ZIFCO-Studie
-        this.studies = result.studies
+        studies = result.studies
           .map((study) => study.name)
           .filter((name) => name !== 'ZIFCO-Studie');
-        this.filteredStudiesArray = this.studies;
-        this.filteredStudies.next(this.filteredStudiesArray);
-        this.isLoading = false;
-
-        this.form = new FormGroup({
-          pseudonym: new FormControl('', Validators.required),
-          compliance_labresults: new FormControl(false, Validators.required),
-          compliance_samples: new FormControl(false, Validators.required),
-          compliance_bloodsamples: new FormControl(false, Validators.required),
-          study_center: new FormControl('', Validators.required),
-          examination_wave: new FormControl(1, Validators.required),
-          study_accesses: new FormControl(null, Validators.required),
-        });
-
-        this.studiesFilterCtrl.valueChanges.subscribe(() => {
-          this.filterStudies();
-        });
-        this.isLoading = false;
-      },
-      (err: any) => {
-        this.isLoading = false;
-        this.alertService.errorObject(err);
       }
+    } catch (err) {
+      this.alertService.errorObject(err);
+    }
+    this.filteredStudies = this.createStudiesFilterObservable(studies);
+    this.isLoading = false;
+  }
+
+  private createStudiesFilterObservable(
+    studies: string[]
+  ): Observable<string[]> {
+    return this.studiesFilterCtrl.valueChanges.pipe(
+      startWith(this.studiesFilterCtrl.value as string),
+      map((filterValue) => filterValue.toLowerCase()),
+      map((filterValue) => {
+        if (!filterValue) {
+          return studies;
+        } else {
+          return studies.filter((study) =>
+            study.toLowerCase().includes(filterValue)
+          );
+        }
+      }),
+      shareReplay(1)
     );
   }
 
-  private filterStudies(): void {
-    this.filteredStudies.next(this.studies);
-    if (!this.studies) {
-      return;
-    }
-    let search = this.studiesFilterCtrl.value;
-    if (!search) {
-      this.filteredStudiesArray = this.studies;
-      this.filteredStudies.next(this.studies.slice());
-      return;
-    } else {
-      search = search.toLowerCase();
-    }
-    this.filteredStudiesArray = this.studies.filter(
-      (study) => study.toLowerCase().indexOf(search) > -1
-    );
-    this.filteredStudies.next(this.filteredStudiesArray);
-  }
-
-  submit(form): void {
-    if (
-      this.form.controls['study_accesses'].value &&
-      this.form.controls['study_accesses'].value[0] === 'allStudiesCheckbox'
-    ) {
-      this.form.controls['study_accesses'].value.shift();
-    }
-
-    this.authService.postProband(form.value).then(
-      (result: any) => {
-        this.dialogRef.close(result);
-      },
-      (err: any) => {
-        this.dialog.open(DialogPopUpComponent, {
+  public async submit(): Promise<void> {
+    try {
+      const payload: CreateProbandRequest = {
+        pseudonym: this.form.get('pseudonym').value,
+        complianceBloodsamples: this.form.get('complianceBloodsamples').value,
+        complianceLabresults: this.form.get('complianceLabresults').value,
+        complianceSamples: this.form.get('complianceSamples').value,
+        examinationWave: this.form.get('examinationWave').value,
+        studyCenter: this.form.get('studyCenter').value,
+      };
+      if (this.data) {
+        payload.ids = this.data.ids;
+      }
+      await this.authService.postProband(
+        payload,
+        this.form.get('studyName').value
+      );
+      this.dialogRef.close(payload.pseudonym);
+    } catch (err) {
+      this.dialog.open<DialogPopUpComponent, DialogPopUpData>(
+        DialogPopUpComponent,
+        {
           width: '500px',
           data: {
-            data: '',
             content: 'DIALOG.CREATE_PROBAND_ERROR',
             isSuccess: false,
           },
-        });
-      }
-    );
-  }
-
-  onSelectAllStudiesClicked(): void {
-    const studiesNameArray = [];
-    if (
-      this.form.controls['study_accesses'].value[0] === 'allStudiesCheckbox' &&
-      this.form.controls['study_accesses'].value.length !==
-        this.filteredStudiesArray.length + 1
-    ) {
-      studiesNameArray.push('allStudiesCheckbox');
-      for (const study of this.filteredStudiesArray) {
-        studiesNameArray.push(study);
-      }
+        }
+      );
     }
-    this.form.controls['study_accesses'].setValue(studiesNameArray);
   }
 }

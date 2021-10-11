@@ -1,12 +1,17 @@
-INSERT INTO users (username, password, role, fcm_token, logged_in_with)
-VALUES ('QTestProband1', '', 'Proband', 'justarandomstring', 'web'),
-       ('QTestProband2', '', 'Proband', '', null),
-       ('QTestProband3', '', 'Proband', 'justarandomstring', 'ios'),
-       ('QTestProband4', '', 'Proband', 'justarandomstring', 'ios'),
-       ('QTestForscher1', '', 'Forscher', 'justarandomstring', 'web'),
-       ('QTestProbandenManager', '', 'ProbandenManager', '', null),
-       ('QTestUntersuchungsteam', '', 'Untersuchungsteam', '', null),
-       ('QTestSystemAdmin', '', 'SysAdmin', '', null);
+INSERT INTO users (username, password, role)
+VALUES ('QTestProband1', '', 'Proband'),
+       ('QTestProband2', '', 'Proband'),
+       ('QTestProband3', '', 'Proband'),
+       ('QTestProband4', '', 'Proband'),
+       ('QTestForscher1', '', 'Forscher'),
+       ('QTestProbandenManager', '', 'ProbandenManager'),
+       ('QTestUntersuchungsteam', '', 'Untersuchungsteam'),
+       ('QTestSystemAdmin', '', 'SysAdmin');
+
+INSERT INTO fcm_tokens (pseudonym, token, study)
+VALUES ('QTestProband1', 'testtoken-1', 'ApiTestStudie'),
+       ('QTestProband3', 'testtoken-3', 'a-different-study'),
+       ('QTestProband4', 'testtoken-4', 'ApiTestStudie');
 
 INSERT INTO studies (name, description, status, has_answers_notify_feature, has_answers_notify_feature_by_mail,
                      pm_email, hub_email)

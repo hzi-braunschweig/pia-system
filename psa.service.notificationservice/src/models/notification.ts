@@ -15,3 +15,10 @@ export interface DbNotificationSchedules {
 }
 
 export type NotificationType = 'qReminder' | 'sample' | 'custom';
+
+export interface Notification {
+  date?: Date;
+  recipients: string[];
+  title: string;
+  body: string;
+}

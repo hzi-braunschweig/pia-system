@@ -4,32 +4,33 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-export class UserListResponse {
+import { Role } from './user';
+
+export interface UserListResponse {
   users: UserWithStudyAccess[];
   links: { self: { href: string } };
 }
 
-export class UserWithStudyAccess {
-  age: number;
+export interface UserWithStudyAccess {
   username: string;
-  role: string;
-  sex: string;
-  password: string;
+  role: Role;
   is_test_proband: boolean;
   study_accesses: StudyAccess[];
   studyNamesArray: string[];
   first_logged_in_at: string;
   account_status: AccountStatus;
   study_status: StudyStatus;
-  compliance_labresults: boolean = false;
-  compliance_samples: boolean = false;
-  compliance_bloodsamples: boolean = false;
-  ids?: string;
+  compliance_labresults: boolean;
+  compliance_samples: boolean;
+  compliance_bloodsamples: boolean;
+  study_center: string;
+  examination_wave: number;
+  ids: string | null;
   needs_material: boolean;
-  pendingComplianceChange?: boolean = false; // Not from backend
+  pendingComplianceChange?: boolean; // Not from backend
 }
 
-export class StudyAccess {
+export interface StudyAccess {
   study_id: string;
   access_level: AccessLevel;
 }

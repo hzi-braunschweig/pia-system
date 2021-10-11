@@ -7,6 +7,7 @@
 import Chainable = Cypress.Chainable;
 import * as mimelib from 'mimelib';
 import { getRandomId } from './helper.commands';
+import { CreateProbandRequest } from '../../src/app/psa.app.core/models/proband';
 
 export interface UserCredentials {
   username: string;
@@ -64,7 +65,6 @@ export interface ProfessionalUser {
     | 'EinwilligungsManager'
     | 'Untersuchungsteam';
   study_accesses: { study_id: string; access_level: StudyAccessLevel }[];
-  compliance_labresults?: boolean;
 }
 
 /**
@@ -109,17 +109,18 @@ export interface Proband {
  * Creates a proband and returns its credentials.
  *
  * @param proband Proband data to be created
+ * @param studyName The name of the study the proband should participate
  */
-export function createProband(proband: Proband): Chainable<UserCredentials> {
+export function createProband(
+  proband: CreateProbandRequest,
+  studyName: string
+): Chainable<UserCredentials> {
   return (
     cy
       .fixture('users')
       // 1. create UT for study
       .then((users) =>
-        cy.createProfessionalUser(
-          users.new.Untersuchungsteam,
-          proband.study_accesses[0]
-        )
+        cy.createProfessionalUser(users.new.Untersuchungsteam, studyName)
       )
       .as('untersuchungsTeamCredentials')
       .then((untersuchungsTeam) => cy.login(untersuchungsTeam))
@@ -139,7 +140,7 @@ export function createProband(proband: Proband): Chainable<UserCredentials> {
         cy
           .request({
             method: 'POST',
-            url: '/api/v1/user/probands',
+            url: `/api/v1/user/studies/${studyName}/probands`,
             headers: { Authorization: token },
             body: proband,
           })
@@ -177,15 +178,17 @@ export function createProband(proband: Proband): Chainable<UserCredentials> {
 export function createRandomProband(
   studyId: string
 ): Chainable<UserCredentials> {
-  return cy.createProband({
-    pseudonym: 'E2E-Proband-' + getRandomId(),
-    compliance_labresults: true,
-    compliance_samples: true,
-    compliance_bloodsamples: true,
-    study_center: 'E2E-Testcenter',
-    examination_wave: 1,
-    study_accesses: [studyId],
-  });
+  return cy.createProband(
+    {
+      pseudonym: 'E2E-Proband-' + getRandomId(),
+      complianceLabresults: true,
+      complianceSamples: true,
+      complianceBloodsamples: true,
+      studyCenter: 'E2E-Testcenter',
+      examinationWave: 1,
+    },
+    studyId
+  );
 }
 
 export function deleteProfessionalUser(username): Chainable {

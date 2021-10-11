@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const emailInteractor = require('../interactors/emailInteractor.js');
+const emailInteractor = require('../interactors/emailInteractor');
 
 /**
  * @description hapi handler for sending emails

@@ -6,12 +6,12 @@
 
 const Joi = require('joi');
 
-const notificationHandler = require('../handlers/notificationHandler.js');
+const { NotificationHandler } = require('../handlers/notificationHandler');
 
 module.exports = {
   path: '/notification/notification/{id}',
   method: 'GET',
-  handler: notificationHandler.getOne,
+  handler: NotificationHandler.getOne,
   config: {
     description: 'get the notification with the specified id',
     auth: 'jwt',

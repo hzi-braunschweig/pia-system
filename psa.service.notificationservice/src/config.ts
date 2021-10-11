@@ -44,6 +44,7 @@ const conf = {
   },
   servers: {
     mailserver: GlobalConfig.mailserver,
+    messageQueue: GlobalConfig.getMessageQueue('notificationservice'),
   },
   publicAuthKey: GlobalConfig.publicAuthKey,
   webappUrl: GlobalConfig.webappUrl,

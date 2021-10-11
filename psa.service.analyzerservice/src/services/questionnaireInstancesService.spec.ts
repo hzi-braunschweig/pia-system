@@ -5,7 +5,7 @@
  */
 
 import { createSandbox, SinonStub } from 'sinon';
-import chai from 'chai';
+import chai, { expect } from 'chai';
 
 import { SormasEndDateService } from './sormasEndDateService';
 import { QuestionnaireInstancesService } from './questionnaireInstancesService';
@@ -15,8 +15,10 @@ import { Questionnaire } from '../models/questionnaire';
 import { User } from '../models/user';
 import { Answer } from '../models/answer';
 import { Condition } from '../models/condition';
+import sinonChai from 'sinon-chai';
 
-const expect = chai.expect;
+chai.use(sinonChai);
+
 const sandbox = createSandbox();
 
 /* eslint-disable @typescript-eslint/no-magic-numbers */
@@ -64,8 +66,8 @@ describe('questionnaireInstancesService', function () {
 
       await QuestionnaireInstancesService.checkAndUpdateQuestionnaireInstancesStatus();
 
-      expect(dbStub.manyOrNone.callCount).to.equal(1);
-      expect(dbStub.many.callCount).to.equal(0);
+      expect(dbStub.manyOrNone).to.have.callCount(1);
+      expect(dbStub.many).to.have.callCount(0);
     });
 
     it('should activate all qis if all their dates are in the past or today', async function () {
@@ -93,10 +95,10 @@ describe('questionnaireInstancesService', function () {
 
       await QuestionnaireInstancesService.checkAndUpdateQuestionnaireInstancesStatus();
 
-      expect(dbStub.manyOrNone.callCount).to.equal(1);
-      expect(dbStub.many.callCount).to.equal(1);
-      expect(dbStub.many.calledWith('2WHERE v.id = t.id RETURNING *')).to.equal(
-        true
+      expect(dbStub.manyOrNone).to.have.callCount(1);
+      expect(dbStub.many).to.have.callCount(1);
+      expect(dbStub.many).to.have.been.calledWith(
+        '2WHERE v.id = t.id RETURNING *'
       );
     });
 
@@ -125,10 +127,10 @@ describe('questionnaireInstancesService', function () {
 
       await QuestionnaireInstancesService.checkAndUpdateQuestionnaireInstancesStatus();
 
-      expect(dbStub.manyOrNone.callCount).to.equal(1);
-      expect(dbStub.many.callCount).to.equal(1);
-      expect(dbStub.many.calledWith('1WHERE v.id = t.id RETURNING *')).to.equal(
-        true
+      expect(dbStub.manyOrNone).to.have.callCount(1);
+      expect(dbStub.many).to.have.callCount(1);
+      expect(dbStub.many).to.have.been.calledWith(
+        '1WHERE v.id = t.id RETURNING *'
       );
     });
   });

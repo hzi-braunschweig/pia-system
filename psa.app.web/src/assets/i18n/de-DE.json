@@ -527,7 +527,17 @@
     "IDS": "IDS",
     "TEST_PROBAND": "Als Testteilnehmer:in markieren",
     "IS_TEST_PROBAND": "Testteilnehmer:in",
-    "NOT_EXIST": "Teilnehmer:in existiert nicht"
+    "NOT_EXIST": "Teilnehmer:in existiert nicht",
+    "ERROR": {
+      "USER_NOT_FOUND": "Es existiert kein Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen.",
+      "WRONG_ROLE": "Der Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen, hat nicht die Rolle \"Untersuchungsteam\"",
+      "NO_ACCESS_TO_STUDY": "Der Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen, hat keine Berechtigung für die Studie",
+      "NO_PLANNED_PROBAND_FOUND": "Das Pseudonym existiert nicht unter geplante Teilnehmende in dieser Studie",
+      "PROBAND_ALREADY_EXISTS": "Zu dem Pseudonym existiert bereits ein:e Teilnehmer:in",
+      "CREATING_ACCOUNG_FAILED": "Das Erstellen des Accounts ist fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Systemadministrator.",
+      "SAVING_PROBAND_FAILED": "Das Speichern des Probanden ist fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Systemadministrator.",
+      "UNKNOWN_ERROR": "Beim Anlegen des Teilnehmenden ist ein unbekannter Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie den Systemadministrator."
+    }
   },
   "DIALOG": {
     "DELETE": "Sind Sie sicher, dass Sie {{data}} löschen wollen?",

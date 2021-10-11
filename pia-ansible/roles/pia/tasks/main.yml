@@ -116,12 +116,14 @@
   tags:
     - prerequisites
     - internet
+    - installation
 
 - name: Update pip3 via command
   command: python3 -m pip install --upgrade pip
   tags:
     - prerequisites
     - internet
+    - installation
 
 - name: Install cryptography
   pip:
@@ -133,6 +135,7 @@
   tags:
     - prerequisites
     - internet
+    - installation
 
 - name: NO PROXY | Install virtualenv
   pip:
@@ -144,6 +147,7 @@
   tags:
     - prerequisites
     - internet
+    - installation
 
 - name: Create Symlink for virtualenv
   file:
@@ -152,6 +156,7 @@
     state: link
   tags:
     - prerequisites
+    - installation
 
 - name: Install python module docker-compose
   pip:
@@ -163,6 +168,7 @@
   tags:
     - prerequisites
     - internet
+    - installation
 
 - name: Check that the /bin/docker-compose exists
   stat:
@@ -170,6 +176,7 @@
   register: docker_compose_result
   tags:
     - prerequisites
+    - installation
 
 - name: Create Symlink for docker-compose
   file:
@@ -179,13 +186,14 @@
   when: not docker_compose_result.stat.exists
   tags:
     - prerequisites
+    - installation
 
 - name: Check that docker-compose in virtualenv exists
   stat:
     path: /sormas/venv/bin/docker-compose
   register: stat_result
 
-- name: Log into netzlink registry with virtualenv
+- name: Log into registry with virtualenv
   docker_login:
     registry: '{{ pia_docker_registry }}'
     username: '{{ survey_docker_user }}'
@@ -196,8 +204,9 @@
   tags:
     - prerequisites
     - internet
+    - installation
 
-- name: Log into netzlink registry
+- name: Log into registry
   docker_login:
     registry: '{{ pia_docker_registry }}'
     username: '{{ survey_docker_user }}'

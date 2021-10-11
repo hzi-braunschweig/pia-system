@@ -5,7 +5,7 @@
  */
 
 import { ConfigRoute } from './configRoute';
-import { ProxyRoute } from './proxyRoute';
+import { ProxyRoute, Route, Upstream } from './proxyRoute';
 
 export interface IOptions {
   isDevelopmentSystem: boolean;
@@ -29,18 +29,14 @@ export class RouteMapper {
 
       const routeHasSsl = options.isSslEnabled && !route.isHttpOnly;
       const defaultProtocolPort = routeHasSsl ? HTTPS_PORT : HTTP_PORT;
-      const defaultPort =
-        typeof options.defaultPort !== 'undefined'
-          ? options.defaultPort
-          : defaultProtocolPort;
+      const defaultPort = options.defaultPort ?? defaultProtocolPort;
 
-      const port = typeof route.port !== 'undefined' ? route.port : defaultPort;
-      const host =
-        typeof route.host !== 'undefined' ? route.host : route.serviceName;
+      const port = route.port ?? defaultPort;
+      const host = route.host ?? route.serviceName;
       const path = route.path;
       const protocol: 'https' | 'http' = routeHasSsl ? 'https' : 'http';
 
-      const upstream = {
+      const upstream: Upstream = {
         serviceName: route.serviceName,
         host,
         port,
@@ -68,7 +64,7 @@ export class RouteMapper {
   /**
    * takes care that the most specific routes are listed (and matched) first
    **/
-  public static sortRoutes(routes: ProxyRoute[]): ProxyRoute[] {
+  public static sortRoutes(routes: Route[]): Route[] {
     routes.sort((a, b) => {
       return b.path.length - a.path.length;
     });
@@ -78,7 +74,7 @@ export class RouteMapper {
   /**
    * takes care that there are no duplicate routes
    **/
-  public static checkRoutes(routes: ProxyRoute[]): ProxyRoute[] {
+  public static checkRoutes(routes: Route[]): Route[] {
     for (const route of routes) {
       if (routes.filter((r) => r.path === route.path).length !== 1) {
         throw new Error(`duplicate route: ${route.path}`);

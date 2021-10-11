@@ -2,6 +2,19 @@
 
 This file contains notes about changes that are important to the operations team.
 
+## 1.27
+
+- the `pia_ip_check_enabled` and `pia_cert_check_enabled` ansible variables have been added and should be set to `true` for PIA-Prod.
+
+The output of `docker logs authservice` should contain enabled `ipCheckEnabled` and `certCheckEnabled`:
+
+```
+08:46:27 08.10.2021, [log,startup] data: Server running at https://0.0.0.0:4000
+08:46:27 08.10.2021, [log,startup] data: {"ipCheckEnabled":true,"certCheckEnabled":true}
+```
+
+## 1.26
+
 ## 1.25.1
 
 - the ansible configuration variable `pia_mhh_ftpservice_allow_old_ssh2_kex` has to be set to `true` for PIA-Prod

@@ -5,6 +5,7 @@ copyright-lint:
     entrypoint: ['/bin/sh', '-c']
 
   script:
+    - rm -rf psa.lib.messagequeue/dist
     - rm -rf psa.lib.templatepipeline/dist
     - rm -rf psa.lib.service-core/dist
     - rm -rf psa.lib.licensecollector/dist

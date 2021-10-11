@@ -11,6 +11,7 @@ import {
   HttpConnection,
   HttpProtocol,
   MailserverConnection,
+  MessageQueueConnection,
   SecureConnection,
   SslCerts,
 } from './configModel';
@@ -192,6 +193,19 @@ export class GlobalConfig {
         key: sslCerts.key,
         ca: sslCerts.ca,
       },
+    };
+  }
+
+  /**
+   * Returns the connection settings for the messagequeue
+   */
+  public static getMessageQueue(serviceName: string): MessageQueueConnection {
+    return {
+      host: ConfigUtils.getEnvVariable('MESSAGEQUEUE_HOST'),
+      port: ConfigUtils.getEnvVariableInt('MESSAGEQUEUE_PORT'),
+      serviceName,
+      username: ConfigUtils.getEnvVariable('MESSAGEQUEUE_APP_USER'),
+      password: ConfigUtils.getEnvVariable('MESSAGEQUEUE_APP_PASSWORD'),
     };
   }
 

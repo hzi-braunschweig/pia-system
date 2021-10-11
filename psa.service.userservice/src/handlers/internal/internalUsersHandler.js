@@ -6,6 +6,7 @@
 
 const Boom = require('@hapi/boom');
 const internalUsersInteractor = require('../../interactors/internal/internalUsersInteractor');
+const postgresqlHelper = require('../../services/postgresqlHelper');
 
 /**
  * @description Internal handler for users
@@ -78,6 +79,31 @@ const internalUsersHandler = (function () {
       });
   }
 
+  /**
+   * get user external compliance - this is an internal method used in S2S Api call
+   */
+  const getUserExternalCompliance = async (request) => {
+    try {
+      const externalCompliance =
+        await internalUsersInteractor.getUserExternalCompliance(
+          request.params.username,
+          postgresqlHelper
+        );
+      if (externalCompliance) {
+        return externalCompliance;
+      } else {
+        return Boom.notFound('no user found');
+      }
+    } catch (err) {
+      request.log(
+        ['error'],
+        'Could not get an answer from database for external compliance'
+      );
+      request.log(['error'], err);
+      return Boom.serverUnavailable(err);
+    }
+  };
+
   return {
     /**
      * @function
@@ -105,6 +131,7 @@ const internalUsersHandler = (function () {
     getStudiesForProfessional: getStudiesForProfessional,
 
     getPseudonyms: getPseudonyms,
+    getUserExternalCompliance: getUserExternalCompliance,
   };
 })();
 

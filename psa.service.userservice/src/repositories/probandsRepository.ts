@@ -4,12 +4,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Proband } from '../models/proband';
-import { db } from '../db';
+import { CreateProband, Proband } from '../models/proband';
+import { getDbTransactionFromOptionsOrDbConnection } from '../db';
 import { PendingComplianceChange } from '../models/pendingComplianceChange';
+import { RepositoryOptions } from '@pia/lib-service-core';
 
 export class ProbandsRepository {
-  public static async find(options: { studyName: string }): Promise<Proband[]> {
+  public static async find(
+    conditions: { studyName: string },
+    options?: RepositoryOptions
+  ): Promise<Proband[]> {
+    const db = getDbTransactionFromOptionsOrDbConnection(options);
     const query = `SELECT u.username                       AS "username",
                               u.ids                            AS "ids",
                               su.study_id                      AS "study",
@@ -35,7 +40,7 @@ export class ProbandsRepository {
                          AND su.study_id = $(studyName)`;
     const probandsWithChanges = await db.manyOrNone<
       Proband & PendingComplianceChange
-    >(query, options);
+    >(query, conditions);
     return probandsWithChanges.map((probandWithChanges) => {
       const proband: Proband = {
         username: probandWithChanges.username,
@@ -68,5 +73,63 @@ export class ProbandsRepository {
       };
       return proband;
     });
+  }
+
+  public static async save(
+    newProbandData: CreateProband,
+    options?: RepositoryOptions
+  ): Promise<void> {
+    const db = getDbTransactionFromOptionsOrDbConnection(options);
+
+    await db.one<string>(
+      `UPDATE users
+             SET compliance_labresults=$(complianceLabresults),
+                 compliance_samples=$(complianceSamples),
+                 compliance_bloodsamples=$(complianceBloodsamples),
+                 study_center=$(studyCenter),
+                 examination_wave=$(examinationWave),
+                 logging_active         = NOT s.has_logging_opt_in
+             FROM studies AS s
+             WHERE username = $(pseudonym)
+               AND s.name = $(study)
+             RETURNING username AS pseudonym`,
+      newProbandData
+    );
+
+    // insert study access for those that did not exist earlier = those without ids
+    if (!newProbandData.ids) {
+      await db.none(
+        `INSERT INTO study_users (study_id, user_id, access_level)
+                 VALUES ($(study), $(pseudonym), 'read')`,
+        newProbandData
+      );
+    }
+  }
+
+  public static async saveIDSProband(
+    ids: string,
+    study: string,
+    options?: RepositoryOptions
+  ): Promise<void> {
+    const db = getDbTransactionFromOptionsOrDbConnection(options);
+    await db.one(
+      `UPDATE users AS u
+             SET ids                     = $(ids),
+                 compliance_labresults   = FALSE,
+                 compliance_samples      = FALSE,
+                 compliance_bloodsamples = FALSE,
+                 logging_active          = NOT s.has_logging_opt_in
+             FROM studies AS s
+             WHERE u.username = $(ids)
+               AND s.name = $(study)
+             RETURNING username AS pseudonym`,
+      { ids, study }
+    );
+
+    await db.none(
+      `INSERT INTO study_users (study_id, user_id, access_level)
+             VALUES ($(study), $(pseudonym), 'read')`,
+      { study, pseudonym: ids }
+    );
   }
 }

@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { Connection, DatabaseConnection, HttpConnection, MailserverConnection, SecureConnection, SslCerts } from './configModel';
+import { Connection, DatabaseConnection, HttpConnection, MailserverConnection, MessageQueueConnection, SecureConnection, SslCerts } from './configModel';
 export declare class GlobalConfig {
     static get internal(): Connection;
     static get authservice(): HttpConnection;
@@ -16,5 +16,6 @@ export declare class GlobalConfig {
     static get publicAuthKey(): Buffer;
     static getPublic(sslCerts: SslCerts): SecureConnection;
     static getQPia(sslCerts: SslCerts): DatabaseConnection;
+    static getMessageQueue(serviceName: string): MessageQueueConnection;
     private static getHttpConnection;
 }

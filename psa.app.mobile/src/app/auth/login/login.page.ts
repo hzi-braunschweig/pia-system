@@ -5,7 +5,7 @@
  */
 
 import { Component } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import {
   AlertController,
   LoadingController,
@@ -13,6 +13,8 @@ import {
   Platform,
   ViewWillEnter,
 } from '@ionic/angular';
+import { AppVersion } from '@ionic-native/app-version/ngx';
+import { Market } from '@ionic-native/market/ngx';
 import { TranslateService } from '@ngx-translate/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
 
@@ -22,6 +24,7 @@ import { ToastPresenterService } from '../../shared/services/toast-presenter/toa
 import { LocaleService } from '../../shared/services/locale/locale.service';
 import { AuthService } from '../auth.service';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -46,23 +49,27 @@ export class LoginPage implements ViewWillEnter {
   private jwtHelper = new JwtHelperService();
   private loginToken: string = localStorage.getItem('token_login');
 
+  private currentAppVersion: string;
+
   constructor(
     public localeService: LocaleService,
     public endpoint: EndpointService,
     private platform: Platform,
+    private appVersion: AppVersion,
+    private market: Market,
     private loadingCtrl: LoadingController,
     private authClient: AuthClientService,
     private auth: AuthService,
     private router: Router,
-    private activatedRoute: ActivatedRoute,
     private menuCtrl: MenuController,
     private toastPresenter: ToastPresenterService,
     private alertCtrl: AlertController,
     private translate: TranslateService
   ) {}
 
-  ionViewWillEnter(): void {
+  async ionViewWillEnter(): Promise<void> {
     this.menuCtrl.enable(false);
+    this.currentAppVersion = await this.appVersion.getVersionNumber();
   }
 
   async login() {
@@ -77,10 +84,18 @@ export class LoginPage implements ViewWillEnter {
     } else {
       username = this.username;
     }
-    this.setEndpoint(username);
+    if (!this.setEndpoint(username)) {
+      return;
+    }
     this.auth.resetCurrentUser();
 
     const loader = await this.showLoader();
+
+    if (!(await this.endpoint.isEndpointCompatible(this.currentAppVersion))) {
+      this.dismissLoader(loader);
+      await this.showAppIncompatibleAlert();
+      return;
+    }
 
     try {
       let result: User;
@@ -162,6 +177,32 @@ export class LoginPage implements ViewWillEnter {
     alert.present();
   }
 
+  async showAppIncompatibleAlert(): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header: this.translate.instant(
+        'LOGIN.ALERT_MSG_INCOMPATIBLE_APP_VERSION'
+      ),
+      buttons: [
+        {
+          text: this.translate.instant('GENERAL.CANCEL_TEXT'),
+          role: 'cancel',
+        },
+        {
+          text: this.translate.instant(
+            'LOGIN.ALERT_BUTTON_LABEL_GO_TO_APP_STORE'
+          ),
+          handler: () => {
+            alert.dismiss();
+            this.market.open(this.getAppId());
+            return false;
+          },
+        },
+      ],
+    });
+
+    alert.present();
+  }
+
   clearLoginToken() {
     localStorage.removeItem('token_login');
     this.loginToken = null;
@@ -194,21 +235,21 @@ export class LoginPage implements ViewWillEnter {
     return 'web';
   }
 
-  private setEndpoint(username: string) {
+  private setEndpoint(username: string): boolean {
     if (!this.showCustomEndpointField) {
       const success = this.endpoint.setEndpointForUser(username);
       if (!success) {
         this.toastPresenter.presentToast(
           'LOGIN.TOAST_MSG_LOGIN_NO_BACKEND_MAPPING_EXISTS'
         );
-        return;
       }
+      return success;
     } else {
       const success = this.endpoint.setCustomEndpoint(this.customEndpointUrl);
       if (!success) {
         this.toastPresenter.presentToast('LOGIN.GIVEN_BACKEND_URL_NOT_VALID');
-        return;
       }
+      return success;
     }
   }
 
@@ -284,5 +325,15 @@ export class LoginPage implements ViewWillEnter {
   private dismissLoader(loading: HTMLIonLoadingElement) {
     loading.dismiss();
     this.isLoading = false;
+  }
+
+  private getAppId() {
+    if (this.platform.is('android')) {
+      return environment.androidAppId;
+    } else if (this.platform.is('ios')) {
+      return environment.iOSAppId;
+    } else {
+      return null;
+    }
   }
 }

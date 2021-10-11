@@ -1,4 +1,4 @@
-FROM node:14.17.5-alpine@sha256:b8d48b515e3049d4b7e9ced6cedbe223c3bc4a3d0fd02332448f3cdb000faee1 AS base
+FROM node:14.18.0-alpine@sha256:a9c0ee1ecc1cfc7a54ffb3db2fe8dff3c8ac7df115e607cf6c720be31f255fb1 AS base
 
 RUN apk --update --no-cache add curl tzdata
 
@@ -9,10 +9,12 @@ ARG DIR=.
 COPY $DIR/package*.json ./
 #copy dependencies' package.json
 COPY --chown=node:node psa.lib.service-core/package.json ../psa.lib.service-core/
+COPY --chown=node:node psa.lib.messagequeue/package.json ../psa.lib.messagequeue/
 
 RUN npm ci --production
 #copy dependencies' source
 COPY --chown=node:node psa.lib.service-core/dist ../psa.lib.service-core/dist
+COPY --chown=node:node psa.lib.messagequeue/dist ../psa.lib.messagequeue/dist
 
 ################################################################
 

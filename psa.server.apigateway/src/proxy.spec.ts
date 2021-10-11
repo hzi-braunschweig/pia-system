@@ -6,11 +6,11 @@
 
 import { expect } from 'chai';
 import { Proxy as HttpProxy } from './proxy';
-import { ProxyRoute } from './proxyRoute';
+import { Route } from './proxyRoute';
 import { HttpServer } from './httpServer';
 import { Headers } from './headers';
 import { StatusCode } from './statusCode';
-import { Response, default as fetch } from 'node-fetch';
+import { default as fetch, Response } from 'node-fetch';
 
 import * as http from 'http';
 
@@ -93,7 +93,7 @@ class Helper {
   }
 
   public static async startProxy(
-    routes: ProxyRoute[],
+    routes: Route[],
     loggingDisabled = true,
     headers?: Headers,
     ssl = false
@@ -423,5 +423,27 @@ describe('Proxy', () => {
     );
 
     expect(await result).to.equal(true);
+  });
+
+  it('should return a predefined response', async () => {
+    const proxy = await Helper.startProxy(
+      [
+        {
+          path: '/api/test',
+          response: {
+            headers: {
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({ test: 'value' }),
+          },
+        },
+      ],
+      false
+    );
+    const response = await fetch(
+      `http://localhost:${proxy.getPort()}/api/test`
+    );
+    expect(response.status).to.equal(StatusCode.OK);
+    expect(await response.text()).to.equal('{"test":"value"}');
   });
 });

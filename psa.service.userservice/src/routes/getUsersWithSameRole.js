@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const usersHandler = require('../handlers/usersHandler.js');
+const { UsersHandler } = require('../handlers/usersHandler');
 
 module.exports = {
   path: '/user/usersWithSameRole',
   method: 'GET',
-  handler: usersHandler.getAllWithSameRole,
+  handler: UsersHandler.getAllWithSameRole,
   config: {
     description: 'get all users with the same role as a requester',
     auth: 'jwt',

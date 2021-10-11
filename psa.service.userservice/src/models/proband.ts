@@ -48,3 +48,44 @@ export type StudyStatus =
   | 'deactivated'
   | 'deletion_pending'
   | 'deleted';
+
+export interface CreateProbandRequest {
+  pseudonym: string;
+  ids?: string;
+  complianceLabresults: boolean;
+  complianceSamples: boolean;
+  complianceBloodsamples: boolean;
+  studyCenter: string;
+  examinationWave: number;
+}
+
+export interface CreateIDSProbandRequest {
+  ids: string;
+}
+
+export interface CreateProband {
+  pseudonym: string;
+  study: string;
+  ids?: string;
+  complianceLabresults: boolean;
+  complianceSamples: boolean;
+  complianceBloodsamples: boolean;
+  studyCenter: string;
+  examinationWave: number;
+}
+
+export interface CreateProbandExternalResponse {
+  pseudonym: string;
+  resultURL: URL;
+}
+
+export enum CreateProbandError {
+  USER_NOT_FOUND = 'USER_NOT_FOUND',
+  WRONG_ROLE = 'WRONG_ROLE',
+  NO_ACCESS_TO_STUDY = 'NO_ACCESS_TO_STUDY',
+  NO_PLANNED_PROBAND_FOUND = 'NO_PLANNED_PROBAND_FOUND',
+  PROBAND_ALREADY_EXISTS = 'PROBAND_ALREADY_EXISTS',
+  CREATING_ACCOUNG_FAILED = 'CREATING_ACCOUNG_FAILED',
+  SAVING_PROBAND_FAILED = 'SAVING_PROBAND_FAILED',
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+}

@@ -7,68 +7,105 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-
-import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
+import {
+  DialogPopUpComponent,
+  DialogPopUpData,
+} from '../../../_helpers/dialog-pop-up';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { PlannedProband } from 'src/app/psa.app.core/models/plannedProband';
-import { User } from 'src/app/psa.app.core/models/user';
 import { DataService } from 'src/app/_services/data.service';
 import { SelectedProbandInfoService } from '../../../_services/selected-proband-info.service';
-import { AuthenticationManager } from '../../../_services/authentication-manager.service';
+import { UserWithStudyAccess } from '../../../psa.app.core/models/user-with-study-access';
+import { AlertService } from '../../../_services/alert.service';
+import { CreateProbandError } from '../../../psa.app.core/models/proband';
 
 @Component({
   templateUrl: 'proband.component.html',
   styleUrls: ['proband.component.scss'],
 })
 export class ProbandComponent implements OnInit, OnDestroy {
-  pseudonym: string;
-  isDataReady: boolean = false;
-  wasCreated: boolean = null;
-  probandExists: boolean = null;
-  isTestProband: boolean = false;
+  public pseudonym: string;
+  public isLoading: boolean;
+  public proband: UserWithStudyAccess = null;
+  public plannedProband: PlannedProband = null;
 
-  proband: User = null;
-  plannedProband: PlannedProband = null;
-
-  constructor(
+  public constructor(
     private activatedRoute: ActivatedRoute,
-    public dialog: MatDialog,
+    private dialog: MatDialog,
     private userService: AuthService,
-    private auth: AuthenticationManager,
     private router: Router,
     private selectedProbandInfoService: SelectedProbandInfoService,
-    private dataService: DataService
+    private dataService: DataService,
+    private alertService: AlertService
   ) {}
 
-  ngOnInit(): void {
+  public async ngOnInit(): Promise<void> {
+    this.isLoading = true;
     this.pseudonym = this.activatedRoute.snapshot.paramMap.get('pseudonym');
-    this.wasCreated = this.activatedRoute.snapshot.queryParamMap.get('created')
-      ? this.activatedRoute.snapshot.queryParamMap.get('created') === 'true'
-      : null;
+    const created = this.activatedRoute.snapshot.queryParamMap.get('created');
 
-    if (this.wasCreated === false) {
-      this.showFailureDialog();
-    } else if (this.wasCreated === true) {
+    if (created === 'false') {
+      const errorType = this.activatedRoute.snapshot.queryParamMap.get(
+        'error'
+      ) as CreateProbandError | null;
+      this.showFailureDialog(errorType ?? CreateProbandError.UNKNOWN_ERROR);
+    } else if (created === 'true') {
       this.showSuccessDialog();
     }
 
-    if (this.wasCreated !== false && this.pseudonym) {
-      this.loadProband();
-    } else {
-      this.probandExists = false;
+    if (created !== 'false' && this.pseudonym) {
+      await this.loadProband();
+
+      this.selectedProbandInfoService.updateSideNavInfoSelectedProband({
+        ids: this.proband.ids,
+        pseudonym: this.proband.username,
+      });
     }
+    this.isLoading = false;
   }
 
-  ngOnDestroy(): void {
-    if (this.auth.currentRole === 'Untersuchungsteam') {
-      this.selectedProbandInfoService.updateSideNavInfoSelectedProband(null);
-    }
+  public ngOnDestroy(): void {
+    this.selectedProbandInfoService.updateSideNavInfoSelectedProband(null);
   }
 
-  async loadProband(): Promise<void> {
+  public async changeTestprobandState(checked: boolean): Promise<void> {
+    this.isLoading = true;
+    try {
+      await this.userService.putUser(this.pseudonym, {
+        is_test_proband: checked,
+      });
+      await this.loadProband();
+      this.dialog.open(DialogPopUpComponent, {
+        width: '500px',
+        data: {
+          data: '',
+          content: 'DIALOG.TEST_PROBAND_STATE_UPDATED',
+          isSuccess: true,
+        },
+      });
+    } catch (error) {
+      this.alertService.errorObject(error);
+    }
+    this.isLoading = false;
+  }
+
+  public openSampleManagement(): void {
+    this.router
+      .navigate(['/sample-management/', this.pseudonym])
+      .catch((e) => this.alertService.errorObject(e));
+  }
+
+  public openLoginLetter(): void {
+    this.dataService.setPlannedProbandsForLetters([this.plannedProband]);
+    this.router
+      .navigate(['/collective-login-letters'])
+      .catch((e) => this.alertService.errorObject(e));
+  }
+
+  private async loadProband(): Promise<void> {
     this.plannedProband = await this.userService
       .getPlannedProband(this.pseudonym)
-      .catch((e) => {
+      .catch(() => {
         return null;
       });
 
@@ -76,71 +113,31 @@ export class ProbandComponent implements OnInit, OnDestroy {
       console.log(e);
       return null;
     });
-
-    if (this.auth.currentRole === 'Untersuchungsteam') {
-      this.selectedProbandInfoService.updateSideNavInfoSelectedProband({
-        ids: this.proband['ids'],
-        pseudonym: this.proband['username'],
-      });
-    }
-
-    this.isTestProband = this.proband ? this.proband['is_test_proband'] : false;
-    this.probandExists = this.proband ? true : false;
-    this.isDataReady = true;
   }
 
-  async changeTestprobandState($event): Promise<void> {
-    let state;
-    $event.checked === true ? (state = true) : (state = false);
-    const message = 'DIALOG.TEST_PROBAND_STATE_UPDATED';
-    await this.userService
-      .putUser(this.pseudonym, { is_test_proband: state })
-      .then((result) => {
-        this.dialog.open(DialogPopUpComponent, {
-          width: '500px',
-          data: { data: '', content: message, isSuccess: true },
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-        return null;
-      });
-  }
-
-  showFailureDialog(): void {
-    setTimeout(() => {
-      const message = 'DIALOG.CREATE_PROBAND_ERROR';
-      this.dialog.open(DialogPopUpComponent, {
+  private showFailureDialog(errorType: CreateProbandError): void {
+    this.dialog.open<DialogPopUpComponent, DialogPopUpData>(
+      DialogPopUpComponent,
+      {
         width: '500px',
         data: {
-          data: '',
-          content: message,
+          content: 'PROBAND.ERROR.' + errorType,
           isSuccess: false,
         },
-      });
-    });
+      }
+    );
   }
 
-  showSuccessDialog(): void {
-    setTimeout(() => {
-      const message = 'DIALOG.CREATE_PROBAND_SUCCESS';
-      this.dialog.open(DialogPopUpComponent, {
+  private showSuccessDialog(): void {
+    this.dialog.open<DialogPopUpComponent, DialogPopUpData>(
+      DialogPopUpComponent,
+      {
         width: '500px',
         data: {
-          data: '',
-          content: message,
+          content: 'DIALOG.CREATE_PROBAND_SUCCESS',
           isSuccess: true,
         },
-      });
-    });
-  }
-
-  openSampleManagement(): void {
-    this.router.navigate(['/sample-management/', this.pseudonym]);
-  }
-
-  openLoginLetter(): void {
-    this.dataService.setPlannedProbandsForLetters([this.plannedProband]);
-    this.router.navigate(['/collective-login-letters']);
+      }
+    );
   }
 }

@@ -38,7 +38,7 @@ export class MessageQueueClientHelper {
    * message queue host is fully available.
    */
   public static async waitForAvailability(options: {
-    hostname: string;
+    host: string;
     port?: number;
     username: string;
     password: string;
@@ -46,7 +46,7 @@ export class MessageQueueClientHelper {
     for (;;) {
       try {
         const connection = await amqp.connect({
-          hostname: options.hostname,
+          hostname: options.host,
           port: options.port,
           username: options.username,
           password: options.password,

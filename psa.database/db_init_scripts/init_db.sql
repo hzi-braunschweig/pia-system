@@ -560,11 +560,6 @@ CREATE TABLE user_files (
         ON DELETE CASCADE
 );
 
-CREATE TABLE app_info (
-    version_number TEXT NOT NULL,
-    release_date TIMESTAMP  DEFAULT now()
-);
-
 CREATE TABLE allowed_ips (
     ip TEXT PRIMARY KEY,
     allowed_role TEXT NOT NULL

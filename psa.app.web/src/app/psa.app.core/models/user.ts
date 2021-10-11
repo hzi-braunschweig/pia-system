@@ -6,21 +6,19 @@
 
 import { StudyAccess } from './study_access';
 
-export class User {
-  id: number;
+export interface User {
   username: string;
-  password: string;
+  role: Role;
   token: string;
   first_logged_in_at: string;
   compliance_labresults: boolean;
   compliance_samples: boolean;
   compliance_bloodsamples: boolean;
-  needs_material: boolean;
-  pw_change_needed: boolean;
-  role: Role;
   study_center: string;
   examination_wave: number;
   ids: string | null;
+  needs_material: boolean;
+  pw_change_needed: boolean;
 }
 
 export interface PasswordChangeRequest {

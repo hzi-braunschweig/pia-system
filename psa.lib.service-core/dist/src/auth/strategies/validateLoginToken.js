@@ -7,7 +7,7 @@ function validateLoginToken(db) {
         throw new Error('validateLoginToken: Missing database connection. Validation needs database access!');
     }
     return async function (decoded) {
-        if (!authModel_1.isLoginToken(decoded)) {
+        if (!(0, authModel_1.isLoginToken)(decoded)) {
             return { isValid: false };
         }
         try {

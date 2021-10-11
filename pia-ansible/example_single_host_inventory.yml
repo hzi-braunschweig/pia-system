@@ -1,0 +1,68 @@
+##############################################################
+##############################################################
+
+# example inventory for a single host deployment
+
+##############################################################
+##############################################################
+all:
+  hosts:
+    pia:
+      ##############################################################
+      ##############################################################
+
+      # adjust the following values to your needs
+
+      ##############################################################
+      ##############################################################
+
+      # the address of the pia host
+      ansible_host: '192.168.122.248'
+
+      # the username on the host that should be used for the deployment
+      ansible_user: pia-deployer
+
+      # registry login informations
+      pia_docker_registry: registry.example.com
+      # username for the login to the docker registry
+      survey_docker_user: example_user
+      # password for the login to the docker registry
+      survey_docker_password: example_password
+
+      # the pia version that is to be deployed
+      # must match the version of the ansible playbook/role!
+      pia_docker_tag: develop
+
+      # the external reachable url for pia
+      pia_url: http://localhost/
+
+      # the protocol + port for external reachability of pia
+      pia_external_protocol: http
+      pia_external_port: 80
+
+      ##############################################################
+      ##############################################################
+
+      # these values should usually not be changed
+
+      ##############################################################
+      ##############################################################
+
+      # keep these values for single host setups
+      docker_host: true
+      pia_is_qpia: true
+      pia_is_ipia: true
+      pia_is_ewpia: true
+      pia_expose_postgres_ports: false
+      pia_is_certificate_master: true
+      pia_certificate_master: '{{ inventory_hostname }}'
+
+      # we are using random passwords on each deployment
+      # (probably they are not needed and thus can change on each deployment)
+      pia_deployment_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+      pia_sormas_on_pia_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+      pia_pia_on_sormas_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+      pia_api_key: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+      pia_mhh_ftpservice_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+      pia_hzi_ftpservice_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+      pia_modys_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"

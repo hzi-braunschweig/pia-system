@@ -8,18 +8,56 @@ import { Injectable } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { User } from '../psa.app.core/models/user';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { AuthService } from '../psa.app.core/providers/auth-service/auth-service';
 
 @Injectable()
 export class AuthenticationManager {
-  private currentUserSubject: BehaviorSubject<User>;
-  public readonly currentUserObservable: Observable<User>;
+  private currentUserSubject: BehaviorSubject<User> = new BehaviorSubject<User>(
+    this.currentUser
+  );
+
+  public readonly currentUserObservable: Observable<User> =
+    this.currentUserSubject.asObservable();
 
   private jwtHelper: JwtHelperService = new JwtHelperService();
 
-  constructor(private authenticationService: AuthService) {
-    this.currentUserSubject = new BehaviorSubject<User>(this.currentUser);
-    this.currentUserObservable = this.currentUserSubject.asObservable();
+  public get currentRole(): string | null {
+    const payload = this.currentUserTokenPayload;
+    return payload && payload.role;
+  }
+
+  public get loginToken(): string {
+    return localStorage.getItem('token_login');
+  }
+
+  public set loginToken(value: string) {
+    if (value) {
+      localStorage.setItem('token_login', value);
+    } else {
+      localStorage.removeItem('token_login');
+    }
+  }
+
+  public get loginTokenPayload(): any {
+    const loginToken = this.loginToken;
+    return loginToken && this.jwtHelper.decodeToken(loginToken);
+  }
+
+  public set currentUser(user: User | null) {
+    if (user) {
+      localStorage.setItem('currentUser', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('currentUser');
+    }
+    this.currentUserSubject.next(user);
+  }
+
+  public get currentUser(): User | null {
+    return JSON.parse(localStorage.getItem('currentUser'));
+  }
+
+  private get currentUserTokenPayload(): any {
+    const currentUser = this.currentUser;
+    return currentUser && this.jwtHelper.decodeToken(currentUser.token);
   }
 
   /**
@@ -33,55 +71,7 @@ export class AuthenticationManager {
     return false;
   }
 
-  set currentUser(user) {
-    if (user) {
-      localStorage.setItem('currentUser', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('currentUser');
-    }
-    this.currentUserSubject.next(user);
-  }
-
-  get currentUser(): User | null {
-    return JSON.parse(localStorage.getItem('currentUser'));
-  }
-
-  get currentUserTokenPayload(): any {
-    const currentUser = this.currentUser;
-    return currentUser && this.jwtHelper.decodeToken(currentUser.token);
-  }
-
-  get currentRole(): string | null {
-    const payload = this.currentUserTokenPayload;
-    return payload && payload.role;
-  }
-
-  get loginToken(): string {
-    return localStorage.getItem('token_login');
-  }
-
-  set loginToken(value: string) {
-    if (value) {
-      localStorage.setItem('token_login', value);
-    } else {
-      localStorage.removeItem('token_login');
-    }
-  }
-
-  get loginTokenPayload(): any {
-    const loginToken = this.loginToken;
-    return loginToken && this.jwtHelper.decodeToken(loginToken);
-  }
-
-  async logout(): Promise<void> {
-    if (!this.currentUser) {
-      return;
-    }
-    if (!this.jwtHelper.isTokenExpired(this.currentUser.token)) {
-      await this.authenticationService
-        .logout(this.currentUser.username)
-        .catch((err) => console.error('Logout Error', err));
-    }
+  public async logout(): Promise<void> {
     this.currentUser = null;
   }
 }

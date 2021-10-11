@@ -7,10 +7,20 @@
 import { Injectable } from '@angular/core';
 
 import { backendMapping } from '../../../backend-mapping';
+import * as compareVersions from 'compare-versions';
+import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 
 interface BackendMappingEntry {
   prefix: string;
   url: string;
+}
+
+interface EndpointMetaData {
+  /**
+   * Minimal Version needed to access the endpoints API
+   */
+  minimalAppVersion: string;
 }
 
 @Injectable({
@@ -27,6 +37,8 @@ export class EndpointService {
     }
     return url || null;
   }
+
+  constructor(private http: HttpClient) {}
 
   getUrl(): string | null {
     return this.endpointUrl;
@@ -66,5 +78,30 @@ export class EndpointService {
 
   isCustomEndpoint(): boolean {
     return !!this.getCustomEndpoint();
+  }
+
+  /**
+   * Endpoint is only compatible if its minimal app version is
+   * lower or equal to the current app version.
+   */
+  async isEndpointCompatible(currentAppVersion: string): Promise<boolean> {
+    let minimalAppVersion: string;
+    try {
+      minimalAppVersion = await this.getMinimalAppVersion();
+    } catch (e) {
+      /**
+       * just return true for endpoints which are unavailable or
+       * which do not implement the meta data api
+       */
+      return true;
+    }
+    return compareVersions(minimalAppVersion, currentAppVersion) !== 1;
+  }
+
+  private async getMinimalAppVersion(): Promise<string> {
+    return await this.http
+      .get<EndpointMetaData>(`${this.endpointUrl}/api/v1/`)
+      .pipe(map((endpointMetaData) => endpointMetaData.minimalAppVersion))
+      .toPromise();
   }
 }

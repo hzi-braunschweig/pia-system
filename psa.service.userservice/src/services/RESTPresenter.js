@@ -44,23 +44,11 @@ const RESTPresenter = (function () {
     };
   }
 
-  function constructMobileVersion() {
-    return {
-      self: { href: '/mobileVersion' },
-    };
-  }
-
   function presentUser(userObj) {
     if (userObj) {
       userObj.links = constructUserLinks(userObj.username);
     }
     return userObj;
-  }
-
-  function presentMobileVersion(mobileVersionObject) {
-    const ret = mobileVersionObject;
-    ret.links = constructMobileVersion();
-    return ret;
   }
 
   function presentUsers(usersArr) {
@@ -148,15 +136,6 @@ const RESTPresenter = (function () {
      * @returns a planned proband object as a REST compliant json object
      */
     presentPlannedProband: presentPlannedProband,
-
-    /**
-     * @function
-     * @description presents a mobile version object as a REST compliant json object
-     * @memberof module:RESTPresenter
-     * @param {array} mobileVersionObject the object of the mobile version infos to present
-     * @returns a mobile version object as a REST compliant json object
-     */
-    presentMobileVersion: presentMobileVersion,
 
     /**
      * @function

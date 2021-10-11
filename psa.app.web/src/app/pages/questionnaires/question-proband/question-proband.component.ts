@@ -65,6 +65,7 @@ import { SelectedProbandInfoService } from '../../../_services/selected-proband-
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
 import { AnswerType } from '../../../psa.app.core/models/answerType';
 import { QuestionnaireInstance } from '../../../psa.app.core/models/questionnaireInstance';
+import { UserWithStudyAccess } from '../../../psa.app.core/models/user-with-study-access';
 
 enum DisplayStatus {
   QUESTIONS,
@@ -138,7 +139,7 @@ export class QuestionProbandComponent
   public user_id: string;
   public answerVersionFromServer: number;
   public release_version: number;
-  public proband: User;
+  public proband: UserWithStudyAccess;
 
   @ViewChild('questionSwiper')
   public questionSwiper: SwiperComponent;

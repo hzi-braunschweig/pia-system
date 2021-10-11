@@ -4,6 +4,7 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
 <div class="jumbotron">
   <mat-card class="d-flex justify-content-center">
     <mat-card-title>
@@ -12,7 +13,7 @@
       </h3>
     </mat-card-title>
     <mat-card-content class="proband-details">
-      <div *ngIf="isDataReady && probandExists">
+      <div *ngIf="proband">
         <table>
           <tr>
             <td>{{ 'PROBAND.EXAMINATION_WAVE' | translate }}</td>
@@ -55,21 +56,20 @@
           </tr>
         </table>
       </div>
-      <div *ngIf="probandExists === false">
+      <div *ngIf="!proband">
         {{ 'PROBAND.NOT_EXIST' | translate }}
       </div>
-      <div *ngIf="probandExists">
+      <div *ngIf="proband">
         <mat-checkbox
-          class="checkbox-big"
-          [(ngModel)]="isTestProband"
-          (change)="changeTestprobandState($event)"
+          [checked]="proband.is_test_proband"
+          (change)="changeTestprobandState($event.checked)"
           >{{ 'PROBAND.TEST_PROBAND' | translate }}</mat-checkbox
         >
       </div>
     </mat-card-content>
     <mat-card-actions>
       <button
-        [disabled]="!probandExists"
+        [disabled]="!proband"
         mat-raised-button
         color="primary"
         (click)="openSampleManagement()"

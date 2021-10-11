@@ -451,6 +451,10 @@ services:
       - MAIL_REQUIRE_TLS=${MAIL_REQUIRE_TLS}
       - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
       - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      - MESSAGEQUEUE_HOST=${MESSAGEQUEUE_HOST}
+      - MESSAGEQUEUE_PORT=${MESSAGEQUEUE_PORT}
+      - MESSAGEQUEUE_APP_PASSWORD=${MESSAGEQUEUE_APP_PASSWORD}
+      - MESSAGEQUEUE_APP_USER=${MESSAGEQUEUE_APP_USER}
 {% if pia_local_development %}
     build:
       context: "../../../"
@@ -798,11 +802,9 @@ services:
       - $SSL_DIRECTORY/apigateway:/etc/ssl/
     ports:
 {% if pia_expose_http_ports %}
-      - "443:443"
-      - "80:80"
+      - "${EXTERNAL_PORT}:${EXTERNAL_PORT}"
 {% else %}
-      - "443"
-      - "80"
+      - "${EXTERNAL_PORT}"
 {% endif %}
     networks:
       pia:

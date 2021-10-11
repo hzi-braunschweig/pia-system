@@ -42,6 +42,12 @@ export interface MailserverConnection extends Connection {
   name: string;
 }
 
+export interface MessageQueueConnection extends Connection {
+  username: string;
+  password: string;
+  serviceName: string;
+}
+
 export interface SftpServerConnection extends Connection {
   username: string;
   password: string;
@@ -82,6 +88,7 @@ export interface ServiceConfig {
     mailserver?: MailserverConnection;
     mhhftpserver?: SftpServerConnection;
     hzistpserver?: SftpServerConnection;
+    messageQueue?: MessageQueueConnection;
   };
   publicAuthKey?: Buffer;
   webappUrl?: string;

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { GlobalConfig, ServiceConfig } from '../../src';
+import { GlobalConfig, SupersetOfServiceConfig } from '../../src';
 
 const dummySslCerts = {
   cert: new Buffer(''),
@@ -12,7 +12,7 @@ const dummySslCerts = {
   ca: new Buffer(''),
 };
 
-export const config: ServiceConfig = {
+const conf = {
   public: GlobalConfig.getPublic(dummySslCerts),
   internal: GlobalConfig.internal,
   database: GlobalConfig.getQPia(dummySslCerts),
@@ -25,8 +25,10 @@ export const config: ServiceConfig = {
   },
   servers: {
     mailserver: GlobalConfig.mailserver,
+    messageQueue: GlobalConfig.getMessageQueue('exampleservice'),
   },
-  isSormasActive: GlobalConfig.isSormasActive,
   webappUrl: GlobalConfig.webappUrl,
   publicAuthKey: GlobalConfig.publicAuthKey,
 };
+
+export const config: SupersetOfServiceConfig<typeof conf> = conf;

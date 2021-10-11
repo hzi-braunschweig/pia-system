@@ -6,12 +6,12 @@
 
 const Joi = require('joi');
 
-const usersHandler = require('../handlers/usersHandler.js');
+const { UsersHandler } = require('../handlers/usersHandler');
 
 module.exports = {
   path: '/user/users/{username}',
   method: 'DELETE',
-  handler: usersHandler.deleteOne,
+  handler: UsersHandler.deleteOne,
   config: {
     description: 'deletes a user and all its data',
     auth: 'jwt',

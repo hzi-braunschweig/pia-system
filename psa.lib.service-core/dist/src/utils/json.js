@@ -10,7 +10,7 @@ function isoDateStringReviverFn(_key, value) {
 }
 exports.isoDateStringReviverFn = isoDateStringReviverFn;
 function isIsoDateString(value) {
-    const possibleDate = date_fns_1.parseISO(value);
-    return date_fns_1.isValid(possibleDate);
+    const possibleDate = (0, date_fns_1.parseISO)(value);
+    return (0, date_fns_1.isValid)(possibleDate);
 }
 //# sourceMappingURL=json.js.map
