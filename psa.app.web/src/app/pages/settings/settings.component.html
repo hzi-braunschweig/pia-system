@@ -12,27 +12,6 @@
       <mat-card-content>
         <mat-divider [inset]="true" class="blue-divider"></mat-divider>
         <div class="settings-row">
-          <span>{{ 'SETTINGS.TIME' | translate }}</span>
-          <input
-            placeholder="{{ 'SETTINGS.TIME_PLACEHOLDER' | translate }}"
-            [format]="24"
-            readonly
-            [ngxTimepicker]="picker"
-            mat-button
-            class="time-input"
-            type="text"
-            value="{{ selectedTime }}"
-            [(ngModel)]="selectedTime"
-          />
-          <span>{{ 'SETTINGS.TIME_UNIT' | translate }}</span>
-          <ngx-material-timepicker
-            #picker
-            [cancelBtnTmpl]="cancelBtn"
-            [ngxMaterialTimepickerTheme]="timepickerTheme"
-          >
-          </ngx-material-timepicker>
-        </div>
-        <div class="settings-row">
           <span>{{ 'SETTINGS.LOGGING' | translate }}</span>
           <mat-checkbox
             data-e2e="acquisition-of-log-data-checkbox"

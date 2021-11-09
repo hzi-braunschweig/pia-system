@@ -8,10 +8,10 @@ const Boom = require('@hapi/boom');
 const validator = require('email-validator');
 
 const { runTransaction } = require('../db');
-const loggingserviceClient = require('../clients/loggingserviceClient');
+const { LoggingserviceClient } = require('../clients/loggingserviceClient');
 const pendingPartialDeletionRepository = require('../repositories/pendingPartialDeletionRepository');
 const pgHelper = require('../services/postgresqlHelper');
-const mailService = require('../services/mailService.js');
+const { MailService } = require('@pia/lib-service-core');
 const { config } = require('../config');
 const pendingPartialDeletionMapper = require('../services/pendingPartialDeletionMapper');
 
@@ -60,7 +60,7 @@ class PendingPartialDeletionsInteractor {
    * @return {Promise<any>}
    * @private
    */
-  static _sendPartialDeletionEmail(mailAddress, id) {
+  static async _sendPartialDeletionEmail(mailAddress, id) {
     const confirmationURL =
       config.webappUrl + `/probands?pendingPartialDeletionId=${id}`;
     const content = {
@@ -80,7 +80,7 @@ class PendingPartialDeletionsInteractor {
         confirmationURL +
         '</a><br><br>',
     };
-    return mailService.sendMail(mailAddress, content).catch((err) => {
+    return MailService.sendMail(mailAddress, content).catch((err) => {
       console.error(err);
       throw Boom.badData('Forscher could not be reached via email.');
     });
@@ -204,7 +204,7 @@ class PendingPartialDeletionsInteractor {
           { transaction }
         );
       if (executedPendingPartialDeletion.delete_logs) {
-        await loggingserviceClient.deleteLogs(
+        await LoggingserviceClient.deleteLogs(
           executedPendingPartialDeletion.proband_id,
           {
             fromTime: executedPendingPartialDeletion.from_date,
@@ -212,7 +212,7 @@ class PendingPartialDeletionsInteractor {
           }
         );
       }
-      await loggingserviceClient.createSystemLog({
+      await LoggingserviceClient.createSystemLog({
         requestedBy: executedPendingPartialDeletion.requested_by,
         requestedFor: executedPendingPartialDeletion.requested_for,
         type: 'partial',

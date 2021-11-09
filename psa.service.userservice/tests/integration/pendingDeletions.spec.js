@@ -1131,7 +1131,6 @@ describe('/pendingDeletions', function () {
         expect(proband.account_status).to.equal('deactivated');
 
         expect(proband.first_logged_in_at).to.equal(null);
-        expect(proband.notification_time).to.equal(null);
         expect(proband.logged_in_with).to.equal(null);
         expect(proband.compliance_labresults).to.equal(null);
         expect(proband.compliance_samples).to.equal(null);

@@ -9,6 +9,7 @@ export declare class GlobalConfig {
     static get questionnaireservice(): HttpConnection;
     static get userservice(): HttpConnection;
     static get sormasservice(): HttpConnection;
+    static get timeZone(): string;
     static get mailserver(): MailserverConnection;
     static get isSormasActive(): boolean;
     static get webappUrl(): string;

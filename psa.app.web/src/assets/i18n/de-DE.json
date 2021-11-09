@@ -433,6 +433,8 @@
     "RELEASE_QUESTIONNAIRE2": "Fragebogen endgültig abschicken",
     "PREVIEW_ANSWERS": "Zur Zusammenfassung gehen",
     "OVERVIEW": "Zusammenfassung",
+    "OVERVIEW_HINT_IN_PROGRESS": "Bitte sehen Sie den Fragebogen nochmals durch und prüfen Sie, ob Sie alle Fragen vollständig und richtig beantwortet haben. Möchten Sie Änderungen an Ihren hier angezeigten Antworten vornehmen, klicken Sie bitte in der Darstellung links auf die entsprechende Frage und beantworten Sie diese erneut.",
+    "OVERVIEW_HINT_RELEASED": "Dieser Fragebogen wurde bereits abgeschlossen und kann nicht mehr geändert werden.",
     "HISTORY": "Versionsgeschichte",
     "ANSWER_VALUE_REQUIRED": "Ihre Antwort ist erforderlich (Pflichtangabe)",
     "ANSWER_VALUE_MIN": "Antwortwert muss größer als 0 sein",
@@ -698,7 +700,6 @@
     "NEW_USER": "Nutzer:in erstellen"
   },
   "SETTINGS": {
-    "TIME": "Wählen Sie die Uhrzeit aus, zu der Sie Benachrichtigungen erhalten möchten: ",
     "CONFIRM": "Speichern",
     "INFO_SAVED": "Ihre Einstellungen wurden erfolgreich gespeichert.",
     "MANAGE_PASSWORD": "Passwort verwalten: ",

@@ -24,7 +24,7 @@ const apiAddress = 'http://localhost:' + process.env.PORT + '/user';
 const serverSandbox = sinon.createSandbox();
 
 const testSandbox = sinon.createSandbox();
-const mail = require('nodemailer');
+const { MailService } = require('@pia/lib-service-core');
 const fetch = require('node-fetch');
 const { config } = require('../../src/config');
 const loggingserviceUrl = config.services.loggingservice.url;
@@ -114,10 +114,9 @@ const pmHeader1 = { authorization: pmToken1 };
 
 describe('/pendingPartialDeletions', function () {
   let fetchStub;
-  const mailTransporter = { sendMail: sinon.stub().resolves({}) };
 
   before(async function () {
-    serverSandbox.stub(mail, 'createTransport').returns(mailTransporter);
+    serverSandbox.stub(MailService, 'sendMail').resolves(true);
     await server.init();
   });
 

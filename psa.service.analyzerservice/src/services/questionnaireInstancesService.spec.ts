@@ -9,13 +9,15 @@ import chai, { expect } from 'chai';
 
 import { SormasEndDateService } from './sormasEndDateService';
 import { QuestionnaireInstancesService } from './questionnaireInstancesService';
-import { addDays, startOfToday, subDays } from 'date-fns';
+import { addDays, startOfToday, subDays, addHours } from 'date-fns';
 import { db } from '../db';
 import { Questionnaire } from '../models/questionnaire';
 import { User } from '../models/user';
 import { Answer } from '../models/answer';
 import { Condition } from '../models/condition';
 import sinonChai from 'sinon-chai';
+import { zonedTimeToUtc } from 'date-fns-tz';
+import { config } from '../config';
 
 chai.use(sinonChai);
 
@@ -136,14 +138,18 @@ describe('questionnaireInstancesService', function () {
   });
 
   describe('createQuestionnaireInstances', function () {
-    it.skip('should return correct questionnaire instances', async function () {
-      const user: User = createUser('Testuser1', subDays(startOfToday(), 1));
+    it('should return correct questionnaire instances', async function () {
+      const date = subDays(startOfToday(), 1);
+      const user: User = createUser('Testuser1', date);
 
       const questionnaire: Questionnaire = createQuestionnaire({
         cycle_amount: 1,
         cycle_unit: 'day',
         activate_after_days: 0,
         deactivate_after_days: 2,
+
+        created_at: date,
+        updated_at: date,
       });
 
       const res =
@@ -158,32 +164,51 @@ describe('questionnaireInstancesService', function () {
       expect(res[0]?.questionnaire_id).to.equal(99999);
       expect(res[0]?.questionnaire_name).to.equal('TestQuestionnaire1');
       expect(res[0]?.user_id).to.equal('Testuser1');
-      expect(res[0]?.date_of_issue).to.equal(subDays(startOfToday(), 1));
+      expect(res[0]?.date_of_issue.toString()).to.equal(
+        zonedTimeToUtc(
+          addHours(addDays(date, 0), 8),
+          config.timeZone
+        ).toString()
+      );
       expect(res[0]?.status).to.equal('active');
 
       expect(res[1]?.study_id).to.equal('Study1');
       expect(res[1]?.questionnaire_id).to.equal(99999);
       expect(res[1]?.questionnaire_name).to.equal('TestQuestionnaire1');
       expect(res[1]?.user_id).to.equal('Testuser1');
-      expect(res[2]?.date_of_issue).to.equal(startOfToday());
-      expect(res[1]?.status).to.equal('active');
+      expect(res[1]?.date_of_issue.toString()).to.equal(
+        zonedTimeToUtc(
+          addHours(addDays(date, 1), 8),
+          config.timeZone
+        ).toString()
+      );
+      // the status of the second instance may change with the time that the test is executed
 
       expect(res[2]?.study_id).to.equal('Study1');
       expect(res[2]?.questionnaire_id).to.equal(99999);
       expect(res[2]?.questionnaire_name).to.equal('TestQuestionnaire1');
       expect(res[2]?.user_id).to.equal('Testuser1');
-      expect(res[2]?.date_of_issue).to.equal(addDays(startOfToday(), 1));
+      expect(res[2]?.date_of_issue.toString()).to.equal(
+        zonedTimeToUtc(
+          addHours(addDays(date, 2), 8),
+          config.timeZone
+        ).toString()
+      );
       expect(res[2]?.status).to.equal('inactive');
     });
 
-    it.skip('should return correct questionnaire instances for one time questionnaire', async function () {
-      const user: User = createUser('Testuser1', subDays(startOfToday(), 1));
+    it('should return correct questionnaire instances for one time questionnaire', async function () {
+      const date = subDays(startOfToday(), 1);
+      const user: User = createUser('Testuser1', date);
       const questionnaire: Questionnaire = createQuestionnaire({
         no_questions: 2,
         cycle_amount: 0,
         cycle_unit: 'once',
         activate_after_days: 1,
         deactivate_after_days: 0,
+
+        created_at: date,
+        updated_at: date,
       });
 
       const res =
@@ -198,8 +223,113 @@ describe('questionnaireInstancesService', function () {
       expect(res[0]?.questionnaire_id).to.equal(99999);
       expect(res[0]?.questionnaire_name).to.equal('TestQuestionnaire1');
       expect(res[0]?.user_id).to.equal('Testuser1');
-      expect(res[0]?.date_of_issue).to.equal(startOfToday());
+      expect(res[0]?.date_of_issue.toString()).to.equal(
+        zonedTimeToUtc(
+          addHours(addDays(date, 1), 8),
+          config.timeZone
+        ).toString()
+      );
       expect(res[0]?.status).to.equal('active');
+    });
+
+    it('should be able to keep the time correct when timeZone changes to DST', async function () {
+      const date = new Date(Date.UTC(2021, 2, 27));
+      const user: User = createUser('Testuser1', date);
+
+      const questionnaire: Questionnaire = createQuestionnaire({
+        cycle_amount: 1,
+        cycle_unit: 'day',
+        activate_after_days: 0,
+        deactivate_after_days: 2,
+
+        created_at: date,
+        updated_at: date,
+      });
+
+      const res =
+        await QuestionnaireInstancesService.createQuestionnaireInstances(
+          questionnaire,
+          user,
+          false
+        );
+
+      expect(res.length).to.equal(3);
+      expect(res[0]?.study_id).to.equal('Study1');
+      expect(res[0]?.questionnaire_id).to.equal(99999);
+      expect(res[0]?.questionnaire_name).to.equal('TestQuestionnaire1');
+      expect(res[0]?.user_id).to.equal('Testuser1');
+      expect(res[0]?.date_of_issue.toString()).to.equal(
+        new Date(Date.UTC(2021, 2, 27, 7)).toString()
+      );
+      expect(res[0]?.status).to.equal('expired');
+
+      expect(res[1]?.study_id).to.equal('Study1');
+      expect(res[1]?.questionnaire_id).to.equal(99999);
+      expect(res[1]?.questionnaire_name).to.equal('TestQuestionnaire1');
+      expect(res[1]?.user_id).to.equal('Testuser1');
+      expect(res[1]?.date_of_issue.toString()).to.equal(
+        new Date(Date.UTC(2021, 2, 28, 6)).toString()
+      );
+      expect(res[1]?.status).to.equal('expired');
+
+      expect(res[2]?.study_id).to.equal('Study1');
+      expect(res[2]?.questionnaire_id).to.equal(99999);
+      expect(res[2]?.questionnaire_name).to.equal('TestQuestionnaire1');
+      expect(res[2]?.user_id).to.equal('Testuser1');
+      expect(res[2]?.date_of_issue.toString()).to.equal(
+        new Date(Date.UTC(2021, 2, 29, 6)).toString()
+      );
+      expect(res[2]?.status).to.equal('expired');
+    });
+
+    it('should be able to keep the time correct when timeZone changes from DST', async function () {
+      const date = new Date(Date.UTC(2020, 9, 24));
+      const user: User = createUser('Testuser1', date);
+
+      const questionnaire: Questionnaire = createQuestionnaire({
+        cycle_amount: 1,
+        cycle_unit: 'day',
+        activate_after_days: 0,
+        deactivate_after_days: 2,
+
+        created_at: date,
+        updated_at: date,
+      });
+
+      const res =
+        await QuestionnaireInstancesService.createQuestionnaireInstances(
+          questionnaire,
+          user,
+          false
+        );
+
+      expect(res.length).to.equal(3);
+      expect(res[0]?.study_id).to.equal('Study1');
+      expect(res[0]?.questionnaire_id).to.equal(99999);
+      expect(res[0]?.questionnaire_name).to.equal('TestQuestionnaire1');
+      expect(res[0]?.user_id).to.equal('Testuser1');
+      expect(res[0]?.date_of_issue.toString()).to.equal(
+        new Date(Date.UTC(2020, 9, 24, 6)).toString()
+      );
+      expect(res[0]?.status).to.equal('expired');
+
+      expect(res[1]?.study_id).to.equal('Study1');
+      expect(res[1]?.questionnaire_id).to.equal(99999);
+      expect(res[1]?.questionnaire_name).to.equal('TestQuestionnaire1');
+      expect(res[1]?.user_id).to.equal('Testuser1');
+      expect(res[1]?.date_of_issue.toString()).to.equal(
+        new Date(Date.UTC(2020, 9, 25, 7)).toString()
+      );
+      expect(res[1]?.status).to.equal('expired');
+
+      expect(res[2]?.study_id).to.equal('Study1');
+      expect(res[2]?.questionnaire_id).to.equal(99999);
+      expect(res[2]?.questionnaire_name).to.equal('TestQuestionnaire1');
+      expect(res[2]?.user_id).to.equal('Testuser1');
+      expect(res[2]?.date_of_issue.toString()).to.equal(
+        new Date(Date.UTC(2020, 9, 26, 7)).toString()
+      );
+      expect(res[2]?.status).to.equal('expired');
     });
   });
 
@@ -1023,7 +1153,6 @@ describe('questionnaireInstancesService', function () {
       study_center: 'string',
       examination_wave: 1,
       logging_active: true,
-      notification_time: '07:00',
       is_test_proband: false,
     };
   }

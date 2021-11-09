@@ -6,6 +6,7 @@
 
 import { SormasEndDateService } from './sormasEndDateService';
 import {
+  add,
   addDays,
   addHours,
   addMonths,
@@ -34,6 +35,8 @@ import { Answer } from '../models/answer';
 import { Condition } from '../models/condition';
 import { AnswerType } from '../models/answerOption';
 import { LoggingService } from './loggingService';
+import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
+import { config } from '../config';
 
 interface QuestionnaireInstanceStatusWithIdentifier {
   id: number;
@@ -237,10 +240,12 @@ export class QuestionnaireInstancesService {
       cycleAmount: questionnaire.cycle_amount,
       cycleWeekday: questionnaire.notification_weekday,
     };
-    const dateOfIssue = this.calculateDateOfIssue(
-      instance.date_of_issue,
+
+    const zonedDateOfIssue = this.calculateDateOfIssue(
+      utcToZonedTime(instance.date_of_issue, config.timeZone),
       cycleSettings
     );
+    const dateOfIssue = zonedTimeToUtc(zonedDateOfIssue, config.timeZone);
     return {
       study_id: instance.study_id,
       questionnaire_id: instance.questionnaire_id,
@@ -267,13 +272,19 @@ export class QuestionnaireInstancesService {
     hasInternalCondition: boolean,
     onlyLoginDependantOnes = false
   ): Promise<QuestionnaireInstanceNew[]> {
-    const issueDatesForQuestionnaireInstances =
+    const zonedIssueDatesForQuestionnaireInstances =
       this.getIssueDatesForQuestionnaireInstances(
         questionnaire,
         user,
         hasInternalCondition,
         onlyLoginDependantOnes
       );
+
+    const issueDatesForQuestionnaireInstances =
+      zonedIssueDatesForQuestionnaireInstances.map((date) => {
+        return zonedTimeToUtc(date, config.timeZone);
+      });
+
     return await asyncMap<Date, QuestionnaireInstanceNew>(
       issueDatesForQuestionnaireInstances,
       async (issueDate: Date, index) => ({
@@ -600,10 +611,6 @@ export class QuestionnaireInstancesService {
     const cyclePerDay = questionnaire.cycle_per_day ?? this.HOURS_PER_DAY;
     const cycleFirstHour = questionnaire.cycle_first_hour ?? 0;
     const notificationWeekday = questionnaire.notification_weekday;
-    const userSettingsHour = user.notification_time
-      ? // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        parseInt(user.notification_time.split(':')[0]!, 10)
-      : 0;
     const activateAtDate = questionnaire.activate_at_date;
     const datesResult = [];
 
@@ -617,13 +624,14 @@ export class QuestionnaireInstancesService {
             questionnaire.created_at.getTime()
           )
     );
-    // Set the hour of the QI to the hour configured in questionnaire or as configured by proband
+    // Set the hour of the QI to the hour configured in questionnaire or the default notification time
     startDate.setHours(0, 0, 0, 0);
     if (cycleUnit !== 'spontan') {
-      startDate = addHours(
-        startDate,
-        cycleUnit === 'hour' ? cycleFirstHour : userSettingsHour
-      );
+      if (cycleUnit === 'hour') {
+        startDate = addHours(startDate, cycleFirstHour);
+      } else {
+        startDate = add(startDate, config.notificationTime);
+      }
     }
 
     if (

@@ -21,7 +21,7 @@ Therefore, the migration.patch has to be updated.
 
 ```bash
 # extract the entrypoint from the postgres image that should be used
-docker run -v $PWD:/data -it --rm postgres:10.16 cp docker-entrypoint.sh /data
+docker run -v $PWD:/data -it --rm postgres:<version> cp docker-entrypoint.sh /data
 
 # create a copy for later comparison
 cp docker-entrypoint.sh docker-entrypoint.sh.original

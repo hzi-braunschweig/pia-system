@@ -4,21 +4,21 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const Joi = require('joi');
+import Joi from 'joi';
+import { ServerRoute } from '@hapi/hapi';
+import { UsersHandler } from '../handlers/usersHandler';
 
-const { UsersHandler } = require('../handlers/usersHandler');
-
-module.exports = {
+const route: ServerRoute = {
   path: '/user/users',
   method: 'POST',
   handler: UsersHandler.createOne,
-  config: {
+  options: {
     description: 'creates a user',
     auth: 'jwt',
     tags: ['api'],
     validate: {
       payload: Joi.object({
-        username: Joi.string().required().default('NeuerTestProband'),
+        username: Joi.string().required().email().default('NeuerTestProband'),
         role: Joi.string()
           .required()
           .valid(
@@ -27,7 +27,6 @@ module.exports = {
             'EinwilligungsManager',
             'Untersuchungsteam'
           ),
-        compliance_labresults: Joi.bool().optional().default(true),
         study_accesses: Joi.array()
           .required()
           .items({
@@ -44,3 +43,5 @@ module.exports = {
     },
   },
 };
+
+export default route;

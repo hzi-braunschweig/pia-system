@@ -10,8 +10,9 @@ import { Argument, Command, Option } from 'commander';
 import { LicenseCollector } from './licenseCollector';
 import { getDockerLicenses } from './dockerLicenseTexts';
 import { PackageLicense } from './packageLicense';
+import { asyncPassErrors } from './asyncWithErrors';
 
-interface CommandOptions {
+export interface CommandOptions {
   target: string;
   excludePackages?: string;
   onlyProduction: boolean;
@@ -71,35 +72,37 @@ class Program {
           'Set the root directory, that should be scanned'
         ).default('./', 'current directory')
       )
-      .action(async (root: string, options: CommandOptions) => {
-        const licenses = await LicenseCollector.collectLicenses(
-          root,
-          options.excludePackages,
-          options.onlyProduction,
-          options.assertValidLicenseTexts
-        );
-        if (options.addDocker) {
-          licenses.push(...getDockerLicenses());
-        }
-        licenses.sort((a, b) => {
-          return a.packageName === b.packageName
-            ? 0
-            : a.packageName > b.packageName
-            ? 1
-            : -1;
-        });
-        switch (options.format) {
-          case 'text':
-            await fs.writeFile(
-              options.target,
-              this.createLicenseTextFile(licenses)
-            );
-            break;
-          case 'json':
-            await fs.writeFile(options.target, JSON.stringify({ licenses }));
-            break;
-        }
-      });
+      .action(
+        asyncPassErrors(async (root: string, options: CommandOptions) => {
+          const licenses = await LicenseCollector.collectLicenses(
+            root,
+            options.excludePackages,
+            options.onlyProduction,
+            options.assertValidLicenseTexts
+          );
+          if (options.addDocker) {
+            licenses.push(...getDockerLicenses());
+          }
+          licenses.sort((a, b) => {
+            return a.packageName === b.packageName
+              ? 0
+              : a.packageName > b.packageName
+              ? 1
+              : -1;
+          });
+          switch (options.format) {
+            case 'text':
+              await fs.writeFile(
+                options.target,
+                this.createLicenseTextFile(licenses)
+              );
+              break;
+            case 'json':
+              await fs.writeFile(options.target, JSON.stringify({ licenses }));
+              break;
+          }
+        })
+      );
     await program.parseAsync();
   }
 

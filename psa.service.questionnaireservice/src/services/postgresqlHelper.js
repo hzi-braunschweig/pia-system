@@ -1767,7 +1767,7 @@ const postgresqlHelper = (function () {
 
   function streamSettings(probands) {
     const query =
-      'SELECT username,notification_time,compliance_labresults,compliance_samples,compliance_bloodsamples,is_test_proband,ids,account_status ' +
+      'SELECT username,compliance_labresults,compliance_samples,compliance_bloodsamples,is_test_proband,ids,account_status ' +
       'FROM users ' +
       'WHERE username IN ($(probands:csv))';
     return createQueryStream(query, {

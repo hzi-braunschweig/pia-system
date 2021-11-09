@@ -11,7 +11,10 @@
  */
 
 abstract class ErrorWithCausedBy extends Error {
-  public constructor(message?: string, protected readonly causedBy?: Error) {
+  public constructor(
+    message?: string,
+    protected readonly causedBy?: Error | unknown
+  ) {
     super(message);
   }
 }

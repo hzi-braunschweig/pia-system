@@ -4,39 +4,28 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const fetch = require('node-fetch');
-const Boom = require('@hapi/boom');
-const { config } = require('../config');
+import * as fetch from 'node-fetch';
+import Boom from '@hapi/boom';
 
-const serviceUrl = config.services.loggingservice.url;
+import { config } from '../config';
+import {
+  SystemLogRequest,
+  SystemLogResponse,
+  UserLogFilter,
+} from '../models/log';
 
-/**
- * @typedef {{
- *     [fromTime]: Date,
- *     [toTime]: Date
- * }} UserLogFilter
- * @typedef {{
- *     requestedBy: string,
- *     requestedFor: string,
- *     type: string
- * }} SystemLogReq
- *
- * @typedef {{
- *     requestedBy: string,
- *     requestedFor: string,
- *     timestamp: Date,
- *     type: ('proband'|'sample'|'study'|'compliance'|'study_change'|'partial')
- * }} SystemLogRes
- */
-
-class LoggingserviceClient {
+export class LoggingserviceClient {
+  private static readonly serviceUrl = config.services.loggingservice.url;
   /**
    *
    * @param userId
    * @param {UserLogFilter} filter
    * @return {Promise<void>}
    */
-  static async deleteLogs(userId, filter) {
+  public static async deleteLogs(
+    userId: string,
+    filter?: UserLogFilter
+  ): Promise<void> {
     let res;
     try {
       let query = '';
@@ -48,10 +37,13 @@ class LoggingserviceClient {
           params.append('toTime', filter.toTime.toISOString());
         query = '?' + params.toString();
       }
-      res = await fetch.default(`${serviceUrl}/log/logs/${userId}${query}`, {
-        method: 'delete',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      res = await fetch.default(
+        `${this.serviceUrl}/log/logs/${userId}${query}`,
+        {
+          method: 'delete',
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
     } catch (e) {
       throw Boom.serverUnavailable(
         'loggingserviceClient deleteLogs: Did not receive a response',
@@ -67,15 +59,12 @@ class LoggingserviceClient {
     }
   }
 
-  /**
-   *
-   * @param {SystemLogReq} log
-   * @return {Promise<SystemLogRes>}
-   */
-  static async createSystemLog(log) {
+  public static async createSystemLog(
+    log: SystemLogRequest
+  ): Promise<SystemLogResponse> {
     let res;
     try {
-      res = await fetch.default(`${serviceUrl}/log/systemLogs`, {
+      res = await fetch.default(`${this.serviceUrl}/log/systemLogs`, {
         method: 'post',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(log),
@@ -93,8 +82,6 @@ class LoggingserviceClient {
         res.status
       );
     }
-    return await res.json();
+    return (await res.json()) as SystemLogResponse;
   }
 }
-
-module.exports = LoggingserviceClient;

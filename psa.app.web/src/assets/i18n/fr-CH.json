@@ -312,6 +312,7 @@
     "JUMP_STEP_MIN": "Doit être supérieur à 0.",
     "JUMP_STEP_MAX": "Doit être inférieur à 45.",
     "JUMP_STEP_REQUIRED": "Le nombre d'étapes est nécessaire.",
+    "QUESTIONNAIRE_INSTANCE_COUNT_ERROR": "Je Teilnehmer:in darf der Fragebogen insgesamt nicht öfter als {{maxInstanceCount}} mal angezeigt werden. Bitte passen Sie den Zykluswert, die Zykluseinheit oder die Laufzeit (Deaktivieren nach x Tagen) entsprechend an.",
     "CHARACTER_NOT_ALLOWED": "Ce caractère n'est pas autorisé.",
     "VALUE_REQUIRED": "Cette valeur est nécessaire.",
     "AFTER": "Après",
@@ -526,7 +527,17 @@
     "IDS": "Identifiants",
     "TEST_PROBAND": "Signaler en tant que participant au test",
     "IS_TEST_PROBAND": "Participant au test",
-    "NOT_EXIST": "Le participant n'existe pas"
+    "NOT_EXIST": "Le participant n'existe pas",
+    "ERROR": {
+      "USER_NOT_FOUND": "Es existiert kein Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen.",
+      "WRONG_ROLE": "Der Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen, hat nicht die Rolle \"Untersuchungsteam\"",
+      "NO_ACCESS_TO_STUDY": "Der Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen, hat keine Berechtigung für die Studie",
+      "NO_PLANNED_PROBAND_FOUND": "Das Pseudonym existiert nicht unter geplante Teilnehmende in dieser Studie",
+      "PROBAND_ALREADY_EXISTS": "Zu dem Pseudonym existiert bereits ein:e Teilnehmer:in",
+      "CREATING_ACCOUNG_FAILED": "Das Erstellen des Accounts ist fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Systemadministrator.",
+      "SAVING_PROBAND_FAILED": "Das Speichern des Probanden ist fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Systemadministrator.",
+      "UNKNOWN_ERROR": "Beim Anlegen des Teilnehmenden ist ein unbekannter Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie den Systemadministrator."
+    }
   },
   "DIALOG": {
     "DELETE": "Êtes-vous sûr de vouloir supprimer {{data}} ?",
@@ -687,7 +698,6 @@
     "NEW_USER": "Créer un utilisateur"
   },
   "SETTINGS": {
-    "TIME": "Sélectionnez l'heure à laquelle vous souhaitez recevoir les notifications: ",
     "CONFIRM": "Enregistrer",
     "INFO_SAVED": "Vos paramètres ont été enregistrés avec succès.",
     "MANAGE_PASSWORD": "Gérer le mot de passe: ",

@@ -49,6 +49,11 @@ const conf = {
   publicAuthKey: GlobalConfig.publicAuthKey,
   webappUrl: GlobalConfig.webappUrl,
   fireBaseCredentials: fireBaseCredentials,
+  timeZone: GlobalConfig.timeZone,
+  notificationTime: {
+    hours: 8, // in the time zone configured above
+    minutes: 0,
+  },
 };
 
 export const config: SupersetOfServiceConfig<typeof conf> = conf;

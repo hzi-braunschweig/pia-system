@@ -13,7 +13,7 @@ const {
 const packageJson = require('../package.json');
 const { db } = require('./db');
 const { config } = require('./config');
-const mailService = require('./services/mailService.js');
+const { MailService } = require('@pia/lib-service-core');
 
 let server;
 let serverInternal;
@@ -50,7 +50,7 @@ exports.init = async () => {
     },
   });
 
-  mailService.initService();
+  MailService.initService(config.servers.mailserver);
 
   await registerAuthStrategies(server, {
     strategies: ['jwt'],

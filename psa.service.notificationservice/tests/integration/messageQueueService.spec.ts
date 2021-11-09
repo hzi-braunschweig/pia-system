@@ -15,7 +15,6 @@ import { StatusCodes } from 'http-status-codes';
 import JWT from 'jsonwebtoken';
 
 import { FcmHelper } from '../../src/services/fcmHelper';
-import { MailService } from '../../src/services/mailService';
 import { cleanup, setup } from './multipleToken.spec.data/setup.helper';
 import secretOrPrivateKey from '../secretOrPrivateKey';
 import { Server } from '../../src/server';
@@ -91,8 +90,6 @@ describe('message queue service', () => {
       .stub(FcmHelper, 'sendDefaultNotification')
       .callsFake(FcmHelperMock.sendDefaultNotification);
     suiteSandbox.stub(FcmHelper, 'initFBAdmin');
-    suiteSandbox.stub(MailService, 'initService');
-    suiteSandbox.stub(MailService, 'sendMail');
     await Server.init();
     await mqc.connect(true);
   });

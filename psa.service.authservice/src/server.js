@@ -14,7 +14,7 @@ const Ejs = require('ejs');
 const packageJson = require('../package.json');
 const { db } = require('./db');
 const { config } = require('./config');
-const mailService = require('./services/mailService');
+const { MailService } = require('@pia/lib-service-core');
 const passwordDeletionTask = require('./services/passwordDeletionTask');
 const RequestLogger = require('./lib/plugins/requestLogger');
 
@@ -84,7 +84,7 @@ exports.init = async () => {
     path: './resources/views',
   });
 
-  mailService.initService();
+  MailService.initService(config.servers.mailserver);
 
   await server.start();
   server.log(['startup'], `Server running at ${server.info.uri}`);

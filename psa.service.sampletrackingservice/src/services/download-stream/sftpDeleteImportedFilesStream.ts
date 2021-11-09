@@ -40,7 +40,7 @@ export class SftpDeleteImportedFilesStream extends Writable {
       console.log(SftpDeleteImportedFilesStream.TAG, 'Connection established.');
       this.initialized = true;
     } catch (err) {
-      this.destroy(err);
+      this.destroy(err as Error);
     }
   }
 
@@ -58,7 +58,7 @@ export class SftpDeleteImportedFilesStream extends Writable {
       }
       callback();
     } catch (e) {
-      callback(e);
+      callback(e as Error);
     }
   }
 

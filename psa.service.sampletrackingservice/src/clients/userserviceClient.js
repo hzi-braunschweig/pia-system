@@ -11,6 +11,10 @@ const { config } = require('../config');
 const serviceUrl = config.services.userservice.url;
 
 class UserserviceClient {
+  /**
+   * @param {string} user_id
+   * @return {Promise<{name: string}>}
+   */
   static async getPrimaryStudy(user_id) {
     let res;
     try {

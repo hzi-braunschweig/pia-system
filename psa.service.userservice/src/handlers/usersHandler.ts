@@ -7,10 +7,18 @@
 import { Lifecycle } from '@hapi/hapi';
 
 import Boom from '@hapi/boom';
-import postgresqlHelper from '../services/postgresqlHelper';
 import RESTPresenter from '../services/RESTPresenter';
-import usersInteractor from '../interactors/usersInteractor';
+import { UsersInteractor } from '../interactors/usersInteractor';
 import { AccessToken } from '@pia/lib-service-core';
+import { AccountStatus, CreateUserRequest } from '../models/user';
+
+function handleError(error: unknown): void {
+  if (error instanceof Boom.Boom) {
+    throw error;
+  }
+  console.error(error);
+  throw Boom.badImplementation('An internal Error happened');
+}
 
 /**
  * HAPI Handler for users
@@ -21,13 +29,9 @@ export class UsersHandler {
    * @param request
    */
   public static getAll: Lifecycle.Method = async (request) => {
-    return usersInteractor
-      .getUsers(request.auth.credentials, postgresqlHelper)
+    return UsersInteractor.getUsers(request.auth.credentials as AccessToken)
       .then((result) => RESTPresenter.presentUsers(result))
-      .catch((err) => {
-        console.log('Could not get users from DB:', err);
-        return Boom.notFound(err);
-      });
+      .catch(handleError);
   };
 
   /**
@@ -35,13 +39,11 @@ export class UsersHandler {
    * @param request
    */
   public static getAllWithSameRole: Lifecycle.Method = async (request) => {
-    return usersInteractor
-      .getUsersWithSameRole(request.auth.credentials, postgresqlHelper)
+    return UsersInteractor.getUsersWithSameRole(
+      request.auth.credentials as AccessToken
+    )
       .then((result) => RESTPresenter.presentUsers(result) as unknown)
-      .catch((err) => {
-        console.log('Could not get users from DB:', err);
-        return Boom.notFound(err);
-      });
+      .catch(handleError);
   };
 
   /**
@@ -51,13 +53,9 @@ export class UsersHandler {
   public static getOne: Lifecycle.Method = async (request) => {
     const id = request.params['username'] as string;
 
-    return usersInteractor
-      .getUser(request.auth.credentials, id, postgresqlHelper)
+    return UsersInteractor.getUser(request.auth.credentials as AccessToken, id)
       .then((result) => RESTPresenter.presentUser(result) as unknown)
-      .catch((err) => {
-        console.log('Could not get user:', err);
-        return Boom.notFound(err);
-      });
+      .catch(handleError);
   };
 
   public static getUserByIDS: Lifecycle.Method = (request) => {
@@ -65,10 +63,9 @@ export class UsersHandler {
     const ids = request.params['ids'] as string;
 
     if (token.role === 'ProbandenManager') {
-      return usersInteractor
-        .getUserByIDS(ids, token.username)
+      return UsersInteractor.getUserByIDS(ids, token.username)
         .then((result) => RESTPresenter.presentUser(result) as unknown)
-        .catch((err) => Boom.badImplementation(err));
+        .catch(handleError);
     } else {
       return Boom.forbidden('Wrong role for this command');
     }
@@ -79,13 +76,12 @@ export class UsersHandler {
    * @param request
    */
   public static createOne: Lifecycle.Method = async (request) => {
-    return usersInteractor
-      .createUser(request.auth.credentials, request.payload, postgresqlHelper)
+    return UsersInteractor.createUser(
+      request.auth.credentials as AccessToken,
+      request.payload as CreateUserRequest
+    )
       .then((result) => RESTPresenter.presentUser(result) as unknown)
-      .catch((err) => {
-        console.log('Could not create user in DB:', err);
-        return Boom.conflict(err);
-      });
+      .catch(handleError);
   };
 
   /**
@@ -97,9 +93,10 @@ export class UsersHandler {
     const requester = request.auth.credentials as AccessToken;
 
     if (requester.role === 'ProbandenManager') {
-      return usersInteractor
-        .createSormasProband(requester.username, request.payload)
-        .catch((err) => Boom.badImplementation(err));
+      return UsersInteractor.createSormasProband(
+        requester.username,
+        request.payload
+      ).catch((err) => Boom.badImplementation(err));
     } else {
       return Boom.forbidden('Wrong role for this command');
     }
@@ -113,12 +110,14 @@ export class UsersHandler {
     const pseudonym = request.params['username'] as string;
     const uservalues = request.payload;
 
-    return usersInteractor.updateUser(
-      request.auth.credentials,
+    return UsersInteractor.updateUser(
+      request.auth.credentials as AccessToken,
       pseudonym,
-      uservalues,
-      postgresqlHelper
-    );
+      uservalues as {
+        is_test_proband?: boolean;
+        account_status?: AccountStatus;
+      }
+    ).catch(handleError);
   };
 
   /**
@@ -128,12 +127,11 @@ export class UsersHandler {
   public static deleteOne: Lifecycle.Method = async (request) => {
     const pseudonym = request.params['username'] as string;
 
-    return usersInteractor
-      .deleteUser(request.auth.credentials, pseudonym, postgresqlHelper)
+    return UsersInteractor.deleteUser(
+      request.auth.credentials as AccessToken,
+      pseudonym
+    )
       .then((result) => RESTPresenter.presentUser(result) as unknown)
-      .catch((err) => {
-        console.log('Could not delete user from DB:', err);
-        return Boom.notFound(err);
-      });
+      .catch(handleError);
   };
 }

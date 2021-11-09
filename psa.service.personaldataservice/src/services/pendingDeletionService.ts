@@ -4,27 +4,32 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const Boom = require('@hapi/boom');
-const { runTransaction } = require('../db');
-const personalDataRepository = require('../repositories/personalDataRepository');
-const pendingDeletionRepository = require('../repositories/pendingDeletionRepository');
-const loggingserviceClient = require('../clients/loggingserviceClient');
-const authserviceClient =
-  require('../clients/authserviceClient').AuthserviceClient;
-const userserviceClient = require('../clients/userserviceClient');
-const mailService = require('./mailService');
-const emailValidator = require('email-validator');
-const { config } = require('../config');
+import Boom from '@hapi/boom';
+import { runTransaction } from '../db';
+import { config } from '../config';
+import emailValidator from 'email-validator';
+import { MailContent, MailService } from '@pia/lib-service-core';
+import { UserserviceClient } from '../clients/userserviceClient';
+import { AuthserviceClient as authserviceClient } from '../clients/authserviceClient';
+import loggingserviceClient from '../clients/loggingserviceClient';
+import pendingDeletionRepository from '../repositories/pendingDeletionRepository';
+import { PersonalDataRepository } from '../repositories/personalDataRepository';
+import {
+  PendingDeletionDb,
+  PendingDeletionReq,
+  PendingDeletionRes,
+} from '../models/pendingDeletion';
 
-class PendingDeletionService {
+export class PendingDeletionService {
   /**
    * Executes a deletion no matter if it is a new one or one from the db
-   * @param {PendingDeletionReq} deletion the deletion that should be executed
-   * @return {Promise<void>}
+   * @param deletion the deletion that should be executed
    */
-  static async executeDeletion(deletion) {
+  public static async executeDeletion(
+    deletion: PendingDeletionReq
+  ): Promise<void> {
     return runTransaction(async (transaction) => {
-      await personalDataRepository.deletePersonalData(deletion.proband_id, {
+      await PersonalDataRepository.deletePersonalData(deletion.proband_id, {
         transaction,
       });
       if (deletion.id) {
@@ -46,13 +51,13 @@ class PendingDeletionService {
     });
   }
 
-  static async deletePendingDeletion(probandId) {
+  public static async deletePendingDeletion(pseudonym: string): Promise<void> {
     return runTransaction(async (transaction) => {
-      await pendingDeletionRepository.deletePendingDeletion(probandId, {
+      await pendingDeletionRepository.deletePendingDeletion(pseudonym, {
         transaction,
       });
       await authserviceClient.updateUser({
-        username: probandId,
+        username: pseudonym,
         account_status: 'active',
       });
     });
@@ -60,18 +65,19 @@ class PendingDeletionService {
 
   /**
    * Creates a new pending deletion and informs the user to confirm this
-   * @param {PendingDeletionReq} deletion the pending deletion that should be created
-   * @return {Promise<PendingDeletionRes>}
+   * @param deletion the pending deletion that should be created
    */
-  static async createPendingDeletion(deletion) {
+  public static async createPendingDeletion(
+    deletion: PendingDeletionReq
+  ): Promise<PendingDeletionRes> {
     if (!emailValidator.validate(deletion.requested_for)) {
       throw Boom.badData('The username to confirm needs to be an email.');
     }
-    const primaryStudy = await userserviceClient.getPrimaryStudy(
+    const primaryStudy = await UserserviceClient.getPrimaryStudy(
       deletion.proband_id
     );
     return runTransaction(async (transaction) => {
-      const pendingDeletion = await pendingDeletionRepository
+      const pendingDeletion = (await pendingDeletionRepository
         .createPendingDeletion(
           { ...deletion, study: primaryStudy.name },
           { transaction }
@@ -81,18 +87,16 @@ class PendingDeletionService {
           throw Boom.preconditionFailed(
             'There is already one pending deletion for this user.'
           );
-        });
-      await mailService
-        .sendMail(
-          deletion.requested_for,
-          PendingDeletionService._createProbandDeletionEmailContent(
-            pendingDeletion.proband_id
-          )
+        })) as PendingDeletionDb;
+      await MailService.sendMail(
+        deletion.requested_for,
+        PendingDeletionService._createProbandDeletionEmailContent(
+          pendingDeletion.proband_id
         )
-        .catch(async (err) => {
-          console.log(err);
-          throw Boom.badData('PM could not be reached via email.');
-        });
+      ).catch((err: Error) => {
+        console.log(err);
+        throw Boom.badData('PM could not be reached via email.');
+      });
       await authserviceClient.updateUser({
         username: deletion.proband_id,
         account_status: 'deactivation_pending',
@@ -101,10 +105,12 @@ class PendingDeletionService {
     });
   }
 
-  static _createProbandDeletionEmailContent(probandId) {
+  private static _createProbandDeletionEmailContent(
+    pseudonym: string
+  ): MailContent {
     const confirmationURL =
       config.webappUrl +
-      `/probands-personal-info?probandIdToDelete=${probandId}&type=personal`;
+      `/probands-personal-info?probandIdToDelete=${pseudonym}&type=personal`;
     return {
       subject: 'PIA - Sie wurden gebeten eine Kontaktsperre zu bestätigen',
       text:
@@ -134,5 +140,3 @@ class PendingDeletionService {
     };
   }
 }
-
-module.exports = PendingDeletionService;

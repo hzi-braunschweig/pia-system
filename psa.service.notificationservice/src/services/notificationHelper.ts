@@ -7,18 +7,17 @@
 import * as schedule from 'node-schedule';
 
 import {
-  startOfToday,
   addDays,
   addHours,
-  addMinutes,
-  subDays,
   format,
   set,
+  startOfToday,
+  subDays,
 } from 'date-fns';
 
 import * as postgresqlHelper from './postgresqlHelper';
 import { FcmHelper } from './fcmHelper';
-import { MailService } from './mailService';
+import { MailService } from '@pia/lib-service-core';
 import { config } from '../config';
 import { PersonaldataserviceClient } from '../clients/personaldataserviceClient';
 import { QuestionnaireserviceClient } from '../clients/questionnaireserviceClient';
@@ -32,6 +31,7 @@ import { DbQuestionnaire } from '../models/questionnaire';
 import { FcmToken } from '../models/fcmToken';
 import StatusCodes from 'http-status-codes';
 import { Boom } from '@hapi/boom';
+import { zonedTimeToUtc } from 'date-fns-tz';
 
 interface Study {
   name: string;
@@ -49,8 +49,6 @@ interface Schedule {
   notification_type: string;
 }
 
-const defaultUserNotificationTime = '15:00';
-
 /**
  * helper methods to send notifications
  */
@@ -62,7 +60,7 @@ export class NotificationHelper {
   public static scheduleInstanceNotificationCreation(): schedule.Job {
     // Once every hour at the fifth minute
     const rule = new schedule.RecurrenceRule();
-    rule.minute = 5;
+    rule.minute = 10;
 
     return schedule.scheduleJob(rule, () => {
       void NotificationHelper.checkAndScheduleNotifications();
@@ -185,10 +183,7 @@ export class NotificationHelper {
     console.log(`Found potential qIs: ${qInstancesResult.length}`);
 
     for (const qInstance of qInstancesResult) {
-      const psuedonym = qInstance.user_id;
-      const userSettings = (await postgresqlHelper.getUserNotificationSettings(
-        psuedonym
-      )) as User;
+      const pseudonym = qInstance.user_id;
       const questionnaireSettings =
         (await postgresqlHelper.getQuestionnaireNotificationSettings(
           qInstance.questionnaire_id,
@@ -196,20 +191,28 @@ export class NotificationHelper {
         )) as DbQuestionnaire;
 
       if (questionnaireSettings.cycle_unit !== 'spontan') {
-        const sendDates = NotificationHelper.createDatesForUserNotification(
-          userSettings,
-          questionnaireSettings,
-          qInstance.date_of_issue
-        );
-        await postgresqlHelper.markInstanceAsScheduled(qInstance.id);
-        sendDates.forEach((date) => {
-          void NotificationHelper.createNotification(
-            date,
-            psuedonym,
-            'qReminder',
-            qInstance.id.toString()
+        const zonedSendDates =
+          NotificationHelper.createDatesForUserNotification(
+            questionnaireSettings,
+            qInstance.date_of_issue
           );
+        const sendDates = zonedSendDates.map((date) => {
+          return zonedTimeToUtc(date, config.timeZone);
         });
+
+        await postgresqlHelper.markInstanceAsScheduled(qInstance.id);
+        for (const date of sendDates) {
+          try {
+            await NotificationHelper.createNotification(
+              date,
+              pseudonym,
+              'qReminder',
+              qInstance.id.toString()
+            );
+          } catch (error) {
+            console.error('failed to create notification', error);
+          }
+        }
       }
     }
   }
@@ -220,7 +223,6 @@ export class NotificationHelper {
    * @param {object} questionnaireSettings the questionnaire settings
    */
   public static createDatesForUserNotification(
-    userSettings: User,
     questionnaireSettings: DbQuestionnaire,
     dateOfIssue: Date
   ): Date[] {
@@ -234,22 +236,8 @@ export class NotificationHelper {
       ? questionnaireSettings.notification_interval
       : 1;
 
-    userSettings.notification_time = userSettings.notification_time
-      ? userSettings.notification_time
-      : defaultUserNotificationTime;
-    const timeSplit = userSettings.notification_time.split(':');
-    assert(
-      timeSplit[0] && timeSplit[1],
-      `invalid notification_time: ${userSettings.notification_time}`
-    );
-    const userSettingsHour = parseInt(timeSplit[0], 10);
-    const userSettingsMinute = parseInt(timeSplit[1], 10);
-
     for (let i = 0; i < questionnaireSettings.notification_tries; i++) {
-      const userSettingsTime = set(new Date(), {
-        hours: userSettingsHour,
-        minutes: userSettingsMinute,
-      });
+      const notificationTime = set(new Date(), config.notificationTime);
       let newDate = null;
 
       // Use instance date as reference
@@ -259,11 +247,11 @@ export class NotificationHelper {
             ? addDays(new Date(dateOfIssue), i * notification_interval)
             : addHours(new Date(dateOfIssue), i * notification_interval);
       }
-      // Use user settings as reference
+      // Use notification time as reference
       else if (notification_interval_unit === 'days') {
-        newDate = addDays(userSettingsTime, i * notification_interval);
+        newDate = addDays(notificationTime, i * notification_interval);
       } else if (notification_interval_unit === 'hours') {
-        newDate = addHours(userSettingsTime, i * notification_interval);
+        newDate = addHours(notificationTime, i * notification_interval);
       }
 
       if (newDate) sendDates.push(newDate);
@@ -338,23 +326,13 @@ export class NotificationHelper {
     r_new: LabResult
   ): Promise<void> {
     if (r_old.status !== 'analyzed' && r_new.status === 'analyzed') {
-      const userSettings = (await postgresqlHelper.getUserNotificationSettings(
-        r_new.user_id
-      )) as User;
-      if (userSettings.compliance_labresults) {
-        userSettings.notification_time = userSettings.notification_time
-          ? userSettings.notification_time
-          : defaultUserNotificationTime;
-        const timeSplit = userSettings.notification_time.split(':');
-        assert(timeSplit[0]);
-        assert(timeSplit[1]);
-        const userSettingsHour = parseInt(timeSplit[0], 10);
-        const userSettingsMinute = parseInt(timeSplit[1], 10);
-
-        const sendDate = set(new Date(), {
-          hours: userSettingsHour,
-          minutes: userSettingsMinute,
-        });
+      const userComplicanceLabresults =
+        (await postgresqlHelper.getUserComplianceLabresults(
+          r_new.user_id
+        )) as User;
+      if (userComplicanceLabresults.compliance_labresults) {
+        const zonedSendDate = set(new Date(), config.notificationTime);
+        const sendDate = zonedTimeToUtc(zonedSendDate, config.timeZone);
         console.log(
           `New labresult was analysed, scheduling notification to: ${
             r_new.user_id
@@ -367,58 +345,6 @@ export class NotificationHelper {
           r_new.id
         );
       }
-    }
-  }
-
-  /**
-   * handles updates to a users notification time settings
-   * @param {object} r_old the old user
-   * @param {object} r_new the new user
-   */
-  public static async handleUpdatedUser(
-    r_old: User,
-    r_new: User
-  ): Promise<void> {
-    if (
-      r_old.notification_time !== r_new.notification_time &&
-      r_new.notification_time
-    ) {
-      const schedules = (await postgresqlHelper.getAllNotificationsForUser(
-        r_new.username
-      )) as Schedule[];
-
-      const timeSplitOld = r_old.notification_time
-        ? r_old.notification_time.split(':')
-        : defaultUserNotificationTime.split(':');
-      assert(
-        timeSplitOld[0] && timeSplitOld[1],
-        `invalid notification_time: ${r_old.notification_time}`
-      );
-      const userSettingsHourOld = parseInt(timeSplitOld[0], 10);
-      const userSettingsMinuteOld = parseInt(timeSplitOld[1], 10);
-
-      const timeSplitNew = r_new.notification_time.split(':');
-      assert(
-        timeSplitNew[0] && timeSplitNew[1],
-        `invalid notification_time: ${r_new.notification_time}`
-      );
-      const userSettingsHourNew = parseInt(timeSplitNew[0], 10);
-      const userSettingsMinuteNew = parseInt(timeSplitNew[1], 10);
-
-      const hourDiv = userSettingsHourNew - userSettingsHourOld;
-      const minuteDiv = userSettingsMinuteNew - userSettingsMinuteOld;
-
-      schedules.forEach((notificationSchedule) => {
-        const newDate = addHours(
-          addMinutes(new Date(notificationSchedule.send_on), minuteDiv),
-          hourDiv
-        );
-        void postgresqlHelper.updateTimeForNotification(
-          notificationSchedule.id,
-          newDate
-        );
-      });
-      console.log(`changed time of ${schedules.length} notification schedules`);
     }
   }
 

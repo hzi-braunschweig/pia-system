@@ -7,7 +7,7 @@
 import chai from 'chai';
 import { createSandbox, SinonSandbox, SinonStub } from 'sinon';
 import sinonChai from 'sinon-chai';
-import { sandbox as fetchMockSandbox } from 'fetch-mock';
+import fetchMocker from 'fetch-mock';
 import * as fetch from 'node-fetch';
 
 import { ModysImportService } from '../../src/services/modysImportService';
@@ -20,7 +20,7 @@ import {
 
 const expect = chai.expect;
 chai.use(sinonChai);
-const fetchMock = fetchMockSandbox();
+const fetchMock = fetchMocker.sandbox();
 const sandbox: SinonSandbox = createSandbox();
 
 describe('MODYS Import', () => {

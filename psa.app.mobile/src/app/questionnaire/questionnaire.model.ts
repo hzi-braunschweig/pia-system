@@ -21,6 +21,7 @@ export interface Study {
 
 export interface Questionnaire {
   id: number;
+  version: number;
   study_id: string;
   name: string;
   no_questions: number;
@@ -40,12 +41,13 @@ export interface Questionnaire {
 export interface Question {
   id: number;
   questionnaire_id: number;
+  questionnaire_version: number;
   text: string;
+  label: string;
   position: number;
   is_mandatory: boolean;
   answer_options: AnswerOption[];
   condition: Condition;
-  isInfoQuestion: boolean;
 }
 
 export interface AnswerOption {
@@ -86,14 +88,18 @@ export enum AnswerType {
 }
 
 export interface Condition {
+  id: number;
   condition_questionnaire_id: number;
   condition_question_id: number;
   condition_answer_option_id: number;
   condition_target_answer_option: number;
+  condition_target_questionnaire: number;
   condition_operand: string;
   condition_value: string;
   condition_link: 'OR' | 'AND' | 'XOR';
   condition_type: 'internal_this' | 'internal_last' | 'external';
+  condition_questionnaire_version: number;
+  condition_target_questionnaire_version: number;
 }
 
 export interface Value {
@@ -116,7 +122,6 @@ export interface QuestionnaireInstance {
   progress: number;
   release_version: number;
   questionnaire_version: number;
-  transmission_ts: string;
   questionnaire: Questionnaire;
 }
 

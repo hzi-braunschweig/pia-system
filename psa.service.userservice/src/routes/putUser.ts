@@ -4,15 +4,15 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const Joi = require('joi');
+import Joi from 'joi';
+import { UsersHandler } from '../handlers/usersHandler';
+import { ServerRoute } from '@hapi/hapi';
 
-const { UsersHandler } = require('../handlers/usersHandler');
-
-module.exports = {
+const route: ServerRoute = {
   path: '/user/users/{username}',
   method: 'PUT',
   handler: UsersHandler.updateOne,
-  config: {
+  options: {
     description: 'updates user data',
     auth: 'jwt',
     tags: ['api'],
@@ -35,3 +35,5 @@ module.exports = {
     },
   },
 };
+
+export default route;

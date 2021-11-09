@@ -5,7 +5,9 @@
  */
 
 const laboratoryResultsHandler = require('./laboratoryResultsHandler');
-const laboratoryResultsInteractor = require('../interactors/laboratoryResultsInteractor');
+const {
+  LaboratoryResultsInteractor,
+} = require('../interactors/laboratoryResultsInteractor');
 const laboratoryResultTemplateService = require('../services/laboratoryResultTemplateService');
 const templatePipelineService = require('../services/templatePipelineService');
 const sinon = require('sinon');
@@ -44,7 +46,7 @@ describe('Get all laboratory results from database', () => {
   getAllLaboratoryResultsRequest.auth = { credentials };
   before(() => {
     const getLaboratoryResultsInteractor = sinon.stub(
-      laboratoryResultsInteractor,
+      LaboratoryResultsInteractor,
       'getAllLaboratoryResults'
     );
     getLaboratoryResultsInteractor.withArgs(credentials).returns(labPromise);
@@ -60,7 +62,7 @@ describe('Get all laboratory results from database', () => {
 describe('Get one laboratory result', () => {
   before(() => {
     const getOneLaboratoryResultsInteractor = sinon.stub(
-      laboratoryResultsInteractor,
+      LaboratoryResultsInteractor,
       'getOneLaboratoryResult'
     );
     getOneLaboratoryResultsInteractor

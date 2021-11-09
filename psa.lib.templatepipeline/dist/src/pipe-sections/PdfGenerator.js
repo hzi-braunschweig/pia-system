@@ -1,7 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PdfGenerator = void 0;
-const puppeteer_1 = require("puppeteer");
+const puppeteer_1 = __importDefault(require("puppeteer"));
 const template_documents_1 = require("../template-documents");
 let browser;
 class PdfGenerator {
@@ -34,7 +37,7 @@ class PdfGenerator {
     }
     async generatePdf(htmlText) {
         if (!browser) {
-            browser = await puppeteer_1.launch({
+            browser = await puppeteer_1.default.launch({
                 args: ['--disable-dev-shm-usage', '--no-sandbox'],
             });
         }

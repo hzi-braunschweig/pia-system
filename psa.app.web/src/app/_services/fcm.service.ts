@@ -23,6 +23,10 @@ export class FCMService {
     private router: Router,
     private ngZone: NgZone
   ) {
+    if (auth.currentRole !== 'Proband') {
+      // init fcm only for probands
+      return;
+    }
     const firebaseConfig = {
       apiKey: 'AIzaSyDf4H-r-iDYG1lVtlDQXs2xJTmvDT4lzV0',
       authDomain: 'pia-app-c50e8.firebaseapp.com',

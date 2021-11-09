@@ -2,6 +2,13 @@
 
 This file contains notes about changes that are important to the operations team.
 
+## 1.28
+
+- a SQL script needs to be executed prior to updating to this version on the HZI PROD instance
+  - the script will be sent to the deployer in a secure manner as it contains sensitive data
+  - the script will clean up specific probands' study accesses in order to allow only one study access per proband
+  - this is a preparation for future changes after which it will not be possible to have probands with access to multiple studies
+
 ## 1.27
 
 - the `pia_ip_check_enabled` and `pia_cert_check_enabled` ansible variables have been added and should be set to `true` for PIA-Prod.

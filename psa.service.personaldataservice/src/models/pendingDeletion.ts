@@ -5,6 +5,7 @@
  */
 
 export interface PendingDeletionReq {
+  id: number;
   requested_by: string;
   requested_for: string;
   proband_id: string;

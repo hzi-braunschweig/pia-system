@@ -124,7 +124,6 @@ describe('/dataExport/searches should work with ids field', function () {
       const expected = [
         {
           Proband: 'test-1',
-          'Benachrichtigung Uhrzeit': '',
           'Einwilligung Ergebnismitteilung': 'Nein',
           'Einwilligung Probenentnahme': 'Nein',
           'Einwilligung Blutprobenentnahme': 'Nein',
@@ -133,7 +132,6 @@ describe('/dataExport/searches should work with ids field', function () {
         },
         {
           Proband: '',
-          'Benachrichtigung Uhrzeit': '',
           'Einwilligung Ergebnismitteilung': 'Nein',
           'Einwilligung Probenentnahme': 'Nein',
           'Einwilligung Blutprobenentnahme': 'Nein',

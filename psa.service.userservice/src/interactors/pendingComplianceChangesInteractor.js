@@ -7,9 +7,9 @@
 const Boom = require('@hapi/boom');
 const validator = require('email-validator');
 
-const mailService = require('../services/mailService.js');
+const { MailService } = require('@pia/lib-service-core');
 const { config } = require('../config');
-const loggingserviceClient = require('../clients/loggingserviceClient');
+const { LoggingserviceClient } = require('../clients/loggingserviceClient');
 const { runTransaction } = require('../db');
 
 /**
@@ -183,23 +183,21 @@ const pendingComplianceChangesInteractor = (function () {
         if (proband && !existingPendingComplianceChange) {
           const pendingComplianceChange =
             await pgHelper.createPendingComplianceChange(data);
-          const result = await mailService
-            .sendMail(
-              data.requested_for,
-              createProbandComplianceChangeEmailContent(
-                pendingComplianceChange.proband_id,
-                createProbandComplianceChangeConfirmationUrl(
-                  pendingComplianceChange.id
-                )
+          const result = await MailService.sendMail(
+            data.requested_for,
+            createProbandComplianceChangeEmailContent(
+              pendingComplianceChange.proband_id,
+              createProbandComplianceChangeConfirmationUrl(
+                pendingComplianceChange.id
               )
             )
-            .catch(async (err) => {
-              await pgHelper.deletePendingComplianceChange(
-                pendingComplianceChange.id
-              );
-              console.log(err);
-              return Boom.badData('PM could not be reached via email: ' + err);
-            });
+          ).catch(async (err) => {
+            await pgHelper.deletePendingComplianceChange(
+              pendingComplianceChange.id
+            );
+            console.log(err);
+            return Boom.badData('PM could not be reached via email: ' + err);
+          });
           if (result) {
             return pendingComplianceChange;
           } else {
@@ -225,7 +223,7 @@ const pendingComplianceChangesInteractor = (function () {
           { transaction: t },
           data
         );
-        await loggingserviceClient.createSystemLog({
+        await LoggingserviceClient.createSystemLog({
           requestedBy: data.requested_by,
           requestedFor: data.requested_for,
           type: 'compliance',
@@ -265,7 +263,7 @@ const pendingComplianceChangesInteractor = (function () {
     }
     return await runTransaction(async (t) => {
       await pgHelper.updatePendingComplianceChange(id, { transaction: t });
-      await loggingserviceClient.createSystemLog({
+      await LoggingserviceClient.createSystemLog({
         requestedBy: pendingComplianceChange.requested_by,
         requestedFor: pendingComplianceChange.requested_for,
         type: 'compliance',

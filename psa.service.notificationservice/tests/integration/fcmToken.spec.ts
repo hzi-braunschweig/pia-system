@@ -50,10 +50,10 @@ const utSession = {
   username: 'QTestUntersuchungsteam',
   groups: ['study'],
 };
-const sysadminSession = {
+const probandWithoutStudies = {
   id: 1,
-  role: 'SysAdmin',
-  username: 'QTestSystemAdmin',
+  role: 'Proband',
+  username: 'QTestProband3',
   groups: [],
 };
 
@@ -77,17 +77,23 @@ const utToken = JWT.sign(utSession, secretOrPrivateKey, {
   algorithm: 'RS512',
   expiresIn: '24h',
 });
-const sysadminToken = JWT.sign(sysadminSession, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
+const probandWithoutStudiesToken = JWT.sign(
+  probandWithoutStudies,
+  secretOrPrivateKey,
+  {
+    algorithm: 'RS512',
+    expiresIn: '24h',
+  }
+);
 
 const invalidHeader = { authorization: invalidToken };
 const probandHeader1 = { authorization: probandToken1 };
 const probandHeader2 = { authorization: probandToken2 };
 const forscherHeader1 = { authorization: forscherToken1 };
 const utHeader = { authorization: utToken };
-const sysadminHeader = { authorization: sysadminToken };
+const probandWithoutStudiesHeader = {
+  authorization: probandWithoutStudiesToken,
+};
 
 interface FcmToken {
   fcm_token: string;
@@ -170,6 +176,33 @@ describe('/fcmToken', function () {
       expect(result).to.have.status(StatusCodes.BAD_REQUEST);
     });
 
+    it('should return HTTP 403 if a Forscher tries to post a token', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .post('/fcmToken')
+        .set(forscherHeader1)
+        .send(payload);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return HTTP 403 if a Untersuchungsteam tries to post a token', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .post('/fcmToken')
+        .set(utHeader)
+        .send(payload);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return HTTP 400 if Proband has no study access', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .post('/fcmToken')
+        .set(probandWithoutStudiesHeader)
+        .send(payload);
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
     it('should return HTTP 200 and create the Probands token', async function () {
       const result = await chai
         .request(apiAddress)
@@ -180,39 +213,6 @@ describe('/fcmToken', function () {
       expect((result.body as FcmToken).fcm_token).to.equal(
         'thisisjustarandomstring'
       );
-    });
-
-    it('should return HTTP 200 and create the Forschers token', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .post('/fcmToken')
-        .set(forscherHeader1)
-        .send(payload);
-      expect(result).to.have.status(StatusCodes.OK);
-      expect((result.body as FcmToken).fcm_token).to.equal(
-        'thisisjustarandomstring'
-      );
-    });
-
-    it('should return HTTP 200 and create the Untersuchungsteams token', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .post('/fcmToken')
-        .set(utHeader)
-        .send(payload);
-      expect(result).to.have.status(StatusCodes.OK);
-      expect((result.body as FcmToken).fcm_token).to.equal(
-        'thisisjustarandomstring'
-      );
-    });
-
-    it('should return HTTP 400 for the SysAdmins because he has no study access', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .post('/fcmToken')
-        .set(sysadminHeader)
-        .send(payload);
-      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
     });
   });
 });

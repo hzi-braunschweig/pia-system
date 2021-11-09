@@ -44,7 +44,7 @@ export class SftpAllFilesDownloadStream extends Readable {
       this.initialized = true;
     } catch (err) {
       console.log(SftpAllFilesDownloadStream.TAG, 'Connect failed', err);
-      this.destroy(err);
+      this.destroy(err as Error);
     }
   }
 
@@ -62,7 +62,7 @@ export class SftpAllFilesDownloadStream extends Readable {
       }
       callback();
     } catch (e) {
-      callback(e);
+      callback(e as Error);
     }
   }
 
@@ -85,7 +85,7 @@ export class SftpAllFilesDownloadStream extends Readable {
         nextPath = await this.filePaths.next();
       } catch (e) {
         // connection is broken -> throw error and break up
-        this.destroy(e);
+        this.destroy(e as Error);
         return;
       }
       if (nextPath.done) {

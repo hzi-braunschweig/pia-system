@@ -161,6 +161,10 @@ export class QuestionnaireAnswerValidators {
   }
 
   static isEmptyFormControlValue(value: FormControlValue): boolean {
+    // handle numbers early as a zero needs to be treated as non empty
+    if (typeof value === 'number') {
+      return Number.isNaN(value);
+    }
     if (!value || (Array.isArray(value) && value.length === 0)) {
       return true;
     } else if (

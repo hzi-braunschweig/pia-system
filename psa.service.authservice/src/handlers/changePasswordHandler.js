@@ -7,7 +7,7 @@
 const Boom = require('@hapi/boom');
 const { config } = require('../config');
 const pwHashesHelper = require('../helpers/pwHashesHelper.js');
-const mailService = require('../services/mailService.js');
+const { MailService } = require('@pia/lib-service-core');
 const pgHelper = require('../services/postgresqlHelper.js');
 const personaldataserviceClient = require('../clients/personaldataserviceClient');
 const {
@@ -115,11 +115,9 @@ const changePasswordHandler = (function () {
       const newUserSecurity =
         pwHashesHelper.createHashedPasswordWithSaltAndPepper(newUserPw);
 
-      await mailService
-        .sendMail(email, createNewPasswordMail(newUserPw))
-        .catch((err) =>
-          request.log('newPassword', 'Unable to send mail: ' + err.stack)
-        );
+      await MailService.sendMail(email, createNewPasswordMail(newUserPw)).catch(
+        (err) => request.log('newPassword', 'Unable to send mail: ' + err.stack)
+      );
       await pgHelper
         .updateUserPasswordOnChangeReq(
           newUserSecurity.passwordHash,

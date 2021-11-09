@@ -19,7 +19,7 @@
     "module": "commonjs",
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "types": ["node"],
+    "types": ["mocha", "node"],
     /* Experimental */
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,

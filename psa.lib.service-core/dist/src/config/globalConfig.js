@@ -31,6 +31,9 @@ class GlobalConfig {
     static get sormasservice() {
         return GlobalConfig.getHttpConnection('SORMASSERVICE');
     }
+    static get timeZone() {
+        return configUtils_1.ConfigUtils.getEnvVariable('APPLICATION_TIMEZONE', 'Europe/Berlin');
+    }
     static get mailserver() {
         return {
             host: configUtils_1.ConfigUtils.getEnvVariable('MAIL_HOST'),

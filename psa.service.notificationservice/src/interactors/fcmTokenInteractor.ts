@@ -18,6 +18,9 @@ export class FcmTokenInteractor {
     accessToken: Partial<AccessToken>,
     fcmToken: string
   ): Promise<{ fcm_token: string }> {
+    if (accessToken.role !== 'Proband') {
+      throw Boom.forbidden('only probands are allowed to create a fcm token');
+    }
     const studies = accessToken.groups;
     if (!studies || studies.length !== 1) {
       throw Boom.badRequest('authToken.groups must contain exactly one study');

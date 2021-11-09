@@ -7,11 +7,11 @@
 const Boom = require('@hapi/boom');
 const validator = require('email-validator');
 const postgresHelper = require('../services/postgresqlHelper');
-const loggingserviceClient = require('../clients/loggingserviceClient');
+const { LoggingserviceClient } = require('../clients/loggingserviceClient');
 const personaldataserviceClient = require('../clients/personaldataserviceClient');
 const { runTransaction } = require('../db');
 
-const mailService = require('../services/mailService.js');
+const { MailService } = require('@pia/lib-service-core');
 const { config } = require('../config');
 
 /**
@@ -324,23 +324,19 @@ const pendingDeletionsInteractor = (function () {
                   } else {
                     const pendingDeletion =
                       await pgHelper.createPendingDeletion(data);
-                    const result = await mailService
-                      .sendMail(
-                        data.requested_for,
-                        createProbandDeletionEmailContent(
-                          data.for_id,
-                          createProbandDeletionConfirmationUrl(data.for_id)
-                        )
+                    const result = await MailService.sendMail(
+                      data.requested_for,
+                      createProbandDeletionEmailContent(
+                        data.for_id,
+                        createProbandDeletionConfirmationUrl(data.for_id)
                       )
-                      .catch(async (err) => {
-                        await pgHelper.cancelPendingDeletion(
-                          pendingDeletion.id
-                        );
-                        console.log(err);
-                        return Boom.badData(
-                          'PM could not be reached via email: ' + err
-                        );
-                      });
+                    ).catch(async (err) => {
+                      await pgHelper.cancelPendingDeletion(pendingDeletion.id);
+                      console.log(err);
+                      return Boom.badData(
+                        'PM could not be reached via email: ' + err
+                      );
+                    });
                     if (result) {
                       return pendingDeletion;
                     } else {
@@ -409,25 +405,23 @@ const pendingDeletionsInteractor = (function () {
                   const pendingDeletion = await pgHelper.createPendingDeletion(
                     data
                   );
-                  const result = await mailService
-                    .sendMail(
-                      data.requested_for,
-                      createSampleDeletionEmailContent(
-                        proband.username,
-                        sample.id,
-                        createSampleDeletionConfirmationUrl(
-                          sample.user_id,
-                          pendingDeletion.id
-                        )
+                  const result = await MailService.sendMail(
+                    data.requested_for,
+                    createSampleDeletionEmailContent(
+                      proband.username,
+                      sample.id,
+                      createSampleDeletionConfirmationUrl(
+                        sample.user_id,
+                        pendingDeletion.id
                       )
                     )
-                    .catch(async (err) => {
-                      await pgHelper.cancelPendingDeletion(pendingDeletion.id);
-                      console.log(err);
-                      return Boom.badData(
-                        'PM could not be reached via email: ' + err
-                      );
-                    });
+                  ).catch(async (err) => {
+                    await pgHelper.cancelPendingDeletion(pendingDeletion.id);
+                    console.log(err);
+                    return Boom.badData(
+                      'PM could not be reached via email: ' + err
+                    );
+                  });
                   if (result) {
                     return pendingDeletion;
                   } else {
@@ -472,20 +466,18 @@ const pendingDeletionsInteractor = (function () {
                 const pendingDeletion = await pgHelper.createPendingDeletion(
                   data
                 );
-                const result = await mailService
-                  .sendMail(
-                    data.requested_for,
-                    createStudyDeletionEmailContent(
-                      createStudyDeletionConfirmationUrl(pendingDeletion.id)
-                    )
+                const result = await MailService.sendMail(
+                  data.requested_for,
+                  createStudyDeletionEmailContent(
+                    createStudyDeletionConfirmationUrl(pendingDeletion.id)
                   )
-                  .catch(async (err) => {
-                    await pgHelper.cancelPendingDeletion(pendingDeletion.id);
-                    console.log(err);
-                    return Boom.badData(
-                      'Sysadmin could not be reached via email: ' + err
-                    );
-                  });
+                ).catch(async (err) => {
+                  await pgHelper.cancelPendingDeletion(pendingDeletion.id);
+                  console.log(err);
+                  return Boom.badData(
+                    'Sysadmin could not be reached via email: ' + err
+                  );
+                });
                 if (result) {
                   return pendingDeletion;
                 } else {
@@ -530,7 +522,7 @@ const pendingDeletionsInteractor = (function () {
         await personaldataserviceClient.deletePersonalDataOfUser(
           pendingDeletion.for_id
         );
-        await loggingserviceClient.deleteLogs(pendingDeletion.for_id);
+        await LoggingserviceClient.deleteLogs(pendingDeletion.for_id);
       } else if (pendingDeletion.type === 'sample') {
         await postgresHelper.deleteSampleData(pendingDeletion.for_id, {
           transaction: t,
@@ -549,7 +541,7 @@ const pendingDeletionsInteractor = (function () {
           }
         }
       }
-      await loggingserviceClient.createSystemLog({
+      await LoggingserviceClient.createSystemLog({
         requestedBy: pendingDeletion.requested_by,
         requestedFor: pendingDeletion.requested_for,
         type: pendingDeletion.type,

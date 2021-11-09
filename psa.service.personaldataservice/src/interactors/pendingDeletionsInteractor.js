@@ -6,8 +6,10 @@
 
 const Boom = require('@hapi/boom');
 const pendingDeletionRepository = require('../repositories/pendingDeletionRepository');
-const pendingDeletionService = require('../services/pendingDeletionService');
-const userserviceClient = require('../clients/userserviceClient');
+const {
+  PendingDeletionService,
+} = require('../services/pendingDeletionService');
+const { UserserviceClient } = require('../clients/userserviceClient');
 
 class PendingDeletionsInteractor {
   /**
@@ -56,11 +58,11 @@ class PendingDeletionsInteractor {
     if (userRole !== 'ProbandenManager') {
       throw Boom.forbidden('Wrong role for this command');
     }
-    const primaryStudy = await userserviceClient.getPrimaryStudy(
+    const primaryStudy = await UserserviceClient.getPrimaryStudy(
       deletion.proband_id
     );
     const probandsOfRequestedFor =
-      await userserviceClient.getProbandsWithAccessToFromProfessional(
+      await UserserviceClient.getProbandsWithAccessToFromProfessional(
         deletion.requested_for
       );
     if (
@@ -86,14 +88,14 @@ class PendingDeletionsInteractor {
           'You cannot request a deletion to be confirmed by yourself.'
         );
       }
-      return pendingDeletionService.createPendingDeletion(deletion);
+      return PendingDeletionService.createPendingDeletion(deletion);
     } else {
       if (deletion.requested_for !== deletion.requested_by) {
         throw Boom.badData(
           'You cannot delete and say it was confirmed by someone else.'
         );
       }
-      await pendingDeletionService.executeDeletion(deletion);
+      await PendingDeletionService.executeDeletion(deletion);
       return deletion;
     }
   }
@@ -129,7 +131,7 @@ class PendingDeletionsInteractor {
     }
 
     // execute deletion
-    await pendingDeletionService.executeDeletion(pendingDeletion);
+    await PendingDeletionService.executeDeletion(pendingDeletion);
     return pendingDeletion;
   }
 
@@ -162,7 +164,7 @@ class PendingDeletionsInteractor {
         'The requester is not allowed to delete this pending deletion'
       );
     }
-    await pendingDeletionService.deletePendingDeletion(probandId);
+    await PendingDeletionService.deletePendingDeletion(probandId);
   }
 }
 

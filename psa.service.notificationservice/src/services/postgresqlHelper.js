@@ -45,11 +45,10 @@ const postgresqlHelper = (function () {
     ]);
   }
 
-  function getUserNotificationSettings(user_id) {
-    return db.one(
-      'SELECT notification_time, compliance_labresults FROM users WHERE username=$1',
-      [user_id]
-    );
+  function getUserComplianceLabresults(user_id) {
+    return db.one('SELECT compliance_labresults FROM users WHERE username=$1', [
+      user_id,
+    ]);
   }
 
   const latestQuestionnaireVersionQuery =
@@ -482,12 +481,12 @@ const postgresqlHelper = (function () {
 
     /**
      * @function
-     * @description gets the notification settings of a user
+     * @description gets the labresults compliance settings of a user
      * @memberof module:postgresqlHelper
      * @param {string} user_id the id of the user to get settings for
-     * @returns {Promise} a resolved promise with the found settings or rejected promise otherwise
+     * @returns {Promise} a resolved promise with the found labresults complicance or rejected promise otherwise
      */
-    getUserNotificationSettings: getUserNotificationSettings,
+    getUserComplianceLabresults: getUserComplianceLabresults,
 
     /**
      * @function

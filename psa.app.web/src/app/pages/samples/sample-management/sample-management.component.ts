@@ -9,8 +9,8 @@ import {
   Component,
   ElementRef,
   forwardRef,
-  ViewChild,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
@@ -235,10 +235,8 @@ export class SampleManagementComponent implements OnInit {
       this.dataSource.data = this.data;
     } else {
       this.sampleTrackingService.getLabResultsForSampleID(filterSampleID).then(
-        (res) => {
-          res.forEach((labResult) => {
-            usersArray.push(labResult.user_id);
-          });
+        (labResult) => {
+          usersArray.push(labResult.user_id);
           this.geBloodSamplesForBloodSampleID(
             usersArray,
             filterSampleID,

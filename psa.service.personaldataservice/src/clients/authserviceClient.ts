@@ -7,7 +7,7 @@
 import * as fetch from 'node-fetch';
 import Boom from '@hapi/boom';
 import { config } from '../config';
-import { User } from '../models/User';
+import { User } from '../models/user';
 
 export class AuthserviceClient {
   private static readonly serviceUrl = config.services.authservice.url;

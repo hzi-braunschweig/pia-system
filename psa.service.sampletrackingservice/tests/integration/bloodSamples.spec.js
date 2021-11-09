@@ -16,27 +16,37 @@ const server = require('../../src/server');
 const apiAddress = 'http://localhost:' + process.env.PORT + '/sample';
 
 const { db } = require('../../src/db');
+const { setup, cleanup } = require('./bloodSamples.spec.data/setup.helper');
 
-const probandSession1 = { id: 1, role: 'Proband', username: 'QTestProband1' };
+const probandSession1 = {
+  id: 1,
+  role: 'Proband',
+  username: 'QTestProband1',
+  groups: ['ApiTestStudie', 'ApiTestMultiProband'],
+};
 const forscherSession1 = {
   id: 1,
   role: 'Forscher',
   username: 'QTestForscher1',
+  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
 };
 const utSession = {
   id: 1,
   role: 'Untersuchungsteam',
   username: 'QTestUntersuchungsteam',
+  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
 };
 const pmSession = {
   id: 1,
   role: 'ProbandenManager',
   username: 'QTestProbandenManager',
+  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
 };
 const sysadminSession = {
   id: 1,
   role: 'SysAdmin',
   username: 'QTestSystemAdmin',
+  groups: [],
 };
 
 const invalidToken = JWT.sign(probandSession1, 'thisIsNotAValidPrivateKey', {
@@ -97,175 +107,11 @@ describe('/sample/probands/id/bloodSamples', () => {
   });
 
   describe('GET /sample/probands/id/bloodSamples', async () => {
-    async function resetDb() {
-      await db.none(
-        'DELETE FROM blood_samples WHERE sample_id=$1 OR sample_id=$2 OR sample_id=$3',
-        ['ZIFCO-1234567890', 'ZIFCO-1234567899', 'ZIFCO-1111111111']
-      );
-      await db.none(
-        'DELETE FROM study_users WHERE user_id=$1 OR user_id=$2 OR user_id=$3 OR user_id=$4 OR user_id=$5',
-        [
-          'QTestProband1',
-          'QTestForscher1',
-          'QTestProband2',
-          'QTestProbandenManager',
-          'QTestUntersuchungsteam',
-        ]
-      );
-      await db.none(
-        'DELETE FROM users WHERE username=$1 OR username=$2 OR username=$3 OR username=$4 OR username=$5 OR username=$6',
-        [
-          'QTestProband1',
-          'QTestProband2',
-          'QTestProbandenManager',
-          'QTestForscher1',
-          'QTestUntersuchungsteam',
-          'QTestSystemAdmin',
-        ]
-      );
-      await db.none('DELETE FROM studies WHERE name IN($1:csv)', [
-        [
-          'ApiTestStudie',
-          'ApiTestStudie2',
-          'ApiTestMultiProband',
-          'ApiTestMultiProf',
-        ],
-      ]);
-    }
-
     before(async () => {
-      await resetDb();
-
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband1',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Proband',
-          null,
-          null,
-          'android',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband2',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Proband',
-          null,
-          null,
-          null,
-          false,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestForscher1',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Forscher',
-          null,
-          null,
-          'web',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProbandenManager',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'ProbandenManager',
-          null,
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestUntersuchungsteam',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Untersuchungsteam',
-          null,
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestSystemAdmin',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'SysAdmin',
-          null,
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1:csv)', [
-        ['ApiTestStudie', 'ApiTestStudie Beschreibung]'],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'ApiTestStudie2 Beschreibung]'],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1, $2)', [
-        'ApiTestMultiProband',
-        'ApiTestMultiProband Beschreibung',
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1, $2)', [
-        'ApiTestMultiProf',
-        'ApiTestMultiProf Beschreibung',
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'QTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestForscher1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProbandenManager', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestUntersuchungsteam', 'read'],
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestForscher1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestProbandenManager', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestUntersuchungsteam', 'read'],
-      ]);
-
-      await db.none('INSERT INTO blood_samples VALUES ($1:csv)', [
-        [
-          99999,
-          'QTestProband1',
-          'ZIFCO-1234567899',
-          true,
-          'This is as simple comment',
-        ],
-      ]);
-      await db.none('INSERT INTO blood_samples VALUES ($1:csv)', [
-        [
-          99998,
-          'QTestProband2',
-          'ZIFCO-1234567890',
-          false,
-          'This is another simple comment',
-        ],
-      ]);
+      await setup();
     });
-
     after(async function () {
-      await resetDb();
+      await cleanup();
     });
 
     it('should return http 401 if the header is invalid', async () => {
@@ -349,181 +195,11 @@ describe('/sample/probands/id/bloodSamples', () => {
   });
 
   describe('GET /sample/bloodResult/sample_id', async () => {
-    async function resetDb() {
-      await db.none(
-        'DELETE FROM blood_samples WHERE sample_id=$1 OR sample_id=$2 OR sample_id=$3',
-        ['ZIFCO-1234567890', 'ZIFCO-1234567899', 'ZIFCO-1111111111']
-      );
-      await db.none(
-        'DELETE FROM study_users WHERE user_id=$1 OR user_id=$2 OR user_id=$3 OR user_id=$4 OR user_id=$5',
-        [
-          'QTestProband1',
-          'QTestForscher1',
-          'QTestProband2',
-          'QTestProbandenManager',
-          'QTestUntersuchungsteam',
-        ]
-      );
-      await db.none(
-        'DELETE FROM users WHERE username=$1 OR username=$2 OR username=$3 OR username=$4 OR username=$5 OR username=$6',
-        [
-          'QTestProband1',
-          'QTestProband2',
-          'QTestProbandenManager',
-          'QTestForscher1',
-          'QTestUntersuchungsteam',
-          'QTestSystemAdmin',
-        ]
-      );
-      await db.none('DELETE FROM studies WHERE name IN($1:csv)', [
-        [
-          'ApiTestStudie',
-          'ApiTestStudie2',
-          'ApiTestMultiProband',
-          'ApiTestMultiProf',
-        ],
-      ]);
-    }
-
     before(async () => {
-      await resetDb();
-
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband1',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Proband',
-          null,
-          null,
-          'android',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband2',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Proband',
-          null,
-          null,
-          null,
-          false,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestForscher1',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Forscher',
-          null,
-          null,
-          'web',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProbandenManager',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'ProbandenManager',
-          null,
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestUntersuchungsteam',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Untersuchungsteam',
-          null,
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestSystemAdmin',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'SysAdmin',
-          null,
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1:csv)', [
-        ['ApiTestStudie', 'ApiTestStudie Beschreibung]'],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'ApiTestStudie2 Beschreibung]'],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1, $2)', [
-        'ApiTestMultiProband',
-        'ApiTestMultiProband Beschreibung',
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1, $2)', [
-        'ApiTestMultiProf',
-        'ApiTestMultiProf Beschreibung',
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'QTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestForscher1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProbandenManager', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestUntersuchungsteam', 'read'],
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestForscher1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestProbandenManager', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestUntersuchungsteam', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestForscher1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestUntersuchungsteam', 'read'],
-      ]);
-
-      await db.none('INSERT INTO blood_samples VALUES ($1:csv)', [
-        [
-          99999,
-          'QTestProband1',
-          'ZIFCO-1234567899',
-          true,
-          'This is as simple comment',
-        ],
-      ]);
-      await db.none('INSERT INTO blood_samples VALUES ($1:csv)', [
-        [
-          99998,
-          'QTestProband2',
-          'ZIFCO-1234567890',
-          false,
-          'This is another simple comment',
-        ],
-      ]);
+      await setup();
     });
-
     after(async function () {
-      await resetDb();
+      await cleanup();
     });
 
     it('should return http 401 if the header is invalid', async () => {
@@ -590,175 +266,82 @@ describe('/sample/probands/id/bloodSamples', () => {
   });
 
   describe('GET /sample/probands/id/bloodSamples/id', async () => {
-    async function resetDb() {
-      await db.none(
-        'DELETE FROM blood_samples WHERE sample_id=$1 OR sample_id=$2 OR sample_id=$3',
-        ['ZIFCO-1234567890', 'ZIFCO-1234567899', 'ZIFCO-1111111111']
-      );
-      await db.none(
-        'DELETE FROM study_users WHERE user_id=$1 OR user_id=$2 OR user_id=$3 OR user_id=$4 OR user_id=$5',
-        [
-          'QTestProband1',
-          'QTestForscher1',
-          'QTestProband2',
-          'QTestProbandenManager',
-          'QTestUntersuchungsteam',
-        ]
-      );
-      await db.none(
-        'DELETE FROM users WHERE username=$1 OR username=$2 OR username=$3 OR username=$4 OR username=$5 OR username=$6',
-        [
-          'QTestProband1',
-          'QTestProband2',
-          'QTestProbandenManager',
-          'QTestForscher1',
-          'QTestUntersuchungsteam',
-          'QTestSystemAdmin',
-        ]
-      );
-      await db.none('DELETE FROM studies WHERE name IN($1:csv)', [
-        [
-          'ApiTestStudie',
-          'ApiTestStudie2',
-          'ApiTestMultiProband',
-          'ApiTestMultiProf',
-        ],
-      ]);
-    }
-
     before(async () => {
-      await resetDb();
-
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband1',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Proband',
-          null,
-          null,
-          'android',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband2',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Proband',
-          null,
-          null,
-          null,
-          false,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestForscher1',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Forscher',
-          null,
-          null,
-          'web',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProbandenManager',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'ProbandenManager',
-          null,
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestUntersuchungsteam',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Untersuchungsteam',
-          null,
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestSystemAdmin',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'SysAdmin',
-          null,
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1:csv)', [
-        ['ApiTestStudie', 'ApiTestStudie Beschreibung]'],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'ApiTestStudie2 Beschreibung]'],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1, $2)', [
-        'ApiTestMultiProband',
-        'ApiTestMultiProband Beschreibung',
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1, $2)', [
-        'ApiTestMultiProf',
-        'ApiTestMultiProf Beschreibung',
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'QTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestForscher1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProbandenManager', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestUntersuchungsteam', 'read'],
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestForscher1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestProbandenManager', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestUntersuchungsteam', 'read'],
-      ]);
-
-      await db.none('INSERT INTO blood_samples VALUES ($1:csv)', [
-        [
-          99999,
-          'QTestProband1',
-          'ZIFCO-1234567899',
-          true,
-          'This is as simple comment',
-        ],
-      ]);
-      await db.none('INSERT INTO blood_samples VALUES ($1:csv)', [
-        [
-          99998,
-          'QTestProband2',
-          'ZIFCO-1234567890',
-          false,
-          'This is another simple comment',
-        ],
-      ]);
+      await setup();
+    });
+    after(async function () {
+      await cleanup();
     });
 
+    it('should return http 401 if the header is invalid', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .get('/bloodResult/' + resultsProband1.sample_id)
+        .set(invalidHeader);
+      expect(result).to.have.status(401);
+    });
+
+    it('should return http 403 if a QTestProband1 tries', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .get('/bloodResult/' + resultsProband1.sample_id)
+        .set(probandHeader1);
+      expect(result).to.have.status(403);
+    });
+
+    it('should return http 403 if a sysadmin tries', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .get('/bloodResult/' + resultsProband1.sample_id)
+        .set(sysadminHeader);
+      expect(result).to.have.status(403);
+    });
+
+    it('should return http 403 if a UT tries', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .get('/bloodResult/' + resultsProband1.sample_id)
+        .set(utHeader);
+      expect(result).to.have.status(403);
+    });
+
+    it('should return http 403 if a forscher tries', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .get('/bloodResult/' + resultsProband1.sample_id)
+        .set(forscherHeader1);
+      expect(result).to.have.status(403);
+    });
+
+    it('should return http 404 if a PM is not in same study as Proband', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .get('/bloodResult/' + resultsProband2.sample_id)
+        .set(pmHeader);
+      expect(result).to.have.status(404);
+    });
+
+    it('should return blood samples from database for PM', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .get('/bloodResult/' + resultsProband1.sample_id)
+        .set(pmHeader);
+      expect(result).to.have.status(200);
+
+      expect(result.body.length).to.equal(1);
+      expect(result.body[0].id).to.equal(resultsProband1.id);
+      expect(result.body[0].user_id).to.equal(resultsProband1.user_id);
+      expect(result.body[0].sample_id).to.equal(resultsProband1.sample_id);
+      expect(result.body[0].remark).to.equal(resultsProband1.remark);
+    });
+  });
+
+  describe('GET /sample/probands/id/bloodSamples/id', async () => {
+    before(async () => {
+      await setup();
+    });
     after(async function () {
-      await resetDb();
+      await cleanup();
     });
 
     it('should return http 401 if the header is invalid', async () => {
@@ -848,209 +431,11 @@ describe('/sample/probands/id/bloodSamples', () => {
       sample_id: 'ApiTest-123456789',
       wrong_param: 'something',
     };
-
-    async function resetDb() {
-      await db.none(
-        'DELETE FROM blood_samples WHERE sample_id=$1 OR sample_id=$2 OR sample_id=$3',
-        ['ZIFCO-1234567890', 'ZIFCO-1234567899', 'ZIFCO-1111111111']
-      );
-      await db.none('DELETE FROM study_users WHERE user_id IN($1:csv)', [
-        [
-          'QTestProband1',
-          'QTestForscher1',
-          'QTestProband2',
-          'QTestProband3',
-          'QTestProband4',
-          'QTestProbandenManager',
-          'QTestUntersuchungsteam',
-        ],
-      ]);
-      await db.none('DELETE FROM users WHERE username IN($1:csv)', [
-        [
-          'QTestProband1',
-          'QTestProband2',
-          'QTestProband3',
-          'QTestProband4',
-          'QTestProbandenManager',
-          'QTestForscher1',
-          'QTestUntersuchungsteam',
-          'QTestSystemAdmin',
-        ],
-      ]);
-      await db.none('DELETE FROM studies WHERE name IN($1:csv)', [
-        [
-          'ApiTestStudie',
-          'ApiTestStudie2',
-          'ApiTestMultiProband',
-          'ApiTestMultiProf',
-        ],
-      ]);
-    }
-
     before(async () => {
-      await resetDb();
-
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband1',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Proband',
-          null,
-          null,
-          'android',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband2',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Proband',
-          null,
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband3',
-          '',
-          'Proband',
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          'deactivated',
-          'active',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband4',
-          '',
-          'Proband',
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          'deleted',
-          'deleted',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestForscher1',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Forscher',
-          null,
-          null,
-          'web',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProbandenManager',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'ProbandenManager',
-          null,
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestUntersuchungsteam',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Untersuchungsteam',
-          null,
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestSystemAdmin',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'SysAdmin',
-          null,
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1:csv)', [
-        ['ApiTestStudie', 'ApiTestStudie Beschreibung]'],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'ApiTestStudie2 Beschreibung]'],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1, $2)', [
-        'ApiTestMultiProband',
-        'ApiTestMultiProband Beschreibung',
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1, $2)', [
-        'ApiTestMultiProf',
-        'ApiTestMultiProf Beschreibung',
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProband3', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProband4', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'QTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestForscher1', 'read'],
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestForscher1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestProbandenManager', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestUntersuchungsteam', 'read'],
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProbandenManager', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestUntersuchungsteam', 'read'],
-      ]);
+      await setup();
     });
-
     after(async function () {
-      await resetDb();
+      await cleanup();
     });
 
     it('should return http 401 if the header is invalid', async () => {
@@ -1213,7 +598,6 @@ describe('/sample/probands/id/bloodSamples', () => {
           '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
           'Proband',
           null,
-          null,
           'android',
         ],
       ]);
@@ -1222,7 +606,6 @@ describe('/sample/probands/id/bloodSamples', () => {
           'QTestProband2',
           '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
           'Proband',
-          null,
           null,
           null,
           false,
@@ -1234,7 +617,6 @@ describe('/sample/probands/id/bloodSamples', () => {
           '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
           'Forscher',
           null,
-          null,
           'web',
         ],
       ]);
@@ -1243,7 +625,6 @@ describe('/sample/probands/id/bloodSamples', () => {
           'QTestProbandenManager',
           '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
           'ProbandenManager',
-          null,
           null,
           null,
         ],
@@ -1255,7 +636,6 @@ describe('/sample/probands/id/bloodSamples', () => {
           'Untersuchungsteam',
           null,
           null,
-          null,
         ],
       ]);
       await db.none('INSERT INTO users VALUES ($1:csv)', [
@@ -1263,7 +643,6 @@ describe('/sample/probands/id/bloodSamples', () => {
           'QTestSystemAdmin',
           '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
           'SysAdmin',
-          null,
           null,
           null,
         ],
@@ -1285,7 +664,6 @@ describe('/sample/probands/id/bloodSamples', () => {
           null,
           null,
           null,
-          null,
           'deactivated',
           'active',
         ],
@@ -1295,7 +673,6 @@ describe('/sample/probands/id/bloodSamples', () => {
           'QTestProband4',
           '',
           'Proband',
-          null,
           null,
           null,
           null,

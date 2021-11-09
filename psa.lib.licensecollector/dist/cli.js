@@ -8,6 +8,7 @@ const promises_1 = __importDefault(require("fs/promises"));
 const commander_1 = require("commander");
 const licenseCollector_1 = require("./licenseCollector");
 const dockerLicenseTexts_1 = require("./dockerLicenseTexts");
+const asyncWithErrors_1 = require("./asyncWithErrors");
 class Program {
     static async main() {
         const program = new commander_1.Command();
@@ -23,10 +24,10 @@ class Program {
             .default('text'))
             .addOption(new commander_1.Option('-d, --addDocker', 'Add additional Docker licenses stored fix in this lib'))
             .addArgument(new commander_1.Argument('[root]', 'Set the root directory, that should be scanned').default('./', 'current directory'))
-            .action(async (root, options) => {
+            .action((0, asyncWithErrors_1.asyncPassErrors)(async (root, options) => {
             const licenses = await licenseCollector_1.LicenseCollector.collectLicenses(root, options.excludePackages, options.onlyProduction, options.assertValidLicenseTexts);
             if (options.addDocker) {
-                licenses.push(...dockerLicenseTexts_1.getDockerLicenses());
+                licenses.push(...(0, dockerLicenseTexts_1.getDockerLicenses)());
             }
             licenses.sort((a, b) => {
                 return a.packageName === b.packageName
@@ -43,7 +44,7 @@ class Program {
                     await promises_1.default.writeFile(options.target, JSON.stringify({ licenses }));
                     break;
             }
-        });
+        }));
         await program.parseAsync();
     }
     static createLicenseTextFile(licenses) {

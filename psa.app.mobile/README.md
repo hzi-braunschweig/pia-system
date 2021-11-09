@@ -57,6 +57,10 @@ Further reading: https://ionicframework.com/docs/developing/ios
 
 For building the Android app you will need the Android SDK, Java JDK **8** and the Gradle build tool.
 
+Please Note: cordova-android and therefore psa.app.mobile does currently NOT support Android SDK >= 31
+(see: <https://github.com/apache/cordova-android/issues/1288>). If you have Android SDK >= 31 (and the corresponding
+Build Tools) installed on your machine, you won't be able to build the PIA Android app. Please install Android SDK 30.
+
 In order to use livereload you need to allow cleartext traffic to your computer's local IP:
 
 - Open `/resources/android/xml/network_security_config.xml`

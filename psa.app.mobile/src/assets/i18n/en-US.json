@@ -53,7 +53,9 @@
     "TOAST_MSG_NEW_PASSWORD_RESULT": "In case you entered a valid user name and the user has a known mail address, an e-mail with a new password was successfully delivered.",
     "AUTHENTICATING": "Authenticating...",
     "ENTER_BACKEND_URL": "Enter URL",
-    "GIVEN_BACKEND_URL_NOT_VALID": "The specified backend URL is invalid"
+    "GIVEN_BACKEND_URL_NOT_VALID": "The specified backend URL is invalid",
+    "ALERT_MSG_INCOMPATIBLE_APP_VERSION": "Sie verwenden eine veraltete App Version. Bitte stellen Sie sicher, dass Sie die aktuellste Version aus dem Store installieren und nutzen.",
+    "ALERT_BUTTON_LABEL_GO_TO_APP_STORE": "Aktualisieren"
   },
   "CHANGE_PASSWORD": {
     "TITLE": "Change password",
@@ -129,10 +131,8 @@
   },
   "SETTINGS": {
     "TITLE": "Settings",
-    "HINT": "Tap to select the time at which you want to receive notifications:",
     "RECORDING_LOGS": "Log data acquisition:",
     "MANAGE_PASSWORD": "Password management",
-    "PLEASE_TYPE": "Please type",
     "TOAST_MSG_SUCCESSFULLY_SENT": "Your settings have been successfully saved.",
     "LICENSES": "Software-Lizenzen",
     "GROUP_TITLE_GENERAL": "Allgemein",

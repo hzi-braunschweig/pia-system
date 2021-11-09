@@ -7,7 +7,7 @@
 import chai from 'chai';
 import sinonChai from 'sinon-chai';
 import { createSandbox, SinonSandbox, SinonStub } from 'sinon';
-import { sandbox as fetchMockSandbox } from 'fetch-mock';
+import fetchMocker from 'fetch-mock';
 import { SormasserviceClient } from './sormasserviceClient';
 import { config } from '../config';
 import * as fetch from 'node-fetch';
@@ -15,7 +15,7 @@ import * as fetch from 'node-fetch';
 chai.use(sinonChai);
 const expect = chai.expect;
 
-const fetchMock = fetchMockSandbox();
+const fetchMock = fetchMocker.sandbox();
 const sandbox: SinonSandbox = createSandbox();
 const HTTP_SERVICE_UNAVAILABLE = 503;
 

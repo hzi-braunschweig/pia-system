@@ -1,4 +1,4 @@
-FROM docker:20.10.8@sha256:63107bd6ce718f130bb2668704239467b74f034c446f9e9c4ae1ffa5ddf4e3dd AS docker-binary
+FROM docker:20.10.9@sha256:938bcb85cf77db2b80d219abd5a1424ec15ce11a3adaea6423fa16cc9acfe926 AS docker-binary
 
 FROM registry.gitlab.com/gitlab-org/release-cli:v0.10.0@sha256:68e201226e1e76cb7edd327c89eb2d5d1a1d2b0fd4a6ea5126e24184d9aa4ffc AS release-cli-binary
 

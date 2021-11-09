@@ -9,10 +9,9 @@ import chaiHttp from 'chai-http';
 import sinonChai from 'sinon-chai';
 import JWT from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
-import sinon, { SinonSpy } from 'sinon';
-import { sandbox } from 'fetch-mock';
+import sinon, { SinonSpy, SinonStub } from 'sinon';
+import fetchMocker from 'fetch-mock';
 import * as fetch from 'node-fetch';
-import mail, { Transporter } from 'nodemailer';
 import { Payload } from '@hapi/boom';
 
 import secretOrPrivateKey from '../secretOrPrivateKey';
@@ -22,14 +21,14 @@ import server from '../../src/server';
 import { config } from '../../src/config';
 import pgHelper from '../../src/services/postgresqlHelper';
 import sormasserviceClient from '../../src/clients/sormasserviceClient';
-import authserviceClient from '../../src/clients/authserviceClient';
+import { AuthserviceClient } from '../../src/clients/authserviceClient';
 import personaldataserviceClient from '../../src/clients/personaldataserviceClient';
-import { mock } from 'ts-mockito';
+import { MailService } from '@pia/lib-service-core';
 
 chai.use(chaiHttp);
 chai.use(sinonChai);
 const expect = chai.expect;
-const fetchMock = sandbox();
+const fetchMock = fetchMocker.sandbox();
 const apiAddress = 'http://localhost:' + String(config.public.port);
 const serverSandbox = sinon.createSandbox();
 const testSandbox = sinon.createSandbox();
@@ -113,12 +112,9 @@ function getData(): CreateSormasUserRequest {
 }
 
 describe('/sormasProbands', function () {
-  const sendMailStub = sinon.stub().resolves();
+  let sendMailStub: SinonStub;
 
   before(async function () {
-    const transporter = mock<Transporter>();
-    transporter.sendMail = sendMailStub;
-    serverSandbox.stub(mail, 'createTransport').returns(transporter);
     serverSandbox.stub(config, 'isSormasActive').value(true);
     await server.init();
   });
@@ -129,13 +125,13 @@ describe('/sormasProbands', function () {
   });
 
   beforeEach(async function () {
+    sendMailStub = testSandbox.stub(MailService, 'sendMail').resolves(true);
     await setup();
   });
 
   afterEach(async function () {
     await cleanup();
     testSandbox.restore();
-    sendMailStub.reset();
     fetchMock.restore();
   });
 
@@ -163,7 +159,7 @@ describe('/sormasProbands', function () {
         pgHelper,
         'createSormasProband'
       );
-      createUserSpy = testSandbox.spy(authserviceClient, 'createUser');
+      createUserSpy = testSandbox.spy(AuthserviceClient, 'createUser');
     });
 
     it('should return 401 for a missing auth key', async () => {

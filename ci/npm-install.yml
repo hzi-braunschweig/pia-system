@@ -1,6 +1,6 @@
 npm-install:
   stage: prepare
-  image: docker:20.10.8@sha256:63107bd6ce718f130bb2668704239467b74f034c446f9e9c4ae1ffa5ddf4e3dd
+  image: docker:20.10.9@sha256:938bcb85cf77db2b80d219abd5a1424ec15ce11a3adaea6423fa16cc9acfe926
   script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
     - >

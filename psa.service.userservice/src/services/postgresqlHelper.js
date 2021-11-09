@@ -15,7 +15,6 @@ const postgresqlHelper = (function () {
       `SELECT username,
                     role,
                     first_logged_in_at,
-                    compliance_labresults,
                     account_status,
                     study_status,
                     ids,
@@ -384,7 +383,6 @@ const postgresqlHelper = (function () {
       `UPDATE users
              SET password='',
                  first_logged_in_at=null,
-                 notification_time=null,
                  logged_in_with=null,
                  compliance_labresults=null,
                  compliance_samples=null,
@@ -973,16 +971,15 @@ const postgresqlHelper = (function () {
 
   async function updateUserSettings(userName, userSettings) {
     return db.one(
-      'UPDATE users SET notification_time=$1, logging_active=$2 WHERE username=$3 RETURNING notification_time, logging_active',
-      [userSettings.notification_time, userSettings.logging_active, userName]
+      'UPDATE users SET logging_active=$1 WHERE username=$2 RETURNING logging_active',
+      [userSettings.logging_active, userName]
     );
   }
 
   async function getUserSettings(userName) {
-    return db.one(
-      'SELECT notification_time, logging_active FROM users WHERE username=$1',
-      [userName]
-    );
+    return db.one('SELECT logging_active FROM users WHERE username=$1', [
+      userName,
+    ]);
   }
 
   async function getStudyAccessesForUser(userName) {
@@ -1179,7 +1176,7 @@ const postgresqlHelper = (function () {
      * @description gets the user with the specified username
      * @memberof module:postgresqlHelper
      * @param {string} username the username of the user to find
-     * @returns {Promise} a resolved promise with the found user or a rejected promise with the error
+     * @returns {Promise<UserResponse>} a resolved promise with the found user or a rejected promise with the error
      */
     getUser: getUser,
 
@@ -1250,7 +1247,7 @@ const postgresqlHelper = (function () {
      * searches for the
      * @param ids {string}
      * @param requesterName {string}
-     * @return {object}
+     * @return {Promise<ProbandResponseForProfessionals>}
      */
     getUserAsProfessionalByIDS: getUserAsProfessionalByIDS,
 
@@ -1258,7 +1255,7 @@ const postgresqlHelper = (function () {
      * @function
      * @description gets the users the professional User has access to
      * @memberof module:postgresqlHelper
-     * @returns {Promise} a resolved promise with the found users or a rejected promise with the error
+     * @return {Promise<ProbandResponseForProfessionals>} a resolved promise with the found users or a rejected promise with the error
      */
     getUsersForProfessional: getUsersForProfessional,
 
@@ -1266,7 +1263,7 @@ const postgresqlHelper = (function () {
      * @function
      * @description gets the users the PM has access to
      * @memberof module:postgresqlHelper
-     * @returns {Promise} a resolved promise with the found users or a rejected promise with the error
+     * @returns {Promise<ProbandResponseForPm[]>} a resolved promise with the found users or a rejected promise with the error
      */
     getUsersForPM: getUsersForPM,
 

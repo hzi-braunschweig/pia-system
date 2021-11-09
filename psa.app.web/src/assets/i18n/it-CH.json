@@ -312,6 +312,7 @@
     "JUMP_STEP_MIN": "Deve essere maggiore di 0",
     "JUMP_STEP_MAX": "Deve essere minore di 45",
     "JUMP_STEP_REQUIRED": "Numero di passaggi necessario",
+    "QUESTIONNAIRE_INSTANCE_COUNT_ERROR": "Je Teilnehmer:in darf der Fragebogen insgesamt nicht öfter als {{maxInstanceCount}} mal angezeigt werden. Bitte passen Sie den Zykluswert, die Zykluseinheit oder die Laufzeit (Deaktivieren nach x Tagen) entsprechend an.",
     "CHARACTER_NOT_ALLOWED": "Carattere non consentito.",
     "VALUE_REQUIRED": "Valore necessario",
     "AFTER": "dopo",
@@ -526,7 +527,17 @@
     "IDS": "IDS",
     "TEST_PROBAND": "Segna come partecipante al test",
     "IS_TEST_PROBAND": "Partecipante al test",
-    "NOT_EXIST": "Il partecipante non esiste"
+    "NOT_EXIST": "Il partecipante non esiste",
+    "ERROR": {
+      "USER_NOT_FOUND": "Es existiert kein Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen.",
+      "WRONG_ROLE": "Der Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen, hat nicht die Rolle \"Untersuchungsteam\"",
+      "NO_ACCESS_TO_STUDY": "Der Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen, hat keine Berechtigung für die Studie",
+      "NO_PLANNED_PROBAND_FOUND": "Das Pseudonym existiert nicht unter geplante Teilnehmende in dieser Studie",
+      "PROBAND_ALREADY_EXISTS": "Zu dem Pseudonym existiert bereits ein:e Teilnehmer:in",
+      "CREATING_ACCOUNG_FAILED": "Das Erstellen des Accounts ist fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Systemadministrator.",
+      "SAVING_PROBAND_FAILED": "Das Speichern des Probanden ist fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Systemadministrator.",
+      "UNKNOWN_ERROR": "Beim Anlegen des Teilnehmenden ist ein unbekannter Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie den Systemadministrator."
+    }
   },
   "DIALOG": {
     "DELETE": "Eliminare {{data}}?",
@@ -687,7 +698,6 @@
     "NEW_USER": "Crea utente"
   },
   "SETTINGS": {
-    "TIME": "Selezionare l’orario in cui si desidera ricevere le notifiche: ",
     "CONFIRM": "Salva",
     "INFO_SAVED": "Le impostazioni sono state salvate.",
     "MANAGE_PASSWORD": "Gestisci password: ",

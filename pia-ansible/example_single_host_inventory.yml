@@ -33,8 +33,8 @@ all:
       # must match the version of the ansible playbook/role!
       pia_docker_tag: develop
 
-      # the external reachable url for pia
-      pia_url: http://localhost/
+      # the external reachable domain for pia (without protocol)
+      pia_url: localhost
 
       # the protocol + port for external reachability of pia
       pia_external_protocol: http

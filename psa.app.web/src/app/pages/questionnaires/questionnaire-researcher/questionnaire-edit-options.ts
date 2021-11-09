@@ -144,7 +144,7 @@ export class QuestionnaireEditOptions {
 
   public static getHoursOfDay(timePostfix: string): QuestionnaireEditOptions[] {
     return [...Array(24).keys()].map((hour) => ({
-      value: hour + new Date().getTimezoneOffset() / 60,
+      value: hour,
       viewValue: `${hour < 10 ? '0' : ''}${hour} ${timePostfix}`,
     }));
   }

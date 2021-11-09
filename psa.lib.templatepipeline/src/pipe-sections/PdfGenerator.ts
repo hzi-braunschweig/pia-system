@@ -5,7 +5,7 @@
  */
 
 import { PipeSection } from './PipeSection';
-import { Browser, launch, PDFOptions } from 'puppeteer';
+import puppeteer, { Browser, PDFOptions } from 'puppeteer';
 import { HtmlDocument, PdfDocument } from '../template-documents';
 
 let browser: Browser | undefined;
@@ -48,7 +48,7 @@ export class PdfGenerator implements PipeSection<HtmlDocument, PdfDocument> {
 
   public async generatePdf(htmlText: Promise<string>): Promise<Buffer> {
     if (!browser) {
-      browser = await launch({
+      browser = await puppeteer.launch({
         args: ['--disable-dev-shm-usage', '--no-sandbox'],
       });
     }

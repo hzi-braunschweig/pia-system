@@ -9,8 +9,8 @@ class HtmlParser {
         return new template_documents_1.DomDocument(this.parseHtml(input.htmlText));
     }
     async parseHtml(htmlText) {
-        const parsedHtml = parse5_1.parseFragment(await htmlText);
-        if (!Parse5TypeGuards_1.isParentNode(parsedHtml)) {
+        const parsedHtml = (0, parse5_1.parseFragment)(await htmlText);
+        if (!(0, Parse5TypeGuards_1.isParentNode)(parsedHtml)) {
             throw Error('Could not parse the html');
         }
         return parsedHtml;

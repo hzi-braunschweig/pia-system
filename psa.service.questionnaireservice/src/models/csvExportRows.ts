@@ -52,7 +52,6 @@ export interface CsvBloodSampleRow {
 export interface CsvUserSettingsRow {
   Proband: string;
   IDS: string;
-  'Benachrichtigung Uhrzeit': string;
   'Einwilligung Ergebnismitteilung': string;
   'Einwilligung Probenentnahme': string;
   'Einwilligung Blutprobenentnahme': string;

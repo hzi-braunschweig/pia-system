@@ -172,43 +172,10 @@ describe('/userSettings', function () {
     });
 
     const userSettings = {
-      notification_time: '15:30',
       logging_active: false,
     };
 
-    const userSettingsInvalid1 = {
-      notification_time: '65:30',
-      logging_active: false,
-    };
-
-    const userSettingsInvalid2 = {
-      notification_time: '15:99',
-      logging_active: false,
-    };
-
-    const userSettingsInvalid3 = {
-      notification_time: 'noTimeFormat',
-      logging_active: false,
-    };
-
-    const userSettingsInvalid4 = {
-      notification_time: '15.30',
-      logging_active: false,
-    };
-
-    const userSettingsInvalid5 = {
-      notification_time: '15:30b',
-      logging_active: false,
-    };
-
-    const userSettingsInvalid6 = {
-      notification_time: '29:00',
-      logging_active: false,
-    };
-
-    const userSettingsInvalid7 = {
-      notification_time: '29:00',
-    };
+    const userSettingsInvalid = {};
 
     it('should return HTTP 401 if the token is wrong', async function () {
       const result = await chai
@@ -255,66 +222,12 @@ describe('/userSettings', function () {
       expect(result).to.have.status(404);
     });
 
-    it('should return HTTP 400 if a the hour is too high', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .put('/userSettings/QTestProband1')
-        .set(probandHeader1)
-        .send(userSettingsInvalid1);
-      expect(result).to.have.status(400);
-    });
-
-    it('should return HTTP 400 if a the minute is too high', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .put('/userSettings/QTestProband1')
-        .set(probandHeader1)
-        .send(userSettingsInvalid2);
-      expect(result).to.have.status(400);
-    });
-
-    it('should return HTTP 400 if the string is no valid time string', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .put('/userSettings/QTestProband1')
-        .set(probandHeader1)
-        .send(userSettingsInvalid3);
-      expect(result).to.have.status(400);
-    });
-
-    it('should return HTTP 400 if a the string has a . instead of :', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .put('/userSettings/QTestProband1')
-        .set(probandHeader1)
-        .send(userSettingsInvalid4);
-      expect(result).to.have.status(400);
-    });
-
-    it('should return HTTP 404 if a the string has an additional letter', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .put('/userSettings/QTestProband1')
-        .set(probandHeader1)
-        .send(userSettingsInvalid5);
-      expect(result).to.have.status(404);
-    });
-
-    it('should return HTTP 404 if a the string is invalid but is not covered by regex check', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .put('/userSettings/QTestProband1')
-        .set(probandHeader1)
-        .send(userSettingsInvalid6);
-      expect(result).to.have.status(404);
-    });
-
     it('should return HTTP 400 if logging_active bool is missing', async function () {
       const result = await chai
         .request(apiAddress)
         .put('/userSettings/QTestProband1')
         .set(probandHeader1)
-        .send(userSettingsInvalid7);
+        .send(userSettingsInvalid);
       expect(result).to.have.status(400);
     });
 
@@ -325,7 +238,6 @@ describe('/userSettings', function () {
         .set(probandHeader1)
         .send(userSettings);
       expect(result).to.have.status(200);
-      expect(result.body.notification_time).to.equal('15:30:00');
       expect(result.body.logging_active).to.equal(false);
       expect(result.body.links.self.href).to.equal(
         '/userSettings/QTestProband1'
@@ -464,7 +376,6 @@ describe('/userSettings', function () {
         .get('/userSettings/QTestProband1')
         .set(probandHeader1);
       expect(result).to.have.status(200);
-      expect(result.body.notification_time).to.equal('17:30:00');
       expect(result.body.logging_active).to.equal(true);
       expect(result.body.links.self.href).to.equal(
         '/userSettings/QTestProband1'

@@ -18,3 +18,5 @@ node_modules
 .scannerwork
 
 **/__pycache__
+**/.nyc_output
+**/node_modules

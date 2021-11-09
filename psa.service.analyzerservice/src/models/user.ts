@@ -21,7 +21,6 @@ export interface User {
   study_center: string;
   examination_wave: number;
   logging_active: boolean;
-  notification_time: string;
   is_test_proband: boolean;
 }
 

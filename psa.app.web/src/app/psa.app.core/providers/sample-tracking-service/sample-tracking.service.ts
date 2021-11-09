@@ -32,9 +32,9 @@ export class SampleTrackingService {
    * @param  sampleID Proband Id
    * @return list with laboratory results
    */
-  getLabResultsForSampleID(sampleID): Promise<LabResult[]> {
+  getLabResultsForSampleID(sampleID): Promise<LabResult> {
     return this.http
-      .get<LabResult[]>(this.apiUrl + `labResults/${sampleID}`)
+      .get<LabResult>(this.apiUrl + `labResults/${sampleID}`)
       .toPromise();
   }
 

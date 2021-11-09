@@ -217,6 +217,23 @@
             {{ 'QUESTIONNAIRE_QUESTIONS.SUMMARY' | translate }}
           </h1>
         </ion-text>
+
+        <ion-card>
+          <ion-card-header
+            class="pia-questionnaire-question pia-questionnaire-question-header"
+          >
+            <ng-container
+              *ngIf="hasQuestionnaireStatus('in_progress') || hasQuestionnaireStatus('released_once')"
+              >{{ 'QUESTIONNAIRE_QUESTIONS.SUMMARY_SUBTITLE_IN_PROGRESS' |
+              translate }}</ng-container
+            >
+            <ng-container *ngIf="hasQuestionnaireStatus('released_twice')"
+              >{{ 'QUESTIONNAIRE_QUESTIONS.SUMMARY_SUBTITLE_RELEASED' |
+              translate }}</ng-container
+            >
+          </ion-card-header>
+        </ion-card>
+
         <ion-card
           *ngFor="let question of questionnaireInstance?.questionnaire?.questions; index as questionIndex"
         >
@@ -287,7 +304,6 @@
             </ng-container>
           </ion-list>
         </ion-card>
-
         <div class="pia-fab-button-spacer"></div>
       </div>
     </ion-slide>

@@ -13,7 +13,7 @@ const {
 const packageJson = require('../package.json');
 const { db } = require('./db');
 const { config } = require('./config');
-const mailService = require('./services/mailService');
+const { MailService } = require('@pia/lib-service-core');
 
 let server;
 let serverInternal;
@@ -38,7 +38,7 @@ exports.init = async () => {
     isInternal: true,
   });
 
-  mailService.initService();
+  MailService.initService(config.servers.mailserver);
 
   await server.start();
   server.log(['startup'], `Server running at ${server.info.uri}`);

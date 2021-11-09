@@ -312,6 +312,7 @@
     "JUMP_STEP_MIN": "Must be greater than 0",
     "JUMP_STEP_MAX": "must be less than 45",
     "JUMP_STEP_REQUIRED": "Steps are required",
+    "QUESTIONNAIRE_INSTANCE_COUNT_ERROR": "Je Teilnehmer:in darf der Fragebogen insgesamt nicht öfter als {{maxInstanceCount}} mal angezeigt werden. Bitte passen Sie den Zykluswert, die Zykluseinheit oder die Laufzeit (Deaktivieren nach x Tagen) entsprechend an.",
     "CHARACTER_NOT_ALLOWED": "This character is not allowed.",
     "VALUE_REQUIRED": "Value is required",
     "AFTER": "after",
@@ -526,7 +527,17 @@
     "IDS": "IDS",
     "TEST_PROBAND": "Mark as test-participant",
     "IS_TEST_PROBAND": "Test-participant",
-    "NOT_EXIST": "Participant does not exist"
+    "NOT_EXIST": "Participant does not exist",
+    "ERROR": {
+      "USER_NOT_FOUND": "Es existiert kein Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen.",
+      "WRONG_ROLE": "Der Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen, hat nicht die Rolle \"Untersuchungsteam\"",
+      "NO_ACCESS_TO_STUDY": "Der Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen, hat keine Berechtigung für die Studie",
+      "NO_PLANNED_PROBAND_FOUND": "Das Pseudonym existiert nicht unter geplante Teilnehmende in dieser Studie",
+      "PROBAND_ALREADY_EXISTS": "Zu dem Pseudonym existiert bereits ein:e Teilnehmer:in",
+      "CREATING_ACCOUNG_FAILED": "Das Erstellen des Accounts ist fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Systemadministrator.",
+      "SAVING_PROBAND_FAILED": "Das Speichern des Probanden ist fehlgeschlagen. Bitte versuchen Sie es erneut oder kontaktieren Sie den Systemadministrator.",
+      "UNKNOWN_ERROR": "Beim Anlegen des Teilnehmenden ist ein unbekannter Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie den Systemadministrator."
+    }
   },
   "DIALOG": {
     "DELETE": "Are you sure you want to delete the questionnaire?",
@@ -687,7 +698,6 @@
     "NEW_USER": "Create user"
   },
   "SETTINGS": {
-    "TIME": "Choose the time that you want to receive notifications: ",
     "CONFIRM": "Save",
     "INFO_SAVED": "Your settings have been successfully saved.",
     "MANAGE_PASSWORD": "Manage Password: ",

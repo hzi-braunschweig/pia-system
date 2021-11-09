@@ -5,7 +5,7 @@
  */
 
 import Boom from '@hapi/boom';
-import authserviceClient from '../clients/authserviceClient';
+import { AuthserviceClient } from '../clients/authserviceClient';
 import {
   AccountCreateError,
   NoAccessToStudyError,
@@ -20,17 +20,8 @@ import { StatusCodes } from 'http-status-codes';
 import { PlannedProbandsRepository } from '../repositories/plannedProbandsRepository';
 import { runTransaction } from '../db';
 import { ProbandsRepository } from '../repositories/probandsRepository';
-
-const INITIAL_PASSWORD_VALIDITY = 120; // in hours
-
-function generateInitialPasswordValidityDate(): Date {
-  // Set initial password validity period to 120 hours after the user was created
-  const initialPasswordValidityDate = new Date();
-  initialPasswordValidityDate.setHours(
-    initialPasswordValidityDate.getHours() + INITIAL_PASSWORD_VALIDITY
-  );
-  return initialPasswordValidityDate;
-}
+import { SecureRandomPasswordService } from './secureRandomPasswordService';
+import { User } from '../models/user';
 
 export class ProbandService {
   public static async createIDSProband(
@@ -47,9 +38,8 @@ export class ProbandService {
       );
     }
 
-    const user = {
+    const user: User = {
       username: ids,
-      password: undefined,
       role: 'Proband',
       pw_change_needed: true,
       account_status: 'no_account',
@@ -58,7 +48,7 @@ export class ProbandService {
     try {
       // when the database is splitted we don't want to create a user
       // for ids probands anymore. Just create them when the get activated.
-      await authserviceClient.createUser(user);
+      await AuthserviceClient.createUser(user);
     } catch (error) {
       if (
         error instanceof Boom.Boom &&
@@ -112,35 +102,38 @@ export class ProbandService {
 
       // Add pseudonym and account to an existing proband with ids
       if (newProbandData.ids) {
-        const user = {
+        const user: User & { new_username?: string } = {
           username: newProbandData.ids,
           new_username: newProbandData.pseudonym,
           password: plannedProband.password,
+          role: 'Proband',
           pw_change_needed: true,
-          initial_password_validity_date: generateInitialPasswordValidityDate(),
+          initial_password_validity_date:
+            SecureRandomPasswordService.generateInitialPasswordValidityDate(),
           account_status: 'active',
         };
 
         // when the db is splitted (into user and proband).
         // we will only create the user when the account gets activated.
         try {
-          await authserviceClient.updateUser(user);
+          await AuthserviceClient.updateUser(user);
         } catch (error) {
           throw new AccountCreateError('Could not activate the account', error);
         }
       } else {
         // Create new proband with pseudonym and account
-        const user = {
+        const user: User = {
           username: newProbandData.pseudonym,
           password: plannedProband.password,
           role: 'Proband',
           pw_change_needed: true,
-          initial_password_validity_date: generateInitialPasswordValidityDate(),
+          initial_password_validity_date:
+            SecureRandomPasswordService.generateInitialPasswordValidityDate(),
           account_status: 'active',
         };
 
         try {
-          await authserviceClient.createUser(user);
+          await AuthserviceClient.createUser(user);
         } catch (error) {
           if (
             error instanceof Boom.Boom &&

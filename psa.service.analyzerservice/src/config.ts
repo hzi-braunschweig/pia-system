@@ -26,6 +26,11 @@ const conf = {
   publicAuthKey: GlobalConfig.publicAuthKey,
   isSormasActive: GlobalConfig.isSormasActive,
   isTestMode: ConfigUtils.getEnvVariable('IS_TEST_MODE', 'false') === 'true',
+  timeZone: GlobalConfig.timeZone,
+  notificationTime: {
+    hours: 8, // in the time zone configured above
+    minutes: 0,
+  },
 };
 
 export const config: SupersetOfServiceConfig<typeof conf> = conf;

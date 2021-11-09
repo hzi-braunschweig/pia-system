@@ -25,7 +25,7 @@ const conf = {
     loggingservice: GlobalConfig.loggingservice,
   },
   publicAuthKey: GlobalConfig.publicAuthKey,
-  timeZone: 'Europe/Berlin',
+  timeZone: GlobalConfig.timeZone,
   isTestMode: ConfigUtils.getEnvVariable('IS_TEST_MODE', 'false') === 'true',
 };
 

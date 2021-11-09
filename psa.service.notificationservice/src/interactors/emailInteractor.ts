@@ -6,7 +6,7 @@
 
 import Boom from '@hapi/boom';
 
-import { MailService } from '../services/mailService';
+import { MailService } from '@pia/lib-service-core';
 import { UserserviceClient } from '../clients/userserviceClient';
 import { PersonaldataserviceClient } from '../clients/personaldataserviceClient';
 import { AccessToken } from 'dist/src';
@@ -86,15 +86,18 @@ export class EmailInteractor {
     pseudonym: string,
     subject: string,
     text: string
-  ): Promise<null | string> {
+  ): Promise<string | null> {
     try {
       const recipientMail =
         await PersonaldataserviceClient.getPersonalDataEmail(pseudonym);
       if (!recipientMail) {
         return null;
       }
-      const res = await MailService.sendMail(recipientMail, { subject, text });
-      return res.accepted?.[0] ?? null;
+      const success = await MailService.sendMail(recipientMail, {
+        subject,
+        text,
+      });
+      return success ? recipientMail : null;
     } catch (err) {
       console.error(err);
       return null;

@@ -7,22 +7,21 @@
 import * as Hapi from '@hapi/hapi';
 import { IClient } from 'pg-promise/typescript/pg-subset';
 import {
-  registerPlugins,
-  registerAuthStrategies,
-  ListeningDbClient,
   DatabaseNotification,
+  ListeningDbClient,
+  MailService,
   ParsedDatabasePayload,
+  registerAuthStrategies,
+  registerPlugins,
 } from '@pia/lib-service-core';
 
 import * as packageJson from '../package.json';
 import { db } from './db';
 import { config } from './config';
-import { MailService } from './services/mailService';
 import { NotificationHelper } from './services/notificationHelper';
 import { FcmHelper } from './services/fcmHelper';
 import { QuestionnaireCronjobs } from './cronjobs/questionnaireCronjobs';
 import { LabResult } from './models/labResult';
-import { User } from './models/user';
 import { DbQuestionnaireInstance } from './models/questionnaireInstance';
 import { messageQueueService } from './services/messageQueueService';
 
@@ -75,7 +74,7 @@ export class Server {
     this.server.log(['startup'], `Server running at ${this.server.info.uri}`);
 
     // Start scheduled jobs
-    MailService.initService();
+    MailService.initService(config.servers.mailserver);
 
     this.listeningDbClient = new ListeningDbClient(db);
     this.listeningDbClient.on(
@@ -127,12 +126,6 @@ export class Server {
             await NotificationHelper.handleUpdatedLabResult(
               pl.row_old as LabResult,
               pl.row_new as LabResult
-            );
-          } else if (msg.channel === 'table_update' && pl.table === 'users') {
-            console.log('got table update for users');
-            await NotificationHelper.handleUpdatedUser(
-              pl.row_old as User,
-              pl.row_new as User
             );
           } else if (
             msg.channel === 'table_update' &&

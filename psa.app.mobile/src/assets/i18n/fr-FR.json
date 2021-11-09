@@ -146,10 +146,8 @@
   },
   "SETTINGS": {
     "TITLE": "Einstellungen",
-    "HINT": "Tippen Sie hier, um die Uhrzeit auszuwählen, zu der Sie Benachrichtigungen bekommen möchten:",
     "RECORDING_LOGS": "Erfassung von Logdaten:",
     "MANGE_PASSWORD": "Passwort verwalten",
-    "PLEASE_TYPE": "Bitte tippen",
     "TOAST_MSG_INTERNET_ERROR": "Ihre Einstellungen konnten nicht geladen werden. Bitte überprüfen Sie Ihre Internetverbindung.",
     "TOAST_MSG_SESSION_EXPIRED": "Anmeldung abgelaufen. Bitte melden Sie sich erneut an.",
     "TOAST_MSG_SUCCESSFULLY_SENT": "Ihre Einstellungen wurden erfolgreich gespeichert."

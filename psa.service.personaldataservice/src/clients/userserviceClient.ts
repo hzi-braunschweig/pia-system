@@ -4,17 +4,19 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const fetch = require('node-fetch');
-const Boom = require('@hapi/boom');
-const { config } = require('../config');
+import * as fetch from 'node-fetch';
+import * as Boom from '@hapi/boom';
 
-const serviceUrl = config.services.userservice.url;
+import { config } from '../config';
+import { User } from '../models/user';
 
-class UserserviceClient {
-  static async getProband(pseudonym) {
+export class UserserviceClient {
+  private static readonly serviceUrl = config.services.userservice.url;
+
+  public static async getProband(pseudonym: string): Promise<User | null> {
     let res;
     try {
-      res = await fetch.default(`${serviceUrl}/user/users/${pseudonym}`, {
+      res = await fetch.default(`${this.serviceUrl}/user/users/${pseudonym}`, {
         method: 'get',
       });
     } catch (e) {
@@ -30,14 +32,16 @@ class UserserviceClient {
         res.status
       );
     }
-    return res.json();
+    return (await res.json()) as User | null;
   }
 
-  static async getPrimaryStudy(pseudonym) {
+  public static async getPrimaryStudy(
+    pseudonym: string
+  ): Promise<{ name: string }> {
     let res;
     try {
       res = await fetch.default(
-        `${serviceUrl}/user/users/${pseudonym}/primaryStudy`,
+        `${this.serviceUrl}/user/users/${pseudonym}/primaryStudy`,
         {
           method: 'get',
           headers: { 'Content-Type': 'application/json' },
@@ -56,18 +60,16 @@ class UserserviceClient {
         res.status
       );
     }
-    return await res.json();
+    return (await res.json()) as { name: string };
   }
 
-  /**
-   * @param username
-   * @returns {Promise<string[]>}
-   */
-  static async getProbandsWithAccessToFromProfessional(username) {
+  public static async getProbandsWithAccessToFromProfessional(
+    username: string
+  ): Promise<string[]> {
     let res;
     try {
       res = await fetch.default(
-        `${serviceUrl}/user/professional/${username}/allProbands`,
+        `${this.serviceUrl}/user/professional/${username}/allProbands`,
         {
           method: 'get',
           headers: { 'Content-Type': 'application/json' },
@@ -86,8 +88,6 @@ class UserserviceClient {
         res.status
       );
     }
-    return await res.json();
+    return (await res.json()) as string[];
   }
 }
-
-module.exports = UserserviceClient;

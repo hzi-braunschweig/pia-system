@@ -22,7 +22,9 @@ const { config } = require('../../src/config');
 const loggingserviceUrl = config.services.loggingservice.url;
 const sormasserviceUrl = config.services.sormasservice.url;
 const sormasserviceClient = require('../../src/clients/sormasserviceClient');
-const loggingserviceClient = require('../../src/clients/loggingserviceClient');
+const {
+  LoggingserviceClient,
+} = require('../../src/clients/loggingserviceClient');
 
 describe('Internal: delete proband data', () => {
   let fetchStub;
@@ -65,7 +67,7 @@ describe('Internal: delete proband data', () => {
     let deleteLogsSpy;
     beforeEach(() => {
       setStatusSpy = testSandbox.spy(sormasserviceClient, 'setStatus');
-      deleteLogsSpy = testSandbox.spy(loggingserviceClient, 'deleteLogs');
+      deleteLogsSpy = testSandbox.spy(LoggingserviceClient, 'deleteLogs');
     });
 
     describe('with sormas active', () => {

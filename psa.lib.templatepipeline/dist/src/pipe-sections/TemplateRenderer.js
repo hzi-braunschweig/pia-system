@@ -11,7 +11,7 @@ class TemplateRenderer {
         return new template_documents_1.HtmlDocument(this.renderTemplate(input.htmlText));
     }
     async renderTemplate(htmlText) {
-        return mustache_1.render(await htmlText, this.entity);
+        return (0, mustache_1.render)(await htmlText, this.entity);
     }
 }
 exports.TemplateRenderer = TemplateRenderer;

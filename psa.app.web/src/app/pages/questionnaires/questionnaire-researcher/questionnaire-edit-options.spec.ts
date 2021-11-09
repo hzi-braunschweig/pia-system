@@ -18,27 +18,18 @@ describe('QuestionnaireEditOptions', () => {
   });
 
   describe('getHoursOfDay()', () => {
-    let getTimezoneOffsetSpy: jasmine.Spy<Date['getTimezoneOffset']>;
-    beforeEach(() => {
-      getTimezoneOffsetSpy = spyOn<Date, 'getTimezoneOffset'>(
-        Date.prototype,
-        'getTimezoneOffset'
-      ).and.returnValue(-120);
-    });
     it('should provide a list of hours of a day', () => {
       const hoursOfDay = QuestionnaireEditOptions.getHoursOfDay('Uhr');
       expect(hoursOfDay.length).toBe(24);
-      expect(hoursOfDay).toContain({ value: 12, viewValue: '14 Uhr' });
-      expect(hoursOfDay).toContain({ value: 18, viewValue: '20 Uhr' });
-      expect(getTimezoneOffsetSpy).toHaveBeenCalled();
+      expect(hoursOfDay).toContain({ value: 14, viewValue: '14 Uhr' });
+      expect(hoursOfDay).toContain({ value: 20, viewValue: '20 Uhr' });
     });
 
     it('should prefix single digit hours with a zero', () => {
       const hoursOfDay = QuestionnaireEditOptions.getHoursOfDay('Uhr');
       expect(hoursOfDay.length).toBe(24);
-      expect(hoursOfDay).toContain({ value: -2, viewValue: '00 Uhr' });
-      expect(hoursOfDay).toContain({ value: 5, viewValue: '07 Uhr' });
-      expect(getTimezoneOffsetSpy).toHaveBeenCalled();
+      expect(hoursOfDay).toContain({ value: 0, viewValue: '00 Uhr' });
+      expect(hoursOfDay).toContain({ value: 7, viewValue: '07 Uhr' });
     });
   });
 });

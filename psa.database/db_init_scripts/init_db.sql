@@ -159,7 +159,6 @@ CREATE TABLE users (
     role TEXT NOT NULL,
     fcm_token TEXT,
     first_logged_in_at DATE NULL,
-    notification_time TIME NULL,
     logged_in_with TEXT NULL,
     compliance_labresults BOOLEAN DEFAULT true,
     compliance_samples BOOLEAN DEFAULT true,

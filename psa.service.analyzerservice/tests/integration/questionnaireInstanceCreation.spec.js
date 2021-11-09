@@ -15,6 +15,12 @@ const {
   cleanup,
 } = require('./questionnaireInstanceCreation.spec.data/setup.helper');
 const { dbWait, txWait } = require('./helper');
+const { zonedTimeToUtc } = require('date-fns-tz');
+const { config } = require('../../src/config');
+
+function localTimeToUtc(date) {
+  return zonedTimeToUtc(date, config.timeZone);
+}
 
 const onceQuestionnaire = {
   id: 99999,
@@ -382,7 +388,7 @@ describe('Questionnaire instance creation', function () {
   });
 
   describe('Autocreate/delete questionnaire instances on questionnaire insert and update and on user update', function () {
-    const userSettingsHour = 13;
+    const defaultNotificationTimeHour = config.notificationTime.hours;
 
     it('should not create any instances when no user is active in study and questionnaire is added', async function () {
       await dbWait(
@@ -431,7 +437,12 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI.length).to.equal(1);
       expect(
         addedQI[0].date_of_issue -
-          df.subDays(df.addHours(df.startOfToday(), userSettingsHour), 5)
+          localTimeToUtc(
+            df.subDays(
+              df.addHours(df.startOfToday(), defaultNotificationTimeHour),
+              5
+            )
+          )
       ).to.equal(0);
       expect(addedQI[0].study_id).to.equal('ApiTestStudie');
       expect(addedQI[0].user_id).to.equal('QTestProband1');
@@ -462,14 +473,24 @@ describe('Questionnaire instance creation', function () {
       if (dateNo !== df.subDays(df.startOfToday(), 5).getDay()) {
         expect(
           addedQI[0].date_of_issue -
-            df
-              .subDays(df.addHours(df.startOfToday(), userSettingsHour), 5)
-              .moveToDayOfWeek(dateNo)
+            localTimeToUtc(
+              df
+                .subDays(
+                  df.addHours(df.startOfToday(), defaultNotificationTimeHour),
+                  5
+                )
+                .moveToDayOfWeek(dateNo)
+            )
         ).to.equal(0);
       } else {
         expect(
           addedQI[0].date_of_issue -
-            df.subDays(df.addHours(df.startOfToday(), userSettingsHour), 5)
+            localTimeToUtc(
+              df.subDays(
+                df.addHours(df.startOfToday(), defaultNotificationTimeHour),
+                5
+              )
+            )
         ).to.equal(0);
       }
 
@@ -490,7 +511,9 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI.length).to.equal(1);
       expect(
         addedQI[0].date_of_issue -
-          df.addHours(df.startOfToday(), userSettingsHour)
+          localTimeToUtc(
+            df.addHours(df.startOfToday(), defaultNotificationTimeHour)
+          )
       ).to.equal(0);
       expect(addedQI[0].study_id).to.equal('ApiTestStudie');
       expect(addedQI[0].user_id).to.equal('QTestProband1');
@@ -539,7 +562,9 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI.length).to.equal(1);
       expect(
         addedQI[0].date_of_issue -
-          df.addHours(df.startOfToday(), userSettingsHour)
+          localTimeToUtc(
+            df.addHours(df.startOfToday(), defaultNotificationTimeHour)
+          )
       ).to.equal(0);
       expect(addedQI[0].study_id).to.equal('ApiTestStudie');
       expect(addedQI[0].user_id).to.equal('QTestProband1');
@@ -565,7 +590,9 @@ describe('Questionnaire instance creation', function () {
 
       expect(addedQI.length).to.equal(1);
       expect(new Date(addedQI[0].date_of_issue).toISOString()).to.equal(
-        df.addHours(df.startOfToday(), userSettingsHour).toISOString()
+        localTimeToUtc(
+          df.addHours(df.startOfToday(), defaultNotificationTimeHour)
+        ).toISOString()
       );
 
       expect(addedQI[0].study_id).to.equal('ApiTestStudie');
@@ -596,12 +623,12 @@ describe('Questionnaire instance creation', function () {
         expect(addedQI[i].study_id).to.equal('ApiTestStudie');
         expect(addedQI[i].user_id).to.equal('QTestProband1');
         expect(addedQI[i].date_of_issue.toString()).to.equal(
-          df
-            .setHours(
+          localTimeToUtc(
+            df.setHours(
               df.addDays(df.startOfToday(), (i - (i % 2)) / 2),
               3 + (i % 2) * 12
             )
-            .toString()
+          ).toString()
         );
       }
     });
@@ -626,18 +653,24 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI.length).to.equal(33);
 
       expect(
-        addedQI[0].date_of_issue - df.addHours(df.startOfToday(), 3)
+        addedQI[0].date_of_issue -
+          localTimeToUtc(df.addHours(df.startOfToday(), 3))
       ).to.equal(0);
       expect(
-        addedQI[1].date_of_issue - df.addHours(df.startOfToday(), 3 + 5)
+        addedQI[1].date_of_issue -
+          localTimeToUtc(df.addHours(df.startOfToday(), 3 + 5))
       ).to.equal(0);
       expect(
         addedQI[5].date_of_issue -
-          df.addHours(df.addDays(df.startOfToday(), 1), 3 + 2 * 5)
+          localTimeToUtc(
+            df.addHours(df.addDays(df.startOfToday(), 1), 3 + 2 * 5)
+          )
       ).to.equal(0);
       expect(
         addedQI[32].date_of_issue -
-          df.addHours(df.addDays(df.startOfToday(), 10), 3 + 2 * 5)
+          localTimeToUtc(
+            df.addHours(df.addDays(df.startOfToday(), 10), 3 + 2 * 5)
+          )
       ).to.equal(0);
 
       expect(addedQI[0].study_id).to.equal('ApiTestStudie');
@@ -673,18 +706,20 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI.length).to.equal(33);
 
       expect(
-        addedQI[0].date_of_issue - df.addHours(df.startOfToday(), 3)
+        addedQI[0].date_of_issue -
+          localTimeToUtc(df.addHours(df.startOfToday(), 3))
       ).to.equal(0);
       expect(
-        addedQI[1].date_of_issue - df.addHours(df.startOfToday(), 3 + 1)
+        addedQI[1].date_of_issue -
+          localTimeToUtc(df.addHours(df.startOfToday(), 3 + 1))
       ).to.equal(0);
       expect(
         addedQI[5].date_of_issue -
-          df.addHours(df.addDays(df.startOfToday(), 1), 3 + 2)
+          localTimeToUtc(df.addHours(df.addDays(df.startOfToday(), 1), 3 + 2))
       ).to.equal(0);
       expect(
         addedQI[32].date_of_issue -
-          df.addHours(df.addDays(df.startOfToday(), 10), 3 + 2)
+          localTimeToUtc(df.addHours(df.addDays(df.startOfToday(), 10), 3 + 2))
       ).to.equal(0);
 
       expect(addedQI[0].study_id).to.equal('ApiTestStudie');
@@ -720,15 +755,27 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI.length).to.equal(11);
       expect(
         addedQI[0].date_of_issue -
-          df.addHours(df.startOfToday(), userSettingsHour)
+          localTimeToUtc(
+            df.addHours(df.startOfToday(), defaultNotificationTimeHour)
+          )
       ).to.equal(0);
       expect(
         addedQI[1].date_of_issue -
-          df.addDays(df.addHours(df.startOfToday(), userSettingsHour), 2)
+          localTimeToUtc(
+            df.addDays(
+              df.addHours(df.startOfToday(), defaultNotificationTimeHour),
+              2
+            )
+          )
       ).to.equal(0);
       expect(
         addedQI[10].date_of_issue -
-          df.addDays(df.addHours(df.startOfToday(), userSettingsHour), 20)
+          localTimeToUtc(
+            df.addDays(
+              df.addHours(df.startOfToday(), defaultNotificationTimeHour),
+              20
+            )
+          )
       ).to.equal(0);
 
       expect(addedQI[0].study_id).to.equal('ApiTestStudie');
@@ -764,15 +811,27 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI.length).to.equal(8);
       expect(
         addedQI[0].date_of_issue -
-          df.addHours(df.startOfToday(), userSettingsHour)
+          localTimeToUtc(
+            df.addHours(df.startOfToday(), defaultNotificationTimeHour)
+          )
       ).to.equal(0);
       expect(
         addedQI[1].date_of_issue -
-          df.addWeeks(df.addHours(df.startOfToday(), userSettingsHour), 2)
+          localTimeToUtc(
+            df.addWeeks(
+              df.addHours(df.startOfToday(), defaultNotificationTimeHour),
+              2
+            )
+          )
       ).to.equal(0);
       expect(
         addedQI[7].date_of_issue -
-          df.addWeeks(df.addHours(df.startOfToday(), userSettingsHour), 14)
+          localTimeToUtc(
+            df.addWeeks(
+              df.addHours(df.startOfToday(), defaultNotificationTimeHour),
+              14
+            )
+          )
       ).to.equal(0);
 
       expect(addedQI[0].study_id).to.equal('ApiTestStudie');
@@ -810,12 +869,14 @@ describe('Questionnaire instance creation', function () {
         expect(addedQI[i].study_id).to.equal('ApiTestStudie');
         expect(addedQI[i].user_id).to.equal('QTestProband1');
         expect(addedQI[i].date_of_issue.toISOString()).to.equal(
-          nextDayXOfWeek(
-            df.addWeeks(
-              df.setHours(df.startOfToday(), userSettingsHour),
-              i * 2
-            ),
-            dateNo
+          localTimeToUtc(
+            nextDayXOfWeek(
+              df.addWeeks(
+                df.setHours(df.startOfToday(), defaultNotificationTimeHour),
+                i * 2
+              ),
+              dateNo
+            )
           ).toISOString()
         );
       }
@@ -843,9 +904,12 @@ describe('Questionnaire instance creation', function () {
         expect(addedQI[i].study_id).to.equal('ApiTestStudie');
         expect(addedQI[i].user_id).to.equal('QTestProband1');
         expect(addedQI[i].date_of_issue.toISOString()).to.equal(
-          df
-            .addMonths(df.setHours(df.startOfToday(), userSettingsHour), i * 2)
-            .toISOString()
+          localTimeToUtc(
+            df.addMonths(
+              df.setHours(df.startOfToday(), defaultNotificationTimeHour),
+              i * 2
+            )
+          ).toISOString()
         );
       }
     });
@@ -876,12 +940,14 @@ describe('Questionnaire instance creation', function () {
         expect(addedQI[i].study_id).to.equal('ApiTestStudie');
         expect(addedQI[i].user_id).to.equal('QTestProband1');
         expect(addedQI[i].date_of_issue.toISOString()).to.equal(
-          nextDayXOfWeek(
-            df.addMonths(
-              df.setHours(df.startOfToday(), userSettingsHour),
-              i * 2
-            ),
-            dateNo
+          localTimeToUtc(
+            nextDayXOfWeek(
+              df.addMonths(
+                df.setHours(df.startOfToday(), defaultNotificationTimeHour),
+                i * 2
+              ),
+              dateNo
+            )
           ).toISOString()
         );
       }
@@ -906,18 +972,18 @@ describe('Questionnaire instance creation', function () {
 
       expect(addedQI.length).to.equal(7);
       const startDate = df.addDays(
-        df.setHours(df.startOfToday(), userSettingsHour),
+        df.setHours(df.startOfToday(), defaultNotificationTimeHour),
         monthQuestionnaire2.activate_after_days
       );
       for (let i = 0; i < addedQI.length; i++) {
         const expectedDate = df.addMonths(
-          df.setHours(df.startOfDay(startDate), userSettingsHour),
+          df.setHours(df.startOfDay(startDate), defaultNotificationTimeHour),
           2 * i
         );
         expect(addedQI[i].study_id).to.equal('ApiTestStudie');
         expect(addedQI[i].user_id).to.equal('QTestProband1');
         expect(addedQI[i].date_of_issue.toISOString()).to.equal(
-          expectedDate.toISOString()
+          localTimeToUtc(expectedDate).toISOString()
         );
       }
     });
@@ -970,7 +1036,9 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI.length).to.equal(1);
       expect(
         addedQI[0].date_of_issue -
-          df.addHours(df.startOfToday(), userSettingsHour)
+          localTimeToUtc(
+            df.addHours(df.startOfToday(), defaultNotificationTimeHour)
+          )
       ).to.equal(0);
       expect(addedQI[0].study_id).to.equal('ApiTestStudie');
       expect(addedQI[0].user_id).to.equal('QTestProband1');
@@ -1961,15 +2029,27 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI.length).to.equal(6);
       expect(
         addedQI[0].date_of_issue -
-          df.addHours(df.startOfToday(), userSettingsHour)
+          localTimeToUtc(
+            df.addHours(df.startOfToday(), defaultNotificationTimeHour)
+          )
       ).to.equal(0);
       expect(
         addedQI[1].date_of_issue -
-          df.addDays(df.addHours(df.startOfToday(), userSettingsHour), 4)
+          localTimeToUtc(
+            df.addDays(
+              df.addHours(df.startOfToday(), defaultNotificationTimeHour),
+              4
+            )
+          )
       ).to.equal(0);
       expect(
         addedQI[5].date_of_issue -
-          df.addDays(df.addHours(df.startOfToday(), userSettingsHour), 20)
+          localTimeToUtc(
+            df.addDays(
+              df.addHours(df.startOfToday(), defaultNotificationTimeHour),
+              20
+            )
+          )
       ).to.equal(0);
 
       expect(addedQI[0].study_id).to.equal('ApiTestStudie');
@@ -2000,7 +2080,8 @@ describe('Questionnaire instance creation', function () {
 
       expect(addedQI.length).to.equal(1);
       expect(
-        addedQI[0].date_of_issue - df.addDays(df.startOfToday(), -10)
+        addedQI[0].date_of_issue -
+          localTimeToUtc(df.addDays(df.startOfToday(), -10))
       ).to.equal(0);
       expect(addedQI[0].study_id).to.equal('ApiTestStudie');
       expect(addedQI[0].user_id).to.equal('QTestProband1');
@@ -2061,7 +2142,8 @@ describe('Questionnaire instance creation', function () {
 
       expect(addedQI.length).to.equal(1);
       expect(
-        addedQI[0].date_of_issue - df.addDays(df.startOfToday(), -5)
+        addedQI[0].date_of_issue -
+          localTimeToUtc(df.addDays(df.startOfToday(), -5))
       ).to.equal(0);
       expect(addedQI[0].study_id).to.equal('ApiTestStudie');
       expect(addedQI[0].user_id).to.equal('QTestProband1');
@@ -2297,12 +2379,6 @@ describe('Questionnaire instance creation', function () {
   });
 
   describe('Autocreate/delete questionnaire instances on questionnaire instance status update for conditional questionnaires', function () {
-    beforeEach(async function () {
-      await dbWait(
-        "UPDATE users SET notification_time=null WHERE username IN ('QTestProband1')"
-      );
-    });
-
     it('should not create any instances when inserting answers that dont meet external condition', async function () {
       const externalQuestionnaire = {
         id: 88888,
@@ -3060,7 +3136,9 @@ describe('Questionnaire instance creation', function () {
 
       expect(addedQI.length).to.equal(2);
 
-      expect(addedQI[1].date_of_issue - df.startOfToday()).to.equal(172800000); // Two days difference
+      expect(
+        addedQI[1].date_of_issue - localTimeToUtc(df.startOfToday())
+      ).to.equal(201600000); // Two days and 8 hours difference
     });
 
     it('should create 3 more instances when inserting 3 answers that do meet internal_last condition for hourly questionnaire', async function () {
@@ -3208,19 +3286,21 @@ describe('Questionnaire instance creation', function () {
       );
 
       expect(addedQI.length).to.equal(4);
-      expect(
-        addedQI[0].date_of_issue - df.addHours(df.startOfToday(), 3)
-      ).to.equal(0);
-      expect(
-        addedQI[1].date_of_issue - df.addHours(df.startOfToday(), 3 + 5)
-      ).to.equal(0);
-      expect(
-        addedQI[2].date_of_issue - df.addHours(df.startOfToday(), 3 + 2 * 5)
-      ).to.equal(0);
-      expect(
-        addedQI[3].date_of_issue -
+      expect(addedQI[0].date_of_issue.toString()).to.equal(
+        localTimeToUtc(df.addHours(df.startOfToday(), 3)).toString()
+      );
+      expect(addedQI[1].date_of_issue.toString()).to.equal(
+        localTimeToUtc(df.addHours(df.startOfToday(), 3 + 5)).toString()
+      );
+      expect(addedQI[2].date_of_issue.toString()).to.equal(
+        localTimeToUtc(df.addHours(df.startOfToday(), 3 + 2 * 5)).toString()
+      );
+      // should be on the next day because of cycle_per_day
+      expect(addedQI[3].date_of_issue.toString()).to.equal(
+        localTimeToUtc(
           df.addHours(df.addDays(df.startOfToday(), 1), 3)
-      ).to.equal(0);
+        ).toString()
+      );
     });
 
     it('should create one more instance for spontan questionnaire when last instance is released', async function () {
@@ -3249,7 +3329,7 @@ describe('Questionnaire instance creation', function () {
             'UPDATE questionnaire_instances SET status=${status},date_of_release_v1=${date}, date_of_issue=${date} WHERE id=${id}',
           arg: {
             status: 'released_once',
-            date: df.startOfToday(),
+            date: localTimeToUtc(df.startOfToday()),
             id: addedInternalQI[0].id,
           },
         },
@@ -3261,8 +3341,12 @@ describe('Questionnaire instance creation', function () {
       );
 
       expect(addedQI.length).to.equal(2);
-      expect(addedQI[0].date_of_issue - df.startOfToday()).to.equal(0);
-      expect(addedQI[1].date_of_issue - df.startOfToday()).to.equal(0);
+      expect(addedQI[0].date_of_issue.toString()).to.equal(
+        localTimeToUtc(df.startOfToday()).toString()
+      );
+      expect(addedQI[1].date_of_issue.toString()).to.equal(
+        localTimeToUtc(df.startOfToday()).toString()
+      );
     });
 
     it('should not create one more instance for spontan questionnaire when last instance is released twice', async function () {

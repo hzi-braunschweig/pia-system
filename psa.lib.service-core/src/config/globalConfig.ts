@@ -102,6 +102,13 @@ export class GlobalConfig {
   }
 
   /**
+   * gets the application timeZone
+   */
+  public static get timeZone(): string {
+    return ConfigUtils.getEnvVariable('APPLICATION_TIMEZONE', 'Europe/Berlin');
+  }
+
+  /**
    * Global mailserver configuration
    *
    * Will only work, if environment variables are passed to the service

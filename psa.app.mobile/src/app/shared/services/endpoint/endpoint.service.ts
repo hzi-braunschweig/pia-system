@@ -85,9 +85,9 @@ export class EndpointService {
    * lower or equal to the current app version.
    */
   async isEndpointCompatible(currentAppVersion: string): Promise<boolean> {
-    let minimalAppVersion: string;
     try {
-      minimalAppVersion = await this.getMinimalAppVersion();
+      const minimalAppVersion = await this.getMinimalAppVersion();
+      return compareVersions(minimalAppVersion, currentAppVersion) !== 1;
     } catch (e) {
       /**
        * just return true for endpoints which are unavailable or
@@ -95,7 +95,6 @@ export class EndpointService {
        */
       return true;
     }
-    return compareVersions(minimalAppVersion, currentAppVersion) !== 1;
   }
 
   private async getMinimalAppVersion(): Promise<string> {

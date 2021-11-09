@@ -7,10 +7,10 @@
 import chai from 'chai';
 import { createSandbox, SinonStub } from 'sinon';
 import sinonChai from 'sinon-chai';
-import { config } from '../config';
 import { MailService } from './mailService';
 import nodemailer, { Transporter } from 'nodemailer';
-import { mock } from 'ts-mockito';
+import { Options } from 'nodemailer/lib/mailer';
+import { MailserverConnection } from '../config/configModel';
 
 chai.use(sinonChai);
 const expect = chai.expect;
@@ -19,23 +19,26 @@ const sandbox = createSandbox();
 describe('MailService', () => {
   let sendMailStub: SinonStub;
   let createTransportStub: SinonStub;
-  const transporter = mock<Transporter>();
+  const mailServerConfig: MailserverConnection = {
+    host: 'MAIL_HOST',
+    port: 80,
+    user: 'MAIL_USER',
+    password: 'MAIL_PASSWORD',
+    requireTLS: false,
+    from: 'noreply@piatest.doesnotexist',
+    name: 'PIA',
+  };
 
   beforeEach(() => {
-    sandbox.stub(config.servers, 'mailserver').value({
-      host: 'MAIL_HOST',
-      port: '80',
-      user: 'MAIL_USER',
-      password: 'MAIL_PASSWORD',
-      requireTLS: false,
-      from: 'noreply@piatest.doesnotexist',
-      name: 'PIA',
-    });
-    sendMailStub = sandbox.stub().resolves();
-    transporter.sendMail = sendMailStub;
+    sendMailStub = sandbox.stub().callsFake((mailOptions: Options) => ({
+      accepted: [mailOptions.to],
+    }));
+    const transporter: Partial<Transporter> = {
+      sendMail: sendMailStub,
+    };
     createTransportStub = sandbox
       .stub(nodemailer, 'createTransport')
-      .returns(transporter);
+      .returns(transporter as Transporter);
   });
   afterEach(() => {
     sandbox.restore();
@@ -46,7 +49,7 @@ describe('MailService', () => {
       // Arrange
 
       // Act
-      MailService.initService();
+      MailService.initService(mailServerConfig);
 
       // Assert
       expect(createTransportStub).to.be.calledOnce;
@@ -55,7 +58,7 @@ describe('MailService', () => {
 
   describe('sendMail()', () => {
     beforeEach(() => {
-      MailService.initService();
+      MailService.initService(mailServerConfig);
     });
 
     it('should send a mail to the specified recipient', async () => {
@@ -86,7 +89,7 @@ describe('MailService', () => {
       const email = {
         subject: 'Test',
         text: 'Some content',
-        html: '<p>some content</p><img src=x onerror=alert(1)//>',
+        html: '<p>some content</p><a id=x onclick=alert(1)//>',
       };
 
       // Act
@@ -97,7 +100,7 @@ describe('MailService', () => {
         to: 'sometest@mail.doesnotexist',
         subject: 'Test',
         text: 'Some content',
-        html: '<p>some content</p><img src="x">',
+        html: '<p>some content</p><a id="x"></a>',
       });
     });
   });

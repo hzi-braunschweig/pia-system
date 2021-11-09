@@ -70,7 +70,7 @@ export class FcmHelper {
         return { ...result, error: undefined, exception: undefined };
       }
     } catch (exception) {
-      return { exception: exception as unknown, error: undefined };
+      return { exception: exception, error: undefined };
     }
   }
 }

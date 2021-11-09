@@ -30,13 +30,12 @@
       psa.service.personaldataservice psa.service.questionnaireservice
       psa.service.sampletrackingservice psa.service.sormasservice
       psa.service.userservice psa.utils.deploymentservice psa.utils.repo-tool
-    unit: psa.app.mobile psa.app.web psa.lib.service-core psa.lib.templatepipeline
-      psa.server.apigateway psa.service.analyzerservice psa.service.authservice
-      psa.service.complianceservice psa.service.modysservice
-      psa.service.notificationservice psa.service.personaldataservice
-      psa.service.questionnaireservice psa.service.sampletrackingservice
-      psa.service.sormasservice psa.service.userservice
-      psa.utils.deploymentservice
+    unit: psa.app.mobile psa.app.web psa.lib.licensecollector psa.lib.service-core
+      psa.lib.templatepipeline psa.server.apigateway psa.service.analyzerservice
+      psa.service.authservice psa.service.complianceservice
+      psa.service.modysservice psa.service.questionnaireservice
+      psa.service.sampletrackingservice psa.service.sormasservice
+      psa.service.userservice psa.utils.deploymentservice
     int: psa.lib.messagequeue psa.lib.service-core psa.service.analyzerservice
       psa.service.authservice psa.service.complianceservice
       psa.service.loggingservice psa.service.modysservice
@@ -68,6 +67,7 @@
     unit:
       - psa.app.mobile
       - psa.app.web
+      - psa.lib.licensecollector
       - psa.lib.service-core
       - psa.lib.templatepipeline
       - psa.server.apigateway
@@ -75,8 +75,6 @@
       - psa.service.authservice
       - psa.service.complianceservice
       - psa.service.modysservice
-      - psa.service.notificationservice
-      - psa.service.personaldataservice
       - psa.service.questionnaireservice
       - psa.service.sampletrackingservice
       - psa.service.sormasservice

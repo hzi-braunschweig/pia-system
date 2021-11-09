@@ -6,10 +6,12 @@
 
 const Boom = require('@hapi/boom');
 const postgresqlHelper = require('../../services/postgresqlHelper');
-const studyAccessRepository = require('../../repositories/studyAccessRepository');
+const {
+  StudyAccessRepository,
+} = require('../../repositories/studyAccessRepository');
 const { config } = require('../../config');
 const sormasserviceClient = require('../../clients/sormasserviceClient.js');
-const loggingserviceClient = require('../../clients/loggingserviceClient.js');
+const { LoggingserviceClient } = require('../../clients/loggingserviceClient');
 const { runTransaction } = require('../../db');
 
 /**
@@ -40,7 +42,7 @@ const internalUsersInteractor = (function () {
       }
 
       if (!keepUsageData) {
-        await loggingserviceClient.deleteLogs(username);
+        await LoggingserviceClient.deleteLogs(username);
       }
       return result;
     }).catch((err) => {
@@ -66,7 +68,7 @@ const internalUsersInteractor = (function () {
   }
 
   async function getProbandsWithAcessToFromProfessional(username) {
-    return studyAccessRepository.getProbandsWithAcessToFromProfessional(
+    return StudyAccessRepository.getProbandsWithAcessToFromProfessional(
       username
     );
   }
@@ -80,7 +82,7 @@ const internalUsersInteractor = (function () {
   }
 
   async function getStudiesForProfessional(username) {
-    return studyAccessRepository.getStudiesForProfessional(username);
+    return StudyAccessRepository.getStudiesForProfessional(username);
   }
 
   async function getPseudonyms(study, accountStatus) {

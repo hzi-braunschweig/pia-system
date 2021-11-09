@@ -16,7 +16,9 @@ const serverSandbox = require('sinon').createSandbox();
 
 const { db } = require('../../src/db');
 
-const loggingserviceClientStub = require('../../src/clients/loggingserviceClient');
+const {
+  LoggingserviceClient,
+} = require('../../src/clients/loggingserviceClient');
 const testSandbox = require('sinon').createSandbox();
 
 describe('delete proband data', () => {
@@ -33,7 +35,7 @@ describe('delete proband data', () => {
 
   beforeEach(async function () {
     deleteLogsStub = testSandbox
-      .stub(loggingserviceClientStub, 'deleteLogs')
+      .stub(LoggingserviceClient, 'deleteLogs')
       .resolves();
 
     await cleanUp();

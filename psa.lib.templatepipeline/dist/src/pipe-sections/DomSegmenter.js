@@ -19,7 +19,7 @@ class DomSegmenter {
             const newSegmentS = this.convertChildToSegmentS(child);
             if (newSegmentS === null) {
             }
-            else if (TemplateSegment_1.isTemplateSegment(newSegmentS)) {
+            else if ((0, TemplateSegment_1.isTemplateSegment)(newSegmentS)) {
                 segments.push(newSegmentS);
             }
             else {
@@ -29,11 +29,11 @@ class DomSegmenter {
         return segments;
     }
     convertChildToSegmentS(child) {
-        if (Parse5TypeGuards_1.isElement(child) && child.tagName === 'p') {
+        if ((0, Parse5TypeGuards_1.isElement)(child) && child.tagName === 'p') {
             const sections = [];
             let i = 0;
             child.childNodes.forEach((pChild) => {
-                if (Parse5TypeGuards_1.isElement(pChild) && this.isCustomHtmlTag(pChild.tagName)) {
+                if ((0, Parse5TypeGuards_1.isElement)(pChild) && this.isCustomHtmlTag(pChild.tagName)) {
                     if (!(sections.length === 0 && i === 0)) {
                         i++;
                     }
@@ -63,10 +63,10 @@ class DomSegmenter {
                 }
             });
         }
-        else if (Parse5TypeGuards_1.isElement(child) && this.isCustomHtmlTag(child.tagName)) {
+        else if ((0, Parse5TypeGuards_1.isElement)(child) && this.isCustomHtmlTag(child.tagName)) {
             return this.createCustomTagSegment(child);
         }
-        else if (Parse5TypeGuards_1.isTextNode(child) && child.value === '\n') {
+        else if ((0, Parse5TypeGuards_1.isTextNode)(child) && child.value === '\n') {
             return null;
         }
         else {
@@ -74,7 +74,7 @@ class DomSegmenter {
         }
     }
     createHtmlSegment(child) {
-        return new segments_1.HtmlSegment(parse5_1.serialize({
+        return new segments_1.HtmlSegment((0, parse5_1.serialize)({
             nodeName: '#document-fragment',
             childNodes: [child],
         }));

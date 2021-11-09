@@ -638,7 +638,6 @@
     "NEW_USER": "Nutzer erstellen"
   },
   "SETTINGS": {
-    "TIME": "Wählen Sie die Uhrzeit aus, zu der Sie Benachrichtigungen erhalten möchten: ",
     "CONFIRM": "Speichern",
     "INFO_SAVED": "Ihre Einstellungen wuden erfolgreich gespeichert.",
     "MANAGE_PASSWORD": "Passwort verwalten: ",

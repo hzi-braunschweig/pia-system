@@ -1,1 +1,1 @@
-{"version":3,"file":"AbstractTemplateDocument.js","sourceRoot":"","sources":["../../../src/template-documents/AbstractTemplateDocument.ts"],"names":[],"mappings":";;;AAGA,MAAsB,wBAAwB;IAGrC,IAAI,CACT,WAAiC;QAEjC,OAAO,WAAW,CAAC,OAAO,CAAC,IAAI,CAAC,CAAC;IACnC,CAAC;CACF;AARD,4DAQC"}
+{"version":3,"file":"AbstractTemplateDocument.js","sourceRoot":"","sources":["../../../src/template-documents/AbstractTemplateDocument.ts"],"names":[],"mappings":";;;AASA,MAAsB,wBAAwB;IAGrC,IAAI,CACT,WAAiC;QAEjC,OAAO,WAAW,CAAC,OAAO,CAAC,IAAI,CAAC,CAAC;IACnC,CAAC;CACF;AARD,4DAQC"}

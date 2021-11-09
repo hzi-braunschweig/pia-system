@@ -14,7 +14,8 @@ const serviceUrl = config.services.loggingservice.url;
  * @typedef {{
  *     requestedBy: string,
  *     requestedFor: string,
- *     type: string
+ *     type: string,
+ *     timestamp: Date
  * }} SystemLogReq
  *
  * @typedef {{

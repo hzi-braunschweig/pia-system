@@ -4,10 +4,15 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const { getDbTransactionFromOptionsOrDbConnection } = require('../db');
+import { getDbTransactionFromOptionsOrDbConnection } from '../db';
+import { RepositoryOptions } from '@pia/lib-service-core';
+import { PersonalData, PersonalDataReq } from '../models/personalData';
 
-class PersonalDataRepository {
-  static async deletePersonalData(pseudonym, options) {
+export class PersonalDataRepository {
+  public static async deletePersonalData(
+    pseudonym: string,
+    options?: RepositoryOptions
+  ): Promise<void> {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
 
     await db.none('DELETE FROM personal_data WHERE pseudonym = $(pseudonym)', {
@@ -15,33 +20,47 @@ class PersonalDataRepository {
     });
   }
 
-  static async getPersonalData(pseudonym, options) {
+  public static async getPersonalData(
+    pseudonym: string,
+    options?: RepositoryOptions
+  ): Promise<PersonalData | null> {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
-    return await db.oneOrNone(
+    return await db.oneOrNone<PersonalData>(
       'SELECT * FROM personal_data WHERE pseudonym=$1',
       [pseudonym]
     );
   }
 
-  static async getPersonalDataEmail(pseudonym, options) {
+  public static async getPersonalDataEmail(
+    pseudonym: string,
+    options?: RepositoryOptions
+  ): Promise<string | null> {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
     return await db
-      .oneOrNone('SELECT email FROM personal_data WHERE pseudonym=$1', [
-        pseudonym,
-      ])
-      .then((row) => row?.email);
+      .oneOrNone<PersonalData>(
+        'SELECT email FROM personal_data WHERE pseudonym=$1',
+        [pseudonym]
+      )
+      .then((row) => row?.email ?? null);
   }
 
-  static async getPersonalDataOfStudies(studies, options) {
+  public static async getPersonalDataOfStudies(
+    studies: string[] | undefined,
+    options?: RepositoryOptions
+  ): Promise<PersonalData[]> {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
     if (!studies?.length) return [];
-    return await db.manyOrNone(
+    return await db.manyOrNone<PersonalData>(
       'SELECT * FROM personal_data WHERE study IN ($(studies:csv))',
       { studies }
     );
   }
 
-  static async updatePersonalData(pseudonym, userValues, options) {
+  public static async updatePersonalData(
+    pseudonym: string,
+    userValues: PersonalDataReq,
+    options?: RepositoryOptions
+  ): Promise<PersonalData> {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
     return await db.one(
       `UPDATE personal_data
@@ -81,9 +100,14 @@ class PersonalDataRepository {
     );
   }
 
-  static async createPersonalData(pseudonym, study, userValues, options) {
+  public static async createPersonalData(
+    pseudonym: string,
+    study: string,
+    userValues: PersonalDataReq,
+    options?: RepositoryOptions
+  ): Promise<PersonalData> {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
-    return db.one(
+    return db.one<PersonalData>(
       `INSERT INTO personal_data(pseudonym, study, anrede, titel, name, vorname, strasse, haus_nr, plz, landkreis,
                                        ort,
                                        telefon_privat, telefon_dienst, telefon_mobil, email, comment)
@@ -111,5 +135,3 @@ class PersonalDataRepository {
     );
   }
 }
-
-module.exports = PersonalDataRepository;

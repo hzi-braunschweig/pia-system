@@ -717,6 +717,31 @@
             {{ 'ANSWERS_PROBAND.OVERVIEW' | translate }}
           </mat-card-title>
           <mat-card-content>
+            <mat-divider
+              [inset]="true"
+              *ngIf="
+                questionnaire_instance_status == 'in_progress' ||
+                questionnaire_instance_status == 'released_once' ||
+                questionnaire_instance_status == 'released_twice'
+              "
+            ></mat-divider>
+            <p>
+              <ng-container
+                *ngIf="
+                  questionnaire_instance_status == 'in_progress' ||
+                  questionnaire_instance_status == 'released_once'
+                "
+                >{{
+                  'ANSWERS_PROBAND.OVERVIEW_HINT_IN_PROGRESS' | translate
+                }}</ng-container
+              >
+              <ng-container
+                *ngIf="questionnaire_instance_status == 'released_twice'"
+                >{{
+                  'ANSWERS_PROBAND.OVERVIEW_HINT_RELEASED' | translate
+                }}</ng-container
+              >
+            </p>
             <mat-divider [inset]="true"></mat-divider>
             <div formArrayName="questions" disabled class="questions">
               <div

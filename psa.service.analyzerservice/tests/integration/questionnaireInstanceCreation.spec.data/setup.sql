@@ -1,6 +1,6 @@
-INSERT INTO users (username, password, role, notification_time)
-VALUES ('QTestProband1', '', 'Proband', '13:25'),
-       ('QTestForscher1', '', 'Forscher', null);
+INSERT INTO users (username, password, role)
+VALUES ('QTestProband1', '', 'Proband'),
+       ('QTestForscher1', '', 'Forscher');
 INSERT INTO studies (name, description)
 VALUES ('ApiTestStudie', 'ApiTestStudie Beschreibung'),
        ('ApiTestMultiStudie', 'ApiTestMultiStudie Beschreibung');

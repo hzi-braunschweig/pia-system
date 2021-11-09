@@ -18,31 +18,44 @@ const fetch = require('node-fetch');
 
 const secretOrPrivateKey = require('../secretOrPrivateKey');
 const JWT = require('jsonwebtoken');
-const QueryFile = require('pg-promise').QueryFile;
-const path = require('path');
 const { db } = require('../../src/db');
+const { setup, cleanup } = require('./laboratoryResult.spec.data/setup.helper');
 
-const probandSession1 = { id: 1, role: 'Proband', username: 'QTestProband1' };
-const probandSession2 = { id: 1, role: 'Proband', username: 'QTestProband2' };
+const probandSession1 = {
+  id: 1,
+  role: 'Proband',
+  username: 'QTestProband1',
+  groups: ['ApiTestStudie'],
+};
+const probandSession2 = {
+  id: 1,
+  role: 'Proband',
+  username: 'QTestProband2',
+  groups: ['ApiTestStudie2'],
+};
 const forscherSession1 = {
   id: 1,
   role: 'Forscher',
   username: 'QTestForscher1',
+  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
 };
 const utSession = {
   id: 1,
   role: 'Untersuchungsteam',
   username: 'QTestUntersuchungsteam',
+  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
 };
 const pmSession = {
   id: 1,
   role: 'ProbandenManager',
   username: 'QTestProbandenManager',
+  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
 };
 const sysadminSession = {
   id: 1,
   role: 'SysAdmin',
   username: 'QTestSystemAdmin',
+  groups: [],
 };
 
 const invalidToken = JWT.sign(probandSession1, 'thisIsNotAValidPrivateKey', {
@@ -229,15 +242,6 @@ const resultsProband3 = {
   ],
 };
 
-const setupFile = new QueryFile(
-  path.join(__dirname, 'laboratoryResult.spec.data/setup.sql'),
-  { minify: true }
-);
-const cleanupFile = new QueryFile(
-  path.join(__dirname, 'laboratoryResult.spec.data/cleanup.sql'),
-  { minify: true }
-);
-
 describe('/sample/probands/{user_id}/labResults', () => {
   before(async function () {
     await server.init();
@@ -284,11 +288,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
 
   describe('GET /sample/probands/{id}/labResults', async () => {
     before(async () => {
-      await db.none(cleanupFile);
-      await db.none(setupFile);
+      await setup();
     });
     after(async function () {
-      await db.none(cleanupFile);
+      await cleanup();
     });
 
     it('should return http 401 if the header is invalid', async () => {
@@ -414,11 +417,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
 
   describe('GET /sample/labResults/sample_id', async () => {
     before(async () => {
-      await db.none(cleanupFile);
-      await db.none(setupFile);
+      await setup();
     });
     after(async function () {
-      await db.none(cleanupFile);
+      await cleanup();
     });
 
     it('should return http 401 if the header is invalid', async () => {
@@ -475,19 +477,17 @@ describe('/sample/probands/{user_id}/labResults', () => {
         .get('/labResults/' + resultsProband1.id)
         .set(pmHeader);
       expect(result).to.have.status(200);
-      expect(result.body.length).to.equal(1);
-      expect(result.body[0].id).to.equal(resultsProband1.id);
-      expect(result.body[0].user_id).to.equal(resultsProband1.user_id);
+      expect(result.body.id).to.equal(resultsProband1.id);
+      expect(result.body.user_id).to.equal(resultsProband1.user_id);
     });
   });
 
   describe('GET /sample/probands/{user_id}/labResults/{result_id}', async () => {
     before(async () => {
-      await db.none(cleanupFile);
-      await db.none(setupFile);
+      await setup();
     });
     after(async function () {
-      await db.none(cleanupFile);
+      await cleanup();
     });
 
     it('should return http 401 if the header is invalid', async () => {
@@ -638,11 +638,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     };
 
     before(async () => {
-      await db.none(cleanupFile);
-      await db.none(setupFile);
+      await setup();
     });
     after(async function () {
-      await db.none(cleanupFile);
+      await cleanup();
     });
 
     it('should return http 401 if the header is invalid', async () => {
@@ -705,7 +704,7 @@ describe('/sample/probands/{user_id}/labResults', () => {
         .post('/probands/QTestProband1/labResults')
         .set(utHeader)
         .send(validLabResult);
-      expect(result).to.have.status(200);
+      expect(result, result.text).to.have.status(200);
       expect(result.body.id).to.equal(validLabResult.sample_id);
       expect(result.body.status).to.equal('new');
       expect(result.body.user_id).to.equal('QTestProband1');
@@ -720,7 +719,7 @@ describe('/sample/probands/{user_id}/labResults', () => {
         .post('/probands/QTestProband1/labResults')
         .set(pmHeader)
         .send(validLabResult2);
-      expect(result).to.have.status(200);
+      expect(result, result.text).to.have.status(200);
       expect(result.body.id).to.equal(validLabResult2.sample_id);
       expect(result.body.status).to.equal('new');
       expect(result.body.user_id).to.equal('QTestProband1');
@@ -761,11 +760,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     };
 
     before(async () => {
-      await db.none(cleanupFile);
-      await db.none(setupFile);
+      await setup();
     });
     after(async function () {
-      await db.none(cleanupFile);
+      await cleanup();
     });
 
     it('should return http 401 if the header is invalid', async () => {
@@ -1034,11 +1032,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
 
   describe('POST /sample/probands/id/needsMaterial', async () => {
     before(async () => {
-      await db.none(cleanupFile);
-      await db.none(setupFile);
+      await setup();
     });
     after(async function () {
-      await db.none(cleanupFile);
+      await cleanup();
     });
 
     it('should request new material for Proband "QTestProband1" and return 204', async () => {

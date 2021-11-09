@@ -8,7 +8,7 @@ class HtmlSerializer {
         return new template_documents_1.HtmlDocument(this.serializeHtml(input.dom));
     }
     async serializeHtml(dom) {
-        return parse5_1.serialize(await dom);
+        return (0, parse5_1.serialize)(await dom);
     }
 }
 exports.HtmlSerializer = HtmlSerializer;

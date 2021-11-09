@@ -4,58 +4,69 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const bloodSamplesInteractor = require('../interactors/bloodSamplesInteractor');
+const {
+  BloodSamplesInteractor,
+} = require('../interactors/bloodSamplesInteractor');
+const Boom = require('@hapi/boom');
+
+function handleError(error) {
+  if (error instanceof Boom.Boom) {
+    throw error;
+  }
+  console.error(error);
+  throw Boom.internal('An internal Error happened');
+}
 
 /**
  * @description HAPI Handler for blood samples
  */
 const bloodSamplesHandler = (function () {
-  function getAllSamples(request) {
+  async function getAllSamples(request) {
     const user_id = request.params.id;
 
-    return bloodSamplesInteractor.getAllBloodSamples(
+    return BloodSamplesInteractor.getAllBloodSamples(
       request.auth.credentials,
       user_id
-    );
+    ).catch(handleError);
   }
 
-  function getOneSample(request) {
-    return bloodSamplesInteractor.getOneBloodSample(
+  async function getOneSample(request) {
+    return BloodSamplesInteractor.getOneBloodSample(
       request.auth.credentials,
       request.params.user_id,
       request.params.sample_id
-    );
+    ).catch(handleError);
   }
 
-  function getSampleWithSampleID(request) {
-    return bloodSamplesInteractor.getBloodSampleWithSampleID(
+  async function getSampleWithSampleID(request) {
+    return BloodSamplesInteractor.getBloodSampleWithSampleID(
       request.auth.credentials,
       request.params.sample_id
-    );
+    ).catch(handleError);
   }
 
-  function createOneSample(request) {
+  async function createOneSample(request) {
     const user_id = request.params.user_id;
     const bloodSample = request.payload;
 
-    return bloodSamplesInteractor.createOneBloodSample(
+    return BloodSamplesInteractor.createOneBloodSample(
       request.auth.credentials,
       user_id,
       bloodSample
-    );
+    ).catch(handleError);
   }
 
-  function updateOneSample(request) {
+  async function updateOneSample(request) {
     const user_id = request.params.user_id;
     const sample_id = request.params.sample_id;
     const bloodSample = request.payload;
 
-    return bloodSamplesInteractor.updateOneBloodSample(
+    return BloodSamplesInteractor.updateOneBloodSample(
       request.auth.credentials,
       user_id,
       sample_id,
       bloodSample
-    );
+    ).catch(handleError);
   }
 
   return {

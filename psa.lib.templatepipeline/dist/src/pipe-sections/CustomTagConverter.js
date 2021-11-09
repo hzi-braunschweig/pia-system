@@ -13,10 +13,10 @@ class CustomTagConverter {
         return document;
     }
     convertAllSubNodes(node) {
-        if (Parse5TypeGuards_1.isParentNode(node)) {
+        if ((0, Parse5TypeGuards_1.isParentNode)(node)) {
             node.childNodes.forEach((child) => this.convertAllSubNodes(child));
         }
-        if (Parse5TypeGuards_1.isElement(node) && node.tagName === this.tagName) {
+        if ((0, Parse5TypeGuards_1.isElement)(node) && node.tagName === this.tagName) {
             this.convertNode(node);
         }
     }

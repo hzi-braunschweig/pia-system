@@ -15,10 +15,9 @@ import * as fetch from 'node-fetch';
 import fetchMocker from 'fetch-mock';
 import { StatusCodes } from 'http-status-codes';
 import JWT from 'jsonwebtoken';
-import { DeepPartial } from '@pia/lib-service-core';
+import { DeepPartial, MailService } from '@pia/lib-service-core';
 
 import { FcmHelper } from '../../src/services/fcmHelper';
-import { MailService } from '../../src/services/mailService';
 import { NotificationHelper as notificationHelperTemp } from '../../src/services/notificationHelper';
 import { dbWait } from './helper';
 import { db } from '../../src/db';
@@ -136,7 +135,7 @@ describe('/notification', function () {
       .callsFake(FcmHelperMock.sendDefaultNotification);
     suiteSandbox.stub(FcmHelper, 'initFBAdmin');
     suiteSandbox.stub(MailService, 'initService');
-    suiteSandbox.stub(MailService, 'sendMail');
+    suiteSandbox.stub(MailService, 'sendMail').resolves(true);
     await Server.init();
   });
 
@@ -408,37 +407,6 @@ describe('/notification', function () {
   });
 
   describe('Notifications handling', function () {
-    it('should update scheduled notification times if users table is updated', async function () {
-      const scheduleBeforeUpdate = await db.one<DbNotificationSchedules>(
-        'SELECT * FROM notification_schedules WHERE id=$1',
-        [99997]
-      );
-
-      await dbWait(
-        'UPDATE users SET notification_time=${notification_time} WHERE username=${username}',
-        {
-          username: 'QTestProband1',
-          notification_time: '17:30:00',
-        }
-      );
-
-      const scheduleAfterUpdate = await db.one<DbNotificationSchedules>(
-        'SELECT * FROM notification_schedules WHERE id=$1',
-        [99997]
-      );
-
-      assert(scheduleAfterUpdate.send_on);
-      assert(scheduleBeforeUpdate.send_on);
-
-      const differenceInMinutes =
-        ((scheduleAfterUpdate.send_on.getTime() -
-          scheduleBeforeUpdate.send_on.getTime()) /
-          (3600 * 1000)) *
-        60;
-
-      expect(differenceInMinutes).to.equal(150);
-    });
-
     it('should update users_to_contact table if a notable answer is sent', async function () {
       await dbWait(
         'UPDATE questionnaire_instances SET status=${status} WHERE id=${id}',

@@ -542,7 +542,6 @@ describe.skip('notificationHandlers', function () {
       study_center: 'string',
       examination_wave: 1,
       logging_active: true,
-      notification_time: '07:00',
       is_test_proband: false,
     };
   }

@@ -5,7 +5,6 @@
  */
 
 export interface User {
-  notification_time: string;
   username: string;
   compliance_labresults: boolean;
 }

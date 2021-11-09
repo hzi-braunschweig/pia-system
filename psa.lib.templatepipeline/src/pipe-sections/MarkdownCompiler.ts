@@ -12,7 +12,7 @@ import DOMPurify from 'dompurify';
 
 const window = new JSDOM('').window as unknown;
 
-// @types/dompurify does not jet support @types/jsdom
+// @types/dompurify does not yet support @types/jsdom
 const domPurify = DOMPurify(window as Window);
 
 export class MarkdownCompiler

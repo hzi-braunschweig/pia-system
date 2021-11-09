@@ -7,6 +7,7 @@
 import {
   Component,
   OnDestroy,
+  OnInit,
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
@@ -44,7 +45,9 @@ import { QuestionnaireConditionChecker } from '../questionnaire-condition-checke
   styleUrls: ['./questionnaire-detail.page.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class QuestionnaireDetailPage implements OnDestroy, ViewWillLeave {
+export class QuestionnaireDetailPage
+  implements OnInit, OnDestroy, ViewWillLeave
+{
   @ViewChild(IonSlides) slides: IonSlides;
 
   @ViewChild(IonContent) content: IonContent;
@@ -80,11 +83,13 @@ export class QuestionnaireDetailPage implements OnDestroy, ViewWillLeave {
     private questionnaireForm: QuestionnaireFormService,
     private alertCtrl: AlertController,
     private router: Router
-  ) {
+  ) {}
+
+  async ngOnInit() {
     const questionnaireInstanceId = Number(
       this.activatedRoute.snapshot.paramMap.get('questionnaireInstanceId')
     );
-    this.fetchQuestionnaireInstance(questionnaireInstanceId);
+    await this.fetchQuestionnaireInstance(questionnaireInstanceId);
   }
 
   ngOnDestroy() {
@@ -133,7 +138,25 @@ export class QuestionnaireDetailPage implements OnDestroy, ViewWillLeave {
   }
 
   getFormOfCurrentSlide(): FormArray {
-    return this.form.at(this.currentSlideIndex) as FormArray;
+    /**
+     * Returns an array which contains only form indices of displayed
+     * questions, thus results in a mapping from slide index to form
+     * index.
+     */
+    const slideIndexToFormIndexMapping: number[] =
+      this.questionnaireInstance.questionnaire.questions.reduce(
+        (array: number[], question, index) => {
+          if (this.isConditionMet(question)) {
+            return [...array, index];
+          } else {
+            return array;
+          }
+        },
+        []
+      );
+    return this.form.at(
+      slideIndexToFormIndexMapping[this.currentSlideIndex]
+    ) as FormArray;
   }
 
   slideNext() {
@@ -269,35 +292,30 @@ export class QuestionnaireDetailPage implements OnDestroy, ViewWillLeave {
    * need to be resetted - both within the current form AND on the server.
    */
   private deleteDisabledAnswers() {
-    let updateValueAndValidity = false;
     this.questionnaireInstance.questionnaire.questions.forEach(
       (question, questionIndex) => {
         if (!this.isConditionMet(question)) {
-          question.answer_options.forEach((answerOption, answerIndex) => {
-            updateValueAndValidity =
-              this.deleteSingleAnswer(
-                questionIndex,
-                answerIndex,
-                answerOption
-              ) || updateValueAndValidity;
-          });
+          question.answer_options.forEach((answerOption, answerIndex) =>
+            this.deleteSingleAnswer(questionIndex, answerIndex, answerOption)
+          );
         } else {
           question.answer_options.forEach((answerOption, answerIndex) => {
             if (!this.isConditionMet(answerOption)) {
-              updateValueAndValidity =
-                this.deleteSingleAnswer(
-                  questionIndex,
-                  answerIndex,
-                  answerOption
-                ) || updateValueAndValidity;
+              this.deleteSingleAnswer(questionIndex, answerIndex, answerOption);
             }
           });
         }
       }
     );
-    if (updateValueAndValidity) {
-      this.form.updateValueAndValidity();
-    }
+    /**
+     * If just any single condition check result changed, we also need to
+     * trigger form validation, as the form cannot know about this change.
+     * Due to missing information about which form control's value change
+     * triggered this method, we simply update the full form.
+     */
+    this.form.controls.forEach((control) =>
+      control.updateValueAndValidity({ emitEvent: false })
+    );
   }
 
   private deleteSingleAnswer(
@@ -311,8 +329,7 @@ export class QuestionnaireDetailPage implements OnDestroy, ViewWillLeave {
       control.patchValue(
         QuestionnaireFormService.getDefaultFormControlValue(
           answerOption.answer_type_id
-        ),
-        { emitEvent: false }
+        )
       );
       this.questionnnaireClient.deleteAnswer(
         this.questionnaireInstance.id,

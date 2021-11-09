@@ -31,25 +31,25 @@ class LicenseTextCompleter {
     static async fetchLicenses() {
         let i = 0;
         const fetchP = [];
-        fetchP[i++] = node_fetch_1.default('https://www.apache.org/licenses/LICENSE-2.0.txt').then(async (res) => {
+        fetchP[i++] = (0, node_fetch_1.default)('https://www.apache.org/licenses/LICENSE-2.0.txt').then(async (res) => {
             LicenseTextCompleter.APACHE_LICENSE_2_0 = await res.text();
         });
-        fetchP[i++] = node_fetch_1.default('https://www.gnu.org/licenses/gpl-2.0.txt').then(async (res) => {
+        fetchP[i++] = (0, node_fetch_1.default)('https://www.gnu.org/licenses/gpl-2.0.txt').then(async (res) => {
             LicenseTextCompleter.GPL_2_0 = await res.text();
         });
-        fetchP[i++] = node_fetch_1.default('https://www.gnu.org/licenses/gpl-3.0.txt').then(async (res) => {
+        fetchP[i++] = (0, node_fetch_1.default)('https://www.gnu.org/licenses/gpl-3.0.txt').then(async (res) => {
             LicenseTextCompleter.GPL_3_0 = await res.text();
         });
-        fetchP[i++] = node_fetch_1.default('https://www.gnu.org/licenses/lgpl-3.0.txt').then(async (res) => {
+        fetchP[i++] = (0, node_fetch_1.default)('https://www.gnu.org/licenses/lgpl-3.0.txt').then(async (res) => {
             LicenseTextCompleter.LGPL_3_0 = await res.text();
         });
-        fetchP[i++] = node_fetch_1.default('https://raw.githubusercontent.com/angular/angular/master/LICENSE').then(async (res) => {
+        fetchP[i++] = (0, node_fetch_1.default)('https://raw.githubusercontent.com/angular/angular/master/LICENSE').then(async (res) => {
             LicenseTextCompleter.MIT_ANGULAR = await res.text();
         });
-        fetchP[i++] = node_fetch_1.default('https://raw.githubusercontent.com/ionic-team/ionic-framework/main/LICENSE').then(async (res) => {
+        fetchP[i++] = (0, node_fetch_1.default)('https://raw.githubusercontent.com/ionic-team/ionic-framework/main/LICENSE').then(async (res) => {
             LicenseTextCompleter.MIT_IONIC = await res.text();
         });
-        fetchP[i++] = node_fetch_1.default('https://zenorocha.mit-license.org/license.txt').then(async (res) => {
+        fetchP[i++] = (0, node_fetch_1.default)('https://zenorocha.mit-license.org/license.txt').then(async (res) => {
             LicenseTextCompleter.MIT_ZENO_ROCHA = await res.text();
         });
         await Promise.all(fetchP);
@@ -94,23 +94,31 @@ class LicenseTextCompleter {
             ],
             ['@firebase/analytics-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/analytics', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/analytics-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/app-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/app', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/app-check', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/app-check-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             [
                 '@firebase/app-check-interop-types',
                 LicenseTextCompleter.APACHE_LICENSE_2_0,
             ],
             ['@firebase/app-check-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/app-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/auth', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/auth-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/auth-interop-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/auth-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/component', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/database-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/database', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/database-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/firestore-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/firestore', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/firestore-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/functions-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/functions', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/functions-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             [
                 '@firebase/installations-types',
                 LicenseTextCompleter.APACHE_LICENSE_2_0,
@@ -118,17 +126,29 @@ class LicenseTextCompleter {
             ['@firebase/installations', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/logger', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/messaging-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            [
+                '@firebase/messaging-interop-types',
+                LicenseTextCompleter.APACHE_LICENSE_2_0,
+            ],
             ['@firebase/messaging', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/messaging-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/performance-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/performance', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/performance-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/polyfill', LicenseTextCompleter.APACHE_LICENSE_2_0],
             [
                 '@firebase/remote-config-types',
                 LicenseTextCompleter.APACHE_LICENSE_2_0,
             ],
             ['@firebase/remote-config', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/remote-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            [
+                '@firebase/remote-config-compat',
+                LicenseTextCompleter.APACHE_LICENSE_2_0,
+            ],
             ['@firebase/storage-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/storage', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/storage-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/util', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/webchannel-wrapper', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@ionic-native/core', LicenseTextCompleter.MIT_IONIC],
@@ -548,6 +568,41 @@ class LicenseTextCompleter {
                     'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n' +
                     '\n' +
                     'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.',
+            ],
+            [
+                'proxy-from-env',
+                'The MIT License\n' +
+                    '\n' +
+                    'Copyright (C) 2016-2018 Rob Wu <rob@robwu.nl>\n' +
+                    '\n' +
+                    'Permission is hereby granted, free of charge, to any person obtaining a copy of\n' +
+                    'this software and associated documentation files (the "Software"), to deal in\n' +
+                    'the Software without restriction, including without limitation the rights to\n' +
+                    'use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies\n' +
+                    'of the Software, and to permit persons to whom the Software is furnished to do\n' +
+                    'so, subject to the following conditions:\n' +
+                    '\n' +
+                    'The above copyright notice and this permission notice shall be included in all\n' +
+                    'copies or substantial portions of the Software.\n' +
+                    '\n' +
+                    'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n' +
+                    'IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS\n' +
+                    'FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\n' +
+                    'COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\n' +
+                    'IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\n' +
+                    'CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n',
+            ],
+            [
+                'set-immediate-shim',
+                'MIT License\n' +
+                    '\n' +
+                    'Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)\n' +
+                    '\n' +
+                    'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n' +
+                    '\n' +
+                    'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n' +
+                    '\n' +
+                    'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n',
             ],
         ]);
     }

@@ -11,9 +11,8 @@ const expect = chai.expect;
 const sinon = require('sinon');
 const fetchMock = require('fetch-mock').sandbox();
 const fetch = require('node-fetch');
-const mail = require('nodemailer');
 
-const { ListeningDbClient } = require('@pia/lib-service-core');
+const { ListeningDbClient, MailService } = require('@pia/lib-service-core');
 const { FcmHelper } = require('../../src/services/fcmHelper');
 
 const { setup, cleanup } = require('./email.spec.data/setup.helper');
@@ -36,16 +35,13 @@ const pmSession = {
   groups: ['QTestStudy1'],
 };
 
-const mailTransporter = {
-  sendMail: sinon.stub().resolves({ accepted: ['qtestproband1@example.com'] }),
-};
-
 describe('/notification/email', () => {
   before(async function () {
     suiteSandbox.stub(ListeningDbClient.prototype);
     suiteSandbox.stub(FcmHelper, 'sendDefaultNotification');
     suiteSandbox.stub(FcmHelper, 'initFBAdmin');
-    suiteSandbox.stub(mail, 'createTransport').returns(mailTransporter);
+    suiteSandbox.stub(MailService, 'initService');
+    suiteSandbox.stub(MailService, 'sendMail').resolves(true);
     await setup();
     await Server.init();
   });

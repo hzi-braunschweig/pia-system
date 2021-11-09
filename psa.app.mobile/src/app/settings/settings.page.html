@@ -13,19 +13,6 @@
         {{ 'SETTINGS.GROUP_TITLE_GENERAL' | translate }}
       </ion-label>
     </ion-item-divider>
-    <ion-item lines="inset">
-      <ion-label class="ion-text-wrap"
-        >{{ 'SETTINGS.HINT' | translate }}</ion-label
-      >
-      <ion-datetime
-        placeholder="{{ 'SETTINGS.PLEASE_TYPE' | translate }}"
-        displayFormat="HH:mm"
-        [(ngModel)]="notificationTime"
-        cancelText="{{ 'GENERAL.CANCEL_TEXT' | translate }}"
-        doneText="{{ 'GENERAL.DONE_TEXT' | translate }}"
-      >
-      </ion-datetime>
-    </ion-item>
     <ion-item lines="none">
       <ion-label class="ion-text-wrap"
         >{{ 'SETTINGS.RECORDING_LOGS' | translate }}</ion-label

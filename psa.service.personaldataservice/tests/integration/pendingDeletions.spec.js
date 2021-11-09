@@ -11,7 +11,6 @@ const expect = chai.expect;
 const sinon = require('sinon');
 const fetchMock = require('fetch-mock').sandbox();
 const fetch = require('node-fetch');
-const mail = require('nodemailer');
 
 const { db } = require('../../src/db');
 const { setup, cleanup } = require('./pendingDeletions.spec.data/setup.helper');
@@ -23,6 +22,7 @@ const serverSandbox = sinon.createSandbox();
 const testSandbox = sinon.createSandbox();
 
 const JWT = require('jsonwebtoken');
+const { MailService } = require('@pia/lib-service-core');
 
 const apiAddress = 'http://localhost:' + process.env.PORT + '/personal';
 
@@ -122,11 +122,9 @@ const pmHeader3 = { authorization: pmToken3 };
 const pmHeader4 = { authorization: pmToken4 };
 
 describe('/pendingDeletions', function () {
-  const mailTransporterMock = {
-    sendMail: serverSandbox.stub().resolves(),
-  };
   before(async function () {
-    serverSandbox.stub(mail, 'createTransport').returns(mailTransporterMock);
+    serverSandbox.stub(MailService, 'initService');
+    serverSandbox.stub(MailService, 'sendMail').resolves(true);
     await server.init();
   });
 

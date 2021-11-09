@@ -4,29 +4,25 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import * as mail from 'nodemailer';
-import { sanitizeHtml } from '@pia/lib-service-core';
+import mail, { Transporter } from 'nodemailer';
+import { SentMessageInfo } from 'nodemailer/lib/smtp-transport';
+import { Options } from 'nodemailer/lib/mailer';
+import { sanitizeHtml } from '../utils/sanitizeHtml';
+import { MailserverConnection } from '../config/configModel';
 
-import { config } from '../config';
-import { assert } from 'ts-essentials';
-
-/**
- * @description helper functions for sending mails via smtp mail server
- */
+export interface MailContent {
+  subject: string;
+  text: string;
+  html?: string;
+}
 
 export class MailService {
-  private static mailTransporter: null | mail.Transporter = null;
+  private static readonly SMTP_OVER_SSL_PORT = 465;
+  private static mailTransporter: Transporter<SentMessageInfo> | null;
 
-  /**
-   * @function
-   * @description initializes the mail server connection
-   * @memberof module:mailService
-   */
-  public static initService(): void {
-    const smtpsPort = 465;
-    const mailServerConfig = config.servers.mailserver;
+  public static initService(mailServerConfig: MailserverConnection): void {
     let secure = false;
-    if (mailServerConfig.port === smtpsPort) {
+    if (mailServerConfig.port === MailService.SMTP_OVER_SSL_PORT) {
       secure = true;
     }
     console.log(
@@ -56,28 +52,21 @@ export class MailService {
     );
   }
 
-  /**
-   * @function
-   * @description initializes the mail server connection
-   * @param {string} recipient the email address of the recipient
-   * @param {string} subject the email subject
-   * @param {string} text the email text
-   * @memberof module:mailService
-   */
   public static async sendMail(
     recipient: string,
-    email: { subject: string; text: string; html?: string }
-  ): Promise<{ accepted?: string[] }> {
-    const mailOptions = {
+    email: MailContent
+  ): Promise<boolean> {
+    if (!MailService.mailTransporter) {
+      throw new Error('MailService was not initialized');
+    }
+    const mailOptions: Options = {
       to: recipient,
       subject: email.subject,
       text: email.text,
       html: email.html ? sanitizeHtml(email.html) : undefined,
     };
 
-    assert(MailService.mailTransporter);
-    return (await MailService.mailTransporter.sendMail(mailOptions)) as {
-      accepted?: string[];
-    };
+    const result = await MailService.mailTransporter.sendMail(mailOptions);
+    return result.accepted.includes(recipient);
   }
 }

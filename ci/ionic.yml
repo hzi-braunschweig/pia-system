@@ -8,7 +8,7 @@ build-ionic-ios-store:
       artifacts: false
   script:
     - cd psa.app.mobile
-    - ionic package build ios app-store --native-config="iOS-Store" --signing-certificate="PIA_Store" --commit="$CI_COMMIT_SHA"
+    - ionic package build ios app-store --native-config="iOS-Store" --environment="pia_build_node_14" --signing-certificate="PIA_Store" --commit="$CI_COMMIT_SHA"
   rules:
     - if: $CI_MERGE_REQUEST_IID
       when: manual
@@ -31,7 +31,7 @@ build-and-push-ionic-ios-store:
       artifacts: false
   script:
     - cd psa.app.mobile
-    - ionic package build ios app-store --native-config="iOS-Store" --signing-certificate="PIA_Store" --commit="$CI_COMMIT_SHA" --destination="Apple App Store"
+    - ionic package build ios app-store --native-config="iOS-Store" --environment="pia_build_node_14" --signing-certificate="PIA_Store" --commit="$CI_COMMIT_SHA" --destination="Apple App Store"
   rules:
     - if: $CI_MERGE_REQUEST_IID
       when: manual
@@ -54,7 +54,7 @@ build-ionic-android-store:
       artifacts: false
   script:
     - cd psa.app.mobile
-    - ionic package build android release --native-config="Android-Store" --signing-certificate="PIA_Android" --commit="$CI_COMMIT_SHA"
+    - ionic package build android release --native-config="Android-Store" --build-stack="Linux - 2021.09" --signing-certificate="PIA_Android" --commit="$CI_COMMIT_SHA"
   rules:
     - if: $CI_MERGE_REQUEST_IID
       when: manual
@@ -77,7 +77,7 @@ build-and-push-ionic-android-store:
       artifacts: false
   script:
     - cd psa.app.mobile
-    - ionic package build android release --native-config="Android-Store" --signing-certificate="PIA_Android" --commit="$CI_COMMIT_SHA" --destination="Google Play Store, Produktion"
+    - ionic package build android release --native-config="Android-Store" --build-stack="Linux - 2021.09" --signing-certificate="PIA_Android" --commit="$CI_COMMIT_SHA" --destination="Google Play Store, Produktion"
   rules:
     - if: $CI_MERGE_REQUEST_IID
       when: manual

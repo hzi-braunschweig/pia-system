@@ -91,7 +91,6 @@ function convertSettingsRow(row: CsvUserSettingsRow): CsvUserSettingsRow {
   return {
     Proband: row.Proband,
     IDS: undefined,
-    'Benachrichtigung Uhrzeit': row['Benachrichtigung Uhrzeit'],
     'Einwilligung Ergebnismitteilung': row['Einwilligung Ergebnismitteilung'],
     'Einwilligung Probenentnahme': row['Einwilligung Probenentnahme'],
     'Einwilligung Blutprobenentnahme': row['Einwilligung Blutprobenentnahme'],
@@ -209,15 +208,6 @@ describe('/dataExport/searches content should match the expected csv', function 
 
     it('should match the given csv data for field "Proband"', () => {
       const mapper = getFieldMapper<CsvUserSettingsRow>('Proband');
-      expect(receivedSettingsRows.map(mapper)).to.deep.equal(
-        expectedSettingsRows.map(mapper)
-      );
-    });
-
-    it('should match the given csv data for field "Benachrichtigung Uhrzeit"', () => {
-      const mapper = getFieldMapper<CsvUserSettingsRow>(
-        'Benachrichtigung Uhrzeit'
-      );
       expect(receivedSettingsRows.map(mapper)).to.deep.equal(
         expectedSettingsRows.map(mapper)
       );

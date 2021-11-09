@@ -166,7 +166,7 @@ export class ProbandsInteractor {
         response,
         errorType,
         statusCode,
-        e
+        e as Error
       );
     }
   }

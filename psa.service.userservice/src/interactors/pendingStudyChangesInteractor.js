@@ -7,10 +7,10 @@
 const Boom = require('@hapi/boom');
 const validator = require('email-validator');
 
-const mailService = require('../services/mailService.js');
+const { MailService } = require('@pia/lib-service-core');
 const { config } = require('../config');
 const studyHelper = require('../helpers/studyHelper');
-const loggingserviceClient = require('../clients/loggingserviceClient');
+const { LoggingserviceClient } = require('../clients/loggingserviceClient');
 const { runTransaction } = require('../db');
 
 /**
@@ -106,23 +106,19 @@ const pendingStudyChangesInteractor = (function () {
             if (!existingPendingStudyChange) {
               const pendingStudyChange =
                 await pgHelper.createPendingStudyChange(data);
-              const result = await mailService
-                .sendMail(
-                  data.requested_for,
-                  createStudyChangeEmailContent(
-                    pendingStudyChange.study_id,
-                    createStudyChangeConfirmationUrl(pendingStudyChange.id)
-                  )
+              const result = await MailService.sendMail(
+                data.requested_for,
+                createStudyChangeEmailContent(
+                  pendingStudyChange.study_id,
+                  createStudyChangeConfirmationUrl(pendingStudyChange.id)
                 )
-                .catch(async (err) => {
-                  await pgHelper.deletePendingStudyChange(
-                    pendingStudyChange.id
-                  );
-                  console.log(err);
-                  return Boom.badData(
-                    'Forscher could not be reached via email: ' + err
-                  );
-                });
+              ).catch(async (err) => {
+                await pgHelper.deletePendingStudyChange(pendingStudyChange.id);
+                console.log(err);
+                return Boom.badData(
+                  'Forscher could not be reached via email: ' + err
+                );
+              });
               if (result) {
                 return pendingStudyChange;
               } else {
@@ -162,7 +158,7 @@ const pendingStudyChangesInteractor = (function () {
       } else {
         return await runTransaction(async (t) => {
           await pgHelper.updatePendingStudyChange(id, { transaction: t });
-          await loggingserviceClient.createSystemLog({
+          await LoggingserviceClient.createSystemLog({
             requestedBy: pendingStudyChange.requested_by,
             requestedFor: pendingStudyChange.requested_for,
             type: 'study_change',

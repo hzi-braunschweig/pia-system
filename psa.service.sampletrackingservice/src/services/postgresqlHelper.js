@@ -12,8 +12,8 @@ const { db } = require('../db');
 const postgresqlHelper = (function () {
   async function getAllLabResultsForProband(user_id) {
     const labResults = await db.manyOrNone(
-      'SELECT * FROM lab_results WHERE user_id=$1 AND study_status!=$2',
-      [user_id, 'deleted']
+      "SELECT * FROM lab_results WHERE user_id=$1 AND study_status!='deleted'",
+      [user_id]
     );
     return labResults;
   }
@@ -62,7 +62,7 @@ const postgresqlHelper = (function () {
     return labResult;
   }
 
-  async function getLabResultForAllProbands(sample_id) {
+  async function getLabResultById(sample_id) {
     return await db.oneOrNone('SELECT * FROM lab_results WHERE id = $1', [
       sample_id,
     ]);
@@ -77,7 +77,7 @@ const postgresqlHelper = (function () {
 
   async function getBloodSampleForAllProbands(sample_id) {
     return await db.manyOrNone(
-      'SELECT * FROM blood_samples WHERE sample_id ILIKE $1',
+      'SELECT * FROM blood_samples WHERE upper(sample_id) = upper($1)',
       [sample_id]
     );
   }
@@ -224,7 +224,7 @@ const postgresqlHelper = (function () {
      * @param {string} sample_id the results id
      * @return {Promise} a resolved promise in case of success or a rejected otherwise
      */
-    getLabResultForAllProbands: getLabResultForAllProbands,
+    getLabResultById: getLabResultById,
 
     /**
      * @function
@@ -281,14 +281,14 @@ const postgresqlHelper = (function () {
      * @param {string} sample_id the blood sample id
      * @return {Promise} a resolved promise in case of success or a rejected otherwise
      */
-    getBloodSampleForAllProbands: getBloodSampleForAllProbands,
+    getBloodSamplesBySampleId: getBloodSampleForAllProbands,
 
     /**
      * @function
      * @description gets the study accesses for the given user id
      * @memberof module:postgresqlHelper
      * @param {string} user_id the users id
-     * @return {Promise} a resolved promise in case of success or a rejected otherwise
+     * @return {Promise<StudyAccess[]>} a resolved promise in case of success or a rejected otherwise
      */
     getStudyAccessesByUsername: getStudyAccessesByUsername,
 

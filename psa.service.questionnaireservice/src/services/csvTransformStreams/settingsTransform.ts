@@ -19,9 +19,6 @@ export class SettingsTransform extends CsvTransform<
     return {
       Proband: setting.account_status === 'no_account' ? '' : setting.username,
       IDS: setting.ids ?? '',
-      'Benachrichtigung Uhrzeit': setting.notification_time
-        ? setting.notification_time
-        : '',
       'Einwilligung Ergebnismitteilung': setting.compliance_labresults
         ? 'Ja'
         : 'Nein',

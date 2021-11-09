@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const personalDataService = require('../../services/personalDataService');
-const userserviceClient = require('../../clients/userserviceClient');
+const { PersonalDataService } = require('../../services/personalDataService');
+const { UserserviceClient } = require('../../clients/userserviceClient');
 
 class InternalPersonalDataInteractor {
   /**
@@ -16,8 +16,8 @@ class InternalPersonalDataInteractor {
    * @returns {Promise<PersonalData>}
    */
   static async createOrUpdate(pseudonym, personalData) {
-    const primaryStudy = await userserviceClient.getPrimaryStudy(pseudonym);
-    return personalDataService.createOrUpdate(
+    const primaryStudy = await UserserviceClient.getPrimaryStudy(pseudonym);
+    return PersonalDataService.createOrUpdate(
       pseudonym,
       primaryStudy.name,
       personalData
@@ -31,7 +31,7 @@ class InternalPersonalDataInteractor {
    * @returns {Promise<void>}
    */
   static async deletePersonalData(username) {
-    return personalDataService.deletePersonalData(username);
+    return PersonalDataService.deletePersonalData(username);
   }
 
   /**
@@ -40,7 +40,7 @@ class InternalPersonalDataInteractor {
    * @return {Promise<string>}
    */
   static async getPersonalDataEmail(username) {
-    return personalDataService.getPersonalDataEmail(username);
+    return PersonalDataService.getPersonalDataEmail(username);
   }
 }
 

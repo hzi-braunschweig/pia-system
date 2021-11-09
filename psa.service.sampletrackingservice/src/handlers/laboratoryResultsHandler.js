@@ -4,32 +4,43 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const laboratoryResultsInteractor = require('../interactors/laboratoryResultsInteractor');
+const {
+  LaboratoryResultsInteractor,
+} = require('../interactors/laboratoryResultsInteractor');
 const laboratoryResultTemplateService = require('../services/laboratoryResultTemplateService');
 const templatePipelineService = require('../services/templatePipelineService');
+const Boom = require('@hapi/boom');
+
+function handleError(error) {
+  if (error instanceof Boom.Boom) {
+    throw error;
+  }
+  console.error(error);
+  throw Boom.internal('An internal Error happened');
+}
 
 /**
  * @description HAPI Handler for laboratory results
  */
 const laboratoryResultsHandler = (function () {
-  function getAllResults(request) {
+  async function getAllResults(request) {
     const user_id = request.params.id;
 
-    return laboratoryResultsInteractor.getAllLaboratoryResults(
+    return LaboratoryResultsInteractor.getAllLaboratoryResults(
       request.auth.credentials,
       user_id
-    );
+    ).catch(handleError);
   }
 
   async function getOneResult(request) {
     const user_id = request.params.user_id;
     const result_id = request.params.result_id;
 
-    const labResult = await laboratoryResultsInteractor.getOneLaboratoryResult(
+    const labResult = await LaboratoryResultsInteractor.getOneLaboratoryResult(
       request.auth.credentials,
       user_id,
       result_id
-    );
+    ).catch(handleError);
 
     if (request.headers.accept === 'text/html') {
       return templatePipelineService.generateLaboratoryResult(
@@ -41,45 +52,45 @@ const laboratoryResultsHandler = (function () {
     }
   }
 
-  function getOneResultWitSampleID(request) {
+  async function getOneResultWitSampleID(request) {
     const result_id = request.params.result_id;
 
-    return laboratoryResultsInteractor.getLaboratoryResultWithSampleID(
+    return LaboratoryResultsInteractor.getLaboratoryResultWithSampleID(
       request.auth.credentials,
       result_id
-    );
+    ).catch(handleError);
   }
 
   function postLabResultsImport(request) {
-    return laboratoryResultsInteractor.postLabResultsImport(
+    return LaboratoryResultsInteractor.postLabResultsImport(
       request.auth.credentials
-    );
+    ).catch(handleError);
   }
 
-  function createOneResult(request) {
+  async function createOneResult(request) {
     const user_id = request.params.user_id;
     const token = request.auth.credentials;
     const labResult = request.payload;
 
-    return laboratoryResultsInteractor.createOneLaboratoryResult(
+    return LaboratoryResultsInteractor.createOneLaboratoryResult(
       token,
       user_id,
       labResult
-    );
+    ).catch(handleError);
   }
 
-  function updateOneResult(request) {
+  async function updateOneResult(request) {
     const user_id = request.params.user_id;
     const result_id = request.params.result_id;
     const token = request.auth.credentials;
     const labResult = request.payload;
 
-    return laboratoryResultsInteractor.updateOneLaboratoryResult(
+    return LaboratoryResultsInteractor.updateOneLaboratoryResult(
       token,
       user_id,
       result_id,
       labResult
-    );
+    ).catch(handleError);
   }
 
   return {
