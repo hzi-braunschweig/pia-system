@@ -9,12 +9,12 @@ import chaiHttp from 'chai-http';
 
 import { Server } from '../example-service/server';
 import { config } from '../example-service/config';
+import { StatusCodes } from 'http-status-codes';
 
 chai.use(chaiHttp);
 const expect = chai.expect;
-const HTTP_OK = 200;
 
-const apiAddress = 'http://localhost:' + config.public.port.toString();
+const apiAddress = `http://localhost:${config.public.port}`;
 
 describe('/example/version', () => {
   before(async function () {
@@ -28,7 +28,7 @@ describe('/example/version', () => {
   describe('GET /example/version', () => {
     it('should return http 200 with version information', async () => {
       const result = await chai.request(apiAddress).get('/example/version');
-      expect(result, result.text).to.have.status(HTTP_OK);
+      expect(result, result.text).to.have.status(StatusCodes.OK);
       expect(result.body).to.eql({
         PIPELINE_ID: '17479',
         GIT_HASH: 'fbf64670',

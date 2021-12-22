@@ -5,6 +5,9 @@
  */
 
 import Joi from 'joi';
+import { AnswerOptionDto } from './answerOption';
+import { QuestionnaireDto } from './questionnaire';
+import { QuestionDto } from './question';
 
 export interface DbCondition {
   id: number;
@@ -21,7 +24,23 @@ export interface DbCondition {
   condition_link: ConditionLink | null;
 }
 
+/**
+ * @deprecated
+ */
 export type Condition = DbCondition;
+
+export interface ConditionDto {
+  id: number;
+  type: ConditionType | null;
+  value: string | null;
+  link: ConditionLink | null;
+  operand: ConditionOperand | null;
+  targetAnswerOption?: AnswerOptionDto | null;
+  targetQuestionnaire?: QuestionnaireDto | null;
+  conditionAnswerOption?: AnswerOptionDto | null;
+  conditionQuestion?: QuestionDto | null;
+  conditionQuestionnaire?: QuestionnaireDto | null;
+}
 
 export enum ConditionType {
   INTERNAL_THIS = 'internal_this',

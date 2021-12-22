@@ -10,6 +10,8 @@ build-ionic-ios-store:
     - cd psa.app.mobile
     - ionic package build ios app-store --native-config="iOS-Store" --environment="pia_build_node_14" --signing-certificate="PIA_Store" --commit="$CI_COMMIT_SHA"
   rules:
+    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+      when: never
     - if: $CI_MERGE_REQUEST_IID
       when: manual
       allow_failure: true
@@ -33,6 +35,8 @@ build-and-push-ionic-ios-store:
     - cd psa.app.mobile
     - ionic package build ios app-store --native-config="iOS-Store" --environment="pia_build_node_14" --signing-certificate="PIA_Store" --commit="$CI_COMMIT_SHA" --destination="Apple App Store"
   rules:
+    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+      when: never
     - if: $CI_MERGE_REQUEST_IID
       when: manual
       allow_failure: true
@@ -56,6 +60,8 @@ build-ionic-android-store:
     - cd psa.app.mobile
     - ionic package build android release --native-config="Android-Store" --build-stack="Linux - 2021.09" --signing-certificate="PIA_Android" --commit="$CI_COMMIT_SHA"
   rules:
+    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+      when: never
     - if: $CI_MERGE_REQUEST_IID
       when: manual
       allow_failure: true
@@ -79,6 +85,8 @@ build-and-push-ionic-android-store:
     - cd psa.app.mobile
     - ionic package build android release --native-config="Android-Store" --build-stack="Linux - 2021.09" --signing-certificate="PIA_Android" --commit="$CI_COMMIT_SHA" --destination="Google Play Store, Produktion"
   rules:
+    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+      when: never
     - if: $CI_MERGE_REQUEST_IID
       when: manual
       allow_failure: true

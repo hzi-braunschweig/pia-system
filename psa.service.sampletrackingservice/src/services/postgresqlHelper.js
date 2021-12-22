@@ -82,28 +82,12 @@ const postgresqlHelper = (function () {
     );
   }
 
-  async function getStudyAccessesByUsername(user_id) {
-    return await db.manyOrNone('SELECT * FROM study_users WHERE user_id=$1', [
-      user_id,
-    ]);
-  }
-
-  async function getStudyAccessByStudyIDsAndUsername(user_id, study_ids) {
-    if (!study_ids.length) {
-      return [];
-    }
-    return await db.manyOrNone(
-      'SELECT * FROM study_users WHERE user_id=$1 AND study_id IN($2:csv)',
-      [user_id, study_ids]
-    );
-  }
-
   async function createLabResult(user_id, labResult) {
     labResult.sample_id = uppercaseOrNull(labResult.sample_id);
     labResult.dummy_sample_id = uppercaseOrNull(labResult.dummy_sample_id);
     await db.one(
-      'UPDATE users SET needs_material=$1 WHERE username=$2 RETURNING *',
-      [false, user_id]
+      'UPDATE probands SET needs_material=FALSE WHERE pseudonym=$(pseudonym) RETURNING *',
+      { pseudonym: user_id }
     );
     const values = [
       labResult.sample_id,
@@ -163,10 +147,10 @@ const postgresqlHelper = (function () {
 
   async function updateLabResultAsProband(user_id, result_id, labResult) {
     return db.tx(async () => {
-      await db.none('UPDATE users SET needs_material=$1 WHERE username=$2', [
-        true,
-        user_id,
-      ]);
+      await db.none(
+        'UPDATE probands SET needs_material=TRUE WHERE pseudonym=$(pseudonym)',
+        { pseudonym: user_id }
+      );
 
       return await db.one(
         'UPDATE lab_results SET date_of_sampling=$1, status=$2 WHERE user_id=$3 AND id = $4 RETURNING *',
@@ -177,8 +161,8 @@ const postgresqlHelper = (function () {
 
   async function requestNewMaterialFor(proband) {
     return await db.none(
-      'UPDATE users SET needs_material=$1 WHERE username=$2',
-      [true, proband]
+      'UPDATE probands SET needs_material=TRUE WHERE pseudonym=$(pseudonym)',
+      { pseudonym: proband }
     );
   }
 
@@ -200,7 +184,10 @@ const postgresqlHelper = (function () {
   }
 
   async function getUser(user_id) {
-    return await db.one('SELECT * FROM users WHERE username=$1', [user_id]);
+    return await db.one(
+      'SELECT status FROM probands WHERE pseudonym=$(pseudonym)',
+      { pseudonym: user_id }
+    );
   }
 
   function uppercaseOrNull(value) {
@@ -282,25 +269,6 @@ const postgresqlHelper = (function () {
      * @return {Promise} a resolved promise in case of success or a rejected otherwise
      */
     getBloodSamplesBySampleId: getBloodSampleForAllProbands,
-
-    /**
-     * @function
-     * @description gets the study accesses for the given user id
-     * @memberof module:postgresqlHelper
-     * @param {string} user_id the users id
-     * @return {Promise<StudyAccess[]>} a resolved promise in case of success or a rejected otherwise
-     */
-    getStudyAccessesByUsername: getStudyAccessesByUsername,
-
-    /**
-     * @function
-     * @description gets a labresult
-     * @memberof module:postgresqlHelper
-     * @param {string} user_id the users id
-     * @param {string} study_id the studies id
-     * @return {Promise} a resolved promise in case of success or a rejected otherwise
-     */
-    getStudyAccessByStudyIDsAndUsername: getStudyAccessByStudyIDsAndUsername,
 
     /**
      * @function

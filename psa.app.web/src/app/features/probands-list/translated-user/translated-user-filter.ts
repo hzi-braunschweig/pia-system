@@ -31,22 +31,12 @@ export class TranslatedUserFilter {
    */
   filter(user: TranslatedUser): boolean {
     return (
-      this.hasStudyAccess(user, this.studyName) &&
+      user.study === this.studyName &&
       (this.searchString === '' ||
         this.containsString(user, this.searchString)) &&
       (this.isTestproband === null ||
         user.is_test_proband === this.isTestproband)
     );
-  }
-
-  /**
-   * Checks if user has access to given study
-   *
-   * @param user user object
-   * @param studyName name of the study which will be checked against
-   */
-  private hasStudyAccess(user: TranslatedUser, studyName: string): boolean {
-    return user.study_accesses.includes(studyName + ' (');
   }
 
   /**

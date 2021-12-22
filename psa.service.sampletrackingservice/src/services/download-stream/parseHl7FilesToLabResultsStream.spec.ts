@@ -73,7 +73,7 @@ describe('ParseHl7FilesToLabrRsultsStream', () => {
 
     // Assert
     const results: ImportFile[] = [];
-    stream.on('data', (data) => results.push(data));
+    stream.on('data', (data: ImportFile) => results.push(data));
     await once(stream, 'end');
 
     expect(results[0]!.result).to.deep.equal(getExample2());
@@ -91,7 +91,7 @@ describe('ParseHl7FilesToLabrRsultsStream', () => {
     });
     stream.end();
     const results: ImportFile[] = [];
-    stream.on('data', (data) => results.push(data));
+    stream.on('data', (data: ImportFile) => results.push(data));
     await once(stream, 'end');
     const example1 = getExample1();
     example1.lab_observations![0]!.result_string = 'NA';

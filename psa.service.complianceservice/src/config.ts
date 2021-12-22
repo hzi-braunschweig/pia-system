@@ -37,12 +37,13 @@ const conf = {
     },
   },
   services: {
-    sormasservice: GlobalConfig.sormasservice,
     userservice: GlobalConfig.userservice,
+  },
+  servers: {
+    messageQueue: GlobalConfig.getMessageQueue('complianceservice'),
   },
   publicAuthKey: GlobalConfig.publicAuthKey,
   defaultLanguage: ConfigUtils.getEnvVariable('DEFAULT_LANGUAGE', 'de-DE'),
-  isSormasActive: GlobalConfig.isSormasActive,
 };
 
 export const config: SupersetOfServiceConfig<typeof conf> = conf;

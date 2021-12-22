@@ -5,8 +5,14 @@
  */
 
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
+
+export interface DialogOkCancelComponentData {
+  q?: string;
+  content: string;
+}
+export type DialogOkCancelComponentReturn = 'ok';
 
 @Component({
   selector: 'dialog-ok-cancel',
@@ -36,12 +42,12 @@ import { TranslateService } from '@ngx-translate/core';
 export class DialogOkCancelComponent {
   constructor(
     public translate: TranslateService,
-    public dialogRef: MatDialogRef<any>,
+    public dialogRef: MatDialogRef<
+      DialogOkCancelComponent,
+      DialogOkCancelComponentReturn
+    >,
     @Inject(MAT_DIALOG_DATA)
-    public data: {
-      q: string;
-      content: string;
-    }
+    public data: DialogOkCancelComponentData
   ) {}
 
   confirmSelection(): void {

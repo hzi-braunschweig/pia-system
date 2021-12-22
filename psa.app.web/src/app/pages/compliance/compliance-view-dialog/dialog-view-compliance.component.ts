@@ -11,6 +11,11 @@ import { AlertService } from '../../../_services/alert.service';
 import { ComplianceWrapper } from './complianceWrapper';
 import { ComplianceDataResponse } from '../../../psa.app.core/models/compliance';
 
+export interface DialogViewComplianceComponentData {
+  study: string;
+  complianceId: number;
+}
+
 @Component({
   selector: 'app-dialog-view-compliance',
   templateUrl: './dialog-view-compliance.component.html',
@@ -24,7 +29,8 @@ export class DialogViewComplianceComponent implements OnInit {
   constructor(
     private complianceService: ComplianceService,
     private alertService: AlertService,
-    @Inject(MAT_DIALOG_DATA) public readonly dialogData: any,
+    @Inject(MAT_DIALOG_DATA)
+    public readonly dialogData: DialogViewComplianceComponentData,
     public readonly dialogRef: MatDialogRef<DialogViewComplianceComponent>
   ) {}
 

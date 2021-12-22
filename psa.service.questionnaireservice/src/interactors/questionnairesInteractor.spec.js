@@ -13,6 +13,9 @@ const {
 } = require('../repositories/questionnaireRepository');
 const { QuestionnaireService } = require('../services/questionnaireService');
 const { QuestionnairesInteractor } = require('./questionnairesInteractor');
+const {
+  complianceserviceClient,
+} = require('../clients/complianceserviceClient');
 
 const expect = chai.expect;
 const sandbox = sinon.createSandbox();
@@ -21,9 +24,15 @@ chai.use(sinonChai);
 describe('questionnairesInteractor', function () {
   let pgHelperMock;
   let questionnaireRepoMock;
+  let hasAgreedToComplianceMock;
+
   beforeEach(() => {
     pgHelperMock = sandbox.stub(pgHelper);
     sandbox.stub(QuestionnaireService, 'deactivateQuestionnaire');
+    hasAgreedToComplianceMock = sandbox.stub(
+      complianceserviceClient,
+      'hasAgreedToCompliance'
+    );
     questionnaireRepoMock = {
       getQuestionnaire: sandbox.stub(
         QuestionnaireRepository,
@@ -461,7 +470,7 @@ describe('questionnairesInteractor', function () {
       questionnaireRepoMock.getQuestionnaire
         .withArgs(1)
         .resolves({ compliance_needed: true, study_id: 'Study1' });
-      pgHelperMock.getUser.resolves({ compliance_samples: true });
+      hasAgreedToComplianceMock.resolves(true);
 
       const session = {
         id: 1,

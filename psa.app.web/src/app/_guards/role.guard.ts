@@ -26,7 +26,7 @@ export class RoleGuard implements CanActivate {
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): boolean {
-    const currentRole = this.auth.currentRole;
+    const currentRole = this.auth.getCurrentRole();
     return (
       next.data.expectedRoles && next.data.expectedRoles.includes(currentRole)
     );

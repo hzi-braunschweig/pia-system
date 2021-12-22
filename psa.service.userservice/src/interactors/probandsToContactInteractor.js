@@ -4,42 +4,40 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+const pgHelper = require('../services/postgresqlHelper');
+
 /**
  * @description interactor that handles user requests based on users permissions
  */
 const probandsToContactInteractor = (function () {
-  async function getProbandsToContact(decodedToken, pgHelper) {
+  async function getProbandsToContact(decodedToken) {
     const userRole = decodedToken.role;
-    const requester = decodedToken.username;
+    const userStudies = decodedToken.groups;
 
-    switch (userRole) {
-      case 'ProbandenManager':
-        return pgHelper.getProbandsToContact(requester).catch((err) => {
-          console.log(err);
-          throw new Error('Could not get the probands to contact');
-        });
-      default:
-        throw new Error(
-          'Could not get probands to contact: Unknown or wrong role'
-        );
+    if (userRole === 'ProbandenManager') {
+      return pgHelper.getProbandsToContact(userStudies).catch((err) => {
+        console.log(err);
+        throw new Error('Could not get the probands to contact');
+      });
+    } else {
+      throw new Error(
+        'Could not get probands to contact: Unknown or wrong role'
+      );
     }
   }
 
-  async function updateProbandsToContact(decodedToken, id, data, pgHelper) {
+  async function updateProbandsToContact(decodedToken, id, data) {
     const userRole = decodedToken.role;
 
-    switch (userRole) {
-      case 'ProbandenManager':
-        return pgHelper.updateProbandToContact(id, data).catch((err) => {
-          console.log(err);
-          throw new Error(
-            'The proband to contact could not be updated: ' + err
-          );
-        });
-      default:
-        throw new Error(
-          'Could not get the pending deletion: Unknown or wrong role'
-        );
+    if (userRole === 'ProbandenManager') {
+      await pgHelper.updateProbandToContact(id, data).catch((err) => {
+        console.log(err);
+        throw new Error('The proband to contact could not be updated: ' + err);
+      });
+    } else {
+      throw new Error(
+        'Could not get the pending deletion: Unknown or wrong role'
+      );
     }
   }
 

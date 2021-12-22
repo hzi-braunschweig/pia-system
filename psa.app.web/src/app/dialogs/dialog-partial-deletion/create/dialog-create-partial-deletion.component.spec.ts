@@ -40,7 +40,6 @@ describe('DialogCreatePartialDeletionComponent', () => {
         endDate: new Date(7000),
         labResults: [mock<LabResult>()],
         questionnaires: [q],
-        deleteLogs: false,
         userForApprove: 'Jack',
         probandId: 'Test-Proband',
       },

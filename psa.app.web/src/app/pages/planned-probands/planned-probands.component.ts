@@ -5,11 +5,11 @@
  */
 
 import {
+  ChangeDetectorRef,
   Component,
   ElementRef,
-  ChangeDetectorRef,
-  ViewChild,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
@@ -18,18 +18,16 @@ import { MatTableDataSource } from '@angular/material/table';
 import { TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
-import { JwtHelperService } from '@auth0/angular-jwt';
 import { PlannedProband } from '../../psa.app.core/models/plannedProband';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { DataService } from '../../_services/data.service';
-import { Observable } from 'rxjs';
-import { User } from 'src/app/psa.app.core/models/user';
+import { fromEvent } from 'rxjs';
 import { DialogDeleteComponent } from '../../_helpers/dialog-delete';
 import 'datejs';
 import { DialogNewPlannedProbandsComponent } from 'src/app/dialogs/new-planned-probands-dialog/new-planned-probands-dialog.component';
 import { MatPaginatorIntlGerman } from '../../_helpers/mat-paginator-intl';
-import { forwardRef } from '@angular/core';
 import { StudyAccess } from 'src/app/psa.app.core/models/study_access';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-planned-probands',
@@ -38,12 +36,11 @@ import { StudyAccess } from 'src/app/psa.app.core/models/study_access';
   providers: [
     {
       provide: MatPaginatorIntl,
-      useClass: forwardRef(() => MatPaginatorIntlGerman),
+      useClass: MatPaginatorIntlGerman,
     },
   ],
 })
 export class PlannedProbandsComponent implements OnInit {
-  currentRole: string;
   dataSource: MatTableDataSource<PlannedProband>;
   plannedProbands: PlannedProband[] = [];
 
@@ -68,13 +65,7 @@ export class PlannedProbandsComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private dataService: DataService,
     public dialog: MatDialog
-  ) {
-    const jwtHelper: JwtHelperService = new JwtHelperService();
-    const currentUser: User = JSON.parse(localStorage.getItem('currentUser'));
-    // decode the token to get its payload
-    const tokenPayload = jwtHelper.decodeToken(currentUser.token);
-    this.currentRole = tokenPayload.role;
-  }
+  ) {}
 
   ngOnInit(): void {
     this.loadData();
@@ -90,9 +81,9 @@ export class PlannedProbandsComponent implements OnInit {
       this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
 
-      Observable.fromEvent(this.filter.nativeElement, 'keyup')
-        .debounceTime(150)
-        .distinctUntilChanged()
+      fromEvent(this.filter.nativeElement, 'keyup')
+        .pipe(debounceTime(150))
+        .pipe(distinctUntilChanged())
         .subscribe(() => {
           if (!this.dataSource) {
             return;

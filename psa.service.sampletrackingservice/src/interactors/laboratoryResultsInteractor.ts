@@ -5,15 +5,19 @@
  */
 
 import Boom from '@hapi/boom';
-import postgresqlHelper from '../services/postgresqlHelper';
-import complianceserviceClient from '../clients/complianceserviceClient';
-import userserviceClient from '../clients/userserviceClient';
+
 import { AccessToken } from '@pia/lib-service-core';
+import postgresqlHelper from '../services/postgresqlHelper';
+import { complianceserviceClient } from '../clients/complianceserviceClient';
 import { LabResult } from '../models/LabResult';
-import { StudyAccess, User } from '../models/user';
+import { User } from '../models/user';
 import { LabResultImportHelper } from '../services/labResultImportHelper';
+import { userserviceClient } from '../clients/userserviceClient';
+import { SystemComplianceType } from '@pia-system/lib-http-clients-internal';
 
 export class LaboratoryResultsInteractor {
+  private static readonly TESTSTUDY_NAME = 'Teststudie';
+
   /**
    * gets all laboratory results for a user
    * @param decodedToken the jwt of the request
@@ -35,14 +39,13 @@ export class LaboratoryResultsInteractor {
         if (requesterName !== pseudonym) {
           throw Boom.forbidden('Probands can only get labresults for themself');
         }
-        const { name: studyName } = await userserviceClient.getPrimaryStudy(
-          pseudonym
-        );
+        const studyOfProband = this.getStudyOfProbandOrThrow(requesterStudies);
+
         const hasLabresultsCompliance =
           await complianceserviceClient.hasAgreedToCompliance(
             pseudonym,
-            studyName,
-            'labresults'
+            studyOfProband,
+            SystemComplianceType.LABRESULTS
           );
         if (!hasLabresultsCompliance) {
           throw Boom.forbidden('Proband has not complied to see lab results');
@@ -50,11 +53,8 @@ export class LaboratoryResultsInteractor {
         const labResults = (await postgresqlHelper.getAllLabResultsForProband(
           pseudonym
         )) as LabResult[];
-        const fakeLabResult = await this.getFakeLabResultForTeststudie(
-          pseudonym
-        );
-        if (fakeLabResult) {
-          labResults.unshift(fakeLabResult);
+        if (studyOfProband === LaboratoryResultsInteractor.TESTSTUDY_NAME) {
+          labResults.unshift(this.createTestStudieFakeLabResult(pseudonym));
         }
         return labResults;
       }
@@ -62,14 +62,11 @@ export class LaboratoryResultsInteractor {
       case 'Forscher':
       case 'Untersuchungsteam':
       case 'ProbandenManager': {
-        const overlappingStudies =
-          await postgresqlHelper.getStudyAccessByStudyIDsAndUsername(
-            pseudonym,
-            requesterStudies
-          );
-        if (!overlappingStudies.length) {
-          throw Boom.notFound('Proband not found in any of your studies');
-        }
+        await this.assertProfessionalHasAccessToProband(
+          pseudonym,
+          requesterStudies
+        );
+
         return (await postgresqlHelper.getAllLabResultsByProband(
           pseudonym
         )) as LabResult[];
@@ -101,14 +98,11 @@ export class LaboratoryResultsInteractor {
         throw Boom.forbidden('Wrong role for this command');
 
       case 'Forscher': {
-        const overlappingStudies =
-          await postgresqlHelper.getStudyAccessByStudyIDsAndUsername(
-            pseudonym,
-            requesterStudies
-          );
-        if (!overlappingStudies.length) {
-          throw Boom.notFound('Proband not found in any of your studies');
-        }
+        await this.assertProfessionalHasAccessToProband(
+          pseudonym,
+          requesterStudies
+        );
+
         const labResult = (await postgresqlHelper.getLabResult(
           pseudonym,
           result_id
@@ -124,14 +118,13 @@ export class LaboratoryResultsInteractor {
         if (requesterName !== pseudonym) {
           throw Boom.forbidden('Probands can only get labresults for themself');
         }
-        const { name: studyName } = await userserviceClient.getPrimaryStudy(
-          pseudonym
-        );
+        const studyOfProband = this.getStudyOfProbandOrThrow(requesterStudies);
+
         const hasLabresultsCompliance =
           await complianceserviceClient.hasAgreedToCompliance(
             pseudonym,
-            studyName,
-            'labresults'
+            studyOfProband,
+            SystemComplianceType.LABRESULTS
           );
         if (!hasLabresultsCompliance) {
           throw Boom.forbidden('Proband has not complied to see lab results');
@@ -142,16 +135,11 @@ export class LaboratoryResultsInteractor {
         )) as LabResult | null;
         if (labResult) {
           return labResult;
-        } else {
-          const fakeLabResult = await this.getFakeLabResultForTeststudie(
-            pseudonym
-          );
-          if (fakeLabResult) {
-            return fakeLabResult;
-          } else {
-            throw Boom.notFound('Could not find labresults');
-          }
         }
+        if (studyOfProband === LaboratoryResultsInteractor.TESTSTUDY_NAME) {
+          return this.createTestStudieFakeLabResult(pseudonym);
+        }
+        throw Boom.notFound('Could not find labresults');
       }
       default:
         throw Boom.forbidden('unknown role for this command');
@@ -184,14 +172,15 @@ export class LaboratoryResultsInteractor {
         if (!labResult) {
           throw Boom.forbidden("Laboratory sample doesn't exist");
         }
-        const overlappingStudies =
-          await postgresqlHelper.getStudyAccessByStudyIDsAndUsername(
-            labResult.user_id,
-            requesterStudies
+        if (!labResult.user_id) {
+          throw Boom.forbidden(
+            'Laboratory sample is not assigned to a proband'
           );
-        if (!overlappingStudies.length) {
-          throw Boom.forbidden('Proband not found in any of your studies');
         }
+        await this.assertProfessionalHasAccessToProband(
+          labResult.user_id,
+          requesterStudies
+        );
         return labResult;
       }
       default:
@@ -246,17 +235,13 @@ export class LaboratoryResultsInteractor {
 
       case 'Untersuchungsteam':
       case 'ProbandenManager': {
-        const overlappingStudies =
-          await postgresqlHelper.getStudyAccessByStudyIDsAndUsername(
-            pseudonym,
-            requesterStudies
-          );
-        if (!overlappingStudies.length) {
-          throw Boom.forbidden('Proband not found in any of your studies');
-        }
+        await this.assertProfessionalHasAccessToProband(
+          pseudonym,
+          requesterStudies
+        );
 
         const proband = (await postgresqlHelper.getUser(pseudonym)) as User;
-        if (proband.account_status === 'deactivated') {
+        if (proband.status !== 'active') {
           throw Boom.forbidden(
             'Cannot create a lab result if proband is not active'
           );
@@ -301,17 +286,13 @@ export class LaboratoryResultsInteractor {
 
       case 'Untersuchungsteam':
       case 'ProbandenManager': {
-        const overlappingStudies =
-          await postgresqlHelper.getStudyAccessByStudyIDsAndUsername(
-            pseudonym,
-            requesterStudies
-          );
-        if (!overlappingStudies.length) {
-          throw Boom.forbidden('Proband not found in any of your studies');
-        }
+        await this.assertProfessionalHasAccessToProband(
+          pseudonym,
+          requesterStudies
+        );
 
         const proband = (await postgresqlHelper.getUser(pseudonym)) as User;
-        if (proband.account_status === 'deactivated') {
+        if (proband.status !== 'active') {
           throw Boom.forbidden(
             'Cannot update a lab result if proband is not active'
           );
@@ -373,14 +354,11 @@ export class LaboratoryResultsInteractor {
         ) {
           throw Boom.forbidden('swab was already sampled');
         }
-        const { name: studyName } = await userserviceClient.getPrimaryStudy(
-          pseudonym
-        );
         const hasSamplesCompliance =
           await complianceserviceClient.hasAgreedToCompliance(
             pseudonym,
-            studyName,
-            'samples'
+            this.getStudyOfProbandOrThrow(requesterStudies),
+            SystemComplianceType.SAMPLES
           );
         if (hasSamplesCompliance) {
           return (await postgresqlHelper.updateLabResultAsProband(
@@ -397,19 +375,25 @@ export class LaboratoryResultsInteractor {
     }
   }
 
-  private static async getFakeLabResultForTeststudie(
-    user_id: string
-  ): Promise<LabResult | null> {
-    const probandAccesses = (await postgresqlHelper.getStudyAccessesByUsername(
-      user_id
-    )) as StudyAccess[];
-    const isProbandOfTeststudie = probandAccesses.some(
-      (access) => access.study_id === 'Teststudie'
-    );
-    if (isProbandOfTeststudie) {
-      return this.createTestStudieFakeLabResult(user_id);
-    } else {
-      return null;
+  private static getStudyOfProbandOrThrow(
+    studyAccessOfProband: string[]
+  ): string {
+    if (!studyAccessOfProband[0]) {
+      throw Boom.forbidden('Probands has no study access');
+    }
+    return studyAccessOfProband[0];
+  }
+
+  private static async assertProfessionalHasAccessToProband(
+    pseudonym: string,
+    studyAccessOfProfessional: string[]
+  ): Promise<void> {
+    const studyOfProband = await userserviceClient.getStudyOfProband(pseudonym);
+    if (
+      !studyOfProband ||
+      !studyAccessOfProfessional.includes(studyOfProband)
+    ) {
+      throw Boom.notFound('Proband not found in any of your studies');
     }
   }
 

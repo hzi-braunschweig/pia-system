@@ -54,46 +54,29 @@ const plannedProbandsInteractor = (function () {
 
   async function createPlannedProbands(decodedToken, pseudonyms, pgHelper) {
     const userRole = decodedToken.role;
-    const requester = decodedToken.username;
+    const userStudies = decodedToken.groups;
 
-    switch (userRole) {
-      case 'Untersuchungsteam':
-        return pgHelper
-          .getUser(requester)
-          .then((requesterObject) => {
-            if (requesterObject && requesterObject.study_accesses.length > 0) {
-              const plannedProbandsToCreate = [];
-              pseudonyms.forEach((pseudonym) => {
-                plannedProbandsToCreate.push([
-                  pseudonym,
-                  SecureRandomPasswordService.generate(),
-                  null,
-                ]);
-              });
-              const study_accesses = requesterObject.study_accesses.map(
-                (access) => access.study_id
-              );
-              return pgHelper
-                .createPlannedProbands(plannedProbandsToCreate, study_accesses)
-                .catch((err) => {
-                  console.log(err);
-                  throw new Error('could not create planned probands: ' + err);
-                });
-            } else {
-              throw new Error(
-                'Could not create the planned probands: User has no write access to any study'
-              );
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-            throw new Error('could not create planned probands: ' + err);
-          });
-      default:
-        throw new Error(
-          'Could not create the planned probands: Unknown or wrong role'
-        );
+    if (userRole !== 'Untersuchungsteam') {
+      throw new Error(
+        'Could not create the planned probands: Unknown or wrong role'
+      );
     }
+    if (!userStudies.length) {
+      throw new Error(
+        'Could not create the planned probands: User has no write access to any study'
+      );
+    }
+    const plannedProbandsToCreate = pseudonyms.map((pseudonym) => [
+      pseudonym,
+      SecureRandomPasswordService.generate(),
+      null,
+    ]);
+    return pgHelper
+      .createPlannedProbands(plannedProbandsToCreate, userStudies)
+      .catch((err) => {
+        console.log(err);
+        throw new Error('could not create planned probands: ' + err);
+      });
   }
 
   async function deletePlannedProband(decodedToken, user_id, pgHelper) {

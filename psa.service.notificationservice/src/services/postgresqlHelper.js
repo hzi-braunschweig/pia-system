@@ -18,7 +18,7 @@ const defaultEmailNotificationDay = 0;
  * @description helper methods to access db
  */
 const postgresqlHelper = (function () {
-  function getActiveQuestionnaireInstances() {
+  async function getActiveQuestionnaireInstances() {
     return db.manyOrNone(
       "SELECT * FROM questionnaire_instances WHERE notifications_scheduled=false AND status IN ('active', 'in_progress')"
     );
@@ -39,16 +39,17 @@ const postgresqlHelper = (function () {
     ).count;
   }
 
-  function getQuestionnaireInstance(id) {
+  async function getQuestionnaireInstance(id) {
     return db.oneOrNone('SELECT * FROM questionnaire_instances WHERE id=$1', [
       id,
     ]);
   }
 
-  function getUserComplianceLabresults(user_id) {
-    return db.one('SELECT compliance_labresults FROM users WHERE username=$1', [
-      user_id,
-    ]);
+  async function getUserComplianceLabresults(user_id) {
+    return db.one(
+      'SELECT compliance_labresults FROM probands WHERE pseudonym=$1',
+      [user_id]
+    );
   }
 
   const latestQuestionnaireVersionQuery =
@@ -71,25 +72,25 @@ const postgresqlHelper = (function () {
     );
   }
 
-  function getToken(pseudonym) {
+  async function getToken(pseudonym) {
     return db.manyOrNone(
       'SELECT token, pseudonym, study FROM fcm_tokens WHERE pseudonym=$1',
       [pseudonym]
     );
   }
 
-  function updateFCMToken(token, pseudonym, study) {
+  async function updateFCMToken(token, pseudonym, study) {
     return db.none(
       'INSERT INTO fcm_tokens (token, pseudonym, study) VALUES ($(token), $(pseudonym), $(study)) ON CONFLICT DO NOTHING',
       { token, pseudonym, study }
     );
   }
 
-  function removeFCMToken(token) {
+  async function removeFCMToken(token) {
     return db.none('DELETE FROM fcm_tokens WHERE token=$1', [token]);
   }
 
-  function removeFCMTokenForPseudonym(pseudonym) {
+  async function removeFCMTokenForPseudonym(pseudonym) {
     return db.none('DELETE FROM fcm_tokens WHERE pseudonym=$1', [pseudonym]);
   }
 
@@ -105,24 +106,28 @@ const postgresqlHelper = (function () {
     );
   }
 
-  async function getNewSampledSamplesForStudy(study_id) {
+  async function getNewSampledSamplesForProbands(probands) {
     return await db.manyOrNone(
-      'SELECT id FROM lab_results WHERE CAST(date_of_sampling AS TIMESTAMP) BETWEEN $1 AND $2 AND user_id=ANY(SELECT user_id FROM study_users WHERE study_id = $3)',
-      [subDays(startOfToday(), 1), startOfToday(), study_id]
+      'SELECT id FROM lab_results WHERE CAST(date_of_sampling AS TIMESTAMP) BETWEEN $(startDate) AND $(endDate) AND user_id IN ($(probands:csv))',
+      {
+        startDate: subDays(startOfToday(), 1),
+        endDate: startOfToday(),
+        probands,
+      }
     );
   }
 
-  async function getNewAnalyzedSamplesForStudy(study_id) {
+  async function getNewAnalyzedSamplesForProbands(probands) {
     const queryString =
       'SELECT lr.id, user_id, dummy_sample_id FROM lab_results as lr ' +
       'LEFT JOIN (SELECT id, date_of_announcement, lab_result_id, MAX(date_of_announcement) FROM lab_observations GROUP BY id) lo on lr.id = lo.lab_result_id ' +
-      'WHERE CAST(date_of_announcement AS TIMESTAMP) BETWEEN $1 AND $2 ' +
-      'AND user_id=ANY(SELECT user_id FROM study_users WHERE study_id = $3)';
-    return await db.manyOrNone(queryString, [
-      subDays(startOfToday(), 1),
-      startOfToday(),
-      study_id,
-    ]);
+      'WHERE CAST(date_of_announcement AS TIMESTAMP) BETWEEN $(startDate) AND $(endDate) ' +
+      'AND user_id IN ($(probands:csv))';
+    return await db.manyOrNone(queryString, {
+      startDate: subDays(startOfToday(), 1),
+      endDate: startOfToday(),
+      probands,
+    });
   }
 
   async function markInstanceAsScheduled(id) {
@@ -530,21 +535,21 @@ const postgresqlHelper = (function () {
 
     /**
      * @function
-     * @description gets all samples for a study that were sampled yesterday
+     * @description gets all samples of a list of probands which were sampled yesterday
      * @memberof module:postgresqlHelper
-     * @param {string} study_id the study to get samples for
+     * @param {string[]} probands list of proband pseudonyms
      * @returns {Promise} a resolved promise with the found studies or a rejected promise with the error
      */
-    getNewSampledSamplesForStudy: getNewSampledSamplesForStudy,
+    getNewSampledSamplesForProbands: getNewSampledSamplesForProbands,
 
     /**
      * @function
-     * @description gets all samples for a study that were analyzed yesterday
+     * @description gets all samples of a list of probands which were analyzed yesterday
      * @memberof module:postgresqlHelper
-     * @param {string} study_id the study to get samples for
+     * @param {string[]} probands list of proband pseudonyms
      * @returns {Promise} a resolved promise with the found studies or a rejected promise with the error
      */
-    getNewAnalyzedSamplesForStudy: getNewAnalyzedSamplesForStudy,
+    getNewAnalyzedSamplesForProbands: getNewAnalyzedSamplesForProbands,
 
     /**
      * @function

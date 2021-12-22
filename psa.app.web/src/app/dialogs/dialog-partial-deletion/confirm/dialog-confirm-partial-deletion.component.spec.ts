@@ -18,9 +18,9 @@ import { QuestionnaireInstance } from '../../../psa.app.core/models/questionnair
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
 import { PendingPartialDeletionResponse } from '../../../psa.app.core/models/pendingPartialDeletion';
 import { SampleTrackingService } from '../../../psa.app.core/providers/sample-tracking-service/sample-tracking.service';
+import { LabResult } from '../../../psa.app.core/models/labresult';
 import createSpyObj = jasmine.createSpyObj;
 import SpyObj = jasmine.SpyObj;
-import { LabResult } from '../../../psa.app.core/models/labresult';
 
 describe('DialogConfirmPartialDeletionComponent', () => {
   let fixture: MockedComponentFixture;
@@ -30,14 +30,14 @@ describe('DialogConfirmPartialDeletionComponent', () => {
   let authService: SpyObj<AuthService>;
   let questionnaireService: SpyObj<QuestionnaireService>;
   let sampleTrackingService: SpyObj<SampleTrackingService>;
-  const username = 'Test-Proband';
+  const pseudonym = 'Test-Proband';
 
   beforeEach(async () => {
     // Provider and Services
     data = {
       partialDeletionResponse: mock<PendingPartialDeletionResponse>(),
     };
-    data.partialDeletionResponse.probandId = username;
+    data.partialDeletionResponse.probandId = pseudonym;
     data.partialDeletionResponse.fromDate = new Date(5000);
     data.partialDeletionResponse.toDate = new Date(6000);
     dialogRef = createSpyObj<
@@ -86,7 +86,7 @@ describe('DialogConfirmPartialDeletionComponent', () => {
     await component.confirmDeletion();
     expect(authService.putPendingPartialDeletion).toHaveBeenCalled();
     const result: DialogConfirmPartialDeletionResult = {
-      probandId: username,
+      probandId: pseudonym,
       successfullyConfirmed: true,
     };
     expect(dialogRef.close).toHaveBeenCalledWith(result);
@@ -97,7 +97,7 @@ describe('DialogConfirmPartialDeletionComponent', () => {
     await component.confirmDeletion();
     expect(authService.putPendingPartialDeletion).toHaveBeenCalled();
     const result: DialogConfirmPartialDeletionResult = {
-      probandId: username,
+      probandId: pseudonym,
       successfullyConfirmed: false,
     };
     expect(dialogRef.close).toHaveBeenCalledWith(result);
@@ -107,7 +107,7 @@ describe('DialogConfirmPartialDeletionComponent', () => {
     await component.rejectDeletion();
     expect(authService.deletePendingPartialDeletion).toHaveBeenCalled();
     const result: DialogConfirmPartialDeletionResult = {
-      probandId: username,
+      probandId: pseudonym,
       successfullyRejected: true,
     };
     expect(dialogRef.close).toHaveBeenCalledWith(result);
@@ -118,7 +118,7 @@ describe('DialogConfirmPartialDeletionComponent', () => {
     await component.rejectDeletion();
     expect(authService.deletePendingPartialDeletion).toHaveBeenCalled();
     const result: DialogConfirmPartialDeletionResult = {
-      probandId: username,
+      probandId: pseudonym,
       successfullyRejected: false,
     };
     expect(dialogRef.close).toHaveBeenCalledWith(result);

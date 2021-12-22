@@ -4,32 +4,39 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { ProbandsComponent } from './probands.component';
 import { AuthenticationManager } from '../../../_services/authentication-manager.service';
 import { By } from '@angular/platform-browser';
-import { ProbandsForscherComponent } from '../probands-forscher/probands-forscher.component';
-import { MockComponent } from 'ng-mocks';
-import { ProbandsUntersuchungsteamComponent } from '../probands-untersuchungsteam/probands-untersuchungsteam.component';
+import { MockBuilder } from 'ng-mocks';
+import { AppModule } from '../../../app.module';
+import SpyObj = jasmine.SpyObj;
 
 describe('ProbandsComponent', () => {
   let component: ProbandsComponent;
   let fixture: ComponentFixture<ProbandsComponent>;
+  let auth: SpyObj<AuthenticationManager>;
 
-  const authManager = { currentRole: null };
+  beforeEach(async () => {
+    // Provider and Services
+    auth = jasmine.createSpyObj<AuthenticationManager>(
+      'AuthenticationManager',
+      ['getCurrentRole']
+    );
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({
-      declarations: [
-        ProbandsComponent,
-        MockComponent(ProbandsForscherComponent),
-        MockComponent(ProbandsUntersuchungsteamComponent),
-      ],
-      providers: [{ provide: AuthenticationManager, useValue: authManager }],
-    }).compileComponents();
+    // Build Base Module
+    await MockBuilder(ProbandsComponent, AppModule).mock(
+      AuthenticationManager,
+      auth
+    );
   });
 
-  it('should load the forscher sub component based on the users role', () => {
+  it('should load the forscher sub component based on the users role', fakeAsync(() => {
     createComponentWithRole('Forscher');
     expect(
       fixture.debugElement.query(By.css('app-probands-forscher'))
@@ -37,9 +44,9 @@ describe('ProbandsComponent', () => {
     expect(
       fixture.debugElement.query(By.css('app-probands-untersuchungsteam'))
     ).toBeNull();
-  });
+  }));
 
-  it('should load the untersuchungsteam sub component based on the users role', () => {
+  it('should load the untersuchungsteam sub component based on the users role', fakeAsync(() => {
     createComponentWithRole('Untersuchungsteam');
     expect(
       fixture.debugElement.query(By.css('app-probands-forscher'))
@@ -47,12 +54,16 @@ describe('ProbandsComponent', () => {
     expect(
       fixture.debugElement.query(By.css('app-probands-untersuchungsteam'))
     ).not.toBeNull();
-  });
+  }));
 
   function createComponentWithRole(role): void {
-    authManager.currentRole = role;
+    // Setup mocks before creating component
+    auth.getCurrentRole.and.returnValue(role);
+
+    // Create component
     fixture = TestBed.createComponent(ProbandsComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    fixture.detectChanges(); // run ngOnInit
+    tick(); // wait for ngOnInit to finish
   }
 });

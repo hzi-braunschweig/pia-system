@@ -9,23 +9,18 @@ import { DatePipe } from '@angular/common';
 import { TranslateService } from '@ngx-translate/core';
 import { TranslatedUserFactory } from './translated-user.factory';
 import { AccountStatusPipe } from '../../../pipes/account-status.pipe';
-import { StudyAccessPipe } from '../../../pipes/study-access.pipe';
-import { UserWithStudyAccess } from '../../../psa.app.core/models/user-with-study-access';
 import { TranslatedUser } from './translated-user.model';
+import { createProband } from '../../../psa.app.core/models/instance.helper.spec';
 
 describe('TranslatedUserFactory', () => {
   let service: TranslatedUserFactory;
-  let translate: TranslateService;
-  let accountStatusPipe: AccountStatusPipe;
-  let studyAccessPipe: StudyAccessPipe;
-  let datePipe: DatePipe;
+  let translate: jasmine.SpyObj<TranslateService>;
+  let accountStatusPipe: jasmine.SpyObj<AccountStatusPipe>;
+  let datePipe: jasmine.SpyObj<DatePipe>;
 
   beforeEach(() => {
     translate = jasmine.createSpyObj('TranslateService', ['instant']);
-    accountStatusPipe = jasmine.createSpyObj('AccountStatusPipe', [
-      'transform',
-    ]);
-    studyAccessPipe = jasmine.createSpyObj('StudyAccessPipe', ['transform']);
+    accountStatusPipe = jasmine.createSpyObj(AccountStatusPipe, ['transform']);
     datePipe = jasmine.createSpyObj('DatePipe', ['transform']);
 
     TestBed.configureTestingModule({
@@ -33,7 +28,6 @@ describe('TranslatedUserFactory', () => {
         TranslatedUserFactory,
         { provide: TranslateService, useValue: translate },
         { provide: AccountStatusPipe, useValue: accountStatusPipe },
-        { provide: StudyAccessPipe, useValue: studyAccessPipe },
         { provide: DatePipe, useValue: datePipe },
       ],
     });
@@ -42,22 +36,23 @@ describe('TranslatedUserFactory', () => {
 
   describe('create()', () => {
     it('should create a TranslatedUser from a UserWithStudyAccess', () => {
-      (translate.instant as jasmine.Spy).and.returnValue('Test');
-      (accountStatusPipe.transform as jasmine.Spy).and.returnValue(
-        'STUDIES.STATUS_ACTIV'
-      );
-      (studyAccessPipe.transform as jasmine.Spy).and.returnValue(
-        'NAKO Test (Lesen)'
-      );
-      (datePipe.transform as jasmine.Spy).and.returnValue('20.04.2020');
+      translate.instant.and.returnValue('Test');
+      accountStatusPipe.transform.and.returnValue('PROBANDEN.STATUS_ACTIVE');
+      datePipe.transform.and.returnValue('20.04.2020');
 
-      const selected = getUser();
+      const selected = createProband({
+        pseudonym: 'Testproband',
+        ids: null,
+        study: 'NAKO Test',
+        is_test_proband: false,
+        first_logged_in_at: new Date('2020-04-20'),
+      });
       const expected: TranslatedUser = {
         username: 'Testproband',
         ids: null,
-        study_accesses: 'NAKO Test (Lesen)',
+        study: 'NAKO Test',
         is_test_proband: 'Test',
-        first_logged_in_at: '20.04.2020',
+        first_logged_in_at: new Date('2020-04-20'),
         status: 'Test',
         userObject: selected,
       };
@@ -65,27 +60,7 @@ describe('TranslatedUserFactory', () => {
       expect(service.create(selected)).toEqual(expected);
       expect(translate.instant).toHaveBeenCalledTimes(2);
       expect(translate.instant).toHaveBeenCalledWith('GENERAL.NO');
-      expect(translate.instant).toHaveBeenCalledWith('STUDIES.STATUS_ACTIV');
+      expect(translate.instant).toHaveBeenCalledWith('PROBANDEN.STATUS_ACTIVE');
     });
   });
-
-  function getUser(): UserWithStudyAccess {
-    return {
-      username: 'Testproband',
-      ids: null,
-      study_accesses: [{ study_id: 'NAKO Test', access_level: 'read' }],
-      is_test_proband: false,
-      first_logged_in_at: '2020-04-20T00:00:00.000Z',
-      account_status: 'active',
-      study_status: 'active',
-      studyNamesArray: [],
-      needs_material: false,
-      role: 'Proband',
-      compliance_bloodsamples: false,
-      compliance_labresults: false,
-      compliance_samples: false,
-      examination_wave: 0,
-      study_center: '',
-    };
-  }
 });

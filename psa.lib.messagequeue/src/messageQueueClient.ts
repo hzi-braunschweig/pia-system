@@ -8,6 +8,7 @@ import * as amqp from 'amqplib';
 
 import { MessageQueueClientConnection } from './messageQueueClientConnection';
 import { MessageQueueClientHelper } from './messageQueueClientHelper';
+import { HandleMessageArgs } from './messageQueueClientInternals';
 
 export interface Producer<M> {
   publish: (message: M) => Promise<boolean>;
@@ -186,45 +187,44 @@ export class MessageQueueClient extends MessageQueueClientConnection {
         if (!message) {
           return;
         }
-        void this.handleMessage(
+        void this.handleMessage({
           message,
           onMessage,
           channel,
           topic,
-          deadLetterQueue
-        );
+          deadLetterQueue,
+        });
       }
     );
   }
 
   private async handleMessage<M>(
-    message: amqp.ConsumeMessage,
-    onMessage: (message: M) => Promise<void>,
-    channel: amqp.Channel,
-    topic: string,
-    deadLetterQueue: amqp.Replies.AssertQueue
+    this: void,
+    args: HandleMessageArgs<M>
   ): Promise<void> {
-    const redelivered = message.fields.redelivered;
+    const redelivered = args.message.fields.redelivered;
 
     try {
-      const data = JSON.parse(message.content.toString()) as Packet<M>;
-      await onMessage(data.message);
+      const data = JSON.parse(args.message.content.toString()) as Packet<M>;
+      await args.onMessage(data.message);
       // message got successfully handled
-      channel.ack(message, false);
+      args.channel.ack(args.message, false);
     } catch {
       if (redelivered) {
         console.error(
-          `dropping message on ${topic} to dead-letter-queue: ${message.content.toString()}`
+          `dropping message on ${
+            args.topic
+          } to dead-letter-queue: ${args.message.content.toString()}`
         );
-        channel.sendToQueue(
-          deadLetterQueue.queue,
-          message.content,
+        args.channel.sendToQueue(
+          args.deadLetterQueue.queue,
+          args.message.content,
           publishOptions
         );
-        channel.ack(message, false);
+        args.channel.ack(args.message, false);
       } else {
         // give it another try
-        channel.nack(message, false, !redelivered);
+        args.channel.nack(args.message, false, !redelivered);
       }
     }
   }

@@ -1,9 +1,8 @@
-DELETE FROM study_users WHERE user_id='QTestProband1' OR user_id='QTestForscher1';
 DELETE FROM answers WHERE answer_option_id=88888 OR questionnaire_instance_id=ANY(SELECT id FROM questionnaire_instances WHERE user_id='QTestProband1');
 DELETE FROM notification_schedules WHERE user_id='QTestProband1';
 DELETE FROM questionnaire_instances_queued WHERE user_id='QTestProband1';
 DELETE FROM questionnaire_instances WHERE questionnaire_id=99999 OR questionnaire_id=88888 OR user_id='QTestProband1';
-DELETE FROM users WHERE username='QTestProband1' OR username='QTestForscher1';
+DELETE FROM probands WHERE pseudonym LIKE 'QTest%';
 DELETE FROM conditions WHERE condition_questionnaire_id=99999 OR condition_questionnaire_id=88881 OR condition_questionnaire_id=88882 OR condition_questionnaire_id=88883;
 DELETE FROM answer_options WHERE id=99999 OR id=88888 OR id=888801 OR id=888802 OR id=88881 OR id=88882 OR id=88883;
 DELETE FROM questions WHERE id=99999 OR id=88888 OR id=88880 OR id=88881 OR id=88882 OR id=88883;

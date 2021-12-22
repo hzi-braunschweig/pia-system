@@ -4,14 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-export type AccountStatus =
-  | 'active'
-  | 'deactivated'
-  | 'deactivation_pending'
-  | 'no_account';
+export type ProbandStatus = 'active' | 'deactivated' | 'deleted';
 
 export interface User {
-  account_status: AccountStatus;
+  status: ProbandStatus;
 }
 
 export interface StudyAccess {

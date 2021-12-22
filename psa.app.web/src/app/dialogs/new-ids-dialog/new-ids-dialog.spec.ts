@@ -27,7 +27,7 @@ describe('DialogNewIdsComponent', () => {
   beforeEach(async () => {
     // Provider and Services
     dialogRef = createSpyObj<MatDialogRef<DialogNewIdsComponent>>(['close']);
-    authService = createSpyObj<AuthService>(['getUser', 'postIDS']);
+    authService = createSpyObj<AuthService>(['postIDS']);
     questionnaireService = createSpyObj<QuestionnaireService>(['getStudies']);
 
     // Build Base Module

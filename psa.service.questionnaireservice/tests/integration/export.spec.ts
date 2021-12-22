@@ -4,37 +4,37 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { expect } from 'chai';
-import * as chai from 'chai';
-import { setup, cleanup } from './export.spec.data/setup.helper';
+import chai, { expect } from 'chai';
+import chaiHttp from 'chai-http';
 import * as zip from 'jszip';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import csvParse from 'csv-parse/lib/sync';
+import * as csv from 'csv-parse/sync';
 import { StatusCodes } from 'http-status-codes';
+import { createSandbox } from 'sinon';
+import JWT from 'jsonwebtoken';
+import { Response } from 'superagent';
+
+import { cleanup, setup } from './export.spec.data/setup.helper';
+import secretOrPrivateKey from '../secretOrPrivateKey';
 import {
   CsvAnswerRow,
   CsvUserSettingsRow,
 } from '../../src/models/csvExportRows';
-
-import chaiHttp from 'chai-http';
-
-import { Response } from 'superagent';
-
-import secretOrPrivateKey from '../secretOrPrivateKey';
-import JWT from 'jsonwebtoken';
-import server from '../../src/server';
+import { Server } from '../../src/server';
+import { config } from '../../src/config';
+import { userserviceClient } from '../../src/clients/userserviceClient';
 
 chai.use(chaiHttp);
 
-const apiAddress = `http://localhost:${
-  process.env['PORT'] ?? '80'
-}/questionnaire`;
+const apiAddress =
+  'http://localhost:' + config.public.port.toString() + '/questionnaire';
 
 const forscherSession1 = {
   id: 1,
   role: 'Forscher',
   username: 'QExportTestForscher',
+  groups: ['Teststudie - Export'],
 };
 
 const forscherToken1 = JWT.sign(forscherSession1, secretOrPrivateKey, {
@@ -99,12 +99,14 @@ function convertSettingsRow(row: CsvUserSettingsRow): CsvUserSettingsRow {
 }
 
 async function loadAnswersCsv(content: string): Promise<CsvAnswerRow[]> {
-  const rows = (await csvParse(content, { columns: true })) as CsvAnswerRow[];
+  const rows = (await csv.parse(content, {
+    columns: true,
+  })) as CsvAnswerRow[];
   return rows.map(convertAnswerRow);
 }
 
 async function loadSettingsCsv(content: string): Promise<CsvUserSettingsRow[]> {
-  const rows = (await csvParse(content, {
+  const rows = (await csv.parse(content, {
     columns: true,
   })) as CsvUserSettingsRow[];
   return rows.map(convertSettingsRow);
@@ -122,6 +124,8 @@ const questionnaire3 = 298;
 const questionnaire4 = 299;
 
 describe('/dataExport/searches content should match the expected csv', function () {
+  const sandbox = createSandbox();
+
   let receivedAnswersRows: CsvAnswerRow[];
   let expectedAnswersRows: CsvAnswerRow[];
 
@@ -129,8 +133,19 @@ describe('/dataExport/searches content should match the expected csv', function 
   let expectedSettingsRows: CsvUserSettingsRow[];
 
   before(async () => {
-    await server.init();
+    await Server.init();
     await setup();
+
+    sandbox
+      .stub(userserviceClient, 'getPseudonyms')
+      .resolves([
+        'QTest-0000000002',
+        'QTest-0000000003',
+        'QTest-0000000004',
+        'QTest-0000000005',
+        'QTest-0000000006',
+        'QTest-0000000007',
+      ]);
 
     const questionnaires = [
       questionnaire1,
@@ -145,11 +160,11 @@ describe('/dataExport/searches content should match the expected csv', function 
       study_name: 'Teststudie - Export',
       questionnaires,
       probands: [
-        'Rtest-0000000002',
-        'Rtest-0000000003',
-        'Rtest-0000000004',
-        'Rtest-0000000005',
-        'Rtest-0000000006',
+        'QTest-0000000002',
+        'QTest-0000000003',
+        'QTest-0000000004',
+        'QTest-0000000005',
+        'QTest-0000000006',
       ],
       exportAnswers: true,
       exportLabResults: true,
@@ -157,7 +172,7 @@ describe('/dataExport/searches content should match the expected csv', function 
       exportSettings: true,
     };
 
-    const response = await chai
+    const response: Response = await chai
       .request(apiAddress)
       .post('/dataExport/searches')
       .set(forscherHeader1)
@@ -166,7 +181,7 @@ describe('/dataExport/searches content should match the expected csv', function 
       .buffer();
     expect(response).to.have.status(StatusCodes.OK);
 
-    const result = await zip.loadAsync(response.body);
+    const result = await zip.loadAsync(response.body as string);
     const answersCsv = result.files['answers.csv'];
     const settingsCsv = result.files['settings.csv'];
 
@@ -197,8 +212,9 @@ describe('/dataExport/searches content should match the expected csv', function 
   });
 
   after(async () => {
-    await server.stop();
+    await Server.stop();
     await cleanup();
+    sandbox.restore();
   });
 
   describe('settings.csv', () => {

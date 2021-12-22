@@ -26,12 +26,6 @@ import { MarkdownModule } from 'ngx-markdown';
 import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
 import { MatomoModule } from 'ngx-matomo-v9';
 import { NgxUsefulSwiperModule } from 'ngx-useful-swiper';
-import 'rxjs/add/observable/fromEvent';
-import 'rxjs/add/observable/merge';
-import 'rxjs/add/operator/debounceTime';
-import 'rxjs/add/operator/distinctUntilChanged';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/startWith';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { DialogSelectForPartialDeletionComponent } from './dialogs/dialog-partial-deletion/select/dialog-select-for-partial-deletion.component';
@@ -51,7 +45,6 @@ import { CollectiveLoginLettersComponent } from './features/collective-login-let
 import { CollectiveSampleLettersComponent } from './features/collective-sample-letters/collective-sample-letters.component';
 import { SideNavigationComponent } from './features/side-navigation/side-navigation.component';
 import { MaterialModule } from './material.module';
-import { ComplianceProbandsComponent } from './pages/compliance/compliance-probands/compliance-probands.component';
 import { ComplianceResearcherComponent } from './pages/compliance/compliance-researcher/compliance-researcher.component';
 import { ContactComponent } from './pages/contact/contact.component';
 import { HomeComponent } from './pages/home/home.component';
@@ -64,7 +57,6 @@ import {
   RequestNewMaterialComponent,
 } from './pages/laboratories/request-new-material/request-new-material.component';
 import { LoginComponent } from './pages/login/login.component';
-import { LogsResearcherComponent } from './pages/logs-researcher/logs-researcher.component';
 import { LogsDeleteSysAdminComponent } from './pages/logsDelete-sysAdmin/logsDelete-sysAdmin.component';
 import { PlannedProbandsComponent } from './pages/planned-probands/planned-probands.component';
 import { ContactProbandComponent } from './pages/probands/contact-proband/contact-proband.component';
@@ -92,10 +84,7 @@ import {
 } from './pages/samples/samples/samples.component';
 import { SettingsComponent } from './pages/settings/settings.component';
 import { StudiesComponent } from './pages/studies/studies/studies.component';
-import {
-  ShowColumnDirective as ShowColumnDirectiveStudyAccesses,
-  StudyAccessesComponent,
-} from './pages/studies/study-accesses/study-accesses.component';
+import { StudyAccessesComponent } from './pages/studies/study-accesses/study-accesses.component';
 import { GetActivityTypePipe } from './pipes/acitivity-type.pipe';
 import { StripMarkdown } from './pipes/strip-markdown.pipe';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
@@ -130,7 +119,6 @@ import { ProbandService } from './psa.app.core/providers/proband-service/proband
 import { DialogChangeStudyComponent } from './dialogs/dialog-change-study/dialog-change-study.component';
 import { SafeUrlPipe } from './pipes/safe-url.pipe';
 import { ComplianceManagerComponent } from './pages/compliance/compliance-manager/compliance-manager.component';
-import { StudyAccessPipe } from './pipes/study-access.pipe';
 import { AccountStatusPipe } from './pipes/account-status.pipe';
 import { ProbandsListModule } from './features/probands-list/probands-list.module';
 import { LoadingSpinnerModule } from './features/loading-spinner/loading-spinner.module';
@@ -141,8 +129,6 @@ import { ComplianceViewListComponent } from './pages/compliance/compliance-view-
 import { ComplianceExaminerComponent } from './pages/compliance/compliance-examiner/compliance-examiner.component';
 import { ComplianceEditExaminerComponent } from './pages/compliance/compliance-edit/compliance-edit-examiner/compliance-edit-examiner.component';
 import { ComplianceEditProbandComponent } from './pages/compliance/compliance-edit/compliance-edit-proband/compliance-edit-proband.component';
-import { SormasIframeComponent } from './features/sormas-iframe/sormas-iframe.component';
-import { DialogNewSormasProbandComponent } from './dialogs/new-sormas-proband-dialog/new-sormas-proband-dialog.component';
 import { ProbandsUntersuchungsteamComponent } from './pages/probands/probands-untersuchungsteam/probands-untersuchungsteam.component';
 import { ProbandsForscherComponent } from './pages/probands/probands-forscher/probands-forscher.component';
 import { MatOptionSelectAllModule } from './features/mat-option-select-all/mat-option-select-all.module';
@@ -162,6 +148,14 @@ import { QuestionnaireInstancesListComponent } from './pages/questionnaire-insta
 import { QuestionnaireInstancesListForInvestigatorComponent } from './pages/questionnaire-instances/questionnaire-instances-list-for-investigator/questionnaire-instances-list-for-investigator.component';
 import { QuestionnaireInstancesListForProbandComponent } from './pages/questionnaire-instances/questionnaire-instances-list-for-proband/questionnaire-instances-list-for-proband.component';
 import { LicenseListComponent } from './pages/license-list/license-list.component';
+import { AccessLevelPipe } from './pipes/access-level.pipe';
+import { StudyStatusPipe } from './pipes/study-status.pipe';
+import { AngularFireModule } from '@angular/fire/compat';
+import {
+  AngularFireMessagingModule,
+  VAPID_KEY,
+} from '@angular/fire/compat/messaging';
+import { environment } from '../environments/environment';
 
 // === LOCALE ===
 // Setup ngx-translate
@@ -201,11 +195,14 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     MatOptionSelectAllModule,
     TemplateModule,
     DragDropModule,
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFireMessagingModule,
   ],
   declarations: [
     GetActivityTypePipe,
-    StudyAccessPipe,
+    AccessLevelPipe,
     AccountStatusPipe,
+    StudyStatusPipe,
     StripMarkdown,
     AppComponent,
     AlertComponent,
@@ -230,7 +227,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     DialogConfirmPartialDeletionComponent,
     DialogNewUserComponent,
     DialogNewPlannedProbandsComponent,
-    DialogNewSormasProbandComponent,
     DialogQuestionnaireSuccessComponent,
     DialogQuestionnaireFailComponent,
     DialogYesNoComponent,
@@ -241,7 +237,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     QuestionnaireResearcherComponent,
     QuestionProbandComponent,
     ShowColumnDirectiveQuestionnaireInstances,
-    ShowColumnDirectiveStudyAccesses,
     ProbandsComponent,
     ProbandsUntersuchungsteamComponent,
     ProbandsForscherComponent,
@@ -271,14 +266,12 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     ImplementStatusPipe2,
     RequestNewMaterialComponent,
     ConfirmNewMaterialRequestComponent,
-    LogsResearcherComponent,
     ProbandsToContactComponent,
     LogsDeleteSysAdminComponent,
     ScanSampleComponent,
     NotificationComponent,
     DialogNotificationComponent,
     ContactComponent,
-    ComplianceProbandsComponent,
     ComplianceResearcherComponent,
     ComplianceExaminerComponent,
     SafeUrlPipe,
@@ -289,7 +282,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     ComplianceEditExaminerComponent,
     ComplianceEditProbandComponent,
     DialogEditComplianceComponent,
-    SormasIframeComponent,
     StudyWelcomeTextComponent,
     ComplianceTextComponent,
     ComplianceRadioComponent,
@@ -314,7 +306,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     DialogSelectForPartialDeletionComponent,
     DialogNewUserComponent,
     DialogNewPlannedProbandsComponent,
-    DialogNewSormasProbandComponent,
     DialogQuestionnaireSuccessComponent,
     DialogQuestionnaireFailComponent,
     RemarkDialogComponent,
@@ -351,6 +342,8 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
       multi: true,
     },
     { provide: DateAdapter, useClass: CustomDateAdapter },
+    // Needed for Firebase Cloud Messaging
+    { provide: VAPID_KEY, useValue: environment.vapidKey },
     AppDateAdapter,
     AlertService,
     AuthService,
@@ -366,8 +359,9 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     SelectedProbandInfoService,
     LoggingService,
     NotificationComponent,
-    StudyAccessPipe,
+    AccessLevelPipe,
     AccountStatusPipe,
+    StudyStatusPipe,
     DatePipe,
   ],
   bootstrap: [AppComponent],

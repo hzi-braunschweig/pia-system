@@ -14,6 +14,7 @@ const rotating_file_stream_1 = require("rotating-file-stream");
 const hapi_router_1 = __importDefault(require("hapi-router"));
 const version_1 = require("./version");
 const metrics_1 = require("./metrics");
+const errorHandler_1 = require("./errorHandler");
 const logSqueezeArgs = [
     {
         log: '*',
@@ -28,6 +29,7 @@ const registerPlugins = async (server, options) => {
         vision_1.default,
         version_1.Version,
         metrics_1.Metrics,
+        errorHandler_1.ErrorHandler,
     ]);
     if (options.routes) {
         await server.register({

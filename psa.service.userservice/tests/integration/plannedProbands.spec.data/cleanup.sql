@@ -4,10 +4,15 @@ WHERE user_id IN
       ('QTestProband1', 'QTestForscher1', 'QTestProband2', 'QTestForscher2', 'ut@apitest.de', 'ut2@apitest.de',
        'QTestProbandenManager');
 DELETE
-FROM users
+FROM accounts
 WHERE username IN
       ('QTestProband1', 'QTestProband2', 'QTestForscher1', 'QTestForscher2', 'ut@apitest.de', 'ut2@apitest.de',
        'QTestSystemAdmin', 'QTestProbandenManager');
+DELETE
+FROM probands
+WHERE pseudonym IN
+      ('QTestProband1', 'QTestProband2');
+
 DELETE
 FROM planned_probands
 WHERE user_id IN ('planned1', 'planned2', 'planned3', 'planned4', 'planned5');

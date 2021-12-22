@@ -12,9 +12,7 @@ import {
   ComplianceType,
 } from '../psa.app.core/models/compliance';
 import { ComplianceService } from 'src/app/psa.app.core/providers/compliance-service/compliance-service';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
-import { Studie } from '../psa.app.core/models/studie';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -24,34 +22,27 @@ import { Observable, Subject } from 'rxjs';
  * (In-App-Compliance) the old one will be ignored.
  */
 export class ComplianceManager {
-  private complianceDataCache: Map<string, ComplianceDataResponse>;
-  private complianceDataChangesSubject: Subject<string>;
-  public readonly complianceDataChangesObservable: Observable<string>;
-  private _primaryStudy: Promise<Studie>;
-  private cachedIsInternalComplianceActive: Promise<boolean> = undefined;
+  private complianceDataCache: ComplianceDataResponse;
+  private complianceDataChangesSubject = new Subject<void>();
+  public readonly complianceDataChangesObservable =
+    this.complianceDataChangesSubject.asObservable();
+  private cachedIsInternalComplianceActive: boolean = undefined;
 
-  constructor(
+  public constructor(
     private auth: AuthenticationManager,
-    private complianceService: ComplianceService,
-    private questionnaireService: QuestionnaireService
+    private complianceService: ComplianceService
   ) {
-    this.auth.currentUserObservable.subscribe(async (user) => {
+    this.auth.currentUser$.subscribe(() => {
       // on user change clear cache
-      this.complianceDataCache = new Map<string, ComplianceDataResponse>();
+      this.complianceDataCache = null;
       this.cachedIsInternalComplianceActive = undefined;
-      this._primaryStudy = null;
     });
-    this.complianceDataChangesSubject = new Subject<string>();
-    this.complianceDataChangesObservable =
-      this.complianceDataChangesSubject.asObservable();
   }
 
-  get isInternalComplianceActive(): Promise<boolean> {
+  public async isInternalComplianceActive(): Promise<boolean> {
     if (this.cachedIsInternalComplianceActive === undefined) {
-      this.cachedIsInternalComplianceActive = this.primaryStudy
-        .then((study) =>
-          this.complianceService.getInternalComplianceActive(study.name)
-        )
+      this.cachedIsInternalComplianceActive = await this.complianceService
+        .getInternalComplianceActive(this.auth.getCurrentStudy())
         .catch((err) => {
           console.error(err);
           return false;
@@ -60,19 +51,14 @@ export class ComplianceManager {
     return this.cachedIsInternalComplianceActive;
   }
 
-  private get primaryStudy(): Promise<Studie> {
-    if (!this._primaryStudy) {
-      this._primaryStudy = this.questionnaireService.getPrimaryStudy();
-    }
-    return this._primaryStudy;
-  }
-
   /**
    * Checks for all compliance in the given array, whether there is on unfulfilled compliance.
    * If not, everything is okay and it returns true, even if the array is empty.
    * @param compliances an array of compliance types that must be fulfilled
    */
-  async userHasCompliances(compliances: ComplianceType[]): Promise<boolean> {
+  public async userHasCompliances(
+    compliances: ComplianceType[]
+  ): Promise<boolean> {
     if (!compliances) {
       return true;
     }
@@ -125,42 +111,32 @@ export class ComplianceManager {
     }
   }
 
-  async getComplianceAgreementForCurrentUser(
-    studyName?: string
-  ): Promise<ComplianceDataResponse> {
-    if (!studyName) {
-      studyName = (await this.primaryStudy).name;
-    }
-    if (!this.complianceDataCache.has(studyName)) {
-      const newComplianceData = await this.complianceService
+  public async getComplianceAgreementForCurrentUser(): Promise<ComplianceDataResponse> {
+    if (!this.complianceDataCache) {
+      this.complianceDataCache = await this.complianceService
         .getComplianceAgreementForUser(
-          studyName,
-          this.auth.currentUser.username
+          this.auth.getCurrentStudy(),
+          this.auth.getCurrentUsername()
         )
         .catch((err) => {
           console.error(err);
           return null;
         });
-      this.complianceDataCache.set(studyName, newComplianceData);
     }
-    return this.complianceDataCache.get(studyName);
+    return this.complianceDataCache;
   }
 
-  async updateComplianceAgreementForCurrentUser(
-    complianceData: ComplianceDataRequest,
-    studyName?: string
+  public async updateComplianceAgreementForCurrentUser(
+    complianceData: ComplianceDataRequest
   ): Promise<ComplianceDataResponse> {
-    if (!studyName) {
-      studyName = (await this.primaryStudy).name;
-    }
     const newComplianceData =
       await this.complianceService.createComplianceAgreementForUser(
-        studyName,
-        this.auth.currentUser.username,
+        this.auth.getCurrentStudy(),
+        this.auth.getCurrentUsername(),
         complianceData
       );
-    this.complianceDataCache.set(studyName, newComplianceData);
-    this.complianceDataChangesSubject.next(studyName);
+    this.complianceDataCache = newComplianceData;
+    this.complianceDataChangesSubject.next();
     return newComplianceData;
   }
 }

@@ -15,10 +15,10 @@ import {
 import { TranslateService } from '@ngx-translate/core';
 
 import { ComplianceService } from './compliance-service/compliance.service';
-import { PrimaryStudyService } from '../shared/services/primary-study/primary-study.service';
 import { ToastPresenterService } from '../shared/services/toast-presenter/toast-presenter.service';
 import { ComplianceClientService } from './compliance-client/compliance-client.service';
 import { ComplianceForStudyWrapper } from './compliance-for-study-wrapper';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-page-compliance',
@@ -35,14 +35,12 @@ export class CompliancePage implements ViewWillEnter, DoCheck {
 
   @ViewChild(IonContent) content: IonContent;
 
-  isUserIntent: boolean =
-    !this.activatedRoute.snapshot.queryParamMap.get('returnTo');
+  isUserIntent: boolean;
 
   private returnTo: string =
     this.activatedRoute.snapshot.queryParamMap.get('returnTo');
 
   constructor(
-    private primaryStudyService: PrimaryStudyService,
     private complianceClient: ComplianceClientService,
     private complianceService: ComplianceService,
     private loadingCtrl: LoadingController,
@@ -50,8 +48,11 @@ export class CompliancePage implements ViewWillEnter, DoCheck {
     private translate: TranslateService,
     private menuCtrl: MenuController,
     private router: Router,
-    private activatedRoute: ActivatedRoute
-  ) {}
+    private activatedRoute: ActivatedRoute,
+    auth: AuthService
+  ) {
+    this.studyName = auth.getCurrentUser().study;
+  }
 
   ngDoCheck(): void {
     if (this.studyWrapper && !this.studyWrapper.editMode) {
@@ -60,20 +61,16 @@ export class CompliancePage implements ViewWillEnter, DoCheck {
   }
 
   async ionViewWillEnter() {
+    this.isUserIntent =
+      !this.activatedRoute.snapshot.queryParamMap.get('returnTo');
     const loader = await this.loadingCtrl.create({
       message: this.translate.instant('GENERAL.LOADING'),
     });
     await loader.present();
 
     try {
-      this.studyName = await this.primaryStudyService
-        .getPrimaryStudy()
-        .then((study) => study.name);
-
       const complianceData =
-        await this.complianceService.getComplianceAgreementForCurrentUser(
-          this.studyName
-        );
+        await this.complianceService.getComplianceAgreementForCurrentUser();
       this.studyWrapper = new ComplianceForStudyWrapper(this.studyName);
       this.studyWrapper.setComplianceData(complianceData);
 
@@ -110,8 +107,7 @@ export class CompliancePage implements ViewWillEnter, DoCheck {
     try {
       const newComplianceData =
         await this.complianceService.updateComplianceAgreementForCurrentUser(
-          formComplianceData,
-          this.studyWrapper.studyName
+          formComplianceData
         );
       this.studyWrapper.setComplianceData(newComplianceData);
       this.toastPresenter.presentToast(

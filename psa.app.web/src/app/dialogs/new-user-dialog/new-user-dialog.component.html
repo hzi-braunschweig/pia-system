@@ -5,11 +5,7 @@
   -->
 
 <div *ngIf="form">
-  <form
-    [formGroup]="form"
-    (ngSubmit)="f.form.valid && submit(form)"
-    #f="ngForm"
-  >
+  <form [formGroup]="form" (ngSubmit)="submit()">
     <h1 mat-dialog-title>{{ 'ROLES.NEW_USER' | translate }}</h1>
     <mat-hint *ngIf="showError">{{ 'DIALOG.SAME_STUDY' | translate }}</mat-hint>
     <mat-hint *ngIf="showErrorEmpty">{{

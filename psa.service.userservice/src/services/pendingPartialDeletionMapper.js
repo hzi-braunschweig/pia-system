@@ -18,7 +18,6 @@ class PendingPartialDeletionMapper {
       probandId: pendingPartialDeletion.proband_id,
       fromDate: pendingPartialDeletion.from_date,
       toDate: pendingPartialDeletion.to_date,
-      deleteLogs: pendingPartialDeletion.delete_logs,
       forInstanceIds: pendingPartialDeletion.for_instance_ids,
       forLabResultsIds: pendingPartialDeletion.for_lab_results_ids,
     };
@@ -36,7 +35,6 @@ class PendingPartialDeletionMapper {
       proband_id: pendingPartialDeletion.probandId,
       from_date: pendingPartialDeletion.fromDate,
       to_date: pendingPartialDeletion.toDate,
-      delete_logs: pendingPartialDeletion.deleteLogs,
       for_instance_ids: pendingPartialDeletion.forInstanceIds,
       for_lab_results_ids: pendingPartialDeletion.forLabResultsIds,
     };

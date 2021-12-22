@@ -11,6 +11,7 @@ const {
 } = require('@pia/lib-service-core');
 
 const packageJson = require('../package.json');
+const { messageQueueService } = require('./services/messageQueueService');
 const { db } = require('./db');
 const { config } = require('./config');
 const { MailService } = require('@pia/lib-service-core');
@@ -22,6 +23,8 @@ exports.init = async () => {
   server = Hapi.server(extractServerOptions(config.public));
   serverInternal = Hapi.server(extractServerOptions(config.internal));
 
+  await messageQueueService.connect();
+
   await registerAuthStrategies(server, {
     strategies: ['jwt'],
     publicAuthKey: config.publicAuthKey,
@@ -29,12 +32,12 @@ exports.init = async () => {
   await registerPlugins(server, {
     name: packageJson.name,
     version: packageJson.version,
-    routes: './src/routes/*.js',
+    routes: 'src/routes/*',
   });
   await registerPlugins(serverInternal, {
     name: packageJson.name,
     version: packageJson.version,
-    routes: './src/routes/internal/*.js',
+    routes: 'src/routes/internal/*',
     isInternal: true,
   });
 
@@ -54,6 +57,7 @@ exports.stop = async () => {
   server.log(['startup'], `Server was stopped`);
   await serverInternal.stop();
   serverInternal.log(['startup'], `Internal server was stopped`);
+  await messageQueueService.disconnect();
 };
 
 function extractServerOptions(connection) {
@@ -71,7 +75,7 @@ function extractServerOptions(connection) {
     app: {
       healthcheck: async () => {
         await db.one('SELECT 1;');
-        return true;
+        return messageQueueService.isConnected();
       },
     },
   };

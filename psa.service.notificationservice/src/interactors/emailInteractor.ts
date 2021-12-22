@@ -5,26 +5,25 @@
  */
 
 import Boom from '@hapi/boom';
-
 import { MailService } from '@pia/lib-service-core';
-import { UserserviceClient } from '../clients/userserviceClient';
-import { PersonaldataserviceClient } from '../clients/personaldataserviceClient';
+import { userserviceClient } from '../clients/userserviceClient';
+import { personaldataserviceClient } from '../clients/personaldataserviceClient';
 import { AccessToken } from 'dist/src';
 import { EmailRequest } from '../models/emailRequest';
 
 export class EmailInteractor {
   /**
    *
-   * @param decodedToken {AccessToken} the jwt of the request
-   * @param payload {EmailRequest}
-   * @returns {Promise<Boom<unknown>|string[]>} list of mails which were successfully sent
+   * @param decodedToken the jwt of the request
+   * @param payload
+   * @returns list of mails which were successfully sent
    */
   public static async sendEmailToProbands(
     decodedToken: AccessToken,
     payload: EmailRequest
-  ): Promise<Boom.Boom | string[]> {
+  ): Promise<string[]> {
     if (decodedToken.role !== 'ProbandenManager') {
-      return Boom.forbidden(
+      throw Boom.forbidden(
         `${decodedToken.role} is not allowed to send E-Mails`
       );
     }
@@ -34,7 +33,7 @@ export class EmailInteractor {
         payload.recipients
       ))
     ) {
-      return Boom.forbidden(`Access to proband's personal data not allowed`);
+      throw Boom.forbidden(`Access to proband's personal data not allowed`);
     }
 
     const successfullySendTo = [];
@@ -50,7 +49,7 @@ export class EmailInteractor {
       }
     }
     if (!successfullySendTo.length) {
-      return Boom.notFound('No mails were sent');
+      throw Boom.notFound('No mails were sent');
     }
 
     return successfullySendTo;
@@ -68,7 +67,7 @@ export class EmailInteractor {
     recipients: string[]
   ): Promise<boolean> {
     const probandsWithAccessTo =
-      await UserserviceClient.getProbandsWithAccessToFromProfessional(username);
+      await userserviceClient.getProbandsWithAccessToFromProfessional(username);
     return recipients.every((pseudonym) =>
       probandsWithAccessTo.includes(pseudonym)
     );
@@ -89,7 +88,7 @@ export class EmailInteractor {
   ): Promise<string | null> {
     try {
       const recipientMail =
-        await PersonaldataserviceClient.getPersonalDataEmail(pseudonym);
+        await personaldataserviceClient.getPersonalDataEmail(pseudonym);
       if (!recipientMail) {
         return null;
       }

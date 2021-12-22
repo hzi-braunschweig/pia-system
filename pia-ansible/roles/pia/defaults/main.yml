@@ -59,6 +59,10 @@ pia_api_key: 66w66666-w666-666w-www6-666w6w666w66
 # If set to true, random api key will be generated
 generate_random_key: false
 
+# the default language, unless another language is explicitly set. Possible values:
+# de-CH, de-DE, en-US, fr-CH, it-CH
+pia_default_language: de-DE
+
 pia_mail_user: pia@some-faked-domain-that-hopefully-will-never-exist.faked
 pia_mail_password: emailpassword
 pia_mail_host: some-faked-domain-that-hopefully-will-never-exist.faked
@@ -73,9 +77,12 @@ pia_mail_require_tls: true
 pia_sormas_on_pia_password: ohH3eiji5VaetoreeR4xiFi5aiteic7a
 # the username that sormas is using to access pia; only relevant for systems with pia but always required!
 pia_sormas_on_pia_user: sormas
+# validity of the token that sormas is using to access pia; should be synchronized with sormas symptomdiary token caching duration.
+pia_sormas_on_pia_token_validity_timeout: 10
 
 pia_pia_on_sormas_user: pia
 pia_pia_on_sormas_password: aithohPheic1roor0iel
+pia_sormas_study: Test-SORMAS-SB
 
 # use localhost and random passwords if not used
 pia_mhh_ftpservice_host: labresultssftpserver

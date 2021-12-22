@@ -6,7 +6,8 @@
 
 import { TranslatedUserFilter } from './translated-user-filter';
 import { TranslatedUser } from './translated-user.model';
-import { UserWithStudyAccess } from '../../../psa.app.core/models/user-with-study-access';
+import { Proband } from '../../../psa.app.core/models/proband';
+import { createProband } from '../../../psa.app.core/models/instance.helper.spec';
 
 describe('TranslatedUserFilter', () => {
   let filter: TranslatedUserFilter;
@@ -83,43 +84,11 @@ describe('TranslatedUserFilter', () => {
     return {
       username: 'Testproband',
       ids: null,
-      study_accesses: 'NAKO (Lesen)',
+      study: 'NAKO',
       is_test_proband: 'Ja',
-      first_logged_in_at: '12.02.2019',
+      first_logged_in_at: new Date('2019-02-12'),
       status: 'Aktiv',
-      userObject: getUser(),
-    };
-  }
-
-  function getTranslatedUser2(): TranslatedUser {
-    return {
-      username: 'Testproband',
-      ids: null,
-      study_accesses: 'Teststudy (Lesen)',
-      is_test_proband: 'Ja',
-      first_logged_in_at: '12.02.2019',
-      status: 'Aktiv',
-      userObject: getUser(),
-    };
-  }
-
-  function getUser(): UserWithStudyAccess {
-    return {
-      username: 'Testproband',
-      ids: null,
-      study_accesses: [{ study_id: 'NAKO Test', access_level: 'read' }],
-      is_test_proband: true,
-      first_logged_in_at: '2020-04-20T00:00:00.000Z',
-      account_status: 'active',
-      study_status: 'active',
-      studyNamesArray: [],
-      needs_material: false,
-      role: 'Proband',
-      compliance_bloodsamples: false,
-      compliance_labresults: false,
-      compliance_samples: false,
-      examination_wave: 0,
-      study_center: '',
+      userObject: createProband(),
     };
   }
 });

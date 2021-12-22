@@ -6,7 +6,7 @@
 
 import { Questionnaire } from './questionnaire';
 
-export type QuestionnaireStatus =
+export type QuestionnaireInstanceStatus =
   | 'inactive'
   | 'active'
   | 'in_progress'
@@ -15,6 +15,22 @@ export type QuestionnaireStatus =
   | 'released_twice'
   | 'expired'
   | 'deleted';
+
+export interface QuestionnaireInstance {
+  id: number;
+  studyId: string | null;
+  questionnaireName: string;
+  pseudonym: string;
+  dateOfIssue: Date;
+  dateOfReleaseV1: Date | null;
+  dateOfReleaseV2: Date | null;
+  cycle: number;
+  status: QuestionnaireInstanceStatus;
+  notificationsScheduled: boolean | null;
+  progress: number | null;
+  releaseVersion: number | null;
+  questionnaire: Questionnaire;
+}
 
 export interface DbQuestionnaireInstance {
   id: number;
@@ -27,14 +43,10 @@ export interface DbQuestionnaireInstance {
   date_of_release_v1: Date | null;
   date_of_release_v2: Date | null;
   cycle: number;
-  status: QuestionnaireStatus;
+  status: QuestionnaireInstanceStatus;
   notifications_scheduled: boolean | null;
   progress: number | null;
   release_version: number | null;
   transmission_ts_v1: Date | null;
   transmission_ts_v2: Date | null;
-}
-
-export interface QuestionnaireInstance extends DbQuestionnaireInstance {
-  questionnaire: Questionnaire;
 }

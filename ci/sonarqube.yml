@@ -1,48 +1,14 @@
-check-sonarqube-feature:
+check-sonarqube:
   stage: push
   image:
-    name: sonarsource/sonar-scanner-cli:4.6@sha256:cd3b738eb221624992481c5f7c1a41923b03203a31b0cf40ce4a16987530c34a
+    name: sonarsource/sonar-scanner-cli:4.6@sha256:5b09af200f24ea231dedef48c0106db817088ccb5466742c60130a1814b16598
     entrypoint: ['']
   needs:
     - job: accumulate-coverage
       artifacts: true
   variables:
-    GIT_DEPTH: 1
-    GIT_STRATEGY: clone
     SONAR_USER_HOME: '${CI_PROJECT_DIR}/.sonar' # Defines the location of the analysis task cache
-  cache:
-    key: '${CI_JOB_NAME}'
-    paths:
-      - .sonar/cache
-  script:
-    - find . -name tsconfig.json -exec sed -i "s/@pia\/lib-service-core/..\/psa.lib.service-core\/tsconfig.global.json/g" {} \;
-    - sonar-scanner
-      -Dsonar.host.url=$SONAR_HOST_URL
-      -Dsonar.login=$SONAR_LOGIN_TOKEN_FEATURE
-      -Dsonar.projectKey=pia-system-feature
-      -Dsonar.sources=.
-      -Dsonar.inclusions=**/src/**
-      -Dsonar.exclusions=psa.utils.*/**,psa.test.*/**,coverage/**
-      -Dsonar.test.inclusions=**/*.spec.*,**/tests/**,psa.app.*/e2e/**,psa.app.*/cypress/**
-      -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-      -Dsonar.coverage.exclusions=*service*/src/index.*
-      -Dsonar.cpd.exclusions=psa.lib.licensecollector/src/licenseTextCompleter.ts
-      -Dsonar.qualitygate.wait=true
-  rules:
-    - if: '$CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME =~ /^develop/'
-  resource_group: sonarqube
-
-check-sonarqube-develop:
-  stage: push
-  image:
-    name: sonarsource/sonar-scanner-cli:4.6@sha256:cd3b738eb221624992481c5f7c1a41923b03203a31b0cf40ce4a16987530c34a
-    entrypoint: ['']
-  needs:
-    - job: accumulate-coverage
-      artifacts: true
-  variables:
-    GIT_DEPTH: 0
-    SONAR_USER_HOME: '${CI_PROJECT_DIR}/.sonar' # Defines the location of the analysis task cache
+    GIT_DEPTH: '0' # Tells git to fetch all the branches of the project, required by the analysis task
   cache:
     key: '${CI_JOB_NAME}'
     paths:
@@ -50,75 +16,10 @@ check-sonarqube-develop:
   script:
     - git fetch --unshallow || true
     - find . -name tsconfig.json -exec sed -i "s/@pia\/lib-service-core/..\/psa.lib.service-core\/tsconfig.global.json/g" {} \;
-    # create new base version for new code in feature-branch project
-    - sonar-scanner
-      -Dsonar.host.url=$SONAR_HOST_URL
-      -Dsonar.login=$SONAR_LOGIN_TOKEN_FEATURE
-      -Dsonar.projectKey=pia-system-feature
-      -Dsonar.sources=.
-      -Dsonar.inclusions=**/src/**
-      -Dsonar.exclusions=psa.utils.*/**,psa.test.*/**,coverage/**
-      -Dsonar.test.inclusions=**/*.spec.*,**/tests/**,psa.app.*/e2e/**,psa.app.*/cypress/**
-      -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-      -Dsonar.coverage.exclusions=*service*/src/index.*
-      -Dsonar.projectVersion=develop.$CI_PIPELINE_ID
-    # create new floating version new code in feature-branch project
-    - sonar-scanner
-      -Dsonar.host.url=$SONAR_HOST_URL
-      -Dsonar.login=$SONAR_LOGIN_TOKEN_FEATURE
-      -Dsonar.projectKey=pia-system-feature
-      -Dsonar.sources=.
-      -Dsonar.inclusions=**/src/**
-      -Dsonar.exclusions=psa.utils.*/**,psa.test.*/**,coverage/**
-      -Dsonar.test.inclusions=**/*.spec.*,**/tests/**,psa.app.*/e2e/**,psa.app.*/cypress/**
-      -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-      -Dsonar.coverage.exclusions=*service*/src/index.*
-      -Dsonar.projectVersion=feature.$CI_PIPELINE_ID
-    # scann for develop
-    - sonar-scanner
-      -Dsonar.host.url=$SONAR_HOST_URL
-      -Dsonar.login=$SONAR_LOGIN_TOKEN_DEVELOP
-      -Dsonar.projectKey=pia-system-develop
-      -Dsonar.sources=.
-      -Dsonar.inclusions=**/src/**
-      -Dsonar.exclusions=psa.utils.*/**,psa.test.*/**,coverage/**
-      -Dsonar.test.inclusions=**/*.spec.*,**/tests/**,psa.app.*/e2e/**,psa.app.*/cypress/**
-      -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-      -Dsonar.coverage.exclusions=*service*/src/index.*
-  allow_failure: true
+    - sonar-scanner -Dsonar.qualitygate.wait=true
   rules:
+    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+      when: never
+    - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_BRANCH =~ /^develop/
-  resource_group: sonarqube
-
-check-sonarqube-release:
-  stage: push
-  image:
-    name: sonarsource/sonar-scanner-cli:4.6@sha256:cd3b738eb221624992481c5f7c1a41923b03203a31b0cf40ce4a16987530c34a
-    entrypoint: ['']
-  needs:
-    - job: accumulate-coverage
-      artifacts: true
-  variables:
-    GIT_DEPTH: 0
-    SONAR_USER_HOME: '${CI_PROJECT_DIR}/.sonar' # Defines the location of the analysis task cache
-  cache:
-    key: '${CI_JOB_NAME}'
-    paths:
-      - .sonar/cache
-  script:
-    - git fetch --unshallow || true
-    - find . -name tsconfig.json -exec sed -i "s/@pia\/lib-service-core/..\/psa.lib.service-core\/tsconfig.global.json/g" {} \;
-    - sonar-scanner
-      -Dsonar.host.url=$SONAR_HOST_URL
-      -Dsonar.login=$SONAR_LOGIN_TOKEN_RELEASE
-      -Dsonar.projectKey=pia-system-release
-      -Dsonar.sources=.
-      -Dsonar.inclusions=**/src/**
-      -Dsonar.exclusions=psa.utils.*/**,psa.test.*/**,coverage/**
-      -Dsonar.test.inclusions=**/*.spec.*,**/tests/**,psa.app.*/e2e/**,psa.app.*/cypress/**
-      -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-      -Dsonar.coverage.exclusions=*service*/src/index.*
-      -Dsonar.qualitygate.wait=true
-  allow_failure: true
-  rules:
     - if: $CI_COMMIT_TAG

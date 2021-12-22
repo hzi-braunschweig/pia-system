@@ -27,6 +27,7 @@ import Router from 'hapi-router';
 
 import { Version } from './version';
 import { Metrics } from './metrics';
+import { ErrorHandler } from './errorHandler';
 
 export interface ServicePluginOptions {
   name: string;
@@ -53,6 +54,7 @@ export const registerPlugins = async (
     Vision, // required by hapi-swagger
     Version, // registers the application version route
     Metrics, // registers the application metrics route
+    ErrorHandler, // registers a error handler that logs server side errors (>=500)
   ]);
 
   if (options.routes) {

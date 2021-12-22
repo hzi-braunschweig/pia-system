@@ -6,9 +6,9 @@
 
 import {
   DbQuestionnaireInstance,
-  QuestionnaireInstance,
+  QuestionnaireInstance as QuestionnaireInstanceDeprecated,
   QuestionnaireInstanceForPM,
-  QuestionnaireStatus,
+  QuestionnaireInstanceStatus,
 } from '../models/questionnaireInstance';
 import {
   QuestionnaireDbResult,
@@ -23,7 +23,10 @@ import {
 import pgPromise from 'pg-promise';
 import { RepositoryOptions } from '@pia/lib-service-core';
 import { QuestionnaireFilter } from '../services/questionnaireFilter';
-import { QuestionnaireInstanceNotFoundError } from '../models/errors';
+import { QuestionnaireInstanceNotFoundError } from '../errors';
+import { EntityRepository, Repository } from 'typeorm';
+import { QuestionnaireInstance } from '../entities/questionnaireInstance';
+import { FindOneOptions } from 'typeorm/find-options/FindOneOptions';
 import QueryResultError = pgPromise.errors.QueryResultError;
 import queryResultErrorCode = pgPromise.errors.queryResultErrorCode;
 
@@ -72,17 +75,20 @@ class RepositoryHelper {
    */
   public static resolveDbResultToQuestionnaireInstanceMap(
     result: QuestionnaireInstanceDbResult[]
-  ): Map<number, QuestionnaireInstance> {
+  ): Map<number, QuestionnaireInstanceDeprecated> {
     const questionnaires =
       QuestionnaireRepositoryHelper.resolveDbResultToQuestionnaireMap(result);
-    const questionnaireInstances = new Map<number, QuestionnaireInstance>();
+    const questionnaireInstances = new Map<
+      number,
+      QuestionnaireInstanceDeprecated
+    >();
     result.forEach((row) => {
       // questionnaire instance
       if (
         row.questionnaire_instance &&
         !questionnaireInstances.has(row.questionnaire_instance.id)
       ) {
-        const questionnaireInstance: QuestionnaireInstance = {
+        const questionnaireInstance: QuestionnaireInstanceDeprecated = {
           ...row.questionnaire_instance,
           date_of_issue: new Date(row.questionnaire_instance.date_of_issue),
           date_of_release_v1:
@@ -91,12 +97,6 @@ class RepositoryHelper {
           date_of_release_v2:
             row.questionnaire_instance.date_of_release_v2 &&
             new Date(row.questionnaire_instance.date_of_release_v2),
-          transmission_ts_v1:
-            row.questionnaire_instance.transmission_ts_v1 &&
-            new Date(row.questionnaire_instance.transmission_ts_v1),
-          transmission_ts_v2:
-            row.questionnaire_instance.transmission_ts_v2 &&
-            new Date(row.questionnaire_instance.transmission_ts_v2),
           questionnaire: RepositoryHelper.deepCloneQuestionnaire(
             questionnaires.get(
               row.questionnaire_instance.questionnaire_id.toString() +
@@ -137,6 +137,9 @@ class RepositoryHelper {
   }
 }
 
+/**
+ * @deprecated
+ */
 export class QuestionnaireInstanceRepository {
   /**
    * gets the questionnaire instance with the specified id
@@ -145,8 +148,8 @@ export class QuestionnaireInstanceRepository {
    */
   public static async getQuestionnaireInstanceForResearcher(
     id: number
-  ): Promise<QuestionnaireInstance> {
-    return db.one<QuestionnaireInstance>(
+  ): Promise<QuestionnaireInstanceDeprecated> {
+    return db.one<QuestionnaireInstanceDeprecated>(
       'SELECT * FROM questionnaire_instances WHERE id = ${id}',
       {
         id: id,
@@ -156,34 +159,14 @@ export class QuestionnaireInstanceRepository {
 
   public static async getQuestionnaireInstanceForInvestigator(
     id: number
-  ): Promise<QuestionnaireInstance> {
-    return db.one<QuestionnaireInstance>(
-      `SELECT qi.*
-             FROM questionnaire_instances AS qi
-                      JOIN questionnaires q ON qi.questionnaire_id = q.id AND qi.questionnaire_version = q.version
-             WHERE qi.id = $(id)
-               AND qi.status != 'deleted'
-               AND q.type = 'for_research_team'`,
-      {
-        id: id,
-      }
-    );
+  ): Promise<QuestionnaireInstanceDeprecated> {
+    return this.getQuestionnaireInstanceForRole(id, 'for_research_team');
   }
 
   public static async getQuestionnaireInstanceForProband(
     id: number
-  ): Promise<QuestionnaireInstance> {
-    return db.one<QuestionnaireInstance>(
-      `SELECT qi.*
-             FROM questionnaire_instances AS qi
-                      JOIN questionnaires q ON qi.questionnaire_id = q.id AND qi.questionnaire_version = q.version
-             WHERE qi.id = $(id)
-               AND qi.status != 'deleted'
-               AND q.type = 'for_probands'`,
-      {
-        id: id,
-      }
-    );
+  ): Promise<QuestionnaireInstanceDeprecated> {
+    return this.getQuestionnaireInstanceForRole(id, 'for_probands');
   }
 
   /**
@@ -193,7 +176,7 @@ export class QuestionnaireInstanceRepository {
    */
   public static async getQuestionnaireInstanceWithQuestionnaire(
     id: number
-  ): Promise<QuestionnaireInstance> {
+  ): Promise<QuestionnaireInstanceDeprecated> {
     const filter = `WHERE qi.id = $(id)`;
     const order = `ORDER BY q.position, ao.position`;
     const query =
@@ -201,14 +184,16 @@ export class QuestionnaireInstanceRepository {
         filter,
         order
       );
-    const result = await db.many(query, { id }).catch((err) => {
-      if (
-        err instanceof QueryResultError &&
-        err.code === queryResultErrorCode.noData
-      )
-        throw new QuestionnaireInstanceNotFoundError();
-      else throw err;
-    });
+    const result = await db
+      .many<QuestionnaireInstanceDbResult>(query, { id })
+      .catch((err) => {
+        if (
+          err instanceof QueryResultError &&
+          err.code === queryResultErrorCode.noData
+        )
+          throw new QuestionnaireInstanceNotFoundError();
+        else throw err;
+      });
     // if db.many runs without error there will be a qInstance -> no need to check null
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const qInstance =
@@ -225,7 +210,7 @@ export class QuestionnaireInstanceRepository {
    */
   public static async getQuestionnaireInstancesWithQuestionnaireAsResearcher(
     user_id: string
-  ): Promise<QuestionnaireInstance[]> {
+  ): Promise<QuestionnaireInstanceDeprecated[]> {
     const actualQInstances = [];
     const resultQInstances =
       await QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireForUserStatusAndType(
@@ -256,8 +241,8 @@ export class QuestionnaireInstanceRepository {
    */
   public static async getQuestionnaireInstancesWithQuestionnaireAsProband(
     user_id: string,
-    status: QuestionnaireStatus[]
-  ): Promise<QuestionnaireInstance[]> {
+    status: QuestionnaireInstanceStatus[]
+  ): Promise<QuestionnaireInstanceDeprecated[]> {
     const actualQInstances = [];
     const resultQInstances =
       await QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireForUserStatusAndType(
@@ -315,7 +300,7 @@ export class QuestionnaireInstanceRepository {
    */
   public static async getQuestionnaireInstancesAsInvestigator(
     user_id: string
-  ): Promise<QuestionnaireInstance[]> {
+  ): Promise<QuestionnaireInstanceDeprecated[]> {
     const actualQInstances = [];
     const resultQInstances =
       await QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireForUserStatusAndType(
@@ -341,17 +326,17 @@ export class QuestionnaireInstanceRepository {
    */
   public static async updateQuestionnaireInstance(
     id: number,
-    status: QuestionnaireStatus | undefined,
+    status: QuestionnaireInstanceStatus | null,
     progress: number,
     release_version: number
-  ): Promise<QuestionnaireInstance> {
+  ): Promise<QuestionnaireInstanceDeprecated> {
     if (status === 'released_once') {
       const questionnaire = await db.one<{ cycle_unit: CycleUnit }>(
         'SELECT cycle_unit FROM questionnaires WHERE id=(SELECT questionnaire_id FROM questionnaire_instances WHERE id=$1) AND version=(SELECT questionnaire_version FROM questionnaire_instances WHERE id=$1)',
         [id]
       );
       if (questionnaire.cycle_unit === 'spontan') {
-        return await db.one<QuestionnaireInstance>(
+        return await db.one<QuestionnaireInstanceDeprecated>(
           'UPDATE questionnaire_instances SET status=${status}, progress=${progress}, release_version=${release_version}, date_of_release_v1=${date_of_release}, date_of_issue=${date_of_release} WHERE id=${id} RETURNING *',
           {
             status: status,
@@ -362,7 +347,7 @@ export class QuestionnaireInstanceRepository {
           }
         );
       } else {
-        return await db.one<QuestionnaireInstance>(
+        return await db.one<QuestionnaireInstanceDeprecated>(
           'UPDATE questionnaire_instances SET status=${status}, progress=${progress}, release_version=${release_version}, date_of_release_v1=${date_of_release} WHERE id=${id} RETURNING *',
           {
             status: status,
@@ -374,7 +359,7 @@ export class QuestionnaireInstanceRepository {
         );
       }
     } else if (status === 'released_twice') {
-      return await db.one<QuestionnaireInstance>(
+      return await db.one<QuestionnaireInstanceDeprecated>(
         'UPDATE questionnaire_instances SET status=${status}, progress=${progress}, release_version=${release_version}, date_of_release_v2=${date_of_release} WHERE id=${id} RETURNING *',
         {
           status: status,
@@ -385,12 +370,12 @@ export class QuestionnaireInstanceRepository {
         }
       );
     } else if (!status) {
-      return await db.one<QuestionnaireInstance>(
+      return await db.one<QuestionnaireInstanceDeprecated>(
         'UPDATE questionnaire_instances SET progress=${progress} WHERE id=${id} RETURNING *',
         { progress: progress, id: id }
       );
     } else {
-      return await db.one<QuestionnaireInstance>(
+      return await db.one<QuestionnaireInstanceDeprecated>(
         'UPDATE questionnaire_instances SET status=${status}, progress=${progress}, release_version=${release_version} WHERE id=${id} RETURNING *',
         {
           status: status,
@@ -405,7 +390,7 @@ export class QuestionnaireInstanceRepository {
   public static async deleteQuestionnaireInstancesByQuestionnaireId(
     questionnaireId: number,
     questionnaireVersion: number,
-    status: QuestionnaireStatus[],
+    status: QuestionnaireInstanceStatus[],
     options?: RepositoryOptions
   ): Promise<void> {
     const dbConnection = getDbTransactionFromOptionsOrDbConnection(options);
@@ -422,9 +407,9 @@ export class QuestionnaireInstanceRepository {
 
   private static async getQuestionnaireInstancesWithQuestionnaireForUserStatusAndType(
     user_id: string,
-    status: QuestionnaireStatus[],
+    status: QuestionnaireInstanceStatus[],
     type: QuestionnaireType | QuestionnaireType[]
-  ): Promise<QuestionnaireInstance[]> {
+  ): Promise<QuestionnaireInstanceDeprecated[]> {
     const filter = `WHERE qi.user_id = $(user_id)
                          AND qi.status IN ($(status:csv))
                          AND qa.type IN ($(type:csv))`;
@@ -444,5 +429,52 @@ export class QuestionnaireInstanceRepository {
         result
       ).values()
     );
+  }
+
+  private static async getQuestionnaireInstanceForRole(
+    id: number,
+    role: 'for_probands' | 'for_research_team'
+  ): Promise<QuestionnaireInstanceDeprecated> {
+    return db.one<QuestionnaireInstanceDeprecated>(
+      `SELECT qi.*
+             FROM questionnaire_instances AS qi
+                      JOIN questionnaires q ON qi.questionnaire_id = q.id AND qi.questionnaire_version = q.version
+             WHERE qi.id = $(id)
+               AND qi.status != 'deleted'
+               AND q.type = $(role)`,
+      { id, role }
+    );
+  }
+}
+
+@EntityRepository(QuestionnaireInstance)
+export class CustomQuestionnaireInstanceRepository extends Repository<QuestionnaireInstance> {
+  private readonly withQuestionnaireRelations = [
+    'questionnaire',
+    'questionnaire.condition',
+    'questionnaire.questions',
+    'questionnaire.questions.condition',
+    'questionnaire.questions.answerOptions',
+    'questionnaire.questions.answerOptions.condition',
+  ];
+
+  public async findOneOrFailByIdWithQuestionnaire(
+    options: FindOneOptions<QuestionnaireInstance>
+  ): Promise<QuestionnaireInstance> {
+    if (!options.relations) {
+      options.relations = [];
+    }
+    options.relations.push(...this.withQuestionnaireRelations);
+    return this.findOneOrFail(options);
+  }
+
+  public async findWithQuestionnaire(
+    options: FindOneOptions<QuestionnaireInstance>
+  ): Promise<QuestionnaireInstance[]> {
+    if (!options.relations) {
+      options.relations = [];
+    }
+    options.relations.push(...this.withQuestionnaireRelations);
+    return this.find(options);
   }
 }

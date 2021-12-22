@@ -10,19 +10,6 @@
   <ion-item-group>
     <ion-item-divider>
       <ion-label class="settings-item-divider">
-        {{ 'SETTINGS.GROUP_TITLE_GENERAL' | translate }}
-      </ion-label>
-    </ion-item-divider>
-    <ion-item lines="none">
-      <ion-label class="ion-text-wrap"
-        >{{ 'SETTINGS.RECORDING_LOGS' | translate }}</ion-label
-      >
-      <ion-checkbox slot="end" [(ngModel)]="loggingActive"></ion-checkbox>
-    </ion-item>
-  </ion-item-group>
-  <ion-item-group>
-    <ion-item-divider>
-      <ion-label class="settings-item-divider">
         {{ 'SETTINGS.GROUP_TITLE_ACCOUNT' | translate }}
       </ion-label>
     </ion-item-divider>
@@ -46,9 +33,3 @@
     </ion-item>
   </ion-item-group>
 </ion-content>
-
-<ion-footer>
-  <ion-button (click)="saveSettings()">
-    {{ 'GENERAL.SAVE' | translate }}
-  </ion-button>
-</ion-footer>

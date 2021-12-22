@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import * as fbAdmin from 'firebase-admin';
-import { FirebaseError } from 'firebase-admin';
+import fbAdmin, { FirebaseError } from 'firebase-admin';
 import { MarkRequired } from 'ts-essentials';
 
 import { config } from '../config';
@@ -24,8 +23,9 @@ export class FcmHelper {
 
   /**
    * @description sends a default fcm message to one user
-   * @param {string} fcmToken the token of the user to send the message to
-   * @param {object} notification_id the notification id to send
+   * @param fcmToken the token of the user to send the message to
+   * @param notificationId the notification id to send
+   * @param badgeNumber the number to show as badge
    */
   public static async sendDefaultNotification(
     this: void,

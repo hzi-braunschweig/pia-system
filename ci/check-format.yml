@@ -7,6 +7,7 @@ check-format:
   variables:
     GIT_DEPTH: '1'
   script:
+    - prettier --version
     - prettier --check .
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"

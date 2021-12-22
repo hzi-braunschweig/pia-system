@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const pgHelper = require('../services/postgresqlHelper.js');
+const pgHelper = require('../services/postgresqlHelper');
 
 /**
  * @description Utility Service for validating answer types

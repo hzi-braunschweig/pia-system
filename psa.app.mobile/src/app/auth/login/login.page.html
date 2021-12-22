@@ -6,103 +6,27 @@
 
 <ion-content color="primary-light">
   <ion-card class="pia-login-card">
-    <ion-card-header>
-      <ion-item lines="none">
-        <ion-thumbnail class="pia-logo">
-          <ion-img src="/assets/images/pia_logo.png"></ion-img>
-        </ion-thumbnail>
-      </ion-item>
+    <ion-card-header class="pia-logo-container">
+      <ion-button
+        *ngIf="username"
+        class="go-back-button"
+        fill="clear"
+        color="tertiary"
+        (click)="switchUser()"
+      >
+        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
+      </ion-button>
+      <img class="pia-logo" src="assets/images/pia_logo.png" alt="pia logo" />
     </ion-card-header>
 
-    <ion-item *ngIf="!isLoginTokenValid()">
-      <ion-label position="stacked"
-        >{{ 'LOGIN.USERNAME' | translate }}</ion-label
-      >
-      <ion-input
-        type="text"
-        name="username"
-        placeholder="{{ 'LOGIN.USERNAME' | translate }}"
-        [(ngModel)]="username"
-      >
-      </ion-input>
-    </ion-item>
+    <app-login-username
+      *ngIf="!username"
+      (usernameChange)="username = $event"
+    ></app-login-username>
 
-    <app-input-password
-      name="password"
-      [label]="'LOGIN.PASSWORD' | translate"
-      [(ngModel)]="password"
-    >
-    </app-input-password>
-    <ion-item>
-      <ion-label>{{ 'GENERAL.LANGUAGE' | translate }}</ion-label>
-      <ion-select
-        class="ion-margin-end"
-        [(ngModel)]="localeService.currentLocale"
-        [ngModelOptions]="{standalone: true}"
-      >
-        <ion-select-option
-          *ngFor="let language of localeService.supportedLanguages"
-          [value]="language.locale"
-        >
-          {{ language.language }}
-        </ion-select-option>
-      </ion-select>
-      <ion-icon
-        *ngFor="let flag of localeService.currentFlagIcons"
-        class="flag-icon flag-icon-{{flag}}"
-      >
-      </ion-icon>
-    </ion-item>
-
-    <ion-item *ngIf="remainingLoginBlockedTime" lines="full">
-      <ion-label class="ion-text-wrap" color="danger">
-        {{ 'LOGIN.TOAST_MSG_LOGIN_PASSWORD_TRIES_ERROR' | translate }} {{
-        remainingLoginBlockedTime }}
-      </ion-label>
-    </ion-item>
-
-    <ion-card-content *ngIf="!remainingLoginBlockedTime">
-      <ion-button (click)="login()" color="primary">
-        {{ 'LOGIN.LOGIN' | translate }}
-      </ion-button>
-    </ion-card-content>
+    <app-login-password-legacy
+      *ngIf="username"
+      [username]="username"
+    ></app-login-password-legacy>
   </ion-card>
-
-  <div class="ion-padding">
-    <ion-button fill="clear" color="tertiary" (click)="showRequestPWDialog()">
-      <span class="underline-button"
-        >{{ 'LOGIN.FORGOT_PASSWORD' | translate }}</span
-      >
-    </ion-button>
-
-    <ion-button
-      *ngIf="isLoginTokenValid()"
-      fill="clear"
-      color="tertiary"
-      (click)="clearLoginToken()"
-    >
-      <span class="underline-button"
-        >{{ 'LOGIN.SWITCH_USER' | translate }}</span
-      >
-    </ion-button>
-
-    <ion-button
-      fill="clear"
-      color="tertiary"
-      (click)="toggleCustomEndpointField()"
-    >
-      <ion-icon *ngIf="!showCustomEndpointField" name="link"></ion-icon>
-      <ion-icon *ngIf="showCustomEndpointField" name="close"></ion-icon>
-    </ion-button>
-
-    <ion-item *ngIf="showCustomEndpointField">
-      <ion-label>{{ 'LOGIN.ENTER_BACKEND_URL' | translate }}</ion-label>
-      <ion-input
-        type="text"
-        [ngModelOptions]="{standalone: true}"
-        [(ngModel)]="customEndpointUrl"
-      >
-      </ion-input>
-    </ion-item>
-  </div>
 </ion-content>

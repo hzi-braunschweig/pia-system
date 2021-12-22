@@ -4,9 +4,16 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { QuestionnaireStatus } from './questionnaireInstance';
-import { AnswerType } from './answerOption';
+import {
+  QuestionnaireInstanceDto,
+  QuestionnaireInstanceStatus,
+} from './questionnaireInstance';
+import { AnswerOptionDto, AnswerType } from './answerOption';
+import { QuestionDto } from './question';
 
+/**
+ * @deprecated
+ */
 export interface Answer {
   question_id: number;
   questionnaire_instance_id: number;
@@ -15,6 +22,16 @@ export interface Answer {
   value: string;
   date_of_release?: Date;
   releasing_person?: string;
+}
+
+export interface AnswerDto {
+  questionnaireInstance?: QuestionnaireInstanceDto;
+  question?: QuestionDto;
+  answerOption?: AnswerOptionDto;
+  versioning: number;
+  value: string;
+  dateOfRelease: Date | null;
+  releasingPerson: string | null;
 }
 
 /**
@@ -29,7 +46,7 @@ export interface FullAnswer {
   date_of_release_v1: Date | null;
   date_of_release_v2: Date | null;
   date_of_issue: Date;
-  status: QuestionnaireStatus;
+  status: QuestionnaireInstanceStatus;
   question_label: string;
   qposition: number;
   answer_option_label: string;
@@ -41,5 +58,4 @@ export interface FullAnswer {
   value: string | null;
   date_of_release: Date | null;
   ids: string | null;
-  account_status: string | null;
 }

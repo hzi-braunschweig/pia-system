@@ -11,69 +11,55 @@ import {
   tick,
 } from '@angular/core/testing';
 import { ComplianceEditProbandComponent } from './compliance-edit-proband.component';
-import { AuthenticationManager } from '../../../../_services/authentication-manager.service';
 import { ComplianceService } from '../../../../psa.app.core/providers/compliance-service/compliance-service';
 import { ComplianceManager } from '../../../../_services/compliance-manager.service';
 import { AlertService } from '../../../../_services/alert.service';
-import { MatDialog } from '@angular/material/dialog';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { TranslateModule } from '@ngx-translate/core';
 import {
   ComplianceDataResponse,
   ComplianceText,
 } from '../../../../psa.app.core/models/compliance';
-import { LoadingSpinnerComponent } from '../../../../features/loading-spinner/loading-spinner.component';
-import { MockComponents, MockModule, MockProvider } from 'ng-mocks';
-import { TemplateModule } from '../../../../features/template-viewer/template.module';
-import { LoadingSpinnerModule } from '../../../../features/loading-spinner/loading-spinner.module';
-import { SegmentType } from '../../../../psa.app.core/models/Segments';
+import { MockBuilder } from 'ng-mocks';
+import { AppModule } from '../../../../app.module';
+import { AuthenticationManager } from '../../../../_services/authentication-manager.service';
+import {
+  createComplianceDataResponse,
+  createComplianceText,
+} from '../../../../psa.app.core/models/instance.helper.spec';
 import SpyObj = jasmine.SpyObj;
-
-class MockAuthManager {
-  currentUser = {
-    username: 'Testproband1',
-  };
-}
 
 describe('ComplianceEditProbandComponent', () => {
   let component: ComplianceEditProbandComponent;
   let fixture: ComponentFixture<ComplianceEditProbandComponent>;
   let complianceService: SpyObj<ComplianceService>;
   let complianceManager: SpyObj<ComplianceManager>;
+  let auth: SpyObj<AuthenticationManager>;
   let alertService: SpyObj<AlertService>;
-  let dialog: SpyObj<MatDialog>;
 
-  beforeEach(() => {
-    complianceService = jasmine.createSpyObj('ComplianceService', [
-      'getComplianceText',
-      'getComplianceAgreementPdfForUser',
-    ]);
-    complianceManager = jasmine.createSpyObj('ComplianceManager', [
-      'getComplianceAgreementForCurrentUser',
-      'updateComplianceAgreementForCurrentUser',
-    ]);
+  beforeEach(async () => {
+    // Provider and Services
+    complianceService = jasmine.createSpyObj<ComplianceService>(
+      'ComplianceService',
+      ['getComplianceText', 'getComplianceAgreementPdfForUser']
+    );
+    complianceManager = jasmine.createSpyObj<ComplianceManager>(
+      'ComplianceManager',
+      [
+        'getComplianceAgreementForCurrentUser',
+        'updateComplianceAgreementForCurrentUser',
+      ]
+    );
+    auth = jasmine.createSpyObj<AuthenticationManager>(
+      'AuthenticationManager',
+      ['getCurrentStudy', 'getCurrentUsername']
+    );
     alertService = jasmine.createSpyObj('AlertService', ['errorObject']);
-    dialog = jasmine.createSpyObj('MatDialog', ['open']);
 
-    TestBed.configureTestingModule({
-      declarations: [
-        ComplianceEditProbandComponent,
-        MockComponents(LoadingSpinnerComponent),
-      ],
-      providers: [
-        { provide: AuthenticationManager, useClass: MockAuthManager },
-        { provide: ComplianceService, useValue: complianceService },
-        { provide: ComplianceManager, useValue: complianceManager },
-        MockProvider(AlertService, alertService),
-        MockProvider(MatDialog, dialog),
-      ],
-      imports: [
-        MockModule(LoadingSpinnerModule),
-        MockModule(TemplateModule),
-        MockModule(MatExpansionModule),
-        MockModule(TranslateModule),
-      ],
-    }).compileComponents();
+    // Build Base Module
+    await MockBuilder(ComplianceEditProbandComponent, AppModule)
+      .mock(ComplianceService, complianceService)
+      .mock(ComplianceManager, complianceManager)
+      .mock(AlertService, alertService)
+      .mock(AuthenticationManager, auth);
   });
 
   function createComponent(
@@ -82,41 +68,41 @@ describe('ComplianceEditProbandComponent', () => {
     complianceOfOther: ComplianceDataResponse,
     complianceText: ComplianceText
   ): void {
-    // mocks
+    // Setup mocks before creating component
+    auth.getCurrentUsername.and.returnValue(username);
+    auth.getCurrentStudy.and.returnValue('Teststudy');
     complianceManager.getComplianceAgreementForCurrentUser.and.resolveTo(
       complianceOfCurrent
     );
     complianceService.getComplianceText.and.resolveTo(complianceText);
-    // create component
+
+    // Create component
     fixture = TestBed.createComponent(ComplianceEditProbandComponent);
     component = fixture.componentInstance;
-    component.username = username;
-    component.study = 'Teststudie1';
-    fixture.detectChanges(); // wait for ngOnInit
-    tick(); // run ngOnInit
-    fixture.detectChanges(); // wait for ngDoCheck
-    tick(); // run ngDoCheck
+    fixture.detectChanges(); // run ngOnInit
+    tick(); // wait for ngOnInit to finish
+    fixture.detectChanges(); // run ngDoCheck
   }
 
   function createComponentForEditMode(): void {
-    createComponent('Testproband1', null, null, getComplianceText());
+    createComponent('Testproband1', null, null, createComplianceText());
   }
 
   function createComponentForReadOnlyMode(): void {
-    createComponent('Testproband1', getComplianceData(), null, null);
+    createComponent('Testproband1', createComplianceDataResponse(), null, null);
   }
 
   describe('Initialization', () => {
     it('should open in edit mode if no compliance exists', fakeAsync(() => {
       createComponentForEditMode();
       // check result
-      expect(component.study).toEqual('Teststudie1');
+      expect(component.study).toEqual('Teststudy');
       expect(component.studyWrapper.editMode).toBeTrue();
       expect(component.studyWrapper.complianceText).toEqual(
-        getComplianceText().compliance_text
+        createComplianceText().compliance_text
       );
       expect(component.studyWrapper.complianceTextObject).toEqual(
-        getComplianceText().compliance_text_object
+        createComplianceText().compliance_text_object
       );
       expect(
         complianceManager.getComplianceAgreementForCurrentUser
@@ -126,17 +112,15 @@ describe('ComplianceEditProbandComponent', () => {
     it('should open in read only mode if compliance exists', fakeAsync(() => {
       createComponentForReadOnlyMode();
       // check result
-      expect(component.study).toEqual('Teststudie1');
+      expect(component.study).toEqual('Teststudy');
       expect(component.studyWrapper.editMode).toBeFalse();
       expect(component.studyWrapper.complianceText).toEqual(null);
       expect(component.studyWrapper.complianceTextObject).toEqual(
-        getComplianceData().compliance_text_object
+        createComplianceDataResponse().compliance_text_object
       );
       expect(
         complianceManager.getComplianceAgreementForCurrentUser
       ).toHaveBeenCalledTimes(1);
-      // wait for ngDoCheck to be called
-      tick();
       expect(component.studyWrapper.form.disabled).toBeTrue();
     }));
 
@@ -146,14 +130,11 @@ describe('ComplianceEditProbandComponent', () => {
       complianceManager.getComplianceAgreementForCurrentUser.and.rejectWith(
         err
       );
-      // create component
+      // Create component
       fixture = TestBed.createComponent(ComplianceEditProbandComponent);
       component = fixture.componentInstance;
-      component.username = 'Testproband1';
-      component.study = 'Teststudie1';
-      // wait for ngOnInit to be called
-      fixture.detectChanges();
-      tick();
+      fixture.detectChanges(); // run ngOnInit
+      tick(); // wait for ngOnInit to finish
       // check result
       expect(component).toBeTruthy();
       expect(
@@ -168,11 +149,11 @@ describe('ComplianceEditProbandComponent', () => {
     it('should fill the studies array and open in read only mode if compliance exists', fakeAsync(() => {
       createComponentForReadOnlyMode();
       expect(component).toBeTruthy();
-      component.downloadPdf('Teststudie');
+      component.downloadPdf();
       tick();
       expect(
         complianceService.getComplianceAgreementPdfForUser
-      ).toHaveBeenCalledWith('Teststudie', 'Testproband1');
+      ).toHaveBeenCalledWith('Teststudy', 'Testproband1');
     }));
   });
 
@@ -191,61 +172,12 @@ describe('ComplianceEditProbandComponent', () => {
       ).toHaveBeenCalledTimes(1);
       expect(
         complianceManager.updateComplianceAgreementForCurrentUser
-      ).toHaveBeenCalledWith(
-        {
-          compliance_text: getComplianceText().compliance_text,
-          textfields: {},
-          compliance_system: {},
-          compliance_questionnaire: [],
-        },
-        'Teststudie1'
-      );
+      ).toHaveBeenCalledWith({
+        compliance_text: createComplianceText().compliance_text,
+        textfields: {},
+        compliance_system: {},
+        compliance_questionnaire: [],
+      });
     }));
   });
-
-  function getComplianceData(): ComplianceDataResponse {
-    return {
-      compliance_text_object: [
-        { type: SegmentType.HTML, html: '<p>Lorem ipsum ... \n </p>' },
-        {
-          type: SegmentType.CUSTOM_TAG,
-          attrs: [],
-          children: [],
-          tagName: 'pia-consent-input-app',
-        },
-      ],
-      timestamp: undefined,
-      textfields: {
-        firstname: 'Michael',
-        lastname: 'Myers',
-        birthdate: new Date('01.01.1900'),
-      },
-      compliance_system: {
-        app: true,
-        samples: true,
-        bloodsamples: false,
-        labresults: false,
-      },
-      compliance_questionnaire: [
-        { name: 'world-domination', value: true },
-        { name: 'world-domination-memo', value: '' },
-      ],
-    };
-  }
-
-  function getComplianceText(): ComplianceText {
-    return {
-      compliance_text_object: [
-        { type: SegmentType.HTML, html: '<p>Lorem ipsum ... \n </p>' },
-        {
-          type: SegmentType.CUSTOM_TAG,
-          attrs: [],
-          children: [],
-          tagName: 'pia-consent-input-app',
-        },
-      ],
-      compliance_text:
-        'Lorem ipsum ... \n <pia-consent-input-app></pia-consent-input-app>',
-    };
-  }
 });

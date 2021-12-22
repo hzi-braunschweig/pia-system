@@ -12,11 +12,10 @@ import {
 } from '@angular/common/http';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { onErrorResumeNext, Subject } from 'rxjs';
-import SpyObj = jasmine.SpyObj;
 
 import { UnauthorizedInterceptor } from './unauthorized-interceptor';
 import { AuthService } from '../../auth/auth.service';
-import { User } from '../../auth/auth.model';
+import SpyObj = jasmine.SpyObj;
 
 describe('UnauthorizedInterceptor', () => {
   let request: HttpRequest<any>;
@@ -31,15 +30,12 @@ describe('UnauthorizedInterceptor', () => {
     ]);
     handleSubject = new Subject<HttpEvent<any>>();
     handler.handle.and.returnValue(handleSubject.asObservable());
-    authMock = jasmine.createSpyObj('AuthManagerService', [
-      'getCurrentUser',
-      'logout',
-    ]);
+    authMock = jasmine.createSpyObj(AuthService, ['getToken', 'logout']);
   });
 
   it('should log user out if a 401 response was received', fakeAsync(() => {
     const error = new HttpErrorResponse({ status: 401 });
-    authMock.getCurrentUser.and.returnValue({} as User);
+    authMock.getToken.and.returnValue('an expired token');
     const interceptor = new UnauthorizedInterceptor(authMock);
     onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
     handleSubject.error(error);
@@ -51,7 +47,7 @@ describe('UnauthorizedInterceptor', () => {
 
   it('should only pass the error if a non 401 response was received', fakeAsync(() => {
     const error = new HttpErrorResponse({ status: 404 });
-    authMock.getCurrentUser.and.returnValue({} as User);
+    authMock.getToken.and.returnValue('an expired token');
     const interceptor = new UnauthorizedInterceptor(authMock);
     onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
     handleSubject.error(error);
@@ -63,7 +59,7 @@ describe('UnauthorizedInterceptor', () => {
 
   it('should only pass the error if no user is logged in', fakeAsync(() => {
     const error = new HttpErrorResponse({ status: 401 });
-    authMock.getCurrentUser.and.returnValue(null);
+    authMock.getToken.and.returnValue(null);
     const interceptor = new UnauthorizedInterceptor(authMock);
     onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
     handleSubject.error(error);

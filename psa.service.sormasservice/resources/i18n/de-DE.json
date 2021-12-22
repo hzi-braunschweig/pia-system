@@ -1,0 +1,22 @@
+{
+  "NEW_PROBAND_ERROR_FETCHING_DATA": "Das Symptomtagebuch konnte die Daten zum/r Teilnehmer:in nicht aus SORMAS laden.",
+  "NEW_PROBAND_ERROR_GENERATING_PSEUDONYM": "Es konnte kein freies Pseudonym generiert werden.",
+  "NEW_PROBAND_ERROR_EMAIL_NOT_VALID": "Die E-Mail Adresse fehlt oder ist nicht gültig. Bitte stellen Sie sicher, dass eine gültige E-Mail-Adresse angegeben ist und als primär markiert ist.",
+  "NEW_PROBAND_COULD_NOT_SAVE_FOLLOW_UP_ENDDATE": "Das Symptomtagebuch konnte das Nachverfolgungsenddatum nicht speichern.",
+  "NEW_PROBAND_ERROR_REGISTERING": "Teilnehmer:in konnte nicht registriert werden. Dies kann an einer falschen Konfiguration des Systems liegen oder daran, dass die Person (UUID) schon im Symptomtagebuch existiert.",
+  "NEW_PROBAND_SUCCESS_MESSAGE": "Teilnehmer:in wurde erfolgreich registriert:\n\n Anmeldename: {{pseudonym}}\n\n Das Passwort wurde per E-Mail an Teilnehmer:in versendet\n",
+  "NEW_PROBAND_SUCCESS_WITH_EMAIL_ERROR_MESSAGE": "Teilnehmer:in wurde erfolgreich registriert:\n\n Anmeldename: {{pseudonym}} \n Passwort: {{password}}\n\n⚠️ Das Passwort konnte nicht per E-Mail an Teilnehmer:in versendet werden",
+  "UPDATE_PROBAND_ERROR_FETCHING_DATA": "Das Symptomtagebuch konnte die Daten zum/r Teilnehmer:in nicht aus SORMAS laden.",
+  "UPDATE_PROBAND_ERROR_EMAIL_NOT_VALID": "Die E-Mail Adresse fehlt oder ist nicht gültig. Bitte stellen Sie sicher, dass eine gültige E-Mail-Adresse angegeben ist und als primär markiert ist.",
+  "UPDATE_PROBAND_COULD_NOT_SAVE_FOLLOW_UP_ENDDATE": "Das Symptomtagebuch konnte das Nachverfolgungsenddatum nicht speichern.",
+  "UPDATE_PROBAND_SUCCESS_MESSAGE": "Das Symptomtagebuch hat die Daten zum/r Teilnehmer:in erfolgreich aktualisiert.",
+  "DEACTIVATE_PROBAND_INTERNAL_ERROR": "Es ist ein unerwarteter Fehler aufgetreten. Bitte informieren Sie den Administrator.",
+  "DEACTIVATE_PROBAND_NOT_FOUND_ERROR": "Es konnte kein Teilnehmer:in zur angegebenen Person (UUID) im Symptomtagebuch gefunden werden",
+  "DEACTIVATE_PROBAND_SUCCESS": "Teilnehmer:in wurde deaktiviert und wird gelöscht, sobald alle offenen Fragebögen abgeschickt wurden oder abgelaufen sind.",
+  "PROBAND_VIEW_TITLE": "Symptomtagebuch",
+  "PROBAND_VIEW_DESCRIPTION": "Die Kontaktperson ist im Symptomtagebuch mit folgenden Daten hinterlegt:",
+  "PROBAND_VIEW_LABEL_LOGIN_NAME": "Anmeldename",
+  "PROBAND_VIEW_LABEL_EMAIL": "E-Mail",
+  "PROBAND_VIEW_LABEL_FOLLOW_UP_END_DATE": "Nachverfolgungsenddatum",
+  "PROBAND_VIEW_NOT_FOUND": "Der Teilnehmende scheint nicht im Symptomtagebuch zu existieren."
+}

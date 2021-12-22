@@ -5,47 +5,18 @@
   -->
 
 <div class="jumbotron" data-e2e="e2e-settings-content">
-  <div>
-    <mat-card>
-      <h1>{{ 'SIDENAV.SETTINGS' | translate }}</h1>
+  <mat-card>
+    <h1>{{ 'SIDENAV.SETTINGS' | translate }}</h1>
 
-      <mat-card-content>
-        <mat-divider [inset]="true" class="blue-divider"></mat-divider>
-        <div class="settings-row">
-          <span>{{ 'SETTINGS.LOGGING' | translate }}</span>
-          <mat-checkbox
-            data-e2e="acquisition-of-log-data-checkbox"
-            class="settings-checkbox"
-            [(ngModel)]="logging_active"
-          ></mat-checkbox>
-        </div>
-        <div class="settings-row">
-          <span>{{ 'SETTINGS.MANAGE_PASSWORD' | translate }}</span>
-          <button
-            data-e2e="e2e-change-password-icon"
-            mat-icon-button
-            routerLink="/settings/change-password"
-          >
-            <mat-icon>subdirectory_arrow_right</mat-icon>
-          </button>
-        </div>
-        <mat-divider [inset]="true" class="blue-divider"></mat-divider>
-      </mat-card-content>
-      <mat-card-actions>
-        <button
-          data-e2e="e2e-save-button"
-          id="buttonconfirm"
-          mat-raised-button
-          color="primary"
-          (click)="saveSettings()"
-        >
-          {{ 'SETTINGS.CONFIRM' | translate }}
-        </button>
-      </mat-card-actions>
-    </mat-card>
-  </div>
-
-  <ng-template #cancelBtn>
-    <button mat-raised-button>{{ 'SETTINGS.CANCEL' | translate }}</button>
-  </ng-template>
+    <mat-card-content>
+      <span>{{ 'SETTINGS.MANAGE_PASSWORD' | translate }}</span>
+      <button
+        data-e2e="e2e-change-password-icon"
+        mat-icon-button
+        routerLink="/settings/change-password"
+      >
+        <mat-icon>subdirectory_arrow_right</mat-icon>
+      </button>
+    </mat-card-content>
+  </mat-card>
 </div>

@@ -11,7 +11,7 @@
   <ion-label class="ion-text-wrap">{{ value }}</ion-label>
   <ion-checkbox
     [disabled]="disabled"
-    [formControl]="form.at(i)"
+    [formControl]="getFormControlAt(i)"
     [name]="name + '-' + value"
     slot="end"
   >

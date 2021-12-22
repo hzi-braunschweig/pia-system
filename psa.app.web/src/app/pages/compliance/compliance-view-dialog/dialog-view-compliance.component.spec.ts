@@ -39,7 +39,7 @@ describe('DialogViewComplianceComponent', () => {
           provide: MAT_DIALOG_DATA,
           useValue: {
             username: 'Testproband',
-            study_accesses: [{ study_id: 'Teststudie', access_level: 'read' }],
+            study: 'Teststudie',
           },
         },
         { provide: MatDialogRef, useValue: dialogRef },
@@ -70,7 +70,7 @@ describe('DialogViewComplianceComponent', () => {
     it('should show an error if fetch fails', async () => {
       (
         complianceService.getComplianceAgreementById as jasmine.Spy
-      ).and.returnValue(Promise.reject());
+      ).and.rejectWith();
 
       await component.ngOnInit();
       fixture.detectChanges();

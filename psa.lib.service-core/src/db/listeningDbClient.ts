@@ -67,7 +67,9 @@ export class ListeningDbClient<
     if (!this.disconnected && this.sco) {
       // if connecting doesn't work it is possible to disconnect and break up the loop
       // in this case, sco would still be null
-      this.sco.client.on('error', (err) => ListeningDbClient.onError(err));
+      this.sco.client.on('error', (err: Error) =>
+        ListeningDbClient.onError(err)
+      );
       console.log('Connected to DB');
       this.emit('connected', this.sco.client);
     }

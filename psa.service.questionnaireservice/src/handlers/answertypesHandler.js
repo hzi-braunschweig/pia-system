@@ -5,7 +5,7 @@
  */
 
 const Boom = require('@hapi/boom');
-const postgresqlHelper = require('../services/postgresqlHelper.js');
+const postgresqlHelper = require('../services/postgresqlHelper');
 const { RESTPresenter } = require('../services/RESTPresenter');
 
 /**

@@ -20,7 +20,6 @@ import {
 } from 'src/app/_helpers/dialog-pop-up';
 import { Observable } from 'rxjs';
 import { CreateProbandRequest } from '../../psa.app.core/models/proband';
-import { UserWithStudyAccess } from '../../psa.app.core/models/user-with-study-access';
 import { map, shareReplay, startWith } from 'rxjs/operators';
 
 export interface DialogNewProbandComponentData {
@@ -62,16 +61,11 @@ export class DialogNewProbandComponent implements OnInit {
     let studies: string[] = [];
     try {
       if (this.data) {
-        const idsUser: UserWithStudyAccess = await this.authService.getUser(
-          this.data.ids
-        );
-        studies = idsUser.study_accesses.map((sa) => sa.study_id);
+        const idsUser = await this.authService.getUserByIDS(this.data.ids);
+        studies = [idsUser.study];
       } else {
         const result = await this.questionnaireService.getStudies();
-        // Hard coded filtering of ZIFCO-Studie
-        studies = result.studies
-          .map((study) => study.name)
-          .filter((name) => name !== 'ZIFCO-Studie');
+        studies = result.studies.map((study) => study.name);
       }
     } catch (err) {
       this.alertService.errorObject(err);

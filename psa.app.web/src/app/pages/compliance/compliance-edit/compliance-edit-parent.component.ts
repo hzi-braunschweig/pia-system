@@ -27,7 +27,9 @@ export abstract class ComplianceEditParentComponent implements DoCheck {
     protected dialog: MatDialog
   ) {}
 
-  async onSubmit(studyWrapper: ComplianceForStudyWrapper): Promise<void> {
+  public async onSubmit(
+    studyWrapper: ComplianceForStudyWrapper
+  ): Promise<void> {
     studyWrapper.cleanFormControls();
     studyWrapper.form.markAllAsTouched();
     if (studyWrapper.form.valid) {
@@ -79,7 +81,7 @@ export abstract class ComplianceEditParentComponent implements DoCheck {
     }
   }
 
-  ngDoCheck(): void {
+  public ngDoCheck(): void {
     if (this.studyWrapper) {
       if (!this.studyWrapper.editMode) {
         this.studyWrapper.form.disable();

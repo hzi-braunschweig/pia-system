@@ -30,25 +30,26 @@ const route: ServerRoute = {
           .description(
             'the pseudonym of planned probands that should be assigned to the proband'
           ),
-        ids: Joi.string()
-          .optional()
-          .description(
-            'an optional ids if the proband already exists but an account should be created'
-          ),
+        ids: Joi.string().optional().empty(null).description('an optional ids'),
         complianceLabresults: Joi.bool()
-          .required()
+          .optional()
+          .default(false)
           .description('compliance to see lab results'),
         complianceSamples: Joi.bool()
-          .required()
+          .optional()
+          .default(false)
           .description('compliance to take nasal swaps'),
         complianceBloodsamples: Joi.bool()
-          .required()
+          .optional()
+          .default(false)
           .description('compliance to take blood samples'),
         studyCenter: Joi.string()
-          .required()
+          .optional()
+          .empty(null)
           .description('the associated study center'),
         examinationWave: Joi.number()
-          .required()
+          .optional()
+          .empty(null)
           .description('the wave of examination'),
       })
         .rename('compliance_labresults', 'complianceLabresults')

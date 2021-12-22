@@ -1,15 +1,9 @@
-FROM node:14.18.1-alpine@sha256:a251de4db0e0632446c0ba62adbe1e37ff148a53732e4574d2ed0f5462cc4407 AS base
+FROM node:14.18.2-alpine@sha256:7bcf853eeb97a25465cb385b015606c22e926f548cbd117f85b7196df8aa0d29 AS base
 
 FROM base AS npm-install
 RUN apk --update --no-cache add curl tzdata
 RUN apk --update --no-cache add chromium ttf-dejavu ttf-liberation ttf-freefont
 ENV CHROME_BIN=/usr/bin/chromium-browser
-
-# Required packages for devDependencies (PACT)
-RUN apk --no-cache add --virtual build-dependencies build-base bash wget \
-    && wget -q -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
-    && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/2.33-r0/glibc-2.33-r0.apk \
-    && apk add glibc-2.33-r0.apk
 
 # required to prevent:
 # could not load the shared library:dso_dlfcn.c:185:filename(libssl_conf.so): libssl_conf.so: cannot open shared object file: No such file or directory
@@ -40,7 +34,6 @@ WORKDIR /usr/src/node-app/
 
 ARG DIR=.
 ENV CYPRESS_INSTALL_BINARY=0
-ENV PACT_SKIP_BINARY_INSTALL=true
 COPY $DIR/package*.json ./
 #copy dev dependencies
 COPY --chown=node psa.lib.licensecollector/package.json ../psa.lib.licensecollector/
@@ -61,7 +54,7 @@ RUN find /usr/src/node-app/dist/out/ | xargs gzip -k -9
 
 ################################################################
 
-FROM nginx:1.21.3-alpine@sha256:1ff1364a1c4332341fc0a854820f1d50e90e11bb0b93eb53b47dc5e10c680116 AS final
+FROM nginx:1.21.4-alpine@sha256:12aa12ec4a8ca049537dd486044b966b0ba6cd8890c4c900ccb5e7e630e03df0 AS final
 
 ARG DIR=.
 

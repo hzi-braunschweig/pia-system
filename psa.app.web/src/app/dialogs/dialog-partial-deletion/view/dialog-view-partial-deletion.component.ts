@@ -22,7 +22,6 @@ export interface PartialDeletionViewHeaderData {
 export class DialogViewPartialDeletionComponent {
   @Input() labResults: LabResult[] = [];
   @Input() questionnaireInstances: QuestionnaireInstance[] = [];
-  @Input() deleteLogs: true;
   @Input() headerData: PartialDeletionViewHeaderData;
   @Input() cancelText: string;
   @Output() cancel = new EventEmitter<MouseEvent>();
@@ -30,9 +29,7 @@ export class DialogViewPartialDeletionComponent {
 
   public containsData(): boolean {
     return (
-      this.deleteLogs ||
-      this.questionnaireInstances.length !== 0 ||
-      this.labResults.length !== 0
+      this.questionnaireInstances.length !== 0 || this.labResults.length !== 0
     );
   }
 }

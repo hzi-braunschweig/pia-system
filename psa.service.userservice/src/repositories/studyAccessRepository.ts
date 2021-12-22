@@ -10,15 +10,15 @@ export class StudyAccessRepository {
   public static async getProbandsWithAcessToFromProfessional(
     professionalUserId: string
   ): Promise<string[]> {
-    const users = await db.manyOrNone<{ username: string }>(
-      `SELECT u.username
-                 FROM users as u
-                          JOIN study_users su1 on u.username = su1.user_id
-                          JOIN study_users as su2 ON su1.study_id = su2.study_id
-                 WHERE su2.user_id = $(professionalUserId)
-                   AND u.role = 'Proband'`,
+    const users = await db.manyOrNone<{ pseudonym: string }>(
+      `SELECT pseudonym
+         FROM probands as p
+       JOIN study_users su
+         ON p.study = su.study_id
+       WHERE
+         su.user_id = $(professionalUserId)`,
       { professionalUserId }
     );
-    return users.map((user) => user.username);
+    return users.map((user) => user.pseudonym);
   }
 }

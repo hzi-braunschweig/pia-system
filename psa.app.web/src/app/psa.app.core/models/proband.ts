@@ -4,50 +4,27 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { PendingComplianceChange } from './pendingComplianceChange';
+import { ExternalCompliance } from './externalCompliance';
 
-export interface Proband {
-  username: string;
-  ids: string | null;
+/**
+ * This will be the new interface when multiple studies per user are removed
+ * or the probands are queried by study
+ */
+export interface ProbandNew extends ExternalCompliance {
+  pseudonym: string;
+  firstLggedInAt: Date | null;
   study: string;
-  studyStatus: StudyStatus;
   accountStatus: AccountStatus;
-  /**
-   * @deprecated it is only needed for the PM to change the compliance
-   * in future it should be moved to the compliance service and managed by
-   * the compliance manager
-   */
-  complianceLabresults: boolean;
-  /**
-   * @deprecated it is only needed for the PM to change the compliance
-   * in future it should be moved to the compliance service and managed by
-   * the compliance manager
-   */
-  complianceSamples: boolean;
-  /**
-   * @deprecated it is only needed for the PM to change the compliance
-   * in future it should be moved to the compliance service and managed by
-   * the compliance manager
-   */
-  complianceBloodsamples: boolean;
-  /**
-   * @deprecated it is only needed for the PM to change the compliance
-   * in future it should be moved to the compliance service and managed by
-   * the compliance manager
-   */
-  pendingComplianceChange: PendingComplianceChange | null;
+  status: ProbandStatus;
+  ids: string | null;
+  needsMaterial: boolean;
+  studyCenter: string | null;
+  examinationWave: number | null;
+  isTestProband: boolean;
 }
 
-export type AccountStatus =
-  | 'active'
-  | 'deactivation_pending'
-  | 'deactivated'
-  | 'no_account';
-export type StudyStatus =
-  | 'active'
-  | 'deactivated'
-  | 'deletion_pending'
-  | 'deleted';
+export type AccountStatus = 'account' | 'no_account';
+export type ProbandStatus = 'active' | 'deactivated' | 'deleted';
 
 export interface CreateProbandRequest {
   pseudonym: string;
@@ -65,11 +42,23 @@ export interface CreateIDSProbandRequest {
 
 export enum CreateProbandError {
   USER_NOT_FOUND = 'USER_NOT_FOUND',
-  WRONG_ROLE = 'WRONG_ROLE',
   NO_ACCESS_TO_STUDY = 'NO_ACCESS_TO_STUDY',
   NO_PLANNED_PROBAND_FOUND = 'NO_PLANNED_PROBAND_FOUND',
   PROBAND_ALREADY_EXISTS = 'PROBAND_ALREADY_EXISTS',
   CREATING_ACCOUNG_FAILED = 'CREATING_ACCOUNG_FAILED',
   SAVING_PROBAND_FAILED = 'SAVING_PROBAND_FAILED',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+}
+
+export interface Proband extends ExternalCompliance {
+  pseudonym: string;
+  first_logged_in_at: Date | null;
+  study: string;
+  accountStatus: AccountStatus;
+  status: ProbandStatus;
+  ids: string | null;
+  needs_material: boolean;
+  study_center: string | null;
+  examination_wave: number | null;
+  is_test_proband: boolean;
 }

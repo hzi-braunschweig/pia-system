@@ -6,7 +6,7 @@
 
 const Joi = require('joi');
 
-const answersHandler = require('../handlers/answersHandler.js');
+const answersHandler = require('../handlers/answersHandler');
 
 module.exports = {
   path: '/questionnaire/questionnaireInstances/{id}/answers',

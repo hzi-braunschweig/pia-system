@@ -5,12 +5,11 @@
   -->
 
 <div *ngIf="form">
-  <form [formGroup]="form" (ngSubmit)="submit(form)">
+  <form [formGroup]="form" (ngSubmit)="submit()">
     <h1 mat-dialog-title>{{ 'STUDIES.ADD_USER' | translate }}</h1>
     <mat-dialog-content>
       <mat-form-field fxFlex>
         <mat-select
-          id="selectuser"
           placeholder="{{ 'LOGIN.USERNAME' | translate }}"
           formControlName="user_id"
         >
@@ -20,7 +19,6 @@
           <mat-option
             *ngFor="let user of filteredUsers | async"
             [value]="user.username"
-            (click)="checkRole(user.role)"
           >
             {{ user.username }}
           </mat-option>
@@ -30,7 +28,6 @@
       <mat-form-field fxFlex>
         <mat-select
           disableOptionCentering
-          id="selectaccesslevel"
           placeholder="{{ 'DIALOG.ACCESS_LEVEL' | translate }}"
           formControlName="access_level"
         >

@@ -32,17 +32,6 @@
       {{ labResult.id }} {{ 'DIALOG.PARTIAL_DELETION.FROM' | translate }}
       {{ labResult.date_of_sampling | date }}
     </dd>
-    <dt *ngIf="deleteLogs">
-      {{ 'DIALOG.PARTIAL_DELETION.LOG_DATA' | translate }}
-    </dt>
-    <dd *ngIf="deleteLogs">
-      {{ 'DIALOG.PARTIAL_DELETION.FROM' | translate }}
-      {{ headerData.startDate }}
-    </dd>
-    <dd *ngIf="deleteLogs">
-      {{ 'DIALOG.PARTIAL_DELETION.TO' | translate }}
-      {{ headerData.endDate }}
-    </dd>
   </dl>
 </mat-dialog-content>
 <mat-dialog-actions>

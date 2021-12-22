@@ -7,7 +7,6 @@
 import {
   Component,
   ElementRef,
-  forwardRef,
   Inject,
   OnInit,
   Pipe,
@@ -23,7 +22,6 @@ import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { JwtHelperService } from '@auth0/angular-jwt';
 import { User } from '../../../psa.app.core/models/user';
 import { SampleTrackingService } from '../../../psa.app.core/providers/sample-tracking-service/sample-tracking.service';
 import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
@@ -51,17 +49,19 @@ import { AlertService } from '../../../_services/alert.service';
 import * as jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
-import { Studie } from 'src/app/psa.app.core/models/studie';
+import { Study } from 'src/app/psa.app.core/models/study';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BloodSample, LabResult } from '../../../psa.app.core/models/labresult';
-import { UserWithStudyAccess } from '../../../psa.app.core/models/user-with-study-access';
+import { Proband } from '../../../psa.app.core/models/proband';
+import { PendingSampleDeletion } from '../../../psa.app.core/models/pendingDeletion';
+import { AuthenticationManager } from '../../../_services/authentication-manager.service';
 
 interface BloodSampleRow extends BloodSample {
   blood_sample_carried_out_value: string;
 }
 
 interface LabResultRow extends LabResult {
-  pendingDeletionObject: any;
+  pendingDeletionObject: PendingSampleDeletion;
 }
 
 @Component({
@@ -71,7 +71,7 @@ interface LabResultRow extends LabResult {
   providers: [
     {
       provide: MatPaginatorIntl,
-      useClass: forwardRef(() => MatPaginatorIntlGerman),
+      useClass: MatPaginatorIntlGerman,
     },
   ],
 })
@@ -87,7 +87,7 @@ export class SamplesComponent implements OnInit {
     { value: false, viewValue: 'SAMPLES.BLOOD_SAMPLE_NOT_CARRIED_OUT' },
   ];
 
-  availableStudies: Studie[] = [];
+  availableStudies: Study[] = [];
 
   showBlutProbenTable: boolean = false;
   showProbenTable: boolean = false;
@@ -105,13 +105,10 @@ export class SamplesComponent implements OnInit {
     private userService: AuthService,
     private sampleTrackingService: SampleTrackingService,
     private _location: Location,
-    private questionnaireService: QuestionnaireService
+    private questionnaireService: QuestionnaireService,
+    auth: AuthenticationManager
   ) {
-    const jwtHelper: JwtHelperService = new JwtHelperService();
-    this.currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    // decode the token to get its payload
-    const tokenPayload = jwtHelper.decodeToken(this.currentUser.token);
-    this.currentRole = tokenPayload.role;
+    this.currentRole = auth.getCurrentRole();
 
     this.pendingDeletionId =
       this.route.snapshot.queryParamMap.get('pendingDeletionId');
@@ -119,46 +116,48 @@ export class SamplesComponent implements OnInit {
       this.route.snapshot.queryParamMap.get('deactivated')
     );
     if (this.pendingDeletionId) {
-      this.authService.getPendingDeletion(this.pendingDeletionId).then(
-        (result: any) => {
-          if (result.requested_for && result.for_id) {
-            this.openDialogDeletePartner(
-              result.for_id,
-              'study',
-              result.requested_by,
-              result.id
-            );
+      this.authService
+        .getPendingDeletion(parseInt(this.pendingDeletionId, 10))
+        .then(
+          (result) => {
+            if (result.requested_for && result.for_id) {
+              this.openDialogDeletePartner(
+                result.for_id,
+                'study',
+                result.requested_by,
+                result.id
+              );
+            }
+          },
+          (err: HttpErrorResponse) => {
+            if (
+              err.error.message ===
+              'The requester is not allowed to get this pending deletion'
+            ) {
+              this.showResultDialog({
+                content: 'PROBANDEN.PENDING_DELETE_ERROR',
+                isSuccess: false,
+              });
+            } else if (
+              err.error.message === 'The pending deletion was not found'
+            ) {
+              this.showResultDialog({
+                content: 'PROBANDEN.PENDING_DELETION_NOT_FOUND',
+                isSuccess: false,
+              });
+            } else if (
+              err.error.message ===
+              'Could not get the pending deletion: Unknown or wrong role'
+            ) {
+              this.showResultDialog({
+                content: 'PROBANDEN.PENDING_DELETION_WRONG_ROLE',
+                isSuccess: false,
+              });
+            } else {
+              this.alertService.errorObject(err);
+            }
           }
-        },
-        (err: HttpErrorResponse) => {
-          if (
-            err.error.message ===
-            'The requester is not allowed to get this pending deletion'
-          ) {
-            this.showResultDialog({
-              content: 'PROBANDEN.PENDING_DELETE_ERROR',
-              isSuccess: false,
-            });
-          } else if (
-            err.error.message === 'The pending deletion was not found'
-          ) {
-            this.showResultDialog({
-              content: 'PROBANDEN.PENDING_DELETION_NOT_FOUND',
-              isSuccess: false,
-            });
-          } else if (
-            err.error.message ===
-            'Could not get the pending deletion: Unknown or wrong role'
-          ) {
-            this.showResultDialog({
-              content: 'PROBANDEN.PENDING_DELETION_WRONG_ROLE',
-              isSuccess: false,
-            });
-          } else {
-            this.alertService.errorObject(err);
-          }
-        }
-      );
+        );
     }
   }
 
@@ -204,7 +203,7 @@ export class SamplesComponent implements OnInit {
     'blood_sample_carried_out',
   ];
 
-  proband: UserWithStudyAccess;
+  proband: Proband;
 
   @ViewChild('filterBluteproben') filterBluteproben: ElementRef;
   @ViewChild('filterNasenabstrichen') filterNasenabstrichen: ElementRef;
@@ -220,23 +219,23 @@ export class SamplesComponent implements OnInit {
       this.currentRole === 'Forscher'
     ) {
       this.userService
-        .getUser(this.pseudonym)
+        .getProband(this.pseudonym)
         .then(async (res) => {
           this.proband = res;
-          if (this.proband.compliance_bloodsamples) {
+          if (this.proband.complianceBloodsamples) {
             this.showBlutProbenTable = true;
             this.initBlutProbenTable();
           }
-          if (this.proband.compliance_samples) {
+          if (this.proband.complianceSamples) {
             this.showProbenTable = true;
             this.initProbenTable();
           }
           if (!this.showProbenTable && !this.showBlutProbenTable) {
             this.loading = false;
           }
-          const studiesResult =
-            await this.questionnaireService.getStudiesOfProband(this.pseudonym);
-          this.availableStudies = studiesResult.studies;
+          this.availableStudies = [
+            await this.questionnaireService.getStudy(res.study),
+          ];
         })
         .catch((e) => {
           console.log(e);
@@ -260,12 +259,12 @@ export class SamplesComponent implements OnInit {
       await Promise.all(
         tableData.map(async (labResult) => {
           if (labResult.study_status === 'active') {
-            labResult.study_status = 'STUDIES.STATUS_ACTIV';
+            labResult.study_status = 'STUDIES.STATUS_ACTIVE';
           } else if (labResult.study_status === 'deletion_pending') {
             labResult.study_status = 'STUDIES.STATUS_DELETION_PENDING';
 
             // add pendingDeletion object if sample has a deletion pending
-            let pendingDeletionObject = null;
+            let pendingDeletionObject: PendingSampleDeletion = null;
             try {
               pendingDeletionObject =
                 await this.authService.getPendingDeletionForSampleId(
@@ -571,7 +570,7 @@ export class SamplesComponent implements OnInit {
     sampleId: string,
     type: DeletionType,
     usernamePM?: string,
-    pendingdeletionId?: string
+    pendingdeletionId?: number
   ): void {
     const dialogData: DialogDeletePartnerData = {
       usernames: {
@@ -862,8 +861,8 @@ export class ScanDialogComponent {
 
   hasDummySampleId = false;
   isBloodSample = false;
-  availableStudies: Studie[] = [];
-  selectedStudy: Studie = null;
+  availableStudies: Study[] = [];
+  selectedStudy: Study = null;
   sample_prefix: string = null;
   sample_suffix_length: number = null;
 
@@ -891,7 +890,7 @@ export class ScanDialogComponent {
       .valueChanges.subscribe((value) => this.onStudyUpdate(value));
   }
 
-  onStudyUpdate(study: Studie): void {
+  onStudyUpdate(study: Study): void {
     this.selectedStudy = study;
     this.scanForm.get('sample_id').setValue('');
     this.scanForm.get('dummy_sample_id').setValue('');

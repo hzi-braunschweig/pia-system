@@ -26,6 +26,8 @@ export class PackageLicense {
     'Anyone is free to copy, modify, publish, use, compile, sell, or',
     // WTFPL
     'DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE',
+    // CC-BY-4.0
+    'Attribution 4.0 International',
   ];
 
   public constructor(
@@ -61,7 +63,7 @@ export class PackageLicense {
           '" with text:\n\n' +
           this.licenseText +
           '\n\n' +
-          'Please add a valid license text to known-missing-license-texts.js\n\n'
+          'Please add a valid license text to licenseTextCompleter.ts\n\n'
       );
     }
   }

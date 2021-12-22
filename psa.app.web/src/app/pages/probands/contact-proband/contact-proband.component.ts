@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, ElementRef, ViewChild, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
@@ -25,7 +25,39 @@ import { Location } from '@angular/common';
   styleUrls: ['./contact-proband.component.scss'],
 })
 export class ContactProbandComponent implements OnInit {
-  @ViewChild('pseudonymInput', { static: true }) pseudonymInput: ElementRef;
+  @ViewChild('pseudonymInput', { static: true })
+  public pseudonymInput: ElementRef;
+
+  public isChildWindow = false;
+  public selectable = true;
+  public removable = true;
+  public submitButtonIsDisabled = false;
+
+  public contactAll = false;
+  public notifyByEmail = false;
+  public notifyByNotification = false;
+
+  public separatorKeysCodes = [ENTER, COMMA];
+
+  public receiver = new FormControl('', [Validators.required]);
+  public subject = new FormControl('', [Validators.required]);
+  public content = new FormControl('', [Validators.required]);
+
+  public messageFormGroup = new FormGroup({
+    receiver: this.receiver,
+    subject: this.subject,
+    content: this.content,
+  });
+
+  public pseudonyms: string[] = [];
+
+  public autoCompletePseudonyms: ReplaySubject<string[]> = new ReplaySubject<
+    string[]
+  >(1);
+
+  private allPseudonyms = [];
+  private autoCompletePseudonymsArray = [];
+  private personalData = [];
 
   constructor(
     private translate: TranslateService,
@@ -36,68 +68,28 @@ export class ContactProbandComponent implements OnInit {
     private personalDataService: PersonalDataService,
     private notificationService: NotificationService
   ) {
-    if ('usernames' in this.activatedRoute.snapshot.params) {
-      const usernameParam =
-        this.activatedRoute.snapshot.paramMap.get('usernames');
-      this.pseudonyms = usernameParam.split(';');
+    if (this.activatedRoute.snapshot.paramMap.has('usernames')) {
+      this.pseudonyms = this.activatedRoute.snapshot.paramMap
+        .get('usernames')
+        .split(';');
       this.notifyByEmail = true;
       this.isChildWindow = true;
     }
   }
 
-  isChildWindow = false;
-  selectable = true;
-  removable = true;
-  submitButtonIsDisabled = false;
-
-  contactAll = false;
-  notifyByEmail = false;
-  notifyByNotification = false;
-
-  separatorKeysCodes = [ENTER, COMMA];
-
-  receiver = new FormControl('', [Validators.required]);
-  subject = new FormControl('', [Validators.required]);
-  content = new FormControl('', [Validators.required]);
-
-  messageFormGroup = new FormGroup({
-    receiver: this.receiver,
-    subject: this.subject,
-    content: this.content,
-  });
-
-  pseudonyms: string[] = [];
-  allPseudonyms = [];
-  public autoCompletePseudonyms: ReplaySubject<string[]> = new ReplaySubject<
-    string[]
-  >(1);
-
-  autoCompletePseudonymsArray = [];
-  personalData = [];
-
-  ngOnInit(): void {
-    this.auth.getUsers().then((res) => {
-      // Save usernames (pseudonyms) in a list
-      for (const user of res.users) {
-        if (
-          user.account_status !== 'deactivated' &&
-          user.study_status !== 'deleted'
-        ) {
-          this.allPseudonyms.push(user.username);
-        }
-      }
-      this.autoCompletePseudonymsArray = this.allPseudonyms;
-      this.updateAutoCompletePseudonyms();
-    });
-
-    this.personalDataService.getPersonalDataAll().then((res) => {
-      this.personalData = res;
-    });
-
+  public async ngOnInit(): Promise<void> {
     // listen for search field value changes
     this.receiver.valueChanges.subscribe(() => {
       this.updateAutoCompletePseudonyms();
     });
+
+    const res = await this.auth.getProbands();
+    this.allPseudonyms = res
+      .filter((user) => user.status === 'active')
+      .map((user) => user.pseudonym);
+    this.autoCompletePseudonymsArray = this.allPseudonyms;
+    this.updateAutoCompletePseudonyms();
+    this.personalData = await this.personalDataService.getPersonalDataAll();
   }
 
   filter(name: string): string[] {
@@ -146,7 +138,7 @@ export class ContactProbandComponent implements OnInit {
       if (this.notifyByNotification) {
         this.notificationService
           .sendNotification(requestData)
-          .then((res) => {
+          .then(() => {
             this.matDialog.open(DialogPopUpComponent, {
               width: '500px',
               data: {

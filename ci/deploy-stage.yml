@@ -1,5 +1,5 @@
 deploy-pia-develop:
-  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d
+  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
     GIT_STRATEGY: none
@@ -15,7 +15,7 @@ deploy-pia-develop:
     url: https://pia-develop.netzlink.com/
 
 deploy-pia-release:
-  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d
+  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
     GIT_STRATEGY: none
@@ -32,7 +32,7 @@ deploy-pia-release:
     url: https://pia-release.netzlink.com/
 
 deploy-sb-pia:
-  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d
+  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
     GIT_STRATEGY: none
@@ -48,7 +48,7 @@ deploy-sb-pia:
     url: https://sb-pia.sormas.netzlink.com/
 
 deploy-sb-pia-de-release:
-  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d
+  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
     GIT_STRATEGY: none
@@ -66,7 +66,7 @@ deploy-sb-pia-de-release:
     url: https://release-pia-de.sormas.netzlink.com
 
 deploy-sb-pia-niedersachsen-release:
-  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d
+  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
     GIT_STRATEGY: none
@@ -83,7 +83,7 @@ deploy-sb-pia-niedersachsen-release:
     url: https://release-niedersachsen-sb.ovh.netzlink.com
 
 deploy-stable:
-  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d
+  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
     GIT_STRATEGY: none
@@ -109,7 +109,7 @@ deploy-stable:
     url: https://$TARGET_NAME
 
 deploy-feature-stage:
-  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d
+  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
     GIT_STRATEGY: none
@@ -125,8 +125,9 @@ deploy-feature-stage:
     - echo "DYNAMIC_ENVIRONMENT_URL=$DYNAMIC_ENVIRONMENT_URL" >> deploy.env
     - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD workflow_job_templates launch --monitor --wait --inventory 40 --extra_vars "{\"survey_host_name\":\"$DYNAMIC_ENVIRONMENT_HOST\",\"pia_url\":\"$DYNAMIC_ENVIRONMENT_HOST\",\"pia_docker_tag\":\"$CI_PIPELINE_ID\", \"pia_fluentd_feature\":\"$DYNAMIC_ENVIRONMENT_HOST\"}" --scm_branch "$CI_COMMIT_SHA" "PIA Feature Host@OVH"
     - curl --fail -u $DEPLOYMENT_USER:$DEPLOYMENT_PASSWORD -o export.sql https://pia-develop.netzlink.com/deployment/db/qpia
-    - sed "s/RETURN (SELECT EXISTS(SELECT 1 FROM users WHERE UPPER(username) = UPPER(check_username)));/RETURN (SELECT EXISTS(SELECT 1 FROM public.users WHERE UPPER(username) = UPPER(check_username)));/g" < export.sql > export-fixed.sql
-    - mv export-fixed.sql export.sql
+    # TODO:
+    - sed -i "s/RETURN (SELECT EXISTS(SELECT 1 FROM users WHERE UPPER(username) = UPPER(check_username)));/RETURN (SELECT EXISTS(SELECT 1 FROM public.users WHERE UPPER(username) = UPPER(check_username)));/g" export.sql
+    - sed -i "s/' LOCALE = '/' LC_COLLATE = '/g" export.sql
     - curl --fail -u $DEPLOYMENT_USER:$DEPLOYMENT_PASSWORD -X POST --data-binary @export.sql $DYNAMIC_ENVIRONMENT_URL/deployment/db/qpia
     - cat deploy.env
   rules:
@@ -145,7 +146,7 @@ deploy-feature-stage:
     auto_stop_in: 1 week
 
 deploy-sb-feature-stage:
-  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d
+  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
     GIT_STRATEGY: none
@@ -163,8 +164,9 @@ deploy-sb-feature-stage:
     - echo "DYNAMIC_ENVIRONMENT_URL=$DYNAMIC_ENVIRONMENT_URL" >> deploy.env
     - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD workflow_job_templates launch --monitor --wait --inventory 40 --extra_vars "{\"survey_host_name\":\"sormas-$DYNAMIC_ENVIRONMENT_HOST\",\"sormas_url\":\"sormas-$DYNAMIC_ENVIRONMENT_HOST\",\"create_default_entities\":true,\"pia_url\":\"sb-$DYNAMIC_ENVIRONMENT_HOST\",\"pia_certificate_master\":\"sb-$DYNAMIC_ENVIRONMENT_HOST\",\"pia_docker_tag\":\"$CI_PIPELINE_ID\",\"SORMAS_DOCKER_VERSION\":\"$SORMAS_DOCKER_VERSION\"}" --scm_branch "$CI_COMMIT_SHA" "Feature-SB@sormas.netzlink.com"
     - curl --fail -u $DEPLOYMENT_USER:$DEPLOYMENT_PASSWORD -o export.sql https://sb-pia.sormas.netzlink.com/deployment/db/qpia
-    - sed "s/RETURN (SELECT EXISTS(SELECT 1 FROM users WHERE UPPER(username) = UPPER(check_username)));/RETURN (SELECT EXISTS(SELECT 1 FROM public.users WHERE UPPER(username) = UPPER(check_username)));/g" < export.sql > export-fixed.sql
-    - mv export-fixed.sql export.sql
+    # TODO:
+    - sed -i "s/RETURN (SELECT EXISTS(SELECT 1 FROM users WHERE UPPER(username) = UPPER(check_username)));/RETURN (SELECT EXISTS(SELECT 1 FROM public.users WHERE UPPER(username) = UPPER(check_username)));/g" export.sql
+    - sed -i "s/' LOCALE = '/' LC_COLLATE = '/g" export.sql
     - curl --fail -u $DEPLOYMENT_USER:$DEPLOYMENT_PASSWORD -X POST --data-binary @export.sql $DYNAMIC_ENVIRONMENT_URL/deployment/db/qpia
     - cat deploy.env
   rules:
@@ -183,7 +185,7 @@ deploy-sb-feature-stage:
     auto_stop_in: 1 week
 
 stop-feature-stage:
-  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d
+  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: undeploy
   variables:
     GIT_STRATEGY: none
@@ -204,7 +206,7 @@ stop-feature-stage:
     action: stop
 
 stop-sb-feature-stage:
-  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:5cd2e953766a18638be95d5343894c6e9035353e896661ed373061eeda70aa9d
+  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: undeploy
   variables:
     GIT_STRATEGY: none

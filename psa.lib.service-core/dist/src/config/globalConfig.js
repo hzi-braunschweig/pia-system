@@ -46,10 +46,6 @@ class GlobalConfig {
             name: configUtils_1.ConfigUtils.getEnvVariable('MAIL_FROM_NAME'),
         };
     }
-    static get isSormasActive() {
-        return (configUtils_1.ConfigUtils.getEnvVariable('IS_SORMAS_ACTIVE', 'false').toLowerCase() ===
-            'true');
-    }
     static get webappUrl() {
         return configUtils_1.ConfigUtils.getEnvVariable('WEBAPP_URL');
     }

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import parse from 'csv-parse/lib/sync';
+import * as csv from 'csv-parse/sync';
 import * as dateFns from 'date-fns';
 import { Transform, TransformCallback } from 'stream';
 import { ImportFile } from '../../models/ImportFile';
@@ -237,7 +237,7 @@ export class ParseCsvFilesToLabResultsStream extends Transform {
         delimiter = currentDelimiter;
       }
     });
-    const parsed = parse(csvString, {
+    const parsed = csv.parse(csvString, {
       ...this.parseOptions,
       delimiter,
     }) as CsvLine[];

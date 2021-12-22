@@ -10,7 +10,6 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 const sinon = require('sinon');
 const fetchMock = require('fetch-mock').sandbox();
-const fetch = require('node-fetch');
 
 const { setup, cleanup } = require('./personalData.spec.data/setup.helper');
 
@@ -20,6 +19,7 @@ const server = require('../../src/server');
 const testSandbox = sinon.createSandbox();
 
 const JWT = require('jsonwebtoken');
+const { HttpClient } = require('@pia-system/lib-http-clients-internal');
 
 const apiAddress = 'http://localhost:' + process.env.PORT + '/personal';
 
@@ -91,7 +91,7 @@ describe('/personalData', () => {
   });
 
   beforeEach(async () => {
-    testSandbox.stub(fetch, 'default').callsFake(fetchMock);
+    testSandbox.stub(HttpClient, 'fetch').callsFake(fetchMock);
     fetchMock.catch(503);
   });
 
@@ -436,13 +436,9 @@ describe('/personalData', () => {
 
     it('should return HTTP 200 with created personal data', async () => {
       // Arrange
-      fetchMock
-        .get('express:/user/users/:pseudonym/primaryStudy', {
-          body: { name: 'QTestStudy1' },
-        })
-        .get('express:/user/users/:pseudonym', {
-          body: { account_status: 'active' },
-        });
+      fetchMock.get('express:/user/users/:pseudonym', {
+        body: { study: 'QTestStudy1', complianceContact: true },
+      });
       const personalData = createPersonalData();
 
       // Act
@@ -463,13 +459,9 @@ describe('/personalData', () => {
 
     it('should return HTTP 200 with personal proband data when a PM tries to update proband', async () => {
       // Arrange
-      fetchMock
-        .get('express:/user/users/:pseudonym/primaryStudy', {
-          body: { name: 'QTestStudy1' },
-        })
-        .get('express:/user/users/:pseudonym', {
-          body: { account_status: 'active' },
-        });
+      fetchMock.get('express:/user/users/:pseudonym', {
+        body: { study: 'QTestStudy1', complianceContact: true },
+      });
       const personalData = {
         anrede: 'Frau',
         titel: 'doc',
@@ -505,13 +497,9 @@ describe('/personalData', () => {
 
     it('should return HTTP 200 with personal proband data when a PM tries to update proband with empty strings as values', async () => {
       // Arrange
-      fetchMock
-        .get('express:/user/users/:pseudonym/primaryStudy', {
-          body: { name: 'QTestStudy1' },
-        })
-        .get('express:/user/users/:pseudonym', {
-          body: { account_status: 'active' },
-        });
+      fetchMock.get('express:/user/users/:pseudonym', {
+        body: { study: 'QTestStudy1', complianceContact: true },
+      });
       const personalData = {
         anrede: '',
         titel: '',
@@ -545,13 +533,9 @@ describe('/personalData', () => {
 
     it('should return HTTP 200 with personal proband data when a PM tries to update proband with null values', async () => {
       // Arrange
-      fetchMock
-        .get('express:/user/users/:pseudonym/primaryStudy', {
-          body: { name: 'QTestStudy1' },
-        })
-        .get('express:/user/users/:pseudonym', {
-          body: { account_status: 'active' },
-        });
+      fetchMock.get('express:/user/users/:pseudonym', {
+        body: { study: 'QTestStudy1', complianceContact: true },
+      });
       const personalData = {
         anrede: '',
         titel: '',
@@ -585,13 +569,9 @@ describe('/personalData', () => {
 
     it('should return HTTP 200 with personal proband data when a PM tries to update proband with a valid postal code', async () => {
       // Arrange
-      fetchMock
-        .get('express:/user/users/:pseudonym/primaryStudy', {
-          body: { name: 'QTestStudy1' },
-        })
-        .get('express:/user/users/:pseudonym', {
-          body: { account_status: 'active' },
-        });
+      fetchMock.get('express:/user/users/:pseudonym', {
+        body: { study: 'QTestStudy1', complianceContact: true },
+      });
       const personalData = { ...createPersonalData(), plz: '0123' };
 
       // Act
@@ -608,13 +588,9 @@ describe('/personalData', () => {
 
     it('should return HTTP 400 when a PM tries to update proband with an invalid postal code', async () => {
       // Arrange
-      fetchMock
-        .get('express:/user/users/:pseudonym/primaryStudy', {
-          body: { name: 'QTestStudy1' },
-        })
-        .get('express:/user/users/:pseudonym', {
-          body: { account_status: 'active' },
-        });
+      fetchMock.get('express:/user/users/:pseudonym', {
+        body: { study: 'QTestStudy1', complianceContact: true },
+      });
 
       // Act
       const probandUpdate = { ...createPersonalData(), plz: '012ab3' };
@@ -628,15 +604,11 @@ describe('/personalData', () => {
       expect(result, result.text).to.have.status(400);
     });
 
-    it('should return HTTP 404 when the proband was deactivated', async () => {
+    it('should return HTTP 403 when the proband has refused to be contacted', async () => {
       // Arrange
-      fetchMock
-        .get('express:/user/users/:pseudonym/primaryStudy', {
-          body: { name: 'QTestStudy1' },
-        })
-        .get('express:/user/users/:pseudonym', {
-          body: { account_status: 'deactivated' },
-        });
+      fetchMock.get('express:/user/users/:pseudonym', {
+        body: { study: 'QTestStudy1', complianceContact: false },
+      });
       const personalData = createPersonalData();
 
       // Act
@@ -647,18 +619,14 @@ describe('/personalData', () => {
         .send(personalData);
 
       // Assert
-      expect(result, result.text).to.have.status(404);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 404 when the PM has no access to the probands data', async () => {
       // Arrange
-      fetchMock
-        .get('express:/user/users/:pseudonym/primaryStudy', {
-          body: { name: 'QTestStudy3' },
-        })
-        .get('express:/user/users/:pseudonym', {
-          body: { account_status: 'active' },
-        });
+      fetchMock.get('express:/user/users/:pseudonym', {
+        body: { study: 'QTestStudy3', complianceContact: true },
+      });
       const personalData = createPersonalData();
 
       // Act

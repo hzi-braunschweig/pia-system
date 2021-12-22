@@ -6,7 +6,7 @@
 
 const complianceTextRepository = require('../repositories/complianceTextRepository');
 const complianceRepository = require('../repositories/complianceRepository');
-const userserviceClient = require('../clients/userserviceClient');
+const { userserviceClient } = require('../clients/userserviceClient');
 const complianceMapper = require('../services/complianceMapper');
 
 class ComplianceService {

@@ -11,20 +11,18 @@ chai.use(chaiHttp);
 chai.use(chaiExclude);
 const expect = chai.expect;
 const sinon = require('sinon');
+const fetchMocker = require('fetch-mock');
+
+const { HttpClient } = require('@pia-system/lib-http-clients-internal');
+const server = require('../../src/server');
+const { sequelize, ComplianceText, Compliance } = require('../../src/db');
 
 const secretOrPrivateKey = require('../secretOrPrivateKey');
 const JWT = require('jsonwebtoken');
 
-const server = require('../../src/server');
-const { sequelize, ComplianceText, Compliance } = require('../../src/db');
+const testSandbox = sinon.createSandbox();
 
 const apiAddress = 'http://localhost:' + process.env.PORT;
-
-const testSandbox = sinon.createSandbox();
-const fetch = require('node-fetch');
-
-const { config } = require('../../src/config');
-const userserviceUrl = config.services.userservice.url;
 
 const probandSession = {
   id: 1,
@@ -62,6 +60,8 @@ const probandHeader = { authorization: probandToken };
 const probandHeader2 = { authorization: probandToken2 };
 const researchTeamHeader = { authorization: researchTeamToken };
 
+const fetchMock = fetchMocker.sandbox();
+
 describe('Compliance API', () => {
   before(async () => {
     await sequelize.sync();
@@ -76,30 +76,24 @@ describe('Compliance API', () => {
     await ComplianceText.destroy({ truncate: true, cascade: true });
     await Compliance.destroy({ truncate: true, cascade: true });
 
-    testSandbox.stub(fetch, 'default').callsFake(async (url) => {
-      if (
-        url ===
-        userserviceUrl + '/user/users/QTestproband1/externalcompliance'
-      ) {
-        return new fetch.Response(
-          JSON.stringify({
-            compliance_samples: true,
-            compliance_bloodsamples: true,
-            compliance_labresults: true,
-          })
-        );
-      } else if (
-        url ===
-        userserviceUrl + '/user/users/QTestproband1/mappingId'
-      ) {
-        return new fetch.Response('e959c22a-ab73-4b70-8871-48c23080b87b');
-      } else {
-        return new fetch.Response(null, { status: 503 });
-      }
-    });
+    testSandbox.stub(HttpClient, 'fetch').callsFake(fetchMock);
+
+    fetchMock
+      .get('express:/user/users/QTestproband1/externalcompliance', {
+        body: JSON.stringify({
+          complianceSamples: true,
+          complianceBloodsamples: true,
+          complianceLabresults: true,
+        }),
+      })
+      .get('express:/user/users/QTestproband1/mappingId', {
+        body: 'e959c22a-ab73-4b70-8871-48c23080b87b',
+      })
+      .catch(503);
   });
   afterEach(async () => {
     testSandbox.restore();
+    fetchMock.restore();
   });
 
   describe('GET /compliance/{study}/agree/{userId}/needed', () => {

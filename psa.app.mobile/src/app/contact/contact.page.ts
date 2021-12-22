@@ -14,15 +14,18 @@ import { ToastPresenterService } from '../shared/services/toast-presenter/toast-
 import { ContactClientService } from './contact-client.service';
 import { StudyContact } from './contact.model';
 import { MaterialClientService } from './material-client.service';
+import { ComplianceService } from '../compliance/compliance-service/compliance.service';
+import { ComplianceType } from '../compliance/compliance.model';
 
 @Component({
   selector: 'app-contact',
   templateUrl: './contact.page.html',
 })
 export class ContactPage implements OnInit {
-  currentUser: User = this.auth.getCurrentUser();
+  public currentUser: User = this.auth.getCurrentUser();
+  public hasSamplesCompliance: boolean;
 
-  addresses: StudyContact[] = null;
+  public addresses: StudyContact[] = null;
 
   constructor(
     private auth: AuthService,
@@ -30,11 +33,16 @@ export class ContactPage implements OnInit {
     private materialClient: MaterialClientService,
     private alertCtrl: AlertController,
     private translate: TranslateService,
-    private toastPresenter: ToastPresenterService
+    private toastPresenter: ToastPresenterService,
+    private complianceService: ComplianceService
   ) {}
 
   async ngOnInit() {
     try {
+      this.hasSamplesCompliance =
+        await this.complianceService.userHasCompliances([
+          ComplianceType.SAMPLES,
+        ]);
       this.addresses = await this.contactClient.getStudyAddresses();
     } catch (error) {
       console.error(error);

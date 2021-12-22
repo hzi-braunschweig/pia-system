@@ -104,7 +104,7 @@ e2e:
     IS_SORMAS_ACTIVE: 'false'
 
     #faked
-    SORMAS_SERVER: localhost
+    SORMAS_SERVER_URL: localhost
     SORMASSERVICE_HOST: sormasservice
     SORMASSERVICE_INTERNAL_PORT: 5000
 

@@ -7,7 +7,7 @@
 import Boom from '@hapi/boom';
 import { runTransaction } from '../db';
 import { PersonalDataRepository } from '../repositories/personalDataRepository';
-import { UserserviceClient } from '../clients/userserviceClient';
+import { userserviceClient } from '../clients/userserviceClient';
 import { PersonalData, PersonalDataReq } from '../models/personalData';
 
 export class PersonalDataService {
@@ -15,20 +15,18 @@ export class PersonalDataService {
    * Creates or updates the personal data if the proband exists and is not deactivated
    *
    * @param pseudonym the user the personal data belong to
-   * @param study name of the study, the user belongs to
    * @param personalData the personal data to change
    */
   public static async createOrUpdate(
     pseudonym: string,
-    study: string,
     personalData: PersonalDataReq
   ): Promise<PersonalData> {
-    const proband = await UserserviceClient.getProband(pseudonym);
+    const proband = await userserviceClient.getProband(pseudonym);
     if (!proband) {
       throw Boom.notFound('proband does not exist');
     }
-    if (proband.account_status === 'deactivated') {
-      throw Boom.notFound('proband was deactivated');
+    if (!proband.complianceContact) {
+      throw Boom.forbidden('proband has refused to be contacted');
     }
     return runTransaction(async (transaction) => {
       const existingPersonalData = await PersonalDataRepository.getPersonalData(
@@ -44,7 +42,7 @@ export class PersonalDataService {
       } else {
         return await PersonalDataRepository.createPersonalData(
           pseudonym,
-          study,
+          proband.study,
           personalData,
           { transaction }
         );

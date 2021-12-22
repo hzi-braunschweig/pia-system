@@ -5,8 +5,9 @@
  */
 
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
+import { ProfessionalUser } from '../psa.app.core/models/user';
 
 @Component({
   selector: 'dialog-user-data',
@@ -16,56 +17,42 @@ import { TranslateService } from '@ngx-translate/core';
     }}</mat-dialog-content>
     <ul style="font-size:14px;	text-align: left">
       <li>{{ 'LOGIN.USERNAME' | translate }}: {{ data.username }}</li>
-      <li>{{ 'LOGIN.PASSWORD' | translate }}: {{ data.password }}</li>
       <li>{{ 'QUESTIONNAIRES_FORSCHER.ROLE' | translate }}: {{ data.role }}</li>
       <li>{{ 'DIALOG.ACCESS_LEVEL' | translate }}:</li>
       <ul
-        *ngFor="let acces_level of this.access_level"
+        *ngFor="let acces_level of this.accessLevel"
         style="font-size:14px;	text-align: left"
       >
-        <li>{{ this.access_level ? acces_level : '' }}</li>
+        <li>{{ this.accessLevel ? acces_level : '' }}</li>
       </ul>
     </ul>
     <hr />
     <mat-dialog-actions align="end">
-      <button id="confirmbutton" mat-button (click)="confirmSelection()">
-        OK
-      </button>
+      <button id="confirmbutton" mat-button mat-dialog-close>OK</button>
     </mat-dialog-actions>
   `,
 })
 export class DialogUserDataComponent {
-  access_level: string[] = [''];
-  study_name: string[] = [''];
+  public accessLevel: string[] = [''];
 
   constructor(
     public translate: TranslateService,
     public dialogRef: MatDialogRef<DialogUserDataComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: ProfessionalUser
   ) {
-    if (
-      data.study_accesses &&
-      data.study_accesses !== [] &&
-      data.study_accesses[0] !== undefined
-    ) {
-      data.study_accesses.forEach((study_access, studyIndex) => {
-        this.access_level[studyIndex] = study_access.access_level;
-        if (this.access_level[studyIndex] === 'read') {
-          this.access_level[studyIndex] = this.translate.instant('DIALOG.READ');
-        } else if (this.access_level[studyIndex] === 'write') {
-          this.access_level[studyIndex] =
-            this.translate.instant('DIALOG.WRITE');
-        } else if (this.access_level[studyIndex] === 'admin') {
-          this.access_level[studyIndex] =
-            this.translate.instant('DIALOG.ADMIN');
+    if (data.study_accesses && data.study_accesses.length) {
+      this.accessLevel = data.study_accesses.map((studyAccess) => {
+        let accessLevel = studyAccess.study_id + '(';
+        if (studyAccess.access_level === 'read') {
+          accessLevel += this.translate.instant('DIALOG.READ');
+        } else if (studyAccess.access_level === 'write') {
+          accessLevel += this.translate.instant('DIALOG.WRITE');
+        } else if (studyAccess.access_level === 'admin') {
+          accessLevel += this.translate.instant('DIALOG.ADMIN');
         }
-        this.access_level[studyIndex] =
-          study_access.study_id + '(' + this.access_level[studyIndex] + ')';
+        accessLevel += ')';
+        return accessLevel;
       });
     }
-  }
-
-  confirmSelection(): void {
-    this.dialogRef.close();
   }
 }

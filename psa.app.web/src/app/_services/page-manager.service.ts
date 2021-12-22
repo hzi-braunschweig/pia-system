@@ -6,7 +6,7 @@
 
 import { Injectable } from '@angular/core';
 import { AuthenticationManager } from './authentication-manager.service';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { ComplianceManager } from './compliance-manager.service';
 import { ComplianceType } from '../psa.app.core/models/compliance';
 
@@ -29,11 +29,11 @@ export class PageManager {
   ) {
     this.navPagesSubject = new BehaviorSubject<Page[]>([]);
     this.navPagesObservable = this.navPagesSubject.asObservable();
-    this.auth.currentUserObservable.subscribe(async (user) => {
+    this.auth.currentUser$.subscribe(async () => {
       this.navPagesSubject.next(await this.getNavigationPagesForCurrentUser());
     });
     this.complianceManager.complianceDataChangesObservable.subscribe(
-      async (studyName) => {
+      async () => {
         this.navPagesSubject.next(
           await this.getNavigationPagesForCurrentUser()
         );
@@ -43,9 +43,8 @@ export class PageManager {
 
   private async getNavigationPagesForCurrentUser(): Promise<Page[]> {
     let pages = [];
-    const currentUser = this.auth.currentUser;
-    const currentRole = this.auth.currentRole;
-    if (!currentUser || !currentRole) {
+    const currentRole = this.auth.getCurrentRole();
+    if (!this.auth.getToken() || !currentRole) {
       return pages;
     }
 
@@ -84,7 +83,6 @@ export class PageManager {
           path: ['welcome-text'],
           subpaths: ['welcome-text'],
         },
-        { name: 'SIDENAV.LOGS', path: ['logs'], subpaths: ['logs'] },
       ];
     } else if (currentRole === 'Untersuchungsteam') {
       pages = [
@@ -105,7 +103,6 @@ export class PageManager {
           path: ['planned-probands'],
           subpaths: ['planned-probands/'],
         },
-        { name: 'SIDENAV.STUDIES', path: ['studies'], subpaths: ['studies'] },
         {
           name: 'SIDENAV.COMPLIANCE_MANAGEMENT',
           path: ['compliance/management'],
@@ -154,11 +151,6 @@ export class PageManager {
           subpaths: ['contact-proband'],
         },
         {
-          name: 'SIDENAV.CONTACTS',
-          path: ['contacts'],
-          subpaths: ['contacts'],
-        },
-        {
           name: 'SIDENAV.PROBANDS_TO_CONTACT',
           path: ['probands-to-contact'],
           subpaths: ['probands-to-contact', 'probands-to-contact/'],
@@ -192,7 +184,7 @@ export class PageManager {
           subpaths: ['laboratory-results'],
         });
       }
-      if (await this.complianceManager.isInternalComplianceActive) {
+      if (await this.complianceManager.isInternalComplianceActive()) {
         pages.push({
           name: 'SIDENAV.COMPLIANCE',
           path: ['compliance/agree'],

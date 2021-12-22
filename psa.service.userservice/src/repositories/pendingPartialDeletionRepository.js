@@ -16,11 +16,9 @@ class PendingPartialDeletionRepository {
   static async createPendingPartialDeletion(data, options) {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
     return await db.one(
-      `INSERT INTO pending_partial_deletions(requested_by, requested_for, proband_id, from_date, to_date,
-                                                   delete_logs, for_instance_ids,
+      `INSERT INTO pending_partial_deletions(requested_by, requested_for, proband_id, from_date, to_date, for_instance_ids,
                                                    for_lab_results_ids)
-             VALUES ($(requested_by), $(requested_for), $(proband_id), $(from_date), $(to_date), $(delete_logs),
-                     $(for_instance_ids),
+             VALUES ($(requested_by), $(requested_for), $(proband_id), $(from_date), $(to_date), $(for_instance_ids),
                      $(for_lab_results_ids))
              RETURNING *`,
       data

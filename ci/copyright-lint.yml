@@ -5,10 +5,12 @@ copyright-lint:
     entrypoint: ['/bin/sh', '-c']
 
   script:
-    - rm -rf psa.lib.messagequeue/dist
-    - rm -rf psa.lib.templatepipeline/dist
-    - rm -rf psa.lib.service-core/dist
+    - rm -rf psa.lib.hapi-i18n-plugin/dist
+    - rm -rf psa.lib.http-clients-internal/dist
     - rm -rf psa.lib.licensecollector/dist
+    - rm -rf psa.lib.messagequeue/dist
+    - rm -rf psa.lib.service-core/dist
+    - rm -rf psa.lib.templatepipeline/dist
     - rm -rf psa.app.web/licenses
     - rm -rf psa.app.mobile/licenses
     - rm -rf secrets

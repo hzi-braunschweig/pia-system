@@ -5,20 +5,10 @@
  */
 
 import { Lifecycle } from '@hapi/hapi';
-
-import Boom from '@hapi/boom';
-import RESTPresenter from '../services/RESTPresenter';
 import { UsersInteractor } from '../interactors/usersInteractor';
 import { AccessToken } from '@pia/lib-service-core';
-import { AccountStatus, CreateUserRequest } from '../models/user';
-
-function handleError(error: unknown): void {
-  if (error instanceof Boom.Boom) {
-    throw error;
-  }
-  console.error(error);
-  throw Boom.badImplementation('An internal Error happened');
-}
+import { CreateProfessionalUser } from '../models/user';
+import { handleError } from './handleError';
 
 /**
  * HAPI Handler for users
@@ -29,9 +19,9 @@ export class UsersHandler {
    * @param request
    */
   public static getAll: Lifecycle.Method = async (request) => {
-    return UsersInteractor.getUsers(request.auth.credentials as AccessToken)
-      .then((result) => RESTPresenter.presentUsers(result))
-      .catch(handleError);
+    return UsersInteractor.getUsers(
+      request.auth.credentials as AccessToken
+    ).catch(handleError);
   };
 
   /**
@@ -41,9 +31,7 @@ export class UsersHandler {
   public static getAllWithSameRole: Lifecycle.Method = async (request) => {
     return UsersInteractor.getUsersWithSameRole(
       request.auth.credentials as AccessToken
-    )
-      .then((result) => RESTPresenter.presentUsers(result) as unknown)
-      .catch(handleError);
+    ).catch(handleError);
   };
 
   /**
@@ -51,24 +39,19 @@ export class UsersHandler {
    * @param request
    */
   public static getOne: Lifecycle.Method = async (request) => {
-    const id = request.params['username'] as string;
+    const pseudonym = request.params['pseudonym'] as string;
 
-    return UsersInteractor.getUser(request.auth.credentials as AccessToken, id)
-      .then((result) => RESTPresenter.presentUser(result) as unknown)
-      .catch(handleError);
+    return UsersInteractor.getProband(
+      request.auth.credentials as AccessToken,
+      pseudonym
+    ).catch(handleError);
   };
 
-  public static getUserByIDS: Lifecycle.Method = (request) => {
+  public static getProbandByIDS: Lifecycle.Method = async (request) => {
     const token = request.auth.credentials as AccessToken;
     const ids = request.params['ids'] as string;
 
-    if (token.role === 'ProbandenManager') {
-      return UsersInteractor.getUserByIDS(ids, token.username)
-        .then((result) => RESTPresenter.presentUser(result) as unknown)
-        .catch(handleError);
-    } else {
-      return Boom.forbidden('Wrong role for this command');
-    }
+    return UsersInteractor.getProbandByIDS(token, ids).catch(handleError);
   };
 
   /**
@@ -76,48 +59,27 @@ export class UsersHandler {
    * @param request
    */
   public static createOne: Lifecycle.Method = async (request) => {
-    return UsersInteractor.createUser(
+    await UsersInteractor.createUser(
       request.auth.credentials as AccessToken,
-      request.payload as CreateUserRequest
-    )
-      .then((result) => RESTPresenter.presentUser(result) as unknown)
-      .catch(handleError);
+      request.payload as CreateProfessionalUser
+    ).catch(handleError);
+    return null;
   };
 
   /**
-   * creates the sormas proband if it does not exist
-   * @param request
-   * @return {*}
-   */
-  public static createSormasProband: Lifecycle.Method = (request) => {
-    const requester = request.auth.credentials as AccessToken;
-
-    if (requester.role === 'ProbandenManager') {
-      return UsersInteractor.createSormasProband(
-        requester.username,
-        request.payload
-      ).catch((err) => Boom.badImplementation(err));
-    } else {
-      return Boom.forbidden('Wrong role for this command');
-    }
-  };
-
-  /**
-   * creates the user if it does not exist
+   * changes attributes of a proband
    * @param request
    */
   public static updateOne: Lifecycle.Method = async (request) => {
     const pseudonym = request.params['username'] as string;
-    const uservalues = request.payload;
+    const userValues = request.payload as { is_test_proband: boolean };
 
-    return UsersInteractor.updateUser(
+    await UsersInteractor.updateUser(
       request.auth.credentials as AccessToken,
       pseudonym,
-      uservalues as {
-        is_test_proband?: boolean;
-        account_status?: AccountStatus;
-      }
+      userValues
     ).catch(handleError);
+    return null;
   };
 
   /**
@@ -127,11 +89,10 @@ export class UsersHandler {
   public static deleteOne: Lifecycle.Method = async (request) => {
     const pseudonym = request.params['username'] as string;
 
-    return UsersInteractor.deleteUser(
+    await UsersInteractor.deleteUser(
       request.auth.credentials as AccessToken,
       pseudonym
-    )
-      .then((result) => RESTPresenter.presentUser(result) as unknown)
-      .catch(handleError);
+    ).catch(handleError);
+    return null;
   };
 }

@@ -49,6 +49,10 @@ export class QuestionnaireAnswerCheckboxComponent
     this.cancelSubscriptions();
   }
 
+  getFormControlAt(i: number): FormControl {
+    return this.form.at(i) as FormControl;
+  }
+
   registerOnChange(onChange: (value: string[]) => void) {
     this.subscription = this.form.valueChanges.subscribe(
       (selected: boolean[]) => this.onChange(selected, onChange)

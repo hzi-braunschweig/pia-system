@@ -20,3 +20,4 @@ node_modules
 **/__pycache__
 **/.nyc_output
 **/node_modules
+**/xunit-test-report.xml

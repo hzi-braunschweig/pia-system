@@ -36,8 +36,8 @@
         unit-view-answers
         [actionLabel]="'PROBANDEN.VIEW_ANSWERS' | translate"
         actionId="view_answers"
-        [disableForDeletedAccounts]="true"
-        (click)="viewQuestionnaireInstancesForUser($event.username)"
+        [disableForDeletedProbands]="true"
+        (click)="viewQuestionnaireInstancesForUser($event.pseudonym)"
       >
       </app-probands-list-entry-action-button>
     </app-probands-list-entry-action>
@@ -51,8 +51,8 @@
         unit-view-labresults
         actionId="view_labresults_for_user"
         [actionLabel]="'PROBANDEN.VIEW_LABRESULTS' | translate"
-        [disableForDeletedAccounts]="true"
-        (click)="viewLabResultsForUser($event.username)"
+        [disableForDeletedProbands]="true"
+        (click)="viewLabResultsForUser($event.pseudonym)"
       >
       </app-probands-list-entry-action-button>
     </app-probands-list-entry-action>
@@ -66,8 +66,8 @@
         unit-view-samples
         actionId="view_samples"
         [actionLabel]="'PROBANDEN.VIEW_SAMPLES' | translate"
-        [disableForDeletedAccounts]="true"
-        (click)="viewSamplesForUser($event.username)"
+        [disableForDeletedProbands]="true"
+        (click)="viewSamplesForUser($event.pseudonym)"
       >
       </app-probands-list-entry-action-button>
     </app-probands-list-entry-action>
@@ -82,8 +82,8 @@
         actionId="delete"
         actionIcon="delete"
         [actionLabel]="'PROBANDEN.DELETE_SPECIFIC_DATA' | translate"
-        [disableForDeletedAccounts]="true"
-        (click)="openSelectDataForPartialDeletionDialog($event.username)"
+        [disableForDeletedProbands]="true"
+        (click)="openSelectDataForPartialDeletionDialog($event.pseudonym)"
       >
       </app-probands-list-entry-action-button>
     </app-probands-list-entry-action>

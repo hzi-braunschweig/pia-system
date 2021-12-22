@@ -4,15 +4,18 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+/* eslint-disable @typescript-eslint/unbound-method */
+
 import chai, { expect } from 'chai';
 import { createSandbox, SinonStubbedInstance } from 'sinon';
 import sinonChai from 'sinon-chai';
 import Boom from '@hapi/boom';
 import stream from 'stream';
 import { promisify } from 'util';
-import { UserserviceClient } from '../../clients/userserviceClient';
 import { getStudysPseudonymsReadable } from './studysPseudonymsStream';
 import { WriteIntoArrayStream } from '@pia/lib-service-core';
+import { UserserviceClient } from '@pia-system/lib-http-clients-internal';
+import { userserviceClient } from '../../clients/userserviceClient';
 
 const pipeline = promisify(stream.pipeline);
 
@@ -20,13 +23,10 @@ chai.use(sinonChai);
 const sandbox = createSandbox();
 
 describe('StudysPseudonymsStream', () => {
-  let userserviceClientStubbed: SinonStubbedInstance<typeof UserserviceClient>;
+  let userserviceClientStubbed: SinonStubbedInstance<UserserviceClient>;
+
   beforeEach(() => {
-    // sandbox.restore() is currently not working for sandbox.stub(class)
-    userserviceClientStubbed = {
-      getPseudonyms: sandbox.stub(UserserviceClient, 'getPseudonyms'),
-      prototype: {},
-    };
+    userserviceClientStubbed = sandbox.stub(userserviceClient);
   });
 
   afterEach(() => {

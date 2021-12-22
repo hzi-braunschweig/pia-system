@@ -15,35 +15,31 @@ export interface Login {
   locale: string;
 }
 
-export interface User {
-  id: number;
+export type ProfessionalRole =
+  | 'Forscher'
+  | 'ProbandenManager'
+  | 'EinwilligungsManager'
+  | 'Untersuchungsteam'
+  | 'SysAdmin';
+
+export type Role = ProfessionalRole | 'Proband';
+
+export interface AccessToken {
   username: string;
-  password: string;
-  token: string;
-  token_login: string;
-  logged_in_with: string;
-  first_logged_in_at: string;
-  compliance_labresults: boolean;
-  compliance_samples: boolean;
-  compliance_bloodsamples: boolean;
-  needs_material: boolean;
-  pw_change_needed: boolean;
-  role: string;
-  study_center: string;
-  examination_wave: number;
-  logging_active: boolean;
+  role: Role;
+  groups: string[];
 }
 
-export class UserWithStudyAccess {
-  age: number;
-  username: string;
-  role: string;
-  sex: string;
-  password: string;
+export type User = Omit<AccessToken, 'groups'> & { study: string };
 
-  study_accesses: StudyAccess[];
-  studyNamesArray: string[];
-  first_logged_in_at: string;
+/**
+ * The response for a login request. Currently it also gives
+ * `username: string;` and `role: Role;` but it is not needed because it is also in the token.
+ */
+export interface LoginResponse {
+  token: string;
+  token_login?: string;
+  pw_change_needed?: boolean;
 }
 
 export class StudyAccess {

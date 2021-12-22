@@ -48,7 +48,7 @@ exports.init = async () => {
   await registerPlugins(server, {
     name: packageJson.name,
     version: packageJson.version,
-    routes: './src/routes/*.js',
+    routes: 'src/routes/*',
   });
 
   await server.start();

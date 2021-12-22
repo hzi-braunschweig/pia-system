@@ -50,10 +50,10 @@ class ComplianceMapper {
 
   /**
    * Converts an externalCompliance into a ComplianceI object for the API
-   * @param externalCompliance {{compliance_samples:boolean, compliance_bloodsamples: boolean, compliance_labresults: boolean}}
+   * @param externalCompliance {{complianceSamples:boolean, complianceBloodsamples: boolean, complianceLabresults: boolean}}
    * @return {Promise<ComplianceRes>}
    */
-  static mapExternalCompliance(externalCompliance) {
+  static async mapExternalCompliance(externalCompliance) {
     return {
       timestamp: null,
       compliance_text: '',
@@ -61,9 +61,9 @@ class ComplianceMapper {
       textfields: {},
       compliance_system: {
         app: true,
-        samples: externalCompliance.compliance_samples,
-        bloodsamples: externalCompliance.compliance_bloodsamples,
-        labresults: externalCompliance.compliance_labresults,
+        samples: externalCompliance.complianceSamples,
+        bloodsamples: externalCompliance.complianceBloodsamples,
+        labresults: externalCompliance.complianceLabresults,
       },
       compliance_questionnaire: [],
     };
@@ -74,7 +74,7 @@ class ComplianceMapper {
    * @param compliance object
    * @return {Promise<ComplianceRes>}
    */
-  static mapComplianceForComplianceManager(compliance) {
+  static async mapComplianceForComplianceManager(compliance) {
     return {
       id: compliance.id,
       study: compliance.study,

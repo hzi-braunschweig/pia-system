@@ -7,7 +7,7 @@
 import { Injectable } from '@angular/core';
 
 import { backendMapping } from '../../../backend-mapping';
-import * as compareVersions from 'compare-versions';
+import { compare } from 'compare-versions';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
@@ -87,7 +87,7 @@ export class EndpointService {
   async isEndpointCompatible(currentAppVersion: string): Promise<boolean> {
     try {
       const minimalAppVersion = await this.getMinimalAppVersion();
-      return compareVersions(minimalAppVersion, currentAppVersion) !== 1;
+      return compare(minimalAppVersion, currentAppVersion, '<=');
     } catch (e) {
       /**
        * just return true for endpoints which are unavailable or

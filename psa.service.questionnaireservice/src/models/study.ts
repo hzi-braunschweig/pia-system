@@ -7,7 +7,6 @@
 export interface Study {
   name: string;
   description: string;
-  access_level: string;
   pm_email: string;
   hub_email: string;
   status: string;

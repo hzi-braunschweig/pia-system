@@ -73,10 +73,9 @@ export abstract class CsvTransform<T, U extends CsvRecord> extends Transform {
       return valueRecord.map((value) => this.preventCsvInjection(value));
     } else if (typeof valueRecord === 'object' && valueRecord !== null) {
       return Object.fromEntries(
-        Object.entries(valueRecord).map(([key, value]) => [
-          key,
-          this.preventCsvInjection(value),
-        ])
+        Object.entries(valueRecord as Record<string, unknown>).map(
+          ([key, value]) => [key, this.preventCsvInjection(value)]
+        )
       );
     } else if (typeof valueRecord === 'string') {
       return CsvSanatizer.removeMaliciousChars(valueRecord);

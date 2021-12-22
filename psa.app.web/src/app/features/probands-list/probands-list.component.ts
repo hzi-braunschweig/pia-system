@@ -7,7 +7,6 @@
 import {
   Component,
   EventEmitter,
-  forwardRef,
   Input,
   OnInit,
   Output,
@@ -21,8 +20,8 @@ import { TranslatedUserFilter } from './translated-user/translated-user-filter';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { AlertService } from '../../_services/alert.service';
 import { TranslatedUserFactory } from './translated-user/translated-user.factory';
-import { UserWithStudyAccess } from '../../psa.app.core/models/user-with-study-access';
 import { MatPaginatorIntlGerman } from '../../_helpers/mat-paginator-intl';
+import { Proband } from '../../psa.app.core/models/proband';
 
 export interface ProbandsListEntryActionConfig {
   columnName: string;
@@ -33,10 +32,10 @@ export interface ProbandsListEntryActionConfig {
 export interface ProbandsListEntryActionButtonConfig {
   label: string;
   icon: string;
-  disableForDeletedAccounts: boolean;
-  showOnlyForIdAndUsernameEquality: boolean;
-  showOnlyForIdAndUsernameInequality: boolean;
-  eventEmitter: EventEmitter<UserWithStudyAccess>;
+  disableForDeletedProbands: boolean;
+  showOnlyForIdsAndPseudonymEquality: boolean;
+  showOnlyForIdsAndPseudonymInequality: boolean;
+  eventEmitter: EventEmitter<Proband>;
 }
 
 /**
@@ -52,7 +51,7 @@ export interface ProbandsListEntryActionButtonConfig {
   providers: [
     {
       provide: MatPaginatorIntl,
-      useClass: forwardRef(() => MatPaginatorIntlGerman),
+      useClass: MatPaginatorIntlGerman,
     },
   ],
 })
@@ -67,10 +66,10 @@ export class ProbandsListComponent implements OnInit {
   displayedColumns = [
     'username',
     'ids',
-    'studyNamesArray',
+    'study',
     'is_test_proband',
     'first_logged_in_at',
-    'account_status',
+    'accountStatus',
   ];
 
   // tslint:disable-next-line:no-output-rename
@@ -125,27 +124,24 @@ export class ProbandsListComponent implements OnInit {
   }
 
   isShown(
-    user: UserWithStudyAccess,
+    user: Proband,
     buttonConfig: ProbandsListEntryActionButtonConfig
   ): boolean {
     return (
-      (!buttonConfig.showOnlyForIdAndUsernameEquality &&
-        !buttonConfig.showOnlyForIdAndUsernameInequality) ||
-      (buttonConfig.showOnlyForIdAndUsernameEquality &&
-        user.ids === user.username) ||
-      (buttonConfig.showOnlyForIdAndUsernameInequality &&
-        user.ids !== user.username)
+      (!buttonConfig.showOnlyForIdsAndPseudonymEquality &&
+        !buttonConfig.showOnlyForIdsAndPseudonymInequality) ||
+      (buttonConfig.showOnlyForIdsAndPseudonymEquality &&
+        user.ids === user.pseudonym) ||
+      (buttonConfig.showOnlyForIdsAndPseudonymInequality &&
+        user.ids !== user.pseudonym)
     );
   }
 
   isDisabled(
-    user: UserWithStudyAccess,
+    user: Proband,
     buttonConfig: ProbandsListEntryActionButtonConfig
   ): boolean {
-    return (
-      buttonConfig.disableForDeletedAccounts &&
-      user.account_status === 'deactivated'
-    );
+    return buttonConfig.disableForDeletedProbands && user.status === 'deleted';
   }
 
   /**
@@ -155,9 +151,9 @@ export class ProbandsListComponent implements OnInit {
     this.isLoading = true;
     this.isLoadingEvent.emit(this.isLoading);
     try {
-      const response = await this.authService.getUsers();
-      this.studyFilterValues = this.extractStudyFilterValues(response.users);
-      this.dataSource.data = response.users.map((user) =>
+      const response = await this.authService.getProbands();
+      this.studyFilterValues = this.extractStudyFilterValues(response);
+      this.dataSource.data = response.map((user) =>
         this.translatedUserFactory.create(user)
       );
       this.dataSource.paginator = this.paginator;
@@ -177,19 +173,7 @@ export class ProbandsListComponent implements OnInit {
    *
    * @param users users from which the study name will be extracted
    */
-  private extractStudyFilterValues(users: UserWithStudyAccess[]): string[] {
-    return Array.from(
-      new Set(
-        this.flattenArray(
-          users.map((user) =>
-            user.study_accesses.map((access) => access.study_id)
-          )
-        )
-      )
-    );
-  }
-
-  private flattenArray<T>(array: T[][]): T[] {
-    return [].concat.apply([], array);
+  private extractStudyFilterValues(users: Proband[]): string[] {
+    return Array.from(new Set(users.map((user) => user.study)));
   }
 }

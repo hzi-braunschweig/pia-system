@@ -7,12 +7,13 @@
 import { AccessToken } from '@pia/lib-service-core';
 import { Questionnaire, QuestionnaireRequest } from '../models/questionnaire';
 import pgHelper from '../services/postgresqlHelper';
-import { UserSettings } from '../models/userSettings';
 import { StudyAccess } from '../models/study_access';
 import Boom from '@hapi/boom';
 import { QuestionnaireRepository } from '../repositories/questionnaireRepository';
 import { DatabaseError } from 'pg-protocol';
 import { QuestionnaireService } from '../services/questionnaireService';
+import { complianceserviceClient } from '../clients/complianceserviceClient';
+import { SystemComplianceType } from '@pia-system/lib-http-clients-internal';
 
 export class QuestionnairesInteractor {
   /**
@@ -234,13 +235,18 @@ export class QuestionnairesInteractor {
       console.log(err);
       throw Boom.notFound('Questionnaire does not exist');
     });
-    if (userRole === 'Proband' && questionnaire.compliance_needed) {
-      const user = (await pgHelper.getUser(userName)) as UserSettings;
-      if (!user.compliance_samples) {
-        throw Boom.forbidden(
-          'Could not get questionnaire: User has not complied to see this questionnaire'
-        );
-      }
+    if (
+      userRole === 'Proband' &&
+      questionnaire.compliance_needed &&
+      !(await complianceserviceClient.hasAgreedToCompliance(
+        userName,
+        questionnaire.study_id,
+        SystemComplianceType.SAMPLES
+      ))
+    ) {
+      throw Boom.forbidden(
+        'Could not get questionnaire: User has not complied to see this questionnaire'
+      );
     }
     this.checkIfUserHasAccessByTokenStudies(
       questionnaire.study_id,
@@ -288,6 +294,8 @@ export class QuestionnairesInteractor {
     userStudies: string[]
   ): Promise<void> {
     this.checkIfUserHasAccessByTokenStudies(study_id, userStudies);
+
+    // soon in the future we will get the studyAccess level from the token too!
     const studyAccess = (await pgHelper
       .getStudyAccessForUser(study_id, userName)
       .catch((err) => {

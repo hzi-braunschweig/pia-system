@@ -23,7 +23,7 @@
       button
       color="primary"
       (click)="presentConfirmNewMaterial()"
-      *ngIf="currentUser.compliance_samples"
+      *ngIf="hasSamplesCompliance"
     >
       <ion-label
         >{{ 'STUDY_CONTACT.NEW_NASAL_SWAB_TO_SEND' | translate }}</ion-label

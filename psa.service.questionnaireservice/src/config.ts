@@ -22,7 +22,11 @@ const conf = {
   internal: GlobalConfig.internal,
   database: GlobalConfig.getQPia(SSL_CERTS),
   services: {
-    loggingservice: GlobalConfig.loggingservice,
+    userservice: GlobalConfig.userservice,
+    complianceservice: GlobalConfig.complianceservice,
+  },
+  servers: {
+    messageQueue: GlobalConfig.getMessageQueue('questionnaireservice'),
   },
   publicAuthKey: GlobalConfig.publicAuthKey,
   timeZone: GlobalConfig.timeZone,

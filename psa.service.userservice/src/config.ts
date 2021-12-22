@@ -25,23 +25,20 @@ const conf = {
     loggingservice: GlobalConfig.loggingservice,
     personaldataservice: GlobalConfig.personaldataservice,
     authservice: GlobalConfig.authservice,
-    sormasservice: GlobalConfig.sormasservice,
   },
   servers: {
     mailserver: GlobalConfig.mailserver,
+    messageQueue: GlobalConfig.getMessageQueue('userservice'),
   },
   publicAuthKey: GlobalConfig.publicAuthKey,
   webappUrl: GlobalConfig.webappUrl,
   backendApiUrl: GlobalConfig.backendApiUrl,
-  isSormasActive: GlobalConfig.isSormasActive,
   apiKey: ConfigUtils.getEnvVariable('API_KEY'),
   studyForExternalSystem: 'ZIFCO-Studie',
   userPasswordLength: parseInt(
     ConfigUtils.getEnvVariable('USER_PASSWORD_LENGTH'),
     10
   ),
-  sormasOnPiaUser: ConfigUtils.getEnvVariable('SORMAS_ON_PIA_USER', ''),
-  sormasOnPiaPassword: ConfigUtils.getEnvVariable('SORMAS_ON_PIA_PASSWORD', ''),
 };
 
 export const config: SupersetOfServiceConfig<typeof conf> = conf;

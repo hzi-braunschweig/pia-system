@@ -4,15 +4,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { createSandbox, SinonStub } from 'sinon';
+import { createSandbox } from 'sinon';
 import chai, { expect } from 'chai';
 
-import { SormasEndDateService } from './sormasEndDateService';
 import { QuestionnaireInstancesService } from './questionnaireInstancesService';
-import { addDays, startOfToday, subDays, addHours } from 'date-fns';
+import { addDays, addHours, startOfToday, subDays } from 'date-fns';
 import { db } from '../db';
 import { Questionnaire } from '../models/questionnaire';
-import { User } from '../models/user';
+import { Proband } from '../models/proband';
 import { Answer } from '../models/answer';
 import { Condition } from '../models/condition';
 import sinonChai from 'sinon-chai';
@@ -25,19 +24,6 @@ const sandbox = createSandbox();
 
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 describe('questionnaireInstancesService', function () {
-  let sormasEndDateServiceStub: SinonStub;
-
-  beforeEach(() => {
-    sormasEndDateServiceStub = sandbox.stub(
-      SormasEndDateService,
-      'getEndDateForUUID'
-    );
-    sormasEndDateServiceStub.resolves(addDays(new Date(), 20));
-    sormasEndDateServiceStub
-      .withArgs('IDS-EXPIRED')
-      .resolves(subDays(new Date(), 1));
-  });
-
   afterEach(function () {
     sandbox.restore();
   });
@@ -138,9 +124,9 @@ describe('questionnaireInstancesService', function () {
   });
 
   describe('createQuestionnaireInstances', function () {
-    it('should return correct questionnaire instances', async function () {
+    it('should return correct questionnaire instances', function () {
       const date = subDays(startOfToday(), 1);
-      const user: User = createUser('Testuser1', date);
+      const user: Proband = createUser('Testuser1', date);
 
       const questionnaire: Questionnaire = createQuestionnaire({
         cycle_amount: 1,
@@ -152,12 +138,11 @@ describe('questionnaireInstancesService', function () {
         updated_at: date,
       });
 
-      const res =
-        await QuestionnaireInstancesService.createQuestionnaireInstances(
-          questionnaire,
-          user,
-          false
-        );
+      const res = QuestionnaireInstancesService.createQuestionnaireInstances(
+        questionnaire,
+        user,
+        false
+      );
 
       expect(res.length).to.equal(3);
       expect(res[0]?.study_id).to.equal('Study1');
@@ -197,9 +182,9 @@ describe('questionnaireInstancesService', function () {
       expect(res[2]?.status).to.equal('inactive');
     });
 
-    it('should return correct questionnaire instances for one time questionnaire', async function () {
+    it('should return correct questionnaire instances for one time questionnaire', function () {
       const date = subDays(startOfToday(), 1);
-      const user: User = createUser('Testuser1', date);
+      const user: Proband = createUser('Testuser1', date);
       const questionnaire: Questionnaire = createQuestionnaire({
         no_questions: 2,
         cycle_amount: 0,
@@ -211,12 +196,11 @@ describe('questionnaireInstancesService', function () {
         updated_at: date,
       });
 
-      const res =
-        await QuestionnaireInstancesService.createQuestionnaireInstances(
-          questionnaire,
-          user,
-          false
-        );
+      const res = QuestionnaireInstancesService.createQuestionnaireInstances(
+        questionnaire,
+        user,
+        false
+      );
 
       expect(res.length).to.equal(1);
       expect(res[0]?.study_id).to.equal('Study1');
@@ -232,9 +216,9 @@ describe('questionnaireInstancesService', function () {
       expect(res[0]?.status).to.equal('active');
     });
 
-    it('should be able to keep the time correct when timeZone changes to DST', async function () {
+    it('should be able to keep the time correct when timeZone changes to DST', function () {
       const date = new Date(Date.UTC(2021, 2, 27));
-      const user: User = createUser('Testuser1', date);
+      const user: Proband = createUser('Testuser1', date);
 
       const questionnaire: Questionnaire = createQuestionnaire({
         cycle_amount: 1,
@@ -246,12 +230,11 @@ describe('questionnaireInstancesService', function () {
         updated_at: date,
       });
 
-      const res =
-        await QuestionnaireInstancesService.createQuestionnaireInstances(
-          questionnaire,
-          user,
-          false
-        );
+      const res = QuestionnaireInstancesService.createQuestionnaireInstances(
+        questionnaire,
+        user,
+        false
+      );
 
       expect(res.length).to.equal(3);
       expect(res[0]?.study_id).to.equal('Study1');
@@ -282,9 +265,9 @@ describe('questionnaireInstancesService', function () {
       expect(res[2]?.status).to.equal('expired');
     });
 
-    it('should be able to keep the time correct when timeZone changes from DST', async function () {
+    it('should be able to keep the time correct when timeZone changes from DST', function () {
       const date = new Date(Date.UTC(2020, 9, 24));
-      const user: User = createUser('Testuser1', date);
+      const user: Proband = createUser('Testuser1', date);
 
       const questionnaire: Questionnaire = createQuestionnaire({
         cycle_amount: 1,
@@ -296,12 +279,11 @@ describe('questionnaireInstancesService', function () {
         updated_at: date,
       });
 
-      const res =
-        await QuestionnaireInstancesService.createQuestionnaireInstances(
-          questionnaire,
-          user,
-          false
-        );
+      const res = QuestionnaireInstancesService.createQuestionnaireInstances(
+        questionnaire,
+        user,
+        false
+      );
 
       expect(res.length).to.equal(3);
       expect(res[0]?.study_id).to.equal('Study1');
@@ -1064,32 +1046,14 @@ describe('questionnaireInstancesService', function () {
   });
 
   describe('isExpired', () => {
-    it('should return false if neither sormas end date nor questionnaire expiration date is reached', async () => {
-      // Arrange
-      const curDate = new Date();
-      const dateOfIssue = subDays(new Date(), 15);
-      const expires_after_days = 30;
-      const questionnaireInstanceIds = 'IDS-NOT-EXPIRED';
-
-      // Act
-      const result = await QuestionnaireInstancesService.isExpired(
-        curDate,
-        dateOfIssue,
-        expires_after_days,
-        questionnaireInstanceIds
-      );
-
-      expect(result).to.equal(false);
-    });
-
-    it('should return false if sormas end date is undefined and questionnaire expiration date is not reached', async () => {
+    it('should return false if questionnaire expiration date is not reached', () => {
       // Arrange
       const curDate = new Date();
       const dateOfIssue = subDays(new Date(), 15);
       const expires_after_days = 30;
 
       // Act
-      const result = await QuestionnaireInstancesService.isExpired(
+      const result = QuestionnaireInstancesService.isExpired(
         curDate,
         dateOfIssue,
         expires_after_days
@@ -1098,62 +1062,40 @@ describe('questionnaireInstancesService', function () {
       expect(result).to.equal(false);
     });
 
-    it('should return true if sormas end date is reached', async () => {
-      // Arrange
-      const curDate = new Date();
-      const dateOfIssue = subDays(new Date(), 15);
-      const expires_after_days = 30;
-      const questionnaireInstanceIds = 'IDS-EXPIRED';
-
-      // Act
-      const result = await QuestionnaireInstancesService.isExpired(
-        curDate,
-        dateOfIssue,
-        expires_after_days,
-        questionnaireInstanceIds
-      );
-
-      expect(result).to.equal(true);
-    });
-
-    it('should return true if sormas end date is not reached but questionnaire expiration date is reached', async () => {
+    it('should return true if questionnaire expiration date is reached', () => {
       // Arrange
       const curDate = new Date();
       const dateOfIssue = subDays(new Date(), 31);
       const expires_after_days = 30;
-      const questionnaireInstanceIds = 'IDS-NOT-EXPIRED';
 
       // Act
-      const result = await QuestionnaireInstancesService.isExpired(
+      const result = QuestionnaireInstancesService.isExpired(
         curDate,
         dateOfIssue,
-        expires_after_days,
-        questionnaireInstanceIds
+        expires_after_days
       );
 
       expect(result).to.equal(true);
     });
   });
 
-  function createUser(username: string, first_logged_in_at: Date | null): User {
+  function createUser(
+    pseudonym: string,
+    first_logged_in_at: Date | null
+  ): Proband {
     return {
-      id: 1,
-      username: username,
-      password: 'string',
-      token: 'string',
-      token_login: 'string',
-      logged_in_with: 'string',
+      pseudonym: pseudonym,
       first_logged_in_at: first_logged_in_at,
       compliance_labresults: true,
       compliance_samples: true,
       compliance_bloodsamples: true,
       needs_material: false,
-      pw_change_needed: false,
-      role: 'Proband',
       study_center: 'string',
       examination_wave: 1,
-      logging_active: true,
       is_test_proband: false,
+      status: 'active',
+      ids: null,
+      study: 'TestStudy',
     };
   }
 
@@ -1175,7 +1117,7 @@ describe('questionnaireInstancesService', function () {
       notification_body_in_progress: 'string',
       notification_weekday: 'sunday',
       notification_interval: 2,
-      notification_interval_unit: 'string',
+      notification_interval_unit: 'days',
       activate_at_date: 'string',
       compliance_needed: false,
       expires_after_days: 14,

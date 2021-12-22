@@ -9,9 +9,8 @@ import { runTransaction } from '../db';
 import { config } from '../config';
 import emailValidator from 'email-validator';
 import { MailContent, MailService } from '@pia/lib-service-core';
-import { UserserviceClient } from '../clients/userserviceClient';
-import { AuthserviceClient as authserviceClient } from '../clients/authserviceClient';
-import loggingserviceClient from '../clients/loggingserviceClient';
+import { userserviceClient } from '../clients/userserviceClient';
+import { loggingserviceClient } from '../clients/loggingserviceClient';
 import pendingDeletionRepository from '../repositories/pendingDeletionRepository';
 import { PersonalDataRepository } from '../repositories/personalDataRepository';
 import {
@@ -38,14 +37,12 @@ export class PendingDeletionService {
           { transaction }
         );
       }
-      await authserviceClient.updateUser({
-        username: deletion.proband_id,
-        account_status: 'deactivated',
+      await userserviceClient.patchProband(deletion.proband_id, {
+        complianceContact: false,
       });
       await loggingserviceClient.createSystemLog({
         requestedBy: deletion.requested_by,
         requestedFor: deletion.requested_for,
-        timestamp: new Date(),
         type: 'personal',
       });
     });
@@ -55,10 +52,6 @@ export class PendingDeletionService {
     return runTransaction(async (transaction) => {
       await pendingDeletionRepository.deletePendingDeletion(pseudonym, {
         transaction,
-      });
-      await authserviceClient.updateUser({
-        username: pseudonym,
-        account_status: 'active',
       });
     });
   }
@@ -73,15 +66,13 @@ export class PendingDeletionService {
     if (!emailValidator.validate(deletion.requested_for)) {
       throw Boom.badData('The username to confirm needs to be an email.');
     }
-    const primaryStudy = await UserserviceClient.getPrimaryStudy(
+    const study = await userserviceClient.getStudyOfProband(
       deletion.proband_id
     );
+
     return runTransaction(async (transaction) => {
       const pendingDeletion = (await pendingDeletionRepository
-        .createPendingDeletion(
-          { ...deletion, study: primaryStudy.name },
-          { transaction }
-        )
+        .createPendingDeletion({ ...deletion, study }, { transaction })
         .catch((err) => {
           console.error(err);
           throw Boom.preconditionFailed(
@@ -96,10 +87,6 @@ export class PendingDeletionService {
       ).catch((err: Error) => {
         console.log(err);
         throw Boom.badData('PM could not be reached via email.');
-      });
-      await authserviceClient.updateUser({
-        username: deletion.proband_id,
-        account_status: 'deactivation_pending',
       });
       return pendingDeletion;
     });

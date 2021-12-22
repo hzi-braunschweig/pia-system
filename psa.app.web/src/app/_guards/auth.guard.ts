@@ -29,17 +29,16 @@ export class AuthGuard implements CanActivate {
     private alertService: AlertService
   ) {}
 
-  canActivate(
+  public canActivate(
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): boolean | UrlTree {
     if (this.auth.isAuthenticated()) {
-      const currentUser = this.auth.currentUser;
-      if (currentUser.pw_change_needed) {
+      if (this.auth.isPasswordChangeNeeded()) {
         return this.router.createUrlTree(['/changePassword']);
       }
       return true;
-    } else if (this.auth.currentUser) {
+    } else if (this.auth.getToken()) {
       // only show this error, if the user was logged in
       this.alertService.errorMessage('ERROR.ERROR_TOKEN_EXPIRED', {
         keepAfterNavigation: true,

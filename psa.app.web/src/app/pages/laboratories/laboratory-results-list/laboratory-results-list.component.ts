@@ -4,16 +4,13 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, ViewChild, Input, OnInit } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { SampleTrackingService } from '../../../psa.app.core/providers/sample-tracking-service/sample-tracking.service';
 import { LabResult } from '../../../psa.app.core/models/labresult';
 import { Router } from '@angular/router';
-import { MatPaginatorIntl } from '@angular/material/paginator';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
-import { forwardRef } from '@angular/core';
 import { Location } from '@angular/common';
 import { AlertService } from '../../../_services/alert.service';
 
@@ -24,7 +21,7 @@ import { AlertService } from '../../../_services/alert.service';
   providers: [
     {
       provide: MatPaginatorIntl,
-      useClass: forwardRef(() => MatPaginatorIntlGerman),
+      useClass: MatPaginatorIntlGerman,
     },
   ],
 })

@@ -10,46 +10,57 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 
 const server = require('../../src/server');
-const apiAddress = 'http://localhost:' + process.env.PORT + '/sample';
 const sinon = require('sinon');
 const testSandbox = sinon.createSandbox();
 const fetchMock = require('fetch-mock').sandbox();
-const fetch = require('node-fetch');
-
-const secretOrPrivateKey = require('../secretOrPrivateKey');
+const { StatusCodes } = require('http-status-codes');
 const JWT = require('jsonwebtoken');
+
+const { HttpClient } = require('@pia-system/lib-http-clients-internal');
+const secretOrPrivateKey = require('../secretOrPrivateKey');
 const { db } = require('../../src/db');
 const { setup, cleanup } = require('./laboratoryResult.spec.data/setup.helper');
+const {
+  LabResultImportHelper,
+} = require('../../src/services/labResultImportHelper');
+
+const apiAddress = 'http://localhost:' + process.env.PORT + '/sample';
 
 const probandSession1 = {
   id: 1,
   role: 'Proband',
   username: 'QTestProband1',
-  groups: ['ApiTestStudie'],
+  groups: ['QTestStudy'],
 };
 const probandSession2 = {
   id: 1,
   role: 'Proband',
   username: 'QTestProband2',
-  groups: ['ApiTestStudie2'],
+  groups: ['QTestStudy2'],
+};
+const probandSession3 = {
+  id: 1,
+  role: 'Proband',
+  username: 'QTestProband3',
+  groups: ['Teststudie'],
 };
 const forscherSession1 = {
   id: 1,
   role: 'Forscher',
   username: 'QTestForscher1',
-  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
+  groups: ['QTestStudy'],
 };
 const utSession = {
   id: 1,
   role: 'Untersuchungsteam',
   username: 'QTestUntersuchungsteam',
-  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
+  groups: ['QTestStudy'],
 };
 const pmSession = {
   id: 1,
   role: 'ProbandenManager',
   username: 'QTestProbandenManager',
-  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
+  groups: ['QTestStudy'],
 };
 const sysadminSession = {
   id: 1,
@@ -67,6 +78,10 @@ const probandToken1 = JWT.sign(probandSession1, secretOrPrivateKey, {
   expiresIn: '24h',
 });
 const probandToken2 = JWT.sign(probandSession2, secretOrPrivateKey, {
+  algorithm: 'RS512',
+  expiresIn: '24h',
+});
+const probandToken3 = JWT.sign(probandSession3, secretOrPrivateKey, {
   algorithm: 'RS512',
   expiresIn: '24h',
 });
@@ -90,6 +105,7 @@ const sysadminToken = JWT.sign(sysadminSession, secretOrPrivateKey, {
 const invalidHeader = { authorization: invalidToken };
 const probandHeader1 = { authorization: probandToken1 };
 const probandHeader2 = { authorization: probandToken2 };
+const probandHeader3 = { authorization: probandToken3 };
 const forscherHeader1 = { authorization: forscherToken1 };
 const utHeader = { authorization: utToken };
 const pmHeader = { authorization: pmToken };
@@ -243,12 +259,16 @@ const resultsProband3 = {
 };
 
 describe('/sample/probands/{user_id}/labResults', () => {
+  const suiteSandbox = sinon.createSandbox();
   before(async function () {
+    suiteSandbox.stub(LabResultImportHelper, 'importHl7FromMhhSftp');
+    suiteSandbox.stub(LabResultImportHelper, 'importCsvFromHziSftp');
     await server.init();
   });
 
   after(async function () {
     await server.stop();
+    suiteSandbox.restore();
   });
 
   function mockCompliance(study, user, type, value) {
@@ -264,21 +284,12 @@ describe('/sample/probands/{user_id}/labResults', () => {
   }
 
   beforeEach(() => {
-    testSandbox.stub(fetch, 'default').callsFake(fetchMock);
-    fetchMock
-      .catch(503)
-      .get(
-        'express:/user/users/QTestProband1/primaryStudy',
-        JSON.stringify({ name: 'ApiTestStudie' })
-      )
-      .get(
-        'express:/user/users/QTestProband2/primaryStudy',
-        JSON.stringify({ name: 'ApiTestStudie2' })
-      );
-    mockCompliance('ApiTestStudie2', 'QTestProband2', 'labresults', false);
-    mockCompliance('ApiTestStudie2', 'QTestProband2', 'samples', true);
-    mockCompliance('ApiTestStudie', 'QTestProband1', 'labresults', true);
-    mockCompliance('ApiTestStudie', 'QTestProband1', 'samples', true);
+    testSandbox.stub(HttpClient, 'fetch').callsFake(fetchMock);
+    mockCompliance('QTestStudy2', 'QTestProband2', 'labresults', false);
+    mockCompliance('QTestStudy2', 'QTestProband2', 'samples', true);
+    mockCompliance('QTestStudy', 'QTestProband1', 'labresults', true);
+    mockCompliance('QTestStudy', 'QTestProband1', 'samples', true);
+    mockCompliance('Teststudie', 'QTestProband3', 'labresults', true);
   });
 
   afterEach(() => {
@@ -318,7 +329,11 @@ describe('/sample/probands/{user_id}/labResults', () => {
       expect(result).to.have.status(403);
     });
 
-    it('should return http 403 if PM tries for proband not in his study', async () => {
+    it('should return http 404 if PM tries for proband not in his study', async () => {
+      fetchMock.get('express:/user/users/QTestProband2', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy2' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/probands/QTestProband2/labResults')
@@ -326,7 +341,11 @@ describe('/sample/probands/{user_id}/labResults', () => {
       expect(result).to.have.status(404);
     });
 
-    it('should return http 404 if PM tries for nonexisting Proband', async () => {
+    it('should return http 404 if PM tries for nonexistent Proband', async () => {
+      fetchMock.get('express:/user/users/NOTAPROBAND', {
+        status: StatusCodes.OK,
+        body: JSON.stringify(null),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/probands/NOTAPROBAND/labResults')
@@ -364,6 +383,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     });
 
     it('should return laboratory results from database for PM', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/probands/QTestProband1/labResults')
@@ -381,6 +404,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     });
 
     it('should return laboratory results from database for UT', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/probands/QTestProband1/labResults')
@@ -398,6 +425,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     });
 
     it('should return laboratory results from database for Forscher', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/probands/QTestProband1/labResults')
@@ -463,15 +494,23 @@ describe('/sample/probands/{user_id}/labResults', () => {
       expect(result).to.have.status(403);
     });
 
-    it('should return http 403 if a PM is not in same study as Proband', async () => {
+    it('should return http 404 if a PM is not in same study as Proband', async () => {
+      fetchMock.get('express:/user/users/QTestProband2', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy2' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/labResults/' + resultsProband3.id)
         .set(pmHeader);
-      expect(result).to.have.status(403);
+      expect(result).to.have.status(404);
     });
 
     it('should return laboratory result from database for ProbandenManager', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/labResults/' + resultsProband1.id)
@@ -580,7 +619,27 @@ describe('/sample/probands/{user_id}/labResults', () => {
       );
     });
 
+    it('should return fake laboratory result for Proband1', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .get('/probands/QTestProband3/labResults/TEST-3722734171')
+        .set(probandHeader3);
+      expect(result).to.have.status(200);
+
+      expect(result.body.id).to.equal('TEST-3722734171');
+      expect(result.body.user_id).to.equal('QTestProband3');
+      expect(result.body.lab_observations.length).to.equal(1);
+      expect(result.body.lab_observations[0].id).to.equal('1');
+      expect(result.body.lab_observations[0].lab_result_id).to.equal(
+        'TEST-3722734171'
+      );
+    });
+
     it('should return laboratory result from database for Forscher', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/probands/QTestProband1/labResults/' + resultsProband1.id)
@@ -607,6 +666,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     });
 
     it('should return deleted laboratory result from database for Forscher', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/probands/QTestProband1/labResults/TEST-12348')
@@ -671,13 +734,17 @@ describe('/sample/probands/{user_id}/labResults', () => {
       expect(result).to.have.status(403);
     });
 
-    it('should return http 403 if a PM tries for Proband that is not in his study', async () => {
+    it('should return http 404 if a PM tries for Proband that is not in his study', async () => {
+      fetchMock.get('express:/user/users/QTestProband2', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy2' }),
+      });
       const result = await chai
         .request(apiAddress)
         .post('/probands/QTestProband2/labResults')
         .set(pmHeader)
         .send(validLabResult);
-      expect(result).to.have.status(403);
+      expect(result).to.have.status(404);
     });
 
     it('should return http 400 if a PM tries but sample_id is missing', async () => {
@@ -699,6 +766,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     });
 
     it('should return http 200 and create the labresult for UT', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .post('/probands/QTestProband1/labResults')
@@ -714,6 +785,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     });
 
     it('should return http 200 and create the labresult FOR PM', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .post('/probands/QTestProband1/labResults')
@@ -784,15 +859,6 @@ describe('/sample/probands/{user_id}/labResults', () => {
       expect(result).to.have.status(403);
     });
 
-    it('should return http 403 if a ut tries', async () => {
-      const result = await chai
-        .request(apiAddress)
-        .put('/probands/QTestProband1/labResults/TEST-1134567890')
-        .set(utHeader)
-        .send(validLabResultProband1);
-      expect(result).to.have.status(403);
-    });
-
     it('should return http 403 if a proband tries with data for pm', async () => {
       const result = await chai
         .request(apiAddress)
@@ -803,6 +869,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     });
 
     it('should return http 403 if a pm tries with data for proband', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .put('/probands/QTestProband1/labResults/TEST-1134567890')
@@ -811,16 +881,24 @@ describe('/sample/probands/{user_id}/labResults', () => {
       expect(result).to.have.status(403);
     });
 
-    it('should return http 403 if a PM tries for Proband that is not in his study', async () => {
+    it('should return http 404 if a PM tries for Proband that is not in his study', async () => {
+      fetchMock.get('express:/user/users/QTestProband2', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy2' }),
+      });
       const result = await chai
         .request(apiAddress)
         .put('/probands/QTestProband2/labResults/TEST-12347')
         .set(pmHeader)
         .send(validLabResultPM);
-      expect(result).to.have.status(403);
+      expect(result).to.have.status(404);
     });
 
     it('should return http 403 if a PM tries for nonexisting lab result', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .put('/probands/QTestProband1/labResults/TEST-wrongid')
@@ -830,6 +908,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     });
 
     it('should return http 403 if a PM tries but update params are wrong', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .put('/probands/QTestProband1/labResults/TEST-1134567890')
@@ -893,6 +975,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     });
 
     it('should return http 403 if a PM tries for deleted lab result', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result1 = await chai
         .request(apiAddress)
         .put('/probands/QTestProband1/labResults/TEST-12348')
@@ -911,6 +997,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     });
 
     it('should return http 200 and update lab result for PM', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result1 = await chai
         .request(apiAddress)
         .put('/probands/QTestProband1/labResults/TEST-1134567890')
@@ -931,6 +1021,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     });
 
     it('should return http 200 and change lab result status to "inactive" for PM', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result1 = await chai
         .request(apiAddress)
         .put('/probands/QTestProband1/labResults/TEST-1134567890')
@@ -946,6 +1040,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     });
 
     it('should return http 200 and change lab result status to "new" for PM', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result1 = await chai
         .request(apiAddress)
         .put('/probands/QTestProband1/labResults/TEST-1134567890')
@@ -997,6 +1095,10 @@ describe('/sample/probands/{user_id}/labResults', () => {
     });
 
     it('should return http 200 and update lab result for Proband and set "needs_materials" field to "true"', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result1 = await chai
         .request(apiAddress)
         .put('/probands/QTestProband1/labResults/TEST-1134567890')
@@ -1015,7 +1117,7 @@ describe('/sample/probands/{user_id}/labResults', () => {
       expect(result2.body.date_of_sampling).to.not.equal(null);
       expect(result2.body.status).to.equal('sampled');
       const result3 = await db.one(
-        "SELECT needs_material FROM users WHERE username='QTestProband1'"
+        "SELECT needs_material FROM probands WHERE pseudonym='QTestProband1'"
       );
       expect(result3.needs_material).to.equal(true);
     });

@@ -6,7 +6,7 @@
 
 const Boom = require('@hapi/boom');
 const { RESTPresenter } = require('../services/RESTPresenter');
-const queuesInteractor = require('../interactors/queuesInteractor.js');
+const queuesInteractor = require('../interactors/queuesInteractor');
 
 /**
  * @description HAPI Handler for instance queues

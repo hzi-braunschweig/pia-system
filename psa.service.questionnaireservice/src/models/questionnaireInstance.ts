@@ -4,9 +4,13 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Questionnaire, DbQuestionnaireForPM } from './questionnaire';
+import {
+  DbQuestionnaireForPM,
+  QuestionnaireDto,
+  Questionnaire,
+} from './questionnaire';
 
-export type QuestionnaireStatus =
+export type QuestionnaireInstanceStatus =
   | 'inactive'
   | 'active'
   | 'in_progress'
@@ -18,7 +22,7 @@ export type QuestionnaireStatus =
 
 export interface DbQuestionnaireInstance {
   id: number;
-  study_id: string | null;
+  study_id: string;
   questionnaire_id: number;
   questionnaire_version: number;
   questionnaire_name: string;
@@ -27,12 +31,10 @@ export interface DbQuestionnaireInstance {
   date_of_release_v1: Date | null;
   date_of_release_v2: Date | null;
   cycle: number;
-  status: QuestionnaireStatus;
+  status: QuestionnaireInstanceStatus;
   notifications_scheduled: boolean | null;
   progress: number | null;
   release_version: number | null;
-  transmission_ts_v1: Date | null;
-  transmission_ts_v2: Date | null;
 }
 
 export interface QuestionnaireInstance extends DbQuestionnaireInstance {
@@ -41,4 +43,20 @@ export interface QuestionnaireInstance extends DbQuestionnaireInstance {
 
 export interface QuestionnaireInstanceForPM extends DbQuestionnaireInstance {
   questionnaire: DbQuestionnaireForPM | undefined;
+}
+
+export interface QuestionnaireInstanceDto {
+  id: number;
+  studyId: string | null;
+  questionnaireName: string;
+  pseudonym: string | null;
+  dateOfIssue: Date;
+  dateOfReleaseV1: Date | null;
+  dateOfReleaseV2: Date | null;
+  cycle: number;
+  status: QuestionnaireInstanceStatus;
+  notificationsScheduled: boolean | null;
+  progress: number | null;
+  releaseVersion: number | null;
+  questionnaire?: QuestionnaireDto;
 }

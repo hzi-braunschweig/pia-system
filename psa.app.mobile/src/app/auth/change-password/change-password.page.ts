@@ -6,7 +6,7 @@
 
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormGroup, FormControl } from '@angular/forms';
+import { FormControl, FormGroup } from '@angular/forms';
 import { LoadingController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -91,7 +91,7 @@ export class ChangePasswordPage {
     try {
       await this.authClient.changePassword(passwordChange);
 
-      this.auth.setPasswordNeeded(false);
+      this.auth.setPasswordChangeNeeded(false);
 
       this.toastPresenter.presentToast(
         'CHANGE_PASSWORD.TOAST_MSG_PASSWORD_CHANGED'

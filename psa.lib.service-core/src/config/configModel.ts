@@ -93,10 +93,6 @@ export interface ServiceConfig {
   publicAuthKey?: Buffer;
   webappUrl?: string;
   backendApiUrl?: string;
-  /**
-   * @deprecated use the messagequeue to communicate with sormasservice
-   */
-  isSormasActive?: boolean;
 }
 
 /**

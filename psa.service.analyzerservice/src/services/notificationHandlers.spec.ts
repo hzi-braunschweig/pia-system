@@ -10,7 +10,7 @@ import { NotificationHandlers } from './notificationHandlers';
 import { db } from '../db';
 import { Questionnaire } from '../models/questionnaire';
 import { startOfToday, subDays } from 'date-fns';
-import { User } from '../models/user';
+import { Proband } from '../models/proband';
 import { Condition } from '../models/condition';
 
 const expect = chai.expect;
@@ -54,9 +54,9 @@ describe.skip('notificationHandlers', function () {
         activate_after_days: 0,
         deactivate_after_days: 1,
       });
-      const users: User[] = [createUser('Testuser1', startOfToday())];
+      const probands: Proband[] = [createUser('Testuser1', startOfToday())];
       const dbStub = stubDb();
-      dbStub.manyOrNone.onCall(0).resolves(users);
+      dbStub.manyOrNone.onCall(0).resolves(probands);
       const expectedCallCount = 2;
       const expectedCallArg = 2;
 
@@ -67,7 +67,7 @@ describe.skip('notificationHandlers', function () {
       expect(dbStub.manyOrNone.calledWith(expectedCallArg)).to.equal(true);
     });
 
-    it('should create QIs for two users', async function () {
+    it('should create QIs for two probands', async function () {
       const questionnaire = createQuestionnaire({
         id: 99999,
         study_id: 'Study1',
@@ -78,12 +78,12 @@ describe.skip('notificationHandlers', function () {
         activate_after_days: 0,
         deactivate_after_days: 1,
       });
-      const users = [
+      const probands = [
         createUser('Testuser1', startOfToday()),
         createUser('Testuser1', subDays(startOfToday(), 1)),
       ];
       const dbStub = stubDb();
-      dbStub.manyOrNone.onCall(0).resolves(users);
+      dbStub.manyOrNone.onCall(0).resolves(probands);
       const expectedCallCount = 2;
       const expectedCallArg = 4;
 
@@ -113,13 +113,13 @@ describe.skip('notificationHandlers', function () {
         condition_value: 'Ja',
       });
 
-      const users = [
+      const probands = [
         createUser('Testuser1', startOfToday()),
         createUser('Testuser1', subDays(startOfToday(), 1)),
       ];
       const dbStub = stubDb();
       dbStub.oneOrNone.resolves(qCondition);
-      dbStub.manyOrNone.onCall(0).resolves(users);
+      dbStub.manyOrNone.onCall(0).resolves(probands);
       const expectedCallCount = 0;
       const expectedCallArg = 4;
 
@@ -168,7 +168,7 @@ describe.skip('notificationHandlers', function () {
       expect(dbStub.manyOrNone.callCount).to.equal(1);
     });
 
-    it('should delete all old qIS and create no new ones if no users are active in study', async function () {
+    it('should delete all old qIS and create no new ones if no probands are active in study', async function () {
       const questionnaire_old = createQuestionnaire({
         id: 99999,
         study_id: 'Study1',
@@ -229,14 +229,14 @@ describe.skip('notificationHandlers', function () {
         deactivate_after_days: 3,
       });
 
-      const users = [
+      const probands = [
         createUser('Testuser1', startOfToday()),
         createUser('Testuser1', subDays(startOfToday(), 1)),
       ];
 
       const dbStub = stubDb();
       dbStub.manyOrNone.onCall(0).resolves([]);
-      dbStub.manyOrNone.onCall(1).resolves(users);
+      dbStub.manyOrNone.onCall(1).resolves(probands);
       const expectedCallCount = 3;
       const expectedCallArgs = 8;
 
@@ -251,298 +251,23 @@ describe.skip('notificationHandlers', function () {
     });
   });
 
-  describe('handleUpdatedUser', function () {
-    it('should not create any QIs if old user has first_logged_in_at value', async function () {
-      const user_old = createUser('Testuser1', startOfToday(), 'Proband');
-      const user_new = createUser('Testuser1', startOfToday(), 'Proband');
-
-      const questionnaires = [
-        createQuestionnaire({
-          id: 99999,
-          study_id: 'Study1',
-          name: 'TestQuestionnaire1',
-          no_questions: 2,
-          cycle_amount: 1,
-          cycle_unit: 'day',
-          activate_after_days: 0,
-          deactivate_after_days: 1,
-        }),
-        createQuestionnaire({
-          id: 99998,
-          study_id: 'Study1',
-          name: 'TestQuestionnaire2',
-          no_questions: 2,
-          cycle_amount: 1,
-          cycle_unit: 'day',
-          activate_after_days: 0,
-          deactivate_after_days: 1,
-        }),
-      ];
-
-      const dbStub = stubDb();
-      dbStub.manyOrNone.onCall(0).resolves(questionnaires);
-      dbStub.manyOrNone.onCall(1).resolves([]);
-      dbStub.manyOrNone.onCall(2).resolves([]);
-
-      await NotificationHandlers.handleUpdatedUser(user_old, user_new);
-
-      expect(dbStub.manyOrNone.callCount).to.equal(0);
-    });
-
-    it('should not create any QIs if new user has first_logged_in_at=null', async function () {
-      const user_old = createUser('Testuser1', null, 'Proband');
-      const user_new = createUser('Testuser1', null, 'Proband');
-
-      const questionnaires = [
-        createQuestionnaire({
-          id: 99999,
-          study_id: 'Study1',
-          name: 'TestQuestionnaire1',
-          no_questions: 2,
-          cycle_amount: 1,
-          cycle_unit: 'day',
-          activate_after_days: 0,
-          deactivate_after_days: 1,
-        }),
-        createQuestionnaire({
-          id: 99998,
-          study_id: 'Study1',
-          name: 'TestQuestionnaire2',
-          no_questions: 2,
-          cycle_amount: 1,
-          cycle_unit: 'day',
-          activate_after_days: 0,
-          deactivate_after_days: 1,
-        }),
-      ];
-
-      const dbStub = stubDb();
-      dbStub.manyOrNone.onCall(0).resolves(questionnaires);
-      dbStub.manyOrNone.onCall(1).resolves([]);
-      dbStub.manyOrNone.onCall(2).resolves([]);
-
-      await NotificationHandlers.handleUpdatedUser(user_old, user_new);
-
-      expect(dbStub.manyOrNone.callCount).to.equal(0);
-    });
-
-    it('should not create any QIs if user is not a proband', async function () {
-      const user_old = createUser('Testuser1', null, 'Forscher');
-      const user_new = createUser('Testuser1', startOfToday(), 'Forscher');
-
-      const questionnaires = [
-        createQuestionnaire({
-          id: 99999,
-          study_id: 'Study1',
-          name: 'TestQuestionnaire1',
-          no_questions: 2,
-          cycle_amount: 1,
-          cycle_unit: 'day',
-          activate_after_days: 0,
-          deactivate_after_days: 1,
-        }),
-        createQuestionnaire({
-          id: 99998,
-          study_id: 'Study1',
-          name: 'TestQuestionnaire2',
-          no_questions: 2,
-          cycle_amount: 1,
-          cycle_unit: 'day',
-          activate_after_days: 0,
-          deactivate_after_days: 1,
-        }),
-      ];
-
-      const dbStub = stubDb();
-      dbStub.manyOrNone.onCall(0).resolves(questionnaires);
-      dbStub.manyOrNone.onCall(1).resolves([]);
-      dbStub.manyOrNone.onCall(2).resolves([]);
-
-      await NotificationHandlers.handleUpdatedUser(user_old, user_new);
-
-      expect(dbStub.manyOrNone.callCount).to.equal(0);
-    });
-
-    it('should not create any QIs if there are no questionnaires', async function () {
-      const user_old = createUser('Testuser1', null, 'Proband');
-      const user_new = createUser('Testuser1', startOfToday(), 'Proband');
-
-      const dbStub = stubDb();
-      dbStub.manyOrNone.onCall(0).resolves([]);
-      dbStub.manyOrNone.onCall(1).resolves([]);
-      dbStub.manyOrNone.onCall(2).resolves([]);
-      const expectedCallCount = 2;
-
-      await NotificationHandlers.handleUpdatedUser(user_old, user_new);
-
-      expect(dbStub.manyOrNone.callCount).to.equal(expectedCallCount);
-    });
-
-    it('should create questionnaire instances', async function () {
-      const user_old = createUser('Testuser1', null, 'Proband');
-      const user_new = createUser('Testuser1', startOfToday(), 'Proband');
-
-      const questionnaires = [
-        createQuestionnaire({
-          id: 99999,
-          study_id: 'Study1',
-          name: 'TestQuestionnaire1',
-          no_questions: 2,
-          cycle_amount: 1,
-          cycle_unit: 'day',
-          activate_after_days: 0,
-          deactivate_after_days: 1,
-        }),
-        createQuestionnaire({
-          id: 99998,
-          study_id: 'Study1',
-          name: 'TestQuestionnaire2',
-          no_questions: 2,
-          cycle_amount: 1,
-          cycle_unit: 'day',
-          activate_after_days: 0,
-          deactivate_after_days: 1,
-        }),
-      ];
-
-      const dbStub = stubDb();
-      dbStub.manyOrNone.onCall(0).resolves(questionnaires);
-      dbStub.manyOrNone.onCall(1).resolves([]);
-      dbStub.manyOrNone.onCall(2).resolves([]);
-      const expectedCallCount = 3;
-      const expectedCallArgs = 4;
-
-      await NotificationHandlers.handleUpdatedUser(user_old, user_new);
-
-      expect(dbStub.manyOrNone.callCount).to.equal(expectedCallCount);
-      expect(dbStub.manyOrNone.calledWith(expectedCallArgs)).to.equal(true);
-    });
-
-    it('should create questionnaire instances only for non conditional questionnaires', async function () {
-      const user_old = createUser('Testuser1', null, 'Proband');
-      const user_new = createUser('Testuser1', startOfToday(), 'Proband');
-
-      const questionnaires = [
-        createQuestionnaire({
-          id: 99999,
-          study_id: 'Study1',
-          name: 'TestQuestionnaire1',
-          no_questions: 2,
-          cycle_amount: 1,
-          cycle_unit: 'day',
-          activate_after_days: 0,
-          deactivate_after_days: 1,
-        }),
-        createQuestionnaire({
-          id: 99998,
-          study_id: 'Study1',
-          name: 'TestQuestionnaire2',
-          no_questions: 2,
-          cycle_amount: 1,
-          cycle_unit: 'day',
-          activate_after_days: 0,
-          deactivate_after_days: 1,
-        }),
-      ];
-
-      const qConditions = [
-        createCondition({
-          condition_questionnaire_id: 1,
-          condition_answer_option_id: 1,
-          condition_operand: '==',
-          condition_value: 'Ja',
-        }),
-      ];
-
-      const dbStub = stubDb();
-      dbStub.manyOrNone.onCall(0).resolves(questionnaires);
-      dbStub.manyOrNone.onCall(1).resolves(qConditions);
-      dbStub.manyOrNone.onCall(2).resolves([]);
-      const expectedCallCount = 3;
-      const expectedCallArgs = 2;
-
-      await NotificationHandlers.handleUpdatedUser(user_old, user_new);
-
-      expect(dbStub.manyOrNone.callCount).to.equal(expectedCallCount);
-      expect(dbStub.manyOrNone.calledWith(expectedCallArgs)).to.equal(true);
-    });
-
-    it('should not create any questionnaire instances if all questionnaires are conditional', async function () {
-      const user_old = createUser('Testuser1', null, 'Proband');
-      const user_new = createUser('Testuser1', startOfToday(), 'Proband');
-
-      const questionnaires = [
-        createQuestionnaire({
-          id: 99999,
-          study_id: 'Study1',
-          name: 'TestQuestionnaire1',
-          no_questions: 2,
-          cycle_amount: 1,
-          cycle_unit: 'day',
-          activate_after_days: 0,
-          deactivate_after_days: 1,
-        }),
-        createQuestionnaire({
-          id: 99998,
-          study_id: 'Study1',
-          name: 'TestQuestionnaire2',
-          no_questions: 2,
-          cycle_amount: 1,
-          cycle_unit: 'day',
-          activate_after_days: 0,
-          deactivate_after_days: 1,
-        }),
-      ];
-
-      const qConditions = [
-        createCondition({
-          condition_questionnaire_id: 1,
-          condition_answer_option_id: 1,
-          condition_operand: '==',
-          condition_value: 'Ja',
-        }),
-        createCondition({
-          condition_questionnaire_id: 1,
-          condition_answer_option_id: 1,
-          condition_operand: '==',
-          condition_value: 'Ja',
-        }),
-      ];
-
-      const dbStub = stubDb();
-      dbStub.manyOrNone.onCall(0).resolves(questionnaires);
-      dbStub.manyOrNone.onCall(1).resolves(qConditions);
-      dbStub.manyOrNone.onCall(2).resolves([]);
-
-      await NotificationHandlers.handleUpdatedUser(user_old, user_new);
-
-      expect(dbStub.manyOrNone.callCount).to.equal(2);
-    });
-  });
-
   function createUser(
-    username: string,
-    first_logged_in_at: Date | null,
-    role = 'Proband'
-  ): User {
+    pseudonym: string,
+    first_logged_in_at: Date | null
+  ): Proband {
     return {
-      id: 1,
-      username: username,
-      password: 'string',
-      token: 'string',
-      token_login: 'string',
-      logged_in_with: 'string',
+      pseudonym: pseudonym,
       first_logged_in_at: first_logged_in_at,
       compliance_labresults: true,
       compliance_samples: true,
       compliance_bloodsamples: true,
       needs_material: false,
-      pw_change_needed: false,
-      role: role,
       study_center: 'string',
       examination_wave: 1,
-      logging_active: true,
       is_test_proband: false,
+      status: 'active',
+      ids: null,
+      study: 'TestStudy',
     };
   }
 
@@ -564,7 +289,7 @@ describe.skip('notificationHandlers', function () {
       notification_body_in_progress: 'string',
       notification_weekday: 'sunday',
       notification_interval: 2,
-      notification_interval_unit: 'string',
+      notification_interval_unit: 'days',
       activate_at_date: 'string',
       compliance_needed: false,
       expires_after_days: 14,

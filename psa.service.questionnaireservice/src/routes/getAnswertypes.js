@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const answertypesHandler = require('../handlers/answertypesHandler.js');
+const answertypesHandler = require('../handlers/answertypesHandler');
 
 module.exports = {
   path: '/questionnaire/answertypes',

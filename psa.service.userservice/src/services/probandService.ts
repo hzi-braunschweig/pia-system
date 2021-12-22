@@ -4,160 +4,261 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import Boom from '@hapi/boom';
-import { AuthserviceClient } from '../clients/authserviceClient';
+import { ITask } from 'pg-promise';
+
+import { runTransaction } from '../db';
+import postgresqlHelper from './postgresqlHelper';
+import { messageQueueService } from './messageQueueService';
+import { authserviceClient } from '../clients/authserviceClient';
 import {
   AccountCreateError,
-  NoAccessToStudyError,
-  NoPlannedProbandFoundError,
-  ProbandAlreadyExistsError,
+  IdsAlreadyExistsError,
+  PlannedProbandNotFoundError,
+  ProbandNotFoundError,
   ProbandSaveError,
-  WrongRoleError,
+  PseudonymAlreadyExistsError,
+  StudyNotFoundError,
 } from '../errors';
-import { ProfessionalUser } from '../models/professionalUser';
 import { CreateProbandRequest } from '../models/proband';
-import { StatusCodes } from 'http-status-codes';
-import { PlannedProbandsRepository } from '../repositories/plannedProbandsRepository';
-import { runTransaction } from '../db';
-import { ProbandsRepository } from '../repositories/probandsRepository';
 import { SecureRandomPasswordService } from './secureRandomPasswordService';
-import { User } from '../models/user';
+import { getConnection } from 'typeorm';
+import { PlannedProband } from '../entities/plannedProband';
+import { RepositoryOptions } from '@pia/lib-service-core';
+import { Proband } from '../entities/proband';
+import { Study } from '../entities/study';
+import { ProbandStatus } from '../models/probandStatus';
+
+export type ProbandDeletionType =
+  | 'default' // delete all proband data but keep the pseudonym
+  | 'keep_usage_data' // delete all proband data but keep usage data like logs and the pseudonym
+  | 'full'; // fully delete all proband data
 
 export class ProbandService {
-  public static async createIDSProband(
+  /**
+   *
+   * @param studyName
+   * @param ids
+   * @throws PseudonymAlreadyExistsError
+   * @throws StudyNotFoundError
+   * @throws IdsAlreadyExistsError
+   * @throws ProbandSaveError
+   */
+  public static async createIDSProbandWithoutAccount(
     studyName: string,
-    ids: string,
-    requester: ProfessionalUser
+    ids: string
   ): Promise<void> {
-    if (requester.role !== 'Untersuchungsteam') {
-      throw new WrongRoleError('The user is not an investigator');
-    }
-    if (!requester.studies.includes(studyName)) {
-      throw new NoAccessToStudyError(
-        'The user has no permission to create the proband in that study'
-      );
-    }
+    await getConnection().transaction(async (transactionEM) => {
+      const probandRepo = transactionEM.getRepository(Proband);
 
-    const user: User = {
-      username: ids,
-      role: 'Proband',
-      pw_change_needed: true,
-      account_status: 'no_account',
-    };
-
-    try {
-      // when the database is splitted we don't want to create a user
-      // for ids probands anymore. Just create them when the get activated.
-      await AuthserviceClient.createUser(user);
-    } catch (error) {
-      if (
-        error instanceof Boom.Boom &&
-        error.output.statusCode === StatusCodes.CONFLICT
-      ) {
-        throw new ProbandAlreadyExistsError(
-          'The proband does already exist',
-          error
+      // Check if pseudonym already exists
+      const existingPseudonymProband = await probandRepo.findOne(ids);
+      if (existingPseudonymProband) {
+        throw new PseudonymAlreadyExistsError(
+          'The pseudonym is already assigned'
         );
       }
-      throw new AccountCreateError('Could not activate the account', error);
-    }
 
-    try {
-      await ProbandsRepository.saveIDSProband(ids, studyName);
-    } catch (e) {
-      throw new ProbandSaveError('could not create the proband', e);
+      // Check if study exists
+      const study = await transactionEM.getRepository(Study).findOne(studyName);
+      if (!study) {
+        throw new StudyNotFoundError(`Study "${studyName}" does not exist`);
+      }
+
+      // Check if IDS already exists
+      const existingIdsProband = await probandRepo.findOne({
+        ids: ids,
+      });
+      if (existingIdsProband) {
+        throw new IdsAlreadyExistsError('The ids is already assigned');
+      }
+
+      const newProband = probandRepo.create({
+        pseudonym: ids,
+        ids: ids,
+        status: ProbandStatus.ACTIVE,
+        complianceContact: false,
+        complianceLabresults: false,
+        complianceSamples: false,
+        complianceBloodsamples: false,
+        isTestProband: false,
+        study: study,
+      });
+      await probandRepo.save(newProband).catch((e) => {
+        throw new ProbandSaveError('could not create the proband', e);
+      });
+
+      await messageQueueService.sendProbandCreated(ids);
+    });
+  }
+
+  /**
+   * Creates a new Proband or updates an existing with a pseudonym and adds an account.
+   * @param studyName
+   * @param newProbandData
+   * @param usePlannedProband whether to use a planned proband otherwise generate a new password.
+   * @returns password the password of the new created user
+   * @throws PseudonymAlreadyExistsError
+   * @throws StudyNotFoundError
+   * @throws PlannedProbandNotFoundError if usePlannedProband is true but it cannot be found
+   * @throws IdsAlreadyExistsError if usePlannedProband is false and ids exists for another proband
+   * @throws ProbandSaveError
+   * @throws ProbandNotFoundError if usePlannedProband is true but no user with the ids exists
+   * @throws AccountCreateError
+   */
+  public static async createProbandWithAccount(
+    studyName: string,
+    newProbandData: CreateProbandRequest,
+    usePlannedProband: boolean
+  ): Promise<string> {
+    let password = '';
+    await getConnection().transaction(async (transactionEM) => {
+      const probandRepo = transactionEM.getRepository(Proband);
+
+      // Check if pseudonym already exists
+      const existingPseudonymProband = await probandRepo.findOne(
+        newProbandData.pseudonym
+      );
+      if (existingPseudonymProband) {
+        throw new PseudonymAlreadyExistsError(
+          'The pseudonym is already assigned'
+        );
+      }
+
+      // Check if study exists
+      const study = await transactionEM.getRepository(Study).findOne(studyName);
+      if (!study) {
+        throw new StudyNotFoundError(`Study "${studyName}" does not exist`);
+      }
+
+      // Find Proband by IDS
+      let existingIdsProband: undefined | Proband = undefined;
+      if (newProbandData.ids) {
+        existingIdsProband = await probandRepo.findOne({
+          ids: newProbandData.ids,
+        });
+      }
+
+      if (usePlannedProband) {
+        const plannedProbandsRepo = transactionEM.getRepository(PlannedProband);
+        const plannedProband = await plannedProbandsRepo
+          .createQueryBuilder('plannedProband')
+          .leftJoin('plannedProband.studies', 'study')
+          .where('study.name = :studyName', { studyName: studyName })
+          .andWhere('plannedProband.pseudonym = :pseudonym', {
+            pseudonym: newProbandData.pseudonym,
+          })
+          .getOne();
+        if (!plannedProband) {
+          throw new PlannedProbandNotFoundError(
+            'Could not find a related planned proband'
+          );
+        }
+        plannedProband.activatedAt = new Date();
+        await plannedProbandsRepo.save(plannedProband);
+
+        password = plannedProband.password;
+      } else {
+        password = SecureRandomPasswordService.generate();
+      }
+
+      let probandCreated = false;
+      let newProband: Proband;
+      if (usePlannedProband && newProbandData.ids) {
+        // proband already exists so update proband with IDS
+        if (!existingIdsProband) {
+          throw new ProbandNotFoundError(
+            'The proband could not be found by the given ids'
+          );
+        }
+        // change pseudonym from ids to pseudonym
+        await probandRepo
+          .update(existingIdsProband.pseudonym, {
+            pseudonym: newProbandData.pseudonym,
+          })
+          .catch((e) => {
+            throw new ProbandSaveError('could not update the proband', e);
+          });
+        existingIdsProband.pseudonym = newProbandData.pseudonym;
+        newProband = existingIdsProband;
+      } else {
+        // create proband
+        if (newProbandData.ids && existingIdsProband) {
+          throw new IdsAlreadyExistsError('The ids is already assigned');
+        }
+        newProband = probandRepo.create({
+          pseudonym: newProbandData.pseudonym,
+          status: ProbandStatus.ACTIVE,
+        });
+        probandCreated = true;
+      }
+
+      // Apply compliance and other data
+      newProband.complianceContact = true;
+      newProband.complianceBloodsamples = newProbandData.complianceBloodsamples;
+      newProband.complianceLabresults = newProbandData.complianceLabresults;
+      newProband.complianceSamples = newProbandData.complianceSamples;
+      newProband.studyCenter = newProbandData.studyCenter ?? null;
+      newProband.examinationWave = newProbandData.examinationWave ?? null;
+      newProband.ids = newProbandData.ids ?? null;
+      newProband.study = study;
+      await probandRepo.save(newProband).catch((e) => {
+        throw new ProbandSaveError('could not create the proband', e);
+      });
+
+      // Create new account for this proband
+      try {
+        await authserviceClient.createAccount({
+          username: newProbandData.pseudonym,
+          password: password,
+          role: 'Proband',
+          pwChangeNeeded: true,
+          initialPasswordValidityDate:
+            SecureRandomPasswordService.generateInitialPasswordValidityDate(),
+        });
+      } catch (error) {
+        throw new AccountCreateError('Could not activate the account', error);
+      }
+
+      if (probandCreated) {
+        await messageQueueService.sendProbandCreated(newProbandData.pseudonym);
+      }
+    });
+    return password;
+  }
+
+  /**
+   * Delete a proband and all its data
+   *
+   * It will delete all data of the user, including questionnaire answers, lab results,
+   * personal data, user logs, etc. Some data are deleted by the corresponding service
+   * and might not be deleted right after the returned Promise resolves.
+   *
+   * You may influence how many data should be deleted by passing a valid deletionType.
+   * @see {@link ProbandDeletionType} for more information.
+   */
+  public static async delete(
+    pseudonym: string,
+    deletionType: ProbandDeletionType = 'default',
+    options?: RepositoryOptions
+  ): Promise<void> {
+    if (options?.transaction) {
+      return this.deleteWithTransaction(pseudonym, deletionType, options);
+    } else {
+      return runTransaction<void>(async (t: ITask<unknown>) => {
+        return this.deleteWithTransaction(pseudonym, deletionType, {
+          transaction: t,
+        });
+      });
     }
   }
 
-  public static async createProband(
-    studyName: string,
-    newProbandData: CreateProbandRequest,
-    requester: ProfessionalUser
+  private static async deleteWithTransaction(
+    pseudonym: string,
+    deletionType: ProbandDeletionType,
+    options: RepositoryOptions
   ): Promise<void> {
-    if (requester.role !== 'Untersuchungsteam') {
-      throw new WrongRoleError('The user is not an investigator');
-    }
-    if (!requester.studies.includes(studyName)) {
-      throw new NoAccessToStudyError(
-        'The user has no permission to create the proband in that study'
-      );
-    }
-    await runTransaction(async (t) => {
-      let plannedProband;
-      try {
-        plannedProband = await PlannedProbandsRepository.find(
-          { pseudonym: newProbandData.pseudonym, study: studyName },
-          { transaction: t }
-        );
-        plannedProband.activatedAt = new Date();
-        await PlannedProbandsRepository.save(plannedProband, {
-          transaction: t,
-        });
-      } catch (e) {
-        throw new NoPlannedProbandFoundError(
-          'Could not find a related planned proband',
-          e
-        );
-      }
+    await postgresqlHelper.deleteProbandData(pseudonym, deletionType, options);
 
-      // Add pseudonym and account to an existing proband with ids
-      if (newProbandData.ids) {
-        const user: User & { new_username?: string } = {
-          username: newProbandData.ids,
-          new_username: newProbandData.pseudonym,
-          password: plannedProband.password,
-          role: 'Proband',
-          pw_change_needed: true,
-          initial_password_validity_date:
-            SecureRandomPasswordService.generateInitialPasswordValidityDate(),
-          account_status: 'active',
-        };
-
-        // when the db is splitted (into user and proband).
-        // we will only create the user when the account gets activated.
-        try {
-          await AuthserviceClient.updateUser(user);
-        } catch (error) {
-          throw new AccountCreateError('Could not activate the account', error);
-        }
-      } else {
-        // Create new proband with pseudonym and account
-        const user: User = {
-          username: newProbandData.pseudonym,
-          password: plannedProband.password,
-          role: 'Proband',
-          pw_change_needed: true,
-          initial_password_validity_date:
-            SecureRandomPasswordService.generateInitialPasswordValidityDate(),
-          account_status: 'active',
-        };
-
-        try {
-          await AuthserviceClient.createUser(user);
-        } catch (error) {
-          if (
-            error instanceof Boom.Boom &&
-            error.output.statusCode === StatusCodes.CONFLICT
-          ) {
-            throw new ProbandAlreadyExistsError(
-              'The proband does already exist',
-              error
-            );
-          }
-          throw new AccountCreateError('Could not activate the account', error);
-        }
-      }
-
-      try {
-        await ProbandsRepository.save(
-          { ...newProbandData, study: studyName },
-          {
-            transaction: t,
-          }
-        );
-      } catch (e) {
-        throw new ProbandSaveError('could not create the proband', e);
-      }
-    });
+    await messageQueueService.sendProbandDelete(pseudonym, deletionType);
   }
 }

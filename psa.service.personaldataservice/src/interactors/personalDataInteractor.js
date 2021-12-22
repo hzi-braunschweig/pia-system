@@ -6,7 +6,7 @@
 
 const Boom = require('@hapi/boom');
 
-const { UserserviceClient } = require('../clients/userserviceClient');
+const { userserviceClient } = require('../clients/userserviceClient');
 const { PersonalDataService } = require('../services/personalDataService');
 
 class PersonalDataInteractor {
@@ -59,17 +59,13 @@ class PersonalDataInteractor {
     if (userRole !== 'ProbandenManager') {
       throw Boom.forbidden('Wrong role for this command');
     }
-    const primaryStudy = await UserserviceClient.getPrimaryStudy(pseudonym);
-    if (!studies.includes(primaryStudy.name)) {
+    const studyOfProband = await userserviceClient.getStudyOfProband(pseudonym);
+    if (!studies.includes(studyOfProband)) {
       throw Boom.notFound(
         'The given pseudonym could not be found in the studies you have access to.'
       );
     }
-    return PersonalDataService.createOrUpdate(
-      pseudonym,
-      primaryStudy.name,
-      personalData
-    );
+    return PersonalDataService.createOrUpdate(pseudonym, personalData);
   }
 }
 

@@ -4,22 +4,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import chai from 'chai';
+import chai, { expect } from 'chai';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 
-import { db } from '../db';
+import { SinonMethodStub } from '@pia/lib-service-core';
 import { QuestionnaireRepository } from '../repositories/questionnaireRepository';
 import { QuestionnaireInstanceRepository } from '../repositories/questionnaireInstanceRepository';
 import { QuestionnaireService } from './questionnaireService';
 import { Questionnaire } from '../models/questionnaire';
-import { SinonMethodStub } from '@pia/lib-service-core';
+import { db } from '../db';
 
-const expect = chai.expect;
-const sandbox = sinon.createSandbox();
 chai.use(sinonChai);
 
 describe('QuestionnaireService', () => {
+  const sandbox = sinon.createSandbox();
+
   const questionnaire = createQuestionnaire();
   let deactivateQuestionnaireMock: SinonMethodStub<
     typeof QuestionnaireRepository.deactivateQuestionnaire

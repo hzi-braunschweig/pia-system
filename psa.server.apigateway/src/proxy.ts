@@ -19,6 +19,7 @@ import {
 import { StatusCode } from './statusCode';
 
 import * as http from 'http';
+import net from 'net';
 
 interface Context {
   received: number;
@@ -144,9 +145,11 @@ export class Proxy extends HttpServer<Context> {
   private handleError(
     err: Error,
     req: http.IncomingMessage,
-    res: http.ServerResponse
+    res: http.ServerResponse | net.Socket
   ): void {
-    res.statusCode = StatusCode.BAD_GATEWAY;
+    if (res instanceof http.ServerResponse) {
+      res.statusCode = StatusCode.BAD_GATEWAY;
+    }
     res.end();
 
     this.logStatus(req, StatusCode.BAD_GATEWAY, err);

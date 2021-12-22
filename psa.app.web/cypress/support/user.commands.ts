@@ -100,7 +100,7 @@ export interface Proband {
   compliance_bloodsamples: boolean;
   study_center: string;
   examination_wave: number;
-  study_accesses: string[];
+  study: string;
   ut_email?: string;
   ids?: string;
 }

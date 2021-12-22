@@ -157,6 +157,15 @@ const routes: ConfigRoute[] = [
     skipBasePath: true,
   },
   {
+    serviceName: 'sormasservice',
+    path: '/sormas/',
+    additionalPaths: [apiPath],
+    isHttpOnly: false,
+    isOnlyOnDevelopmentSystems: false,
+    port: getNumberIfDefined(process.env['SORMASSERVICE_PORT']),
+    skipBasePath: true,
+  },
+  {
     serviceName: 'personaldataservice',
     path: '/personal/',
     additionalPaths: [apiPath, adminApiPath],
@@ -245,7 +254,7 @@ export default {
       getEnvVariable('IS_DEVELOPMENT_SYSTEM', 'false').toLowerCase() === 'true',
   },
   publicMetaData: {
-    minimalAppVersion: '1.27.0',
+    minimalAppVersion: '1.29.0',
   },
   routes,
 };

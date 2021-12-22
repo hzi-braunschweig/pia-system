@@ -28,6 +28,3 @@ authKey
 firebase
 ssl
 tests/private.key
-
-# Build
-dist/

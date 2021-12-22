@@ -40,10 +40,10 @@ export class QuestionnaireInstancesListForInvestigatorComponent
           this.pseudonym
         );
       this.currentQuestionnaireInstances = questionnaireInstances;
-      const proband = await this.userService.getUser(this.pseudonym);
+      const proband = await this.userService.getProband(this.pseudonym);
       this.selectedProbandInfoService.updateSideNavInfoSelectedProband({
         ids: proband.ids,
-        pseudonym: proband.username,
+        pseudonym: proband.pseudonym,
       });
     } catch (err) {
       this.alertService.errorObject(err);

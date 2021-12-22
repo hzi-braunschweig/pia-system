@@ -5,13 +5,12 @@
  */
 
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormControl } from '@angular/forms';
-import { Validators } from '@angular/forms';
-import { FormGroup } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { ReplaySubject } from 'rxjs';
 import { AlertService } from '../_services/alert.service';
+import { ProfessionalUser } from '../psa.app.core/models/user';
 
 @Component({
   selector: 'dialog-change-compliance',
@@ -123,7 +122,7 @@ export class DialogChangeComplianceComponent implements OnInit {
   form: FormGroup;
   public usernameFilterCtrl: FormControl = new FormControl();
   public filteredUsers: ReplaySubject<any[]> = new ReplaySubject<any[]>(1);
-  usersWithSameRole: any[];
+  usersWithSameRole: ProfessionalUser[];
   usernames: any = { usernameProband: '', usernamePM: '' };
 
   constructor(
@@ -136,11 +135,12 @@ export class DialogChangeComplianceComponent implements OnInit {
     this.usernames.usernamePM = data.requested_by;
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     if (!this.data.requested_by && this.data.has_four_eyes_opposition) {
-      this.authService.getUsersWithSameRole().then(
-        (result: any) => {
-          this.usersWithSameRole = result.users;
+      this.authService
+        .getUsersWithSameRole()
+        .then((users) => {
+          this.usersWithSameRole = users;
           this.filteredUsers.next(
             this.usersWithSameRole.filter((user) => {
               // use validator to filter users without email address
@@ -148,11 +148,10 @@ export class DialogChangeComplianceComponent implements OnInit {
               return !control.errors || !control.errors.email;
             })
           );
-        },
-        (err: any) => {
+        })
+        .catch((err) => {
           this.alertService.errorObject(err);
-        }
-      );
+        });
 
       this.form = new FormGroup({
         requested_for: new FormControl(null, Validators.required),

@@ -1,297 +1,349 @@
 BEGIN;
 
-SET TIMEZONE='UTC';
+SET TIMEZONE = 'UTC';
 
 --
--- Data for Name: users; Type: TABLE DATA; Owner: superuser
+-- Users and Studies
 --
 
-INSERT INTO users (username, password, role, first_logged_in_at, logged_in_with, compliance_labresults, compliance_samples, needs_material, pw_change_needed, number_of_wrong_attempts, third_wrong_password_at, study_center, examination_wave, compliance_bloodsamples, is_test_proband, account_status, study_status, ids, logging_active, salt, initial_password_validity_date, mapping_id) VALUES ('Rtest-0000000002', '', 'Proband', '2021-06-08', 'web', true, true, true, false, 0, NULL, '.', 1, true, false, 'active', 'active', NULL, true, '', NULL, '7ef73318-7fce-4add-abb0-9842a7ccc3cc');
-INSERT INTO users (username, password, role, first_logged_in_at, logged_in_with, compliance_labresults, compliance_samples, needs_material, pw_change_needed, number_of_wrong_attempts, third_wrong_password_at, study_center, examination_wave, compliance_bloodsamples, is_test_proband, account_status, study_status, ids, logging_active, salt, initial_password_validity_date, mapping_id) VALUES ('Rtest-0000000003', '', 'Proband', '2021-06-08', 'web', true, true, false, false, 0, NULL, '.', 1, true, false, 'active', 'active', NULL, true, '', NULL, 'd3fd0282-c18a-42d1-8142-e0acbf0bdf63');
-INSERT INTO users (username, password, role, first_logged_in_at, logged_in_with, compliance_labresults, compliance_samples, needs_material, pw_change_needed, number_of_wrong_attempts, third_wrong_password_at, study_center, examination_wave, compliance_bloodsamples, is_test_proband, account_status, study_status, ids, logging_active, salt, initial_password_validity_date, mapping_id) VALUES ('Rtest-0000000004', '', 'Proband', '2021-06-08', 'web', true, true, false, false, 0, NULL, '.', 1, true, false, 'active', 'active', NULL, true, '', NULL, '2a3e903e-43f0-412a-afc6-5ed0f95ba5d6');
-INSERT INTO users (username, password, role, first_logged_in_at, logged_in_with, compliance_labresults, compliance_samples, needs_material, pw_change_needed, number_of_wrong_attempts, third_wrong_password_at, study_center, examination_wave, compliance_bloodsamples, is_test_proband, account_status, study_status, ids, logging_active, salt, initial_password_validity_date, mapping_id) VALUES ('Rtest-0000000005', '', 'Proband', '2021-06-08', 'web', true, true, false, false, 0, NULL, '.', 1, true, false, 'active', 'active', NULL, true, '', NULL, '54db6c14-1565-42e6-8dc6-c37f25c19633');
-INSERT INTO users (username, password, role, first_logged_in_at, logged_in_with, compliance_labresults, compliance_samples, needs_material, pw_change_needed, number_of_wrong_attempts, third_wrong_password_at, study_center, examination_wave, compliance_bloodsamples, is_test_proband, account_status, study_status, ids, logging_active, salt, initial_password_validity_date, mapping_id) VALUES ('Rtest-0000000006', '', 'Proband',  NULL, NULL, true, true, false, true, NULL, NULL, '.', 1, true, false, 'active', 'active', NULL, true, '', '2021-06-13 15:38:01.607', '919d25da-2255-4217-a007-0e0a0d877f95');
-INSERT INTO users (username, password, role, first_logged_in_at, logged_in_with, compliance_labresults, compliance_samples, needs_material, pw_change_needed, number_of_wrong_attempts, third_wrong_password_at, study_center, examination_wave, compliance_bloodsamples, is_test_proband, account_status, study_status, ids, logging_active, salt, initial_password_validity_date, mapping_id) VALUES ('Rtest-0000000007', '', 'Proband',  NULL, NULL, false, false, false, true, NULL, NULL, '.', 1, false, false, 'active', 'active', NULL, true, '', '2021-06-14 09:19:07.482', 'b5fd8cbf-b428-4e7c-a5ff-c06159877bbc');
+INSERT INTO studies (name, description, pm_email, hub_email, status, address, has_rna_samples, sample_prefix,
+                     sample_suffix_length, has_answers_notify_feature, has_answers_notify_feature_by_mail,
+                     has_four_eyes_opposition, has_partial_opposition, has_total_opposition, has_compliance_opposition,
+                     has_logging_opt_in, pseudonym_prefix, pseudonym_suffix_length)
+VALUES ('Teststudie - Export', 'Studie, um die Integrationstest des Exports vorzubereiten (PIA-2585)', NULL, NULL,
+        'active', NULL, FALSE, 'ZIFCO', 10, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, NULL, NULL);
+
+INSERT INTO probands (pseudonym, first_logged_in_at, compliance_labresults, compliance_samples, needs_material, study_center, examination_wave, compliance_bloodsamples, status, logging_active, study)
+VALUES ('QTest-0000000002', '2021-06-08', TRUE, TRUE, TRUE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export'),
+       ('QTest-0000000003', '2021-06-08', TRUE, TRUE, FALSE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export'),
+       ('QTest-0000000004', '2021-06-08', TRUE, TRUE, FALSE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export'),
+       ('QTest-0000000005', '2021-06-08', TRUE, TRUE, FALSE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export'),
+       ('QTest-0000000006', NULL, TRUE, TRUE, FALSE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export'),
+       ('QTest-0000000007', NULL, FALSE, FALSE, FALSE, '.', 1, FALSE, 'active', TRUE, 'Teststudie - Export');
 
 --
--- Data for Name: studies; Type: TABLE DATA; Owner: superuser
+-- Questionnaires
 --
 
-INSERT INTO studies (name, description, pm_email, hub_email, status, address, has_rna_samples, sample_prefix, sample_suffix_length, has_answers_notify_feature, has_answers_notify_feature_by_mail, has_four_eyes_opposition, has_partial_opposition, has_total_opposition, has_compliance_opposition, has_logging_opt_in, pseudonym_prefix, pseudonym_suffix_length) VALUES ('Teststudie - Export', 'Studie, um die Integrationstest des Exports vorzubereiten (PIA-2585)', NULL, NULL, 'active', NULL, false, 'ZIFCO', 10, false, false, false, true, true, true, false, NULL, NULL);
+INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
+                            deactivate_after_days, notification_tries, notification_title, notification_body_new,
+                            notification_body_in_progress, notification_weekday, notification_interval,
+                            notification_interval_unit, activate_at_date, compliance_needed, expires_after_days,
+                            finalises_after_days, created_at, type, version, publish, notify_when_not_filled,
+                            notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour,
+                            keep_answers)
+VALUES (298, 'Teststudie - Export', 'FB3_morgen_expired', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, FALSE, 1,
+        1, '2021-06-08', 'for_probands', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
+       (299, 'Teststudie - Export', 'FB4_Versionierung_mit_Labels_Codes', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
+        NULL, FALSE, 2, 5, '2021-06-08', 'for_probands', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
+       (295, 'Teststudie - Export', 'FB1_alle_Antworttypen', 1, 1, 'day', 0, 3, 0, '', '', '', '', 0, '', NULL, FALSE,
+        300, 100, '2021-06-08', 'for_probands', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
+       (297, 'Teststudie - Export', 'FB2_alle_Antworttypen_UT', 1, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL,
+        FALSE, 999999, 999999, '2021-06-08', 'for_research_team', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL,
+        FALSE),
+       (299, 'Teststudie - Export', 'FB4_Versionierung_mit_Labels_Codes', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
+        NULL, FALSE, 2, 5, '2021-06-08', 'for_probands', 2, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE);
+
+
+INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, label, questionnaire_version)
+VALUES (2618, 295, 'Es werden verschiedene Antworttypen durchgetestet.', 1, FALSE, '', 1),
+       (2620, 297, 'Es werden verschiedene Antworttypen durchgetestet.', 1, FALSE, '', 1),
+       (2621, 298, 'Wähle aus', 1, FALSE, '', 1),
+       (2622, 298, 'Wähle aus', 2, FALSE, '', 1),
+       (2623, 299, 'Frage mit Labels', 1, FALSE, '', 1),
+       (2624, 299, 'Frage mit Codes und Labels', 2, FALSE, '', 1),
+       (2625, 299, 'Frage mit Labels', 1, FALSE, '', 2),
+       (2626, 299, 'Frage mit Codes und Labels', 2, FALSE, '', 2);
+
+
+INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position",
+                            is_condition_target, restriction_min, restriction_max, is_decimal, label)
+VALUES (5967, 2618, 'Ist dies eine Einzelauswahl?', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE, ''),
+       (5968, 2618, 'Ist dies eine Mehrfachauswahl?', 2, '{f,f,f}', '{"Keine Angabe",Ja,Nein}', '{99,1,0}', 2, FALSE,
+        NULL, NULL, FALSE, ''),
+       (5969, 2618, 'Können hier nur Zahlen eingetragen werden?', 3, '{}', '{}', '{}', 3, FALSE, NULL, NULL, FALSE, ''),
+       (5970, 2618, 'Klappt diese Freitextfrage?', 4, '{}', '{}', '{}', 4, FALSE, NULL, NULL, FALSE, ''),
+       (5971, 2618, 'Gib das heutige Datum an.', 5, '{}', '{}', '{}', 5, FALSE, NULL, NULL, FALSE, ''),
+       (5972, 2618, 'Wähle ja, und prüfe, ob eine weitere Frage erscheint (Prüfung von Bedingung).', 1, '{f,f}',
+        '{Ja,Nein}', '{1,0}', 6, FALSE, NULL, NULL, FALSE, ''),
+       (5973, 2618, 'Lade ein Foto hoch.', 8, '{}', '{}', '{}', 7, FALSE, NULL, NULL, FALSE, ''),
+       (5974, 2618, 'Gib eine Proben-ID ein.', 6, '{}', '{}', '{}', 8, FALSE, NULL, NULL, FALSE, ''),
+       (5975, 2618, 'Gib eine PZN ein.', 7, '{}', '{}', '{}', 9, FALSE, NULL, NULL, FALSE, ''),
+       (5976, 2618, 'Zeitstempel', 9, '{}', '{}', '{}', 10, FALSE, NULL, NULL, FALSE, ''),
+       (5987, 2620, 'Ist dies eine Einzelauswahl?', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE, ''),
+       (5988, 2620, 'Ist dies eine Mehrfachauswahl?', 2, '{f,f,f}', '{"Keine Angabe",Ja,Nein}', '{99,1,0}', 2, FALSE,
+        NULL, NULL, FALSE, ''),
+       (5989, 2620, 'Können hier nur Zahlen eingetragen werden?', 3, '{}', '{}', '{}', 3, FALSE, NULL, NULL, FALSE, ''),
+       (5990, 2620, 'Klappt diese Freitextfrage?', 4, '{}', '{}', '{}', 4, FALSE, NULL, NULL, FALSE, ''),
+       (5991, 2620, 'Gib das heutige Datum an.', 5, '{}', '{}', '{}', 5, FALSE, NULL, NULL, FALSE, ''),
+       (5992, 2620, 'Wähle ja, und prüfe, ob eine weitere Frage erscheint (Prüfung von Bedingung).', 1, '{f,f}',
+        '{Ja,Nein}', '{1,0}', 6, FALSE, NULL, NULL, FALSE, ''),
+       (5993, 2620, 'Lade ein Foto hoch.', 8, '{}', '{}', '{}', 7, FALSE, NULL, NULL, FALSE, ''),
+       (5994, 2620, 'Gib eine Proben-ID ein.', 6, '{}', '{}', '{}', 8, FALSE, NULL, NULL, FALSE, ''),
+       (5995, 2620, 'Gib eine PZN ein.', 7, '{}', '{}', '{}', 9, FALSE, NULL, NULL, FALSE, ''),
+       (5996, 2620, 'Zeitstempel', 9, '{}', '{}', '{}', 10, FALSE, NULL, NULL, FALSE, ''),
+       (5997, 2621, '', 1, '{f,f}', '{Ja,Nein}', '{}', 1, FALSE, NULL, NULL, FALSE, ''),
+       (5998, 2622, '', 2, '{f,f,f}', '{"Keine Angabe",Timbuktu,Venezuela}', '{}', 1, FALSE, NULL, NULL, FALSE, ''),
+       (5999, 2623, 'Wie viele Tage sind es bis Weihnachten?', 3, '{}', '{}', '{}', 1, FALSE, NULL, NULL, FALSE,
+        'Weihnachtslabel'),
+       (6000, 2624, 'Was sind deine Lieblingsfarben', 2, '{f,f,f,f,f}', '{"Keine Angabe",grün,blau,gelb,rot}',
+        '{99,1,2,3,4}', 1, FALSE, NULL, NULL, FALSE, ''),
+       (6001, 2625, 'Wie viele Tage sind es bis Weihnachten?', 3, '{}', '{}', '{}', 1, FALSE, NULL, NULL, FALSE,
+        'Weihnachtslabel'),
+       (6002, 2626, 'Was sind deine Lieblingsfarben', 2, '{f,f,f,f,f}', '{"Keine Angabe",grün,blau,gelb,rot}',
+        '{99,1,2,3,4}', 1, FALSE, NULL, NULL, FALSE, 'Farbenlabel');
 
 --
--- Data for Name: study_users; Type: TABLE DATA; Owner: superuser
+-- Questionnaire Instances with Answers
 --
 
-INSERT INTO study_users (study_id, user_id, access_level) VALUES ('Teststudie - Export', 'Rtest-0000000002', 'read');
-INSERT INTO study_users (study_id, user_id, access_level) VALUES ('Teststudie - Export', 'Rtest-0000000003', 'read');
-INSERT INTO study_users (study_id, user_id, access_level) VALUES ('Teststudie - Export', 'Rtest-0000000004', 'read');
-INSERT INTO study_users (study_id, user_id, access_level) VALUES ('Teststudie - Export', 'Rtest-0000000005', 'read');
-INSERT INTO study_users (study_id, user_id, access_level) VALUES ('Teststudie - Export', 'Rtest-0000000006', 'read');
-INSERT INTO study_users (study_id, user_id, access_level) VALUES ('Teststudie - Export', 'Rtest-0000000007', 'read');
+INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue,
+                                     date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled,
+                                     progress, release_version, questionnaire_version, transmission_ts_v1,
+                                     transmission_ts_v2)
+VALUES (17712526, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000003', '2021-06-10 00:00:00', NULL,
+        NULL, 3, 'inactive', FALSE, 0, 0, 1, NULL, NULL),
+       (17712527, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000003', '2021-06-11 00:00:00', NULL,
+        NULL, 4, 'inactive', FALSE, 0, 0, 1, NULL, NULL),
+       (17712523, 'Teststudie - Export', 298, 'FB3_morgen_expired', 'QTest-0000000003', '2021-06-08 00:00:00', NULL,
+        NULL, 1, 'expired', TRUE, 0, 0, 1, NULL, NULL),
+       (17712524, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000003', '2021-06-08 00:00:00',
+        '2021-06-08 15:18:47.27', NULL, 1, 'released_once', FALSE, 90, 1, 1, NULL, NULL),
+       (17712513, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'QTest-0000000002', '2021-06-08 00:00:00',
+        NULL, NULL, 1, 'released', TRUE, 90, 2, 1, NULL, NULL),
+       (17712541, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'QTest-0000000006', '2021-06-08 00:00:00',
+        NULL, NULL, 1, 'in_progress', TRUE, 60, 0, 1, NULL, NULL),
+       (17712532, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000004', '2021-06-10 00:00:00', NULL,
+        NULL, 3, 'inactive', FALSE, 0, 0, 1, NULL, NULL),
+       (17712533, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000004', '2021-06-11 00:00:00', NULL,
+        NULL, 4, 'inactive', FALSE, 0, 0, 1, NULL, NULL),
+       (17712525, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000003', '2021-06-09 00:00:00',
+        '2021-06-09 07:08:50.912', NULL, 2, 'released_once', TRUE, 40, 1, 1, NULL, NULL),
+       (17712529, 'Teststudie - Export', 298, 'FB3_morgen_expired', 'QTest-0000000004', '2021-06-08 00:00:00', NULL,
+        NULL, 1, 'expired', TRUE, 0, 0, 1, NULL, NULL),
+       (17712530, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000004', '2021-06-08 00:00:00', NULL,
+        NULL, 1, 'in_progress', TRUE, 60, 0, 1, NULL, NULL),
+       (17712534, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Labels_Codes', 'QTest-0000000004',
+        '2021-06-08 00:00:00', NULL, NULL, 1, 'in_progress', TRUE, 50, 0, 2, NULL, NULL),
+       (17712528, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Labels_Codes', 'QTest-0000000003',
+        '2021-06-08 00:00:00', '2021-06-08 15:20:27.142', NULL, 1, 'released_once', FALSE, 100, 1, 2, NULL, NULL),
+       (17712531, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000004', '2021-06-09 00:00:00',
+        '2021-06-09 07:12:38.338', NULL, 2, 'released_once', TRUE, 30, 1, 1, NULL, NULL),
+       (17712538, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000005', '2021-06-10 00:00:00', NULL,
+        NULL, 3, 'inactive', FALSE, 0, 0, 1, NULL, NULL),
+       (17712539, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000005', '2021-06-11 00:00:00', NULL,
+        NULL, 4, 'inactive', FALSE, 0, 0, 1, NULL, NULL),
+       (17712535, 'Teststudie - Export', 298, 'FB3_morgen_expired', 'QTest-0000000005', '2021-06-08 00:00:00', NULL,
+        NULL, 1, 'expired', TRUE, 0, 0, 1, NULL, NULL),
+       (17712536, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000005', '2021-06-08 00:00:00', NULL,
+        NULL, 1, 'active', TRUE, 0, 0, 1, NULL, NULL),
+       (17712540, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Labels_Codes', 'QTest-0000000005',
+        '2021-06-08 00:00:00', NULL, NULL, 1, 'active', TRUE, 0, 0, 2, NULL, NULL),
+       (17712537, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000005', '2021-06-09 00:00:00',
+        '2021-06-09 07:14:04.508', NULL, 2, 'released_once', TRUE, 10, 1, 1, NULL, NULL),
+       (17712514, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'QTest-0000000003', '2021-06-08 00:00:00',
+        NULL, NULL, 1, 'released', TRUE, 90, 1, 1, NULL, NULL),
+       (17712515, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'QTest-0000000004', '2021-06-08 00:00:00',
+        NULL, NULL, 1, 'released', TRUE, 90, 1, 1, NULL, NULL),
+       (17712516, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'QTest-0000000005', '2021-06-08 00:00:00',
+        NULL, NULL, 1, 'active', TRUE, 0, 0, 1, NULL, NULL),
+       (17712520, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000002', '2021-06-10 00:00:00', NULL,
+        NULL, 3, 'inactive', FALSE, 0, 0, 1, NULL, NULL),
+       (17712521, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000002', '2021-06-11 00:00:00', NULL,
+        NULL, 4, 'inactive', FALSE, 0, 0, 1, NULL, NULL),
+       (17712519, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000002', '2021-06-09 00:00:00',
+        '2021-06-09 07:00:19.809', '2021-06-09 07:00:29.534', 2, 'released_twice', TRUE, 80, 2, 1, NULL, NULL),
+       (17712518, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'QTest-0000000002', '2021-06-08 00:00:00',
+        '2021-06-08 15:11:23.371', '2021-06-08 15:11:50.364', 1, 'released_twice', TRUE, 100, 2, 1, NULL, NULL),
+       (17712522, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Labels_Codes', 'QTest-0000000002',
+        '2021-06-08 00:00:00', '2021-06-08 15:13:25.708', '2021-06-08 15:13:42.345', 1, 'released_twice', TRUE, 100, 2,
+        2, NULL, NULL),
+       (17712517, 'Teststudie - Export', 298, 'FB3_morgen_expired', 'QTest-0000000002', '2021-06-08 00:00:00', NULL,
+        NULL, 1, 'expired', TRUE, 50, 0, 1, NULL, NULL),
+       (17712542, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'QTest-0000000007', '2021-06-08 00:00:00',
+        NULL, NULL, 1, 'released', FALSE, 20, 2, 1, NULL, NULL);
+
+
+INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release,
+                     releasing_person)
+VALUES (17712518, 2618, 5967, 1, 'Ja', NULL, NULL),
+       (17712518, 2618, 5968, 1, 'Nein;Ja;', NULL, NULL),
+       (17712518, 2618, 5969, 1, '1234', NULL, NULL),
+       (17712518, 2618, 5970, 1, 'Freitext', NULL, NULL),
+       (17712518, 2618, 5971, 1, 'Tue Jun 08 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)', NULL, NULL),
+       (17712518, 2618, 5972, 1, 'Ja', NULL, NULL),
+       (17712518, 2618, 5973, 1, '321', NULL, NULL),
+       (17712518, 2618, 5974, 1, 'ZIFCO-1234567852', NULL, NULL),
+       (17712518, 2618, 5975, 1, 'PZN-5678', NULL, NULL),
+       (17712518, 2618, 5976, 1, '1623165077219', NULL, NULL),
+       (17712518, 2618, 5967, 2, 'Ja', NULL, NULL),
+       (17712518, 2618, 5968, 2, 'Nein;Ja;', NULL, NULL),
+       (17712518, 2618, 5969, 2, '1234', NULL, NULL),
+       (17712518, 2618, 5970, 2, 'Freitext', NULL, NULL),
+       (17712518, 2618, 5971, 2, 'Tue Jun 08 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)', NULL, NULL),
+       (17712518, 2618, 5972, 2, 'Ja', NULL, NULL),
+       (17712518, 2618, 5973, 2, '321', NULL, NULL),
+       (17712518, 2618, 5974, 2, 'ZIFCO-1234567852', NULL, NULL),
+       (17712518, 2618, 5975, 2, 'PZN-56789', NULL, NULL),
+       (17712518, 2618, 5976, 2, '1623165077219', NULL, NULL),
+       (17712524, 2618, 5967, 1, 'Ja', NULL, NULL),
+       (17712524, 2618, 5968, 1, 'Nein;', NULL, NULL),
+       (17712524, 2618, 5969, 1, '7548', NULL, NULL),
+       (17712517, 2621, 5997, 1, 'Ja', NULL, NULL),
+       (17712517, 2622, 5998, 1, '', NULL, NULL),
+       (17712524, 2618, 5970, 1, 'yeah yeah yeah', NULL, NULL),
+       (17712524, 2618, 5971, 1, 'Tue Jun 08 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)', NULL, NULL),
+       (17712524, 2618, 5972, 1, 'Nein', NULL, NULL),
+       (17712524, 2618, 5973, 1, '324', NULL, NULL),
+       (17712524, 2618, 5974, 1, 'ZIFCO-7777444111', NULL, NULL),
+       (17712524, 2618, 5975, 1, 'PZN-0000000003', NULL, NULL),
+       (17712524, 2618, 5976, 1, '1623165521517', NULL, NULL),
+       (17712522, 2625, 6001, 1, '54687468', NULL, NULL),
+       (17712522, 2626, 6002, 1, 'gelb;blau;grün;', NULL, NULL),
+       (17712522, 2625, 6001, 2, '546874685', NULL, NULL),
+       (17712522, 2626, 6002, 2, 'gelb;blau;grün;', NULL, NULL),
+       (17712528, 2625, 6001, 1, '4645', NULL, NULL),
+       (17712528, 2626, 6002, 1, 'gelb;blau;', NULL, NULL),
+       (17712530, 2618, 5967, 1, 'Nein', NULL, NULL),
+       (17712530, 2618, 5968, 1, 'Nein;', NULL, NULL),
+       (17712530, 2618, 5969, 1, '535354', NULL, NULL),
+       (17712530, 2618, 5970, 1, 'Eierschalensollbruchstelle', NULL, NULL),
+       (17712530, 2618, 5971, 1, 'Tue Jun 01 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)', NULL, NULL),
+       (17712530, 2618, 5972, 1, 'Nein', NULL, NULL),
+       (17712530, 2618, 5973, 1, '', NULL, NULL),
+       (17712530, 2618, 5974, 1, '', NULL, NULL),
+       (17712530, 2618, 5975, 1, '', NULL, NULL),
+       (17712530, 2618, 5976, 1, '', NULL, NULL),
+       (17712519, 2618, 5967, 1, 'Ja', NULL, NULL),
+       (17712519, 2618, 5968, 1, 'Nein;Ja;', NULL, NULL),
+       (17712519, 2618, 5969, 1, '0', NULL, NULL),
+       (17712519, 2618, 5970, 1, ';,', NULL, NULL),
+       (17712519, 2618, 5971, 1, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', NULL, NULL),
+       (17712519, 2618, 5972, 1, 'Ja', NULL, NULL),
+       (17712519, 2618, 5973, 1, '', NULL, NULL),
+       (17712519, 2618, 5974, 1, '', NULL, NULL),
+       (17712519, 2618, 5975, 1, ';,', NULL, NULL),
+       (17712519, 2618, 5976, 1, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', NULL, NULL),
+       (17712519, 2618, 5967, 2, 'Ja', NULL, NULL),
+       (17712519, 2618, 5968, 2, 'Nein;Ja;', NULL, NULL),
+       (17712519, 2618, 5969, 2, '0', NULL, NULL),
+       (17712519, 2618, 5970, 2, ';,', NULL, NULL),
+       (17712519, 2618, 5971, 2, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', NULL, NULL),
+       (17712519, 2618, 5972, 2, 'Ja', NULL, NULL),
+       (17712519, 2618, 5973, 2, '', NULL, NULL),
+       (17712519, 2618, 5974, 2, '', NULL, NULL),
+       (17712519, 2618, 5975, 2, ';,', NULL, NULL),
+       (17712519, 2618, 5976, 2, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', NULL, NULL),
+       (17712531, 2618, 5967, 1, '', NULL, NULL),
+       (17712531, 2618, 5968, 1, '', NULL, NULL),
+       (17712531, 2618, 5969, 1, '464646876843135', NULL, NULL),
+       (17712531, 2618, 5971, 1, '', NULL, NULL),
+       (17712531, 2618, 5972, 1, '', NULL, NULL),
+       (17712531, 2618, 5973, 1, '', NULL, NULL),
+       (17712531, 2618, 5974, 1, '', NULL, NULL),
+       (17712534, 2625, 6001, 1, '5', NULL, NULL),
+       (17712534, 2626, 6002, 1, '', NULL, NULL),
+       (17712525, 2618, 5967, 1, '', NULL, NULL),
+       (17712525, 2618, 5968, 1, 'Keine Angabe', NULL, NULL),
+       (17712525, 2618, 5969, 1, '1', NULL, NULL),
+       (17712525, 2618, 5970, 1, '', NULL, NULL),
+       (17712525, 2618, 5971, 1, 'Sat Jan 01 0000 00:00:00 GMT+0053 (Mitteleuropäische Normalzeit)', NULL, NULL),
+       (17712525, 2618, 5972, 1, '', NULL, NULL),
+       (17712525, 2618, 5973, 1, '', NULL, NULL),
+       (17712525, 2618, 5974, 1, '', NULL, NULL),
+       (17712525, 2618, 5975, 1, '', NULL, NULL),
+       (17712525, 2618, 5976, 1, 'Mon Jan 01 2001 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', NULL, NULL),
+       (17712513, 2620, 5994, 1, '', '2021-06-08 15:30:12.758', ''),
+       (17712513, 2620, 5995, 1, 'PZN-89646', '2021-06-08 15:30:12.758', ''),
+       (17712513, 2620, 5996, 1, '1623166177265', '2021-06-08 15:30:12.758', ''),
+       (17712531, 2618, 5976, 1, '', NULL, NULL),
+       (17712513, 2620, 5987, 1, 'Ja', '2021-06-08 15:30:12.758', ''),
+       (17712513, 2620, 5988, 1, 'Keine Angabe', '2021-06-08 15:30:12.758', ''),
+       (17712513, 2620, 5989, 1, '1', '2021-06-08 15:30:12.758', ''),
+       (17712513, 2620, 5990, 1, 'Untersuchungsteamtext', '2021-06-08 15:30:12.758', ''),
+       (17712513, 2620, 5991, 1, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)',
+        '2021-06-08 15:30:12.758', ''),
+       (17712513, 2620, 5992, 1, 'Ja', '2021-06-08 15:30:12.758', ''),
+       (17712513, 2620, 5993, 1, '326', '2021-06-08 15:30:12.758', ''),
+       (17712513, 2620, 5987, 2, 'Ja', '2021-06-08 15:32:37.36', ''),
+       (17712513, 2620, 5988, 2, 'Keine Angabe', '2021-06-08 15:32:37.36', ''),
+       (17712513, 2620, 5989, 2, '1', '2021-06-08 15:32:37.36', ''),
+       (17712513, 2620, 5990, 2, 'Untersuchungsteamtext', '2021-06-08 15:32:37.36', ''),
+       (17712513, 2620, 5991, 2, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)',
+        '2021-06-08 15:32:37.36', ''),
+       (17712513, 2620, 5992, 2, 'Ja', '2021-06-08 15:32:37.36', ''),
+       (17712513, 2620, 5993, 2, '326', '2021-06-08 15:32:37.36', ''),
+       (17712513, 2620, 5994, 2, '', '2021-06-08 15:32:37.36', ''),
+       (17712513, 2620, 5995, 2, 'PZN-8964665', '2021-06-08 15:32:37.36', ''),
+       (17712513, 2620, 5996, 2, '1623166177265', '2021-06-08 15:32:37.36', ''),
+       (17712531, 2618, 5970, 1,
+        'GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText,GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,;vGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,.;!"§$%$&&%/&/())=?`/%$$""*%&/(545GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText',
+        NULL, NULL),
+       (17712513, 2620, 5987, 3, 'Ja', '2021-06-09 07:51:21.168', ''),
+       (17712513, 2620, 5988, 3, 'Keine Angabe', '2021-06-09 07:51:21.168', ''),
+       (17712513, 2620, 5989, 3, '1', '2021-06-09 07:51:21.168', ''),
+       (17712513, 2620, 5990, 3, 'Untersuchungsteamtext', '2021-06-09 07:51:21.168', ''),
+       (17712513, 2620, 5991, 3, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)',
+        '2021-06-09 07:51:21.168', ''),
+       (17712513, 2620, 5992, 3, 'Ja', '2021-06-09 07:51:21.168', ''),
+       (17712513, 2620, 5993, 3, '326', '2021-06-09 07:51:21.168', ''),
+       (17712513, 2620, 5994, 3, '', '2021-06-09 07:51:21.168', ''),
+       (17712513, 2620, 5995, 3, 'PZN-8964665', '2021-06-09 07:51:21.168', ''),
+       (17712513, 2620, 5996, 3, '1623166177265', '2021-06-09 07:51:21.168', ''),
+       (17712514, 2620, 5987, 1, 'Ja', '2021-06-08 15:34:33.705', ''),
+       (17712514, 2620, 5988, 1, 'Nein;Ja;', '2021-06-08 15:34:33.705', ''),
+       (17712514, 2620, 5989, 1, '1000', '2021-06-08 15:34:33.705', ''),
+       (17712514, 2620, 5990, 1, 'Hier könnte Ihr Freitext stehen.', '2021-06-08 15:34:33.705', ''),
+       (17712514, 2620, 5991, 1, 'Wed Jun 30 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)',
+        '2021-06-08 15:34:33.705', ''),
+       (17712514, 2620, 5992, 1, 'Ja', '2021-06-08 15:34:33.705', ''),
+       (17712514, 2620, 5993, 1, '327', '2021-06-08 15:34:33.705', ''),
+       (17712514, 2620, 5994, 1, '', '2021-06-08 15:34:33.705', ''),
+       (17712514, 2620, 5995, 1, 'PZN-7514', '2021-06-08 15:34:33.705', ''),
+       (17712514, 2620, 5996, 1, '1623166430425', '2021-06-08 15:34:33.705', ''),
+       (17712515, 2620, 5987, 1, 'Nein', '2021-06-08 15:36:54.09', ''),
+       (17712515, 2620, 5988, 1, 'Ja;', '2021-06-08 15:36:54.09', ''),
+       (17712515, 2620, 5989, 1, '754', '2021-06-08 15:36:54.09', ''),
+       (17712515, 2620, 5990, 1, 'textomaniac', '2021-06-08 15:36:54.09', ''),
+       (17712515, 2620, 5991, 1, 'Mon Feb 08 2016 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)',
+        '2021-06-08 15:36:54.09', ''),
+       (17712515, 2620, 5992, 1, 'Ja', '2021-06-08 15:36:54.09', ''),
+       (17712515, 2620, 5993, 1, '329', '2021-06-08 15:36:54.09', ''),
+       (17712515, 2620, 5994, 1, '', '2021-06-08 15:36:54.09', ''),
+       (17712515, 2620, 5995, 1, 'PZN-0000000004', '2021-06-08 15:36:54.09', ''),
+       (17712515, 2620, 5996, 1, '1623166611483', '2021-06-08 15:36:54.09', ''),
+       (17712541, 2620, 5987, 1, 'Nein', '2021-06-08 15:38:37.874', ''),
+       (17712541, 2620, 5988, 1, 'Keine Angabe', '2021-06-08 15:38:37.874', ''),
+       (17712541, 2620, 5989, 1, '535', '2021-06-08 15:38:37.874', ''),
+       (17712541, 2620, 5990, 1, 'text', '2021-06-08 15:38:37.874', ''),
+       (17712541, 2620, 5991, 1, 'Tue Jun 08 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)',
+        '2021-06-08 15:38:37.874', ''),
+       (17712541, 2620, 5992, 1, 'Nein', '2021-06-08 15:38:37.874', ''),
+       (17712541, 2620, 5993, 1, '', '2021-06-08 15:38:37.874', ''),
+       (17712541, 2620, 5994, 1, '', '2021-06-08 15:38:37.874', ''),
+       (17712541, 2620, 5995, 1, '', '2021-06-08 15:38:37.874', ''),
+       (17712541, 2620, 5996, 1, '', '2021-06-08 15:38:37.874', ''),
+       (17712531, 2618, 5975, 1,
+        'GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText,GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,;vGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,.;!"§$%$&&%/&/())=?`/%$$""*%&/(545GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText',
+        NULL, NULL),
+       (17712537, 2618, 5967, 1, '', NULL, NULL),
+       (17712537, 2618, 5968, 1, 'Nein;', NULL, NULL),
+       (17712537, 2618, 5969, 1, '', NULL, NULL),
+       (17712537, 2618, 5970, 1, '', NULL, NULL),
+       (17712537, 2618, 5971, 1, '', NULL, NULL),
+       (17712537, 2618, 5972, 1, '', NULL, NULL),
+       (17712537, 2618, 5973, 1, '', NULL, NULL),
+       (17712537, 2618, 5974, 1, '', NULL, NULL),
+       (17712537, 2618, 5975, 1, '', NULL, NULL),
+       (17712537, 2618, 5976, 1, '', NULL, NULL),
+       (17712528, 2625, 6001, 2, '4645', NULL, NULL),
+       (17712528, 2626, 6002, 2, 'gelb;blau;', NULL, NULL);
+
 
 --
--- Data for Name: questionnaires; Type: TABLE DATA; Owner: superuser
+-- Add the researcher who requests the export
 --
-
-INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, notification_weekday, notification_interval, notification_interval_unit, activate_at_date, compliance_needed, expires_after_days, finalises_after_days, created_at, type, version, publish, notify_when_not_filled, notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour, keep_answers) VALUES (298, 'Teststudie - Export', 'FB3_morgen_expired', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, false, 1, 1, '2021-06-08', 'for_probands', 1, 'allaudiences', false, NULL, NULL, NULL, NULL, false);
-INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, notification_weekday, notification_interval, notification_interval_unit, activate_at_date, compliance_needed, expires_after_days, finalises_after_days, created_at, type, version, publish, notify_when_not_filled, notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour, keep_answers) VALUES (299, 'Teststudie - Export', 'FB4_Versionierung_mit_Labels_Codes', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, false, 2, 5, '2021-06-08', 'for_probands', 1, 'allaudiences', false, NULL, NULL, NULL, NULL, false);
-INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, notification_weekday, notification_interval, notification_interval_unit, activate_at_date, compliance_needed, expires_after_days, finalises_after_days, created_at, type, version, publish, notify_when_not_filled, notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour, keep_answers) VALUES (295, 'Teststudie - Export', 'FB1_alle_Antworttypen', 1, 1, 'day', 0, 3, 0, '', '', '', '', 0, '', NULL, false, 300, 100, '2021-06-08', 'for_probands', 1, 'allaudiences', false, NULL, NULL, NULL, NULL, false);
-INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, notification_weekday, notification_interval, notification_interval_unit, activate_at_date, compliance_needed, expires_after_days, finalises_after_days, created_at, type, version, publish, notify_when_not_filled, notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour, keep_answers) VALUES (297, 'Teststudie - Export', 'FB2_alle_Antworttypen_UT', 1, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, false, 999999, 999999, '2021-06-08', 'for_research_team', 1, 'allaudiences', false, NULL, NULL, NULL, NULL, false);
-INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, notification_weekday, notification_interval, notification_interval_unit, activate_at_date, compliance_needed, expires_after_days, finalises_after_days, created_at, type, version, publish, notify_when_not_filled, notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour, keep_answers) VALUES (299, 'Teststudie - Export', 'FB4_Versionierung_mit_Labels_Codes', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, false, 2, 5, '2021-06-08', 'for_probands', 2, 'allaudiences', false, NULL, NULL, NULL, NULL, false);
-
---
--- Data for Name: questions; Type: TABLE DATA; Owner: superuser
---
-
-INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, label, questionnaire_version) VALUES (2618, 295, 'Es werden verschiedene Antworttypen durchgetestet.', 1, false, '', 1);
-INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, label, questionnaire_version) VALUES (2620, 297, 'Es werden verschiedene Antworttypen durchgetestet.', 1, false, '', 1);
-INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, label, questionnaire_version) VALUES (2621, 298, 'Wähle aus', 1, false, '', 1);
-INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, label, questionnaire_version) VALUES (2622, 298, 'Wähle aus', 2, false, '', 1);
-INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, label, questionnaire_version) VALUES (2623, 299, 'Frage mit Labels', 1, false, '', 1);
-INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, label, questionnaire_version) VALUES (2624, 299, 'Frage mit Codes und Labels', 2, false, '', 1);
-INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, label, questionnaire_version) VALUES (2625, 299, 'Frage mit Labels', 1, false, '', 2);
-INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, label, questionnaire_version) VALUES (2626, 299, 'Frage mit Codes und Labels', 2, false, '', 2);
-
---
--- Data for Name: answer_options; Type: TABLE DATA; Owner: superuser
---
-
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5967, 2618, 'Ist dies eine Einzelauswahl?', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5968, 2618, 'Ist dies eine Mehrfachauswahl?', 2, '{f,f,f}', '{"Keine Angabe",Ja,Nein}', '{99,1,0}', 2, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5969, 2618, 'Können hier nur Zahlen eingetragen werden?', 3, '{}', '{}', '{}', 3, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5970, 2618, 'Klappt diese Freitextfrage?', 4, '{}', '{}', '{}', 4, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5971, 2618, 'Gib das heutige Datum an.', 5, '{}', '{}', '{}', 5, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5972, 2618, 'Wähle ja, und prüfe, ob eine weitere Frage erscheint (Prüfung von Bedingung).', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 6, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5973, 2618, 'Lade ein Foto hoch.', 8, '{}', '{}', '{}', 7, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5974, 2618, 'Gib eine Proben-ID ein.', 6, '{}', '{}', '{}', 8, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5975, 2618, 'Gib eine PZN ein.', 7, '{}', '{}', '{}', 9, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5976, 2618, 'Zeitstempel', 9, '{}', '{}', '{}', 10, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5987, 2620, 'Ist dies eine Einzelauswahl?', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5988, 2620, 'Ist dies eine Mehrfachauswahl?', 2, '{f,f,f}', '{"Keine Angabe",Ja,Nein}', '{99,1,0}', 2, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5989, 2620, 'Können hier nur Zahlen eingetragen werden?', 3, '{}', '{}', '{}', 3, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5990, 2620, 'Klappt diese Freitextfrage?', 4, '{}', '{}', '{}', 4, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5991, 2620, 'Gib das heutige Datum an.', 5, '{}', '{}', '{}', 5, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5992, 2620, 'Wähle ja, und prüfe, ob eine weitere Frage erscheint (Prüfung von Bedingung).', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 6, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5993, 2620, 'Lade ein Foto hoch.', 8, '{}', '{}', '{}', 7, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5994, 2620, 'Gib eine Proben-ID ein.', 6, '{}', '{}', '{}', 8, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5995, 2620, 'Gib eine PZN ein.', 7, '{}', '{}', '{}', 9, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5996, 2620, 'Zeitstempel', 9, '{}', '{}', '{}', 10, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5997, 2621, '', 1, '{f,f}', '{Ja,Nein}', '{}', 1, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5998, 2622, '', 2, '{f,f,f}', '{"Keine Angabe",Timbuktu,Venezuela}', '{}', 1, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (5999, 2623, 'Wie viele Tage sind es bis Weihnachten?', 3, '{}', '{}', '{}', 1, false, NULL, NULL, false, 'Weihnachtslabel');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (6000, 2624, 'Was sind deine Lieblingsfarben', 2, '{f,f,f,f,f}', '{"Keine Angabe",grün,blau,gelb,rot}', '{99,1,2,3,4}', 1, false, NULL, NULL, false, '');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (6001, 2625, 'Wie viele Tage sind es bis Weihnachten?', 3, '{}', '{}', '{}', 1, false, NULL, NULL, false, 'Weihnachtslabel');
-INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position", is_condition_target, restriction_min, restriction_max, is_decimal, label) VALUES (6002, 2626, 'Was sind deine Lieblingsfarben', 2, '{f,f,f,f,f}', '{"Keine Angabe",grün,blau,gelb,rot}', '{99,1,2,3,4}', 1, false, NULL, NULL, false, 'Farbenlabel');
-
---
--- Data for Name: questionnaire_instances; Type: TABLE DATA; Owner: superuser
---
-
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712526, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000003', '2021-06-10 00:00:00', NULL, NULL, 3, 'inactive', false, 0, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712527, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000003', '2021-06-11 00:00:00', NULL, NULL, 4, 'inactive', false, 0, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712523, 'Teststudie - Export', 298, 'FB3_morgen_expired', 'Rtest-0000000003', '2021-06-08 00:00:00', NULL, NULL, 1, 'expired', true, 0, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712524, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000003', '2021-06-08 00:00:00', '2021-06-08 15:18:47.27', NULL, 1, 'released_once', false, 90, 1, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712513, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'Rtest-0000000002', '2021-06-08 00:00:00', NULL, NULL, 1, 'released', true, 90, 2, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712541, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'Rtest-0000000006', '2021-06-08 00:00:00', NULL, NULL, 1, 'in_progress', true, 60, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712532, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000004', '2021-06-10 00:00:00', NULL, NULL, 3, 'inactive', false, 0, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712533, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000004', '2021-06-11 00:00:00', NULL, NULL, 4, 'inactive', false, 0, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712525, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000003', '2021-06-09 00:00:00', '2021-06-09 07:08:50.912', NULL, 2, 'released_once', true, 40, 1, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712529, 'Teststudie - Export', 298, 'FB3_morgen_expired', 'Rtest-0000000004', '2021-06-08 00:00:00', NULL, NULL, 1, 'expired', true, 0, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712530, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000004', '2021-06-08 00:00:00', NULL, NULL, 1, 'in_progress', true, 60, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712534, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Labels_Codes', 'Rtest-0000000004', '2021-06-08 00:00:00', NULL, NULL, 1, 'in_progress', true, 50, 0, 2, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712528, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Labels_Codes', 'Rtest-0000000003', '2021-06-08 00:00:00', '2021-06-08 15:20:27.142', NULL, 1, 'released_once', false, 100, 1, 2, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712531, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000004', '2021-06-09 00:00:00', '2021-06-09 07:12:38.338', NULL, 2, 'released_once', true, 30, 1, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712538, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000005', '2021-06-10 00:00:00', NULL, NULL, 3, 'inactive', false, 0, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712539, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000005', '2021-06-11 00:00:00', NULL, NULL, 4, 'inactive', false, 0, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712535, 'Teststudie - Export', 298, 'FB3_morgen_expired', 'Rtest-0000000005', '2021-06-08 00:00:00', NULL, NULL, 1, 'expired', true, 0, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712536, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000005', '2021-06-08 00:00:00', NULL, NULL, 1, 'active', true, 0, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712540, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Labels_Codes', 'Rtest-0000000005', '2021-06-08 00:00:00', NULL, NULL, 1, 'active', true, 0, 0, 2, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712537, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000005', '2021-06-09 00:00:00', '2021-06-09 07:14:04.508', NULL, 2, 'released_once', true, 10, 1, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712514, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'Rtest-0000000003', '2021-06-08 00:00:00', NULL, NULL, 1, 'released', true, 90, 1, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712515, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'Rtest-0000000004', '2021-06-08 00:00:00', NULL, NULL, 1, 'released', true, 90, 1, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712516, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'Rtest-0000000005', '2021-06-08 00:00:00', NULL, NULL, 1, 'active', true, 0, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712520, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000002', '2021-06-10 00:00:00', NULL, NULL, 3, 'inactive', false, 0, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712521, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000002', '2021-06-11 00:00:00', NULL, NULL, 4, 'inactive', false, 0, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712519, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000002', '2021-06-09 00:00:00', '2021-06-09 07:00:19.809', '2021-06-09 07:00:29.534', 2, 'released_twice', true, 80, 2, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712518, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'Rtest-0000000002', '2021-06-08 00:00:00', '2021-06-08 15:11:23.371', '2021-06-08 15:11:50.364', 1, 'released_twice', true, 100, 2, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712522, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Labels_Codes', 'Rtest-0000000002', '2021-06-08 00:00:00', '2021-06-08 15:13:25.708', '2021-06-08 15:13:42.345', 1, 'released_twice', true, 100, 2, 2, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712517, 'Teststudie - Export', 298, 'FB3_morgen_expired', 'Rtest-0000000002', '2021-06-08 00:00:00', NULL, NULL, 1, 'expired', true, 50, 0, 1, NULL, NULL);
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled, progress, release_version, questionnaire_version, transmission_ts_v1, transmission_ts_v2) VALUES (17712542, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'Rtest-0000000007', '2021-06-08 00:00:00', NULL, NULL, 1, 'released', false, 20, 2, 1, NULL, NULL);
-
---
--- Data for Name: answers; Type: TABLE DATA; Owner: superuser
---
-
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5967, 1, 'Ja', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5968, 1, 'Nein;Ja;', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5969, 1, '1234', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5970, 1, 'Freitext', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5971, 1, 'Tue Jun 08 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5972, 1, 'Ja', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5973, 1, '321', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5974, 1, 'ZIFCO-1234567852', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5975, 1, 'PZN-5678', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5976, 1, '1623165077219', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5967, 2, 'Ja', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5968, 2, 'Nein;Ja;', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5969, 2, '1234', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5970, 2, 'Freitext', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5971, 2, 'Tue Jun 08 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5972, 2, 'Ja', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5973, 2, '321', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5974, 2, 'ZIFCO-1234567852', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5975, 2, 'PZN-56789', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712518, 2618, 5976, 2, '1623165077219', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712524, 2618, 5967, 1, 'Ja', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712524, 2618, 5968, 1, 'Nein;', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712524, 2618, 5969, 1, '7548', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712517, 2621, 5997, 1, 'Ja', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712517, 2622, 5998, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712524, 2618, 5970, 1, 'yeah yeah yeah', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712524, 2618, 5971, 1, 'Tue Jun 08 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712524, 2618, 5972, 1, 'Nein', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712524, 2618, 5973, 1, '324', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712524, 2618, 5974, 1, 'ZIFCO-7777444111', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712524, 2618, 5975, 1, 'PZN-0000000003', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712524, 2618, 5976, 1, '1623165521517', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712522, 2625, 6001, 1, '54687468', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712522, 2626, 6002, 1, 'gelb;blau;grün;', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712522, 2625, 6001, 2, '546874685', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712522, 2626, 6002, 2, 'gelb;blau;grün;', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712528, 2625, 6001, 1, '4645', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712528, 2626, 6002, 1, 'gelb;blau;', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712530, 2618, 5967, 1, 'Nein', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712530, 2618, 5968, 1, 'Nein;', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712530, 2618, 5969, 1, '535354', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712530, 2618, 5970, 1, 'Eierschalensollbruchstelle', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712530, 2618, 5971, 1, 'Tue Jun 01 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712530, 2618, 5972, 1, 'Nein', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712530, 2618, 5973, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712530, 2618, 5974, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712530, 2618, 5975, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712530, 2618, 5976, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5967, 1, 'Ja', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5968, 1, 'Nein;Ja;', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5969, 1, '0', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5970, 1, ';,', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5971, 1, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5972, 1, 'Ja', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5973, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5974, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5975, 1, ';,', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5976, 1, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5967, 2, 'Ja', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5968, 2, 'Nein;Ja;', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5969, 2, '0', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5970, 2, ';,', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5971, 2, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5972, 2, 'Ja', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5973, 2, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5974, 2, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5975, 2, ';,', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712519, 2618, 5976, 2, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712531, 2618, 5967, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712531, 2618, 5968, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712531, 2618, 5969, 1, '464646876843135', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712531, 2618, 5971, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712531, 2618, 5972, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712531, 2618, 5973, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712531, 2618, 5974, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712534, 2625, 6001, 1, '5', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712534, 2626, 6002, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712525, 2618, 5967, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712525, 2618, 5968, 1, 'Keine Angabe', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712525, 2618, 5969, 1, '1', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712525, 2618, 5970, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712525, 2618, 5971, 1, 'Sat Jan 01 0000 00:00:00 GMT+0053 (Mitteleuropäische Normalzeit)', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712525, 2618, 5972, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712525, 2618, 5973, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712525, 2618, 5974, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712525, 2618, 5975, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712525, 2618, 5976, 1, 'Mon Jan 01 2001 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5994, 1, '', '2021-06-08 15:30:12.758', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5995, 1, 'PZN-89646', '2021-06-08 15:30:12.758', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5996, 1, '1623166177265', '2021-06-08 15:30:12.758', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712531, 2618, 5976, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5987, 1, 'Ja', '2021-06-08 15:30:12.758', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5988, 1, 'Keine Angabe', '2021-06-08 15:30:12.758', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5989, 1, '1', '2021-06-08 15:30:12.758', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5990, 1, 'Untersuchungsteamtext', '2021-06-08 15:30:12.758', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5991, 1, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', '2021-06-08 15:30:12.758', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5992, 1, 'Ja', '2021-06-08 15:30:12.758', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5993, 1, '326', '2021-06-08 15:30:12.758', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5987, 2, 'Ja', '2021-06-08 15:32:37.36', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5988, 2, 'Keine Angabe', '2021-06-08 15:32:37.36', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5989, 2, '1', '2021-06-08 15:32:37.36', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5990, 2, 'Untersuchungsteamtext', '2021-06-08 15:32:37.36', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5991, 2, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', '2021-06-08 15:32:37.36', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5992, 2, 'Ja', '2021-06-08 15:32:37.36', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5993, 2, '326', '2021-06-08 15:32:37.36', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5994, 2, '', '2021-06-08 15:32:37.36', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5995, 2, 'PZN-8964665', '2021-06-08 15:32:37.36', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5996, 2, '1623166177265', '2021-06-08 15:32:37.36', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712531, 2618, 5970, 1, 'GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText,GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,;vGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,.;!"§$%$&&%/&/())=?`/%$$""*%&/(545GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5987, 3, 'Ja', '2021-06-09 07:51:21.168', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5988, 3, 'Keine Angabe', '2021-06-09 07:51:21.168', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5989, 3, '1', '2021-06-09 07:51:21.168', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5990, 3, 'Untersuchungsteamtext', '2021-06-09 07:51:21.168', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5991, 3, 'Thu Jan 01 1970 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', '2021-06-09 07:51:21.168', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5992, 3, 'Ja', '2021-06-09 07:51:21.168', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5993, 3, '326', '2021-06-09 07:51:21.168', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5994, 3, '', '2021-06-09 07:51:21.168', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5995, 3, 'PZN-8964665', '2021-06-09 07:51:21.168', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712513, 2620, 5996, 3, '1623166177265', '2021-06-09 07:51:21.168', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712514, 2620, 5987, 1, 'Ja', '2021-06-08 15:34:33.705', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712514, 2620, 5988, 1, 'Nein;Ja;', '2021-06-08 15:34:33.705', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712514, 2620, 5989, 1, '1000', '2021-06-08 15:34:33.705', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712514, 2620, 5990, 1, 'Hier könnte Ihr Freitext stehen.', '2021-06-08 15:34:33.705', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712514, 2620, 5991, 1, 'Wed Jun 30 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)', '2021-06-08 15:34:33.705', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712514, 2620, 5992, 1, 'Ja', '2021-06-08 15:34:33.705', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712514, 2620, 5993, 1, '327', '2021-06-08 15:34:33.705', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712514, 2620, 5994, 1, '', '2021-06-08 15:34:33.705', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712514, 2620, 5995, 1, 'PZN-7514', '2021-06-08 15:34:33.705', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712514, 2620, 5996, 1, '1623166430425', '2021-06-08 15:34:33.705', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712515, 2620, 5987, 1, 'Nein', '2021-06-08 15:36:54.09', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712515, 2620, 5988, 1, 'Ja;', '2021-06-08 15:36:54.09', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712515, 2620, 5989, 1, '754', '2021-06-08 15:36:54.09', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712515, 2620, 5990, 1, 'textomaniac', '2021-06-08 15:36:54.09', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712515, 2620, 5991, 1, 'Mon Feb 08 2016 00:00:00 GMT+0100 (Mitteleuropäische Normalzeit)', '2021-06-08 15:36:54.09', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712515, 2620, 5992, 1, 'Ja', '2021-06-08 15:36:54.09', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712515, 2620, 5993, 1, '329', '2021-06-08 15:36:54.09', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712515, 2620, 5994, 1, '', '2021-06-08 15:36:54.09', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712515, 2620, 5995, 1, 'PZN-0000000004', '2021-06-08 15:36:54.09', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712515, 2620, 5996, 1, '1623166611483', '2021-06-08 15:36:54.09', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712541, 2620, 5987, 1, 'Nein', '2021-06-08 15:38:37.874', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712541, 2620, 5988, 1, 'Keine Angabe', '2021-06-08 15:38:37.874', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712541, 2620, 5989, 1, '535', '2021-06-08 15:38:37.874', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712541, 2620, 5990, 1, 'text', '2021-06-08 15:38:37.874', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712541, 2620, 5991, 1, 'Tue Jun 08 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)', '2021-06-08 15:38:37.874', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712541, 2620, 5992, 1, 'Nein', '2021-06-08 15:38:37.874', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712541, 2620, 5993, 1, '', '2021-06-08 15:38:37.874', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712541, 2620, 5994, 1, '', '2021-06-08 15:38:37.874', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712541, 2620, 5995, 1, '', '2021-06-08 15:38:37.874', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712541, 2620, 5996, 1, '', '2021-06-08 15:38:37.874', '');
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712531, 2618, 5975, 1, 'GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText,GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,;vGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,.;!"§$%$&&%/&/())=?`/%$$""*%&/(545GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712537, 2618, 5967, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712537, 2618, 5968, 1, 'Nein;', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712537, 2618, 5969, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712537, 2618, 5970, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712537, 2618, 5971, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712537, 2618, 5972, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712537, 2618, 5973, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712537, 2618, 5974, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712537, 2618, 5975, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712537, 2618, 5976, 1, '', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712528, 2625, 6001, 2, '4645', NULL, NULL);
-INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release, releasing_person) VALUES (17712528, 2626, 6002, 2, 'gelb;blau;', NULL, NULL);
-
---
--- PostgreSQL database dump complete
---
-
--- add the forscher
-INSERT INTO users(username, password, role, compliance_labresults, compliance_samples) VALUES ('QExportTestForscher', '', 'Forscher', true, true);
-INSERT INTO study_users (study_id, user_id, access_level) VALUES ('Teststudie - Export', 'QExportTestForscher', 'write');
+INSERT INTO accounts(username, password, role)
+VALUES ('QExportTestForscher', '', 'Forscher');
 
 COMMIT;

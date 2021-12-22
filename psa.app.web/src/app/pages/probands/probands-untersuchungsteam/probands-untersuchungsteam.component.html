@@ -45,9 +45,9 @@
         unit-view-labresults-for-proband
         actionId="view_labresults_for_proband"
         [actionLabel]="'PROBANDEN.VIEW_DETAILS' | translate"
-        [disableForDeletedAccounts]="true"
-        [showOnlyForIdAndUsernameInequality]="true"
-        (click)="viewDetailsForProband($event.username)"
+        [disableForDeletedProbands]="true"
+        [showOnlyForIdsAndPseudonymInequality]="true"
+        (click)="viewDetailsForProband($event.pseudonym)"
       >
       </app-probands-list-entry-action-button>
       <app-probands-list-entry-action-button
@@ -55,8 +55,8 @@
         actionId="view_labresults_add_pseudonym"
         [actionLabel]="'PROBANDEN.NEW_PSEUDONYM' | translate"
         actionIcon="account_circle"
-        [disableForDeletedAccounts]="true"
-        [showOnlyForIdAndUsernameEquality]="true"
+        [disableForDeletedProbands]="true"
+        [showOnlyForIdsAndPseudonymEquality]="true"
         (click)="addPseudonym($event.ids)"
       >
       </app-probands-list-entry-action-button>
@@ -71,8 +71,8 @@
         unit-view-questionnaires
         actionId="view_questionnaires"
         [actionLabel]="'PROBANDEN.VIEW_QUESTIONNAIRES' | translate"
-        [disableForDeletedAccounts]="true"
-        (click)="viewQuestionnaireInstancesForUT($event.username)"
+        [disableForDeletedProbands]="true"
+        (click)="viewQuestionnaireInstancesForUT($event.pseudonym)"
       >
       </app-probands-list-entry-action-button>
     </app-probands-list-entry-action>

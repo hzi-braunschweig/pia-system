@@ -70,6 +70,5 @@ export interface ServiceConfig {
     publicAuthKey?: Buffer;
     webappUrl?: string;
     backendApiUrl?: string;
-    isSormasActive?: boolean;
 }
 export declare type SupersetOfServiceConfig<C> = Required<Extract<C, ServiceConfig>>;

@@ -6,7 +6,7 @@
 
 const Joi = require('joi');
 
-const studyAccessesHandler = require('../handlers/studyAccessesHandler.js');
+const studyAccessesHandler = require('../handlers/studyAccessesHandler');
 
 module.exports = {
   path: '/questionnaire/studies/{name}/accesses/{username}',

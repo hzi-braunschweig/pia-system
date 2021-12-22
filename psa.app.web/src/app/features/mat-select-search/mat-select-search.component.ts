@@ -217,7 +217,8 @@ export class MatSelectSearchComponent
     }
     const overlayClass = 'cdk-overlay-pane-select-search';
 
-    this.matSelect.overlayDir.attach
+    // @ts-ignore
+    this.matSelect._overlayDir.attach
       .pipe(takeUntil(this._onDestroy))
       .subscribe(() => {
         // note: this is hacky, but currently there is no better way to do this

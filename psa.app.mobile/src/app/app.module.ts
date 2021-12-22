@@ -43,7 +43,7 @@ import { UnauthorizedInterceptor } from './shared/interceptors/unauthorized-inte
 import { HttpErrorInterceptor } from './shared/interceptors/http-error-interceptor.service';
 
 export function HttpLoaderFactory(http: HttpClient) {
-  return new TranslateHttpLoader(http);
+  return new TranslateHttpLoader(http, './assets/i18n/');
 }
 
 registerLocaleData(localeEn, 'en', localeEnExtra);

@@ -9,7 +9,6 @@ import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
-import * as fetch from 'node-fetch';
 import fetchMocker from 'fetch-mock';
 import { StatusCodes } from 'http-status-codes';
 import JWT from 'jsonwebtoken';
@@ -22,6 +21,7 @@ import { config } from '../../src/config';
 import { MessageQueueClient } from '@pia/lib-messagequeue';
 import { EventEmitter, once } from 'events';
 import { MessageQueueService } from '../../src/services/messageQueueService';
+import { HttpClient } from '@pia-system/lib-http-clients-internal';
 
 interface FcmToken {
   fcm_token: string;
@@ -41,14 +41,14 @@ const probandSession1 = {
   id: 1,
   role: 'Proband',
   username: 'QTestProband1',
-  groups: ['ApiTestStudie'],
+  groups: ['QTestStudie'],
 };
 
 const pmSession = {
   id: 1,
   role: 'ProbandenManager',
   username: 'QTestProbandenManager',
-  groups: ['ApiTestStudie'],
+  groups: ['QTestStudie'],
 };
 
 const probandToken1 = JWT.sign(probandSession1, secretOrPrivateKey, {
@@ -103,7 +103,7 @@ describe('message queue service', () => {
   beforeEach(async () => {
     await setup();
     testSandbox
-      .stub<typeof fetch, 'default'>(fetch, 'default')
+      .stub<typeof HttpClient, 'fetch'>(HttpClient, 'fetch')
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .callsFake(fetchMock);

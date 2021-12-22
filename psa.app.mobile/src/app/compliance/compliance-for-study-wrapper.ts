@@ -85,7 +85,7 @@ export class ComplianceForStudyWrapper {
       });
     } else {
       this.editMode = true;
-      const dateControl = new FormControl(new Date());
+      const dateControl = new FormControl(new Date().toISOString());
       dateControl.disable();
       this.textSystem.addControl('date', dateControl);
     }

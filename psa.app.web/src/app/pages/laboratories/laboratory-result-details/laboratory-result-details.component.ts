@@ -8,7 +8,7 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { SampleTrackingService } from '../../../psa.app.core/providers/sample-tracking-service/sample-tracking.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { User } from '../../../psa.app.core/models/user';
+import { AuthenticationManager } from '../../../_services/authentication-manager.service';
 
 @Component({
   selector: 'app-laboratory-result-details',
@@ -25,16 +25,17 @@ export class LaboratoryResultDetailsComponent implements OnInit {
     private activatedRoute: ActivatedRoute,
     private translate: TranslateService,
     private sampleTrackingService: SampleTrackingService,
-    private router: Router
+    private router: Router,
+    private auth: AuthenticationManager
   ) {}
 
   ngOnInit(): void {
-    const currentUser: User = JSON.parse(localStorage.getItem('currentUser'));
+    const currentUserName = this.auth.getCurrentUsername();
     const resultID = this.activatedRoute.snapshot.paramMap.get('id');
 
     this.sampleTrackingService
       .getLabResultObservationForUser(
-        this.user_id ? this.user_id : currentUser.username,
+        this.user_id ? this.user_id : currentUserName,
         resultID
       )
       .then((res) => {

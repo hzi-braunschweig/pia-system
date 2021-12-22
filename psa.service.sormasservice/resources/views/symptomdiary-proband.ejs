@@ -1,0 +1,44 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title><%-translate.__('PROBAND_VIEW_TITLE')%></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="../../../../../favicon.png" />
+    <style>
+      body {
+        background-color: #f1f6ed;
+        font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
+      }
+      dl > dt {
+        font-weight: bold;
+      }
+      dd {
+        margin-bottom: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      <%-translate.__('PROBAND_VIEW_DESCRIPTION')%>
+    </p>
+    <dl>
+      <dt><%-translate.__('PROBAND_VIEW_LABEL_LOGIN_NAME')%></dt>
+      <dd id="pseudonym"></dd>
+
+      <dt><%-translate.__('PROBAND_VIEW_LABEL_FOLLOW_UP_END_DATE')%></dt>
+      <dd id="followUpEndDate"></dd>
+    </dl>
+    <script>
+        const data = <%-JSON.stringify(data)%>;
+        document.getElementById("pseudonym").innerHTML = data.pseudonym;
+        document.getElementById("followUpEndDate").innerHTML = data.followUpEndDate && new Date(data.followUpEndDate).toLocaleString();
+    </script>
+  </body>
+</html>

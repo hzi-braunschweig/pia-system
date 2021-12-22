@@ -16,13 +16,12 @@ import {
 } from '../../models/questionnaireInstance';
 import { QuestionnaireInstanceQueue } from '../../models/questionnaireInstanceQueue';
 import { Answer } from '../../models/answer';
-import { Studie } from '../../models/studie';
+import { Study } from '../../models/study';
 import { AuthenticationManager } from '../../../_services/authentication-manager.service';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpEvent } from '@angular/common/http';
 import { map, pluck } from 'rxjs/operators';
 import { StudyWelcomeText } from 'src/app/psa.app.core/models/studyWelcomeText';
-import { PendingPartialDeletionResponse } from '../../models/pendingPartialDeletion';
 
 @Injectable()
 export class QuestionnaireService {
@@ -224,25 +223,9 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  getStudies(): Promise<{ studies: Studie[] }> {
+  getStudies(): Promise<{ studies: Study[] }> {
     return this.http
-      .get<{ studies: Studie[] }>(this.apiUrl + 'studies')
-      .toPromise();
-  }
-
-  getPrimaryStudy(): Promise<Studie> {
-    return this.getStudies().then((result) => {
-      if (!result) {
-        return null;
-      } else {
-        return result.studies.find((study) => !study.super_study_name);
-      }
-    });
-  }
-
-  getStudiesOfProband(probandName): Promise<any> {
-    return this.http
-      .get(this.apiUrl + 'studies/proband/' + probandName)
+      .get<{ studies: Study[] }>(this.apiUrl + 'studies')
       .toPromise();
   }
 
@@ -258,18 +241,12 @@ export class QuestionnaireService {
     return this.http.put(this.apiUrl + 'studies/' + name, putData).toPromise();
   }
 
-  getStudy(name: string): Promise<Studie> {
-    return this.http.get<Studie>(this.apiUrl + 'studies/' + name).toPromise();
+  getStudy(name: string): Promise<Study> {
+    return this.http.get<Study>(this.apiUrl + 'studies/' + name).toPromise();
   }
 
   getStudyAddresses(): Promise<any> {
     return this.http.get(this.apiUrl + 'studies/addresses').toPromise();
-  }
-
-  getStudyAccesses(name: string): Promise<Studie[]> {
-    return this.http
-      .get<Studie[]>(this.apiUrl + 'studies/' + name + '/accesses')
-      .toPromise();
   }
 
   deleteUserFromStudy(username: string, study_name: string): Promise<void> {
@@ -280,8 +257,8 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  postStudyAccess(username: string, postData: object): Promise<any> {
-    return this.http
+  async postStudyAccess(username: string, postData: object): Promise<void> {
+    await this.http
       .post(this.apiUrl + 'studies/' + username + '/accesses', postData)
       .toPromise();
   }
@@ -317,7 +294,7 @@ export class QuestionnaireService {
   getQuestionnaireInstanceQueues(): Promise<QuestionnaireInstanceQueue[]> {
     return this.http
       .get<{ queues: QuestionnaireInstanceQueue[] }>(
-        this.apiUrl + 'probands/' + this.auth.currentUser.username + '/queues'
+        this.apiUrl + 'probands/' + this.auth.getCurrentUsername() + '/queues'
       )
       .pipe(pluck('queues'))
       .toPromise();
@@ -328,7 +305,7 @@ export class QuestionnaireService {
       .delete<void>(
         this.apiUrl +
           'probands/' +
-          this.auth.currentUser.username +
+          this.auth.getCurrentUsername() +
           '/queues/' +
           instance_id
       )

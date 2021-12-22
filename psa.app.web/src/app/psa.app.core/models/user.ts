@@ -4,21 +4,28 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { StudyAccess } from './study_access';
+import { StudyAccessOfUser } from './study_access';
 
-export interface User {
+export interface AccessToken {
   username: string;
   role: Role;
+  groups: string[];
+}
+
+export type User = Omit<AccessToken, 'groups'> & { studies: string[] };
+
+/**
+ * The response for a login request. Currently it also gives
+ * `username: string;` and `role: Role;` but it is not needed because it is also in the token.
+ */
+export interface LoginResponse {
   token: string;
-  first_logged_in_at: string;
-  compliance_labresults: boolean;
-  compliance_samples: boolean;
-  compliance_bloodsamples: boolean;
-  study_center: string;
-  examination_wave: number;
-  ids: string | null;
-  needs_material: boolean;
+  token_login: string;
   pw_change_needed: boolean;
+}
+
+export interface LoginToken {
+  username: string;
 }
 
 export interface PasswordChangeRequest {
@@ -27,23 +34,17 @@ export interface PasswordChangeRequest {
   newPassword2: string;
 }
 
-export interface PasswordChangeResponse {
-  compliance_labresults: boolean;
-  first_logged_in_at: string;
-  pw_change_needed: boolean;
-  role: string;
-}
-
-export interface UserWithSameRole {
-  username: string;
-  role: Role;
-  study_accesses: StudyAccess[];
-}
-
-export type Role =
-  | 'Proband'
+export type ProfessionalRole =
   | 'Forscher'
-  | 'Untersuchungsteam'
   | 'ProbandenManager'
   | 'EinwilligungsManager'
+  | 'Untersuchungsteam'
   | 'SysAdmin';
+
+export type Role = ProfessionalRole | 'Proband';
+
+export interface ProfessionalUser {
+  username: string;
+  role: ProfessionalRole;
+  study_accesses: StudyAccessOfUser[];
+}

@@ -4,184 +4,174 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<div *ngIf="form" class="dialog-wrapper">
-  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
-  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    <h1 mat-dialog-title>{{ 'DIALOG.FILTER_DATA' | translate }}</h1>
-    <mat-dialog-content>
-      <mat-grid-list layout="row" [cols]="3" rowHeight="90px">
-        <mat-grid-tile>
-          <span
-            >{{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_DATE' | translate }}
-          </span>
-        </mat-grid-tile>
-        <mat-grid-tile>
-          <span>{{ 'DIALOG.FROM' | translate }} </span>
-          <mat-form-field>
-            <input
-              matInput
-              [max]="currentDate"
-              [matDatepicker]="picker_start"
-              formControlName="start_date"
-              placeholder="{{
-                'QUESTIONNAIRE_FORSCHER.DATE_EMPTY' | translate
-              }}"
-              (dateChange)="onStartDateChange()"
-            />
-            <mat-datepicker-toggle
-              matSuffix
-              [for]="picker_start"
-            ></mat-datepicker-toggle>
-            <mat-datepicker #picker_start></mat-datepicker>
-          </mat-form-field>
-        </mat-grid-tile>
-        <mat-grid-tile>
-          <span>{{ 'DIALOG.TO' | translate }} </span>
-          <mat-form-field>
-            <input
-              matInput
-              [min]="form.controls['start_date'].value"
-              [max]="currentDate"
-              [matDatepicker]="picker_end"
-              formControlName="end_date"
-              placeholder="{{
-                'QUESTIONNAIRE_FORSCHER.DATE_EMPTY' | translate
-              }}"
-            />
-            <mat-datepicker-toggle
-              matSuffix
-              [for]="picker_end"
-            ></mat-datepicker-toggle>
-            <mat-datepicker #picker_end></mat-datepicker>
-          </mat-form-field>
-        </mat-grid-tile>
-      </mat-grid-list>
-      <mat-grid-list [cols]="3" rowHeight="80px">
-        <mat-grid-tile>
-          <mat-form-field fxFlex>
-            <mat-select
-              id="selectstudydialog"
-              placeholder="{{ 'QUESTIONNAIRE_FORSCHER.STUDY' | translate }}"
-              formControlName="study_name"
-            >
-              <mat-select-search
-                [formControl]="studyFilterCtrl"
-              ></mat-select-search>
-              <mat-option
-                *ngFor="let study_id of studiesForSelection | async"
-                [value]="study_id"
-                unit-study-option
-              >
-                {{ study_id }}
-              </mat-option>
-            </mat-select>
-            <mat-error
-              *ngIf="form.controls['study_name'].hasError('required')"
-              unit-study-select-error
-            >
-              {{ 'DIALOG.STUDY_REQUIRED' | translate }}
-            </mat-error>
-          </mat-form-field>
-        </mat-grid-tile>
-        <mat-grid-tile>
-          <mat-form-field fxFlex>
-            <mat-select
-              id="selectquestionnaire"
-              [multiple]="true"
-              placeholder="{{ 'SIDENAV.QUESTIONNAIRES' | translate }}"
-              formControlName="questionnaires"
-            >
-              <mat-select-search
-                [formControl]="questionnaireFilterCtrl"
-              ></mat-select-search>
-              <app-mat-option-select-all>{{
-                'CONTACTS.SELECT_ALL' | translate
-              }}</app-mat-option-select-all>
-              <mat-option
-                *ngFor="let questionnaire of questionnairesForSelection | async"
-                [value]="questionnaire.id"
-                unit-questionnaire-option
-              >
-                {{ questionnaire.name }}
-              </mat-option>
-            </mat-select>
-            <mat-error
-              *ngIf="form.hasError('emptyQuestionnaires')"
-              unit-questionnaire-select-error
-            >
-              {{ 'DIALOG.QUESTIONNAIRE_REQUIRED' | translate }}
-            </mat-error>
-          </mat-form-field>
-        </mat-grid-tile>
-        <mat-grid-tile>
-          <mat-form-field fxFlex>
-            <mat-select
-              id="selectproband"
-              placeholder="{{ 'SIDENAV.PROBANDS' | translate }}"
-              formControlName="probands"
-            >
-              <mat-select-search
-                [formControl]="probandFilterCtrl"
-              ></mat-select-search>
-              <mat-option value="allProbandsCheckbox">{{
-                'CONTACTS.ALL_PROBANDS' | translate
-              }}</mat-option>
-              <mat-option
-                *ngFor="let proband of probandsForSelection | async"
-                [value]="proband.username"
-                unit-proband-option
-              >
-                {{ proband.username }}
-              </mat-option>
-            </mat-select>
-            <mat-error
-              *ngIf="form.controls['probands'].hasError('required')"
-              unit-proband-select-error
-            >
-              {{ 'DIALOG.PROBAND_REQUIRED' | translate }}
-            </mat-error>
-          </mat-form-field>
-        </mat-grid-tile>
-      </mat-grid-list>
-      <mat-grid-list layout="row" [cols]="1" rowHeight="30px">
-        <mat-grid-tile>
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <h1 mat-dialog-title>{{ 'DIALOG.FILTER_DATA' | translate }}</h1>
+  <mat-dialog-content>
+    <div class="grid-container">
+      <span>{{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_DATE' | translate }}</span>
+
+      <span
+        >{{ 'DIALOG.FROM' | translate }}
+        <mat-form-field>
+          <input
+            matInput
+            [max]="currentDate"
+            [matDatepicker]="picker_start"
+            formControlName="start_date"
+            placeholder="{{ 'QUESTIONNAIRE_FORSCHER.DATE_EMPTY' | translate }}"
+            (dateChange)="onStartDateChange()"
+          />
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="picker_start"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #picker_start></mat-datepicker>
+        </mat-form-field>
+      </span>
+
+      <span
+        >{{ 'DIALOG.TO' | translate }}
+        <mat-form-field>
+          <input
+            matInput
+            [min]="form.controls['start_date'].value"
+            [max]="currentDate"
+            [matDatepicker]="picker_end"
+            formControlName="end_date"
+            placeholder="{{ 'QUESTIONNAIRE_FORSCHER.DATE_EMPTY' | translate }}"
+          />
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="picker_end"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #picker_end></mat-datepicker>
+        </mat-form-field>
+      </span>
+
+      <mat-form-field fxFlex>
+        <mat-select
+          id="selectstudydialog"
+          placeholder="{{ 'QUESTIONNAIRE_FORSCHER.STUDY' | translate }}"
+          formControlName="study_name"
+        >
+          <mat-select-search
+            [formControl]="studyFilterCtrl"
+          ></mat-select-search>
+          <mat-option
+            *ngFor="let study_id of studiesForSelection | async"
+            [value]="study_id"
+            unit-study-option
+          >
+            {{ study_id }}
+          </mat-option>
+        </mat-select>
+        <mat-error
+          *ngIf="form.controls['study_name'].hasError('required')"
+          unit-study-select-error
+        >
+          {{ 'DIALOG.STUDY_REQUIRED' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field fxFlex>
+        <mat-select
+          id="selectquestionnaire"
+          [multiple]="true"
+          placeholder="{{ 'SIDENAV.QUESTIONNAIRES' | translate }}"
+          formControlName="questionnaires"
+        >
+          <mat-select-search
+            [formControl]="questionnaireFilterCtrl"
+          ></mat-select-search>
+          <app-mat-option-select-all>{{
+            'CONTACTS.SELECT_ALL' | translate
+          }}</app-mat-option-select-all>
+          <mat-option
+            *ngFor="let questionnaire of questionnairesForSelection | async"
+            [value]="questionnaire.id"
+            unit-questionnaire-option
+          >
+            {{ questionnaire.name }}
+          </mat-option>
+        </mat-select>
+        <mat-error
+          *ngIf="form.hasError('emptyQuestionnaires')"
+          unit-questionnaire-select-error
+        >
+          {{ 'DIALOG.QUESTIONNAIRE_REQUIRED' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field fxFlex>
+        <mat-select
+          id="selectproband"
+          placeholder="{{ 'SIDENAV.PROBANDS' | translate }}"
+          formControlName="probands"
+        >
+          <mat-select-search
+            [formControl]="probandFilterCtrl"
+          ></mat-select-search>
+          <mat-option value="allProbandsCheckbox">{{
+            'CONTACTS.ALL_PROBANDS' | translate
+          }}</mat-option>
+          <mat-option
+            *ngFor="let proband of probandsForSelection | async"
+            [value]="proband.pseudonym"
+            unit-proband-option
+          >
+            {{ proband.pseudonym }}
+          </mat-option>
+        </mat-select>
+        <mat-error
+          *ngIf="form.controls['probands'].hasError('required')"
+          unit-proband-select-error
+        >
+          {{ 'DIALOG.PROBAND_REQUIRED' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <ul>
+        <li>
           <mat-checkbox formControlName="exportAnswers"
             >{{ 'QUESTIONNAIRE_FORSCHER.EXPORT_ANSWERS' | translate }}
           </mat-checkbox>
-        </mat-grid-tile>
-        <mat-grid-tile>
+        </li>
+        <li>
           <mat-checkbox formControlName="exportLabResults"
             >{{ 'QUESTIONNAIRE_FORSCHER.EXPORT_LABRESULTS' | translate }}
           </mat-checkbox>
-        </mat-grid-tile>
-        <mat-grid-tile>
+        </li>
+        <li>
           <mat-checkbox formControlName="exportSamples"
             >{{ 'QUESTIONNAIRE_FORSCHER.EXPORT_SAMPLES' | translate }}
           </mat-checkbox>
-        </mat-grid-tile>
-        <mat-grid-tile>
+        </li>
+        <li>
           <mat-checkbox formControlName="exportSettings"
             >{{ 'QUESTIONNAIRE_FORSCHER.EXPORT_SETTINGS' | translate }}
           </mat-checkbox>
-        </mat-grid-tile>
-      </mat-grid-list>
-      <p class="dialog-export-hint" *ngIf="isLoading">
-        {{ 'DIALOG.EXPORT_HINT' | translate }}
-      </p>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-button type="button" (click)="dialogRef.close()">
-        {{ 'DIALOG.CANCEL' | translate }}
-      </button>
-      <button
-        id="confirmbutton"
-        mat-raised-button
-        color="primary"
-        type="submit"
-        [disabled]="!form.valid || isLoading"
-      >
-        {{ 'DIALOG.EXPORT' | translate }}
-      </button>
-    </mat-dialog-actions>
-  </form>
-</div>
+        </li>
+      </ul>
+    </div>
+
+    <p class="dialog-export-hint" *ngIf="isLoading">
+      {{ 'DIALOG.EXPORT_HINT' | translate }}
+    </p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="dialogRef.close()">
+      {{ 'DIALOG.CANCEL' | translate }}
+    </button>
+    <button
+      id="confirmbutton"
+      mat-raised-button
+      color="primary"
+      type="submit"
+      [disabled]="!form.valid || isLoading"
+    >
+      {{ 'DIALOG.EXPORT' | translate }}
+    </button>
+  </mat-dialog-actions>
+</form>

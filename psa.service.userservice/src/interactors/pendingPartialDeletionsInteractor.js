@@ -8,12 +8,13 @@ const Boom = require('@hapi/boom');
 const validator = require('email-validator');
 
 const { runTransaction } = require('../db');
-const { LoggingserviceClient } = require('../clients/loggingserviceClient');
+const { loggingserviceClient } = require('../clients/loggingserviceClient');
 const pendingPartialDeletionRepository = require('../repositories/pendingPartialDeletionRepository');
 const pgHelper = require('../services/postgresqlHelper');
 const { MailService } = require('@pia/lib-service-core');
 const { config } = require('../config');
 const pendingPartialDeletionMapper = require('../services/pendingPartialDeletionMapper');
+const { ProbandsRepository } = require('../repositories/probandsRepository');
 
 /**
  * Interactor that handles pending deletion requests based on users permissions
@@ -95,6 +96,7 @@ class PendingPartialDeletionsInteractor {
   static async createPendingPartialDeletion(decodedToken, data) {
     const userRole = decodedToken.role;
     const requestedBy = decodedToken.username;
+    const userStudies = decodedToken.groups;
 
     if (userRole !== 'Forscher') {
       return Boom.forbidden(
@@ -112,20 +114,31 @@ class PendingPartialDeletionsInteractor {
           'The username of the one who should confirm is not an email'
         );
       }
-      const requestedFor = await pgHelper.getUser(data.requestedFor);
+      const requestedFor = await pgHelper.getProfessionalUser(
+        data.requestedFor,
+        userRole
+      );
       if (!requestedFor) {
         throw Boom.badData('The one who should confirm could not be found');
       }
-      if (requestedFor.role !== 'Forscher') {
-        throw Boom.badData('The one who should confirm is not a researcher');
+      let proband;
+      try {
+        proband = await ProbandsRepository.getProbandAsProfessional(
+          data.probandId,
+          userStudies
+        );
+      } catch (err) {
+        console.log(err);
+        throw Boom.notFound('Proband does not exist in one of your studies');
       }
-      const studiesInCommon = await pgHelper.getCommonStudiesOfAllUsers(
-        [requestedBy, data.requestedFor, data.probandId],
-        { transaction }
-      );
-      if (studiesInCommon.length === 0) {
+
+      if (
+        !requestedFor.study_accesses
+          .map((access) => access.study_id)
+          .includes(proband.study)
+      ) {
         throw Boom.forbidden(
-          'Proband, requester and the one who should confirm are not in the same study.'
+          'The one who should confirm is not in the probands study.'
         );
       }
       if (
@@ -203,16 +216,7 @@ class PendingPartialDeletionsInteractor {
           id,
           { transaction }
         );
-      if (executedPendingPartialDeletion.delete_logs) {
-        await LoggingserviceClient.deleteLogs(
-          executedPendingPartialDeletion.proband_id,
-          {
-            fromTime: executedPendingPartialDeletion.from_date,
-            toTime: executedPendingPartialDeletion.to_date,
-          }
-        );
-      }
-      await LoggingserviceClient.createSystemLog({
+      await loggingserviceClient.createSystemLog({
         requestedBy: executedPendingPartialDeletion.requested_by,
         requestedFor: executedPendingPartialDeletion.requested_for,
         type: 'partial',

@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
 /**
  * Previously cycle_first_hour was saved in UTC time. As it was not saved with any time zone information,
  * it was not possible to respect summer time / winter time. Thus, we now save the time zoned value.

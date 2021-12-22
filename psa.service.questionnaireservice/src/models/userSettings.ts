@@ -5,9 +5,8 @@
  */
 
 export interface UserSettings {
-  username: string;
+  pseudonym: string;
   ids: string | null;
-  account_status: string | null;
   compliance_labresults: boolean;
   compliance_samples: boolean;
   compliance_bloodsamples: boolean;

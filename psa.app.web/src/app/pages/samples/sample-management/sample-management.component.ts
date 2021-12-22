@@ -8,7 +8,6 @@ import {
   ChangeDetectorRef,
   Component,
   ElementRef,
-  forwardRef,
   OnInit,
   ViewChild,
 } from '@angular/core';
@@ -18,17 +17,22 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
-import { JwtHelperService } from '@auth0/angular-jwt';
-import { User } from '../../../psa.app.core/models/user';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { PersonalDataService } from 'src/app/psa.app.core/providers/personaldata-service/personaldata-service';
 import { DataService } from '../../../_services/data.service';
 import { DialogOkCancelComponent } from '../../../_helpers/dialog-ok-cancel';
-import { Observable } from 'rxjs';
+import { fromEvent, Observable } from 'rxjs';
 import { MediaObserver } from '@angular/flex-layout';
 import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
 import { AbstractControl, FormControl } from '@angular/forms';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
+import { AccountStatusPipe } from '../../../pipes/account-status.pipe';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  startWith,
+} from 'rxjs/operators';
 
 @Component({
   selector: 'app-sample-management',
@@ -37,12 +41,11 @@ import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
   providers: [
     {
       provide: MatPaginatorIntl,
-      useClass: forwardRef(() => MatPaginatorIntlGerman),
+      useClass: MatPaginatorIntlGerman,
     },
   ],
 })
 export class SampleManagementComponent implements OnInit {
-  currentRole: string;
   dataSource: MatTableDataSource<any>;
   probands: any;
   dataWithProbandsWhoNeedsMaterial = [];
@@ -58,13 +61,9 @@ export class SampleManagementComponent implements OnInit {
     private mediaObserver: MediaObserver,
     private cdr: ChangeDetectorRef,
     private dataService: DataService,
-    private personalDataService: PersonalDataService
+    private personalDataService: PersonalDataService,
+    private accountStatusPipe: AccountStatusPipe
   ) {
-    const jwtHelper: JwtHelperService = new JwtHelperService();
-    const currentUser: User = JSON.parse(localStorage.getItem('currentUser'));
-    // decode the token to get its payload
-    const tokenPayload = jwtHelper.decodeToken(currentUser.token);
-    this.currentRole = tokenPayload.role;
     this.sample_id = new FormControl('');
 
     const gridAns = new Map([
@@ -81,8 +80,8 @@ export class SampleManagementComponent implements OnInit {
       }
     });
     this.cols = this.mediaObserver.media$
-      .map((change) => gridAns.get(change.mqAlias))
-      .startWith(startCond2);
+      .pipe(map((change) => gridAns.get(change.mqAlias)))
+      .pipe(startWith(startCond2));
   }
 
   displayedColumns = [
@@ -106,9 +105,9 @@ export class SampleManagementComponent implements OnInit {
   ngOnInit(): void {
     this.initTable();
 
-    Observable.fromEvent(this.filter.nativeElement, 'keyup')
-      .debounceTime(150)
-      .distinctUntilChanged()
+    fromEvent(this.filter.nativeElement, 'keyup')
+      .pipe(debounceTime(150))
+      .pipe(distinctUntilChanged())
       .subscribe(() => {
         if (!this.dataSource) {
           return;
@@ -123,14 +122,12 @@ export class SampleManagementComponent implements OnInit {
     const probandenPersonalData =
       await this.personalDataService.getPersonalDataAll();
 
-    const probandenData = await this.authService.getUsers();
-    const probands = probandenData['users'];
+    const probands = await this.authService.getProbands();
 
     for (const proband of probands) {
       const probandPersonalData = probandenPersonalData.find(
-        (res) => res.pseudonym === proband.username
+        (res) => res.pseudonym === proband.pseudonym
       );
-      let accountStatus = '';
       const vorname = probandPersonalData ? probandPersonalData.vorname : '';
       const name = probandPersonalData ? probandPersonalData.name : '';
       const strasse = probandPersonalData ? probandPersonalData.strasse : '';
@@ -140,25 +137,10 @@ export class SampleManagementComponent implements OnInit {
       const anrede = probandPersonalData ? probandPersonalData.anrede : '';
       const titel = probandPersonalData ? probandPersonalData.titel : '';
 
-      if (
-        proband.account_status === 'active' &&
-        proband.study_status === 'active'
-      ) {
-        accountStatus = 'STUDIES.STATUS_ACTIV';
-      } else if (proband.study_status === 'deletion_pending') {
-        accountStatus = 'STUDIES.STATUS_DELETION_PENDING';
-      } else if (proband.study_status === 'deleted') {
-        accountStatus = 'STUDIES.STATUS_DELETED';
-      } else if (proband.account_status === 'deactivation_pending') {
-        accountStatus = 'PROBANDEN.STATUS_DEACTIVATION_PENDING';
-      } else if (proband.account_status === 'deactivated') {
-        accountStatus = 'PROBANDEN.STATUS_DEACTIVATED';
-      } else if (proband.account_status === 'no_account') {
-        accountStatus = 'PROBANDEN.STATUS_NO_ACCOUNT';
-      }
+      const accountStatus = this.accountStatusPipe.transform(proband);
 
       const objectToPush = {
-        username: proband.username === proband.ids ? '' : proband.username,
+        username: proband.pseudonym === proband.ids ? '' : proband.pseudonym,
         ids: proband.ids,
         vorname,
         name,
@@ -243,7 +225,7 @@ export class SampleManagementComponent implements OnInit {
             newData
           );
         },
-        (err: any) => {
+        (err) => {
           this.geBloodSamplesForBloodSampleID(
             usersArray,
             filterSampleID,

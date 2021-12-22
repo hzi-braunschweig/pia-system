@@ -19,7 +19,7 @@ import {
   ProbandsListComponent,
   ProbandsListEntryActionButtonConfig,
 } from './probands-list.component';
-import { UserWithStudyAccess } from '../../psa.app.core/models/user-with-study-access';
+import { Proband } from '../../psa.app.core/models/proband';
 
 @Component({
   selector: 'app-probands-list-entry-action-button',
@@ -36,17 +36,17 @@ export class ProbandsListEntryActionButtonComponent implements OnChanges {
   actionIcon = 'visibility';
 
   @Input()
-  disableForDeletedAccounts = false;
+  disableForDeletedProbands = false;
 
   @Input()
-  showOnlyForIdAndUsernameEquality = false;
+  showOnlyForIdsAndPseudonymEquality = false;
 
   @Input()
-  showOnlyForIdAndUsernameInequality = false;
+  showOnlyForIdsAndPseudonymInequality = false;
 
   // tslint:disable-next-line:no-output-native
   @Output()
-  click: EventEmitter<UserWithStudyAccess> = new EventEmitter<UserWithStudyAccess>();
+  click: EventEmitter<Proband> = new EventEmitter<Proband>();
 
   constructor(
     @Inject(forwardRef(() => ProbandsListEntryActionComponent))
@@ -58,10 +58,11 @@ export class ProbandsListEntryActionButtonComponent implements OnChanges {
       this.parent.addEntryActionButton(this.actionId, {
         label: this.actionLabel,
         icon: this.actionIcon,
-        disableForDeletedAccounts: this.disableForDeletedAccounts,
-        showOnlyForIdAndUsernameEquality: this.showOnlyForIdAndUsernameEquality,
-        showOnlyForIdAndUsernameInequality:
-          this.showOnlyForIdAndUsernameInequality,
+        disableForDeletedProbands: this.disableForDeletedProbands,
+        showOnlyForIdsAndPseudonymEquality:
+          this.showOnlyForIdsAndPseudonymEquality,
+        showOnlyForIdsAndPseudonymInequality:
+          this.showOnlyForIdsAndPseudonymInequality,
         eventEmitter: this.click,
       });
     }

@@ -6,138 +6,119 @@
 
 import { Component, Inject, OnInit } from '@angular/core';
 import {
-  MatDialogRef,
   MAT_DIALOG_DATA,
   MatDialog,
+  MatDialogRef,
 } from '@angular/material/dialog';
-import {
-  FormGroup,
-  FormBuilder,
-  Validators,
-  FormControl,
-} from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../_services/alert.service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
-import { UserWithStudyAccess } from '../../psa.app.core/models/user-with-study-access';
-import { JwtHelperService } from '@auth0/angular-jwt';
-import { User } from '../../psa.app.core/models/user';
-import { ReplaySubject } from 'rxjs';
-import { StudyAccess } from '../../psa.app.core/models/study_access';
-import { DialogOkCancelComponent } from 'src/app/_helpers/dialog-ok-cancel';
+import { Observable } from 'rxjs';
+import {
+  DialogOkCancelComponent,
+  DialogOkCancelComponentData,
+  DialogOkCancelComponentReturn,
+} from 'src/app/_helpers/dialog-ok-cancel';
 import { TranslateService } from '@ngx-translate/core';
+import { ProfessionalUser } from '../../psa.app.core/models/user';
+import { map, shareReplay, startWith } from 'rxjs/operators';
+
+export interface DialogUserStudyAccessComponentData {
+  studyName: string;
+}
+export type DialogUserStudyAccessComponentReturn = boolean;
+
+export interface ProfessionalUserWithStudyNamesArray extends ProfessionalUser {
+  studyNamesArray?: string[];
+}
 
 @Component({
   selector: 'dialog-user-study',
   templateUrl: 'user-study-dialog.html',
 })
 export class DialogUserStudyAccessComponent implements OnInit {
-  form: FormGroup;
-  users: UserWithStudyAccess[];
-  currentRole: string;
-  public usernameFilterCtrl: FormControl = new FormControl();
-  public filteredUsers: ReplaySubject<UserWithStudyAccess[]> =
-    new ReplaySubject<UserWithStudyAccess[]>(1);
-  studyAccess: StudyAccess;
-  study_name: string;
+  public form: FormGroup = new FormGroup({
+    user_id: new FormControl(null, Validators.required),
+    access_level: new FormControl(null, Validators.required),
+  });
+  public usernameFilterCtrl: FormControl = new FormControl('');
+  public filteredUsers: Observable<ProfessionalUserWithStudyNamesArray[]>;
+  private studyName: string;
 
-  accesses = [
+  public readonly accesses = [
     { value: 'read', viewValue: 'DIALOG.READ' },
     { value: 'write', viewValue: 'DIALOG.WRITE' },
     { value: 'admin', viewValue: 'DIALOG.ADMIN' },
   ];
 
-  usersOutsideStudy = [];
-
-  constructor(
-    private formBuilder: FormBuilder,
-    public dialogRef: MatDialogRef<DialogUserStudyAccessComponent>,
+  public constructor(
+    @Inject(MAT_DIALOG_DATA) data: DialogUserStudyAccessComponentData,
+    public dialogRef: MatDialogRef<
+      DialogUserStudyAccessComponent,
+      DialogUserStudyAccessComponentReturn
+    >,
     private authService: AuthService,
     private alertService: AlertService,
-    @Inject(MAT_DIALOG_DATA) public data: any,
     private questionnaireService: QuestionnaireService,
     private matDialog: MatDialog,
     private translate: TranslateService
   ) {
-    this.study_name = data.data.toString();
-    this.authService.getUsers().then(
-      (result: any) => {
-        this.users = result.users;
-        this.users.forEach((user, userIndex) => {
-          user.studyNamesArray = [];
-          user.study_accesses.forEach((studyaccess, studyaccessIndex) => {
-            user.studyNamesArray.push(studyaccess.study_id);
-          });
+    this.studyName = data.studyName;
+  }
 
-          if (
+  public async ngOnInit(): Promise<void> {
+    try {
+      const allUsers = await this.authService.getProfessionalUsers();
+      const usersOutsideStudy = allUsers
+        .map((user) => ({
+          ...user,
+          studyNamesArray: user.study_accesses.map(
+            (studyaccess) => studyaccess.study_id
+          ),
+        }))
+        .filter(
+          (user) =>
             user.studyNamesArray === undefined ||
-            !user.studyNamesArray.includes(this.study_name)
-          ) {
-            this.usersOutsideStudy.push(user);
-          }
-          this.filteredUsers.next(this.usersOutsideStudy.slice());
-        });
-      },
-      (err: any) => {
-        this.alertService.errorObject(err);
-      }
-    );
+            !user.studyNamesArray.includes(this.studyName)
+        );
 
-    const jwtHelper: JwtHelperService = new JwtHelperService();
-    const currentUser: User = JSON.parse(localStorage.getItem('currentUser'));
-    const tokenPayload = jwtHelper.decodeToken(currentUser.token);
-    this.currentRole = tokenPayload.role;
+      this.filteredUsers = this.createUsersFilterObservable(usersOutsideStudy);
+    } catch (err) {
+      this.alertService.errorObject(err);
+    }
   }
 
-  ngOnInit(): void {
-    this.form = new FormGroup({
-      user_id: new FormControl(null, Validators.required),
-      access_level: new FormControl(null, Validators.required),
-    });
-
-    this.usernameFilterCtrl.valueChanges.subscribe(() => {
-      this.filterUsers();
-    });
-  }
-
-  private filterUsers(): void {
-    this.filteredUsers.next(this.usersOutsideStudy);
-    if (!this.usersOutsideStudy) {
-      return;
-    }
-    let search = this.usernameFilterCtrl.value;
-    if (!search) {
-      this.filteredUsers.next(this.usersOutsideStudy.slice());
-      return;
-    } else {
-      search = search.toLowerCase();
-    }
-    this.filteredUsers.next(
-      this.usersOutsideStudy.filter(
-        (user) => user.username.toLowerCase().indexOf(search) > -1
-      )
+  private createUsersFilterObservable(
+    users: ProfessionalUserWithStudyNamesArray[]
+  ): Observable<ProfessionalUserWithStudyNamesArray[]> {
+    return this.usernameFilterCtrl.valueChanges.pipe(
+      startWith(this.usernameFilterCtrl.value as string),
+      map((filterValue) => filterValue.toLowerCase()),
+      map((filterValue) => {
+        if (!filterValue) {
+          return users;
+        } else {
+          return users.filter((user) =>
+            user.username.toLowerCase().includes(filterValue)
+          );
+        }
+      }),
+      shareReplay(1)
     );
   }
 
-  checkRole(role: string): void {
-    if (role === 'Proband') {
-      this.form.controls['access_level'].setValue('read');
-      this.form.controls['access_level'].disable();
-    } else {
-      this.form.controls['access_level'].reset();
-      this.form.controls['access_level'].enable();
-    }
-  }
-
-  submit(form): void {
-    this.form.controls['access_level'].enable();
-
-    const dialogRef = this.matDialog.open(DialogOkCancelComponent, {
-      width: '250px',
+  public submit(): void {
+    const dialogRef = this.matDialog.open<
+      DialogOkCancelComponent,
+      DialogOkCancelComponentData,
+      DialogOkCancelComponentReturn
+    >(DialogOkCancelComponent, {
+      width: '450px',
       data: {
         content: this.translate.instant('DIALOG.CONFIRM_STUDY_ACCESS', {
-          user: form.value.user_id,
-          study: this.study_name,
+          user: this.form.value.user_id,
+          study: this.studyName,
         }),
       },
     });
@@ -145,16 +126,13 @@ export class DialogUserStudyAccessComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result === 'ok') {
         this.questionnaireService
-          .postStudyAccess(this.study_name, form.value)
-          .then(
-            (studyAccess: any) => {
-              this.studyAccess = studyAccess;
-              this.dialogRef.close(this.studyAccess);
-            },
-            (err: any) => {
-              this.alertService.errorObject(err);
-            }
-          );
+          .postStudyAccess(this.studyName, this.form.value)
+          .then(() => {
+            this.dialogRef.close(true);
+          })
+          .catch((err) => {
+            this.alertService.errorObject(err);
+          });
       }
     });
   }

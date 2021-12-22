@@ -10,4 +10,6 @@ export type ProfessionalRole =
   | 'EinwilligungsManager'
   | 'Untersuchungsteam';
 
-export type Role = ProfessionalRole | 'Proband';
+export type ProbandRole = 'Proband';
+
+export type Role = ProfessionalRole | ProbandRole;

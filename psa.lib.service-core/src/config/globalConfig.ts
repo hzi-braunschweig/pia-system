@@ -11,9 +11,9 @@ import {
   HttpConnection,
   HttpProtocol,
   MailserverConnection,
-  MessageQueueConnection,
   SecureConnection,
   SslCerts,
+  MessageQueueConnection,
 } from './configModel';
 
 /**
@@ -129,19 +129,6 @@ export class GlobalConfig {
   }
 
   /**
-   * Boolean if SORMAS is activated. Will only return a valid value, if IS_SORMAS_ACTIVE is
-   * passed to the service.
-   *
-   * @deprecated there should be no connection to the sormasservice. Use the messagequeue to communicate with sormas.
-   */
-  public static get isSormasActive(): boolean {
-    return (
-      ConfigUtils.getEnvVariable('IS_SORMAS_ACTIVE', 'false').toLowerCase() ===
-      'true'
-    );
-  }
-
-  /**
    * The URL of the web frontend. Will only be available, if WEBAPP_URL is passed to the service.
    */
   public static get webappUrl(): string {
@@ -156,7 +143,7 @@ export class GlobalConfig {
   }
 
   /**
-   * The URL of the web frontend. Will only be available, if WEBAPP_URL is passed to the service.
+   * Public key for the RS512 JWT token validation
    */
   public static get publicAuthKey(): Buffer {
     return ConfigUtils.getFileContent('./authKey/public.pem');

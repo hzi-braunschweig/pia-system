@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
+import { IMockBuilder, MockBuilder } from 'ng-mocks';
 import { AppModule } from '../../app.module';
 import {
   DialogNewProbandComponent,
@@ -13,19 +13,23 @@ import {
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
 import { QuestionnaireService } from '../../psa.app.core/providers/questionnaire-service/questionnaire-service';
-import { IMockBuilder } from 'ng-mocks/dist/lib/mock-builder/types';
 import { CreateProbandRequest } from '../../psa.app.core/models/proband';
-import { fakeAsync, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { first } from 'rxjs/operators';
 import {
+  createProband,
   createStudy,
-  createUserWithStudyAccess,
 } from '../../psa.app.core/models/instance.helper.spec';
 import createSpyObj = jasmine.createSpyObj;
 import SpyObj = jasmine.SpyObj;
 
 describe('DialogNewProbandComponent', () => {
-  let fixture: MockedComponentFixture;
+  let fixture: ComponentFixture<DialogNewProbandComponent>;
   let component: DialogNewProbandComponent;
   let dialogRef: SpyObj<MatDialogRef<DialogNewProbandComponent>>;
   let authService: SpyObj<AuthService>;
@@ -37,7 +41,7 @@ describe('DialogNewProbandComponent', () => {
     dialogRef = createSpyObj<MatDialogRef<DialogNewProbandComponent>>([
       'close',
     ]);
-    authService = createSpyObj<AuthService>(['getUser', 'postProband']);
+    authService = createSpyObj<AuthService>(['getUserByIDS', 'postProband']);
     questionnaireService = createSpyObj<QuestionnaireService>(['getStudies']);
 
     // Build Base Module
@@ -68,8 +72,9 @@ describe('DialogNewProbandComponent', () => {
       });
 
       // Create component
-      fixture = MockRender(DialogNewProbandComponent);
-      component = fixture.point.componentInstance;
+      fixture = TestBed.createComponent(DialogNewProbandComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges(); // run ngOnInit
       tick(); // wait for ngOnInit to finish
     }));
 
@@ -164,14 +169,15 @@ describe('DialogNewProbandComponent', () => {
 
     beforeEach(fakeAsync(() => {
       // Setup mocks before creating component
-      const u = createUserWithStudyAccess({
-        study_accesses: [{ study_id: 'Test3', access_level: 'read' }],
+      const u = createProband({
+        study: 'Test3',
       });
-      authService.getUser.and.resolveTo(u);
+      authService.getUserByIDS.and.resolveTo(u);
 
       // Create component
-      fixture = MockRender(DialogNewProbandComponent);
-      component = fixture.point.componentInstance;
+      fixture = TestBed.createComponent(DialogNewProbandComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
       tick(); // wait for ngOnInit to finish
     }));
 
@@ -186,7 +192,7 @@ describe('DialogNewProbandComponent', () => {
     });
 
     it('should submit the form', async () => {
-      expect(authService.getUser).toHaveBeenCalled();
+      expect(authService.getUserByIDS).toHaveBeenCalled();
 
       const postData: CreateProbandRequest = {
         pseudonym: 'Test-1234567890',

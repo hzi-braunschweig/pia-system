@@ -1,189 +1,189 @@
 Frage,Proband,FB_Datum,Antwort_Datum,Antwort,Kodierung_Code,Kodierung_Wert
-FB1_alle_Antworttypen_v1_f1_1_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_1_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_2_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Nein;Ja;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_2_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Nein;Ja;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_3_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,1234,[],[]
-FB1_alle_Antworttypen_v1_f1_3_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,1234,[],[]
-FB1_alle_Antworttypen_v1_f1_4_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Freitext,[],[]
-FB1_alle_Antworttypen_v1_f1_4_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Freitext,[],[]
-FB1_alle_Antworttypen_v1_f1_5_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,08.06.2021,[],[]
-FB1_alle_Antworttypen_v1_f1_5_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,08.06.2021,[],[]
-FB1_alle_Antworttypen_v1_f1_6_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_6_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_7_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,321,[],[]
-FB1_alle_Antworttypen_v1_f1_7_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,321,[],[]
-FB1_alle_Antworttypen_v1_f1_8_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,ZIFCO-1234567852,[],[]
-FB1_alle_Antworttypen_v1_f1_8_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,ZIFCO-1234567852,[],[]
-FB1_alle_Antworttypen_v1_f1_9_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,PZN-5678,[],[]
-FB1_alle_Antworttypen_v1_f1_9_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,PZN-56789,[],[]
-FB1_alle_Antworttypen_v1_f1_10_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,"08.06.2021, 17:11",[],[]
-FB1_alle_Antworttypen_v1_f1_10_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:11,"08.06.2021, 17:11",[],[]
-FB1_alle_Antworttypen_v1_f1_1_a1,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_1_a2,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_2_a1,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,Nein;Ja;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_2_a2,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,Nein;Ja;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_3_a1,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,0,[],[]
-FB1_alle_Antworttypen_v1_f1_3_a2,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,0,[],[]
-FB1_alle_Antworttypen_v1_f1_4_a1,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,";,",[],[]
-FB1_alle_Antworttypen_v1_f1_4_a2,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,";,",[],[]
-FB1_alle_Antworttypen_v1_f1_5_a1,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,01.01.1970,[],[]
-FB1_alle_Antworttypen_v1_f1_5_a2,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,01.01.1970,[],[]
-FB1_alle_Antworttypen_v1_f1_6_a1,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_6_a2,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_7_a1,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,.,[],[]
-FB1_alle_Antworttypen_v1_f1_7_a2,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,.,[],[]
-FB1_alle_Antworttypen_v1_f1_8_a1,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,.,[],[]
-FB1_alle_Antworttypen_v1_f1_8_a2,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,.,[],[]
-FB1_alle_Antworttypen_v1_f1_9_a1,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,";,",[],[]
-FB1_alle_Antworttypen_v1_f1_9_a2,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,";,",[],[]
-FB1_alle_Antworttypen_v1_f1_10_a1,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,"01.01.1970, 00:00",[],[]
-FB1_alle_Antworttypen_v1_f1_10_a2,Rtest-0000000002,09.06.2021 00:00,09.06.2021 07:00,"01.01.1970, 00:00",[],[]
-FB1_alle_Antworttypen_v1_f1_1_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:18,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_2_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:18,Nein;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_3_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:18,7548,[],[]
-FB1_alle_Antworttypen_v1_f1_4_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:18,yeah yeah yeah,[],[]
-FB1_alle_Antworttypen_v1_f1_5_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:18,08.06.2021,[],[]
-FB1_alle_Antworttypen_v1_f1_6_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:18,Nein,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_7_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:18,324,[],[]
-FB1_alle_Antworttypen_v1_f1_8_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:18,ZIFCO-7777444111,[],[]
-FB1_alle_Antworttypen_v1_f1_9_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:18,PZN-0000000003,[],[]
-FB1_alle_Antworttypen_v1_f1_10_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:18,"08.06.2021, 17:18",[],[]
-FB1_alle_Antworttypen_v1_f1_1_a1,Rtest-0000000003,09.06.2021 00:00,09.06.2021 07:08,.,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_2_a1,Rtest-0000000003,09.06.2021 00:00,09.06.2021 07:08,Keine Angabe,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_3_a1,Rtest-0000000003,09.06.2021 00:00,09.06.2021 07:08,1,[],[]
-FB1_alle_Antworttypen_v1_f1_4_a1,Rtest-0000000003,09.06.2021 00:00,09.06.2021 07:08,.,[],[]
-FB1_alle_Antworttypen_v1_f1_5_a1,Rtest-0000000003,09.06.2021 00:00,09.06.2021 07:08,01.01.2000,[],[]
-FB1_alle_Antworttypen_v1_f1_6_a1,Rtest-0000000003,09.06.2021 00:00,09.06.2021 07:08,.,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_7_a1,Rtest-0000000003,09.06.2021 00:00,09.06.2021 07:08,.,[],[]
-FB1_alle_Antworttypen_v1_f1_8_a1,Rtest-0000000003,09.06.2021 00:00,09.06.2021 07:08,.,[],[]
-FB1_alle_Antworttypen_v1_f1_9_a1,Rtest-0000000003,09.06.2021 00:00,09.06.2021 07:08,.,[],[]
-FB1_alle_Antworttypen_v1_f1_10_a1,Rtest-0000000003,09.06.2021 00:00,09.06.2021 07:08,"01.01.2001, 00:00",[],[]
-FB1_alle_Antworttypen_v1_f1_1,Rtest-0000000004,08.06.2021 00:00,.,.,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_2,Rtest-0000000004,08.06.2021 00:00,.,.,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_3,Rtest-0000000004,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_4,Rtest-0000000004,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_5,Rtest-0000000004,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_6,Rtest-0000000004,08.06.2021 00:00,.,.,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_7,Rtest-0000000004,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_8,Rtest-0000000004,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_9,Rtest-0000000004,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_10,Rtest-0000000004,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_1_a1,Rtest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_2_a1,Rtest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_3_a1,Rtest-0000000004,09.06.2021 00:00,09.06.2021 07:12,464646876843135,[],[]
-FB1_alle_Antworttypen_v1_f1_4_a1,Rtest-0000000004,09.06.2021 00:00,09.06.2021 07:12,"GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText,GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,;vGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,.;!""§$%$&&%/&/())=?`/%$$""""*%&/(545GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText",[],[]
-FB1_alle_Antworttypen_v1_f1_5_a1,Rtest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,[],[]
-FB1_alle_Antworttypen_v1_f1_6_a1,Rtest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_7_a1,Rtest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,[],[]
-FB1_alle_Antworttypen_v1_f1_8_a1,Rtest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,[],[]
-FB1_alle_Antworttypen_v1_f1_9_a1,Rtest-0000000004,09.06.2021 00:00,09.06.2021 07:12,"GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText,GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,;vGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,.;!""§$%$&&%/&/())=?`/%$$""""*%&/(545GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText",[],[]
-FB1_alle_Antworttypen_v1_f1_10_a1,Rtest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,[],[]
-FB1_alle_Antworttypen_v1_f1_1,Rtest-0000000005,08.06.2021 00:00,.,.,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_2,Rtest-0000000005,08.06.2021 00:00,.,.,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_3,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_4,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_5,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_6,Rtest-0000000005,08.06.2021 00:00,.,.,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_7,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_8,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_9,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_10,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB1_alle_Antworttypen_v1_f1_1_a1,Rtest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_2_a1,Rtest-0000000005,09.06.2021 00:00,09.06.2021 07:14,Nein;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_3_a1,Rtest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
-FB1_alle_Antworttypen_v1_f1_4_a1,Rtest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
-FB1_alle_Antworttypen_v1_f1_5_a1,Rtest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
-FB1_alle_Antworttypen_v1_f1_6_a1,Rtest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,"[1,0]","[""Ja"",""Nein""]"
-FB1_alle_Antworttypen_v1_f1_7_a1,Rtest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
-FB1_alle_Antworttypen_v1_f1_8_a1,Rtest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
-FB1_alle_Antworttypen_v1_f1_9_a1,Rtest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
-FB1_alle_Antworttypen_v1_f1_10_a1,Rtest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_1_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:30,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_1_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:32,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_1_a3,Rtest-0000000002,08.06.2021 00:00,09.06.2021 07:51,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_2_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:30,Keine Angabe,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_2_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:32,Keine Angabe,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_2_a3,Rtest-0000000002,08.06.2021 00:00,09.06.2021 07:51,Keine Angabe,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_3_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:30,1,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_3_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:32,1,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_3_a3,Rtest-0000000002,08.06.2021 00:00,09.06.2021 07:51,1,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_4_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:30,Untersuchungsteamtext,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_4_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:32,Untersuchungsteamtext,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_4_a3,Rtest-0000000002,08.06.2021 00:00,09.06.2021 07:51,Untersuchungsteamtext,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_5_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:30,01.01.1970,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_5_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:32,01.01.1970,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_5_a3,Rtest-0000000002,08.06.2021 00:00,09.06.2021 07:51,01.01.1970,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_6_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:30,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_6_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:32,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_6_a3,Rtest-0000000002,08.06.2021 00:00,09.06.2021 07:51,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_7_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:30,326,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_7_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:32,326,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_7_a3,Rtest-0000000002,08.06.2021 00:00,09.06.2021 07:51,326,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_8_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:30,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_8_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:32,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_8_a3,Rtest-0000000002,08.06.2021 00:00,09.06.2021 07:51,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_9_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:30,PZN-89646,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_9_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:32,PZN-8964665,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_9_a3,Rtest-0000000002,08.06.2021 00:00,09.06.2021 07:51,PZN-8964665,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_10_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:30,"08.06.2021, 17:29",[],[]
-FB2_alle_Antworttypen_UT_v1_f1_10_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:32,"08.06.2021, 17:29",[],[]
-FB2_alle_Antworttypen_UT_v1_f1_10_a3,Rtest-0000000002,08.06.2021 00:00,09.06.2021 07:51,"08.06.2021, 17:29",[],[]
-FB2_alle_Antworttypen_UT_v1_f1_1_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:34,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_2_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:34,Nein;Ja;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_3_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:34,1000,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_4_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:34,Hier könnte Ihr Freitext stehen.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_5_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:34,30.06.2021,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_6_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:34,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_7_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:34,327,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_8_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:34,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_9_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:34,PZN-7514,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_10_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:34,"08.06.2021, 17:33",[],[]
-FB2_alle_Antworttypen_UT_v1_f1_1_a1,Rtest-0000000004,08.06.2021 00:00,08.06.2021 15:36,Nein,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_2_a1,Rtest-0000000004,08.06.2021 00:00,08.06.2021 15:36,Ja;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_3_a1,Rtest-0000000004,08.06.2021 00:00,08.06.2021 15:36,754,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_4_a1,Rtest-0000000004,08.06.2021 00:00,08.06.2021 15:36,textomaniac,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_5_a1,Rtest-0000000004,08.06.2021 00:00,08.06.2021 15:36,08.02.2016,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_6_a1,Rtest-0000000004,08.06.2021 00:00,08.06.2021 15:36,Ja,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_7_a1,Rtest-0000000004,08.06.2021 00:00,08.06.2021 15:36,329,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_8_a1,Rtest-0000000004,08.06.2021 00:00,08.06.2021 15:36,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_9_a1,Rtest-0000000004,08.06.2021 00:00,08.06.2021 15:36,PZN-0000000004,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_10_a1,Rtest-0000000004,08.06.2021 00:00,08.06.2021 15:36,"08.06.2021, 17:36",[],[]
-FB2_alle_Antworttypen_UT_v1_f1_1,Rtest-0000000005,08.06.2021 00:00,.,.,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_2,Rtest-0000000005,08.06.2021 00:00,.,.,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_3,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_4,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_5,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_6,Rtest-0000000005,08.06.2021 00:00,.,.,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_7,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_8,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_9,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_10,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_1_a1,Rtest-0000000006,08.06.2021 00:00,.,Nein,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_2_a1,Rtest-0000000006,08.06.2021 00:00,.,Keine Angabe,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_3_a1,Rtest-0000000006,08.06.2021 00:00,.,535,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_4_a1,Rtest-0000000006,08.06.2021 00:00,.,text,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_5_a1,Rtest-0000000006,08.06.2021 00:00,.,08.06.2021,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_6_a1,Rtest-0000000006,08.06.2021 00:00,.,Nein,"[1,0]","[""Ja"",""Nein""]"
-FB2_alle_Antworttypen_UT_v1_f1_7_a1,Rtest-0000000006,08.06.2021 00:00,.,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_8_a1,Rtest-0000000006,08.06.2021 00:00,.,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_9_a1,Rtest-0000000006,08.06.2021 00:00,.,.,[],[]
-FB2_alle_Antworttypen_UT_v1_f1_10_a1,Rtest-0000000006,08.06.2021 00:00,.,.,[],[]
-FB3_morgen_expired_v1_f1_1,Rtest-0000000002,08.06.2021 00:00,.,.,[],"[""Ja"",""Nein""]"
-FB3_morgen_expired_v1_f2_1,Rtest-0000000002,08.06.2021 00:00,.,.,[],"[""Keine Angabe"",""Timbuktu"",""Venezuela""]"
-FB3_morgen_expired_v1_f1_1,Rtest-0000000003,08.06.2021 00:00,.,.,[],"[""Ja"",""Nein""]"
-FB3_morgen_expired_v1_f2_1,Rtest-0000000003,08.06.2021 00:00,.,.,[],"[""Keine Angabe"",""Timbuktu"",""Venezuela""]"
-FB3_morgen_expired_v1_f1_1,Rtest-0000000004,08.06.2021 00:00,.,.,[],"[""Ja"",""Nein""]"
-FB3_morgen_expired_v1_f2_1,Rtest-0000000004,08.06.2021 00:00,.,.,[],"[""Keine Angabe"",""Timbuktu"",""Venezuela""]"
-FB3_morgen_expired_v1_f1_1,Rtest-0000000005,08.06.2021 00:00,.,.,[],"[""Ja"",""Nein""]"
-FB3_morgen_expired_v1_f2_1,Rtest-0000000005,08.06.2021 00:00,.,.,[],"[""Keine Angabe"",""Timbuktu"",""Venezuela""]"
-FB4_Versionierung_mit_Labels_Codes_v2_f1_Weihnachtslabel_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:13,54687468,[],[]
-FB4_Versionierung_mit_Labels_Codes_v2_f1_Weihnachtslabel_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:13,546874685,[],[]
-FB4_Versionierung_mit_Labels_Codes_v2_f2_Farbenlabel_a1,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:13,gelb;blau;grün;,"[99,1,2,3,4]","[""Keine Angabe"",""grün"",""blau"",""gelb"",""rot""]"
-FB4_Versionierung_mit_Labels_Codes_v2_f2_Farbenlabel_a2,Rtest-0000000002,08.06.2021 00:00,08.06.2021 15:13,gelb;blau;grün;,"[99,1,2,3,4]","[""Keine Angabe"",""grün"",""blau"",""gelb"",""rot""]"
-FB4_Versionierung_mit_Labels_Codes_v2_f1_Weihnachtslabel_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:20,4645,[],[]
-FB4_Versionierung_mit_Labels_Codes_v2_f2_Farbenlabel_a1,Rtest-0000000003,08.06.2021 00:00,08.06.2021 15:20,gelb;blau;,"[99,1,2,3,4]","[""Keine Angabe"",""grün"",""blau"",""gelb"",""rot""]"
-FB4_Versionierung_mit_Labels_Codes_v2_f1_Weihnachtslabel,Rtest-0000000004,08.06.2021 00:00,.,.,[],[]
-FB4_Versionierung_mit_Labels_Codes_v2_f2_Farbenlabel,Rtest-0000000004,08.06.2021 00:00,.,.,"[99,1,2,3,4]","[""Keine Angabe"",""grün"",""blau"",""gelb"",""rot""]"
-FB4_Versionierung_mit_Labels_Codes_v2_f1_Weihnachtslabel,Rtest-0000000005,08.06.2021 00:00,.,.,[],[]
-FB4_Versionierung_mit_Labels_Codes_v2_f2_Farbenlabel,Rtest-0000000005,08.06.2021 00:00,.,.,"[99,1,2,3,4]","[""Keine Angabe"",""grün"",""blau"",""gelb"",""rot""]"
+FB1_alle_Antworttypen_v1_f1_1_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_1_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_2_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Nein;Ja;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_2_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Nein;Ja;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_3_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,1234,[],[]
+FB1_alle_Antworttypen_v1_f1_3_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,1234,[],[]
+FB1_alle_Antworttypen_v1_f1_4_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Freitext,[],[]
+FB1_alle_Antworttypen_v1_f1_4_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Freitext,[],[]
+FB1_alle_Antworttypen_v1_f1_5_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,08.06.2021,[],[]
+FB1_alle_Antworttypen_v1_f1_5_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,08.06.2021,[],[]
+FB1_alle_Antworttypen_v1_f1_6_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_6_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_7_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,321,[],[]
+FB1_alle_Antworttypen_v1_f1_7_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,321,[],[]
+FB1_alle_Antworttypen_v1_f1_8_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,ZIFCO-1234567852,[],[]
+FB1_alle_Antworttypen_v1_f1_8_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,ZIFCO-1234567852,[],[]
+FB1_alle_Antworttypen_v1_f1_9_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,PZN-5678,[],[]
+FB1_alle_Antworttypen_v1_f1_9_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,PZN-56789,[],[]
+FB1_alle_Antworttypen_v1_f1_10_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,"08.06.2021, 17:11",[],[]
+FB1_alle_Antworttypen_v1_f1_10_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:11,"08.06.2021, 17:11",[],[]
+FB1_alle_Antworttypen_v1_f1_1_a1,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_1_a2,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_2_a1,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,Nein;Ja;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_2_a2,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,Nein;Ja;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_3_a1,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,0,[],[]
+FB1_alle_Antworttypen_v1_f1_3_a2,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,0,[],[]
+FB1_alle_Antworttypen_v1_f1_4_a1,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,";,",[],[]
+FB1_alle_Antworttypen_v1_f1_4_a2,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,";,",[],[]
+FB1_alle_Antworttypen_v1_f1_5_a1,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,01.01.1970,[],[]
+FB1_alle_Antworttypen_v1_f1_5_a2,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,01.01.1970,[],[]
+FB1_alle_Antworttypen_v1_f1_6_a1,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_6_a2,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_7_a1,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,.,[],[]
+FB1_alle_Antworttypen_v1_f1_7_a2,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,.,[],[]
+FB1_alle_Antworttypen_v1_f1_8_a1,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,.,[],[]
+FB1_alle_Antworttypen_v1_f1_8_a2,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,.,[],[]
+FB1_alle_Antworttypen_v1_f1_9_a1,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,";,",[],[]
+FB1_alle_Antworttypen_v1_f1_9_a2,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,";,",[],[]
+FB1_alle_Antworttypen_v1_f1_10_a1,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,"01.01.1970, 00:00",[],[]
+FB1_alle_Antworttypen_v1_f1_10_a2,QTest-0000000002,09.06.2021 00:00,09.06.2021 07:00,"01.01.1970, 00:00",[],[]
+FB1_alle_Antworttypen_v1_f1_1_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:18,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_2_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:18,Nein;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_3_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:18,7548,[],[]
+FB1_alle_Antworttypen_v1_f1_4_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:18,yeah yeah yeah,[],[]
+FB1_alle_Antworttypen_v1_f1_5_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:18,08.06.2021,[],[]
+FB1_alle_Antworttypen_v1_f1_6_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:18,Nein,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_7_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:18,324,[],[]
+FB1_alle_Antworttypen_v1_f1_8_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:18,ZIFCO-7777444111,[],[]
+FB1_alle_Antworttypen_v1_f1_9_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:18,PZN-0000000003,[],[]
+FB1_alle_Antworttypen_v1_f1_10_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:18,"08.06.2021, 17:18",[],[]
+FB1_alle_Antworttypen_v1_f1_1_a1,QTest-0000000003,09.06.2021 00:00,09.06.2021 07:08,.,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_2_a1,QTest-0000000003,09.06.2021 00:00,09.06.2021 07:08,Keine Angabe,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_3_a1,QTest-0000000003,09.06.2021 00:00,09.06.2021 07:08,1,[],[]
+FB1_alle_Antworttypen_v1_f1_4_a1,QTest-0000000003,09.06.2021 00:00,09.06.2021 07:08,.,[],[]
+FB1_alle_Antworttypen_v1_f1_5_a1,QTest-0000000003,09.06.2021 00:00,09.06.2021 07:08,01.01.2000,[],[]
+FB1_alle_Antworttypen_v1_f1_6_a1,QTest-0000000003,09.06.2021 00:00,09.06.2021 07:08,.,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_7_a1,QTest-0000000003,09.06.2021 00:00,09.06.2021 07:08,.,[],[]
+FB1_alle_Antworttypen_v1_f1_8_a1,QTest-0000000003,09.06.2021 00:00,09.06.2021 07:08,.,[],[]
+FB1_alle_Antworttypen_v1_f1_9_a1,QTest-0000000003,09.06.2021 00:00,09.06.2021 07:08,.,[],[]
+FB1_alle_Antworttypen_v1_f1_10_a1,QTest-0000000003,09.06.2021 00:00,09.06.2021 07:08,"01.01.2001, 00:00",[],[]
+FB1_alle_Antworttypen_v1_f1_1,QTest-0000000004,08.06.2021 00:00,.,.,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_2,QTest-0000000004,08.06.2021 00:00,.,.,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_3,QTest-0000000004,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_4,QTest-0000000004,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_5,QTest-0000000004,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_6,QTest-0000000004,08.06.2021 00:00,.,.,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_7,QTest-0000000004,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_8,QTest-0000000004,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_9,QTest-0000000004,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_10,QTest-0000000004,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_1_a1,QTest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_2_a1,QTest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_3_a1,QTest-0000000004,09.06.2021 00:00,09.06.2021 07:12,464646876843135,[],[]
+FB1_alle_Antworttypen_v1_f1_4_a1,QTest-0000000004,09.06.2021 00:00,09.06.2021 07:12,"GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText,GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,;vGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,.;!""§$%$&&%/&/())=?`/%$$""""*%&/(545GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText",[],[]
+FB1_alle_Antworttypen_v1_f1_5_a1,QTest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,[],[]
+FB1_alle_Antworttypen_v1_f1_6_a1,QTest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_7_a1,QTest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,[],[]
+FB1_alle_Antworttypen_v1_f1_8_a1,QTest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,[],[]
+FB1_alle_Antworttypen_v1_f1_9_a1,QTest-0000000004,09.06.2021 00:00,09.06.2021 07:12,"GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText,GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,;vGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText;,.;!""§$%$&&%/&/())=?`/%$$""""*%&/(545GanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielTextGanzVielText",[],[]
+FB1_alle_Antworttypen_v1_f1_10_a1,QTest-0000000004,09.06.2021 00:00,09.06.2021 07:12,.,[],[]
+FB1_alle_Antworttypen_v1_f1_1,QTest-0000000005,08.06.2021 00:00,.,.,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_2,QTest-0000000005,08.06.2021 00:00,.,.,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_3,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_4,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_5,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_6,QTest-0000000005,08.06.2021 00:00,.,.,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_7,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_8,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_9,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_10,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB1_alle_Antworttypen_v1_f1_1_a1,QTest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_2_a1,QTest-0000000005,09.06.2021 00:00,09.06.2021 07:14,Nein;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_3_a1,QTest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
+FB1_alle_Antworttypen_v1_f1_4_a1,QTest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
+FB1_alle_Antworttypen_v1_f1_5_a1,QTest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
+FB1_alle_Antworttypen_v1_f1_6_a1,QTest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,"[1,0]","[""Ja"",""Nein""]"
+FB1_alle_Antworttypen_v1_f1_7_a1,QTest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
+FB1_alle_Antworttypen_v1_f1_8_a1,QTest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
+FB1_alle_Antworttypen_v1_f1_9_a1,QTest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
+FB1_alle_Antworttypen_v1_f1_10_a1,QTest-0000000005,09.06.2021 00:00,09.06.2021 07:14,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_1_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:30,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_1_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:32,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_1_a3,QTest-0000000002,08.06.2021 00:00,09.06.2021 07:51,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_2_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:30,Keine Angabe,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_2_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:32,Keine Angabe,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_2_a3,QTest-0000000002,08.06.2021 00:00,09.06.2021 07:51,Keine Angabe,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_3_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:30,1,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_3_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:32,1,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_3_a3,QTest-0000000002,08.06.2021 00:00,09.06.2021 07:51,1,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_4_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:30,Untersuchungsteamtext,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_4_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:32,Untersuchungsteamtext,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_4_a3,QTest-0000000002,08.06.2021 00:00,09.06.2021 07:51,Untersuchungsteamtext,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_5_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:30,01.01.1970,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_5_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:32,01.01.1970,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_5_a3,QTest-0000000002,08.06.2021 00:00,09.06.2021 07:51,01.01.1970,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_6_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:30,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_6_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:32,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_6_a3,QTest-0000000002,08.06.2021 00:00,09.06.2021 07:51,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_7_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:30,326,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_7_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:32,326,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_7_a3,QTest-0000000002,08.06.2021 00:00,09.06.2021 07:51,326,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_8_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:30,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_8_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:32,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_8_a3,QTest-0000000002,08.06.2021 00:00,09.06.2021 07:51,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_9_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:30,PZN-89646,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_9_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:32,PZN-8964665,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_9_a3,QTest-0000000002,08.06.2021 00:00,09.06.2021 07:51,PZN-8964665,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_10_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:30,"08.06.2021, 17:29",[],[]
+FB2_alle_Antworttypen_UT_v1_f1_10_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:32,"08.06.2021, 17:29",[],[]
+FB2_alle_Antworttypen_UT_v1_f1_10_a3,QTest-0000000002,08.06.2021 00:00,09.06.2021 07:51,"08.06.2021, 17:29",[],[]
+FB2_alle_Antworttypen_UT_v1_f1_1_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:34,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_2_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:34,Nein;Ja;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_3_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:34,1000,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_4_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:34,Hier könnte Ihr Freitext stehen.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_5_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:34,30.06.2021,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_6_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:34,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_7_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:34,327,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_8_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:34,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_9_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:34,PZN-7514,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_10_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:34,"08.06.2021, 17:33",[],[]
+FB2_alle_Antworttypen_UT_v1_f1_1_a1,QTest-0000000004,08.06.2021 00:00,08.06.2021 15:36,Nein,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_2_a1,QTest-0000000004,08.06.2021 00:00,08.06.2021 15:36,Ja;,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_3_a1,QTest-0000000004,08.06.2021 00:00,08.06.2021 15:36,754,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_4_a1,QTest-0000000004,08.06.2021 00:00,08.06.2021 15:36,textomaniac,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_5_a1,QTest-0000000004,08.06.2021 00:00,08.06.2021 15:36,08.02.2016,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_6_a1,QTest-0000000004,08.06.2021 00:00,08.06.2021 15:36,Ja,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_7_a1,QTest-0000000004,08.06.2021 00:00,08.06.2021 15:36,329,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_8_a1,QTest-0000000004,08.06.2021 00:00,08.06.2021 15:36,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_9_a1,QTest-0000000004,08.06.2021 00:00,08.06.2021 15:36,PZN-0000000004,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_10_a1,QTest-0000000004,08.06.2021 00:00,08.06.2021 15:36,"08.06.2021, 17:36",[],[]
+FB2_alle_Antworttypen_UT_v1_f1_1,QTest-0000000005,08.06.2021 00:00,.,.,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_2,QTest-0000000005,08.06.2021 00:00,.,.,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_3,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_4,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_5,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_6,QTest-0000000005,08.06.2021 00:00,.,.,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_7,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_8,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_9,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_10,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_1_a1,QTest-0000000006,08.06.2021 00:00,.,Nein,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_2_a1,QTest-0000000006,08.06.2021 00:00,.,Keine Angabe,"[99,1,0]","[""Keine Angabe"",""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_3_a1,QTest-0000000006,08.06.2021 00:00,.,535,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_4_a1,QTest-0000000006,08.06.2021 00:00,.,text,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_5_a1,QTest-0000000006,08.06.2021 00:00,.,08.06.2021,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_6_a1,QTest-0000000006,08.06.2021 00:00,.,Nein,"[1,0]","[""Ja"",""Nein""]"
+FB2_alle_Antworttypen_UT_v1_f1_7_a1,QTest-0000000006,08.06.2021 00:00,.,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_8_a1,QTest-0000000006,08.06.2021 00:00,.,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_9_a1,QTest-0000000006,08.06.2021 00:00,.,.,[],[]
+FB2_alle_Antworttypen_UT_v1_f1_10_a1,QTest-0000000006,08.06.2021 00:00,.,.,[],[]
+FB3_morgen_expired_v1_f1_1,QTest-0000000002,08.06.2021 00:00,.,.,[],"[""Ja"",""Nein""]"
+FB3_morgen_expired_v1_f2_1,QTest-0000000002,08.06.2021 00:00,.,.,[],"[""Keine Angabe"",""Timbuktu"",""Venezuela""]"
+FB3_morgen_expired_v1_f1_1,QTest-0000000003,08.06.2021 00:00,.,.,[],"[""Ja"",""Nein""]"
+FB3_morgen_expired_v1_f2_1,QTest-0000000003,08.06.2021 00:00,.,.,[],"[""Keine Angabe"",""Timbuktu"",""Venezuela""]"
+FB3_morgen_expired_v1_f1_1,QTest-0000000004,08.06.2021 00:00,.,.,[],"[""Ja"",""Nein""]"
+FB3_morgen_expired_v1_f2_1,QTest-0000000004,08.06.2021 00:00,.,.,[],"[""Keine Angabe"",""Timbuktu"",""Venezuela""]"
+FB3_morgen_expired_v1_f1_1,QTest-0000000005,08.06.2021 00:00,.,.,[],"[""Ja"",""Nein""]"
+FB3_morgen_expired_v1_f2_1,QTest-0000000005,08.06.2021 00:00,.,.,[],"[""Keine Angabe"",""Timbuktu"",""Venezuela""]"
+FB4_Versionierung_mit_Labels_Codes_v2_f1_Weihnachtslabel_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:13,54687468,[],[]
+FB4_Versionierung_mit_Labels_Codes_v2_f1_Weihnachtslabel_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:13,546874685,[],[]
+FB4_Versionierung_mit_Labels_Codes_v2_f2_Farbenlabel_a1,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:13,gelb;blau;grün;,"[99,1,2,3,4]","[""Keine Angabe"",""grün"",""blau"",""gelb"",""rot""]"
+FB4_Versionierung_mit_Labels_Codes_v2_f2_Farbenlabel_a2,QTest-0000000002,08.06.2021 00:00,08.06.2021 15:13,gelb;blau;grün;,"[99,1,2,3,4]","[""Keine Angabe"",""grün"",""blau"",""gelb"",""rot""]"
+FB4_Versionierung_mit_Labels_Codes_v2_f1_Weihnachtslabel_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:20,4645,[],[]
+FB4_Versionierung_mit_Labels_Codes_v2_f2_Farbenlabel_a1,QTest-0000000003,08.06.2021 00:00,08.06.2021 15:20,gelb;blau;,"[99,1,2,3,4]","[""Keine Angabe"",""grün"",""blau"",""gelb"",""rot""]"
+FB4_Versionierung_mit_Labels_Codes_v2_f1_Weihnachtslabel,QTest-0000000004,08.06.2021 00:00,.,.,[],[]
+FB4_Versionierung_mit_Labels_Codes_v2_f2_Farbenlabel,QTest-0000000004,08.06.2021 00:00,.,.,"[99,1,2,3,4]","[""Keine Angabe"",""grün"",""blau"",""gelb"",""rot""]"
+FB4_Versionierung_mit_Labels_Codes_v2_f1_Weihnachtslabel,QTest-0000000005,08.06.2021 00:00,.,.,[],[]
+FB4_Versionierung_mit_Labels_Codes_v2_f2_Farbenlabel,QTest-0000000005,08.06.2021 00:00,.,.,"[99,1,2,3,4]","[""Keine Angabe"",""grün"",""blau"",""gelb"",""rot""]"

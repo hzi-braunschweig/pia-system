@@ -194,29 +194,21 @@
                                     "
                                   >
                                     <mat-radio-button
+                                      #radioButton
                                       [value]="valueAnswers.value"
                                       [checked]="
                                         valueAnswers.value ==
                                         answer.controls['value'].value
                                       "
-                                      (change)="updateState($event, i, j)"
+                                      (click)="
+                                        updateState(radioButton, i, j);
+                                        $event.preventDefault()
+                                      "
                                     >
                                       <span>{{ valueAnswers.value }}</span>
                                     </mat-radio-button>
                                   </div>
                                 </mat-radio-group>
-                                <button
-                                  mat-raised-button
-                                  color="accent"
-                                  type="button"
-                                  (click)="deselectSingleChoice(i, j)"
-                                  [disabled]="!answer.controls['value'].value"
-                                >
-                                  {{
-                                    'ANSWERS_PROBAND.DESELECT_SINGLE_CHOICE'
-                                      | translate
-                                  }}
-                                </button>
                               </div>
                               <mat-error
                                 *ngIf="answer.hasError('answerRequired')"

@@ -7,7 +7,7 @@
 import Boom from '@hapi/boom';
 import * as pgHelper from '../services/postgresqlHelper';
 import { Readable } from 'stream';
-import stringify from 'csv-stringify';
+import * as csv from 'csv-stringify';
 import archiver from 'archiver';
 import { File } from '../models/file';
 import { AccessToken } from '@pia/lib-service-core';
@@ -16,17 +16,18 @@ import { LabResultTransform } from '../services/csvTransformStreams/labResultTra
 import { SampleTransform } from '../services/csvTransformStreams/sampleTransform';
 import { BloodSampleTransform } from '../services/csvTransformStreams/bloodSampleTransform';
 import { SettingsTransform } from '../services/csvTransformStreams/settingsTransform';
+import { userserviceClient } from '../clients/userserviceClient';
 
-interface SearchCriteria {
-  start_date?: Date;
-  end_date?: Date;
+export interface SearchCriteria {
+  start_date: Date | null;
+  end_date: Date | null;
   study_name: string;
-  questionnaires?: number[];
-  probands?: string[];
-  exportAnswers?: boolean;
-  exportLabResults?: boolean;
-  exportSamples?: boolean;
-  exportSettings?: boolean;
+  questionnaires: number[] | null;
+  probands: string[];
+  exportAnswers: boolean;
+  exportLabResults: boolean;
+  exportSamples: boolean;
+  exportSettings: boolean;
 }
 
 export class SearchesInteractor {
@@ -42,27 +43,19 @@ export class SearchesInteractor {
     searchCriteria: SearchCriteria
   ): Promise<Readable> {
     const userRole = decodedToken.role;
-    const userName = decodedToken.username;
+    const userStudies = decodedToken.groups;
 
-    switch (userRole) {
-      case 'Forscher':
-        try {
-          await pgHelper.getStudyAccessForUser(
-            searchCriteria.study_name,
-            userName
-          );
-        } catch (err) {
-          console.log(err);
-          throw Boom.forbidden(
-            'Could not create the search, because user has no access to study'
-          );
-        }
-        return await SearchesInteractor.search(searchCriteria);
-      default:
-        throw Boom.forbidden(
-          'Could not create the search: Unknown or wrong role'
-        );
+    if (userRole !== 'Forscher') {
+      throw Boom.forbidden(
+        'Could not create the search: Unknown or wrong role'
+      );
     }
+    if (!userStudies.includes(searchCriteria.study_name)) {
+      throw Boom.forbidden(
+        'Could not create the search, because user has no access to study'
+      );
+    }
+    return await SearchesInteractor.search(searchCriteria);
   }
 
   /**
@@ -99,17 +92,16 @@ export class SearchesInteractor {
     if (exportAnswers && (!questionnaires || questionnaires.length === 0)) {
       throw Boom.badData('Unable to export answers without questionnaires.');
     }
-
-    let foundProbands: string[];
-    try {
-      foundProbands = (await pgHelper.findProbandNamesInStudy(
-        probands,
-        study_name
-      )) as string[];
-    } catch (err) {
-      console.log(err);
-      throw Boom.internal('Something went wrong while connecting to the db.');
+    if (!study_name) {
+      throw Boom.badData('Unable to export for undefined study');
     }
+
+    const allProbandsOfStudy = await userserviceClient.getPseudonyms({
+      study: study_name,
+    });
+    const foundProbands = allProbandsOfStudy.filter((pseudonym) =>
+      probands.includes(pseudonym)
+    );
 
     if (foundProbands.length === 0) {
       throw Boom.badData('There was no Proband found.');
@@ -126,7 +118,7 @@ export class SearchesInteractor {
         study_name
       ) as Readable;
       const transformStream = new AnswersTransform();
-      const csvStream = stringify({ header: true });
+      const csvStream = csv.stringify({ header: true });
       archive.append(answersStream.pipe(transformStream).pipe(csvStream), {
         name: 'answers.csv',
       });
@@ -180,7 +172,7 @@ export class SearchesInteractor {
         end_date
       ) as Readable;
       const transformStream = new LabResultTransform();
-      const csvStream = stringify({ header: true });
+      const csvStream = csv.stringify({ header: true });
       archive.append(labResultsStream.pipe(transformStream).pipe(csvStream), {
         name: 'lab_results.csv',
       });
@@ -189,7 +181,7 @@ export class SearchesInteractor {
     if (exportSamples) {
       const samplesStream = pgHelper.streamSamples(foundProbands) as Readable;
       const transformStream = new SampleTransform();
-      const csvStream = stringify({ header: true });
+      const csvStream = csv.stringify({ header: true });
       archive.append(samplesStream.pipe(transformStream).pipe(csvStream), {
         name: 'samples.csv',
       });
@@ -200,7 +192,7 @@ export class SearchesInteractor {
         foundProbands
       ) as Readable;
       const transformStream = new BloodSampleTransform();
-      const csvStream = stringify({ header: true });
+      const csvStream = csv.stringify({ header: true });
       archive.append(bloodSamplesStream.pipe(transformStream).pipe(csvStream), {
         name: 'blood_samples.csv',
       });
@@ -209,7 +201,7 @@ export class SearchesInteractor {
     if (exportSettings) {
       const settingsStream = pgHelper.streamSettings(foundProbands) as Readable;
       const transformStream = new SettingsTransform();
-      const csvStream = stringify({ header: true });
+      const csvStream = csv.stringify({ header: true });
       archive.append(settingsStream.pipe(transformStream).pipe(csvStream), {
         name: 'settings.csv',
       });

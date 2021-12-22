@@ -40,3 +40,7 @@ pia_enable_db_export: true
 pia_enable_db_import: true
 pia_deployment_user: deployer
 pia_deployment_password: deployer
+
+pia_has_sormas: false
+pia_sormas_study: Teststudie
+sormas_url: http://example.com

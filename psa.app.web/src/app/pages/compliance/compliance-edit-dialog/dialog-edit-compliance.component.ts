@@ -6,7 +6,7 @@
 
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { UserWithStudyAccess } from '../../../psa.app.core/models/user-with-study-access';
+import { Proband } from '../../../psa.app.core/models/proband';
 
 @Component({
   selector: 'app-dialog-edit-compliance',
@@ -15,7 +15,7 @@ import { UserWithStudyAccess } from '../../../psa.app.core/models/user-with-stud
 export class DialogEditComplianceComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA)
-    public readonly user: UserWithStudyAccess,
+    public readonly user: Proband,
     public readonly dialogRef: MatDialogRef<DialogEditComplianceComponent>
   ) {}
 }

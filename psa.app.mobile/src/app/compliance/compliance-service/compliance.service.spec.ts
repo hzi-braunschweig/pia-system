@@ -4,158 +4,172 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { ComplianceService } from './compliance.service';
 import { ComplianceClientService } from '../compliance-client/compliance-client.service';
-import { PrimaryStudyService } from '../../shared/services/primary-study/primary-study.service';
-import { ComplianceDataResponse, ComplianceType } from '../compliance.model';
-import { SegmentType } from '../segment.model';
+import { ComplianceType } from '../compliance.model';
+import { MockBuilder } from 'ng-mocks';
+import { AuthService } from '../../auth/auth.service';
+import { BehaviorSubject } from 'rxjs';
+import { createComplianceDataResponse } from '../compliance.model.spec';
+import { User } from '../../auth/auth.model';
+import SpyObj = jasmine.SpyObj;
+import createSpy = jasmine.createSpy;
 
 describe('ComplianceService', () => {
   let service: ComplianceService;
-  let complianceClient: ComplianceClientService;
-  let primaryStudyService: PrimaryStudyService;
+  let complianceClient: SpyObj<ComplianceClientService>;
+  let auth: SpyObj<AuthService>;
+  let currentUser$: BehaviorSubject<User>;
 
-  const testStudyName = 'Teststudie';
+  beforeEach(async () => {
+    // Provider and Services
+    complianceClient = jasmine.createSpyObj<ComplianceClientService>(
+      'ComplianceClientService',
+      [
+        'getComplianceAgreementForCurrentUser',
+        'createComplianceAgreementForCurrentUser',
+        'getInternalComplianceActive',
+      ]
+    );
+    currentUser$ = new BehaviorSubject<User>(null);
+    auth = jasmine.createSpyObj<AuthService>(
+      'AuthService',
+      ['getCurrentUser'],
+      {
+        currentUser$: currentUser$.asObservable(),
+      }
+    );
+
+    // Build Base Module
+    await MockBuilder(ComplianceService)
+      .mock(ComplianceClientService, complianceClient)
+      .mock(AuthService, auth);
+  });
 
   beforeEach(() => {
-    complianceClient = jasmine.createSpyObj('ComplianceService', [
-      'getComplianceAgreementForCurrentUser',
-      'createComplianceAgreementForCurrentUser',
-      'getInternalComplianceActive',
-    ]);
-    primaryStudyService = jasmine.createSpyObj('QuestionnaireService', [
-      'getPrimaryStudy',
-    ]);
-
-    (
-      complianceClient.getComplianceAgreementForCurrentUser as jasmine.Spy
-    ).and.returnValue(null);
-    (
-      complianceClient.createComplianceAgreementForCurrentUser as jasmine.Spy
-    ).and.returnValue(createComplianceData());
-    (primaryStudyService.getPrimaryStudy as jasmine.Spy).and.returnValue({
-      name: testStudyName,
-    });
-
-    TestBed.configureTestingModule({
-      providers: [
-        ComplianceService,
-        { provide: ComplianceClientService, useValue: complianceClient },
-        { provide: PrimaryStudyService, useValue: primaryStudyService },
-      ],
-    });
+    // Create service
     service = TestBed.inject(ComplianceService);
+  });
+
+  describe('changing user subscription', () => {
+    it('should clear the cache if a user logs out', fakeAsync(() => {
+      tick();
+
+      currentUser$.next({
+        username: 'TEST-0001',
+        role: 'Proband',
+        study: 'teststudy',
+      });
+      tick();
+      complianceClient.getComplianceAgreementForCurrentUser.and.resolveTo(
+        createComplianceDataResponse()
+      );
+      service.getComplianceAgreementForCurrentUser();
+      tick();
+      expect(
+        complianceClient.getComplianceAgreementForCurrentUser
+      ).toHaveBeenCalled();
+      complianceClient.getComplianceAgreementForCurrentUser.calls.reset();
+      service.getComplianceAgreementForCurrentUser();
+      tick();
+      expect(
+        complianceClient.getComplianceAgreementForCurrentUser
+      ).not.toHaveBeenCalled();
+    }));
   });
 
   describe('userHasCompliances()', () => {
     it('should check, whether the current user has given single compliances', async () => {
-      (
-        complianceClient.getComplianceAgreementForCurrentUser as jasmine.Spy
-      ).and.returnValue(createComplianceData());
-      const store = {
-        currentUser:
-          '{"compliance_samples": false, "compliance_bloodsamples": true, "compliance_labresults": true}',
-      };
-      spyOn(localStorage, 'getItem').and.callFake((key) => {
-        return store[key];
-      });
+      complianceClient.getComplianceAgreementForCurrentUser.and.resolveTo(
+        createComplianceDataResponse()
+      );
       expect(await service.userHasCompliances([ComplianceType.SAMPLES])).toBe(
         false
       );
       expect(
         await service.userHasCompliances([ComplianceType.BLOODSAMPLES])
-      ).toBe(true);
+      ).toBeTrue();
       expect(
         await service.userHasCompliances([ComplianceType.LABRESULTS])
-      ).toBe(true);
+      ).toBeTrue();
     });
 
     it('should check, whether the current user has given list of compliances', async () => {
-      (
-        complianceClient.getComplianceAgreementForCurrentUser as jasmine.Spy
-      ).and.returnValue(createComplianceData());
-      const store = {
-        currentUser:
-          '{"compliance_samples": false, "compliance_bloodsamples": true, "compliance_labresults": true}',
-      };
-      spyOn(localStorage, 'getItem').and.callFake((key) => {
-        return store[key];
-      });
+      complianceClient.getComplianceAgreementForCurrentUser.and.resolveTo(
+        createComplianceDataResponse()
+      );
       expect(
         await service.userHasCompliances([
           ComplianceType.SAMPLES,
           ComplianceType.BLOODSAMPLES,
           ComplianceType.LABRESULTS,
         ])
-      ).toBe(false);
+      ).toBeFalse();
       expect(
         await service.userHasCompliances([
           ComplianceType.BLOODSAMPLES,
           ComplianceType.LABRESULTS,
         ])
-      ).toBe(true);
+      ).toBeTrue();
     });
   });
 
   describe('userHasAppUsageCompliance()', () => {
     it('should return true if compliance data exists and app usage is true', async () => {
-      (
-        complianceClient.getComplianceAgreementForCurrentUser as jasmine.Spy
-      ).and.returnValue(createComplianceData());
-      expect(await service.userHasAppUsageCompliance()).toBe(true);
+      complianceClient.getComplianceAgreementForCurrentUser.and.resolveTo(
+        createComplianceDataResponse(true)
+      );
+      expect(await service.userHasAppUsageCompliance()).toBeTrue();
     });
     it('should return false if compliance data exists and app usage is false', async () => {
-      (
-        complianceClient.getComplianceAgreementForCurrentUser as jasmine.Spy
-      ).and.returnValue(createComplianceData(false));
-      expect(await service.userHasAppUsageCompliance()).toBe(false);
+      complianceClient.getComplianceAgreementForCurrentUser.and.resolveTo(
+        createComplianceDataResponse(false)
+      );
+      expect(await service.userHasAppUsageCompliance()).toBeFalse();
     });
 
     it('should return false if no compliance text exists', async () => {
-      (
-        complianceClient.getComplianceAgreementForCurrentUser as jasmine.Spy
-      ).and.returnValue(createComplianceData(null));
-      expect(await service.userHasAppUsageCompliance()).toBe(false);
+      complianceClient.getComplianceAgreementForCurrentUser.and.resolveTo(
+        createComplianceDataResponse(null)
+      );
+      expect(await service.userHasAppUsageCompliance()).toBeFalse();
     });
   });
 
   describe('isInternalComplianceActive()', () => {
     it('should return true if compliance text exists for the current study', async () => {
-      (
-        complianceClient.getInternalComplianceActive as jasmine.Spy
-      ).and.returnValue(true);
-      expect(await service.isInternalComplianceActive()).toBe(true);
+      complianceClient.getInternalComplianceActive.and.resolveTo(true);
+      expect(await service.isInternalComplianceActive()).toBeTrue();
     });
 
     it('should return false if no compliance text exists for the current study', async () => {
-      (
-        complianceClient.getInternalComplianceActive as jasmine.Spy
-      ).and.returnValue(false);
-      expect(await service.isInternalComplianceActive()).toBe(false);
+      complianceClient.getInternalComplianceActive.and.resolveTo(false);
+      expect(await service.isInternalComplianceActive()).toBeFalse();
     });
   });
 
-  function createComplianceData(
-    appCompliance: boolean = true
-  ): ComplianceDataResponse {
-    return {
-      compliance_text_object: [{ type: SegmentType.HTML, html: '' }],
-      timestamp: new Date(),
-      textfields: {
-        firstname: 'heiko',
-        lastname: 'schotte',
-        birthdate: new Date('1968-03-12'),
-        location: 'Muster-Stadt',
-      },
-      compliance_system: {
-        app: appCompliance,
-        samples: false,
-        bloodsamples: true,
-        labresults: true,
-      },
-      compliance_questionnaire: [{ name: 'world-domination', value: true }],
-    };
-  }
+  describe('updateComplianceAgreementForCurrentUser()', () => {
+    it('should send a change request to backend', async () => {
+      const response = createComplianceDataResponse();
+      const request = { ...response, compliance_text: '' };
+      complianceClient.createComplianceAgreementForCurrentUser.and.resolveTo(
+        response
+      );
+      const newCompliance =
+        await service.updateComplianceAgreementForCurrentUser(request);
+      expect(newCompliance).toEqual(response);
+    });
+
+    it('should notify all observers that the compliance changed', fakeAsync(() => {
+      const spy = createSpy();
+      service.complianceDataChangesObservable.subscribe(spy);
+      const response = createComplianceDataResponse();
+      const request = { ...response, compliance_text: '' };
+      service.updateComplianceAgreementForCurrentUser(request);
+      tick();
+      expect(spy).toHaveBeenCalled();
+    }));
+  });
 });

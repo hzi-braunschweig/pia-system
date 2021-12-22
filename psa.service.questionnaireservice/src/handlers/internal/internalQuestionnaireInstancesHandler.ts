@@ -5,12 +5,32 @@
  */
 
 import { Lifecycle } from '@hapi/hapi';
-import { InternalQuestionnaireInstancesInteractor } from '../../interactors/internalQuestionnaireInstancesInteractor';
+import { InternalQuestionnaireInstancesInteractor } from '../../interactors/internal/internalQuestionnaireInstancesInteractor';
+import { QuestionnaireInstanceStatus } from '../../models/questionnaireInstance';
 
 export class InternalQuestionnaireInstancesHandler {
   public static getOne: Lifecycle.Method = async (request) => {
     const id = request.params['id'] as number;
     return await InternalQuestionnaireInstancesInteractor.getQuestionnaireInstance(
+      id
+    );
+  };
+
+  public static getAllForProband: Lifecycle.Method = async (request) => {
+    const pseudonym = request.params['pseudonym'] as string;
+    const loadQuestionnaire = request.query['loadQuestionnaire'] as boolean;
+    const status = request.query['status'] as QuestionnaireInstanceStatus[];
+    return await InternalQuestionnaireInstancesInteractor.getQuestionnaireInstancesForProband(
+      pseudonym,
+      { status, loadQuestionnaire }
+    );
+  };
+
+  public static getQuestionnaireInstanceAnswers: Lifecycle.Method = async (
+    request
+  ) => {
+    const id = request.params['id'] as number;
+    return await InternalQuestionnaireInstancesInteractor.getQuestionnaireInstanceAnswers(
       id
     );
   };

@@ -50,22 +50,22 @@ import { QuestionnaireInstanceQueue } from '../../../psa.app.core/models/questio
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
 import 'datejs';
 import { Location } from '@angular/common';
-import { User } from '../../../psa.app.core/models/user';
-import { JwtHelperService } from '@auth0/angular-jwt';
-import { timeout } from 'rxjs/internal/operators/timeout';
+import { timeout } from 'rxjs/operators';
 import { Tools } from './tools';
 import {
   HistoryItem,
   QuestionItem,
 } from 'src/app/psa.app.core/models/historyItem';
-import { Studie } from 'src/app/psa.app.core/models/studie';
+import { Study } from 'src/app/psa.app.core/models/study';
 import { RequiredAnswerValidator } from './required-answer-validator';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SelectedProbandInfoService } from '../../../_services/selected-proband-info.service';
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
 import { AnswerType } from '../../../psa.app.core/models/answerType';
 import { QuestionnaireInstance } from '../../../psa.app.core/models/questionnaireInstance';
-import { UserWithStudyAccess } from '../../../psa.app.core/models/user-with-study-access';
+import { Proband } from '../../../psa.app.core/models/proband';
+import { AuthenticationManager } from '../../../_services/authentication-manager.service';
+import { MatRadioButton } from '@angular/material/radio';
 
 enum DisplayStatus {
   QUESTIONS,
@@ -127,7 +127,7 @@ export class QuestionProbandComponent
   public myForm: FormGroup;
   public questionnaireInstanceId: number | undefined;
   private questionnaire: Questionnaire;
-  public studyOfQuestionnaire: Studie = null;
+  public studyOfQuestionnaire: Study = null;
   public readonly DisplayStatus = DisplayStatus;
   public displayStatus: DisplayStatus = DisplayStatus.QUESTIONS;
   public currentHistory: HistoryItem[] = [];
@@ -139,7 +139,7 @@ export class QuestionProbandComponent
   public user_id: string;
   public answerVersionFromServer: number;
   public release_version: number;
-  public proband: UserWithStudyAccess;
+  public proband: Proband;
 
   @ViewChild('questionSwiper')
   public questionSwiper: SwiperComponent;
@@ -176,14 +176,11 @@ export class QuestionProbandComponent
     private selectedProbandInfoService: SelectedProbandInfoService,
     private questionnaireService: QuestionnaireService,
     private sampleTrackingService: SampleTrackingService,
+    private auth: AuthenticationManager,
     public dialog: MatDialog,
     private _location: Location
   ) {
-    const jwtHelper: JwtHelperService = new JwtHelperService();
-    const currentUser: User = JSON.parse(localStorage.getItem('currentUser'));
-    // decode the token to get its payload
-    const tokenPayload = jwtHelper.decodeToken(currentUser.token);
-    this.currentRole = tokenPayload.role;
+    this.currentRole = this.auth.getCurrentRole();
     if ('instanceId' in this.activatedRoute.snapshot.params) {
       this.questionnaireInstanceId = Number(
         this.activatedRoute.snapshot.paramMap.get('instanceId')
@@ -212,10 +209,10 @@ export class QuestionProbandComponent
       );
 
       if (this.currentRole === 'Untersuchungsteam') {
-        this.proband = await this.userService.getUser(this.user_id);
+        this.proband = await this.userService.getProband(this.user_id);
         this.selectedProbandInfoService.updateSideNavInfoSelectedProband({
           ids: this.proband.ids,
-          pseudonym: this.proband.username,
+          pseudonym: this.proband.pseudonym,
         });
       }
       await this.initForm(this.questionnaire); // handles both the create and edit logic
@@ -1799,27 +1796,21 @@ export class QuestionProbandComponent
     }
   }
 
-  public updateState(event?, questionIndex?, answerIndex?): void {
-    if (event && questionIndex !== undefined) {
-      const answerValue = this.getAnswerOptionFormControlAtPosition(
-        questionIndex,
-        answerIndex
-      ).get('value');
-      answerValue.setValue(event.value);
-    }
-    this.checkConditions(questionIndex, answerIndex);
-  }
-
-  public deselectSingleChoice(questionIndex, answerIndex): void {
+  public updateState(
+    button: MatRadioButton,
+    questionIndex: number,
+    answerIndex: number
+  ): void {
     const answerValue = this.getAnswerOptionFormControlAtPosition(
       questionIndex,
       answerIndex
     ).get('value');
-    answerValue.setValue('');
-    if (questionIndex !== undefined) {
-      this.checkConditions(questionIndex, answerIndex);
-      this.postAllAnswers(false);
+    if (button.checked) {
+      answerValue.setValue('');
+    } else {
+      answerValue.setValue(button.value);
     }
+    this.checkConditions(questionIndex, answerIndex);
   }
 
   public isAnswerInArray(answer, answers_string): boolean {
@@ -2089,10 +2080,8 @@ export class QuestionProbandComponent
           return count === 1;
         }
         break;
-
-      default:
-        return false;
     }
+    return false;
   }
 
   private goToSlide(slideNumber: number): void {

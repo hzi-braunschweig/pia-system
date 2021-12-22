@@ -5,14 +5,13 @@ const path = require('path');
 module.exports = function (config) {
   config.set({
     basePath: '',
-    frameworks: ['jasmine', '@angular-devkit/build-angular', 'pact'],
+    frameworks: ['jasmine', '@angular-devkit/build-angular'],
     plugins: [
       require('karma-jasmine'),
       require('karma-junit-reporter'),
-      require('@pact-foundation/karma-pact'),
       require('karma-chrome-launcher'),
       require('karma-jasmine-html-reporter'),
-      require('karma-coverage-istanbul-reporter'),
+      require('karma-coverage'),
       require('@angular-devkit/build-angular/plugins/karma'),
     ],
     client: {
@@ -21,16 +20,29 @@ module.exports = function (config) {
         timeoutInterval: 40000,
       },
     },
-    coverageIstanbulReporter: {
-      dir: path.join(__dirname, './coverage'),
-      reports: ['html', 'text-summary', 'cobertura', 'lcovonly', 'json'],
-      fixWebpackSourcePaths: true,
+    preprocessors: {
+      // source files, that you wanna generate coverage for
+      // do not include tests or libraries
+      './src/**/*.ts': ['coverage'],
     },
-    reporters: ['progress', 'kjhtml', 'junit'],
+    jasmineHtmlReporter: {
+      suppressAll: true, // removes the duplicated traces
+    },
+    coverageReporter: {
+      dir: path.join(__dirname, './coverage'),
+      reporters: [
+        { type: 'html' },
+        { type: 'text-summary' },
+        { type: 'cobertura', dir: 'coverage/', subdir: '.' },
+        { type: 'lcovonly', dir: 'coverage/', subdir: '.' },
+        { type: 'json', dir: 'coverage/', subdir: '.' },
+      ],
+    },
+    reporters: ['progress', 'coverage', 'kjhtml', 'junit'],
     junitReporter: {
-      outputDir: './tests/reports', // results will be saved as $outputDir/$browserName.xml
-      outputFile: 'xunit-test-report.xml', // if included, results will be saved as $outputDir/$browserName/$outputFile
-      useBrowserName: false, // add browser name to report and classes names
+      outputDir: './tests/reports',
+      outputFile: 'xunit-test-report.xml',
+      useBrowserName: false,
     },
     port: 9876,
     colors: true,
@@ -45,19 +57,5 @@ module.exports = function (config) {
     },
     singleRun: false,
     restartOnFileChange: true,
-    pact: [
-      {
-        consumer: 'WebApp',
-        provider: 'ComplianceService',
-        port: 14010,
-        cors: true,
-        spec: 3,
-        log: path.resolve(process.cwd(), 'logs', 'mockserver-integration.log'),
-        dir: path.resolve(process.cwd(), 'pacts'),
-      },
-    ],
-    proxies: {
-      '/api/v1/compliance': 'http://localhost:14010/api/v1/compliance',
-    },
   });
 };

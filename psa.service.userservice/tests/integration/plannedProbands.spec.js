@@ -14,24 +14,32 @@ const { setup, cleanup } = require('./plannedProbands.spec.data/setup.helper');
 
 const JWT = require('jsonwebtoken');
 
-const server = require('../../src/server');
+const { Server } = require('../../src/server');
 const apiAddress = 'http://localhost:' + process.env.PORT + '/user';
 
-const probandSession1 = { id: 1, role: 'Proband', username: 'QTestProband1' };
+const probandSession1 = {
+  id: 1,
+  role: 'Proband',
+  username: 'QTestProband1',
+  groups: ['ApiTestStudie'],
+};
 const forscherSession1 = {
   id: 1,
   role: 'Forscher',
   username: 'QTestForscher1',
+  groups: ['ApiTestStudie', 'ApiTestStudie2', 'ApiTestMultiProf'],
 };
 const utSession1 = {
   id: 1,
   role: 'Untersuchungsteam',
   username: 'ut@apitest.de',
+  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
 };
 const utSession2 = {
   id: 1,
   role: 'Untersuchungsteam',
   username: 'ut2@apitest.de',
+  groups: ['ApiTestStudie2'],
 };
 const sysadminSession = {
   id: 1,
@@ -42,6 +50,7 @@ const pmSession = {
   id: 1,
   role: 'ProbandenManager',
   username: 'QTestProbandenManager',
+  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
 };
 
 const invalidToken = JWT.sign(probandSession1, 'thisIsNotAValidPrivateKey', {
@@ -82,11 +91,11 @@ const pmHeader = { authorization: pmToken };
 
 describe('/plannedprobands', function () {
   before(async function () {
-    await server.init();
+    await Server.init();
   });
 
   after(async function () {
-    await server.stop();
+    await Server.stop();
   });
 
   describe('GET plannedprobands', function () {

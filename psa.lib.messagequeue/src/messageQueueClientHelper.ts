@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import * as amqp from 'amqplib';
 import * as util from 'util';
+import * as amqp from 'amqplib';
 
 const delay = util.promisify(setTimeout);
 

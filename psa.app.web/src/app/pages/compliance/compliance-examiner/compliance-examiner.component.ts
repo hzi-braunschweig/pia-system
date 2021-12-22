@@ -7,7 +7,7 @@
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogEditComplianceComponent } from '../compliance-edit-dialog/dialog-edit-compliance.component';
-import { UserWithStudyAccess } from '../../../psa.app.core/models/user-with-study-access';
+import { Proband } from '../../../psa.app.core/models/proband';
 
 @Component({
   selector: 'app-compliance-examiner',
@@ -18,7 +18,7 @@ export class ComplianceExaminerComponent {
 
   constructor(private readonly dialog: MatDialog) {}
 
-  showCompliance(user: UserWithStudyAccess): void {
+  showCompliance(user: Proband): void {
     this.dialog.open(DialogEditComplianceComponent, {
       width: '1000px',
       autoFocus: true,

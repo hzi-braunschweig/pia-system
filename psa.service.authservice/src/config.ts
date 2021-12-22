@@ -22,19 +22,21 @@ const conf = {
   internal: GlobalConfig.internal,
   database: GlobalConfig.getQPia(SSL_CERTS),
   services: {
-    loggingservice: GlobalConfig.loggingservice,
     personaldataservice: GlobalConfig.personaldataservice,
   },
   servers: {
     mailserver: GlobalConfig.mailserver,
+    messageQueue: GlobalConfig.getMessageQueue('authservice'),
   },
   publicAuthKey: GlobalConfig.publicAuthKey,
+  isTestMode: ConfigUtils.getEnvVariable('IS_TEST_MODE', 'false') === 'true',
   webappUrl: GlobalConfig.webappUrl,
   privateAuthKey: ConfigUtils.getFileContent('./authKey/private.key'),
-  userPasswordLength: parseInt(
+  minUserPasswordLength: parseInt(
     ConfigUtils.getEnvVariable('USER_PASSWORD_LENGTH'),
     10
   ),
+  maxUserPasswordLength: 80,
   ipCheckEnabled:
     ConfigUtils.getEnvVariable(
       'IP_CHECK_ENABLED',
@@ -45,8 +47,6 @@ const conf = {
       'CERT_CHECK_ENABLED',
       'false'
     ).toLocaleLowerCase() === 'true',
-  sormasOnPiaUser: ConfigUtils.getEnvVariable('SORMAS_ON_PIA_USER', ''),
-  sormasOnPiaPassword: ConfigUtils.getEnvVariable('SORMAS_ON_PIA_PASSWORD', ''),
 };
 
 export const config: SupersetOfServiceConfig<typeof conf> = conf;

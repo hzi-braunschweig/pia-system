@@ -59,7 +59,7 @@ describe('validateAccessToken()', () => {
     expect((db.oneOrNone as sinon.SinonStub).calledOnce).to.be.ok;
     expect(
       (db.oneOrNone as sinon.SinonStub).calledWith(
-        "SELECT username FROM users WHERE username=${username} AND role=${role} AND account_status!='deactivated'",
+        'SELECT username FROM accounts WHERE username=${username} AND role=${role}',
         { username: 'Testuser', role: 'Proband' }
       )
     ).to.be.ok;

@@ -4,16 +4,29 @@
   "compilerOptions": {
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
+    "forceConsistentCasingInFileNames": true,
+    // Default angular as goal:
+    //    "strict": true,
+    //    "noImplicitOverride": true,
+    //    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
     "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es5",
+    "target": "es2017",
     "module": "es2020",
-    "lib": ["es2019", "dom"]
+    "lib": ["es2020", "dom", "dom.iterable"]
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true
+    // Default angular as goal:
+    //    "strictTemplates": true
   },
   "exclude": ["cypress"]
 }

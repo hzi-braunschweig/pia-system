@@ -135,7 +135,9 @@ export class ComplianceService {
   getComplianceNeeded(studyName: string): Promise<boolean> {
     return this.http
       .get<boolean>(
-        `${this.apiUrl}${studyName}/agree/${this.auth.currentUser.username}/needed`
+        `${
+          this.apiUrl
+        }${studyName}/agree/${this.auth.getCurrentUsername()}/needed`
       )
       .toPromise();
   }
@@ -144,7 +146,7 @@ export class ComplianceService {
     this.getPdfFromUrl(`${this.apiUrl}${studyName}/agree-pdf/${username}`);
   }
 
-  getComplianceAgreementPdfById(studyName: string, complianceId: string): void {
+  getComplianceAgreementPdfById(studyName: string, complianceId: number): void {
     this.getPdfFromUrl(
       `${this.apiUrl}${studyName}/agree-pdf/instance/${complianceId}`
     );

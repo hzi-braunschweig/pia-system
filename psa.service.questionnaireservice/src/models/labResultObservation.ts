@@ -8,7 +8,6 @@ export interface LabResultObservation {
   lab_result_id: string;
   user_id: string;
   ids: string | null;
-  account_status: string | null;
   date_of_sampling: Date;
   date_of_delivery: Date;
   date_of_analysis: Date;

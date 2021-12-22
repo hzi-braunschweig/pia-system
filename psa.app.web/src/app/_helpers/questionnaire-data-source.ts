@@ -8,8 +8,10 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { Questionnaire } from '../psa.app.core/models/questionnaire';
 import { DataSource } from '@angular/cdk/collections';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, merge, Observable } from 'rxjs';
 import { QuestionnaireDatabase } from './questionnaire-database';
+import { map } from 'rxjs/operators';
+
 /**
  * Data source to provide what data should be rendered in the table. Note that the data source
  * can retrieve its data in any way. In this case, the data source is provided a reference
@@ -51,22 +53,24 @@ export class QuestionnaireDataSource extends DataSource<any> {
       this._paginator.page,
     ];
 
-    return Observable.merge(...displayDataChanges).map(() => {
-      this.filteredData = this._questionnaireDatabase.data
-        .slice()
-        .filter((item: Questionnaire) => {
-          const searchStr = this.buildItemString(item);
-          return searchStr.indexOf(this.filter.toLowerCase()) !== -1;
-        });
+    return merge(...displayDataChanges).pipe(
+      map(() => {
+        this.filteredData = this._questionnaireDatabase.data
+          .slice()
+          .filter((item: Questionnaire) => {
+            const searchStr = this.buildItemString(item);
+            return searchStr.indexOf(this.filter.toLowerCase()) !== -1;
+          });
 
-      const sortedData = this.sortData(this.filteredData.slice());
-      const startIndex = this._paginator.pageIndex * this._paginator.pageSize;
-      this.renderedData = sortedData.splice(
-        startIndex,
-        this._paginator.pageSize
-      );
-      return this.renderedData;
-    });
+        const sortedData = this.sortData(this.filteredData.slice());
+        const startIndex = this._paginator.pageIndex * this._paginator.pageSize;
+        this.renderedData = sortedData.splice(
+          startIndex,
+          this._paginator.pageSize
+        );
+        return this.renderedData;
+      })
+    );
   }
 
   buildItemString(item: Questionnaire): string {

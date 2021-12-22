@@ -13,6 +13,7 @@ export * from './db/listeningDbClient';
 export * from './db/models';
 export * from './db/repositoryHelper';
 export * from './db/transactionRunnerFactory';
+export * from './plugins/errorHandler';
 export * from './plugins/metrics';
 export * from './plugins/version';
 export * from './plugins/registerPlugins';

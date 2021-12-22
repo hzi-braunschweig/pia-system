@@ -17,6 +17,7 @@ import { ComplianceService } from './compliance/compliance-service/compliance.se
 import { NotificationService } from './shared/services/notification/notification.service';
 import { EndpointService } from './shared/services/endpoint/endpoint.service';
 import { BadgeService } from './shared/services/badge/badge.service';
+import { User } from './auth/auth.model';
 
 interface AppPage {
   title: string;
@@ -50,7 +51,11 @@ export class AppComponent {
     private badgeService: BadgeService
   ) {
     this.onAppStart();
-    this.auth.loggedIn.subscribe(() => this.onLogin());
+    this.auth.currentUser$.subscribe((user) => {
+      if (user) {
+        this.onLogin(user);
+      }
+    });
     this.compliance.complianceDataChangesObservable.subscribe(() =>
       this.onComplianceChanges()
     );
@@ -77,11 +82,9 @@ export class AppComponent {
   /**
    * Executed on every user login for initializations
    */
-  private onLogin() {
+  private onLogin(user: User) {
     this.setupSideMenu();
-    this.notification.initPushNotifications(
-      this.auth.getCurrentUser().username
-    );
+    this.notification.initPushNotifications(user.username);
   }
 
   /**
@@ -101,10 +104,11 @@ export class AppComponent {
       );
     }
 
-    this.statusBar.styleDefault();
-    this.splashScreen.hide();
-
-    this.piaVersion = await this.appVersion.getVersionNumber();
+    if (this.platform.is('cordova')) {
+      this.statusBar.styleDefault();
+      this.splashScreen.hide();
+      this.piaVersion = await this.appVersion.getVersionNumber();
+    }
   }
 
   private async presentConfirmLogout() {

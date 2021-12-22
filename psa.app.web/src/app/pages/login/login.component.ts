@@ -16,6 +16,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AuthenticationManager } from '../../_services/authentication-manager.service';
 import { PageManager } from '../../_services/page-manager.service';
 import { LocaleService } from '../../_services/locale.service';
+import { LoginResponse } from '../../psa.app.core/models/user';
 
 @Component({
   templateUrl: 'login.component.html',
@@ -35,7 +36,6 @@ export class LoginComponent implements OnInit {
   timeLeft = 0;
   message: any = 0;
   interval: any;
-  returnUrl: string;
   revealPassword = false;
 
   constructor(
@@ -50,7 +50,7 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private matDialog: MatDialog
   ) {
-    if (this.auth.currentUser) {
+    if (this.auth.getToken()) {
       this.auth.logout();
     }
   }
@@ -61,18 +61,12 @@ export class LoginComponent implements OnInit {
       password: [''],
     });
     // reset login status
-    this.token_login = this.auth.loginToken;
-    this.token_login_username = this.token_login
-      ? this.auth.loginTokenPayload.username
-      : null;
-    // get return url from route parameters or default to '/'
-    this.returnUrl =
-      this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
-    if (this.token_login) {
-      this.form.controls['username'].disable();
+    this.token_login_username = this.auth.getLoginTokenUsername();
+    if (this.auth.getLoginToken()) {
+      this.form.get('username').disable();
       this.other_account = true;
     } else {
-      this.form.controls['username'].enable();
+      this.form.get('username').enable();
       this.other_account = false;
     }
   }
@@ -87,8 +81,7 @@ export class LoginComponent implements OnInit {
 
   showUsername(): void {
     this.form.controls['username'].enable();
-    this.auth.loginToken = null;
-    this.token_login = null;
+    this.auth.removeLoginToken();
     this.token_login_username = null;
     this.other_account = false;
   }
@@ -102,7 +95,10 @@ export class LoginComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result === 'yes') {
         this.authenticationService
-          .requestNewPassword(this.form.value.username, this.token_login)
+          .requestNewPassword(
+            this.form.value.username,
+            this.auth.getLoginToken()
+          )
           .then((res) => {
             this.showResultDialog('LOGIN.NEW_PASSWORD_SENT', true);
           })
@@ -117,7 +113,7 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  login(): void {
+  public login(): void {
     this.showError = false;
     this.showBackendConnectionError = false;
     this.showTokenExpired = false;
@@ -128,13 +124,11 @@ export class LoginComponent implements OnInit {
       logged_in_with: 'web',
     };
     this.loading = true;
-    if (!this.token_login) {
+    if (!this.auth.getLoginToken()) {
       this.authenticationService
         .login(this.loginData)
-        .then(async (result: any) => {
-          const token_login = result.token_login;
-          this.auth.loginToken = token_login;
-          await this.postLoginOperations(result);
+        .then(async (result) => {
+          this.postLoginOperations(result);
         })
         .catch((err) => {
           this.loading = false;
@@ -149,9 +143,9 @@ export class LoginComponent implements OnInit {
         });
     } else {
       this.authenticationService
-        .loginWithToken(this.loginData, this.auth.loginToken)
-        .then(async (result: any) => {
-          await this.postLoginOperations(result);
+        .loginWithToken(this.loginData, this.auth.getLoginToken())
+        .then(async (result) => {
+          this.postLoginOperations(result);
         })
         .catch((err) => {
           this.loading = false;
@@ -181,43 +175,22 @@ export class LoginComponent implements OnInit {
     }, 1000);
   }
 
-  postLoginOperations(user): void {
-    if (user && user.token) {
-      // store user details and jwt token in local storage to keep user logged in between page refreshes
-      this.auth.currentUser = user;
+  private postLoginOperations(user: LoginResponse): void {
+    // store user details and jwt token in local storage to keep user logged in between page refreshes
+    this.auth.handleLoginResponse(user);
 
-      if (user.pw_change_needed) {
-        this.router.navigate(['/changePassword']);
-      } else {
-        const indexOfQueryParams = this.returnUrl.indexOf('?');
-        if (indexOfQueryParams !== -1) {
-          const url = this.returnUrl.substring(0, indexOfQueryParams);
-          const secondPartOfString = this.returnUrl.substring(
-            indexOfQueryParams + 1
-          );
-          const params = JSON.parse(
-            '{"' +
-              secondPartOfString.replace(/&/g, '","').replace(/=/g, '":"') +
-              '"}',
-            (key, value) => {
-              return key === '' ? value : decodeURIComponent(value);
-            }
-          );
-          this.router.navigate([url], { queryParams: params });
-        } else {
-          this.router.navigate([this.returnUrl]).then((succesfulNavigation) => {
-            if (succesfulNavigation === false) {
-              this.router.navigate(['/home']);
-            }
-          });
-        }
-      }
+    if (user.pw_change_needed) {
+      this.router.navigate(['/changePassword']);
     } else {
-      this.alertService.errorMessage(
-        'SAMPLE_MANAGEMENT.ERROR_MATERIAL_REQUEST'
+      // get return url from route parameters or default to '/'
+      const url = new URL(
+        'http://localhost' +
+          (this.route.snapshot.queryParamMap.get('returnUrl') || '/home')
       );
+      this.router.navigate([url.pathname], {
+        queryParams: Object.fromEntries(url.searchParams.entries()),
+      });
     }
-    this.loading = false;
   }
 
   changeState(): void {

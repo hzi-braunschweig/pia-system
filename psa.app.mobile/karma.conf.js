@@ -7,6 +7,7 @@
 // Karma configuration file, see link for more information
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
+const path = require('path');
 module.exports = function (config) {
   config.set({
     basePath: '',
@@ -16,22 +17,32 @@ module.exports = function (config) {
       require('karma-junit-reporter'),
       require('karma-chrome-launcher'),
       require('karma-jasmine-html-reporter'),
-      require('karma-coverage-istanbul-reporter'),
+      require('karma-coverage'),
       require('@angular-devkit/build-angular/plugins/karma'),
     ],
     client: {
       clearContext: false, // leave Jasmine Spec Runner output visible in browser
     },
-    coverageIstanbulReporter: {
-      dir: require('path').join(__dirname, './coverage'),
-      reports: ['html', 'text-summary', 'cobertura', 'lcovonly', 'json'],
-      fixWebpackSourcePaths: true,
+    preprocessors: {
+      // source files, that you wanna generate coverage for
+      // do not include tests or libraries
+      './src/**/*.ts': ['coverage'],
     },
-    reporters: ['progress', 'kjhtml', 'junit'],
+    coverageReporter: {
+      dir: path.join(__dirname, './coverage'),
+      reporters: [
+        { type: 'html' },
+        { type: 'text-summary' },
+        { type: 'cobertura', dir: 'coverage/', subdir: '.' },
+        { type: 'lcovonly', dir: 'coverage/', subdir: '.' },
+        { type: 'json', dir: 'coverage/', subdir: '.' },
+      ],
+    },
+    reporters: ['progress', 'coverage', 'kjhtml', 'junit'],
     junitReporter: {
-      outputDir: './tests/reports', // results will be saved as $outputDir/$browserName.xml
-      outputFile: 'xunit-test-report.xml', // if included, results will be saved as $outputDir/$browserName/$outputFile
-      useBrowserName: false, // add browser name to report and classes names
+      outputDir: './tests/reports',
+      outputFile: 'xunit-test-report.xml',
+      useBrowserName: false,
     },
     port: 9876,
     colors: true,
@@ -45,5 +56,6 @@ module.exports = function (config) {
       },
     },
     singleRun: false,
+    restartOnFileChange: true,
   });
 };

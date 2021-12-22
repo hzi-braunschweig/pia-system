@@ -6,7 +6,7 @@
 
 const Boom = require('@hapi/boom');
 const { RESTPresenter } = require('../services/RESTPresenter');
-const answersInteractor = require('../interactors/answersInteractor.js');
+const answersInteractor = require('../interactors/answersInteractor');
 
 /**
  * @description HAPI Handler for answers

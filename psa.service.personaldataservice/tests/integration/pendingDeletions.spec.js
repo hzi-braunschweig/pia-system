@@ -10,7 +10,6 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 const sinon = require('sinon');
 const fetchMock = require('fetch-mock').sandbox();
-const fetch = require('node-fetch');
 
 const { db } = require('../../src/db');
 const { setup, cleanup } = require('./pendingDeletions.spec.data/setup.helper');
@@ -23,6 +22,7 @@ const testSandbox = sinon.createSandbox();
 
 const JWT = require('jsonwebtoken');
 const { MailService } = require('@pia/lib-service-core');
+const { HttpClient } = require('@pia-system/lib-http-clients-internal');
 
 const apiAddress = 'http://localhost:' + process.env.PORT + '/personal';
 
@@ -134,10 +134,17 @@ describe('/pendingDeletions', function () {
   });
 
   beforeEach(async () => {
-    testSandbox.stub(fetch, 'default').callsFake(fetchMock);
-    fetchMock
-      .catch(503)
-      .patch('express:/auth/user', 204, { name: 'setAccountStatus' });
+    testSandbox.stub(HttpClient, 'fetch').callsFake(fetchMock);
+    fetchMock.catch(503).patch(
+      'express:/user/users/:pseudonym',
+      {
+        status: 204,
+        body: JSON.stringify(null),
+      },
+      {
+        name: 'setComplianceContact',
+      }
+    );
     await setup();
   });
 
@@ -252,7 +259,12 @@ describe('/pendingDeletions', function () {
             'QTestProbandWithNoData',
           ],
         })
-        .get('express:/user/users/:pseudonym/primaryStudy', {
+        .get('express:/user/users/:pseudonym', {
+          body: {
+            study: 'QTestStudy1',
+          },
+        })
+        .get('express:/user/studies/:studyName', {
           body: {
             name: 'QTestStudy1',
             has_total_opposition: true,
@@ -343,7 +355,7 @@ describe('/pendingDeletions', function () {
         pdNoEmailPm.proband_id
       );
       expect(pendingDeletion).to.be.null;
-      expect(fetchMock.called('setAccountStatus')).to.be.false;
+      expect(fetchMock.called('setComplianceContact')).to.be.false;
     });
 
     it('should return HTTP 200 if target proband has no personal data and create a pending deletion', async () => {
@@ -361,10 +373,7 @@ describe('/pendingDeletions', function () {
         pdNoDataProband.proband_id
       );
       expect(pendingDeletion).to.be.not.null;
-      expect(fetchMock.called('setAccountStatus')).to.be.true;
-      expect(fetchMock.lastCall('setAccountStatus')[1].body).to.contain(
-        'deactivation_pending'
-      );
+      expect(fetchMock.called('setComplianceContact')).to.be.false;
     });
 
     it('should return HTTP 200 and create a pending deletion', async () => {
@@ -382,10 +391,7 @@ describe('/pendingDeletions', function () {
         pdValid.proband_id
       );
       expect(pendingDeletion).to.be.not.null;
-      expect(fetchMock.called('setAccountStatus')).to.be.true;
-      expect(fetchMock.lastCall('setAccountStatus')[1].body).to.contain(
-        'deactivation_pending'
-      );
+      expect(fetchMock.called('setComplianceContact')).to.be.false;
     });
 
     it('should return HTTP 200 and create a pending deletion if no_email_pm requests', async () => {
@@ -403,10 +409,7 @@ describe('/pendingDeletions', function () {
         pdValid.proband_id
       );
       expect(pendingDeletion).to.be.not.null;
-      expect(fetchMock.called('setAccountStatus')).to.be.true;
-      expect(fetchMock.lastCall('setAccountStatus')[1].body).to.contain(
-        'deactivation_pending'
-      );
+      expect(fetchMock.called('setComplianceContact')).to.be.false;
     });
   });
 
@@ -468,7 +471,9 @@ describe('/pendingDeletions', function () {
     });
 
     it('should return HTTP 200 and delete all of probands data', async () => {
-      fetchMock.post('express:/log/systemLogs', {});
+      fetchMock.post('express:/log/systemLogs', {
+        body: JSON.stringify(createSystemLogResponse()),
+      });
       const result = await chai
         .request(apiAddress)
         .put('/pendingdeletions/QTestProband1')
@@ -482,9 +487,9 @@ describe('/pendingDeletions', function () {
         'QTestProband1'
       );
       expect(personalData).to.be.null;
-      expect(fetchMock.called('setAccountStatus')).to.be.true;
-      expect(fetchMock.lastCall('setAccountStatus')[1].body).to.contain(
-        'deactivated'
+      expect(fetchMock.called('setComplianceContact')).to.be.true;
+      expect(fetchMock.lastCall('setComplianceContact')[1].body).to.contain(
+        false
       );
     });
   });
@@ -563,10 +568,7 @@ describe('/pendingDeletions', function () {
       );
       expect(personalData).to.be.be.an('object');
       expect(personalData.pseudonym).to.equal('QTestProband1');
-      expect(fetchMock.called('setAccountStatus')).to.be.true;
-      expect(fetchMock.lastCall('setAccountStatus')[1].body).to.contain(
-        'active'
-      );
+      expect(fetchMock.called('setComplianceContact')).to.be.false;
     });
 
     it('should return HTTP 204 and cancel deletion of proband data for requested_for pm', async () => {
@@ -586,10 +588,16 @@ describe('/pendingDeletions', function () {
       );
       expect(personalData).to.be.be.an('object');
       expect(personalData.pseudonym).to.equal('QTestProband1');
-      expect(fetchMock.called('setAccountStatus')).to.be.true;
-      expect(fetchMock.lastCall('setAccountStatus')[1].body).to.contain(
-        'active'
-      );
+      expect(fetchMock.called('setComplianceContact')).to.be.false;
     });
   });
+
+  function createSystemLogResponse() {
+    return {
+      requestedBy: 'pm1@example.com',
+      requestedFor: 'pm2@example.com',
+      timestamp: new Date().toString(),
+      type: 'QTestProband1',
+    };
+  }
 });

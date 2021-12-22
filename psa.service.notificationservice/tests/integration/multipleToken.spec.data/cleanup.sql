@@ -1,27 +1,18 @@
 DELETE
 FROM notification_schedules
-WHERE user_id IN (
-                  'QTestProband1',
-                  'QTestProbandenManager'
-);
-
-DELETE FROM fcm_tokens;
+WHERE user_id LIKE 'QTest%';
 
 DELETE
-FROM study_users
-WHERE user_id IN (
-                  'QTestProband1',
-                  'QTestProbandenManager'
-);
+FROM fcm_tokens WHERE study LIKE 'QTest%';;
 
 DELETE
-FROM users
-WHERE username IN (
-                   'QTestProband1',
-                   'QTestProbandenManager'
-);
+FROM accounts
+WHERE username LIKE 'QTest%';
 
+DELETE
+FROM probands
+WHERE pseudonym LIKE 'QTest%';
 
 DELETE
 FROM studies
-WHERE name = 'ApiTestStudie';
+WHERE name LIKE 'QTest%';

@@ -5,15 +5,17 @@
  */
 
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-import chai from 'chai';
+import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
-import secretOrPrivateKey from '../secretOrPrivateKey';
 import { sign } from 'jsonwebtoken';
-import { cleanup, setup } from './questionnaires.spec.data/setup.helper';
-import server from '../../src/server';
 import startOfToday from 'date-fns/startOfToday';
-import { config } from '../../src/config';
 import { StatusCodes } from 'http-status-codes';
+import fetchMocker from 'fetch-mock';
+
+import secretOrPrivateKey from '../secretOrPrivateKey';
+import { cleanup, setup } from './questionnaires.spec.data/setup.helper';
+import { Server } from '../../src/server';
+import { config } from '../../src/config';
 import {
   Questionnaire,
   QuestionnaireRequest,
@@ -25,9 +27,11 @@ import {
   AnswerOptionRequest,
 } from '../../src/models/answerOption';
 import { db } from '../../src/db';
+import sinon from 'sinon';
+import { HttpClient } from '@pia-system/lib-http-clients-internal';
 
 chai.use(chaiHttp);
-const expect = chai.expect;
+
 const apiAddress =
   'http://localhost:' + config.public.port.toString() + '/questionnaire';
 
@@ -143,18 +147,34 @@ const conditionSourceQuestionnaire = {
   version: 1,
 };
 
+const sandbox = sinon.createSandbox();
+const fetchMock = fetchMocker.sandbox();
+
 describe('/questionnaires', function () {
+  before(async () => {
+    await Server.init();
+  });
+
+  after(async () => {
+    await Server.stop();
+  });
+
+  beforeEach(async () => {
+    await setup();
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    sandbox.stub(HttpClient, 'fetch').callsFake(fetchMock);
+  });
+
+  afterEach(async () => {
+    await cleanup();
+
+    sandbox.restore();
+    fetchMock.restore();
+  });
+
   describe('POST /questionnaire/questionnaires', function () {
-    beforeEach(async function () {
-      await server.init();
-      await setup();
-    });
-
-    afterEach(async function () {
-      await server.stop();
-      await cleanup();
-    });
-
     it('should return HTTP 401 if the token is wrong', async function () {
       const result = await chai
         .request(apiAddress)
@@ -540,16 +560,6 @@ describe('/questionnaires', function () {
   });
 
   describe('POST /questionnaire/revisequestionnaire/{id}', function () {
-    beforeEach(async function () {
-      await server.init();
-      await setup();
-    });
-
-    afterEach(async function () {
-      await server.stop();
-      await cleanup();
-    });
-
     it('should return HTTP 401 if the token is wrong', async function () {
       const result = await chai
         .request(apiAddress)
@@ -678,17 +688,7 @@ describe('/questionnaires', function () {
     });
   });
 
-  describe('PUT /questionnaire/questionnaires/{id}/{version}', function () {
-    beforeEach(async function () {
-      await server.init();
-      await setup();
-    });
-
-    afterEach(async function () {
-      await server.stop();
-      await cleanup();
-    });
-
+  describe('PUT /questionnaire/questionnaires/{id}/{version}', () => {
     it('should return HTTP 401 if the token is wrong', async function () {
       const result = await chai
         .request(apiAddress)
@@ -792,7 +792,7 @@ describe('/questionnaires', function () {
       expect(result).to.have.status(412);
     });
 
-    it('should return HTTP 200 with the changed questionnaire and condition if the request is valid and update is_condition_target of target answer option', async function () {
+    it('should return HTTP 200 with the changed questionnaire and condition if the request is valid and update is_condition_target of target answer option', async () => {
       const changedConditionQuestionnaire = getExistingQuestionnaire4();
       changedConditionQuestionnaire.condition = {
         condition_type: 'external',
@@ -866,6 +866,8 @@ describe('/questionnaires', function () {
           '/' +
           existingQuestionnaire4.version.toString()
       );
+
+      mockHasAgreedToCompliance('QTestProband1', 'ApiTestStudy1');
 
       const result2 = await chai
         .request(apiAddress)
@@ -1083,16 +1085,6 @@ describe('/questionnaires', function () {
   });
 
   describe('GET /questionnaire/questionnaires', function () {
-    before(async function () {
-      await server.init();
-      await setup();
-    });
-
-    after(async function () {
-      await server.stop();
-      await cleanup();
-    });
-
     it('should return HTTP 401 if the token is wrong', async function () {
       const result = await chai
         .request(apiAddress)
@@ -1135,16 +1127,6 @@ describe('/questionnaires', function () {
   });
 
   describe('GET /questionnaire/questionnaires/{id}/{version}', function () {
-    before(async function () {
-      await server.init();
-      await setup();
-    });
-
-    after(async function () {
-      await server.stop();
-      await cleanup();
-    });
-
     it('should return HTTP 401 if the token is wrong', async function () {
       const result = await chai
         .request(apiAddress)
@@ -1188,6 +1170,8 @@ describe('/questionnaires', function () {
     });
 
     it('should return HTTP 403 if proband tries to get questionnaire he did not comply to get', async function () {
+      mockHasAgreedToCompliance('QTestProband3', 'ApiTestStudy1', false);
+
       const result = await chai
         .request(apiAddress)
         .get(
@@ -1201,6 +1185,8 @@ describe('/questionnaires', function () {
     });
 
     it('should return HTTP 200 with the correct questionnaire and version 1', async function () {
+      mockHasAgreedToCompliance('QTestProband1', 'ApiTestStudy1');
+
       const result = await chai
         .request(apiAddress)
         .get(
@@ -1228,6 +1214,8 @@ describe('/questionnaires', function () {
     });
 
     it('should return HTTP 200 with the correct questionnaire and version 2', async function () {
+      mockHasAgreedToCompliance('QTestProband1', 'ApiTestStudy1');
+
       const result = await chai
         .request(apiAddress)
         .get(
@@ -1309,16 +1297,6 @@ describe('/questionnaires', function () {
   });
 
   describe('DELETE /questionnaire/questionnaires/{id}/{version}', function () {
-    beforeEach(async function () {
-      await server.init();
-      await setup();
-    });
-
-    afterEach(async function () {
-      await server.stop();
-      await cleanup();
-    });
-
     it('should return HTTP 401 if the token is wrong', async function () {
       const result = await chai
         .request(apiAddress)
@@ -1444,16 +1422,6 @@ describe('/questionnaires', function () {
   });
 
   describe('PATCH /questionnaire/{study}/questionnaires/{id}/{version}', function () {
-    beforeEach(async function () {
-      await server.init();
-      await setup();
-    });
-
-    afterEach(async function () {
-      await server.stop();
-      await cleanup();
-    });
-
     it('should return HTTP 401 if the token is wrong', async function () {
       const result = await chai
         .request(apiAddress)
@@ -1555,6 +1523,20 @@ describe('/questionnaires', function () {
       expect(resultFromDatabse).to.deep.equal([{ id: 110300 }]);
     });
   });
+
+  function mockHasAgreedToCompliance(
+    pseudonym: string,
+    study: string,
+    hasCompliance = true
+  ): void {
+    fetchMock.get(
+      `http://complianceservice:5000/compliance/${study}/agree/${pseudonym}?system=samples`,
+      {
+        status: StatusCodes.OK,
+        body: hasCompliance.toString(),
+      }
+    );
+  }
 });
 
 function checkIfResponseMatchesRequestQuestionnaire(

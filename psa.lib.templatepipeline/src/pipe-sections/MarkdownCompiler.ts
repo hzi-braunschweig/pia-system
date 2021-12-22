@@ -5,7 +5,7 @@
  */
 
 import { PipeSection } from './PipeSection';
-import { parse } from 'marked';
+import { marked } from 'marked';
 import { HtmlDocument, MarkdownDocument } from '../template-documents';
 import { JSDOM } from 'jsdom';
 import DOMPurify from 'dompurify';
@@ -29,7 +29,7 @@ export class MarkdownCompiler
   }
 
   private async parseMarkdown(markdownText: Promise<string>): Promise<string> {
-    return parse(
+    return marked.parse(
       domPurify.sanitize(await markdownText, {
         ADD_TAGS: this.allowedTags,
       })

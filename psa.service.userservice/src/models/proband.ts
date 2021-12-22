@@ -4,50 +4,16 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { PendingComplianceChange } from './pendingComplianceChange';
+import { Proband } from '../entities/proband';
+import { ExternalCompliance } from './externalCompliance';
+import { AccountStatus } from './accountStatus';
+import { ProbandStatus } from './probandStatus';
 
-export interface Proband {
-  username: string;
-  ids: string | null;
-  study: string;
-  studyStatus: StudyStatus;
-  accountStatus: AccountStatus;
-  /**
-   * @deprecated it is only needed for the PM to change the compliance
-   * in future it should be moved to the compliance service and managed by
-   * the compliance manager
-   */
-  complianceLabresults: boolean;
-  /**
-   * @deprecated it is only needed for the PM to change the compliance
-   * in future it should be moved to the compliance service and managed by
-   * the compliance manager
-   */
-  complianceSamples: boolean;
-  /**
-   * @deprecated it is only needed for the PM to change the compliance
-   * in future it should be moved to the compliance service and managed by
-   * the compliance manager
-   */
-  complianceBloodsamples: boolean;
-  /**
-   * @deprecated it is only needed for the PM to change the compliance
-   * in future it should be moved to the compliance service and managed by
-   * the compliance manager
-   */
-  pendingComplianceChange: PendingComplianceChange | null;
+// Create Proband
+
+export interface CreateIDSProbandRequest {
+  ids: string;
 }
-
-export type AccountStatus =
-  | 'active'
-  | 'deactivation_pending'
-  | 'deactivated'
-  | 'no_account';
-export type StudyStatus =
-  | 'active'
-  | 'deactivated'
-  | 'deletion_pending'
-  | 'deleted';
 
 export interface CreateProbandRequest {
   pseudonym: string;
@@ -55,23 +21,13 @@ export interface CreateProbandRequest {
   complianceLabresults: boolean;
   complianceSamples: boolean;
   complianceBloodsamples: boolean;
-  studyCenter: string;
-  examinationWave: number;
+  studyCenter?: string;
+  examinationWave?: number;
 }
 
-export interface CreateIDSProbandRequest {
-  ids: string;
-}
-
-export interface CreateProband {
+export interface CreateProbandResponse {
   pseudonym: string;
-  study: string;
-  ids?: string;
-  complianceLabresults: boolean;
-  complianceSamples: boolean;
-  complianceBloodsamples: boolean;
-  studyCenter: string;
-  examinationWave: number;
+  password: string;
 }
 
 export interface CreateProbandExternalResponse {
@@ -81,11 +37,58 @@ export interface CreateProbandExternalResponse {
 
 export enum CreateProbandError {
   USER_NOT_FOUND = 'USER_NOT_FOUND',
-  WRONG_ROLE = 'WRONG_ROLE',
   NO_ACCESS_TO_STUDY = 'NO_ACCESS_TO_STUDY',
   NO_PLANNED_PROBAND_FOUND = 'NO_PLANNED_PROBAND_FOUND',
   PROBAND_ALREADY_EXISTS = 'PROBAND_ALREADY_EXISTS',
   CREATING_ACCOUNG_FAILED = 'CREATING_ACCOUNG_FAILED',
   SAVING_PROBAND_FAILED = 'SAVING_PROBAND_FAILED',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+}
+
+// Get Proband
+
+export interface ProbandResponse extends ExternalCompliance {
+  pseudonym: string;
+  first_logged_in_at: Date | null;
+  study: string;
+  accountStatus: AccountStatus;
+  status: ProbandStatus;
+  ids: string | null;
+  needs_material: boolean;
+  study_center: string | null;
+  examination_wave: number | null;
+  is_test_proband: boolean;
+}
+
+export interface ProbandResponseNew extends ExternalCompliance {
+  pseudonym: string;
+  firstLggedInAt: Date | null;
+  study: string;
+  accountStatus: AccountStatus;
+  status: ProbandStatus;
+  ids: string | null;
+  needsMaterial: boolean;
+  studyCenter: string | null;
+  examinationWave: number | null;
+  isTestProband: boolean;
+}
+
+// Patch Proband
+
+export type ProbandComplianceContactPatch = Pick<Proband, 'complianceContact'>;
+export type ProbandStatusPatch = Pick<Proband, 'status'>;
+export type ProbandPatch = ProbandComplianceContactPatch | ProbandStatusPatch;
+export function isProbandComplianceContactPatch(
+  check: ProbandPatch
+): check is ProbandComplianceContactPatch {
+  const patch = check as Partial<ProbandComplianceContactPatch>;
+  return (
+    typeof check === 'object' && typeof patch.complianceContact === 'boolean'
+  );
+}
+export function isProbandStatusPatch(
+  check: ProbandPatch
+): check is ProbandStatusPatch {
+  const patch = check as Partial<ProbandStatusPatch>;
+  return typeof check === 'object' && typeof patch.status === 'string';
 }

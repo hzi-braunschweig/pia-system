@@ -9,6 +9,7 @@ const pgHelper = require('../services/postgresqlHelper');
 const {
   QuestionnaireInstanceRepository,
 } = require('../repositories/questionnaireInstanceRepository');
+const { assertStudyAccess } = require('../services/studyAccessAssert');
 
 /**
  * @description interactor that handles answers requests based on users permissions
@@ -43,12 +44,7 @@ const fileInteractor = (function () {
             console.log(err);
             throw Boom.notFound('Questionnaire instance not found');
           });
-        await pgHelper
-          .getStudyAccessForUser(qInstance.study_id, username)
-          .catch((err) => {
-            console.log(err);
-            throw Boom.forbidden('Wrong access for this command');
-          });
+        assertStudyAccess(qInstance.study_id, decodedToken);
         return file;
       }
       case 'Forscher': {
@@ -73,12 +69,7 @@ const fileInteractor = (function () {
         ) {
           throw Boom.notFound('File has not been released yet');
         }
-        await pgHelper
-          .getStudyAccessForUser(qInstance.study_id, username)
-          .catch((err) => {
-            console.log(err);
-            throw Boom.forbidden('Wrong access for this command');
-          });
+        assertStudyAccess(qInstance.study_id, decodedToken);
         return file;
       }
       default:

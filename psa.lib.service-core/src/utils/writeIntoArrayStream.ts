@@ -12,7 +12,7 @@ export class WriteIntoArrayStream<T> extends Writable {
   }
 
   public _write(
-    chunk: any,
+    chunk: T,
     _encoding: BufferEncoding,
     callback: (error?: Error | null) => void
   ): void {

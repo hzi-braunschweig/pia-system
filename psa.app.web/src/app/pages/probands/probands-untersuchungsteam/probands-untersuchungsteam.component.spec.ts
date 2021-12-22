@@ -45,12 +45,11 @@ describe('ProbandsUntersuchungsteamComponent', () => {
 
   describe('page header buttons', () => {
     it('should present a button to open a dialog for adding new ids', fakeAsync(() => {
-      const fetchUsersSpy = spyOn(component.probandsList, 'fetchUsers');
       clickButton('[unit-create-ids]');
       expect(dialog.open).toHaveBeenCalledTimes(1);
       afterClosedSubject.next('testuser');
       tick();
-      expect(fetchUsersSpy).toHaveBeenCalledTimes(1);
+      expect(component.probandsList.fetchUsers).toHaveBeenCalledTimes(1);
     }));
 
     it('should present a button to navigate to proband creation', fakeAsync(() => {

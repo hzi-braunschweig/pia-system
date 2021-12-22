@@ -17,12 +17,13 @@ import {
 } from '../models/questionnaireInstance';
 import { db } from '../db';
 import { Answer } from '../models/answer';
-import { StudyUser, User } from '../models/user';
+import { Proband } from '../models/proband';
 import { addMinutes, startOfToday } from 'date-fns';
 import { Condition } from '../models/condition';
 import { AnswerOption } from '../models/answerOption';
 import { asyncForEach } from '@pia/lib-service-core';
 import { LoggingService } from './loggingService';
+import { ProbandsRepository } from '../repositories/probandsRepository';
 
 const pgp = pg();
 
@@ -106,34 +107,31 @@ export class NotificationHandlers {
       }
 
       // Add new instances
-      let users: User[];
+      let probands: Proband[];
       if (questionnaire.cycle_unit === 'once') {
-        // if it is a one time questionnaire we do not need to create a new instance for users who already answered one (those instances survived above)
-        users = await t.manyOrNone(
-          `SELECT *
-                     FROM study_users as s
-                              LEFT JOIN users u on u.username = s.user_id
-                     WHERE s.study_id = $(study_id)
-                       AND u.role = 'Proband'
-                       AND u.username NOT IN
-                           (SELECT user_id FROM questionnaire_instances WHERE questionnaire_id = $(id))`,
-          questionnaire
+        /**
+         * if questionnaire is a new version of a one time questionnaire we do not need to create a new instance
+         * for probands who already answered one (those instances survived above)
+         */
+        probands = await NotificationHandlers.getActiveProbandsOfStudy(
+          t,
+          questionnaire.study_id,
+          questionnaire.id
         );
       } else {
-        // other questionnaires need to be created anyway (like spontaneous ones need to replace the active one that was deleted above)
-        users = await t.manyOrNone(
-          `SELECT *
-                     FROM study_users as s
-                              LEFT JOIN users u on u.username = s.user_id
-                     WHERE s.study_id = $(study_id)
-                       AND u.role = 'Proband'`,
-          questionnaire
+        /**
+         * other questionnaires need to be created anyway (like spontaneous ones need
+         * to replace the active one that was deleted above)
+         */
+        probands = await NotificationHandlers.getActiveProbandsOfStudy(
+          t,
+          questionnaire.study_id
         );
       }
 
-      await NotificationHandlers.createQuestionnaireInstancesForUsers(
+      await NotificationHandlers.createQuestionnaireInstancesForProbands(
         questionnaire,
-        users,
+        probands,
         t
       );
     });
@@ -174,85 +172,70 @@ export class NotificationHandlers {
           q_new
         )}`
       );
+
       if (q_new.publish === 'hidden') {
         return;
       }
 
-      const users: User[] = await t.manyOrNone(
-        'SELECT * FROM users WHERE role=$(role) AND username=ANY(SELECT user_id FROM study_users WHERE study_id=$(study_id) )',
-        {
-          role: 'Proband',
-          study_id: q_new.study_id,
-        }
-      );
+      const probands: Proband[] =
+        await NotificationHandlers.getActiveProbandsOfStudy(t, q_new.study_id);
 
-      await NotificationHandlers.createQuestionnaireInstancesForUsers(
+      await NotificationHandlers.createQuestionnaireInstancesForProbands(
         q_new,
-        users,
+        probands,
         t
       );
     });
   }
 
   /**
-   * Creates questionnaire instances based on the updated user
-   *
-   * @param {Object} user_old the old user
-   * @param {Object} user_new the updated user
+   * Creates questionnaire instances when a user logs in for the first time
    */
-  public static async handleUpdatedUser(
-    user_old: User,
-    user_new: User
-  ): Promise<void> {
-    if (
-      NotificationHandlers.isFirstLogin(user_old, user_new) &&
-      user_new.role === 'Proband'
-    ) {
-      await NotificationHandlers.createQuestionnaireInstancesForUser(
-        user_new,
-        true
-      );
-    }
-  }
+  public static async handleLoginOfProband(pseudonym: string): Promise<void> {
+    let proband: Proband = await ProbandsRepository.findOneOrFail(pseudonym);
 
-  /**
-   * Creates questionnaire instances based on the inserted study_user
-   *
-   * @param {Object} study_user the inserted study_user
-   */
-  public static async handleInsertedStudyUser(
-    study_user: StudyUser
-  ): Promise<void> {
-    const correspondingUser: User = await db.one(
-      "SELECT * FROM users WHERE username = $1 AND role='Proband'",
-      [study_user.user_id]
+    if (!NotificationHandlers.isFirstLogin(proband)) {
+      // if proband already logged in before, no questionnaire instances need to be created
+      return;
+    }
+
+    proband = await ProbandsRepository.updateFirstLoggedInAt(
+      pseudonym,
+      new Date()
     );
+
+    if (!NotificationHandlers.isUserActiveInStudy(proband)) {
+      return;
+    }
     await NotificationHandlers.createQuestionnaireInstancesForUser(
-      correspondingUser
+      proband,
+      true
     );
   }
 
   /**
-   * Deletes questionnaire instances based on the deleted study_user
-   *
-   * @param {Object} study_user the old study_user
+   * Creates questionnaire instances based on the inserted user
    */
-  public static async handleDeletedStudyUser(
-    study_user: StudyUser
-  ): Promise<void> {
-    const correspondingUser: User = await db.one(
-      'SELECT * FROM users where username = $1',
-      [study_user.user_id]
-    );
-    if (correspondingUser.role === 'Proband') {
-      const deletedQIs = await db.manyOrNone(
-        'DELETE FROM questionnaire_instances WHERE user_id=$1 AND study_id=$2 RETURNING *',
-        [study_user.user_id, study_user.study_id]
-      );
-      NotificationHandlers.logger.info(
-        `Deleted ${deletedQIs.length} questionnaire instances for user: ${study_user.user_id} because he was removed from study: ${study_user.study_id}`
-      );
+  public static async handleProbandCreated(pseudonym: string): Promise<void> {
+    const user: Proband = await ProbandsRepository.findOneOrFail(pseudonym);
+
+    if (!NotificationHandlers.isUserActiveInStudy(user)) {
+      return;
     }
+    await NotificationHandlers.createQuestionnaireInstancesForUser(user);
+  }
+
+  /**
+   * Deletes questionnaire instances based on the deleted user
+   */
+  public static async handleProbandDeleted(pseudonym: string): Promise<void> {
+    const deletedQIs = await db.manyOrNone(
+      'DELETE FROM questionnaire_instances WHERE user_id=$1 RETURNING *',
+      [pseudonym]
+    );
+    NotificationHandlers.logger.info(
+      `Deleted ${deletedQIs.length} questionnaire instances for proband: ${pseudonym} because he was removed`
+    );
   }
 
   /**
@@ -325,7 +308,7 @@ export class NotificationHandlers {
         questionnaireOfInstance.cycle_unit === 'spontan'
       ) {
         qInstancesToAdd.push(
-          await QuestionnaireInstancesService.createNextQuestionnaireInstance(
+          QuestionnaireInstancesService.createNextQuestionnaireInstance(
             questionnaireOfInstance,
             instance_new
           )
@@ -334,9 +317,16 @@ export class NotificationHandlers {
         // No conditions to check, stop here
         return;
       }
-      const user: User = await t.one('SELECT * FROM users WHERE username=$1', [
-        instance_new.user_id,
-      ]);
+
+      const user: Proband = await ProbandsRepository.findOneOrFail(
+        instance_new.user_id
+      );
+
+      // Do not create new instances for deactivated or deleted probands
+      if (!NotificationHandlers.isUserActiveInStudy(user)) {
+        return;
+      }
+
       // this will have an effect on the start date of questionnaire instances which
       // will be created later on (@see questionnaireInstancesService#createQuestionnaireInstances)
       user.first_logged_in_at = startOfToday();
@@ -385,7 +375,7 @@ export class NotificationHandlers {
               )
             ) {
               const newInstances =
-                await QuestionnaireInstancesService.createQuestionnaireInstances(
+                QuestionnaireInstancesService.createQuestionnaireInstances(
                   questionnaire,
                   user,
                   false
@@ -427,7 +417,7 @@ export class NotificationHandlers {
                 )
               ) {
                 const newInstances =
-                  await QuestionnaireInstancesService.createQuestionnaireInstances(
+                  QuestionnaireInstancesService.createQuestionnaireInstances(
                     questionnaire,
                     user,
                     false
@@ -496,7 +486,7 @@ export class NotificationHandlers {
               )
             ) {
               qInstancesToAdd.push(
-                await QuestionnaireInstancesService.createNextQuestionnaireInstance(
+                QuestionnaireInstancesService.createNextQuestionnaireInstance(
                   questionnaire,
                   instance_new
                 )
@@ -527,7 +517,7 @@ export class NotificationHandlers {
                 )
               ) {
                 qInstancesToAdd.push(
-                  await QuestionnaireInstancesService.createNextQuestionnaireInstance(
+                  QuestionnaireInstancesService.createNextQuestionnaireInstance(
                     questionnaire,
                     instance_new
                   )
@@ -600,9 +590,42 @@ export class NotificationHandlers {
     });
   }
 
-  private static async createQuestionnaireInstancesForUsers(
+  private static async getActiveProbandsOfStudy(
+    t: ITask<unknown>,
+    study: string,
+    excludeQuestionnaireId?: number
+  ): Promise<Proband[]> {
+    const filterByQuestionnaireIdQuery = excludeQuestionnaireId
+      ? 'AND pseudonym NOT IN (SELECT user_id FROM questionnaire_instances WHERE questionnaire_id = $(id))'
+      : '';
+
+    return t.manyOrNone<Proband>(
+      `SELECT pseudonym,
+                first_logged_in_at,
+                study,
+                status,
+                ids,
+                needs_material,
+                study_center,
+                examination_wave,
+                is_test_proband,
+                compliance_labresults,
+                compliance_samples,
+                compliance_bloodsamples
+         FROM probands
+         WHERE study = $(study)
+           AND status IN ('active')
+           ${filterByQuestionnaireIdQuery}`,
+      {
+        study,
+        id: excludeQuestionnaireId,
+      }
+    );
+  }
+
+  private static async createQuestionnaireInstancesForProbands(
     questionnaire: Questionnaire,
-    users: User[],
+    probands: Proband[],
     t: ITask<unknown>
   ): Promise<void> {
     const qCondition: Condition | null = await t.oneOrNone(
@@ -613,9 +636,9 @@ export class NotificationHandlers {
       }
     );
 
-    if (users.length > 0) {
+    if (probands.length > 0) {
       let qInstances: QuestionnaireInstanceNew[] = [];
-      await asyncForEach(users, async (user) => {
+      await asyncForEach(probands, async (user) => {
         if (!user.compliance_samples && questionnaire.compliance_needed) {
           return;
         }
@@ -636,7 +659,7 @@ export class NotificationHandlers {
             await t.manyOrNone(
               'SELECT * FROM answers,questionnaire_instances WHERE answers.questionnaire_instance_id=questionnaire_instances.id AND user_id=$1 AND answer_option_id=$2 AND cycle=ANY(SELECT MAX(cycle) FROM questionnaire_instances WHERE user_id=$1 AND questionnaire_id=$3 AND questionnaire_version=$4 AND (questionnaire_instances.status IN ($5, $6, $7))) ORDER BY versioning',
               [
-                user.username,
+                user.pseudonym,
                 qCondition.condition_target_answer_option,
                 qCondition.condition_target_questionnaire,
                 qCondition.condition_target_questionnaire_version,
@@ -708,7 +731,7 @@ export class NotificationHandlers {
         }
 
         qInstances = qInstances.concat(
-          await QuestionnaireInstancesService.createQuestionnaireInstances(
+          QuestionnaireInstancesService.createQuestionnaireInstances(
             questionnaire,
             user,
             NotificationHandlers.hasInternalCondition(qCondition)
@@ -728,55 +751,52 @@ export class NotificationHandlers {
   }
 
   private static async createQuestionnaireInstancesForUser(
-    user: User,
+    user: Proband,
     onlyLoginDependantOnes = false
   ): Promise<void> {
     await db.tx(async function (t) {
       // Retrieve questionnaires with newest version only
       const questionnaires: QuestionnaireWithConditionType[] =
         await t.manyOrNone(
-          'SELECT questionnaires.*, conditions.condition_type FROM questionnaires ' +
-            'LEFT JOIN conditions ON questionnaires.id=conditions.condition_questionnaire_id ' +
-            'AND questionnaires.version=conditions.condition_questionnaire_version ' +
-            'WHERE study_id=ANY(SELECT study_id FROM study_users WHERE user_id=$1) ' +
-            'AND version=(SELECT MAX(q.version) FROM questionnaires as q WHERE q.id=questionnaires.id) ' +
-            'AND active=TRUE',
-          [user.username]
+          `SELECT questionnaires.*, conditions.condition_type
+             FROM questionnaires
+                      LEFT JOIN conditions ON questionnaires.id = conditions.condition_questionnaire_id
+                 AND questionnaires.version = conditions.condition_questionnaire_version
+             WHERE study_id = (SELECT study FROM probands WHERE pseudonym = $(pseudonym))
+               AND version = (SELECT MAX(q.version) FROM questionnaires AS q WHERE q.id = questionnaires.id)
+               AND active = TRUE`,
+          { pseudonym: user.pseudonym }
         );
 
       if (questionnaires.length <= 0) {
         return;
       }
 
-      let qInstances: QuestionnaireInstanceNew[] = [];
-      await asyncForEach(questionnaires, async function (questionnaire) {
-        if (
-          NotificationHandlers.hasExternalCondition(questionnaire) ||
-          (!user.compliance_samples && questionnaire.compliance_needed)
-        ) {
-          return;
-        }
-        if (questionnaire.publish === 'testprobands' && !user.is_test_proband) {
-          return;
-        }
-
-        if (questionnaire.publish === 'hidden') {
-          return;
-        }
-
-        qInstances = qInstances.concat(
-          await QuestionnaireInstancesService.createQuestionnaireInstances(
+      const qInstances: QuestionnaireInstanceNew[] = questionnaires
+        .filter((questionnaire) => {
+          if (
+            NotificationHandlers.hasExternalCondition(questionnaire) ||
+            (!user.compliance_samples && questionnaire.compliance_needed)
+          ) {
+            return false;
+          }
+          return !(
+            questionnaire.publish === 'hidden' ||
+            (questionnaire.publish === 'testprobands' && !user.is_test_proband)
+          );
+        })
+        .flatMap((questionnaire) => {
+          return QuestionnaireInstancesService.createQuestionnaireInstances(
             questionnaire,
             user,
             NotificationHandlers.hasInternalCondition(questionnaire),
             onlyLoginDependantOnes
-          )
-        );
-      });
+          );
+        });
 
       await NotificationHandlers.createQuestionnaireInstances(qInstances, t);
       NotificationHandlers.logger.info(
-        `Added ${qInstances.length} questionnaire instances to db for user ${user.username}`
+        `Added ${qInstances.length} questionnaire instances to db for user ${user.pseudonym}`
       );
     });
   }
@@ -807,8 +827,12 @@ export class NotificationHandlers {
     return qCondition?.condition_type === 'external';
   }
 
-  private static isFirstLogin(userOld: User, userNew: User): boolean {
-    return !userOld.first_logged_in_at && !!userNew.first_logged_in_at;
+  private static isFirstLogin(proband: Proband): boolean {
+    return proband.first_logged_in_at === null;
+  }
+
+  private static isUserActiveInStudy(user: Proband): boolean {
+    return user.status === 'active';
   }
 
   private static isDeactivationChange(

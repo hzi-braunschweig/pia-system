@@ -33,7 +33,7 @@ describe('QuestionnaireInstancesListForInvestigatorComponent', () => {
     );
     MockInstance(
       AuthService,
-      'getUser',
+      'getProband',
       jasmine
         .createSpy()
         .and.resolveTo({ ids: '123456789', pseudonym: 'TEST-1234567890' })

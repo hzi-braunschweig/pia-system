@@ -5,8 +5,8 @@
   -->
 
 <app-probands-forscher
-  *ngIf="auth.currentRole === 'Forscher'"
+  *ngIf="auth.getCurrentRole() === 'Forscher'"
 ></app-probands-forscher>
 <app-probands-untersuchungsteam
-  *ngIf="auth.currentRole === 'Untersuchungsteam'"
+  *ngIf="auth.getCurrentRole() === 'Untersuchungsteam'"
 ></app-probands-untersuchungsteam>

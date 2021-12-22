@@ -5,30 +5,46 @@
  */
 
 import { Pipe, PipeTransform } from '@angular/core';
-import { UserWithStudyAccess } from '../psa.app.core/models/user-with-study-access';
+import { Proband } from '../psa.app.core/models/proband';
 
 /**
  * Returns the translation key of an account status
  */
-@Pipe({ name: 'accountStatus' })
+@Pipe({ name: 'accountStatusConvert' })
 export class AccountStatusPipe implements PipeTransform {
-  transform(entityWithStatus: UserWithStudyAccess): string | null {
+  public transform(
+    entityWithStatus: Pick<Proband, 'accountStatus' | 'status'>
+  ): string {
     if (
-      entityWithStatus.account_status === 'active' &&
-      entityWithStatus.study_status === 'active'
+      entityWithStatus.accountStatus === 'account' &&
+      entityWithStatus.status === 'active'
     ) {
-      return 'STUDIES.STATUS_ACTIV';
-    } else if (entityWithStatus.study_status === 'deletion_pending') {
-      return 'STUDIES.STATUS_DELETION_PENDING';
-    } else if (entityWithStatus.study_status === 'deleted') {
-      return 'STUDIES.STATUS_DELETED';
-    } else if (entityWithStatus.account_status === 'deactivation_pending') {
-      return 'PROBANDEN.STATUS_DEACTIVATION_PENDING';
-    } else if (entityWithStatus.account_status === 'deactivated') {
-      return 'PROBANDEN.STATUS_DEACTIVATED';
-    } else if (entityWithStatus.account_status === 'no_account') {
-      return 'PROBANDEN.STATUS_NO_ACCOUNT';
+      return 'PROBANDEN.STATUS_ACTIVE';
     }
-    return null;
+    if (
+      entityWithStatus.accountStatus === 'no_account' &&
+      entityWithStatus.status === 'active'
+    ) {
+      return 'PROBANDEN.STATUS_ACTIVE_NO_ACCOUNT';
+    }
+    if (
+      entityWithStatus.accountStatus === 'account' &&
+      entityWithStatus.status === 'deactivated'
+    ) {
+      return 'PROBANDEN.STATUS_DEACTIVATED';
+    }
+    if (
+      entityWithStatus.accountStatus === 'no_account' &&
+      entityWithStatus.status === 'deactivated'
+    ) {
+      return 'PROBANDEN.STATUS_COMMUNICATION_BAN';
+    }
+    if (
+      entityWithStatus.accountStatus === 'no_account' &&
+      entityWithStatus.status === 'deleted'
+    ) {
+      return 'PROBANDEN.STATUS_DELETED';
+    }
+    return 'UNDEFINED';
   }
 }

@@ -83,6 +83,17 @@ module.exports = {
     '@typescript-eslint/no-use-before-define': ['error', { functions: false }],
     '@typescript-eslint/no-useless-constructor': ['error'],
     'no-only-tests/no-only-tests': 'error',
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            group: ['*psa.*'],
+            message: 'Never import files from psa.* packages directly.',
+          },
+        ],
+      },
+    ],
   },
   ignorePatterns: ['dist'],
 };

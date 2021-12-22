@@ -1,7 +1,4 @@
-import { AuthCredentials, Request } from '@hapi/hapi';
-export interface BasicValidationFn {
-    (request: Request, username: string, password: string): ValidationResult;
-}
+import { AuthCredentials } from '@hapi/hapi';
 export interface TokenValidationFn<T extends AuthToken> {
     (decoded: T): Promise<ValidationResult>;
 }

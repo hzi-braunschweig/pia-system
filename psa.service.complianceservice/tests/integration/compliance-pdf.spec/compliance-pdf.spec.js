@@ -7,16 +7,13 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiExclude = require('chai-exclude');
-chai.use(chaiHttp);
-chai.use(chaiExclude);
 const binaryParser = require('superagent-binary-parser');
-const expect = chai.expect;
+const JWT = require('jsonwebtoken');
 const sinon = require('sinon');
 const fs = require('fs');
+const fetchMocker = require('fetch-mock');
 
-const secretOrPrivateKey = require('../../secretOrPrivateKey');
-const JWT = require('jsonwebtoken');
-
+const { HttpClient } = require('@pia-system/lib-http-clients-internal');
 const server = require('../../../src/server');
 const {
   sequelize,
@@ -25,12 +22,14 @@ const {
   QuestionnaireCompliance,
   QuestionnaireTextCompliance,
 } = require('../../../src/db');
+const { config } = require('../../../src/config');
+const secretOrPrivateKey = require('../../secretOrPrivateKey');
+
+const expect = chai.expect;
+chai.use(chaiHttp);
+chai.use(chaiExclude);
 
 const testSandbox = sinon.createSandbox();
-const fetch = require('node-fetch');
-
-const { config } = require('../../../src/config');
-const userserviceUrl = config.services.userservice.url;
 
 const apiAddress = 'http://localhost:' + config.public.port;
 
@@ -89,6 +88,8 @@ const probandHeader2 = { authorization: probandToken2 };
 const complianceManagerHeader = { authorization: complianceManagerToken };
 const complianceManagerHeader2 = { authorization: complianceManagerToken2 };
 
+const fetchMock = fetchMocker.sandbox();
+
 describe('Compliance PDF API', function () {
   before(async () => {
     await sequelize.sync();
@@ -103,16 +104,17 @@ describe('Compliance PDF API', function () {
     await ComplianceText.destroy({ truncate: true, cascade: true });
     await Compliance.destroy({ truncate: true, cascade: true });
 
-    testSandbox.stub(fetch, 'default').callsFake(async (url) => {
-      if (url === userserviceUrl + '/user/users/QTestproband1/mappingId') {
-        return new fetch.Response('e959c22a-ab73-4b70-8871-48c23080b87b');
-      } else {
-        return new fetch.Response(null, { status: 503 });
-      }
-    });
+    testSandbox.stub(HttpClient, 'fetch').callsFake(fetchMock);
+
+    fetchMock
+      .get('express:/user/users/QTestproband1/mappingId', {
+        body: 'e959c22a-ab73-4b70-8871-48c23080b87b',
+      })
+      .catch(503);
   });
   afterEach(async () => {
     testSandbox.restore();
+    fetchMock.restore();
   });
 
   describe('GET /compliance/{study}/agree-pdf/{userId}', () => {

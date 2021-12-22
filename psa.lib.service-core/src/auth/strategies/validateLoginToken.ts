@@ -31,7 +31,7 @@ export function validateLoginToken(
     }
     try {
       const result = await db.oneOrNone<unknown>(
-        "SELECT username FROM users WHERE username=${username} AND account_status!='deactivated'",
+        'SELECT username FROM accounts WHERE username=${username}',
         {
           username: decoded.username,
         }

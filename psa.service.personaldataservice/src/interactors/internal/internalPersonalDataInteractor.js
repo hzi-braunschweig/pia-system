@@ -5,7 +5,6 @@
  */
 
 const { PersonalDataService } = require('../../services/personalDataService');
-const { UserserviceClient } = require('../../clients/userserviceClient');
 
 class InternalPersonalDataInteractor {
   /**
@@ -16,12 +15,7 @@ class InternalPersonalDataInteractor {
    * @returns {Promise<PersonalData>}
    */
   static async createOrUpdate(pseudonym, personalData) {
-    const primaryStudy = await UserserviceClient.getPrimaryStudy(pseudonym);
-    return PersonalDataService.createOrUpdate(
-      pseudonym,
-      primaryStudy.name,
-      personalData
-    );
+    return PersonalDataService.createOrUpdate(pseudonym, personalData);
   }
 
   /**

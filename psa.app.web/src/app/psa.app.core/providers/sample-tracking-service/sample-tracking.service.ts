@@ -163,7 +163,7 @@ export class SampleTrackingService {
       date_of_sampling: new Date(), // only relevant information for background
       dummy_sample_id: dummySampleId ? dummySampleId : undefined,
     };
-    return this.putLabResult(this.auth.currentUser.username, sampleID, data);
+    return this.putLabResult(this.auth.getCurrentUsername(), sampleID, data);
   }
 
   requestMaterialForCurrentUser(): Promise<Questionnaire> {
@@ -171,7 +171,7 @@ export class SampleTrackingService {
       .post<Questionnaire>(
         this.apiUrl +
           'probands/' +
-          this.auth.currentUser.username +
+          this.auth.getCurrentUsername() +
           '/needsMaterial',
         {}
       )

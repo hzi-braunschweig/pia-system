@@ -4,31 +4,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import {
-  Component,
-  ElementRef,
-  ChangeDetectorRef,
-  ViewChild,
-  OnInit,
-} from '@angular/core';
-import { SelectionModel } from '@angular/cdk/collections';
-import { MatPaginator } from '@angular/material/paginator';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { AlertService } from '../../../_services/alert.service';
-import { StudiesDataSource } from '../../../_helpers/studies-data-source';
-import { StudiesDatabase } from '../../../_helpers/studies-database';
-import { Router } from '@angular/router';
-import { Studie } from '../../../psa.app.core/models/studie';
-import { JwtHelperService } from '@auth0/angular-jwt';
-import { User } from '../../../psa.app.core/models/user';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Study } from '../../../psa.app.core/models/study';
 import { DialogDeleteComponent } from '../../../_helpers/dialog-delete';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { TranslateService } from '@ngx-translate/core';
-import { Observable } from 'rxjs';
 import { DialogStudyComponent } from 'src/app/dialogs/study-dialog/study-dialog';
-import { ActivatedRoute } from '@angular/router';
 import {
   DialogPopUpComponent,
   DialogPopUpData,
@@ -39,11 +25,13 @@ import {
   DialogDeletePartnerData,
   DialogDeletePartnerResult,
 } from '../../../_helpers/dialog-delete-partner';
-import { MatPaginatorIntl } from '@angular/material/paginator';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
-import { forwardRef } from '@angular/core';
 import { DialogChangeStudyComponent } from 'src/app/dialogs/dialog-change-study/dialog-change-study.component';
+import { AuthenticationManager } from '../../../_services/authentication-manager.service';
+import { MatTableDataSource } from '@angular/material/table';
+import { FormControl } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { isSpecificHttpError } from '../../../psa.app.core/models/specificHttpError';
 
 @Component({
   templateUrl: 'studies.component.html',
@@ -51,164 +39,138 @@ import { HttpErrorResponse } from '@angular/common/http';
   providers: [
     {
       provide: MatPaginatorIntl,
-      useClass: forwardRef(() => MatPaginatorIntlGerman),
+      useClass: MatPaginatorIntlGerman,
     },
   ],
 })
 export class StudiesComponent implements OnInit {
-  @ViewChild('filter', { static: true }) filter: ElementRef;
-  @ViewChild(MatPaginator, { static: true }) _paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
+  @ViewChild(MatPaginator, { static: true })
+  private paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true })
+  private sort: MatSort;
 
-  studies: Studie[];
-  currentRole: string;
-  currentUser: User;
-  pendingDeletionId: string;
-  type: DeletionType;
-  pendingStudyChangeId: string;
+  public currentRole: string;
+  public currentUsername: string;
 
-  displayedColumns = ['name', 'description', 'status', 'access_level', 'view'];
-  studiesDatabase: StudiesDatabase;
-  dataSource: StudiesDataSource | null;
-  selection = new SelectionModel<string>(true, []);
-  currentStudy: string;
+  public displayedColumns = ['name', 'description', 'status', 'view'];
+  public dataSource = new MatTableDataSource<Study>();
+  public isLoading = false;
+  public filterKeyword = new FormControl('');
 
   constructor(
     private questionnaireService: QuestionnaireService,
     private alertService: AlertService,
-    private translate: TranslateService,
     private activatedRoute: ActivatedRoute,
     private authService: AuthService,
     private router: Router,
-    public dialog: MatDialog,
-    private cdr: ChangeDetectorRef
+    private dialog: MatDialog,
+    auth: AuthenticationManager
   ) {
-    this.questionnaireService
-      .getStudies()
-      .then((result: any) => {
-        this.studies = result.studies;
-
-        const jwtHelper: JwtHelperService = new JwtHelperService();
-        this.currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        const tokenPayload = jwtHelper.decodeToken(this.currentUser.token);
-        this.currentRole = tokenPayload.role;
-
-        this.pendingDeletionId =
-          this.activatedRoute.snapshot.queryParamMap.get('pendingDeletionId');
-        this.pendingStudyChangeId =
-          this.activatedRoute.snapshot.queryParamMap.get(
-            'pendingStudyChangeId'
-          );
-        this.type = this.activatedRoute.snapshot.queryParamMap.get(
-          'type'
-        ) as DeletionType;
-
-        if (this.pendingDeletionId && this.type === 'study') {
-          this.authService
-            .getPendingDeletion(this.pendingDeletionId)
-            .then((pendingDeletion: any) => {
-              if (pendingDeletion.requested_for && pendingDeletion.for_id) {
-                this.openDialogDeletePartner(
-                  pendingDeletion.for_id,
-                  this.type,
-                  pendingDeletion.requested_by,
-                  pendingDeletion.id
-                );
-              }
-            })
-            .catch((err: HttpErrorResponse) => {
-              if (
-                err.error.message ===
-                'The requester is not allowed to get this pending deletion'
-              ) {
-                this.showResultDialog({
-                  content: 'PROBANDEN.PENDING_DELETE_ERROR',
-                  isSuccess: false,
-                });
-              } else if (
-                err.error.message === 'The pending deletion was not found'
-              ) {
-                this.showResultDialog({
-                  content: 'PROBANDEN.PENDING_DELETION_NOT_FOUND',
-                  isSuccess: false,
-                });
-              } else if (
-                err.error.message ===
-                'Could not get the pending deletion: Unknown or wrong role'
-              ) {
-                this.showResultDialog({
-                  content: 'PROBANDEN.PENDING_DELETION_WRONG_ROLE',
-                  isSuccess: false,
-                });
-              } else {
-                this.alertService.errorObject(err);
-              }
-            });
-        }
-
-        if (this.pendingStudyChangeId) {
-          const correspondingStudy = this.studies.find(
-            (study) =>
-              study.pendingStudyChange &&
-              study.pendingStudyChange.id === this.pendingStudyChangeId
-          );
-
-          if (
-            correspondingStudy &&
-            correspondingStudy.pendingStudyChange &&
-            correspondingStudy.pendingStudyChange.requested_for ===
-              this.currentUser.username
-          ) {
-            this.openDialogChangeStudy(correspondingStudy);
-          }
-        }
-      })
-      .catch((err: any) => {
-        this.alertService.errorObject(err);
-      });
-  }
-
-  ngOnInit(): void {
-    this.initTable();
-    Observable.fromEvent(this.filter.nativeElement, 'keyup')
-      .debounceTime(150)
-      .distinctUntilChanged()
-      .subscribe(() => {
-        if (!this.dataSource) {
-          return;
-        }
-        this.dataSource.filter = this.filter.nativeElement.value;
-      });
-  }
-
-  initTable(): void {
-    this.studiesDatabase = new StudiesDatabase(
-      this.questionnaireService,
-      this.translate,
-      this.alertService,
-      this.currentRole === 'Untersuchungsteam'
+    this.currentUsername = auth.getCurrentUsername();
+    this.currentRole = auth.getCurrentRole();
+    this.filterKeyword.valueChanges.subscribe(
+      (value) => (this.dataSource.filter = value.trim().toLowerCase())
     );
-    this.dataSource = new StudiesDataSource(
-      this.studiesDatabase,
-      this._paginator,
-      this.sort,
-      this.translate
-    );
-    this.cdr.detectChanges();
   }
 
-  filterSelectMethod(): void {
-    if (!this.dataSource) {
+  public async ngOnInit(): Promise<void> {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+    await this.initTable();
+    await this.getAndOpenPendingDeletion();
+    this.getAndOpenPendingChange();
+  }
+
+  private async getAndOpenPendingDeletion(): Promise<void> {
+    const pendingDeletionId = Number(
+      this.activatedRoute.snapshot.queryParamMap.get('pendingDeletionId')
+    );
+    const type = this.activatedRoute.snapshot.queryParamMap.get(
+      'type'
+    ) as DeletionType;
+
+    if (!pendingDeletionId || type !== 'study') {
       return;
     }
-    this.dataSource.filter = this.currentStudy;
+    try {
+      const pendingDeletion = await this.authService.getPendingDeletion(
+        pendingDeletionId
+      );
+      this.openDialogDeletePartner(
+        pendingDeletion.for_id,
+        type,
+        pendingDeletion.requested_by,
+        pendingDeletion.id
+      );
+    } catch (err) {
+      if (!(err instanceof HttpErrorResponse)) {
+        this.alertService.errorObject(err);
+      } else if (
+        err.error.message ===
+        'The requester is not allowed to get this pending deletion'
+      ) {
+        this.showResultDialog({
+          content: 'PROBANDEN.PENDING_DELETE_ERROR',
+          isSuccess: false,
+        });
+      } else if (err.error.message === 'The pending deletion was not found') {
+        this.showResultDialog({
+          content: 'PROBANDEN.PENDING_DELETION_NOT_FOUND',
+          isSuccess: false,
+        });
+      } else if (
+        err.error.message ===
+        'Could not get the pending deletion: Unknown or wrong role'
+      ) {
+        this.showResultDialog({
+          content: 'PROBANDEN.PENDING_DELETION_WRONG_ROLE',
+          isSuccess: false,
+        });
+      } else {
+        this.alertService.errorObject(err);
+      }
+    }
+  }
+
+  private getAndOpenPendingChange(): void {
+    const pendingStudyChangeId = Number(
+      this.activatedRoute.snapshot.queryParamMap.get('pendingStudyChangeId')
+    );
+    if (pendingStudyChangeId) {
+      const correspondingStudy = this.dataSource.data.find(
+        (study) =>
+          study.pendingStudyChange &&
+          study.pendingStudyChange.id === pendingStudyChangeId
+      );
+
+      if (
+        correspondingStudy &&
+        correspondingStudy.pendingStudyChange &&
+        correspondingStudy.pendingStudyChange.requested_for ===
+          this.currentUsername
+      ) {
+        this.openDialogChangeStudy(correspondingStudy);
+      }
+    }
+  }
+
+  private async initTable(): Promise<void> {
+    this.isLoading = true;
+    this.dataSource.data = [];
+    try {
+      const { studies } = await this.questionnaireService.getStudies();
+      this.dataSource.data = studies;
+    } catch (err) {
+      this.alertService.errorObject(err);
+    }
+    this.isLoading = false;
   }
 
   viewAllUsersInStudy(name: string): void {
     this.router.navigate(['/studies', name, 'users']);
   }
 
-  addOrEditStudy(studyName: string): void {
+  addOrEditStudy(studyName?: string): void {
     const dialogRef = this.dialog.open(DialogStudyComponent, {
       width: '500px',
       data: { name: studyName },
@@ -221,7 +183,7 @@ export class StudiesComponent implements OnInit {
     });
   }
 
-  openDialogChangeStudy(study: Studie): void {
+  openDialogChangeStudy(study: Study): void {
     const dialogRef = this.dialog.open(DialogChangeStudyComponent, {
       width: study.pendingStudyChange ? '1100px' : '700px',
       height: 'auto',
@@ -248,14 +210,10 @@ export class StudiesComponent implements OnInit {
         };
         this.showResultDialog(data);
       } else if (result) {
-        if (result.error) {
-          this.showResultDialog({
-            content: result.error.message,
-            isSuccess: false,
-          });
-        } else {
-          this.showResultDialog(result);
-        }
+        this.showResultDialog({
+          content: this.getErrorMessage(result),
+          isSuccess: false,
+        });
       }
       this.initTable();
     });
@@ -278,7 +236,7 @@ export class StudiesComponent implements OnInit {
     studyName: string,
     type: DeletionType,
     usernameSysAdmin?: string,
-    pendingdeletionId?: string
+    pendingdeletionId?: number
   ): void {
     const dialogData: DialogDeletePartnerData = {
       usernames: {
@@ -352,8 +310,8 @@ export class StudiesComponent implements OnInit {
               };
               break;
           }
-          this.showResultDialog(data);
         }
+        this.showResultDialog(data);
       }
       this.router.navigate(['/studies']);
     });
@@ -364,5 +322,23 @@ export class StudiesComponent implements OnInit {
       width: '300px',
       data,
     });
+  }
+
+  private getErrorMessage(err: unknown): string {
+    if (!isSpecificHttpError(err)) {
+      return 'ERROR.ERROR_UNKNOWN';
+    }
+    switch (err.error.errorCode) {
+      case 'MISSING_PERMISSION':
+        return 'STUDIES.MISSING_PERMISSION';
+      case '4_EYE_OPPOSITION.PENDING_CHANGE_ALREADY_EXISTS':
+        return 'STUDIES.PENDING_CHANGE_ALREADY_EXISTS';
+      case '4_EYE_OPPOSITION.REQUESTED_FOR_NOT_REACHED':
+        return 'STUDIES.REQUESTED_FOR_NOT_REACHED';
+      case 'STUDY.INVALID_PSEUDONYM_PREFIX':
+        return 'STUDIES.INVALID_PSEUDONYM_PREFIX';
+      default:
+        return 'ERROR.ERROR_UNKNOWN';
+    }
   }
 }

@@ -155,7 +155,7 @@
             mat-icon-button
             (click)="openDeleteSampleDialog(row.id, 'sample')"
             matTooltip="{{ 'SAMPLES.DELETE_SAMPLE' | translate }}"
-            [disabled]="row.study_status !== 'STUDIES.STATUS_ACTIV'"
+            [disabled]="row.study_status !== 'STUDIES.STATUS_ACTIVE'"
             *ngIf="!row.pendingDeletionObject"
           >
             <mat-icon>delete</mat-icon>

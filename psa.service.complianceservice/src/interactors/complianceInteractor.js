@@ -8,11 +8,10 @@ const Boom = require('@hapi/boom');
 const complianceRepository = require('../repositories/complianceRepository');
 const complianceService = require('../services/complianceService');
 const templatePipelineService = require('../services/pdfGeneratorService');
-const { config } = require('../config');
-const sormasserviceClient = require('../clients/sormasserviceClient');
-const userserviceClient = require('../clients/userserviceClient');
+const { userserviceClient } = require('../clients/userserviceClient');
 const transactionWrapper = require('../lib/transactionWrapper');
 const complianceMapper = require('../services/complianceMapper');
+const { messageQueueService } = require('../services/messageQueueService');
 
 class ComplianceInteractor {
   /**
@@ -84,7 +83,7 @@ class ComplianceInteractor {
     }
     try {
       return await templatePipelineService.createPdf(
-        request.i18n,
+        request.plugins.i18n,
         complianceAgree
       );
     } catch (e) {
@@ -122,7 +121,7 @@ class ComplianceInteractor {
 
     try {
       return await templatePipelineService.createPdf(
-        request.i18n,
+        request.plugins.i18n,
         complianceAgree
       );
     } catch (e) {
@@ -176,18 +175,7 @@ class ComplianceInteractor {
           additionalData,
           { transaction: t }
         );
-        request.log(
-          ['info', 'sormas'],
-          'Checking if compliance must be reported to another system...'
-        );
-        if (config.isSormasActive) {
-          request.log(['info', 'sormas'], 'Reporting to SORMAS.');
-          const ids = await userserviceClient.lookupIds(userId);
-          if (!ids) {
-            request.log(['warning', 'sormas'], 'Unable to get ids for user');
-          }
-          await sormasserviceClient.setStatus(ids, 'ACCEPTED');
-        }
+        await messageQueueService.sendComplianceCreate(userId);
       })
       .catch((e) => {
         request.log('error', e.stack + JSON.stringify(e, null, 2));

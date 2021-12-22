@@ -7,6 +7,7 @@
 import { TemplateSegment } from './Segments';
 
 export interface ComplianceAgreement {
+  id: number;
   ids: string;
   username: string;
   study: string;

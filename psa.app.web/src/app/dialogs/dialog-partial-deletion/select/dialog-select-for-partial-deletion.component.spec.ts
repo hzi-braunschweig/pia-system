@@ -20,7 +20,7 @@ import {
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
 import { LabResult } from '../../../psa.app.core/models/labresult';
 import { SampleTrackingService } from '../../../psa.app.core/providers/sample-tracking-service/sample-tracking.service';
-import { UserWithSameRole } from '../../../psa.app.core/models/user';
+import { ProfessionalUser } from '../../../psa.app.core/models/user';
 import createSpyObj = jasmine.createSpyObj;
 import SpyObj = jasmine.SpyObj;
 import Spy = jasmine.Spy;
@@ -77,11 +77,11 @@ describe('DialogSelectForPartialDeletionComponent', () => {
     labResult.status = 'analyzed';
     sampleTrackingService.getAllLabResultsForUser.and.resolveTo([labResult]);
 
-    const u1 = mock<UserWithSameRole>();
-    const u2 = mock<UserWithSameRole>();
+    const u1 = mock<ProfessionalUser>();
+    const u2 = mock<ProfessionalUser>();
     u1.username = 'researcher@example.com';
     u2.username = 'researcherWithoutMail';
-    const resU = { users: [u1, u2] };
+    const resU = [u1, u2];
     authService.getUsersWithSameRole.and.resolveTo(resU);
 
     // Create component
@@ -178,13 +178,11 @@ describe('DialogSelectForPartialDeletionComponent', () => {
   });
   describe('submit', () => {
     it('should close validate and not close the dialog if not valid', async () => {
-      component.form.get('deleteLogs').setValue(true);
       component.form.get('userForApprove').setValue('researcherexamplecom');
       component.submit();
       expect(dialogRef.close).toHaveBeenCalledTimes(0);
     });
     it('should close validate and close the dialog', async () => {
-      component.form.get('deleteLogs').setValue(true);
       component.form.get('userForApprove').setValue('researcher@example.com');
       component.form
         .get('questionnaires')

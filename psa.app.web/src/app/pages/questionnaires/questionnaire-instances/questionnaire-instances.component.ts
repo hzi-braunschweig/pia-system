@@ -5,34 +5,32 @@
  */
 
 import {
-  Component,
-  ElementRef,
-  ViewChild,
-  Directive,
   AfterViewInit,
+  Component,
+  Directive,
+  ElementRef,
   Input,
   OnInit,
+  ViewChild,
 } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../../_services/alert.service';
 import { QuestionnaireInstancesOneUserDataSource } from '../../../_helpers/questionnaire-instances-for-one-user-data-source';
 import { QuestionnaireInsancesOneUserDatabase } from '../../../_helpers/questionnaire-instances-for-one-user-database';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { JwtHelperService } from '@auth0/angular-jwt';
-import { User } from '../../../psa.app.core/models/user';
-import { MatPaginatorIntl } from '@angular/material/paginator';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
-import { forwardRef } from '@angular/core';
-import { Observable } from 'rxjs';
+import { fromEvent } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 import {
   QuestionnaireInstance,
   QuestionnaireStatus,
 } from '../../../psa.app.core/models/questionnaireInstance';
 import { HttpErrorResponse } from '@angular/common/http';
+import { AuthenticationManager } from '../../../_services/authentication-manager.service';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   templateUrl: 'questionnaire-instances.component.html',
@@ -40,7 +38,7 @@ import { HttpErrorResponse } from '@angular/common/http';
   providers: [
     {
       provide: MatPaginatorIntl,
-      useClass: forwardRef(() => MatPaginatorIntlGerman),
+      useClass: MatPaginatorIntlGerman,
     },
   ],
 })
@@ -54,13 +52,10 @@ export class QuestionnaireInstancesComponent implements OnInit {
     private alertService: AlertService,
     private _location: Location,
     private translate: TranslateService,
-    private router: Router
+    private router: Router,
+    auth: AuthenticationManager
   ) {
-    const jwtHelper: JwtHelperService = new JwtHelperService();
-    const currentUser: User = JSON.parse(localStorage.getItem('currentUser'));
-    // decode the token to get its payload
-    const tokenPayload = jwtHelper.decodeToken(currentUser.token);
-    this.currentRole = tokenPayload.role;
+    this.currentRole = auth.getCurrentRole();
     if ('username' in this.activatedRoute.snapshot.params) {
       this.username = this.activatedRoute.snapshot.paramMap.get('username');
     }
@@ -104,9 +99,9 @@ export class QuestionnaireInstancesComponent implements OnInit {
         }
       );
 
-    Observable.fromEvent(this.filter.nativeElement, 'keyup')
-      .debounceTime(150)
-      .distinctUntilChanged()
+    fromEvent(this.filter.nativeElement, 'keyup')
+      .pipe(debounceTime(150))
+      .pipe(distinctUntilChanged())
       .subscribe(() => {
         if (!this.dataSource) {
           return;

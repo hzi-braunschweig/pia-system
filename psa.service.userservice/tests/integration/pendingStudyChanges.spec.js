@@ -15,25 +15,31 @@ const secretOrPrivateKey = require('../secretOrPrivateKey');
 
 const { db } = require('../../src/db');
 
-const server = require('../../src/server');
+const { Server } = require('../../src/server');
 const apiAddress = 'http://localhost:' + process.env.PORT + '/user';
-const serverSandbox = sinon.createSandbox();
+const suiteSandbox = sinon.createSandbox();
 
 const testSandbox = sinon.createSandbox();
 const fetch = require('node-fetch');
 const { config } = require('../../src/config');
+const { HttpClient } = require('@pia-system/lib-http-clients-internal');
+const {
+  setup,
+  cleanup,
+} = require('./pendingStudyChanges.spec.data/setup.helper');
+const { MailService } = require('@pia/lib-service-core');
 const loggingserviceUrl = config.services.loggingservice.url;
 
-const probandSession1 = { id: 1, role: 'Proband', username: 'ApiTestProband1' };
+const probandSession1 = { id: 1, role: 'Proband', username: 'QTestProband1' };
 const forscherSession1 = {
   id: 1,
   role: 'Forscher',
-  username: 'forscher1@apitest.de',
+  username: 'forscher1@example.com',
 };
 const forscherSession2 = {
   id: 1,
   role: 'Forscher',
-  username: 'forscher2@apitest.de',
+  username: 'forscher2@example.com',
 };
 const forscherSession3 = {
   id: 1,
@@ -43,22 +49,22 @@ const forscherSession3 = {
 const forscherSession4 = {
   id: 1,
   role: 'Forscher',
-  username: 'forscher4@apitest.de',
+  username: 'forscher4@example.com',
 };
 const utSession1 = {
   id: 1,
   role: 'Untersuchungsteam',
-  username: 'ut1@apitest.de',
+  username: 'ut1@example.com',
 };
 const sysadminSession1 = {
   id: 1,
   role: 'SysAdmin',
-  username: 'sa1@apitest.de',
+  username: 'sa1@example.com',
 };
 const pmSession1 = {
   id: 1,
   role: 'ProbandenManager',
-  username: 'pm1@apitest.de',
+  username: 'pm1@example.com',
 };
 
 const invalidToken = JWT.sign(probandSession1, 'thisIsNotAValidPrivateKey', {
@@ -111,22 +117,23 @@ describe('/pendingStudyChanges', function () {
   let fetchStub;
 
   before(async function () {
-    await server.init();
+    await Server.init();
+    suiteSandbox.stub(MailService, 'sendMail').resolves(true);
   });
 
   after(async function () {
-    await server.stop();
-    serverSandbox.restore();
+    await Server.stop();
+    suiteSandbox.restore();
   });
 
   beforeEach(() => {
-    fetchStub = testSandbox.stub(fetch, 'default');
+    fetchStub = testSandbox.stub(HttpClient, 'fetch');
     fetchStub.callsFake(async (url, options) => {
       console.log(url);
       let body;
       if (
         url === loggingserviceUrl + '/log/systemLogs' &&
-        options.method === 'post'
+        options.method === 'POST'
       ) {
         body = { ...options.body };
         body.timestamp = new Date();
@@ -143,221 +150,16 @@ describe('/pendingStudyChanges', function () {
 
   describe('POST pendingstudychanges', function () {
     beforeEach(async function () {
-      await cleanUp();
-
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ApiTestProband1',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Proband',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ApiTestProband2',
-          '8225433d40a33c8cad99d05697c599f5aad03bbf7f74a87a0a19dc5f01cd831fd73efc5ab4a8bc37ad994ad05bd5390821fc7a23d3cf7f9a1ac0e0472a7dce0e',
-          'Proband',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ApiTestProband3',
-          '8225433d40a33c8cad99d05697c599f5aad03bbf7f74a87a0a19dc5f01cd831fd73efc5ab4a8bc37ad994ad05bd5390821fc7a23d3cf7f9a1ac0e0472a7dce0e',
-          'Proband',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'forscher1@apitest.de',
-          '9dd01c80bb400e844cba017d2c1a70ac4a13f890fd39d19cbe0b05a9b6cc5805c9b1e8003d41123144db039df6cb9ad1383d3a387a55776105c89c94c92c5e45',
-          'Forscher',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'forscher2@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Forscher',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'forscherNoEmail',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Forscher',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'forscher4@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Forscher',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ut1@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Untersuchungsteam',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ut2@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Untersuchungsteam',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'pm1@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'ProbandenManager',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'pm2@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'ProbandenManager',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'sa1@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'SysAdmin',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'sa2@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'SysAdmin',
-        ],
-      ]);
-      await db.none(
-        'INSERT INTO studies(name, description, has_logging_opt_in) VALUES ($1:csv)',
-        [['ApiTestStudie1', 'ApiTestStudie1 Beschreibung', false]]
-      );
-      await db.none(
-        'INSERT INTO studies(name, description, has_logging_opt_in) VALUES ($1:csv)',
-        [['ApiTestStudie2', 'ApiTestStudie2 Beschreibung]', false]]
-      );
-      await db.none(
-        'INSERT INTO studies(name, description, has_logging_opt_in) VALUES ($1:csv)',
-        [['ApiTestMultiProband', 'ApiTestMultiProband Beschreibung]', false]]
-      );
-      await db.none(
-        'INSERT INTO studies(name, description, has_logging_opt_in) VALUES ($1:csv)',
-        [['ApiTestMultiProf', 'ApiTestMultiProf Beschreibung]', false]]
-      );
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'ApiTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'ApiTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'ApiTestProband3', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'forscher1@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'forscher1@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'forscher2@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'forscher2@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'forscherNoEmail', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'ut1@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'ut2@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'pm1@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'pm2@apitest.de', 'write'],
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'ApiTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'ApiTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'ApiTestProband3', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'ut1@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'ut2@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'forscher1@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'forscher2@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'forscherNoEmail', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'forscher4@apitest.de', 'write'],
-      ]);
-
-      await db.none(
-        "INSERT INTO pending_study_changes(id, requested_by, requested_for, study_id, description_from, description_to, has_rna_samples_from, has_rna_samples_to, sample_prefix_from, sample_prefix_to, sample_suffix_length_from, sample_suffix_length_to, has_answers_notify_feature_from, has_answers_notify_feature_to, has_answers_notify_feature_by_mail_from, has_answers_notify_feature_by_mail_to, has_four_eyes_opposition_from, has_four_eyes_opposition_to, has_partial_opposition_from, has_partial_opposition_to, has_total_opposition_from, has_total_opposition_to, has_compliance_opposition_from, has_compliance_opposition_to, has_logging_opt_in_from, has_logging_opt_in_to)VALUES(1234560, 'forscher1@apitest.de', 'forscher2@apitest.de', 'ApiTestStudie2', 'ApiTestStudie2 Beschreibung', 'DescriptionChange', FALSE, TRUE, NULL, NULL, 0, 0, FALSE, TRUE, FALSE, TRUE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE, TRUE)"
-      );
+      await setup();
     });
 
     afterEach(async function () {
-      await cleanUp();
+      await cleanup();
     });
 
-    async function cleanUp() {
-      await db.none('DELETE FROM users WHERE username IN ($1:csv)', [
-        [
-          'ApiTestProband1',
-          'ApiTestProband2',
-          'ApiTestProband3',
-          'forscher1@apitest.de',
-          'forscher2@apitest.de',
-          'forscherNoEmail',
-          'forscher4@apitest.de',
-          'ut1@apitest.de',
-          'ut2@apitest.de',
-          'pm1@apitest.de',
-          'pm2@apitest.de',
-          'sa1@apitest.de',
-          'sa2@apitest.de',
-        ],
-      ]);
-      await db.none('DELETE FROM studies WHERE name IN($1:csv)', [
-        [
-          'ApiTestStudie1',
-          'ApiTestStudie2',
-          'ApiTestMultiProband',
-          'ApiTestMultiProf',
-        ],
-      ]);
-    }
-
     const pDValid1 = {
-      requested_for: 'forscher2@apitest.de',
-      study_id: 'ApiTestStudie1',
+      requested_for: 'forscher2@example.com',
+      study_id: 'QTestStudie2',
       description_to: 'DescriptionChange',
       has_rna_samples_to: true,
       sample_prefix_to: 'PREFIX_EDIT',
@@ -374,8 +176,8 @@ describe('/pendingStudyChanges', function () {
     };
 
     const pDValid2 = {
-      requested_for: 'forscher2@apitest.de',
-      study_id: 'ApiTestMultiProf',
+      requested_for: 'forscher2@example.com',
+      study_id: 'QTestStudie3',
       description_to: 'DescriptionChange',
       has_rna_samples_to: true,
       sample_prefix_to: 'PREFIX_EDIT',
@@ -392,8 +194,8 @@ describe('/pendingStudyChanges', function () {
     };
 
     const pDValid3 = {
-      requested_for: 'forscher2@apitest.de',
-      study_id: 'ApiTestStudie1',
+      requested_for: 'forscher2@example.com',
+      study_id: 'QTestStudie2',
       description_to: null,
       sample_prefix_to: null,
       sample_suffix_length_to: null,
@@ -403,7 +205,7 @@ describe('/pendingStudyChanges', function () {
 
     const pDwrongFor = {
       requested_for: 'nonexisting@forscher.de',
-      study_id: 'ApiTestStudie1',
+      study_id: 'QTestStudie2',
       description_to: 'DescriptionChange',
       has_rna_samples_to: true,
       sample_prefix_to: 'PREFIX_EDIT',
@@ -419,7 +221,7 @@ describe('/pendingStudyChanges', function () {
     };
 
     const pDwrongStudy = {
-      requested_for: 'forscher2@apitest.de',
+      requested_for: 'forscher2@example.com',
       study_id: 'NonexistingStudy',
       description_to: 'DescriptionChange',
       has_rna_samples_to: true,
@@ -437,7 +239,7 @@ describe('/pendingStudyChanges', function () {
 
     const pDNoEmailFor = {
       requested_for: 'forscherNoEmail',
-      study_id: 'ApiTestStudie1',
+      study_id: 'QTestStudie2',
       description_to: 'DescriptionChange',
       has_rna_samples_to: true,
       sample_prefix_to: 'PREFIX_EDIT',
@@ -453,8 +255,8 @@ describe('/pendingStudyChanges', function () {
     };
 
     const pDWrongStudyForscher = {
-      requested_for: 'forscher4@apitest.de',
-      study_id: 'ApiTestStudie1',
+      requested_for: 'forscher4@example.com',
+      study_id: 'QTestStudie2',
       description_to: 'DescriptionChange',
       has_rna_samples_to: true,
       sample_prefix_to: 'PREFIX_EDIT',
@@ -470,8 +272,8 @@ describe('/pendingStudyChanges', function () {
     };
 
     const pDWrongAccessToStudyForscher = {
-      requested_for: 'forscher4@apitest.de',
-      study_id: 'ApiTestMultiProf',
+      requested_for: 'forscher4@example.com',
+      study_id: 'QTestStudie3',
       description_to: 'DescriptionChange',
       has_rna_samples_to: true,
       sample_prefix_to: 'PREFIX_EDIT',
@@ -487,8 +289,8 @@ describe('/pendingStudyChanges', function () {
     };
 
     const pDConflictStudy = {
-      requested_for: 'forscher2@apitest.de',
-      study_id: 'ApiTestStudie2',
+      requested_for: 'forscher2@example.com',
+      study_id: 'QTestStudie1',
       description_to: 'DescriptionChange',
       has_rna_samples_to: true,
       sample_prefix_to: 'PREFIX_EDIT',
@@ -509,7 +311,7 @@ describe('/pendingStudyChanges', function () {
         .post('/pendingstudychanges')
         .set(invalidHeader)
         .send(pDValid1);
-      expect(result).to.have.status(401);
+      expect(result, result.text).to.have.status(401);
     });
 
     it('should return HTTP 403 when a proband tries', async function () {
@@ -518,7 +320,7 @@ describe('/pendingStudyChanges', function () {
         .post('/pendingstudychanges')
         .set(probandHeader1)
         .send(pDValid1);
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 403 when a PM tries', async function () {
@@ -527,7 +329,7 @@ describe('/pendingStudyChanges', function () {
         .post('/pendingstudychanges')
         .set(pmHeader1)
         .send(pDValid1);
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 403 when a ut tries', async function () {
@@ -536,7 +338,7 @@ describe('/pendingStudyChanges', function () {
         .post('/pendingstudychanges')
         .set(utHeader1)
         .send(pDValid1);
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 403 when a sysadmin tries', async function () {
@@ -545,7 +347,7 @@ describe('/pendingStudyChanges', function () {
         .post('/pendingstudychanges')
         .set(sysadminHeader1)
         .send(pDValid1);
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 422 when a forscher tries for himself', async function () {
@@ -554,36 +356,36 @@ describe('/pendingStudyChanges', function () {
         .post('/pendingstudychanges')
         .set(forscherHeader2)
         .send(pDValid1);
-      expect(result).to.have.status(422);
+      expect(result, result.text).to.have.status(422);
     });
 
-    it('should return HTTP 422 when a forscher from wrong study tries', async function () {
+    it('should return HTTP 403 when a forscher from wrong study tries', async function () {
       const result = await chai
         .request(apiAddress)
         .post('/pendingstudychanges')
         .set(forscherHeader4)
         .send(pDValid1);
-      expect(result).to.have.status(422);
+      expect(result, result.text).to.have.status(403);
     });
 
-    it('should return HTTP 422 when a forscher with wrong study access tries', async function () {
+    it('should return HTTP 403 when a forscher with wrong study access tries', async function () {
       const result = await chai
         .request(apiAddress)
         .post('/pendingstudychanges')
         .set(forscherHeader4)
         .send(pDValid2);
-      expect(result).to.have.status(422);
+      expect(result, result.text).to.have.status(403);
     });
 
-    it('should return HTTP 422 when requested_for is no email address and not create pending compliance change object', async function () {
+    it('should return HTTP 400 when requested_for is no email address and not create pending compliance change object', async function () {
       const result = await chai
         .request(apiAddress)
         .post('/pendingstudychanges')
         .set(forscherHeader1)
         .send(pDNoEmailFor);
-      expect(result).to.have.status(422);
+      expect(result, result.text).to.have.status(400);
       db.oneOrNone('SELECT * FROM pending_study_changes WHERE study_id=$1', [
-        'ApiTestMultiProf',
+        'QTestStudie3',
       ]).then((cc) => {
         expect(cc).to.equal(null);
       });
@@ -595,7 +397,7 @@ describe('/pendingStudyChanges', function () {
         .post('/pendingstudychanges')
         .set(forscherHeader1)
         .send(pDWrongStudyForscher);
-      expect(result).to.have.status(422);
+      expect(result, result.text).to.have.status(422);
     });
 
     it('should return HTTP 422 when requested_for has wrong study access', async function () {
@@ -604,25 +406,25 @@ describe('/pendingStudyChanges', function () {
         .post('/pendingstudychanges')
         .set(forscherHeader1)
         .send(pDWrongAccessToStudyForscher);
-      expect(result).to.have.status(422);
+      expect(result, result.text).to.have.status(422);
     });
 
-    it('should return HTTP 422 when target study is nonexisting', async function () {
+    it('should return HTTP 403 when target study is nonexisting', async function () {
       const result = await chai
         .request(apiAddress)
         .post('/pendingstudychanges')
         .set(forscherHeader1)
         .send(pDwrongStudy);
-      expect(result).to.have.status(422);
+      expect(result, result.text).to.have.status(403);
     });
 
-    it('should return HTTP 422 when target forscher is nonexisting', async function () {
+    it('should return HTTP 404 when target forscher is nonexisting', async function () {
       const result = await chai
         .request(apiAddress)
         .post('/pendingstudychanges')
         .set(forscherHeader1)
         .send(pDwrongFor);
-      expect(result).to.have.status(422);
+      expect(result, result.text).to.have.status(404);
     });
 
     it('should return HTTP 422 when pseudonym prefix does not exist in mapping', async function () {
@@ -632,16 +434,16 @@ describe('/pendingStudyChanges', function () {
         .post('/pendingstudychanges')
         .set(forscherHeader1)
         .send(pDValid2);
-      expect(result).to.have.status(422);
+      expect(result, result.text).to.have.status(422);
     });
 
-    it('should return HTTP 403 when targeted study has a change request already', async function () {
+    it('should return HTTP 409 when targeted study has a change request already', async function () {
       const result = await chai
         .request(apiAddress)
         .post('/pendingstudychanges')
         .set(forscherHeader1)
         .send(pDConflictStudy);
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(409);
     });
 
     it('should return HTTP 200 and create pending compliance change', async function () {
@@ -650,10 +452,10 @@ describe('/pendingStudyChanges', function () {
         .post('/pendingstudychanges')
         .set(forscherHeader1)
         .send(pDValid1);
-      expect(result).to.have.status(200);
-      expect(result.body.requested_by).to.equal('forscher1@apitest.de');
-      expect(result.body.requested_for).to.equal('forscher2@apitest.de');
-      expect(result.body.study_id).to.equal('ApiTestStudie1');
+      expect(result, result.text).to.have.status(200);
+      expect(result.body.requested_by).to.equal('forscher1@example.com');
+      expect(result.body.requested_for).to.equal('forscher2@example.com');
+      expect(result.body.study_id).to.equal('QTestStudie2');
 
       expect(result.body.description_to).to.equal('DescriptionChange');
       expect(result.body.has_rna_samples_to).to.equal(true);
@@ -668,7 +470,7 @@ describe('/pendingStudyChanges', function () {
       expect(result.body.has_logging_opt_in_to).to.equal(true);
 
       expect(result.body.description_from).to.equal(
-        'ApiTestStudie1 Beschreibung'
+        'QTestStudie2 Beschreibung'
       );
       expect(result.body.has_rna_samples_from).to.equal(true);
       expect(result.body.sample_prefix_from).to.equal('ZIFCO');
@@ -690,10 +492,10 @@ describe('/pendingStudyChanges', function () {
         .post('/pendingstudychanges')
         .set(forscherHeader1)
         .send(pDValid3);
-      expect(result).to.have.status(200);
-      expect(result.body.requested_by).to.equal('forscher1@apitest.de');
-      expect(result.body.requested_for).to.equal('forscher2@apitest.de');
-      expect(result.body.study_id).to.equal('ApiTestStudie1');
+      expect(result, result.text).to.have.status(200);
+      expect(result.body.requested_by).to.equal('forscher1@example.com');
+      expect(result.body.requested_for).to.equal('forscher2@example.com');
+      expect(result.body.study_id).to.equal('QTestStudie2');
 
       expect(result.body.description_to).to.equal(null);
       expect(result.body.has_rna_samples_to).to.equal(true);
@@ -708,7 +510,7 @@ describe('/pendingStudyChanges', function () {
       expect(result.body.has_logging_opt_in_to).to.equal(false);
 
       expect(result.body.description_from).to.equal(
-        'ApiTestStudie1 Beschreibung'
+        'QTestStudie2 Beschreibung'
       );
       expect(result.body.has_rna_samples_from).to.equal(true);
       expect(result.body.sample_prefix_from).to.equal('ZIFCO');
@@ -727,217 +529,12 @@ describe('/pendingStudyChanges', function () {
 
   describe('PUT pendingstudychanges/id', function () {
     beforeEach(async function () {
-      await cleanUp();
-
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ApiTestProband1',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Proband',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ApiTestProband2',
-          '8225433d40a33c8cad99d05697c599f5aad03bbf7f74a87a0a19dc5f01cd831fd73efc5ab4a8bc37ad994ad05bd5390821fc7a23d3cf7f9a1ac0e0472a7dce0e',
-          'Proband',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ApiTestProband3',
-          '8225433d40a33c8cad99d05697c599f5aad03bbf7f74a87a0a19dc5f01cd831fd73efc5ab4a8bc37ad994ad05bd5390821fc7a23d3cf7f9a1ac0e0472a7dce0e',
-          'Proband',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'forscher1@apitest.de',
-          '9dd01c80bb400e844cba017d2c1a70ac4a13f890fd39d19cbe0b05a9b6cc5805c9b1e8003d41123144db039df6cb9ad1383d3a387a55776105c89c94c92c5e45',
-          'Forscher',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'forscher2@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Forscher',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'forscherNoEmail',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Forscher',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'forscher4@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Forscher',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ut1@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Untersuchungsteam',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ut2@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Untersuchungsteam',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'pm1@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'ProbandenManager',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'pm2@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'ProbandenManager',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'sa1@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'SysAdmin',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'sa2@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'SysAdmin',
-        ],
-      ]);
-      await db.none(
-        'INSERT INTO studies(name, description, has_logging_opt_in) VALUES ($1:csv)',
-        [['ApiTestStudie1', 'ApiTestStudie1 Beschreibung', false]]
-      );
-      await db.none(
-        'INSERT INTO studies(name, description, has_logging_opt_in) VALUES ($1:csv)',
-        [['ApiTestStudie2', 'ApiTestStudie2 Beschreibung]', false]]
-      );
-      await db.none(
-        'INSERT INTO studies(name, description, has_logging_opt_in) VALUES ($1:csv)',
-        [['ApiTestMultiProband', 'ApiTestMultiProband Beschreibung]', false]]
-      );
-      await db.none(
-        'INSERT INTO studies(name, description, has_logging_opt_in) VALUES ($1:csv)',
-        [['ApiTestMultiProf', 'ApiTestMultiProf Beschreibung]', false]]
-      );
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'ApiTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'ApiTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'ApiTestProband3', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'forscher1@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'forscher1@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'forscher2@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'forscher2@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'forscherNoEmail', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'ut1@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'ut2@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'pm1@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'pm2@apitest.de', 'write'],
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'ApiTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'ApiTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'ApiTestProband3', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'ut1@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'ut2@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'forscher1@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'forscher2@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'forscherNoEmail', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'forscher4@apitest.de', 'write'],
-      ]);
-
-      await db.none(
-        "INSERT INTO pending_study_changes(id, requested_by, requested_for, study_id, description_from, description_to, has_rna_samples_from, has_rna_samples_to, sample_prefix_from, sample_prefix_to, sample_suffix_length_from, sample_suffix_length_to, has_answers_notify_feature_from, has_answers_notify_feature_to, has_answers_notify_feature_by_mail_from, has_answers_notify_feature_by_mail_to, has_four_eyes_opposition_from, has_four_eyes_opposition_to, has_partial_opposition_from, has_partial_opposition_to, has_total_opposition_from, has_total_opposition_to, has_compliance_opposition_from, has_compliance_opposition_to, has_logging_opt_in_from, has_logging_opt_in_to)VALUES(1234560, 'forscher1@apitest.de', 'forscher2@apitest.de', 'ApiTestStudie1', 'ApiTestStudie1 Beschreibung', 'DescriptionChange', FALSE, TRUE, NULL, NULL, 0, 0, FALSE, TRUE, FALSE, TRUE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE, TRUE)"
-      );
+      await setup();
     });
 
     afterEach(async function () {
-      await cleanUp();
+      await cleanup();
     });
-
-    async function cleanUp() {
-      await db.none('DELETE FROM users WHERE username IN ($1:csv)', [
-        [
-          'ApiTestProband1',
-          'ApiTestProband2',
-          'ApiTestProband3',
-          'forscher1@apitest.de',
-          'forscher2@apitest.de',
-          'forscherNoEmail',
-          'forscher4@apitest.de',
-          'ut1@apitest.de',
-          'ut2@apitest.de',
-          'pm1@apitest.de',
-          'pm2@apitest.de',
-          'sa1@apitest.de',
-          'sa2@apitest.de',
-        ],
-      ]);
-      await db.none('DELETE FROM studies WHERE name IN($1:csv)', [
-        [
-          'ApiTestStudie1',
-          'ApiTestStudie2',
-          'ApiTestMultiProband',
-          'ApiTestMultiProf',
-        ],
-      ]);
-    }
 
     it('should return HTTP 401 when the token is wrong', async function () {
       const result = await chai
@@ -945,7 +542,7 @@ describe('/pendingStudyChanges', function () {
         .put('/pendingstudychanges/1234560')
         .set(invalidHeader)
         .send({});
-      expect(result).to.have.status(401);
+      expect(result, result.text).to.have.status(401);
     });
 
     it('should return HTTP 403 when a proband tries', async function () {
@@ -954,7 +551,7 @@ describe('/pendingStudyChanges', function () {
         .put('/pendingstudychanges/1234560')
         .set(probandHeader1)
         .send({});
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 403 when a PM tries', async function () {
@@ -963,7 +560,7 @@ describe('/pendingStudyChanges', function () {
         .put('/pendingstudychanges/1234560')
         .set(pmHeader1)
         .send({});
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 403 when a ut tries', async function () {
@@ -972,7 +569,7 @@ describe('/pendingStudyChanges', function () {
         .put('/pendingstudychanges/1234560')
         .set(utHeader1)
         .send({});
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 403 sysadmin tries', async function () {
@@ -981,7 +578,7 @@ describe('/pendingStudyChanges', function () {
         .put('/pendingstudychanges/1234560')
         .set(sysadminHeader1)
         .send({});
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 403 when requested_by forscher tries', async function () {
@@ -990,7 +587,7 @@ describe('/pendingStudyChanges', function () {
         .put('/pendingstudychanges/1234560')
         .set(forscherHeader1)
         .send({});
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 403 wrong forscher tries', async function () {
@@ -999,7 +596,7 @@ describe('/pendingStudyChanges', function () {
         .put('/pendingstudychanges/1234560')
         .set(forscherHeader3)
         .send({});
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 200 and change study data and post deletion log', async function () {
@@ -1008,10 +605,10 @@ describe('/pendingStudyChanges', function () {
         .put('/pendingstudychanges/1234560')
         .set(forscherHeader2)
         .send({});
-      expect(result).to.have.status(200);
+      expect(result, result.text).to.have.status(200);
 
       const study = await db.one('SELECT * FROM studies WHERE name=$1', [
-        'ApiTestStudie1',
+        'QTestStudie1',
       ]);
       expect(fetchStub.calledOnce).to.be.true;
 
@@ -1031,218 +628,12 @@ describe('/pendingStudyChanges', function () {
 
   describe('DELETE pendingstudychanges/id', function () {
     beforeEach(async function () {
-      await cleanUp();
-
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ApiTestProband1',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Proband',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ApiTestProband2',
-          '8225433d40a33c8cad99d05697c599f5aad03bbf7f74a87a0a19dc5f01cd831fd73efc5ab4a8bc37ad994ad05bd5390821fc7a23d3cf7f9a1ac0e0472a7dce0e',
-          'Proband',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ApiTestProband3',
-          '8225433d40a33c8cad99d05697c599f5aad03bbf7f74a87a0a19dc5f01cd831fd73efc5ab4a8bc37ad994ad05bd5390821fc7a23d3cf7f9a1ac0e0472a7dce0e',
-          'Proband',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'forscher1@apitest.de',
-          '9dd01c80bb400e844cba017d2c1a70ac4a13f890fd39d19cbe0b05a9b6cc5805c9b1e8003d41123144db039df6cb9ad1383d3a387a55776105c89c94c92c5e45',
-          'Forscher',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'forscher2@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Forscher',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'forscherNoEmail',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Forscher',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'forscher4@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Forscher',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ut1@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Untersuchungsteam',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'ut2@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'Untersuchungsteam',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'pm1@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'ProbandenManager',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'pm2@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'ProbandenManager',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'sa1@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'SysAdmin',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'sa2@apitest.de',
-          'd72f039889ceb351fee4751d7ede5b1073e480ceebedb9a7f45d5144af05c117ad1ac20619f5a1a63aceaa34fe837bccb43c858274f4b03f355f0982710f9e0b',
-          'SysAdmin',
-        ],
-      ]);
-      await db.none(
-        'INSERT INTO studies(name, description, has_logging_opt_in) VALUES ($1:csv)',
-        [['ApiTestStudie1', 'ApiTestStudie1 Beschreibung', false]]
-      );
-      await db.none(
-        'INSERT INTO studies(name, description, has_logging_opt_in) VALUES ($1:csv)',
-        [['ApiTestStudie2', 'ApiTestStudie2 Beschreibung]', false]]
-      );
-      await db.none(
-        'INSERT INTO studies(name, description, has_logging_opt_in) VALUES ($1:csv)',
-        [['ApiTestMultiProband', 'ApiTestMultiProband Beschreibung]', false]]
-      );
-      await db.none(
-        'INSERT INTO studies(name, description, has_logging_opt_in) VALUES ($1:csv)',
-        [['ApiTestMultiProf', 'ApiTestMultiProf Beschreibung]', false]]
-      );
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'ApiTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'ApiTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'ApiTestProband3', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'forscher1@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'forscher1@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'forscher2@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'forscher2@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'forscherNoEmail', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'ut1@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'ut2@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'pm1@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie1', 'pm2@apitest.de', 'write'],
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'ApiTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'ApiTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'ApiTestProband3', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'ut1@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'ut2@apitest.de', 'write'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'forscher1@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'forscher2@apitest.de', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'forscherNoEmail', 'admin'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'forscher4@apitest.de', 'write'],
-      ]);
-
-      await db.none(
-        'INSERT INTO pending_study_changes(id, requested_by, requested_for, study_id, description_from, description_to, has_rna_samples_from, has_rna_samples_to, sample_prefix_from, sample_prefix_to, sample_suffix_length_from, sample_suffix_length_to, has_answers_notify_feature_from, has_answers_notify_feature_to, has_answers_notify_feature_by_mail_from, has_answers_notify_feature_by_mail_to, has_four_eyes_opposition_from, has_four_eyes_opposition_to, has_partial_opposition_from, has_partial_opposition_to, has_total_opposition_from, has_total_opposition_to, has_compliance_opposition_from, has_compliance_opposition_to, has_logging_opt_in_from, has_logging_opt_in_to) ' +
-          "VALUES(1234560, 'forscher1@apitest.de', 'forscher2@apitest.de', 'ApiTestStudie1', 'ApiTestStudie1 Beschreibung', 'DescriptionChange', false, true, null, null, 0, 0, false, true, false, true, true, false, true, false, true, false, true, false, false, true)"
-      );
+      await setup();
     });
 
     afterEach(async function () {
-      await cleanUp();
+      await cleanup();
     });
-
-    async function cleanUp() {
-      await db.none('DELETE FROM users WHERE username IN ($1:csv)', [
-        [
-          'ApiTestProband1',
-          'ApiTestProband2',
-          'ApiTestProband3',
-          'forscher1@apitest.de',
-          'forscher2@apitest.de',
-          'forscherNoEmail',
-          'forscher4@apitest.de',
-          'ut1@apitest.de',
-          'ut2@apitest.de',
-          'pm1@apitest.de',
-          'pm2@apitest.de',
-          'sa1@apitest.de',
-          'sa2@apitest.de',
-        ],
-      ]);
-      await db.none('DELETE FROM studies WHERE name IN($1:csv)', [
-        [
-          'ApiTestStudie1',
-          'ApiTestStudie2',
-          'ApiTestMultiProband',
-          'ApiTestMultiProf',
-        ],
-      ]);
-    }
 
     it('should return HTTP 401 when the token is wrong', async function () {
       const result = await chai
@@ -1250,7 +641,7 @@ describe('/pendingStudyChanges', function () {
         .delete('/pendingstudychanges/1234560')
         .set(invalidHeader)
         .send({});
-      expect(result).to.have.status(401);
+      expect(result, result.text).to.have.status(401);
     });
 
     it('should return HTTP 403 when a proband tries', async function () {
@@ -1259,7 +650,7 @@ describe('/pendingStudyChanges', function () {
         .delete('/pendingstudychanges/1234560')
         .set(probandHeader1)
         .send({});
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 403 when a pm tries', async function () {
@@ -1268,7 +659,7 @@ describe('/pendingStudyChanges', function () {
         .delete('/pendingstudychanges/1234560')
         .set(pmHeader1)
         .send({});
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 403 when a ut tries', async function () {
@@ -1277,7 +668,7 @@ describe('/pendingStudyChanges', function () {
         .delete('/pendingstudychanges/1234560')
         .set(utHeader1)
         .send({});
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 403 when a sysadmin tries', async function () {
@@ -1286,7 +677,7 @@ describe('/pendingStudyChanges', function () {
         .delete('/pendingstudychanges/1234560')
         .set(sysadminHeader1)
         .send({});
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 403 wrong forscher tries', async function () {
@@ -1295,7 +686,7 @@ describe('/pendingStudyChanges', function () {
         .delete('/pendingstudychanges/1234560')
         .set(forscherHeader3)
         .send({});
-      expect(result).to.have.status(403);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 200 and cancel changing of study data for requested_by forscher', async function () {
@@ -1304,10 +695,10 @@ describe('/pendingStudyChanges', function () {
         .delete('/pendingstudychanges/1234560')
         .set(forscherHeader1)
         .send({});
-      expect(result).to.have.status(200);
+      expect(result, result.text).to.have.status(200);
 
       const study = await db.one('SELECT * FROM studies WHERE name=$1', [
-        'ApiTestStudie1',
+        'QTestStudie1',
       ]);
       const pending_study_change = await db.oneOrNone(
         'SELECT * FROM pending_study_changes WHERE id=$1',
@@ -1316,7 +707,7 @@ describe('/pendingStudyChanges', function () {
 
       expect(pending_study_change).to.equal(null);
 
-      expect(study.description).to.equal('ApiTestStudie1 Beschreibung');
+      expect(study.description).to.equal('QTestStudie1 Beschreibung');
       expect(study.has_rna_samples).to.equal(true);
       expect(study.sample_prefix).to.equal('ZIFCO');
       expect(study.sample_suffix_length).to.equal(10);
@@ -1335,10 +726,10 @@ describe('/pendingStudyChanges', function () {
         .delete('/pendingstudychanges/1234560')
         .set(forscherHeader2)
         .send({});
-      expect(result).to.have.status(200);
+      expect(result, result.text).to.have.status(200);
 
       const study = await db.one('SELECT * FROM studies WHERE name=$1', [
-        'ApiTestStudie1',
+        'QTestStudie1',
       ]);
       const pending_study_change = await db.oneOrNone(
         'SELECT * FROM pending_study_changes WHERE id=$1',
@@ -1347,7 +738,7 @@ describe('/pendingStudyChanges', function () {
 
       expect(pending_study_change).to.equal(null);
 
-      expect(study.description).to.equal('ApiTestStudie1 Beschreibung');
+      expect(study.description).to.equal('QTestStudie1 Beschreibung');
       expect(study.has_rna_samples).to.equal(true);
       expect(study.sample_prefix).to.equal('ZIFCO');
       expect(study.sample_suffix_length).to.equal(10);

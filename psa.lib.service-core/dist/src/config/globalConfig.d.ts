@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { Connection, DatabaseConnection, HttpConnection, MailserverConnection, MessageQueueConnection, SecureConnection, SslCerts } from './configModel';
+import { Connection, DatabaseConnection, HttpConnection, MailserverConnection, SecureConnection, SslCerts, MessageQueueConnection } from './configModel';
 export declare class GlobalConfig {
     static get internal(): Connection;
     static get authservice(): HttpConnection;
@@ -11,7 +11,6 @@ export declare class GlobalConfig {
     static get sormasservice(): HttpConnection;
     static get timeZone(): string;
     static get mailserver(): MailserverConnection;
-    static get isSormasActive(): boolean;
     static get webappUrl(): string;
     static get backendApiUrl(): string;
     static get publicAuthKey(): Buffer;

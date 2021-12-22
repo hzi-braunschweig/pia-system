@@ -31,12 +31,8 @@ export class Server {
     });
 
     await registerAuthStrategies(Server.instance, {
-      strategies: ['jwt', 'simple'],
+      strategies: ['jwt'],
       publicAuthKey: config.publicAuthKey,
-      basicCredentials: {
-        username: 'basicuser',
-        password: 'basicpassword',
-      },
     });
     await registerPlugins(Server.instance, {
       name: 'exampleservice',

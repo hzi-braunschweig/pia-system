@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { UserWithStudyAccess } from '../../../psa.app.core/models/user-with-study-access';
+import { Proband } from '../../../psa.app.core/models/proband';
 
 export interface TranslatedUser {
   username: string;
   ids: string | null;
-  study_accesses: string;
+  study: string;
   is_test_proband: string;
-  first_logged_in_at: string;
+  first_logged_in_at: Date;
   status: string;
-  userObject: UserWithStudyAccess;
+  userObject: Proband;
 }

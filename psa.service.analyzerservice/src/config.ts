@@ -20,16 +20,15 @@ const SSL_CERTS: SslCerts = {
 const conf = {
   public: GlobalConfig.getPublic(SSL_CERTS),
   database: GlobalConfig.getQPia(SSL_CERTS),
-  services: {
-    sormasservice: GlobalConfig.sormasservice,
-  },
   publicAuthKey: GlobalConfig.publicAuthKey,
-  isSormasActive: GlobalConfig.isSormasActive,
   isTestMode: ConfigUtils.getEnvVariable('IS_TEST_MODE', 'false') === 'true',
   timeZone: GlobalConfig.timeZone,
   notificationTime: {
     hours: 8, // in the time zone configured above
     minutes: 0,
+  },
+  servers: {
+    messageQueue: GlobalConfig.getMessageQueue('analyzerservice'),
   },
 };
 

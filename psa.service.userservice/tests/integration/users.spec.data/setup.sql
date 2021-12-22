@@ -1,13 +1,22 @@
-INSERT INTO users (username, password, role, compliance_labresults, ids)
-VALUES ('QTestProband1', 'notEmpty', 'Proband', TRUE, NULL),
-       ('QTestProband2', 'notEmpty', 'Proband', TRUE, NULL),
-       ('QTestProband3', 'notEmpty', 'Proband', TRUE, NULL),
-       ('QTestProband4', 'notEmpty', 'Proband', TRUE, NULL),
-       ('QTest_IDS1', 'notEmpty', 'Proband', TRUE, 'QTest_IDS1'),
-       ('QTest_IDS2', 'notEmpty', 'Proband', TRUE, 'QTest_IDS2');
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 
-INSERT INTO users (username, password, role)
-VALUES ('researcher1@example.com', '', 'Forscher'),
+INSERT INTO studies (name, has_logging_opt_in)
+VALUES ('QTestStudy1', FALSE),
+       ('QTestStudy2', FALSE),
+       ('QTestStudy3', TRUE),
+       ('QTestStudy4', FALSE),
+       ('ZIFCO-Studie', FALSE);
+
+INSERT INTO accounts (username, password, role)
+VALUES ('QTestProband1', '', 'Proband'),
+       ('QTestProband2', '', 'Proband'),
+       ('QTestProband3', '', 'Proband'),
+       ('QTestProband4', '', 'Proband'),
+       ('researcher1@example.com', '', 'Forscher'),
        ('researcher2@example.com', '', 'Forscher'),
        ('researcher3@example.com', '', 'Forscher'),
        ('researcher4@example.com', '', 'Forscher'),
@@ -21,25 +30,21 @@ VALUES ('researcher1@example.com', '', 'Forscher'),
        ('pm2@example.com', '', 'ProbandenManager'),
        ('pm3@example.com', '', 'ProbandenManager');
 
-INSERT INTO studies (name, description, has_logging_opt_in)
-VALUES ('QTestStudy1', 'QTestStudy1 Beschreibung', FALSE),
-       ('QTestStudy2', 'QTestStudy2 Beschreibung', FALSE),
-       ('QTestStudy3', 'QTestStudy3 Beschreibung', TRUE),
-       ('QTestStudy4', 'QTestStudy4 Beschreibung', FALSE),
-       ('ZIFCO-Studie', 'ZIFCO Studie', FALSE);
+INSERT INTO probands (pseudonym, compliance_labresults, ids, study)
+VALUES ('QTestProband1', TRUE, NULL, 'QTestStudy1'),
+       ('QTestProband2', TRUE, NULL, 'QTestStudy2'),
+       ('QTestProband3', TRUE, NULL, 'QTestStudy2'),
+       ('QTestProband4', TRUE, 'test-ids-000', 'QTestStudy1'),
+       ('QTest_IDS1', TRUE, 'QTest_IDS1', 'QTestStudy3'),
+       ('QTest_IDS2', TRUE, 'QTest_IDS2', 'QTestStudy3');
 
-INSERT INTO study_users
-VALUES ('QTestStudy1', 'QTestProband1', 'read'),
-       ('QTestStudy1', 'QTestProband4', 'read'),
-       ('QTestStudy1', 'pm1@example.com', 'write'),
+INSERT INTO study_users (study_id, user_id, access_level)
+VALUES ('QTestStudy1', 'pm1@example.com', 'write'),
        ('QTestStudy1', 'researcher1@example.com', 'write'),
        ('QTestStudy1', 'investigationteam1@example.com', 'write'),
        ('QTestStudy1', 'investigationteam2@example.com', 'write'),
-       ('QTestStudy2', 'QTestProband2', 'read'),
-       ('QTestStudy2', 'QTestProband3', 'read'),
        ('QTestStudy2', 'researcher2@example.com', 'write'),
        ('QTestStudy2', 'researcher1@example.com', 'write'),
-       ('QTestStudy3', 'QTest_IDS2', 'read'),
        ('QTestStudy3', 'investigationteam1@example.com', 'write'),
        ('QTestStudy3', 'researcher1@example.com', 'write'),
        ('QTestStudy3', 'researcher3@example.com', 'write'),

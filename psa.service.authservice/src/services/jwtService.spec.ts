@@ -8,8 +8,7 @@ import chai from 'chai';
 import sinon from 'sinon';
 import JWT from 'jsonwebtoken';
 import { config } from '../config';
-import pgHelper from './postgresqlHelper';
-import jwtService from './jwtService';
+import { JwtService } from './jwtService';
 import {
   ACCESS_TOKEN_ID,
   AccessToken,
@@ -17,6 +16,7 @@ import {
   LOGIN_TOKEN_ID,
   LoginToken,
 } from '@pia/lib-service-core';
+import { db } from '../db';
 
 const sandbox = sinon.createSandbox();
 
@@ -26,15 +26,18 @@ interface CustomTestToken extends AccessToken {
   app: string;
 }
 
-const studies = ['study1', 'study2'];
+const user = { study: 'userStudy' };
+const studies = ['researcherStudy1', 'researcherStudy2'];
 const locale = 'EN-en';
-const app = 'web';
-const role = 'Proband';
 const username = 'testuser';
 
 describe('JwtService', () => {
   beforeEach(() => {
-    sandbox.stub(pgHelper, 'getUserStudies').resolves(studies);
+    sandbox
+      .stub(db, 'manyOrNone')
+      .resolves(studies.map((study) => ({ study_id: study })));
+    sandbox.stub(db, 'one').resolves(user);
+
     sandbox
       .stub(config, 'privateAuthKey')
       .value(ConfigUtils.getFileContent('./tests/unit/private.key'));
@@ -47,21 +50,28 @@ describe('JwtService', () => {
     sandbox.restore();
   });
 
-  it('should createSormasToken', async () => {
-    const token = await jwtService.createSormasToken();
-    const decoded = JWT.verify(token, config.publicAuthKey) as AccessToken;
+  it('should createAccessToken for Proband', async () => {
+    const role = 'Proband';
+
+    const token = await JwtService.createAccessToken({
+      locale,
+      role,
+      username,
+    });
+    const decoded = JWT.verify(token, config.publicAuthKey) as CustomTestToken;
 
     expect(!!decoded).to.be.true;
     expect(decoded.id).to.equal(ACCESS_TOKEN_ID);
-    expect(decoded.role).to.equal('ProbandenManager');
-    expect(decoded.username).to.equal('sormas-client');
-    expect(decoded.groups).to.deep.equal(studies);
+    expect(decoded.role).to.equal(role);
+    expect(decoded.username).to.equal(username);
+    expect(decoded.groups).to.deep.equal([user.study]);
   });
 
-  it('should createAccessToken', async () => {
-    const token = await jwtService.createAccessToken({
+  it('should createAccessToken for Forscher', async () => {
+    const role = 'Forscher';
+
+    const token = await JwtService.createAccessToken({
       locale,
-      app,
       role,
       username,
     });
@@ -72,11 +82,10 @@ describe('JwtService', () => {
     expect(decoded.role).to.equal(role);
     expect(decoded.username).to.equal(username);
     expect(decoded.groups).to.deep.equal(studies);
-    expect(decoded.app).to.deep.equal(app);
   });
 
   it('should createLoginToken', () => {
-    const token = jwtService.createLoginToken({
+    const token = JwtService.createLoginToken({
       username,
     });
     const decoded = JWT.verify(token, config.publicAuthKey) as LoginToken;

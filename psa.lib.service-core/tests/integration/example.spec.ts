@@ -15,7 +15,7 @@ import { config } from '../example-service/config';
 chai.use(chaiHttp);
 const expect = chai.expect;
 
-const apiAddress = 'http://localhost:' + config.public.port.toString();
+const apiAddress = `http://localhost:${config.public.port}`;
 
 const probandToken = signToken(
   {

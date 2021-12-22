@@ -36,8 +36,11 @@ export class ProbandsHandler {
     const studyName = request.params['studyName'] as string;
     const probandRequest = request.payload as CreateProbandRequest;
 
-    await ProbandsInteractor.createProband(studyName, probandRequest, token);
-    return null;
+    return await ProbandsInteractor.createProband(
+      studyName,
+      probandRequest,
+      token
+    );
   };
 
   /**

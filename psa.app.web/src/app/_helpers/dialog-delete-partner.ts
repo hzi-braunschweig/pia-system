@@ -14,7 +14,7 @@ import {
 } from '@angular/forms';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { PersonalDataService } from 'src/app/psa.app.core/providers/personaldata-service/personaldata-service';
-import { UserWithSameRole } from '../psa.app.core/models/user';
+import { ProfessionalUser } from '../psa.app.core/models/user';
 import { AlertService } from '../_services/alert.service';
 import { ReplaySubject } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -23,7 +23,7 @@ export type DeletionType = 'general' | 'personal' | 'study' | 'sample';
 export type DeletionAction = 'requested' | 'rejected' | 'confirmed';
 
 export interface DialogDeletePartnerData {
-  pendingdeletionId?: string;
+  pendingdeletionId?: number;
   usernames: {
     usernameSysAdmin?: string;
     usernamePM?: string;
@@ -181,12 +181,12 @@ export interface DialogDeletePartnerResult {
   `,
 })
 export class DialogDeletePartnerComponent implements OnInit {
-  usersWithSameRole: UserWithSameRole[];
+  usersWithSameRole: ProfessionalUser[];
   form: FormGroup;
   acceptDelete: boolean = false;
   public usernameFilterCtrl: FormControl = new FormControl();
-  public filteredUsers: ReplaySubject<UserWithSameRole[]> = new ReplaySubject<
-    UserWithSameRole[]
+  public filteredUsers: ReplaySubject<ProfessionalUser[]> = new ReplaySubject<
+    ProfessionalUser[]
   >(1);
   isLoading: boolean = false;
 
@@ -210,8 +210,8 @@ export class DialogDeletePartnerComponent implements OnInit {
     } else {
       this.authService
         .getUsersWithSameRole()
-        .then((result: { users: UserWithSameRole[] }) => {
-          this.usersWithSameRole = result.users;
+        .then((users) => {
+          this.usersWithSameRole = users;
           this.filteredUsers.next(
             this.usersWithSameRole.filter((user) => {
               // use validator to filter users without email address
@@ -268,7 +268,6 @@ export class DialogDeletePartnerComponent implements OnInit {
           await this.authService.deletePendingDeletion(
             this.data.pendingdeletionId
           );
-          await this.personalDataService.deletePendingDeletion(probandUsername);
           break;
         case 'study':
         case 'sample':

@@ -4,14 +4,15 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { performance } from 'perf_hooks';
 import * as Hapi from '@hapi/hapi';
 import { IClient } from 'pg-promise/typescript/pg-subset';
 import {
   DatabaseNotification,
+  isoDateStringReviverFn,
   ListeningDbClient,
   ParsedDatabasePayload,
   registerPlugins,
-  isoDateStringReviverFn,
 } from '@pia/lib-service-core';
 
 import * as packageJson from '../package.json';
@@ -20,8 +21,8 @@ import { db } from './db';
 import { TaskScheduler } from './services/taskScheduler';
 import { NotificationHandlers } from './services/notificationHandlers';
 import { Questionnaire } from './models/questionnaire';
-import { StudyUser, User } from './models/user';
 import { QuestionnaireInstance } from './models/questionnaireInstance';
+import { messageQueueService } from './services/messageQueueService';
 
 export class Server {
   private static instance: Hapi.Server;
@@ -29,6 +30,8 @@ export class Server {
   private static listeningDbClient: ListeningDbClient<unknown>;
 
   public static async init(): Promise<void> {
+    await messageQueueService.connect();
+
     this.instance = new Hapi.Server({
       host: config.public.host,
       port: config.public.port,
@@ -36,7 +39,7 @@ export class Server {
       app: {
         healthcheck: async (): Promise<boolean> => {
           await db.one('SELECT 1;');
-          return true;
+          return messageQueueService.isConnected();
         },
       },
     });
@@ -55,8 +58,8 @@ export class Server {
     TaskScheduler.init();
 
     this.listeningDbClient = new ListeningDbClient(db);
-    this.listeningDbClient.on('connected', (client) => {
-      void this.registerDbNotifications(client);
+    this.listeningDbClient.on('connected', (client: IClient) => {
+      this.registerDbNotifications(client).catch(console.error);
     });
     await this.listeningDbClient.connect();
   }
@@ -66,6 +69,8 @@ export class Server {
     await this.listeningDbClient.disconnect();
     await this.instance.stop();
     this.instance.log(['startup'], `Server was stopped`);
+
+    await messageQueueService.disconnect();
   }
 
   public static async terminate(): Promise<void> {
@@ -77,10 +82,13 @@ export class Server {
     client.on('notification', async function (msg: DatabaseNotification) {
       if (msg.name === 'notification') {
         try {
+          const start = performance.now();
+
           const pl: ParsedDatabasePayload = JSON.parse(
             msg.payload,
             isoDateStringReviverFn
           ) as ParsedDatabasePayload;
+
           if (msg.channel === 'table_insert' && pl.table === 'questionnaires') {
             await NotificationHandlers.handleInsertedQuestionnaire(
               pl.row as Questionnaire
@@ -93,11 +101,6 @@ export class Server {
               pl.row_old as Questionnaire,
               pl.row_new as Questionnaire
             );
-          } else if (msg.channel === 'table_update' && pl.table === 'users') {
-            await NotificationHandlers.handleUpdatedUser(
-              pl.row_old as User,
-              pl.row_new as User
-            );
           } else if (
             msg.channel === 'table_update' &&
             pl.table === 'questionnaire_instances'
@@ -105,20 +108,6 @@ export class Server {
             await NotificationHandlers.handleUpdatedInstance(
               pl.row_old as QuestionnaireInstance,
               pl.row_new as QuestionnaireInstance
-            );
-          } else if (
-            msg.channel === 'table_insert' &&
-            pl.table === 'study_users'
-          ) {
-            await NotificationHandlers.handleInsertedStudyUser(
-              pl.row as StudyUser
-            );
-          } else if (
-            msg.channel === 'table_delete' &&
-            pl.table === 'study_users'
-          ) {
-            await NotificationHandlers.handleDeletedStudyUser(
-              pl.row as StudyUser
             );
           } else {
             return;
@@ -128,7 +117,8 @@ export class Server {
               msg.channel +
               "' notification for table '" +
               pl.table +
-              "'"
+              "'",
+            '(took ' + Math.round(performance.now() - start).toString() + ' ms)'
           );
         } catch (err) {
           console.error(err);

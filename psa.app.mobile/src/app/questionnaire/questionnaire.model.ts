@@ -4,19 +4,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-// tslint:disable:variable-name
-
 export interface Study {
   name: string;
-  description: string;
-  access_level: string;
-  pm_email: string;
-  hub_email: string;
-  status: string;
   has_rna_samples?: boolean;
   sample_prefix?: string;
   sample_suffix_length?: number;
-  super_study_name?: string;
 }
 
 export interface Questionnaire {
@@ -145,7 +137,7 @@ export interface FileDto {
   file: string;
 }
 
-export class StudyWelcomeText {
+export interface StudyWelcomeText {
   study_id: string;
   welcome_text: string;
   language: string;

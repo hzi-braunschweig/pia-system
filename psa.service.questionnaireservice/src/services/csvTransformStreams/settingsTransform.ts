@@ -17,7 +17,7 @@ export class SettingsTransform extends CsvTransform<
    */
   protected convertToCsvRow(setting: UserSettings): CsvUserSettingsRow {
     return {
-      Proband: setting.account_status === 'no_account' ? '' : setting.username,
+      Proband: setting.ids === setting.pseudonym ? '' : setting.pseudonym,
       IDS: setting.ids ?? '',
       'Einwilligung Ergebnismitteilung': setting.compliance_labresults
         ? 'Ja'

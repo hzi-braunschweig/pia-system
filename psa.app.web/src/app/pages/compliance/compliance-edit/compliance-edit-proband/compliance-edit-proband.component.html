@@ -4,39 +4,46 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
-<div *ngIf="!isLoading" data-e2e="e2e-compliance-edit-component">
-  <h2 data-e2e="e2e-compliance-edit-component-header">{{ study }}</h2>
-  <p *ngIf="!studyWrapper.complianceTextObject">
-    {{ 'COMPLIANCE.NO_COMPLIANCE_FROM_UT_FOR_THIS_STUDY' | translate }}
-  </p>
-  <form
-    *ngIf="studyWrapper.complianceTextObject"
-    [formGroup]="studyWrapper.form"
-    (ngSubmit)="onSubmit(studyWrapper)"
-  >
-    <app-template-viewer
-      [segments]="studyWrapper.complianceTextObject"
-      [form]="studyWrapper.form"
-      (usedFormControls)="studyWrapper.usedFormControls = $event"
+<app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
+<div
+  class="jumbotron"
+  *ngIf="!isLoading"
+  data-e2e="e2e-compliance-probands-content"
+>
+  <mat-card data-e2e="e2e-compliance-edit-component">
+    <h1>{{ 'SIDENAV.COMPLIANCE' | translate }}</h1>
+    <h2 data-e2e="e2e-compliance-edit-component-header">{{ study }}</h2>
+    <p *ngIf="!studyWrapper.complianceTextObject">
+      {{ 'COMPLIANCE.NO_COMPLIANCE_FROM_UT_FOR_THIS_STUDY' | translate }}
+    </p>
+    <form
+      *ngIf="studyWrapper.complianceTextObject"
+      [formGroup]="studyWrapper.form"
+      (ngSubmit)="onSubmit(studyWrapper)"
     >
-    </app-template-viewer>
-    <button
-      data-e2e="e2e-compliance-edit-ok-button"
-      mat-raised-button
-      type="submit"
-      color="primary"
-      [disabled]="!studyWrapper.editMode"
-    >
-      {{ 'GENERAL.OK' | translate }}
-    </button>
-    <button
-      mat-raised-button
-      color="primary"
-      *ngIf="!studyWrapper.editMode"
-      (click)="downloadPdf(studyWrapper.studyName)"
-    >
-      {{ 'COMPLIANCE.DOWNLOAD_PDF' | translate }}
-    </button>
-  </form>
+      <app-template-viewer
+        [segments]="studyWrapper.complianceTextObject"
+        [form]="studyWrapper.form"
+        (usedFormControls)="studyWrapper.usedFormControls = $event"
+      >
+      </app-template-viewer>
+      <button
+        data-e2e="e2e-compliance-edit-ok-button"
+        mat-raised-button
+        type="submit"
+        color="primary"
+        [disabled]="!studyWrapper.editMode"
+      >
+        {{ 'GENERAL.OK' | translate }}
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        *ngIf="!studyWrapper.editMode"
+        (click)="downloadPdf()"
+      >
+        {{ 'COMPLIANCE.DOWNLOAD_PDF' | translate }}
+      </button>
+    </form>
+  </mat-card>
 </div>

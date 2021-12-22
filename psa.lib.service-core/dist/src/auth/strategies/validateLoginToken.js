@@ -11,7 +11,7 @@ function validateLoginToken(db) {
             return { isValid: false };
         }
         try {
-            const result = await db.oneOrNone("SELECT username FROM users WHERE username=${username} AND account_status!='deactivated'", {
+            const result = await db.oneOrNone('SELECT username FROM accounts WHERE username=${username}', {
                 username: decoded.username,
             });
             return { isValid: result !== null && result !== undefined };

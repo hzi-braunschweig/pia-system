@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import * as server from './server';
 import { ServerRunner } from '@pia/lib-service-core';
+import { Server } from './server';
 
-new ServerRunner(server).start();
+new ServerRunner(Server).start();

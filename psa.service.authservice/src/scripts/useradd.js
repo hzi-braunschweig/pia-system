@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const postgresqlHelper = require('../services/postgresqlHelper');
-const pwHashesHelper = require('../helpers/pwHashesHelper.js');
-const pgp = require('pg-promise')();
+const { connectDatabase } = require('../db');
+const { getRepository, getConnection } = require('typeorm');
+const { Account } = require('../entities/account');
+const { PwHashesHelper } = require('../helpers/pwHashesHelper');
 
 function getArg(prefix) {
   for (const arg of process.argv) {
@@ -27,27 +28,24 @@ function getArg(prefix) {
   }
 
   const { salt, passwordHash } =
-    pwHashesHelper.createHashedPasswordWithSaltAndPepper(password);
+    PwHashesHelper.createHashedPasswordWithSaltAndPepper(password);
 
-  const user = {
-    username,
+  await connectDatabase();
+
+  const repo = getRepository(Account);
+
+  await repo.insert({
+    username: username,
+    role: role,
     password: passwordHash,
-    salt,
-    role,
-    study_accesses: [],
-    account_status: 'active',
-  };
-  await postgresqlHelper.createUser(user);
-  // set pwChangeNeeded to false
-  await postgresqlHelper.updateUserPasswordOnChangeReq(
-    passwordHash,
-    salt,
-    false,
-    username
-  );
-  console.info(`created user '${username}' with role '${role}'`);
+    salt: salt,
+    pwChangeNeeded: false,
+    accountStatus: 'account',
+    status: 'deactivated', // Proband-Status is not relevant for professional users
+  });
 
-  pgp.end();
+  await getConnection().close();
+  console.info(`created user '${username}' with role '${role}'`);
 })().catch((err) => {
   console.error('Could not create user:', err);
   process.exit(1);

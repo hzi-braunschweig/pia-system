@@ -20,12 +20,10 @@ import { ProbandsListEntryActionComponent } from './probands-list-entry-action.c
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { AlertService } from '../../_services/alert.service';
 import { TranslatedUserFactory } from './translated-user/translated-user.factory';
-import {
-  UserListResponse,
-  UserWithStudyAccess,
-} from '../../psa.app.core/models/user-with-study-access';
 import { TranslatedUser } from './translated-user/translated-user.model';
 import { MatTableModule } from '@angular/material/table';
+import { Proband } from '../../psa.app.core/models/proband';
+import { createProband } from '../../psa.app.core/models/instance.helper.spec';
 
 @Pipe({ name: 'translate' })
 class MockTranslatePipe implements PipeTransform {
@@ -38,23 +36,19 @@ describe('ProbandsListComponent', () => {
   let component: ProbandsListComponent;
   let fixture: ComponentFixture<ProbandsListComponent>;
 
-  let authService: AuthService;
-  let alertService: AlertService;
-  let translatedUserFactory: TranslatedUserFactory;
+  let authService: jasmine.SpyObj<AuthService>;
+  let alertService: jasmine.SpyObj<AlertService>;
+  let translatedUserFactory: jasmine.SpyObj<TranslatedUserFactory>;
 
   beforeEach(() => {
-    authService = jasmine.createSpyObj('AuthService', ['getUsers']);
-    alertService = jasmine.createSpyObj('AlertService', ['errorObject']);
-    translatedUserFactory = jasmine.createSpyObj('TranslatedUserFactory', [
+    authService = jasmine.createSpyObj(AuthService, ['getProbands']);
+    alertService = jasmine.createSpyObj(AlertService, ['errorObject']);
+    translatedUserFactory = jasmine.createSpyObj(TranslatedUserFactory, [
       'create',
     ]);
 
-    (authService.getUsers as jasmine.Spy).and.returnValue(
-      Promise.resolve(getUserList())
-    );
-    (translatedUserFactory.create as jasmine.Spy).and.returnValue(
-      getTranslatedUser()
-    );
+    authService.getProbands.and.resolveTo([createProband()]);
+    translatedUserFactory.create.and.returnValue(getTranslatedUser());
 
     TestBed.configureTestingModule({
       imports: [MatTableModule],
@@ -79,7 +73,7 @@ describe('ProbandsListComponent', () => {
   describe('ngOnInit()', () => {
     it('should fetch users and extract studies from response', async () => {
       await component.ngOnInit();
-      expect(authService.getUsers).toHaveBeenCalledTimes(1);
+      expect(authService.getProbands).toHaveBeenCalledTimes(1);
       expect(component.studyFilterValues.length).toBeGreaterThan(0);
       expect(component.studyFilterValues[0]).toEqual('NAKO Test');
     });
@@ -90,7 +84,9 @@ describe('ProbandsListComponent', () => {
     });
 
     it('should show an error alert on errors', async () => {
-      (authService.getUsers as jasmine.Spy).and.returnValue(Promise.reject());
+      (authService.getProbands as jasmine.Spy).and.returnValue(
+        Promise.reject()
+      );
       await component.ngOnInit();
       expect(alertService.errorObject).toHaveBeenCalled();
     });
@@ -130,42 +126,15 @@ describe('ProbandsListComponent', () => {
     });
   });
 
-  function getUserList(): UserListResponse {
-    return {
-      users: [getUser()],
-      links: { self: { href: '/some/path' } },
-    };
-  }
-
-  function getUser(): UserWithStudyAccess {
-    return {
-      username: 'Testproband',
-      ids: null,
-      study_accesses: [{ study_id: 'NAKO Test', access_level: 'read' }],
-      is_test_proband: true,
-      first_logged_in_at: '2020-04-20T00:00:00.000Z',
-      account_status: 'active',
-      study_status: 'active',
-      studyNamesArray: [],
-      needs_material: false,
-      role: 'Proband',
-      compliance_bloodsamples: false,
-      compliance_labresults: false,
-      compliance_samples: false,
-      examination_wave: 0,
-      study_center: '',
-    };
-  }
-
   function getTranslatedUser(): TranslatedUser {
     return {
       username: 'Testproband',
       ids: null,
-      study_accesses: 'NAKO (Lesen)',
+      study: 'NAKO',
       is_test_proband: 'Ja',
-      first_logged_in_at: '20.04.2020',
+      first_logged_in_at: new Date('2020-04-20'),
       status: 'Aktiv',
-      userObject: getUser(),
+      userObject: createProband(),
     };
   }
 
@@ -177,10 +146,10 @@ describe('ProbandsListComponent', () => {
         {
           label: 'Test column',
           icon: 'visibility',
-          disableForDeletedAccounts: false,
-          showOnlyForIdAndUsernameEquality: false,
-          showOnlyForIdAndUsernameInequality: false,
-          eventEmitter: new EventEmitter<UserWithStudyAccess>(),
+          disableForDeletedProbands: false,
+          showOnlyForIdsAndPseudonymEquality: false,
+          showOnlyForIdsAndPseudonymInequality: false,
+          eventEmitter: new EventEmitter<Proband>(),
         },
       ],
     };

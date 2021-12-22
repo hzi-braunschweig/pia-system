@@ -55,39 +55,6 @@ describe('Release Test, role: "Proband", Tab: Settings', () => {
       });
   });
 
-  it('should test whether there are only buttons that are allowed to be there', () => {
-    cy.visit(appUrl);
-    login(probandCredentials.username, probandCredentials.password);
-    changePassword(probandCredentials.password, newPassword);
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
-    cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Einstellungen')
-      .click();
-    cy.get('[data-e2e="e2e-settings-content"]').contains('Einstellungen');
-
-    cy.get('#buttonconfirm').click();
-  });
-
-  it('should test capturing of log data switching on and off', () => {
-    cy.visit(appUrl);
-    login(probandCredentials.username, probandCredentials.password);
-    changePassword(probandCredentials.password, newPassword);
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
-    cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Einstellungen')
-      .click();
-    cy.get('[data-e2e="e2e-settings-content"]').contains('Einstellungen');
-
-    cy.get('[data-e2e="acquisition-of-log-data-checkbox"]').click();
-    cy.get('#buttonconfirm').click();
-
-    cy.contains('Ihre Einstellungen wurden erfolgreich gespeichert');
-
-    cy.get('[data-e2e="acquisition-of-log-data-checkbox"]').click();
-    cy.get('#buttonconfirm').click();
-    cy.contains('Ihre Einstellungen wurden erfolgreich gespeichert');
-  });
-
   it('should test "Manage Password" functionality', () => {
     cy.visit(appUrl);
     login(probandCredentials.username, probandCredentials.password);

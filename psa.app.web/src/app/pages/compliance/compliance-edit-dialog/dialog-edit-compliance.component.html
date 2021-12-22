@@ -6,13 +6,13 @@
 
 <h3>
   {{ 'COMPLIANCE.DIALOG_EDIT_HEADER' | translate }}
-  <em>{{ user?.username }}</em>
+  <em>{{ user?.pseudonym }}</em>
 </h3>
 
 <mat-dialog-content>
   <app-compliance-edit-examiner
-    [username]="user?.username"
-    [study]="user?.study_accesses[0].study_id"
+    [username]="user?.pseudonym"
+    [study]="user?.study"
   ></app-compliance-edit-examiner>
 </mat-dialog-content>
 

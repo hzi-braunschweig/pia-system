@@ -62,8 +62,10 @@ Currently in use:
 
 | Topic name                        | Description                                                                            |
 | --------------------------------- | -------------------------------------------------------------------------------------- |
+| `proband.created`                 | Published when a proband is registered                                                 |
 | `proband.deleted`                 | Published when a proband's data should be fully deleted                                |
 | `proband.deactivated`             | Published when a proband was deactivated and should not receive any new questionnaires |
+| `proband.logged_in`               | Published when a proband logs in                                                       |
 | `compliance.created`              | Published when a compliance was filled out by a proband                                |
 | `questionnaire_instance.released` | Published when a questionnaire instance moves to any "released[...]" status            |
 

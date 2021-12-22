@@ -5,28 +5,26 @@
  */
 
 /* Structure */
-.probands-container {
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 200px);
+  grid-gap: 1rem;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.users-container {
   display: flex;
   flex-direction: column;
   min-width: 300px;
   opacity: 0.8;
 }
 
-.probands-header {
-  min-height: 56px;
-  max-height: 56px;
-  display: flex;
-  align-items: center;
-  padding: 8px 24px 0;
-  font-size: 20px;
-  justify-content: space-between;
-  border-bottom: 1px solid transparent;
-}
-
 .mat-form-field {
   font-size: 14px;
   flex-grow: 1;
   margin-top: 8px;
+  max-width: 250px;
 }
 
 /** Selection styles */
@@ -42,9 +40,5 @@
 }
 
 .mat-icon {
-  margin-left: 20px;
-}
-
-.mat-form-field {
-  max-width: 150px;
+  margin: 0 10px;
 }

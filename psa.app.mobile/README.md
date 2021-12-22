@@ -38,6 +38,7 @@ Additional setup is required for Cordova to support programmatic builds:
 
 - `npm install -g ios-sim`
 - `brew install ios-deploy`
+- `sudo gem install cocoapods`
 
 Run the app with live reload:
 

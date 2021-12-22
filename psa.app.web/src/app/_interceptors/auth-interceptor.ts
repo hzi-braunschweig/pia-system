@@ -21,14 +21,15 @@ import { AuthenticationManager } from '../_services/authentication-manager.servi
 export class AuthInterceptor implements HttpInterceptor {
   constructor(private auth: AuthenticationManager) {}
 
-  intercept(
-    request: HttpRequest<any>,
+  public intercept(
+    request: HttpRequest<unknown>,
     next: HttpHandler
-  ): Observable<HttpEvent<any>> {
-    if (this.auth.currentUser !== null) {
+  ): Observable<HttpEvent<unknown>> {
+    const token = this.auth.getToken();
+    if (token !== null) {
       request = request.clone({
         setHeaders: {
-          Authorization: this.auth.currentUser.token,
+          Authorization: this.auth.getToken(),
         },
       });
     }

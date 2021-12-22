@@ -201,7 +201,6 @@ describe('ProbandsForscherComponent', () => {
         endDate: undefined,
         labResults: [],
         questionnaires: [],
-        deleteLogs: false,
         userForApprove: '',
         probandId: username,
       };

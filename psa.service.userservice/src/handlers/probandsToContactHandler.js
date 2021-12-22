@@ -5,42 +5,30 @@
  */
 
 const Boom = require('@hapi/boom');
-const postgresqlHelper = require('../services/postgresqlHelper.js');
-const RESTPresenter = require('../services/RESTPresenter.js');
 const probandsToContactInteractor = require('../interactors/probandsToContactInteractor');
 
 /**
  * @description HAPI Handler for planned probands
  */
 const probandsToContactHandler = (function () {
-  function getProbandsToContact(request) {
+  async function getProbandsToContact(request) {
     return probandsToContactInteractor
-      .getProbandsToContact(request.auth.credentials, postgresqlHelper)
-      .then(function (result) {
-        return RESTPresenter.presentProbandsToContact(result);
-      })
+      .getProbandsToContact(request.auth.credentials)
       .catch((err) => {
         console.log('Could not get users from DB: ' + err);
         return Boom.notFound(err);
       });
   }
 
-  function updateOne(request) {
+  async function updateOne(request) {
     const id = request.params.id;
-    return probandsToContactInteractor
-      .updateProbandsToContact(
-        request.auth.credentials,
-        id,
-        request.payload,
-        postgresqlHelper
-      )
-      .then(function (result) {
-        return RESTPresenter.presentProbandsToContact(result);
-      })
+    await probandsToContactInteractor
+      .updateProbandsToContact(request.auth.credentials, id, request.payload)
       .catch((err) => {
         console.log('Could update probands to contact in DB: ' + err);
         return Boom.notFound(err);
       });
+    return null;
   }
 
   return {

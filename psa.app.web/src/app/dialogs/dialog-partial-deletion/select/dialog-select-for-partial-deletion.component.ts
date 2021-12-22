@@ -23,7 +23,6 @@ import {
 } from '../../../psa.app.core/models/questionnaire';
 import { LabResult } from '../../../psa.app.core/models/labresult';
 import { HttpErrorResponse } from '@angular/common/http';
-import { UserWithSameRole } from '../../../psa.app.core/models/user';
 import { endOfDay, startOfDay } from 'date-fns';
 
 export interface DialogSelectForPartialDeletionData {
@@ -36,7 +35,6 @@ export interface DialogSelectForPartialDeletionResult {
   endDate: Date | null;
   questionnaires: Questionnaire[];
   labResults: LabResult[];
-  deleteLogs: boolean;
   userForApprove: string;
   probandId: string;
 }
@@ -60,12 +58,10 @@ export class DialogSelectForPartialDeletionComponent implements OnInit {
       questionnaires: new FormControl([]),
       labResults: new FormControl([]),
       userForApprove: this.userForApproveFC,
-      deleteLogs: new FormControl(false),
     },
     DialogSelectForPartialDeletionComponent.atLeastOneRequiredValidator(
       'questionnaires',
-      'labResults',
-      'deleteLogs'
+      'labResults'
     )
   );
   public readonly labResultsFilterCtrl: FormControl = new FormControl();
@@ -121,7 +117,7 @@ export class DialogSelectForPartialDeletionComponent implements OnInit {
     };
   }
 
-  async ngOnInit(): Promise<void> {
+  public async ngOnInit(): Promise<void> {
     const getLabResultPromise = this.sampleTrackingService
       .getAllLabResultsForUser(this.data.probandId)
       .then((result: LabResult[]) => {
@@ -153,17 +149,15 @@ export class DialogSelectForPartialDeletionComponent implements OnInit {
 
     const getUsersWithSameRolePromise = this.authService
       .getUsersWithSameRole()
-      .then((result: { users: UserWithSameRole[] }) => {
-        if (result.users) {
-          this.researchers = result.users
-            .map((user) => user.username)
-            .filter((username) => {
-              // use validator to filter users without email address
-              const control = new FormControl(username, Validators.email);
-              return !control.errors || !control.errors.email;
-            });
-          this.filteredResearchers = this.researchers;
-        }
+      .then((users) => {
+        this.researchers = users
+          .map((user) => user.username)
+          .filter((username) => {
+            // use validator to filter users without email address
+            const control = new FormControl(username, Validators.email);
+            return !control.errors || !control.errors.email;
+          });
+        this.filteredResearchers = this.researchers;
       })
       .catch((err: HttpErrorResponse) => {
         this.alertService.errorObject(err);
@@ -197,7 +191,7 @@ export class DialogSelectForPartialDeletionComponent implements OnInit {
     );
   }
 
-  submit(): void {
+  public submit(): void {
     this.form.markAllAsTouched();
     if (!this.form.valid) {
       return;
@@ -213,7 +207,6 @@ export class DialogSelectForPartialDeletionComponent implements OnInit {
       labResults: this.form
         .get('labResults')
         .value.filter((value) => value !== 'allLabResultsCheckbox'),
-      deleteLogs: this.form.get('deleteLogs').value,
       userForApprove: this.form.get('userForApprove').value,
       probandId: this.data.probandId,
     };

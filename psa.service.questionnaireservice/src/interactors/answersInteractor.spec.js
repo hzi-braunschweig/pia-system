@@ -71,9 +71,6 @@ describe('answersInteractor', function () {
           'getQuestionnaireInstanceForResearcher'
         )
         .resolves({ study_id: 1, status: 'released_once' });
-      const getStudyAccessForUserStub = sandbox
-        .stub(pgHelper, 'getStudyAccessForUser')
-        .rejects();
       const getAnswersForProbandStub = sandbox
         .stub(pgHelper, 'getAnswersForProband')
         .resolves(null);
@@ -84,7 +81,6 @@ describe('answersInteractor', function () {
       const session = { id: 1, role: 'Forscher', username: 'Testforscher' };
       await answersInteractor.getAnswers(session, 1).catch(() => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
-        expect(getStudyAccessForUserStub.callCount).to.equal(1);
         expect(getAnswersForProbandStub.callCount).to.equal(0);
         expect(getAnswersForForscherStub.callCount).to.equal(0);
       });
@@ -97,9 +93,6 @@ describe('answersInteractor', function () {
           'getQuestionnaireInstanceForResearcher'
         )
         .resolves({ study_id: 1, status: 'active' });
-      const getStudyAccessForUserStub = sandbox
-        .stub(pgHelper, 'getStudyAccessForUser')
-        .resolves();
       const getAnswersForProbandStub = sandbox
         .stub(pgHelper, 'getAnswersForProband')
         .resolves(null);
@@ -110,7 +103,6 @@ describe('answersInteractor', function () {
       const session = { id: 1, role: 'Forscher', username: 'Testforscher' };
       await answersInteractor.getAnswers(session, 1).catch(() => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
-        expect(getStudyAccessForUserStub.callCount).to.equal(0);
         expect(getAnswersForProbandStub.callCount).to.equal(0);
         expect(getAnswersForForscherStub.callCount).to.equal(0);
       });
@@ -145,10 +137,7 @@ describe('answersInteractor', function () {
           QuestionnaireInstanceRepository,
           'getQuestionnaireInstanceForResearcher'
         )
-        .resolves({ study_id: 1, status: 'released_once' });
-      const getStudyAccessForUserStub = sandbox
-        .stub(pgHelper, 'getStudyAccessForUser')
-        .resolves();
+        .resolves({ study_id: 'Study1', status: 'released_once' });
       const getAnswersForProbandStub = sandbox
         .stub(pgHelper, 'getAnswersForProband')
         .resolves(null);
@@ -156,10 +145,14 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'getAnswersForForscher')
         .resolves([{ question_id: 1 }]);
 
-      const session = { id: 1, role: 'Forscher', username: 'Testforscher' };
+      const session = {
+        id: 1,
+        role: 'Forscher',
+        username: 'Testforscher',
+        groups: ['Study1'],
+      };
       await answersInteractor.getAnswers(session, 1).then((result) => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
-        expect(getStudyAccessForUserStub.callCount).to.equal(1);
         expect(getAnswersForProbandStub.callCount).to.equal(0);
         expect(getAnswersForForscherStub.callCount).to.equal(1);
         expect(result[0].question_id).to.equal(1);

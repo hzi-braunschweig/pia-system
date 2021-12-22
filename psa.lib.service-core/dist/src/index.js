@@ -19,6 +19,7 @@ __exportStar(require("./db/listeningDbClient"), exports);
 __exportStar(require("./db/models"), exports);
 __exportStar(require("./db/repositoryHelper"), exports);
 __exportStar(require("./db/transactionRunnerFactory"), exports);
+__exportStar(require("./plugins/errorHandler"), exports);
 __exportStar(require("./plugins/metrics"), exports);
 __exportStar(require("./plugins/version"), exports);
 __exportStar(require("./plugins/registerPlugins"), exports);

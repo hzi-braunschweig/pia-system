@@ -18,7 +18,7 @@ class MarkdownCompiler {
         return new template_documents_1.HtmlDocument(this.parseMarkdown(input.markdownText));
     }
     async parseMarkdown(markdownText) {
-        return (0, marked_1.parse)(domPurify.sanitize(await markdownText, {
+        return marked_1.marked.parse(domPurify.sanitize(await markdownText, {
             ADD_TAGS: this.allowedTags,
         }));
     }

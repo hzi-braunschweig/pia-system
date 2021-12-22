@@ -30,7 +30,7 @@ export class HomeComponent implements OnInit {
     private questionnaireService: QuestionnaireService,
     private notification: NotificationComponent
   ) {
-    this.currentRole = this.auth.currentRole;
+    this.currentRole = this.auth.getCurrentRole();
     this.activatedRoute.queryParams.subscribe((params) => {
       if (params.notification_id) {
         this.getNotificationData(params.notification_id);
@@ -40,9 +40,10 @@ export class HomeComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     if (this.currentRole === 'Proband') {
-      const study = await this.questionnaireService.getPrimaryStudy();
       const welcomeTextObj =
-        await this.questionnaireService.getStudyWelcomeText(study.name);
+        await this.questionnaireService.getStudyWelcomeText(
+          this.auth.getCurrentStudy()
+        );
       if (welcomeTextObj) {
         this.welcomeText = welcomeTextObj.welcome_text;
       }

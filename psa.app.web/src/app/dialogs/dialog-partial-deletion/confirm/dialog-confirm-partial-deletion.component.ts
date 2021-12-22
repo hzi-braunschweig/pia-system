@@ -33,7 +33,6 @@ export interface DialogConfirmPartialDeletionResult {
   templateUrl: 'dialog-confirm-partial-deletion.component.html',
 })
 export class DialogConfirmPartialDeletionComponent {
-  deleteLogs: boolean = false;
   labResults: LabResult[] = [];
   questionnaireInstances: QuestionnaireInstance[] = [];
   isLoading: boolean = true;
@@ -62,8 +61,6 @@ export class DialogConfirmPartialDeletionComponent {
           : datePipe.transform(data.partialDeletionResponse.fromDate),
       endDate: datePipe.transform(data.partialDeletionResponse.toDate),
     };
-
-    this.deleteLogs = data.partialDeletionResponse.deleteLogs;
 
     const fetchingLabresultsPromise = this.sampleTrackingService
       .getAllLabResultsForUser(data.partialDeletionResponse.probandId)

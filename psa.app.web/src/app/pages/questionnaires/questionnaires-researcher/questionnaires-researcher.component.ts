@@ -4,16 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import {
-  Component,
-  ElementRef,
-  ViewChild,
-  forwardRef,
-  OnInit,
-} from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { SelectionModel } from '@angular/cdk/collections';
 import { Observable } from 'rxjs';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../../_services/alert.service';
@@ -22,13 +16,11 @@ import { QuestionnaireDatabase } from '../../../_helpers/questionnaire-database'
 import { DialogDeleteComponent } from '../../../_helpers/dialog-delete';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { JwtHelperService } from '@auth0/angular-jwt';
-import { User } from '../../../psa.app.core/models/user';
 import { TranslateService } from '@ngx-translate/core';
-import { MatPaginatorIntl } from '@angular/material/paginator';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
 import { MediaObserver } from '@angular/flex-layout';
 import { Questionnaire } from '../../../psa.app.core/models/questionnaire';
+import { map, startWith } from 'rxjs/operators';
 
 @Component({
   templateUrl: 'questionnaires-researcher.component.html',
@@ -36,7 +28,7 @@ import { Questionnaire } from '../../../psa.app.core/models/questionnaire';
   providers: [
     {
       provide: MatPaginatorIntl,
-      useClass: forwardRef(() => MatPaginatorIntlGerman),
+      useClass: MatPaginatorIntlGerman,
     },
   ],
 })
@@ -69,7 +61,6 @@ export class QuestionnairesResearcherComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) _paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild('delete') delete: ElementRef;
-  currentRole: string;
   public cols: Observable<number>;
   questionnaires: Questionnaire[];
   isLoading: boolean = true;
@@ -80,12 +71,6 @@ export class QuestionnairesResearcherComponent implements OnInit {
       this._paginator,
       this.sort
     );
-
-    const jwtHelper: JwtHelperService = new JwtHelperService();
-    const currentUser: User = JSON.parse(localStorage.getItem('currentUser'));
-    // decode the token to get its payload
-    const tokenPayload = jwtHelper.decodeToken(currentUser.token);
-    this.currentRole = tokenPayload.role;
 
     this.questionnaireService.getQuestionnaires().then(
       (result) => {
@@ -104,17 +89,17 @@ export class QuestionnairesResearcherComponent implements OnInit {
       ['lg', 2],
       ['xl', 2],
     ]);
-    let start: any;
+    let start: number;
 
     grid.forEach((cols, mqAlias) => {
       if (this.mediaObserver.isActive(mqAlias)) {
-        start = this.cols;
+        start = cols;
       }
     });
 
     this.cols = this.mediaObserver.media$
-      .map((change) => grid.get(change.mqAlias))
-      .startWith(start);
+      .pipe(map((change) => grid.get(change.mqAlias)))
+      .pipe(startWith(start));
   }
 
   applyFilter(filterValue: string): void {

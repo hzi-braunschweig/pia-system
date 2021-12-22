@@ -5,13 +5,12 @@
  */
 
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormGroup, Validators, FormControl } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
-import { Studie } from '../../psa.app.core/models/studie';
+import { Study } from '../../psa.app.core/models/study';
 import { AlertService } from '../../_services/alert.service';
-import { JwtHelperService } from '@auth0/angular-jwt';
-import { User } from '../../psa.app.core/models/user';
+import { AuthenticationManager } from '../../_services/authentication-manager.service';
 
 @Component({
   selector: 'app-study-dialog',
@@ -20,7 +19,7 @@ import { User } from '../../psa.app.core/models/user';
 })
 export class DialogStudyComponent implements OnInit {
   form: FormGroup;
-  study: Studie;
+  study: Study;
   currentRole: string;
 
   accesses = [
@@ -33,12 +32,10 @@ export class DialogStudyComponent implements OnInit {
     public dialogRef: MatDialogRef<DialogStudyComponent>,
     private alertService: AlertService,
     @Inject(MAT_DIALOG_DATA) public data: any,
-    private questionnaireService: QuestionnaireService
+    private questionnaireService: QuestionnaireService,
+    auth: AuthenticationManager
   ) {
-    const jwtHelper: JwtHelperService = new JwtHelperService();
-    const currentUser: User = JSON.parse(localStorage.getItem('currentUser'));
-    const tokenPayload = jwtHelper.decodeToken(currentUser.token);
-    this.currentRole = tokenPayload.role;
+    this.currentRole = auth.getCurrentRole();
   }
 
   ngOnInit(): void {

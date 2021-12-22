@@ -2,6 +2,57 @@
 
 This file contains notes about changes that are important to the operations team.
 
+## 1.29
+
+- the `pia_sormas_on_pia_password` variable is expected to be secure and not guessable. Please make sure that it has a length of 32 random characters.
+- new SORMAS integration:
+  - The complete flow between SORMAS and PIA was refactored in order to comply to an existing standard API
+  - The following properties need to be configured in SORMAS to work properly with PIA:
+    - interface.patientdiary.probandsurl = <BACKEND_API_URL>/api/v1/sormas/symptomdiary
+  - The following variables for the integration need to be set in PIA
+    - SORMAS_SERVER_URL (OLD: SORMAS_SERVER)
+    - SORMAS_ON_PIA_USER (OLD)
+    - SORMAS_ON_PIA_PASSWORD (OLD)
+    - PIA_ON_SORMAS_USER (OLD)
+    - PIA_ON_SORMAS_PASSWORD (OLD)
+    - SORMAS_STUDY (NEW)
+      - the name of the study which is used on that stage
+      - can be found via databaseservice with the following DB query, which should show only one result: `SELECT name FROM studies;`
+      - if multiple results are returned, this has to be resolved together with the HZI
+    - SORMAS_ON_PIA_TOKEN_VALIDITY_TIMEOUT (NEW)
+      - should be synchronized with SORMAS symptomdiary token caching duration
+      - in this release it must be set to the value: 22000
+      - it is subject to change in later releases
+      - DEFAULT: 10 (secounds)
+    - DEFAULT_LANGUAGE (NEW)
+      - the default language for the whole application.
+      - DEFAULT: de-DE
+      - OTHER OPTIONS: en-US, de-CH, fr-CH, it-CH
+- the users status and account status will be migrated. Usually there should not be any problem on migration but to make it sure before doing the update, please check if there is any unexpected state in those columns:
+
+```sql
+-- there should only exist expected states as the account_status. If this query returns a row please fix that entry.
+SELECT username, account_status
+FROM users
+WHERE account_status NOT IN ('no_account', 'active', 'deactivation_pending', 'deactivated');
+
+-- there should only exist expected states as the study_status. If this query returns a row please fix that entry.
+SELECT username, study_status
+FROM users
+WHERE study_status NOT IN ('active', 'deletion_pending', 'deleted', 'deactivated');
+```
+
+- the study a proband is assigned to will now be exactly one by database design. Therefore, make sure each proband has exactly one study:
+
+```sql
+SELECT u.username, json_agg(su.study_id) as studies
+FROM users AS u
+         LEFT OUTER JOIN study_users su ON u.username = su.user_id
+WHERE u.role = 'Proband'
+GROUP BY username
+HAVING COUNT(su.study_id) <> 1;
+```
+
 ## 1.28
 
 - a SQL script needs to be executed prior to updating to this version on the HZI PROD instance

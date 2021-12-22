@@ -51,7 +51,7 @@ const latestQuestionnaireVersionQuery =
  * @description helper methods to access db
  */
 const postgresqlHelper = (function () {
-  function insertQuestionnaire(questionnaire) {
+  async function insertQuestionnaire(questionnaire) {
     const csQuestions = new db.$config.pgp.helpers.ColumnSet(
       [
         'questionnaire_id',
@@ -64,7 +64,7 @@ const postgresqlHelper = (function () {
       { table: 'questions' }
     );
 
-    return db.tx((t) => {
+    return db.tx(async (t) => {
       // Insert questionnaire
       return t
         .one(
@@ -353,7 +353,7 @@ const postgresqlHelper = (function () {
     });
   }
 
-  function reviseQuestionnaire(questionnaire, id) {
+  async function reviseQuestionnaire(questionnaire, id) {
     const csQuestions = new db.$config.pgp.helpers.ColumnSet(
       [
         'questionnaire_id',
@@ -676,7 +676,7 @@ const postgresqlHelper = (function () {
     });
   }
 
-  function updateQuestionnaire(questionnaire, id, version) {
+  async function updateQuestionnaire(questionnaire, id, version) {
     return db.tx(async (t) => {
       if (!version) {
         version = (await t.one(latestQuestionnaireVersionQuery, id)).version;
@@ -693,7 +693,7 @@ const postgresqlHelper = (function () {
           'DELETE FROM answers WHERE questionnaire_instance_id=ANY(SELECT id FROM questionnaire_instances WHERE questionnaire_id=$1 AND questionnaire_version=$2)',
           [id, version]
         )
-        .then(function () {
+        .then(async function () {
           // Update questionnaire
           return t
             .one(
@@ -1029,7 +1029,7 @@ const postgresqlHelper = (function () {
     });
   }
 
-  function deleteQuestionnaire(id, version) {
+  async function deleteQuestionnaire(id, version) {
     return db.tx(async (t) => {
       if (!version) {
         version = (await t.one(latestQuestionnaireVersionQuery, id)).version;
@@ -1090,100 +1090,36 @@ const postgresqlHelper = (function () {
     });
   }
 
-  function getAnswertype(id) {
+  async function getAnswertype(id) {
     return db.one('SELECT * FROM answer_types WHERE id=${id}', { id: id });
   }
 
-  function getAnswertypes() {
+  async function getAnswertypes() {
     return db.many('SELECT * FROM answer_types');
   }
 
-  function getStudyAccessForUser(study_id, user_id) {
+  async function getStudyAccessForUser(study_id, user_id) {
     return db.one(
       'SELECT * FROM study_users WHERE study_id=${study_id} AND user_id=${user_id}',
       { study_id: study_id, user_id: user_id }
     );
   }
 
-  function getStudyAccessesForUser(user_id) {
-    return db.manyOrNone('SELECT * FROM study_users WHERE user_id=${user_id}', {
-      user_id: user_id,
-    });
-  }
-
-  function getProbandStudyAccessesForStudy(study_id) {
-    return db
-      .manyOrNone(
-        'SELECT * FROM study_users WHERE study_id=${study_id} AND user_id=ANY(SELECT username FROM users WHERE role=${role})',
-        { study_id: study_id, role: 'Proband' }
-      )
-      .then(function (accesses_result) {
-        return db
-          .manyOrNone(
-            'SELECT username,role FROM users WHERE username=ANY(SELECT user_id FROM study_users WHERE study_id=${study_id})',
-            { study_id: study_id }
-          )
-          .then(function (users_result) {
-            accesses_result.forEach(function (access) {
-              users_result.forEach(function (user) {
-                if (access.user_id === user.username) {
-                  access.role = user.role;
-                }
-              });
-            });
-            return accesses_result;
-          });
-      });
-  }
-
-  function getProfessionalsStudyAccessesForStudy(study_id) {
-    return db
-      .manyOrNone(
-        'SELECT * FROM study_users WHERE study_id=$1 AND user_id=ANY(SELECT username FROM users WHERE role IN ($2:csv))',
-        [
-          study_id,
-          [
-            'Forscher',
-            'Untersuchungsteam',
-            'ProbandenManager',
-            'EinwilligungsManager',
-          ],
-        ]
-      )
-      .then(function (accesses_result) {
-        return db
-          .manyOrNone(
-            'SELECT username,role FROM users WHERE username=ANY(SELECT user_id FROM study_users WHERE study_id=${study_id})',
-            { study_id: study_id }
-          )
-          .then(function (users_result) {
-            accesses_result.forEach(function (access) {
-              users_result.forEach(function (user) {
-                if (access.user_id === user.username) {
-                  access.role = user.role;
-                }
-              });
-            });
-            return accesses_result;
-          });
-      });
-  }
-
-  function deleteStudyAccess(study_name, username) {
+  async function deleteStudyAccess(study_name, username) {
     return db.one(
       'DELETE FROM study_users WHERE study_id=${study_id} AND user_id=${user_id} RETURNING *',
       { study_id: study_name, user_id: username }
     );
   }
 
-  function getAnsweredQuestionnaireInstances(study_id, username) {
+  async function getAnsweredQuestionnaireInstances(study_id, username) {
     return db.manyOrNone(
       'SELECT questionnaire_instance_id FROM answers WHERE questionnaire_instance_id IN (SELECT id FROM questionnaire_instances WHERE user_id=$1 AND study_id=$2)',
       [username, study_id]
     );
   }
 
-  function createStudyAccess(study_name, study_access) {
+  async function createStudyAccess(study_name, study_access) {
     return db.one(
       'INSERT INTO study_users(study_id, user_id, access_level) VALUES(${study_id}, ${user_id}, ${access_level}) RETURNING *',
       {
@@ -1194,7 +1130,7 @@ const postgresqlHelper = (function () {
     );
   }
 
-  function updateStudyAccess(study_name, username, study_access) {
+  async function updateStudyAccess(study_name, username, study_access) {
     return db.one(
       'UPDATE study_users SET access_level=${access_level} WHERE study_id=${study_id} AND user_id=${user_id} RETURNING *',
       {
@@ -1205,25 +1141,18 @@ const postgresqlHelper = (function () {
     );
   }
 
-  function getStudy(id) {
+  async function getStudy(id) {
     return db.one('SELECT * FROM studies WHERE name=${id}', { id: id });
   }
 
-  function getStudiesOfProbandForUser(probandName, username) {
-    return db.manyOrNone(
-      'SELECT * FROM studies WHERE name IN(SELECT study_id FROM study_users WHERE user_id=$1) AND name IN(SELECT study_id FROM study_users WHERE user_id=$2)',
-      [probandName, username]
-    );
-  }
-
-  function getStudyAddresses(ids) {
+  async function getStudyAddresses(ids) {
     return db.manyOrNone(
       'SELECT address, name FROM studies WHERE name IN($1:csv) AND address IS NOT NULL',
       [ids]
     );
   }
 
-  function createStudy(study) {
+  async function createStudy(study) {
     return db.one(
       'INSERT INTO studies(name, description, pm_email, hub_email) VALUES(${name}, ${description}, ${pm_email}, ${hub_email}) RETURNING *',
       {
@@ -1235,7 +1164,7 @@ const postgresqlHelper = (function () {
     );
   }
 
-  function updateStudyAsAdmin(id, study) {
+  async function updateStudyAsAdmin(id, study) {
     return db.one(
       'UPDATE studies SET name=${name}, description=${description}, pm_email=${pm_email}, hub_email=${hub_email} WHERE name=${id} RETURNING *',
       {
@@ -1248,7 +1177,7 @@ const postgresqlHelper = (function () {
     );
   }
 
-  function updateStudyWelcomeText(study_id, welcomeText) {
+  async function updateStudyWelcomeText(study_id, welcomeText) {
     return db.one(
       'INSERT INTO study_welcome_text (study_id, welcome_text)' +
         ' VALUES ($1, $2) ON CONFLICT (study_id, language) DO UPDATE' +
@@ -1257,7 +1186,7 @@ const postgresqlHelper = (function () {
     );
   }
 
-  function getStudyWelcomeText(study_id, language = 'de_DE') {
+  async function getStudyWelcomeText(study_id, language = 'de_DE') {
     return db.oneOrNone(
       'SELECT * FROM study_welcome_text WHERE study_id = $1 AND language=$2',
       [study_id, language]
@@ -1285,18 +1214,18 @@ const postgresqlHelper = (function () {
     return studies;
   }
 
-  function getStudies() {
+  async function getStudies() {
     return db.manyOrNone('SELECT * FROM studies');
   }
 
-  function createOrUpdateAnswers(
+  async function createOrUpdateAnswers(
     qInstanceId,
     answers,
     version,
     date_of_release = null,
     releasing_person = null
   ) {
-    return db.tx((t) => {
+    return db.tx(async (t) => {
       return t
         .manyOrNone(
           'SELECT * FROM answers WHERE questionnaire_instance_id=${qInstanceId} AND versioning=${version}',
@@ -1479,13 +1408,13 @@ const postgresqlHelper = (function () {
     });
   }
 
-  function getAnswersForProband(id) {
+  async function getAnswersForProband(id) {
     return db
       .oneOrNone(
         'SELECT versioning FROM answers WHERE questionnaire_instance_id=$(id) ORDER BY versioning DESC LIMIT 1',
         { id: id }
       )
-      .then(function (version) {
+      .then(async function (version) {
         return db.manyOrNone(
           'SELECT * FROM answers WHERE questionnaire_instance_id=$(id) AND versioning=$(version)',
           { id: id, version: version ? version.versioning : 1 }
@@ -1493,14 +1422,14 @@ const postgresqlHelper = (function () {
       });
   }
 
-  function getHistoricalAnswersForInstance(id) {
+  async function getHistoricalAnswersForInstance(id) {
     return db
       .manyOrNone(
         'SELECT answer_option_id, answers.question_id, versioning, value, date_of_release, releasing_person, answer_type_id FROM answers, answer_options ' +
           'WHERE questionnaire_instance_id=${id} AND answer_options.id=answers.answer_option_id ORDER BY versioning, question_id, answer_option_id',
         { id: id }
       )
-      .then(function (result) {
+      .then(async function (result) {
         return db
           .manyOrNone(
             'SELECT * FROM user_files WHERE questionnaire_instance_id=$1',
@@ -1527,7 +1456,7 @@ const postgresqlHelper = (function () {
       });
   }
 
-  function getAllAnswersForProband(username) {
+  async function getAllAnswersForProband(username) {
     return db
       .manyOrNone(
         'SELECT * FROM answers WHERE questionnaire_instance_id=ANY(SELECT id FROM questionnaire_instances WHERE user_id=$1)',
@@ -1538,7 +1467,7 @@ const postgresqlHelper = (function () {
       });
   }
 
-  function getAllQueuesForProband(user_id) {
+  async function getAllQueuesForProband(user_id) {
     return db
       .manyOrNone(
         'SELECT * FROM questionnaire_instances_queued WHERE user_id=$1 ORDER BY date_of_queue DESC',
@@ -1549,7 +1478,7 @@ const postgresqlHelper = (function () {
       });
   }
 
-  function deleteQueue(user_id, instance_id) {
+  async function deleteQueue(user_id, instance_id) {
     return db
       .one(
         'DELETE FROM questionnaire_instances_queued WHERE user_id=$1 AND questionnaire_instance_id=$2 RETURNING *',
@@ -1560,13 +1489,13 @@ const postgresqlHelper = (function () {
       });
   }
 
-  function getAnswersForForscher(id) {
+  async function getAnswersForForscher(id) {
     return db
       .oneOrNone(
         'SELECT versioning FROM answers WHERE questionnaire_instance_id=${id} ORDER BY versioning DESC LIMIT 1',
         { id: id }
       )
-      .then(function (version) {
+      .then(async function (version) {
         return db
           .manyOrNone(
             'SELECT * FROM answers WHERE questionnaire_instance_id=${id} AND versioning=${version}',
@@ -1585,7 +1514,7 @@ const postgresqlHelper = (function () {
       });
   }
 
-  function deleteAnswer(
+  async function deleteAnswer(
     questionnaire_instance_id,
     answer_option_id,
     version = null
@@ -1635,16 +1564,12 @@ const postgresqlHelper = (function () {
     });
   }
 
-  function getUser(username) {
-    return db.one('SELECT * FROM users WHERE username=$1', [username]);
-  }
-
-  async function findProbandNamesInStudy(probands, study_name) {
-    const foundProbands = await db.manyOrNone(
-      "SELECT username FROM study_users AS su JOIN users AS u ON username = user_id WHERE study_id = $(study_name) AND user_id IN ($(probands:csv)) AND role ='Proband';",
-      { probands, study_name }
+  async function getRoleOfUser(username) {
+    const account = await db.one(
+      'SELECT role FROM accounts WHERE username=$1',
+      [username]
     );
-    return foundProbands.map((proband) => proband.username);
+    return account.role;
   }
 
   function createQueryStream(query, queryParameter) {
@@ -1679,8 +1604,7 @@ const postgresqlHelper = (function () {
                           a.versioning,
                           a.value,
                           a.date_of_release,
-                          u.ids,
-                          u.account_status
+                          p.ids
                    FROM questionnaires AS q
                           JOIN questions AS quest
                                ON quest.questionnaire_id = q.id AND quest.questionnaire_version = q.version
@@ -1688,8 +1612,8 @@ const postgresqlHelper = (function () {
                                ON ao.question_id = quest.id
                           JOIN questionnaire_instances AS qi
                                ON q.id = qi.questionnaire_id AND q.version = qi.questionnaire_version
-                          LEFT OUTER JOIN users AS u
-                               ON qi.user_id = u.username
+                          LEFT OUTER JOIN probands AS p
+                               ON qi.user_id = p.pseudonym
                           LEFT OUTER JOIN answers AS a
                                           ON ao.id = a.answer_option_id AND
                                              qi.id = a.questionnaire_instance_id AND
@@ -1728,11 +1652,10 @@ const postgresqlHelper = (function () {
                               lr.date_of_sampling,
                               lo.date_of_announcement,
                               lo.result_string,
-                              u.ids,
-                              u.account_status
+                              p.ids
                        FROM lab_results AS lr
                                 LEFT JOIN lab_observations AS lo ON lr.id = lo.lab_result_id
-                                LEFT OUTER JOIN users AS u ON lr.user_id = u.username
+                                LEFT OUTER JOIN probands AS p ON lr.user_id = p.pseudonym
                        WHERE lr.status = 'analyzed'
                          AND lr.user_id IN ($(probands:csv))
                          AND lr.date_of_sampling >= $(start_date)
@@ -1746,30 +1669,36 @@ const postgresqlHelper = (function () {
   }
 
   function streamSamples(probands) {
-    const query =
-      'SELECT lr.id, lr.user_id, lr.status, lr.remark, lr.dummy_sample_id, lr.study_status, u.ids, u.account_status FROM lab_results AS lr ' +
-      'LEFT OUTER JOIN users AS u ON lr.user_id = u.username ' +
-      'WHERE lr.user_id IN ($(probands:csv)) ORDER BY lr.user_id, lr.id, lr.study_status, lr.status';
+    const query = `SELECT lr.id, lr.user_id, lr.status, lr.remark, lr.dummy_sample_id, lr.study_status, p.ids
+                   FROM lab_results AS lr
+                          LEFT OUTER JOIN probands AS p ON lr.user_id = p.pseudonym
+                   WHERE lr.user_id IN ($(probands:csv))
+                   ORDER BY lr.user_id, lr.id, lr.study_status, lr.status`;
     return createQueryStream(query, {
       probands,
     });
   }
 
   function streamBloodSamples(probands) {
-    const query =
-      'SELECT bs.sample_id, bs.user_id, bs.remark, bs.blood_sample_carried_out, u.ids, u.account_status FROM blood_samples AS bs ' +
-      'LEFT OUTER JOIN users AS u ON bs.user_id = u.username ' +
-      'WHERE bs.user_id IN ($(probands:csv)) ORDER BY bs.user_id, bs.sample_id';
+    const query = `SELECT bs.sample_id, bs.user_id, bs.remark, bs.blood_sample_carried_out, p.ids
+         FROM blood_samples AS bs
+                LEFT OUTER JOIN probands AS p ON bs.user_id = p.pseudonym
+         WHERE bs.user_id IN ($(probands:csv))
+         ORDER BY bs.user_id, bs.sample_id`;
     return createQueryStream(query, {
       probands,
     });
   }
 
   function streamSettings(probands) {
-    const query =
-      'SELECT username,compliance_labresults,compliance_samples,compliance_bloodsamples,is_test_proband,ids,account_status ' +
-      'FROM users ' +
-      'WHERE username IN ($(probands:csv))';
+    const query = `SELECT pseudonym,
+                compliance_labresults,
+                compliance_samples,
+                compliance_bloodsamples,
+                is_test_proband,
+                ids
+         FROM probands
+         WHERE pseudonym IN ($(probands:csv))`;
     return createQueryStream(query, {
       probands,
     });
@@ -1857,35 +1786,8 @@ const postgresqlHelper = (function () {
      * @param {string} user_id the id of the user to find
      * @returns {Promise} a resolved promise with the found access level or a rejected promise with the error
      */
+
     getStudyAccessForUser: getStudyAccessForUser,
-
-    /**
-     * @function
-     * @description gets the study accesses for the given user
-     * @memberof module:postgresqlHelper
-     * @param {string} user_id the id of the user to find study accesses for
-     * @returns {Promise} a resolved promise with the found study accesses or a rejected promise with the error
-     */
-    getStudyAccessesForUser: getStudyAccessesForUser,
-
-    /**
-     * @function
-     * @description gets the study accesses for the given study
-     * @memberof module:postgresqlHelper
-     * @param {string} study_id the id of the study to find accesses for
-     * @returns {Promise} a resolved promise with the found study accesses or a rejected promise with the error
-     */
-    getProbandStudyAccessesForStudy: getProbandStudyAccessesForStudy,
-
-    /**
-     * @function
-     * @description gets the study accesses for the given study
-     * @memberof module:postgresqlHelper
-     * @param {string} study_id the id of the study to find accesses for
-     * @returns {Promise} a resolved promise with the found study accesses or a rejected promise with the error
-     */
-    getProfessionalsStudyAccessesForStudy:
-      getProfessionalsStudyAccessesForStudy,
 
     /**
      * @function
@@ -1955,16 +1857,6 @@ const postgresqlHelper = (function () {
      * @returns {Promise} a resolved promise with the found study or a rejected promise with the error
      */
     getStudy: getStudy,
-
-    /**
-     * @function
-     * @description gets the study with the specified id
-     * @memberof module:postgresqlHelper
-     * @param {string} probandname the id of proband to get studies for
-     * @param {string} username the id of the user to match the studies with
-     * @returns {Promise} a resolved promise with the found study or a rejected promise with the error
-     */
-    getStudiesOfProbandForUser: getStudiesOfProbandForUser,
 
     /**
      * @function
@@ -2084,17 +1976,7 @@ const postgresqlHelper = (function () {
      * @param {string} username the username of the user to find
      * @returns {Promise} a resolved promise with the found user or a rejected promise with the error
      */
-    getUser: getUser,
-
-    /**
-     * @function
-     * @description gets the probands inside a study
-     * @memberof module:postgresqlHelper
-     * @param {array} probands
-     * @param {string} study_name
-     * @returns {Promise} a resolved promise with the found probands or a rejected promise with the error
-     */
-    findProbandNamesInStudy: findProbandNamesInStudy,
+    getRoleOfUser: getRoleOfUser,
 
     /**
      * @function

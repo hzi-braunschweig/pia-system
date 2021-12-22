@@ -10,13 +10,13 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 const sinon = require('sinon');
 const fetchMock = require('fetch-mock').sandbox();
-const fetch = require('node-fetch');
 
 const {
   setup,
   cleanup,
 } = require('./internal-personalData.spec.data/setup.helper');
 
+const { HttpClient } = require('@pia-system/lib-http-clients-internal');
 const server = require('../../src/server');
 const testSandbox = sinon.createSandbox();
 
@@ -35,7 +35,7 @@ describe('Internal: /personalData', () => {
   });
 
   beforeEach(() => {
-    testSandbox.stub(fetch, 'default').callsFake(fetchMock);
+    testSandbox.stub(HttpClient, 'fetch').callsFake(fetchMock);
     fetchMock.catch(503);
   });
 
@@ -67,19 +67,12 @@ describe('Internal: /personalData', () => {
   });
 
   describe('PUT /personal/personalData/proband/{pseudonym}', () => {
-    beforeEach(() => {
-      fetchMock.get('express:/user/users/:pseudonym/primaryStudy', {
-        body: {
-          name: 'QTestStudy1',
-        },
-      });
-    });
-
     it('should return HTTP 200 with created personal data', async () => {
       // Arrange
       fetchMock.get('express:/user/users/:pseudonym', {
         body: {
-          account_status: 'active',
+          study: 'QTestStudy1',
+          complianceContact: true,
         },
       });
       const personalData = createPersonalData();
@@ -103,7 +96,8 @@ describe('Internal: /personalData', () => {
       // Arrange
       fetchMock.get('express:/user/users/:pseudonym', {
         body: {
-          account_status: 'active',
+          study: 'QTestStudy1',
+          complianceContact: true,
         },
       });
       const personalData = createPersonalData();
@@ -127,7 +121,8 @@ describe('Internal: /personalData', () => {
       // Arrange
       fetchMock.get('express:/user/users/:pseudonym', {
         body: {
-          account_status: 'active',
+          study: 'QTestStudy1',
+          complianceContact: true,
         },
       });
       const personalData = {
@@ -164,7 +159,8 @@ describe('Internal: /personalData', () => {
       // Arrange
       fetchMock.get('express:/user/users/:pseudonym', {
         body: {
-          account_status: 'active',
+          study: 'QTestStudy1',
+          complianceContact: true,
         },
       });
       const personalData = {
@@ -201,7 +197,8 @@ describe('Internal: /personalData', () => {
       // Arrange
       fetchMock.get('express:/user/users/:pseudonym', {
         body: {
-          account_status: 'active',
+          study: 'QTestStudy1',
+          complianceContact: true,
         },
       });
       const personalData = createPersonalData();
@@ -217,11 +214,12 @@ describe('Internal: /personalData', () => {
       expect(result, result.text).to.have.status(400);
     });
 
-    it('should return HTTP 404 when the proband was deactivated', async () => {
+    it('should return HTTP 403 when the proband has refused to be contacted', async () => {
       // Arrange
       fetchMock.get('express:/user/users/:pseudonym', {
         body: {
-          account_status: 'deactivated',
+          study: 'QTestStudy1',
+          complianceContact: false,
         },
       });
       const personalData = createPersonalData();
@@ -233,7 +231,7 @@ describe('Internal: /personalData', () => {
         .send(personalData);
 
       // Assert
-      expect(result, result.text).to.have.status(404);
+      expect(result, result.text).to.have.status(403);
     });
 
     it('should return HTTP 404 when the proband does not exist', async () => {

@@ -25,6 +25,7 @@ export class LicenseCollector {
     'BSD-3-Clause',
     'BSD',
     'CC-BY-3.0',
+    'CC-BY-4.0',
     'CC0-1.0',
     'ISC',
     'MIT',

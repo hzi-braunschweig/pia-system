@@ -30,7 +30,7 @@ class PackageLicense {
                 '" with text:\n\n' +
                 this.licenseText +
                 '\n\n' +
-                'Please add a valid license text to known-missing-license-texts.js\n\n');
+                'Please add a valid license text to licenseTextCompleter.ts\n\n');
         }
     }
     getKnownMissingLicenseText() {
@@ -55,5 +55,6 @@ PackageLicense.VALID_LICENSE_TEXT_SNIPPETS = [
     'Redistribution and use in source and binary forms, with or',
     'Anyone is free to copy, modify, publish, use, compile, sell, or',
     'DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE',
+    'Attribution 4.0 International',
 ];
 //# sourceMappingURL=packageLicense.js.map

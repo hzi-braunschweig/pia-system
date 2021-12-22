@@ -107,12 +107,6 @@ export class QuestionnaireClientService {
       .toPromise();
   }
 
-  getStudies(): Promise<{ studies: Study[] }> {
-    return this.http
-      .get<{ studies: Study[] }>(this.getApiUrl() + 'studies')
-      .toPromise();
-  }
-
   getStudy(name: string): Promise<Study> {
     return this.http
       .get<Study>(this.getApiUrl() + 'studies/' + name)

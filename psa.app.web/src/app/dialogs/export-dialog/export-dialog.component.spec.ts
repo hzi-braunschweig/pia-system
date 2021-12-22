@@ -38,17 +38,14 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { MatSelectSearchComponent } from '../../features/mat-select-search/mat-select-search.component';
 import { MatOptionSelectAllComponent } from '../../features/mat-option-select-all/mat-option-select-all.component';
 import {
-  UserListResponse,
-  UserWithStudyAccess,
-} from '../../psa.app.core/models/user-with-study-access';
-import {
   Questionnaire,
   QuestionnaireListResponse,
 } from '../../psa.app.core/models/questionnaire';
 import { By } from '@angular/platform-browser';
-import SpyObj = jasmine.SpyObj;
 import { of } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
+import { createProband } from '../../psa.app.core/models/instance.helper.spec';
+import SpyObj = jasmine.SpyObj;
 
 describe('DialogExportDataComponent', () => {
   let component: DialogExportDataComponent;
@@ -58,22 +55,41 @@ describe('DialogExportDataComponent', () => {
   let authService: SpyObj<AuthService>;
   let alertService: SpyObj<AlertService>;
   let questionnaireService: SpyObj<QuestionnaireService>;
+  const proband1 = createProband({
+    pseudonym: 'Testproband1',
+    study: 'Teststudie1',
+  });
+  const proband2 = createProband({
+    pseudonym: 'Testproband2',
+    study: 'Teststudie2',
+  });
+  const proband3 = createProband({
+    pseudonym: 'Testproband3',
+    study: 'Teststudie2',
+  });
+  const proband4 = createProband({
+    pseudonym: 'Testproband4',
+    study: 'Teststudie3',
+  });
 
   beforeEach(async () => {
-    dialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
-    authService = jasmine.createSpyObj('AuthService', ['getUsers']);
-    alertService = jasmine.createSpyObj('AlertService', ['error']);
-    questionnaireService = jasmine.createSpyObj('QuestionnaireService', [
+    dialogRef = jasmine.createSpyObj(MatDialogRef, ['close']);
+    authService = jasmine.createSpyObj(AuthService, ['getProbands']);
+    alertService = jasmine.createSpyObj(AlertService, ['error']);
+    questionnaireService = jasmine.createSpyObj(QuestionnaireService, [
       'getExportData',
       'getQuestionnaires',
       'getImageBy',
     ]);
 
-    authService.getUsers.and.returnValue(
-      Promise.resolve(getUserListResponse())
-    );
-    questionnaireService.getQuestionnaires.and.returnValue(
-      Promise.resolve(getQuestionnaireListResponse())
+    authService.getProbands.and.resolveTo([
+      proband1,
+      proband2,
+      proband3,
+      proband4,
+    ]);
+    questionnaireService.getQuestionnaires.and.resolveTo(
+      getQuestionnaireListResponse()
     );
     questionnaireService.getExportData.and.returnValue(
       of(new HttpResponse({ body: new Blob(), statusText: 'OK' }))
@@ -179,10 +195,7 @@ describe('DialogExportDataComponent', () => {
       tick();
       fixture.detectChanges();
       expect(component.form.get('probands').enabled).toBeTruthy();
-      expect(probandsSpy).toHaveBeenCalledWith([
-        { username: 'Testproband2', studies: ['Teststudie1', 'Teststudie2'] },
-        { username: 'Testproband3', studies: ['Teststudie2'] },
-      ]);
+      expect(probandsSpy).toHaveBeenCalledWith([proband2, proband3]);
     }));
   });
 
@@ -229,33 +242,6 @@ describe('DialogExportDataComponent', () => {
       expect(questionnaireService.getExportData).not.toHaveBeenCalled();
     });
   });
-
-  function getUserListResponse(): UserListResponse {
-    return {
-      users: [
-        {
-          username: 'Testproband1',
-          study_accesses: [{ study_id: 'Teststudie1', access_level: null }],
-        },
-        {
-          username: 'Testproband2',
-          study_accesses: [
-            { study_id: 'Teststudie1', access_level: null },
-            { study_id: 'Teststudie2', access_level: null },
-          ],
-        },
-        {
-          username: 'Testproband3',
-          study_accesses: [{ study_id: 'Teststudie2', access_level: null }],
-        },
-        {
-          username: 'Testproband4',
-          study_accesses: [{ study_id: 'Teststudie3', access_level: null }],
-        },
-      ] as UserWithStudyAccess[],
-      links: null,
-    };
-  }
 
   function getQuestionnaireListResponse(): QuestionnaireListResponse {
     return {

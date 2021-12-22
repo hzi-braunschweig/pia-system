@@ -6,17 +6,14 @@
 
 import { AnswerOption } from './answerOption';
 import { Condition } from './condition';
+import { Questionnaire } from './questionnaire';
 
-export interface DbQuestion {
+export interface Question {
   id: number;
-  questionnaire_id: number;
-  questionnaire_version: number;
-  text: string;
+  isMandatory: boolean | null;
   position: number;
-  is_mandatory: boolean | null;
-}
-
-export interface Question extends DbQuestion {
-  answer_options: AnswerOption[];
-  condition: Condition | null;
+  text: string;
+  questionnaire?: Questionnaire;
+  answerOptions?: AnswerOption[];
+  condition?: Condition | null;
 }

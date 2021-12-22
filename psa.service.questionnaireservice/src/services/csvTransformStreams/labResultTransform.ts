@@ -21,7 +21,7 @@ export class LabResultTransform extends CsvTransform<
     return {
       Bericht_ID: observation.lab_result_id,
       Proband:
-        observation.account_status === 'no_account' ? '' : observation.user_id,
+        observation.ids === observation.user_id ? '' : observation.user_id,
       IDS: observation.ids ?? '',
       Datum_Abnahme: this.formatDate(observation.date_of_sampling),
       Datum_Eingang: this.formatDate(observation.date_of_delivery),

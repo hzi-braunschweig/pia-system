@@ -266,7 +266,10 @@ export class QuestionnaireDetailPage
       this.canGoToNext = !this.hasQuestionnaireStatus('released_twice');
       this.canSubmit = false;
 
-      this.form.valueChanges.subscribe(() => this.deleteDisabledAnswers());
+      this.form.valueChanges.subscribe(() => {
+        this.deleteDisabledAnswers();
+        this.updateSlideHeight();
+      });
     } catch (error) {
       console.error(error);
     }
@@ -338,6 +341,34 @@ export class QuestionnaireDetailPage
       return true;
     }
     return false;
+  }
+
+  /**
+   * The slides' content height may change whenever new questions
+   * are shown or hidden or whenever form control values change.
+   * Those changes are not always detected by the slides component
+   * as it does not live within Angular's component life cycle.
+   *
+   * This is an issue especially with single select fields and
+   * uploaded photos. Those changes increase the content height,
+   * but do it too late for the slide to pick up the changes.
+   *
+   * Thus we manually trigger the slide's height update after every
+   * value change of the questionnaire form.
+   *
+   * As we want a responsive UI, but do not know how fast the mobile
+   * device renders new content, we trigger the update 10 times
+   * within 1000ms.
+   */
+  private updateSlideHeight(): void {
+    let updateCount = 10;
+    const interval = setInterval(() => {
+      void this.slides.updateAutoHeight();
+      --updateCount;
+      if (updateCount <= 0) {
+        clearInterval(interval);
+      }
+    }, 100);
   }
 
   private async updateAnswersAndQuestionnaireInstance(

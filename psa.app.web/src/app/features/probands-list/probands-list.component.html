@@ -81,7 +81,7 @@
       </ng-container>
 
       <!-- Study Column -->
-      <ng-container matColumnDef="studyNamesArray">
+      <ng-container matColumnDef="study">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
           {{ 'QUESTIONNAIRES_FORSCHER.STUDY_ID' | translate }}
         </th>
@@ -90,7 +90,7 @@
           *matCellDef="let row"
           data-e2e="e2e-compliance-management-study"
         >
-          {{ row.study_accesses }}
+          {{ row.study }}
         </td>
       </ng-container>
 
@@ -107,11 +107,13 @@
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
           {{ 'PROBANDEN.FIRST_LOGIN' | translate }}
         </th>
-        <td mat-cell *matCellDef="let row">{{ row.first_logged_in_at }}</td>
+        <td mat-cell *matCellDef="let row">
+          {{ row.first_logged_in_at | date }}
+        </td>
       </ng-container>
 
       <!-- Account status Column -->
-      <ng-container matColumnDef="account_status">
+      <ng-container matColumnDef="accountStatus">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
           {{ 'PROBANDEN.ACCOUNT_STATUS' | translate }}
         </th>

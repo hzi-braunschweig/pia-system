@@ -4,8 +4,12 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-importScripts('https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js');
-importScripts('https://www.gstatic.com/firebasejs/8.6.8/firebase-messaging.js');
+importScripts(
+  'https://www.gstatic.com/firebasejs/9.2.0/firebase-app-compat.js'
+);
+importScripts(
+  'https://www.gstatic.com/firebasejs/9.2.0/firebase-messaging-compat.js'
+);
 
 // Initialize Firebase
 const firebaseConfig = {

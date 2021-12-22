@@ -22,7 +22,6 @@
         mat-raised-button
         color="primary"
         (click)="createNewQuestionnaire()"
-        *ngIf="currentRole == 'Forscher'"
         data-e2e="e2e-create-new-questionnaire-button"
       >
         {{ 'QUESTIONNAIRES_FORSCHER.NEW_QUESTIONNAIRE' | translate }}
@@ -146,7 +145,6 @@
             id="deleteicon"
             mat-icon-button
             (click)="openDialog(row.id, row.version)"
-            *ngIf="currentRole == 'Forscher'"
           >
             <mat-icon>delete</mat-icon>
           </button>
@@ -155,7 +153,6 @@
             #delete
             mat-icon-button
             (click)="editQuestionnaire(row.id, row.version)"
-            *ngIf="currentRole == 'Forscher'"
           >
             <mat-icon>mode_edit</mat-icon>
           </button>

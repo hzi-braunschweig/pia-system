@@ -19,19 +19,20 @@ import * as postgresqlHelper from './postgresqlHelper';
 import { FcmHelper } from './fcmHelper';
 import { MailService } from '@pia/lib-service-core';
 import { config } from '../config';
-import { PersonaldataserviceClient } from '../clients/personaldataserviceClient';
-import { QuestionnaireserviceClient } from '../clients/questionnaireserviceClient';
+import { personaldataserviceClient } from '../clients/personaldataserviceClient';
+import { questionnaireserviceClient } from '../clients/questionnaireserviceClient';
 import { assert } from 'ts-essentials';
 import { User } from '../models/user';
 import { LabResult } from '../models/labResult';
 import { DbNotificationSchedules } from '../models/notification';
-import { Answer } from '../models/answer';
-import { DbQuestionnaireInstance } from '../models/questionnaireInstance';
+import { DbAnswer } from '../models/answer';
 import { DbQuestionnaire } from '../models/questionnaire';
 import { FcmToken } from '../models/fcmToken';
 import StatusCodes from 'http-status-codes';
 import { Boom } from '@hapi/boom';
+import { DbQuestionnaireInstance } from '../models/questionnaireInstance';
 import { zonedTimeToUtc } from 'date-fns-tz';
+import { userserviceClient } from '../clients/userserviceClient';
 
 interface Study {
   name: string;
@@ -105,21 +106,24 @@ export class NotificationHelper {
     const studiesHUB = await postgresqlHelper.getStudiesWithHUBEmail();
 
     await Promise.all(
-      studiesPM.map(async (study) => {
+      studiesPM.map(async (study: Study) => {
         await NotificationHelper.sendSampleReportToPM(study);
       })
     );
 
     await Promise.all(
-      studiesHUB.map(async (study) => {
+      studiesHUB.map(async (study: Study) => {
         await NotificationHelper.sendSampleReportToHUB(study);
       })
     );
   }
 
   public static async sendSampleReportToPM(study: Study): Promise<void> {
-    const labResults = await postgresqlHelper.getNewSampledSamplesForStudy(
-      study.name
+    const probandsOfStudy = await userserviceClient.getPseudonyms({
+      study: study.name,
+    });
+    const labResults = await postgresqlHelper.getNewSampledSamplesForProbands(
+      probandsOfStudy
     );
     if (labResults.length > 0) {
       console.log(
@@ -135,8 +139,11 @@ export class NotificationHelper {
   }
 
   public static async sendSampleReportToHUB(study: Study): Promise<void> {
-    const labResults = (await postgresqlHelper.getNewAnalyzedSamplesForStudy(
-      study.name
+    const probandsOfStudy = await userserviceClient.getPseudonyms({
+      study: study.name,
+    });
+    const labResults = (await postgresqlHelper.getNewAnalyzedSamplesForProbands(
+      probandsOfStudy
     )) as LabResult[];
     if (labResults.length > 0) {
       console.log(
@@ -219,8 +226,9 @@ export class NotificationHelper {
 
   /**
    * creates dates for push notifications
-   * @param {object} userSettings the user settings
-   * @param {object} questionnaireSettings the questionnaire settings
+   * @param userSettings the user settings
+   * @param questionnaireSettings the questionnaire settings
+   * @param dateOfIssue
    */
   public static createDatesForUserNotification(
     questionnaireSettings: DbQuestionnaire,
@@ -360,7 +368,7 @@ export class NotificationHelper {
     if (hasAnswersNotifyFeature) {
       const answers = (await postgresqlHelper.getQuestionnaireInstanceAnswers(
         questionnaireInstanceId
-      )) as Answer[];
+      )) as DbAnswer[];
       for (const answer of answers) {
         const isNotableAnswer = (await postgresqlHelper.isNotableAnswer(
           answer.answer_option_id,
@@ -431,10 +439,11 @@ export class NotificationHelper {
     notificationSchedule: Schedule
   ): Promise<void> {
     try {
-      const qInstance =
-        await QuestionnaireserviceClient.getQuestionnaireInstance(
+      const qInstance = await questionnaireserviceClient
+        .getQuestionnaireInstance(
           Number.parseInt(notificationSchedule.reference_id)
-        ).catch((err) => {
+        )
+        .catch((err) => {
           if (
             err instanceof Boom &&
             err.output.statusCode === StatusCodes.NOT_FOUND
@@ -461,7 +470,7 @@ export class NotificationHelper {
         qInstance.status === 'active' ||
         qInstance.status === 'in_progress'
       ) {
-        assert(qInstance.user_id === notificationSchedule.user_id);
+        assert(qInstance.pseudonym === notificationSchedule.user_id);
 
         const tokens = (await postgresqlHelper.getToken(
           notificationSchedule.user_id
@@ -469,14 +478,14 @@ export class NotificationHelper {
         const sendNotification = tokens.length > 0;
         const sendMail = !sendNotification;
 
-        let notification_body = '';
-        const notification_title = qInstance.questionnaire.notification_title;
+        let notification_body;
+        const notification_title = qInstance.questionnaire.notificationTitle;
 
         if (qInstance.status === 'active') {
-          notification_body = qInstance.questionnaire.notification_body_new;
+          notification_body = qInstance.questionnaire.notificationBodyNew;
         } else {
           notification_body =
-            qInstance.questionnaire.notification_body_in_progress;
+            qInstance.questionnaire.notificationBodyInProgress;
         }
 
         let didSendReminder = false;
@@ -493,7 +502,7 @@ export class NotificationHelper {
             }
 
             const success = await NotificationHelper.sendNotifications({
-              recipient: qInstance.user_id,
+              recipient: qInstance.pseudonym,
               tokens,
               notificationId: notificationSchedule.id,
               badgeNumber: numberOfOpenQuestionnairesForBadge,
@@ -506,18 +515,18 @@ export class NotificationHelper {
           }
           if (sendMail) {
             console.log(
-              `Sending email to user: ${qInstance.user_id} for instance id: ${qInstance.id}`
+              `Sending email to user: ${qInstance.pseudonym} for instance id: ${qInstance.id}`
             );
 
-            const email = await PersonaldataserviceClient.getPersonalDataEmail(
-              qInstance.user_id
-            ).catch(() => {
-              console.log('User has no email address');
-              return null;
-            });
+            const email = await personaldataserviceClient
+              .getPersonalDataEmail(qInstance.pseudonym)
+              .catch(() => {
+                console.log('User has no email address');
+                return null;
+              });
 
             if (email) {
-              const url = `${config.webappUrl}/extlink/questionnaire/${qInstance.questionnaire_id}/${qInstance.id}`;
+              const url = `${config.webappUrl}/extlink/questionnaire/${qInstance.questionnaire.id}/${qInstance.id}`;
               const InstanceReminderMail = {
                 subject: notification_title,
                 text: `Liebe:r Nutzer:in,\n\n${notification_body}\nKlicken Sie auf folgenden Link, um direkt zum Fragebogen zu gelangen:\n<a href="${url}">PIA Webapp</a>`,
@@ -525,7 +534,7 @@ export class NotificationHelper {
               };
               await MailService.sendMail(email, InstanceReminderMail);
               console.log(
-                `Successfully sent email to user: ${qInstance.user_id} for instance id: ${qInstance.id}`
+                `Successfully sent email to user: ${qInstance.pseudonym} for instance id: ${qInstance.id}`
               );
               await postgresqlHelper.deleteScheduledNotification(
                 notificationSchedule.id
@@ -539,7 +548,7 @@ export class NotificationHelper {
 
         if (!didSendReminder) {
           console.log(
-            `Error sending notification AND email to user: ${qInstance.user_id} for instance id: ${qInstance.id}, postponing it`
+            `Error sending notification AND email to user: ${qInstance.pseudonym} for instance id: ${qInstance.id}, postponing it`
           );
           await postgresqlHelper.postponeNotificationByInstanceId(
             notificationSchedule.reference_id
@@ -597,12 +606,12 @@ export class NotificationHelper {
             notificationSchedule.user_id
         );
 
-        const email = await PersonaldataserviceClient.getPersonalDataEmail(
-          notificationSchedule.user_id
-        ).catch(() => {
-          console.log('User has no email address');
-          return null;
-        });
+        const email = await personaldataserviceClient
+          .getPersonalDataEmail(notificationSchedule.user_id)
+          .catch(() => {
+            console.log('User has no email address');
+            return null;
+          });
 
         if (email) {
           const InstanceReminderMail = {
@@ -664,7 +673,7 @@ export class NotificationHelper {
         const emailPayload = {
           subject: notificationSchedule.title,
           text: notificationSchedule.body,
-          html: notificationSchedule.body.replace(/(?:\r\n|\r|\n)/g, '<br>'),
+          html: notificationSchedule.body.replace(/\r\n|\r|\n/g, '<br>'),
         };
         await MailService.sendMail(emailTo, emailPayload);
         console.log('Successfully sent email to: ' + emailTo);

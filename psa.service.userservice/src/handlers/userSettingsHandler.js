@@ -5,9 +5,10 @@
  */
 
 const Boom = require('@hapi/boom');
-const postgresqlHelper = require('../services/postgresqlHelper.js');
 const RESTPresenter = require('../services/RESTPresenter.js');
-const userSettingsInteractor = require('../interactors/userSettingsInteractor.js');
+const {
+  UserSettingsInteractor,
+} = require('../interactors/userSettingsInteractor');
 
 /**
  * @description HAPI Handler for users
@@ -17,13 +18,11 @@ const userSettingsHandler = (function () {
     const username = request.params.username;
     const settingsValues = request.payload;
 
-    return userSettingsInteractor
-      .updateUserSettings(
-        request.auth.credentials,
-        username,
-        settingsValues,
-        postgresqlHelper
-      )
+    return UserSettingsInteractor.updateUserSettings(
+      request.auth.credentials,
+      username,
+      settingsValues
+    )
       .then((result) => RESTPresenter.presentUserSettings(result, username))
       .catch((err) => {
         console.log('Could not update user settings in DB:' + err);
@@ -34,8 +33,10 @@ const userSettingsHandler = (function () {
   function getOne(request) {
     const username = request.params.username;
 
-    return userSettingsInteractor
-      .getUserSettings(request.auth.credentials, username, postgresqlHelper)
+    return UserSettingsInteractor.getUserSettings(
+      request.auth.credentials,
+      username
+    )
       .then((result) => RESTPresenter.presentUserSettings(result, username))
       .catch((err) => {
         console.log('Could not get user settings from DB:' + err);

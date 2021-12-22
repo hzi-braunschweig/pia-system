@@ -26,7 +26,7 @@ import {
   HostListener,
   OnInit,
 } from '@angular/core';
-import { Studie } from '../../../psa.app.core/models/studie';
+import { Study } from '../../../psa.app.core/models/study';
 import { TranslateService } from '@ngx-translate/core';
 import {
   DateAdapter,
@@ -44,7 +44,6 @@ import {
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
 import { MediaObserver } from '@angular/flex-layout';
 import { NgxMaterialTimepickerTheme } from 'ngx-material-timepicker';
-import { HttpErrorResponse } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { QuestionnaireEditOptions } from './questionnaire-edit-options';
@@ -85,10 +84,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
   type: string;
   activate_at_date: string;
   study_id: string;
-  selectedStudy: Studie = null;
+  selectedStudy: Study = null;
   answer_type_id: number;
   panelDrag: any = true;
-  studies: Studie[];
+  studies: Study[];
   showQuestionnaireCondition = false;
   questionnairesForConditionQuestionnaire = [];
   questionnaires: Questionnaire[];

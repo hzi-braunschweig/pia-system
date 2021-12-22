@@ -8,9 +8,11 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { QuestionnaireInstance } from '../../app/psa.app.core/models/questionnaireInstance';
 import { DataSource } from '@angular/cdk/collections';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, merge, Observable } from 'rxjs';
 import { QuestionnaireInsancesOneUserDatabase } from './questionnaire-instances-for-one-user-database';
 import { TranslateService } from '@ngx-translate/core';
+import { map } from 'rxjs/operators';
+
 /**
  * Data source to provide what data should be rendered in the table. Note that the data source
  * can retrieve its data in any way. In this case, the data source is provided a reference
@@ -51,26 +53,28 @@ export class QuestionnaireInstancesOneUserDataSource extends DataSource<any> {
       this._paginator.page,
     ];
 
-    return Observable.merge(...displayDataChanges).map(() => {
-      // Filter data
-      this.filteredData = this._questionnaireDatabase.data
-        .slice()
-        .filter((item: QuestionnaireInstance) => {
-          const searchStr = this.buildItemString(item);
-          return searchStr.indexOf(this.filter.toLowerCase()) !== -1;
-        });
+    return merge(...displayDataChanges).pipe(
+      map(() => {
+        // Filter data
+        this.filteredData = this._questionnaireDatabase.data
+          .slice()
+          .filter((item: QuestionnaireInstance) => {
+            const searchStr = this.buildItemString(item);
+            return searchStr.indexOf(this.filter.toLowerCase()) !== -1;
+          });
 
-      // Sort filtered data
-      const sortedData = this.sortData(this.filteredData.slice());
+        // Sort filtered data
+        const sortedData = this.sortData(this.filteredData.slice());
 
-      // Grab the page's slice of the filtered sorted data.
-      const startIndex = this._paginator.pageIndex * this._paginator.pageSize;
-      this.renderedData = sortedData.splice(
-        startIndex,
-        this._paginator.pageSize
-      );
-      return this.renderedData;
-    });
+        // Grab the page's slice of the filtered sorted data.
+        const startIndex = this._paginator.pageIndex * this._paginator.pageSize;
+        this.renderedData = sortedData.splice(
+          startIndex,
+          this._paginator.pageSize
+        );
+        return this.renderedData;
+      })
+    );
   }
 
   buildItemString(item: QuestionnaireInstance): string {

@@ -4,73 +4,78 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
-import { AlertController, Platform } from '@ionic/angular';
-import { SplashScreen } from '@ionic-native/splash-screen/ngx';
-import { StatusBar } from '@ionic-native/status-bar/ngx';
-import { AppVersion } from '@ionic-native/app-version/ngx';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { MockPipe, MockProvider } from 'ng-mocks';
-import { NEVER } from 'rxjs';
-
+import { MockBuilder } from 'ng-mocks';
+import { BehaviorSubject, NEVER } from 'rxjs';
 import { AppComponent } from './app.component';
 import { AuthService } from './auth/auth.service';
 import { ComplianceService } from './compliance/compliance-service/compliance.service';
 import { NotificationService } from './shared/services/notification/notification.service';
-import { EndpointService } from './shared/services/endpoint/endpoint.service';
 import { User } from './auth/auth.model';
-import { BadgeService } from './shared/services/badge/badge.service';
+import { AppModule } from './app.module';
+import { Platform } from '@ionic/angular';
+import { SplashScreen } from '@ionic-native/splash-screen/ngx';
+import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { TranslatePipe } from '@ngx-translate/core';
 import SpyObj = jasmine.SpyObj;
 
 describe('AppComponent', () => {
-  let statusBarSpy;
-  let splashScreenSpy;
-  let platformReadySpy;
-  let platformSpy;
+  let statusBarSpy: SpyObj<StatusBar>;
+  let splashScreenSpy: SpyObj<SplashScreen>;
+  let platformSpy: SpyObj<Platform>;
   let auth: SpyObj<AuthService>;
   let compliance: SpyObj<ComplianceService>;
+  let notification: SpyObj<NotificationService>;
+  let currentUser$: BehaviorSubject<User>;
+  const currentUser: User = {
+    username: 'TESTUSER-1234',
+    role: 'Proband',
+    study: 'teststudy',
+  };
 
-  beforeEach(() => {
-    statusBarSpy = jasmine.createSpyObj('StatusBar', ['styleDefault']);
-    splashScreenSpy = jasmine.createSpyObj('SplashScreen', ['hide']);
-    platformReadySpy = Promise.resolve();
-    platformSpy = jasmine.createSpyObj('Platform', { ready: platformReadySpy });
-    auth = jasmine.createSpyObj('AuthService', [
-      'getCurrentUser',
-      'isAuthenticated',
+  beforeEach(async () => {
+    statusBarSpy = jasmine.createSpyObj<StatusBar>('StatusBar', [
+      'styleDefault',
     ]);
-    compliance = jasmine.createSpyObj('ComplianceService', [
-      'userHasCompliances',
-      'isInternalComplianceActive',
+    splashScreenSpy = jasmine.createSpyObj<SplashScreen>('SplashScreen', [
+      'hide',
     ]);
+    platformSpy = jasmine.createSpyObj<Platform>('Platform', ['ready', 'is']);
+    currentUser$ = new BehaviorSubject<User>(currentUser);
+    auth = jasmine.createSpyObj(
+      'AuthService',
+      ['getCurrentUser', 'isAuthenticated'],
+      {
+        currentUser$,
+      }
+    );
+    compliance = jasmine.createSpyObj(
+      'ComplianceService',
+      ['userHasCompliances', 'isInternalComplianceActive'],
+      {
+        complianceDataChangesObservable: NEVER,
+      }
+    );
+    notification = jasmine.createSpyObj<NotificationService>(
+      'NotificationService',
+      ['initPushNotifications']
+    );
 
-    (compliance as any).complianceDataChangesObservable = NEVER;
+    platformSpy.ready.and.resolveTo();
     compliance.userHasCompliances.and.resolveTo(true);
     compliance.isInternalComplianceActive.and.resolveTo(true);
-    (auth as any).loggedIn = NEVER;
     auth.isAuthenticated.and.returnValue(true);
-    auth.getCurrentUser.and.returnValue({ username: 'TESTUSER-1234' } as User);
+    auth.getCurrentUser.and.returnValue(currentUser);
 
-    TestBed.configureTestingModule({
-      declarations: [AppComponent, MockPipe(TranslatePipe, (value) => value)],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      providers: [
-        MockProvider(AppVersion),
-        MockProvider(StatusBar, statusBarSpy),
-        MockProvider(SplashScreen, splashScreenSpy),
-        MockProvider(Platform, platformSpy),
-        MockProvider(AlertController),
-        MockProvider(TranslateService),
-        MockProvider(ComplianceService, compliance),
-        MockProvider(NotificationService),
-        MockProvider(EndpointService),
-        MockProvider(AuthService, auth),
-        MockProvider(BadgeService),
-      ],
-      imports: [RouterTestingModule.withRoutes([])],
-    }).compileComponents();
+    await MockBuilder(AppComponent, AppModule)
+      .mock(AuthService, auth)
+      .mock(ComplianceService, compliance)
+      .mock(NotificationService, notification)
+      .mock(StatusBar, statusBarSpy)
+      .mock(SplashScreen, splashScreenSpy)
+      .mock(Platform, platformSpy)
+      .mock(Platform, platformSpy)
+      .mock(TranslatePipe, (value) => value);
   });
 
   it('should create the app', async () => {
@@ -79,13 +84,20 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it('should initialize the app', async () => {
+  it('should initialize the app', fakeAsync(() => {
+    platformSpy.is.and.returnValue(true);
     TestBed.createComponent(AppComponent);
     expect(platformSpy.ready).toHaveBeenCalled();
-    await platformReadySpy;
+    tick();
     expect(statusBarSpy.styleDefault).toHaveBeenCalled();
     expect(splashScreenSpy.hide).toHaveBeenCalled();
-  });
+  }));
+
+  it('should initialize notifications when a user is logged in', fakeAsync(() => {
+    TestBed.createComponent(AppComponent);
+    tick();
+    expect(notification.initPushNotifications).toHaveBeenCalled();
+  }));
 
   it('should have menu labels', fakeAsync(() => {
     const fixture = TestBed.createComponent(AppComponent);

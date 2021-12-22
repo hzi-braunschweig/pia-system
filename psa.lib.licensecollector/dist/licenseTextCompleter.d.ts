@@ -4,6 +4,7 @@ export declare class LicenseTextCompleter {
     static GPL_3_0: string;
     static LGPL_3_0: string;
     static MIT_ANGULAR: string;
+    static MIT_ANGULAR_FIRE: string;
     static MIT_IONIC: string;
     static MIT_ZENO_ROCHA: string;
     static knownMissingLicenseTexts: Map<string, string> | undefined;

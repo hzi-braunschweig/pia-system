@@ -57,10 +57,12 @@ export class QuestionnaireListPage {
     ).length;
   }
 
-  async switchTab(status: Status) {
+  async switchTab(event: Event) {
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { status },
+      queryParams: {
+        status: (event as CustomEvent<{ value: Status }>).detail.value,
+      },
       queryParamsHandling: 'merge',
     });
   }

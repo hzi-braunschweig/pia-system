@@ -7,10 +7,7 @@
 <app-header [title]="'QUESTIONNAIRES.TITLE' | translate"></app-header>
 
 <ion-content color="primary-light">
-  <ion-segment
-    (ionChange)="switchTab($event.detail.value)"
-    [value]="selectedStatus"
-  >
+  <ion-segment (ionChange)="switchTab($event)" [value]="selectedStatus">
     <ion-segment-button value="open">
       <ion-label
         >{{ 'QUESTIONNAIRES.OPEN_QUESTIONNAIRES' | translate }}</ion-label

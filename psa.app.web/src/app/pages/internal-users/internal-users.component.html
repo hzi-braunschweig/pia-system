@@ -4,56 +4,49 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
+<app-loading-spinner *ngIf="isLoading" cover="true"></app-loading-spinner>
+
 <div class="jumbotron">
-  <mat-grid-list [cols]="cols | async" rowHeight="50px">
-    <mat-grid-tile>
-      <mat-form-field>
-        <mat-select
-          disableOptionCentering
-          id="selectstudy"
-          (selectionChange)="filterSelectMethod()"
-          placeholder="{{ 'ROLES.ROLES' | translate }}"
-          [(ngModel)]="currentRole"
-        >
-          <mat-option *ngFor="let role of roles" [value]="role.value">
-            {{ role.viewValue | translate }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </mat-grid-tile>
-    <mat-grid-tile>
-      <mat-form-field>
-        <input
-          matInput
-          (keyup)="applyFilter()"
-          [(ngModel)]="filterKeyword"
-          placeholder="{{ 'GENERAL.FILTER' | translate }}"
-        />
-      </mat-form-field>
-    </mat-grid-tile>
-    <mat-grid-tile>
-      <button
-        id="resetFilter"
-        mat-raised-button
-        color="primary"
-        (click)="resetFilter()"
+  <div class="grid-container">
+    <mat-form-field>
+      <mat-select
+        disableOptionCentering
+        id="selectstudy"
+        (selectionChange)="initTable()"
+        placeholder="{{ 'ROLES.ROLES' | translate }}"
+        [(ngModel)]="currentRole"
       >
-        {{ 'PROBANDEN.RESET_FILTER' | translate }}
-      </button>
-    </mat-grid-tile>
-    <mat-grid-tile>
-      <button
-        id="createUser"
-        mat-raised-button
-        color="primary"
-        (click)="addUser()"
-      >
-        {{ 'ROLES.NEW_USER' | translate }}
-      </button>
-    </mat-grid-tile>
-  </mat-grid-list>
-  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
-  <div class="probands-container mat-elevation-z8">
+        <mat-option *ngFor="let role of roles" [value]="role.value">
+          {{ role.viewValue | translate }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field>
+      <input
+        matInput
+        (keyup)="applyFilter()"
+        [(ngModel)]="filterKeyword"
+        placeholder="{{ 'GENERAL.FILTER' | translate }}"
+      />
+    </mat-form-field>
+    <button
+      id="resetFilter"
+      mat-raised-button
+      color="primary"
+      (click)="resetFilter()"
+    >
+      {{ 'PROBANDEN.RESET_FILTER' | translate }}
+    </button>
+    <button
+      id="createUser"
+      mat-raised-button
+      color="primary"
+      (click)="addUser()"
+    >
+      {{ 'ROLES.NEW_USER' | translate }}
+    </button>
+  </div>
+  <div class="users-container mat-elevation-z8">
     <mat-table
       #table
       [dataSource]="dataSource"
@@ -77,20 +70,11 @@
         <mat-cell *matCellDef="let row"> {{ row.role }}</mat-cell>
       </ng-container>
 
-      <!-- Date of first login Column -->
-      <ng-container matColumnDef="first_logged_in_at">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'PROBANDEN.FIRST_LOGIN' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row"> {{ row.first_logged_in_at }}</mat-cell>
-      </ng-container>
-
       <ng-container matColumnDef="view">
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
         <mat-cell *matCellDef="let row">
           <button
             id="deleteicon"
-            #delete
             mat-icon-button
             (click)="openDialog(row.username)"
           >
@@ -106,7 +90,7 @@
     <div
       class="table-no-results"
       *ngIf="!isLoading"
-      [style.display]="dataSource.renderedData.length == 0 ? '' : 'none'"
+      [style.display]="dataSource.filteredData.length === 0 ? '' : 'none'"
     >
       {{ 'QUESTIONNAIRES_FORSCHER.FILTER_NO_RESULTS' | translate }}
     </div>
@@ -114,7 +98,6 @@
     <mat-paginator
       #paginator
       [length]="dataSource.filteredData.length"
-      [pageIndex]="0"
       [pageSize]="25"
       [pageSizeOptions]="[5, 10, 25, 100]"
     >

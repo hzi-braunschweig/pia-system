@@ -1,4 +1,3 @@
-BEGIN;
 -- Studies
 INSERT INTO studies(name, description, has_logging_opt_in)
 VALUES ('ApiTestStudy1', 'ApiTestStudy1 Beschreibung', FALSE),
@@ -6,29 +5,29 @@ VALUES ('ApiTestStudy1', 'ApiTestStudy1 Beschreibung', FALSE),
        ('ApiTestStudy3', 'ApiTestStudy3 Beschreibung', FALSE);
 
 -- Users
-INSERT INTO users(username, password, role, compliance_labresults, compliance_samples)
-VALUES ('QTestForscher1', '', 'Forscher', TRUE, TRUE),
-       ('QTestForscher2', '', 'Forscher', TRUE, TRUE),
-       ('QTestProband1', '', 'Proband', TRUE, TRUE),
-       ('QTestProband2', '', 'Proband', TRUE, TRUE),
-       ('QTestProband3', '', 'Proband', FALSE, FALSE),
-       ('QTestProband4', '', 'Proband', TRUE, TRUE),
-       ('QTestProband5', '', 'Proband', TRUE, TRUE),
-       ('QTestProbandenManager', '', 'ProbandenManager', TRUE, TRUE),
-       ('QTestSysAdmin', '', 'SysAdmin', TRUE, TRUE),
-       ('QTestUntersuchungsteam', '', 'Untersuchungsteam', TRUE, TRUE);
-INSERT INTO study_users
+INSERT INTO probands(pseudonym, compliance_labresults, compliance_samples, study)
+VALUES ('QTestProband1', TRUE, TRUE, 'ApiTestStudy1'),
+       ('QTestProband2', TRUE, TRUE, 'ApiTestStudy2'),
+       ('QTestProband3', FALSE, FALSE, 'ApiTestStudy1'),
+       ('QTestProband4', TRUE, TRUE, 'ApiTestStudy3');
+
+INSERT INTO accounts(username, password, role)
+VALUES ('QTestProband1', '', 'Proband'),
+       ('QTestProband2', '', 'Proband'),
+       ('QTestProband3', '', 'Proband'),
+       ('QTestProband4', '', 'Proband'),
+       ('QTestForscher1', '', 'Forscher'),
+       ('QTestForscher2', '', 'Forscher'),
+       ('QTestProbandenManager', '', 'ProbandenManager'),
+       ('QTestSysAdmin', '', 'SysAdmin'),
+       ('QTestUntersuchungsteam', '', 'Untersuchungsteam');
+
+INSERT INTO study_users (study_id, user_id, access_level)
 VALUES ('ApiTestStudy1', 'QTestForscher1', 'write'),
-       ('ApiTestStudy1', 'QTestProband1', 'read'),
-       ('ApiTestStudy1', 'QTestProband3', 'read'),
        ('ApiTestStudy1', 'QTestProbandenManager', 'write'),
        ('ApiTestStudy1', 'QTestUntersuchungsteam', 'write'),
-
        ('ApiTestStudy2', 'QTestForscher2', 'admin'),
-       ('ApiTestStudy2', 'QTestProband2', 'read'),
-
-       ('ApiTestStudy3', 'QTestForscher1', 'write'),
-       ('ApiTestStudy3', 'QTestProband4', 'read');
+       ('ApiTestStudy3', 'QTestForscher1', 'write');
 
 -- Questionnaires
 -- HINT: The number in this setup file has a design for easier usage: <study_number>00<questionnaire><question-position><answer_option-position>(<version>)
@@ -173,5 +172,3 @@ VALUES (110300, 1003101, 1003111, 1, '999999');
 INSERT INTO user_files(id, user_id, questionnaire_instance_id, answer_option_id, file)
 VALUES (999999, 'QTestProband1', 110300, 1003111,
         'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAJ5JREFUOI3d0sEJwlAQBNCnVag3CSLYRJCAFqJV6EEb0WAndiGCKDmoZegh/xAC+clVB/YwCzOzDMvfYooT3nghx6SreIYbUgwwxBz3YNyafKvwHfYV/kBSFfRrBhusIgFrbGMGC1xruzRcAhcsYwYf9Cr8jKK2iyJXFtaEDIeYwUTZdhMKjNuumCrbzjAKkwVx519IcMQzzKFL8o/iCw90Gk24qnziAAAAAElFTkSuQmCC');
-
-COMMIT;

@@ -7,7 +7,7 @@
 import { Injectable } from '@angular/core';
 import { PersonalData } from '../../models/personalData';
 import { HttpClient } from '@angular/common/http';
-import { SystemLog, SystemLogFilter } from '../../models/systemLog';
+import { PendingPersonalDataDeletion } from '../../models/pendingPersonalDataDeletion';
 
 @Injectable()
 export class PersonalDataService {
@@ -20,7 +20,7 @@ export class PersonalDataService {
    * @param probandId Proband Id
    * @return Pesonal data for proband with probandID
    */
-  getPersonalDataFor(probandId: string): Promise<PersonalData> {
+  public async getPersonalDataFor(probandId: string): Promise<PersonalData> {
     return this.http
       .get<PersonalData>(this.apiUrl + `personalData/proband/${probandId}`)
       .toPromise();
@@ -32,7 +32,7 @@ export class PersonalDataService {
    * @param putData data to put
    * @return Pesonal data for proband with probandID
    */
-  putPersonalDataFor(
+  public async putPersonalDataFor(
     probandId: string,
     putData: object
   ): Promise<PersonalData> {
@@ -48,43 +48,47 @@ export class PersonalDataService {
    * Get personal data for every proband in the database
    * @return Pesonal data for every proband in the database
    */
-  getPersonalDataAll(): Promise<PersonalData[]> {
+  public async getPersonalDataAll(): Promise<PersonalData[]> {
     return this.http
       .get<PersonalData[]>(this.apiUrl + `personalData`)
       .toPromise();
   }
 
-  postPendingDeletion(postData: object): Promise<any> {
-    return this.http
+  public async postPendingDeletion(postData: object): Promise<void> {
+    await this.http
       .post(this.apiUrl + 'pendingdeletions', postData)
       .toPromise();
   }
 
-  putPendingDeletion(probandUsername: string): Promise<any> {
-    return this.http
+  public async putPendingDeletion(probandUsername: string): Promise<void> {
+    await this.http
       .put(this.apiUrl + 'pendingdeletions/' + probandUsername, null)
       .toPromise();
   }
 
-  getPendingDeletionForProbandId(probandId: string): Promise<any> {
+  public async getPendingDeletionForProbandId(
+    probandId: string
+  ): Promise<PendingPersonalDataDeletion> {
     return this.http
-      .get(this.apiUrl + 'pendingdeletions/' + probandId)
+      .get<PendingPersonalDataDeletion>(
+        this.apiUrl + 'pendingdeletions/' + probandId
+      )
       .toPromise();
   }
 
-  async deletePendingDeletion(probandId: string): Promise<void> {
+  public async deletePendingDeletion(probandId: string): Promise<void> {
     await this.http
       .delete(this.apiUrl + 'pendingdeletions/' + probandId)
       .toPromise();
   }
 
-  /**
-   * Get deletion logs
-   * @return deletion logs from iPia
-   */
-  getDeletionLogs(query: SystemLogFilter): Promise<SystemLog[]> {
+  public async getPendingPersonalDataDeletions(
+    studyName: string
+  ): Promise<PendingPersonalDataDeletion[]> {
     return this.http
-      .get<SystemLog[]>(this.apiUrl + `deletionlogs`, { params: { ...query } })
+      .get<PendingPersonalDataDeletion[]>(
+        `${this.apiUrl}studies/${studyName}/pendingdeletions`
+      )
       .toPromise();
   }
 }

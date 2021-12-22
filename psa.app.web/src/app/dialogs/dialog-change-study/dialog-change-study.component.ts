@@ -5,17 +5,13 @@
  */
 
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormControl } from '@angular/forms';
-import { Validators } from '@angular/forms';
-import { FormGroup } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ReplaySubject } from 'rxjs';
 import { AlertService } from '../../_services/alert.service';
-import {
-  StudyAccess,
-  UserWithStudyAccess,
-} from '../../psa.app.core/models/user-with-study-access';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
+import { ProfessionalUser } from '../../psa.app.core/models/user';
+import { StudyAccessOfUser } from '../../psa.app.core/models/study_access';
 
 @Component({
   selector: 'app-dialog-change-study',
@@ -25,8 +21,10 @@ import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-se
 export class DialogChangeStudyComponent implements OnInit {
   form: FormGroup;
   public usernameFilterCtrl: FormControl = new FormControl();
-  public filteredUsers: ReplaySubject<any[]> = new ReplaySubject<any[]>(1);
-  usersWithSameRole: UserWithStudyAccess[];
+  public filteredUsers: ReplaySubject<ProfessionalUser[]> = new ReplaySubject<
+    ProfessionalUser[]
+  >(1);
+  usersWithSameRole: ProfessionalUser[];
 
   constructor(
     public dialogRef: MatDialogRef<DialogChangeStudyComponent>,
@@ -38,28 +36,26 @@ export class DialogChangeStudyComponent implements OnInit {
   ngOnInit(): void {
     // New change request
     if (!this.data.study.pendingStudyChange) {
-      this.authService.getUsersWithSameRole().then(
-        (result: any) => {
+      this.authService
+        .getUsersWithSameRole()
+        .then((users) => {
           // Filter users that have admin access to study and a valid email as username
-          this.usersWithSameRole = result.users.filter(
-            (user: UserWithStudyAccess) => {
-              const control = new FormControl(user.username, Validators.email);
-              return (
-                !!user.study_accesses.find(
-                  (studyAccess: StudyAccess) =>
-                    studyAccess.access_level === 'admin' &&
-                    studyAccess.study_id === this.data.study.name
-                ) &&
-                (!control.errors || !control.errors.email)
-              );
-            }
-          );
+          this.usersWithSameRole = users.filter((user) => {
+            const control = new FormControl(user.username, Validators.email);
+            return (
+              !!user.study_accesses.find(
+                (studyAccess: StudyAccessOfUser) =>
+                  studyAccess.access_level === 'admin' &&
+                  studyAccess.study_id === this.data.study.name
+              ) &&
+              (!control.errors || !control.errors.email)
+            );
+          });
           this.filteredUsers.next(this.usersWithSameRole);
-        },
-        (err: any) => {
+        })
+        .catch((err) => {
           this.alertService.errorObject(err);
-        }
-      );
+        });
 
       // Listen for search field value changes
       this.usernameFilterCtrl.valueChanges.subscribe(() => {

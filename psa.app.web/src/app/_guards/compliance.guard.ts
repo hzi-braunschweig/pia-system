@@ -31,21 +31,21 @@ export class ComplianceGuard implements CanActivate {
     private alertService: AlertService
   ) {}
 
-  async canActivate(
+  public async canActivate(
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Promise<boolean | UrlTree> {
-    const currentRole = this.auth.currentRole;
-    if (currentRole !== 'Proband') {
-      return true;
-    }
     if (!this.auth.isAuthenticated()) {
       return false;
     }
+    const currentRole = this.auth.getCurrentRole();
+    if (currentRole !== 'Proband') {
+      return true;
+    }
     try {
-      const study = await this.questionnaireService.getPrimaryStudy();
+      const study = this.auth.getCurrentStudy();
       const isComplianceNeeded =
-        await this.complianceService.getComplianceNeeded(study.name);
+        await this.complianceService.getComplianceNeeded(study);
       if (isComplianceNeeded) {
         this.alertService.errorMessage('COMPLIANCE.COMPLIANCE_NEEDED');
         return this.router.createUrlTree(['/compliance/agree']);

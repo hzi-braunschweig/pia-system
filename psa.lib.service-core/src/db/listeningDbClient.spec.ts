@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 import * as sinon from 'sinon';
 import { IDatabase } from 'pg-promise';
 import EventEmitter from 'events';
@@ -65,7 +65,7 @@ describe('ListeningDbClient', () => {
       listeningDbClient = new ListeningDbClient<unknown>(db);
       await listeningDbClient.connect();
       expect(connectStub.callCount).to.eq(expectedCallCount);
-    });
+    }).timeout(4000);
 
     it('should disconnect on connection lost', async () => {
       const disconnectStub = sinon

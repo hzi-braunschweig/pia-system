@@ -4,38 +4,38 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { expect } from 'chai';
-import * as chai from 'chai';
-import { setup, cleanup } from './export.ids.spec.data/setup.helper';
+import chai, { expect } from 'chai';
+import chaiHttp from 'chai-http';
+import { createSandbox } from 'sinon';
 import JSZip, * as zip from 'jszip';
-import csvParse from 'csv-parse/lib/sync';
+import * as csv from 'csv-parse/sync';
+import JWT from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
+import { Response } from 'superagent';
+
 import {
   CsvAnswerRow,
-  CsvUserSettingsRow,
   CsvBloodSampleRow,
   CsvLabResultObservationRow,
   CsvSampleRow,
+  CsvUserSettingsRow,
 } from '../../src/models/csvExportRows';
-
-import chaiHttp from 'chai-http';
-
-import { Response } from 'superagent';
-
+import { cleanup, setup } from './export.ids.spec.data/setup.helper';
 import secretOrPrivateKey from '../secretOrPrivateKey';
-import JWT from 'jsonwebtoken';
-import server from '../../src/server';
+import { Server } from '../../src/server';
+import { config } from '../../src/config';
+import { userserviceClient } from '../../src/clients/userserviceClient';
 
 chai.use(chaiHttp);
 
-const apiAddress = `http://localhost:${
-  process.env['PORT'] ?? '80'
-}/questionnaire`;
+const apiAddress =
+  'http://localhost:' + config.public.port.toString() + '/questionnaire';
 
 const forscherSession1 = {
   id: 1,
   role: 'Forscher',
   username: 'QExportTestForscher',
+  groups: ['Teststudie - Export'],
 };
 
 const forscherToken1 = JWT.sign(forscherSession1, secretOrPrivateKey, {
@@ -64,32 +64,34 @@ async function loadCsv<T>(zipFile: JSZip, name: string): Promise<T[]> {
     throw new Error();
   }
   const content = await file.async('string');
-  return (await csvParse(content, { columns: true })) as T[];
+  return (await csv.parse(content, { columns: true })) as T[];
 }
 
 const questionnaire = 297;
 
 describe('/dataExport/searches should work with ids field', function () {
+  const sandbox = createSandbox();
+
   let receivedAnswersRows: CsvAnswerRow[];
-
   let receivedSettingsRows: CsvUserSettingsRow[];
-
   let receivedBloodSamplesRows: CsvBloodSampleRow[];
-
   let receivedSamplesRows: CsvSampleRow[];
-
   let receivedLabResultsRows: CsvLabResultObservationRow[];
 
   before(async () => {
-    await server.init();
+    await Server.init();
     await setup();
+
+    sandbox
+      .stub(userserviceClient, 'getPseudonyms')
+      .resolves(['test-1', 'test-ids2']);
 
     const search = {
       start_date: new Date('2000-01-01'),
       end_date: new Date('2999-01-01'),
       study_name: 'Teststudie - Export',
       questionnaires: [questionnaire],
-      probands: ['test-1', 'test-2'],
+      probands: ['test-1', 'test-ids2'],
       exportAnswers: true,
       exportLabResults: true,
       exportSamples: true,
@@ -105,7 +107,7 @@ describe('/dataExport/searches should work with ids field', function () {
       .buffer();
     expect(response).to.have.status(StatusCodes.OK);
 
-    const result = await zip.loadAsync(response.body);
+    const result = await zip.loadAsync(response.body as string);
 
     receivedAnswersRows = await loadCsv(result, 'answers.csv');
     receivedSettingsRows = await loadCsv(result, 'settings.csv');
@@ -115,8 +117,9 @@ describe('/dataExport/searches should work with ids field', function () {
   });
 
   after(async () => {
-    await server.stop();
+    await Server.stop();
     await cleanup();
+    sandbox.restore();
   });
 
   describe('settings.csv', () => {

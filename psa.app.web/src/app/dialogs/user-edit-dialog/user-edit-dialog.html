@@ -5,7 +5,7 @@
   -->
 
 <div *ngIf="form">
-  <form [formGroup]="form" (ngSubmit)="submit(form)">
+  <form [formGroup]="form" (ngSubmit)="submit()">
     <h1 mat-dialog-title>{{ 'STUDIES.CHANGE_ACCESS_LEVEL' | translate }}</h1>
     <mat-dialog-content>
       <div fxFlex>
@@ -19,7 +19,7 @@
           disableOptionCentering
           id="changeaccesslevel"
           placeholder="{{ 'DIALOG.ACCESS_LEVEL' | translate }}"
-          formControlName="access_level"
+          formControlName="accessLevel"
         >
           <mat-option *ngFor="let access of accesses" [value]="access.value">
             {{ access.viewValue | translate }}

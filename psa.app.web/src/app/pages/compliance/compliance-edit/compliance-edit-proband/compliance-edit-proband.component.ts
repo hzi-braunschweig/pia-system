@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ComplianceService } from 'src/app/psa.app.core/providers/compliance-service/compliance-service';
 import { ComplianceManager } from '../../../../_services/compliance-manager.service';
 import { AlertService } from '../../../../_services/alert.service';
@@ -25,13 +25,9 @@ export class ComplianceEditProbandComponent
   extends ComplianceEditParentComponent
   implements OnInit
 {
-  @Input()
-  username: string;
-
-  @Input()
-  study: string;
-
-  isLoading = false;
+  private username: string;
+  public study: string;
+  public isLoading = false;
 
   constructor(
     private auth: AuthenticationManager,
@@ -41,16 +37,16 @@ export class ComplianceEditProbandComponent
     protected dialog: MatDialog
   ) {
     super(complianceService, alertService, dialog);
+    this.username = this.auth.getCurrentUsername();
+    this.study = this.auth.getCurrentStudy();
   }
 
-  async ngOnInit(): Promise<void> {
+  public async ngOnInit(): Promise<void> {
     this.isLoading = true;
     try {
       // get the current compliance data
       const data =
-        await this.complianceManager.getComplianceAgreementForCurrentUser(
-          this.study
-        );
+        await this.complianceManager.getComplianceAgreementForCurrentUser();
 
       await this.prepareComplianceForm(data);
     } catch (err) {
@@ -59,18 +55,17 @@ export class ComplianceEditProbandComponent
     this.isLoading = false;
   }
 
-  async updateComplianceAgreement(
+  protected async updateComplianceAgreement(
     complianceData: ComplianceDataRequest
   ): Promise<ComplianceDataResponse> {
     return await this.complianceManager.updateComplianceAgreementForCurrentUser(
-      complianceData,
-      this.study
+      complianceData
     );
   }
 
-  async downloadPdf(studyName: string): Promise<void> {
+  public async downloadPdf(): Promise<void> {
     await this.complianceService.getComplianceAgreementPdfForUser(
-      studyName,
+      this.study,
       this.username
     );
   }

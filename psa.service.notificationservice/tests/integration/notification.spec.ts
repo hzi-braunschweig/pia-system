@@ -11,7 +11,6 @@ import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import { addMinutes, startOfToday } from 'date-fns';
 import { CronJob, CronTime } from 'cron';
-import * as fetch from 'node-fetch';
 import fetchMocker from 'fetch-mock';
 import { StatusCodes } from 'http-status-codes';
 import JWT from 'jsonwebtoken';
@@ -25,10 +24,9 @@ import { cleanup, setup } from './notification.spec.data/setup.helper';
 import secretOrPrivateKey from '../secretOrPrivateKey';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
-import { DbNotificationSchedules } from '../../src/models/notification';
 import { DbUsersToContact } from '../../src/models/usersToContact';
 import { QuestionnaireInstance } from '../../src/models/questionnaireInstance';
-import { assert } from 'ts-essentials';
+import { HttpClient } from '@pia-system/lib-http-clients-internal';
 
 const notificationHelper = notificationHelperTemp as {
   sendAllOpenNotifications(): Promise<void>;
@@ -147,7 +145,7 @@ describe('/notification', function () {
   beforeEach(async function () {
     await setup();
     testSandbox
-      .stub<typeof fetch, 'default'>(fetch, 'default')
+      .stub<typeof HttpClient, 'fetch'>(HttpClient, 'fetch')
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .callsFake(fetchMock);
@@ -464,6 +462,10 @@ describe('/notification', function () {
     });
 
     it('should send sample report mails', async function () {
+      fetchMock.get('express:/user/pseudonyms', {
+        status: StatusCodes.OK,
+        body: JSON.stringify(['QTestProband1']),
+      });
       await db.none(
         "INSERT INTO lab_results VALUES ('LAB_RESULT-88888', 'QTestProband1', NULL, $1,'new','Das PM merkt an: bitte mit Vorsicht genießen!',FALSE,'Dr. House',NULL)",
         [startOfToday()]
@@ -485,6 +487,14 @@ describe('/notification', function () {
       expect(logSpy).to.have.been.calledWith(
         'Found 1 analyzed labresults from yesterday in study ApiTestStudie, which the hub will be informed about'
       );
+
+      expect(
+        fetchMock.called('express:/user/pseudonyms', {
+          query: {
+            study: 'ApiTestStudie',
+          },
+        })
+      ).to.be.true;
     });
 
     it('should check and schedule notifications', async function () {
@@ -531,36 +541,35 @@ describe('/notification', function () {
 function getQuestionnaireInstance9999996(): DeepPartial<QuestionnaireInstance> {
   return {
     id: 9999996,
-    study_id: 'ApiTestStudie',
-    questionnaire_id: 99999,
-    questionnaire_name: 'ApiTestQuestionnaire',
-    user_id: 'QTestProband1',
-    date_of_issue: new Date('2017-08-08T00:00:00.000Z'),
-    date_of_release_v1: null,
-    date_of_release_v2: null,
+    studyId: 'ApiTestStudie',
+    questionnaireName: 'ApiTestQuestionnaire',
+    pseudonym: 'QTestProband1',
+    dateOfIssue: new Date('2017-08-08T00:00:00.000Z'),
+    dateOfReleaseV1: null,
+    dateOfReleaseV2: null,
     cycle: 1,
     status: 'active',
     questionnaire: {
       id: 99999,
-      study_id: 'ApiTestStudie',
+      studyId: 'ApiTestStudie',
       name: 'ApiTestQuestionnaire',
-      no_questions: 2,
-      cycle_amount: 1,
-      cycle_unit: 'week',
-      activate_after_days: 1,
-      deactivate_after_days: 365,
-      notification_tries: 3,
-      notification_title: 'PIA Fragebogen',
-      notification_body_new: 'NeuNachricht',
-      notification_body_in_progress: 'AltNachricht',
-      notification_weekday: null,
-      notification_interval: null,
-      notification_interval_unit: null,
-      activate_at_date: null,
-      compliance_needed: true,
-      notify_when_not_filled: true,
-      notify_when_not_filled_time: '00:00',
-      notify_when_not_filled_day: 0,
+      noQuestions: 2,
+      cycleAmount: 1,
+      cycleUnit: 'week',
+      activateAfterDays: 1,
+      deactivateAfterDays: 365,
+      notificationTries: 3,
+      notificationTitle: 'PIA Fragebogen',
+      notificationBodyNew: 'NeuNachricht',
+      notificationBodyInProgress: 'AltNachricht',
+      notificationWeekday: null,
+      notificationInterval: null,
+      notificationIntervalUnit: null,
+      activateAtDate: null,
+      complianceNeeded: true,
+      notifyWhenNotFilled: true,
+      notifyWhenNotFilledTime: '00:00',
+      notifyWhenNotFilledDay: 0,
       questions: [{}],
     },
   };

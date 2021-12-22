@@ -1,29 +1,25 @@
-INSERT INTO users (username, password, role)
+INSERT INTO studies (name, description, status, has_answers_notify_feature, has_answers_notify_feature_by_mail,
+                     pm_email, hub_email)
+VALUES ('ApiTestStudie', 'ApiTestStudie Beschreibung', 'active', true, true, 'pm@pia.test', 'hub@pia.test');
+
+INSERT INTO accounts (username, password, role)
 VALUES ('QTestProband1', '', 'Proband'),
        ('QTestProband2', '', 'Proband'),
-       ('QTestProband3', '', 'Proband'),
-       ('QTestProband4', '', 'Proband'),
        ('QTestForscher1', '', 'Forscher'),
        ('QTestProbandenManager', '', 'ProbandenManager'),
        ('QTestUntersuchungsteam', '', 'Untersuchungsteam'),
        ('QTestSystemAdmin', '', 'SysAdmin');
 
+INSERT INTO probands (pseudonym, study, compliance_labresults)
+VALUES ('QTestProband1', 'ApiTesStudie', TRUE),
+       ('QTestProband2', 'ApiTesStudie', TRUE),
+       ('QTestProband3', 'ApiTesStudie', TRUE),
+       ('QTestProband4', 'ApiTesStudie', TRUE);
+
 INSERT INTO fcm_tokens (pseudonym, token, study)
 VALUES ('QTestProband1', 'testtoken-1', 'ApiTestStudie'),
        ('QTestProband3', 'testtoken-3', 'a-different-study'),
        ('QTestProband4', 'testtoken-4', 'ApiTestStudie');
-
-INSERT INTO studies (name, description, status, has_answers_notify_feature, has_answers_notify_feature_by_mail,
-                     pm_email, hub_email)
-VALUES ('ApiTestStudie', 'ApiTestStudie Beschreibung', 'active', true, true, 'pm@pia.test', 'hub@pia.test');
-
-INSERT INTO study_users
-VALUES ('ApiTestStudie', 'QTestProband1', 'read'),
-       ('ApiTestStudie', 'QTestProband2', 'read'),
-       ('ApiTestStudie', 'QTestProband4', 'read'),
-       ('ApiTestStudie', 'QTestForscher1', 'read'),
-       ('ApiTestStudie', 'QTestProbandenManager', 'read'),
-       ('ApiTestStudie', 'QTestUntersuchungsteam', 'read');
 
 INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,

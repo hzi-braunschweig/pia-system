@@ -5,19 +5,17 @@
  */
 
 import {
+  AfterViewInit,
   Component,
   Inject,
   OnInit,
-  ViewChildren,
   QueryList,
-  AfterViewInit,
+  ViewChildren,
 } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormGroup, FormArray, Validators, FormControl } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { AlertService } from '../../_services/alert.service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
-import { JwtHelperService } from '@auth0/angular-jwt';
-import { User } from '../../psa.app.core/models/user';
 import { PlannedProband } from 'src/app/psa.app.core/models/plannedProband';
 
 @Component({
@@ -29,7 +27,6 @@ export class DialogNewPlannedProbandsComponent
 {
   form: FormGroup;
   currentPlannedProbands: PlannedProband[] = [];
-  currentRole: string;
   wasPosted: boolean = false;
   @ViewChildren('input') inputs: QueryList<any>;
 
@@ -38,12 +35,7 @@ export class DialogNewPlannedProbandsComponent
     private authService: AuthService,
     private alertService: AlertService,
     @Inject(MAT_DIALOG_DATA) public data: any
-  ) {
-    const jwtHelper: JwtHelperService = new JwtHelperService();
-    const currentUser: User = JSON.parse(localStorage.getItem('currentUser'));
-    const tokenPayload = jwtHelper.decodeToken(currentUser.token);
-    this.currentRole = tokenPayload.role;
-  }
+  ) {}
 
   ngOnInit(): void {
     this.buildForm();

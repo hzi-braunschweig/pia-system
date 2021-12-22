@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Condition, ConditionRequest, ConditionResponse } from './condition';
+import {
+  ConditionDto,
+  Condition,
+  ConditionRequest,
+  ConditionResponse,
+} from './condition';
+import { QuestionDto } from './question';
 
 export interface DbAnswerOption {
   id: number;
@@ -36,8 +42,28 @@ export enum AnswerType {
   File = 10,
 }
 
+/**
+ * @deprecated
+ */
 export interface AnswerOption extends DbAnswerOption {
   condition: Condition | null;
+}
+
+export interface AnswerOptionDto {
+  id: number;
+  position: number;
+  text: string | null;
+  answerTypeId: AnswerType;
+  isConditionTarget: boolean | null;
+  isDecimal: boolean | null;
+  isNotable: boolean[] | null;
+  label: string | null;
+  restrictionMax: number | null;
+  restrictionMin: number | null;
+  values: string[] | null;
+  valuesCode: number[] | null;
+  question?: QuestionDto;
+  condition?: ConditionDto | null;
 }
 
 export interface AnswerOptionResponse extends DbAnswerOption {

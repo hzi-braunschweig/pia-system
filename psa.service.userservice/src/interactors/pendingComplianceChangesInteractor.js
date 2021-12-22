@@ -9,14 +9,16 @@ const validator = require('email-validator');
 
 const { MailService } = require('@pia/lib-service-core');
 const { config } = require('../config');
-const { LoggingserviceClient } = require('../clients/loggingserviceClient');
+const { loggingserviceClient } = require('../clients/loggingserviceClient');
 const { runTransaction } = require('../db');
+const pgHelper = require('../services/postgresqlHelper');
+const { ProbandsRepository } = require('../repositories/probandsRepository');
 
 /**
  * @description interactor that handles pending deletion requests based on users permissions
  */
 const pendingComplianceChangesInteractor = (function () {
-  async function getPendingComplianceChange(decodedToken, id, pgHelper) {
+  async function getPendingComplianceChange(decodedToken, id) {
     const userRole = decodedToken.role;
     const userName = decodedToken.username;
 
@@ -47,47 +49,25 @@ const pendingComplianceChangesInteractor = (function () {
     }
   }
 
-  async function getPendingComplianceChangeForProband(
-    decodedToken,
-    probandId,
-    pgHelper
-  ) {
+  async function getPendingComplianceChanges(decodedToken, studyName) {
     const userRole = decodedToken.role;
-    const userName = decodedToken.username;
+    const userStudies = decodedToken.groups;
 
-    switch (userRole) {
-      case 'ProbandenManager':
-        try {
-          const pendingComplianceChange =
-            await pgHelper.getPendingComplianceChangeForProbandIdIfExisting(
-              probandId
-            );
-          if (
-            pendingComplianceChange &&
-            pendingComplianceChange.requested_for !== userName &&
-            pendingComplianceChange.requested_by !== userName
-          ) {
-            return Boom.forbidden(
-              'The requester is not allowed to get this pending compliance change'
-            );
-          } else {
-            return pendingComplianceChange;
-          }
-        } catch (err) {
-          console.log(err);
-          return Boom.notFound('The pending compliance change was not found');
-        }
-
-      default:
-        return Boom.forbidden(
-          'Could not get the pending compliance change: Unknown or wrong role'
-        );
+    if (userRole !== 'ProbandenManager') {
+      throw Boom.forbidden(
+        'Could not get the pending compliance change: Unknown or wrong role'
+      );
     }
+    if (!userStudies.includes(studyName)) {
+      throw Boom.forbidden('User has no access to this study');
+    }
+    return await pgHelper.getPendingComplianceChangesOfStudy(studyName);
   }
 
-  async function createPendingComplianceChange(decodedToken, data, pgHelper) {
+  async function createPendingComplianceChange(decodedToken, data) {
     const userRole = decodedToken.role;
     const userName = decodedToken.username;
+    const userStudies = decodedToken.groups;
 
     const createProbandComplianceChangeEmailContent = function (
       proband,
@@ -135,42 +115,54 @@ const pendingComplianceChangesInteractor = (function () {
         'Could not create the pending deletion: Unknown or wrong role'
       );
     }
-    const requested_for = await pgHelper
-      .getUser(data.requested_for)
+    /**
+     * @type {ProfessionalUser}
+     */
+    const requestedFor = await pgHelper
+      .getProfessionalUser(data.requested_for, userRole)
       .catch((err) => {
         throw Boom.boomify(err);
       });
+    if (!requestedFor) {
+      throw Boom.badData('The one who should confirm could not be found');
+    }
 
     // Only gets the user if the requester is in same study, so these calls will check that
     let proband;
     try {
-      await pgHelper.getUserAsProfessional(data.proband_id, userName);
-      proband = await pgHelper.getUserAsProfessional(
+      proband = await ProbandsRepository.getProbandAsProfessional(
         data.proband_id,
-        data.requested_for
+        userStudies
       );
     } catch (err) {
       console.log(err);
+      throw Boom.badData('The proband does not exist in any of your studies');
+    }
+    if (
+      !requestedFor.study_accesses
+        ?.map((access) => access.study_id)
+        ?.includes(proband.study)
+    ) {
       throw Boom.badData(
-        "One of requested_for or requested_by is not in the proband's study"
+        'The proband does not exist in any of the studies of requested_for'
       );
     }
 
-    const superStudyOfProband = await pgHelper
-      .getStudy(proband.study_accesses[0].study_id)
+    const studyOfProband = await pgHelper
+      .getStudy(proband.study)
       .catch((err) => {
         console.log(err);
         throw Boom.badData('Study not found');
       });
 
     if (
-      superStudyOfProband.has_four_eyes_opposition &&
-      superStudyOfProband.has_compliance_opposition
+      studyOfProband.has_four_eyes_opposition &&
+      studyOfProband.has_compliance_opposition
     ) {
       if (
         data.requested_for !== userName &&
-        requested_for &&
-        requested_for.role === 'ProbandenManager' &&
+        requestedFor &&
+        requestedFor.role === 'ProbandenManager' &&
         validator.validate(data.requested_for)
       ) {
         data.requested_by = userName;
@@ -215,7 +207,7 @@ const pendingComplianceChangesInteractor = (function () {
       }
     }
     // No 4-eye confirmation, change instantly
-    else if (superStudyOfProband.has_compliance_opposition) {
+    else if (studyOfProband.has_compliance_opposition) {
       data.requested_by = userName;
       return await runTransaction(async (t) => {
         await pgHelper.updatePendingComplianceChange(
@@ -223,7 +215,7 @@ const pendingComplianceChangesInteractor = (function () {
           { transaction: t },
           data
         );
-        await LoggingserviceClient.createSystemLog({
+        await loggingserviceClient.createSystemLog({
           requestedBy: data.requested_by,
           requestedFor: data.requested_for,
           type: 'compliance',
@@ -238,7 +230,7 @@ const pendingComplianceChangesInteractor = (function () {
     }
   }
 
-  async function updatePendingComplianceChange(decodedToken, id, pgHelper) {
+  async function updatePendingComplianceChange(decodedToken, id) {
     const userRole = decodedToken.role;
     const userName = decodedToken.username;
 
@@ -263,7 +255,7 @@ const pendingComplianceChangesInteractor = (function () {
     }
     return await runTransaction(async (t) => {
       await pgHelper.updatePendingComplianceChange(id, { transaction: t });
-      await LoggingserviceClient.createSystemLog({
+      await loggingserviceClient.createSystemLog({
         requestedBy: pendingComplianceChange.requested_by,
         requestedFor: pendingComplianceChange.requested_for,
         type: 'compliance',
@@ -277,7 +269,7 @@ const pendingComplianceChangesInteractor = (function () {
     });
   }
 
-  async function deletePendingComplianceChange(decodedToken, id, pgHelper) {
+  async function deletePendingComplianceChange(decodedToken, id) {
     const userRole = decodedToken.role;
     const userName = decodedToken.username;
 
@@ -326,10 +318,9 @@ const pendingComplianceChangesInteractor = (function () {
      * @memberof module:pendingComplianceChangesInteractor
      * @param {object} decodedToken the decoded jwt of the request
      * @param {number} id the id of the proband to get the pending compliance change to for
-     * @param {object} pgHelper helper object to query postgres db
      * @returns object promise a promise that will be resolved in case of success or rejected otherwise
      */
-    getPendingComplianceChangeForProband: getPendingComplianceChangeForProband,
+    getPendingComplianceChanges: getPendingComplianceChanges,
 
     /**
      * @function

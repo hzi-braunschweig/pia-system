@@ -1,0 +1,7 @@
+{
+  "all": true,
+  "reporter": ["text", "cobertura", "json"],
+  "extension": [".ts"],
+  "include": ["src/**/*.*"],
+  "exclude": ["**/*.spec.*"]
+}

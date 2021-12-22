@@ -10,57 +10,54 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
-import { TranslatePipe } from '@ngx-translate/core';
-import { MarkdownComponent } from 'ngx-markdown';
-import { MockComponent, MockPipe } from 'ng-mocks';
-import SpyObj = jasmine.SpyObj;
+import { MockBuilder } from 'ng-mocks';
 
 import { HomePage } from './home.page';
-import { HeaderComponent } from '../shared/components/header/header.component';
-import { PrimaryStudyService } from '../shared/services/primary-study/primary-study.service';
 import { QuestionnaireClientService } from '../questionnaire/questionnaire-client.service';
-import { Study } from '../questionnaire/questionnaire.model';
+import { HomePageModule } from './home.module';
+import { AuthService } from '../auth/auth.service';
+import SpyObj = jasmine.SpyObj;
 
 describe('HomePage', () => {
   let component: HomePage;
   let fixture: ComponentFixture<HomePage>;
 
-  let primaryStudy: SpyObj<PrimaryStudyService>;
+  let auth: SpyObj<AuthService>;
   let questionnaireClient: SpyObj<QuestionnaireClientService>;
 
-  beforeEach(() => {
-    primaryStudy = jasmine.createSpyObj('PrimaryStudyService', [
-      'getPrimaryStudy',
-    ]);
-    questionnaireClient = jasmine.createSpyObj('QuestionnaireClientService', [
-      'getStudyWelcomeText',
-    ]);
+  beforeEach(async () => {
+    // Provider and Services
+    auth = jasmine.createSpyObj<AuthService>('AuthService', ['getCurrentUser']);
+    questionnaireClient = jasmine.createSpyObj<QuestionnaireClientService>(
+      'QuestionnaireClientService',
+      ['getStudyWelcomeText']
+    );
 
-    primaryStudy.getPrimaryStudy.and.resolveTo({ name: 'Teststudy' } as Study);
+    // Build Base Module
+    await MockBuilder(HomePage, HomePageModule)
+      .mock(AuthService, auth)
+      .mock(QuestionnaireClientService, questionnaireClient);
+  });
+
+  beforeEach(fakeAsync(() => {
+    // Setup mocks before creating component
+    auth.getCurrentUser.and.returnValue({
+      username: 'TEST-1234',
+      role: 'Proband',
+      study: 'Teststudy',
+    });
     questionnaireClient.getStudyWelcomeText.and.resolveTo({
       study_id: 'Teststudy',
       welcome_text: 'Welcome!',
       language: 'en-US',
     });
 
-    TestBed.configureTestingModule({
-      declarations: [
-        HomePage,
-        MockComponent(MarkdownComponent),
-        MockPipe(TranslatePipe, (value) => value),
-        MockComponent(HeaderComponent),
-      ],
-      imports: [IonicModule.forRoot()],
-      providers: [
-        { provide: PrimaryStudyService, useValue: primaryStudy },
-        { provide: QuestionnaireClientService, useValue: questionnaireClient },
-      ],
-    }).compileComponents();
-
+    // Create component
     fixture = TestBed.createComponent(HomePage);
     component = fixture.componentInstance;
-  });
+    fixture.detectChanges(); // run ngOnInit
+    tick(); // wait for ngOnInit to finish
+  }));
 
   it('should contain a welcome text', fakeAsync(() => {
     component.ngOnInit();

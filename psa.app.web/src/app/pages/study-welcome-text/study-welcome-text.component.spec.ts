@@ -5,11 +5,11 @@
  */
 
 import {
-  async,
   ComponentFixture,
   fakeAsync,
   TestBed,
   tick,
+  waitForAsync,
 } from '@angular/core/testing';
 import { StudyWelcomeTextComponent } from './study-welcome-text.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -18,16 +18,16 @@ import { TranslateModule } from '@ngx-translate/core';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../_services/alert.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Studie } from '../../psa.app.core/models/studie';
+import { Study } from '../../psa.app.core/models/study';
 import { By } from '@angular/platform-browser';
 import { MatCardModule } from '@angular/material/card';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
-import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
+import { MatDialogModule } from '@angular/material/dialog';
+import { createStudy } from '../../psa.app.core/models/instance.helper.spec';
 
 describe('StudyWelcomeTextComponent', () => {
   let component: StudyWelcomeTextComponent;
@@ -41,41 +41,44 @@ describe('StudyWelcomeTextComponent', () => {
     language: 'de_DE',
   };
 
-  beforeEach(async(() => {
-    alertService = jasmine.createSpyObj('AlertService', ['errorObject']);
-    questionnaireService = jasmine.createSpyObj('QuestionnaireService', [
-      'getStudies',
-      'getStudyWelcomeText',
-    ]);
+  beforeEach(
+    waitForAsync(() => {
+      alertService = jasmine.createSpyObj('AlertService', ['errorObject']);
+      questionnaireService = jasmine.createSpyObj('QuestionnaireService', [
+        'getStudies',
+        'getStudyWelcomeText',
+      ]);
 
-    questionnaireService.getStudies.and.returnValue(
-      Promise.resolve({ studies: getStudies() })
-    );
-    questionnaireService.getStudyWelcomeText.and.returnValue(
-      Promise.resolve(studyWelcomeTextObj)
-    );
+      questionnaireService.getStudies.and.returnValue(
+        Promise.resolve({ studies: getStudies() })
+      );
+      questionnaireService.getStudyWelcomeText.and.returnValue(
+        Promise.resolve(studyWelcomeTextObj)
+      );
 
-    TestBed.configureTestingModule({
-      providers: [
-        { provide: QuestionnaireService, useValue: questionnaireService },
-        { provide: AlertService, useValue: alertService },
-      ],
-      declarations: [StudyWelcomeTextComponent],
-      imports: [
-        BrowserAnimationsModule,
-        FormsModule,
-        MarkdownModule.forRoot(),
-        MatCardModule,
-        MatDatepickerModule,
-        MatDividerModule,
-        MatInputModule,
-        MatListModule,
-        MatSelectModule,
-        ReactiveFormsModule,
-        TranslateModule.forRoot(),
-      ],
-    });
-  }));
+      TestBed.configureTestingModule({
+        providers: [
+          { provide: QuestionnaireService, useValue: questionnaireService },
+          { provide: AlertService, useValue: alertService },
+        ],
+        declarations: [StudyWelcomeTextComponent],
+        imports: [
+          BrowserAnimationsModule,
+          FormsModule,
+          MarkdownModule.forRoot(),
+          MatCardModule,
+          MatDatepickerModule,
+          MatDividerModule,
+          MatInputModule,
+          MatListModule,
+          MatSelectModule,
+          MatDialogModule,
+          ReactiveFormsModule,
+          TranslateModule.forRoot(),
+        ],
+      });
+    })
+  );
 
   beforeEach(fakeAsync(() => {
     fixture = TestBed.createComponent(StudyWelcomeTextComponent);
@@ -102,10 +105,10 @@ describe('StudyWelcomeTextComponent', () => {
     ).toBeTruthy();
   }));
 
-  function getStudies(): Studie[] {
-    const studies = [new Studie(), new Studie()];
-    studies[0].name = 'Teststudie1';
-    studies[1].name = 'Teststudie2';
-    return studies;
+  function getStudies(): Study[] {
+    return [
+      createStudy({ name: 'Teststudie1' }),
+      createStudy({ name: 'Teststudie2' }),
+    ];
   }
 });

@@ -17,15 +17,10 @@ import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnai
 import { AlertService } from '../../_services/alert.service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { APP_DATE_FORMATS, AppDateAdapter } from '../../_helpers/date-adapter';
-import { Observable } from 'rxjs';
+import { combineLatest, Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
-import { combineLatest } from 'rxjs';
 import { HttpEvent, HttpResponse } from '@angular/common/http';
-
-interface StudyProband {
-  username: string;
-  studies: string[];
-}
+import { Proband } from '../../psa.app.core/models/proband';
 
 interface StudyQuestionnaire {
   id: number;
@@ -54,7 +49,7 @@ export class DialogExportDataComponent implements OnInit {
 
   studiesForSelection: Observable<string[]>;
   questionnairesForSelection: Observable<StudyQuestionnaire[]>;
-  probandsForSelection: Observable<StudyProband[]>;
+  probandsForSelection: Observable<Proband[]>;
   allStudyProbandsUsernames: string[];
 
   studyFilterCtrl: FormControl = new FormControl();
@@ -149,19 +144,13 @@ export class DialogExportDataComponent implements OnInit {
   private async fetchSelectionData(): Promise<void> {
     this.isLoading = true;
     try {
-      const { users } = await this.authService.getUsers();
-      const studies = new Set<string>();
-      const studyProbands = [];
-      users.forEach((user) => {
-        const userStudies = user.study_accesses.map((study) => study.study_id);
-        userStudies.forEach((study_id) => studies.add(study_id));
-        studyProbands.push({ username: user.username, studies: userStudies });
-      });
+      const users = await this.authService.getProbands();
+      const studies = new Set<string>(users.map((user) => user.study));
       this.studiesForSelection = this.getStudiesForSelection(
         Array.from(studies.values())
       );
-      this.probandsForSelection = this.getProbandsForSelection(studyProbands);
-      this.setAllStudyProbandsUsernames(studyProbands);
+      this.probandsForSelection = this.getProbandsForSelection(users);
+      this.setAllStudyProbandsUsernames(users);
 
       const { questionnaires } =
         await this.questionnaireService.getQuestionnaires();
@@ -187,20 +176,18 @@ export class DialogExportDataComponent implements OnInit {
     );
   }
 
-  private getProbandsForSelection(
-    probands: StudyProband[]
-  ): Observable<StudyProband[]> {
-    return combineLatest(
+  private getProbandsForSelection(probands: Proband[]): Observable<Proband[]> {
+    return combineLatest([
       this.form.get('study_name').valueChanges,
-      this.probandFilterCtrl.valueChanges.pipe(startWith(''))
-    ).pipe(
-      map(([study_id, searchValue]: [string, string]) =>
+      this.probandFilterCtrl.valueChanges.pipe(startWith('')),
+    ]).pipe(
+      map(([studyId, searchValue]: [string, string]) =>
         probands.filter(
           (proband) =>
             DialogExportDataComponent.containsSearchValue(
-              proband.username,
+              proband.pseudonym,
               searchValue
-            ) && proband.studies.includes(study_id)
+            ) && proband.study === studyId
         )
       ),
       startWith([])
@@ -210,10 +197,10 @@ export class DialogExportDataComponent implements OnInit {
   private getQuestionnairesForSelection(
     questionnaires: StudyQuestionnaire[]
   ): Observable<StudyQuestionnaire[]> {
-    return combineLatest(
+    return combineLatest([
       this.form.get('study_name').valueChanges,
-      this.questionnaireFilterCtrl.valueChanges.pipe(startWith(''))
-    ).pipe(
+      this.questionnaireFilterCtrl.valueChanges.pipe(startWith('')),
+    ]).pipe(
       map(([study_id, searchValue]: [string, string]) =>
         questionnaires.filter(
           (questionnaire) =>
@@ -236,14 +223,14 @@ export class DialogExportDataComponent implements OnInit {
     });
   }
 
-  private setAllStudyProbandsUsernames(probands: StudyProband[]): void {
+  private setAllStudyProbandsUsernames(probands: Proband[]): void {
     this.form
       .get('study_name')
       .valueChanges.subscribe(
-        (study_id) =>
+        (studyId) =>
           (this.allStudyProbandsUsernames = probands
-            .filter((proband) => proband.studies.includes(study_id))
-            .map((proband) => proband.username))
+            .filter((proband) => proband.study === studyId)
+            .map((proband) => proband.pseudonym))
       );
   }
 

@@ -46,6 +46,9 @@ class LicenseTextCompleter {
         fetchP[i++] = (0, node_fetch_1.default)('https://raw.githubusercontent.com/angular/angular/master/LICENSE').then(async (res) => {
             LicenseTextCompleter.MIT_ANGULAR = await res.text();
         });
+        fetchP[i++] = (0, node_fetch_1.default)('https://raw.githubusercontent.com/angular/angularfire/master/LICENSE').then(async (res) => {
+            LicenseTextCompleter.MIT_ANGULAR_FIRE = await res.text();
+        });
         fetchP[i++] = (0, node_fetch_1.default)('https://raw.githubusercontent.com/ionic-team/ionic-framework/main/LICENSE').then(async (res) => {
             LicenseTextCompleter.MIT_IONIC = await res.text();
         });
@@ -61,6 +64,7 @@ class LicenseTextCompleter {
             ['@angular/compiler', LicenseTextCompleter.MIT_ANGULAR],
             ['@angular/core', LicenseTextCompleter.MIT_ANGULAR],
             ['@angular/forms', LicenseTextCompleter.MIT_ANGULAR],
+            ['@angular/fire', LicenseTextCompleter.MIT_ANGULAR_FIRE],
             ['@angular/localize', LicenseTextCompleter.MIT_ANGULAR],
             ['@angular/language-service', LicenseTextCompleter.MIT_ANGULAR],
             ['@angular/platform-browser-dynamic', LicenseTextCompleter.MIT_ANGULAR],
@@ -97,6 +101,7 @@ class LicenseTextCompleter {
             ['@firebase/analytics-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/app-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/app', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/app-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/app-check', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/app-check-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             [
@@ -104,11 +109,10 @@ class LicenseTextCompleter {
                 LicenseTextCompleter.APACHE_LICENSE_2_0,
             ],
             ['@firebase/app-check-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
-            ['@firebase/app-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
-            ['@firebase/auth', LicenseTextCompleter.APACHE_LICENSE_2_0],
-            ['@firebase/auth-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/auth-interop-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/auth-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/auth', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/auth-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/component', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/database-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/database', LicenseTextCompleter.APACHE_LICENSE_2_0],
@@ -195,6 +199,31 @@ class LicenseTextCompleter {
                     'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n' +
                     '\n' +
                     'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.',
+            ],
+            [
+                'acorn-import-assertions',
+                'The MIT License (MIT)\n' +
+                    '\n' +
+                    'Copyright © 2021 \n' +
+                    '\n' +
+                    '\n' +
+                    'Permission is hereby granted, free of charge, to any person obtaining a copy\n' +
+                    'of this software and associated documentation files (the “Software”), to deal\n' +
+                    'in the Software without restriction, including without limitation the rights\n' +
+                    'to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n' +
+                    'copies of the Software, and to permit persons to whom the Software is\n' +
+                    'furnished to do so, subject to the following conditions:\n' +
+                    '\n' +
+                    'The above copyright notice and this permission notice shall be included in\n' +
+                    'all copies or substantial portions of the Software.\n' +
+                    '\n' +
+                    'THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n' +
+                    'IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n' +
+                    'FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n' +
+                    'AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n' +
+                    'LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n' +
+                    'OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\n' +
+                    'THE SOFTWARE.',
             ],
             [
                 'cliui',
@@ -603,6 +632,68 @@ class LicenseTextCompleter {
                     'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n' +
                     '\n' +
                     'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n',
+            ],
+            [
+                'memory-fs',
+                'Copyright JS Foundation and other contributors\n' +
+                    '\n' +
+                    'Permission is hereby granted, free of charge, to any person obtaining\n' +
+                    'a copy of this software and associated documentation files (the\n' +
+                    "'Software'), to deal in the Software without restriction, including\n" +
+                    'without limitation the rights to use, copy, modify, merge, publish,\n' +
+                    'distribute, sublicense, and/or sell copies of the Software, and to\n' +
+                    'permit persons to whom the Software is furnished to do so, subject to\n' +
+                    'the following conditions:\n' +
+                    '\n' +
+                    'The above copyright notice and this permission notice shall be\n' +
+                    'included in all copies or substantial portions of the Software.\n' +
+                    '\n' +
+                    "THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,\n" +
+                    'EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n' +
+                    'MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\n' +
+                    'IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY\n' +
+                    'CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,\n' +
+                    'TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE\n' +
+                    'SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n',
+            ],
+            [
+                'run-queue',
+                'Copyright Rebecca Turner\n' +
+                    '\n' +
+                    'Permission to use, copy, modify, and/or distribute this software for any\n' +
+                    'purpose with or without fee is hereby granted, provided that the above\n' +
+                    'copyright notice and this permission notice appear in all copies.\n' +
+                    '\n' +
+                    'THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\n' +
+                    'WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\n' +
+                    'MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\n' +
+                    'ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\n' +
+                    'WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\n' +
+                    'ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\n' +
+                    'OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.\n',
+            ],
+            [
+                'watchpack-chokidar2',
+                'Copyright JS Foundation and other contributors\n' +
+                    '\n' +
+                    'Permission is hereby granted, free of charge, to any person obtaining\n' +
+                    'a copy of this software and associated documentation files (the\n' +
+                    "'Software'), to deal in the Software without restriction, including\n" +
+                    'without limitation the rights to use, copy, modify, merge, publish,\n' +
+                    'distribute, sublicense, and/or sell copies of the Software, and to\n' +
+                    'permit persons to whom the Software is furnished to do so, subject to\n' +
+                    'the following conditions:\n' +
+                    '\n' +
+                    'The above copyright notice and this permission notice shall be\n' +
+                    'included in all copies or substantial portions of the Software.\n' +
+                    '\n' +
+                    "THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,\n" +
+                    'EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n' +
+                    'MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\n' +
+                    'IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY\n' +
+                    'CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,\n' +
+                    'TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE\n' +
+                    'SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.',
             ],
         ]);
     }

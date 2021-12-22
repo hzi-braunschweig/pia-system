@@ -5,7 +5,7 @@
  */
 
 import { Fs } from './fs';
-import csvStringify from 'csv-stringify/lib/sync';
+import csvStringify from 'csv-stringify/sync';
 import fetch from 'node-fetch';
 import {
   OpenAPIObject,
@@ -73,7 +73,7 @@ export class RouteMetaDataScanner {
     const serviceName = spec.info.title.replace('API Documentation ', '');
     return this.mapApiPathToRouteMetaData(
       serviceName,
-      spec['host'],
+      spec['host'] as string,
       spec.paths
     );
   }
@@ -84,7 +84,12 @@ export class RouteMetaDataScanner {
     paths: PathsObject
   ): RouteMetaData[] {
     return Object.keys(paths).flatMap((path) =>
-      this.mapApiPathItemToRouteMetaData(service, host, path, paths[path])
+      this.mapApiPathItemToRouteMetaData(
+        service,
+        host,
+        path,
+        paths[path] as PathItemObject
+      )
     );
   }
 
@@ -103,7 +108,7 @@ export class RouteMetaDataScanner {
         host,
         path,
         method,
-        pathItems[method]
+        pathItems[method] as OperationObject
       )
     );
   }
@@ -126,7 +131,7 @@ export class RouteMetaDataScanner {
   }
 
   private static createCsv(routeMetaData: RouteMetaData[]): string {
-    return csvStringify(routeMetaData, {
+    return csvStringify.stringify(routeMetaData, {
       delimiter: ';',
       header: true,
     });

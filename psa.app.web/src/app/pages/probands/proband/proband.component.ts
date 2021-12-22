@@ -15,9 +15,11 @@ import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-se
 import { PlannedProband } from 'src/app/psa.app.core/models/plannedProband';
 import { DataService } from 'src/app/_services/data.service';
 import { SelectedProbandInfoService } from '../../../_services/selected-proband-info.service';
-import { UserWithStudyAccess } from '../../../psa.app.core/models/user-with-study-access';
 import { AlertService } from '../../../_services/alert.service';
-import { CreateProbandError } from '../../../psa.app.core/models/proband';
+import {
+  CreateProbandError,
+  Proband,
+} from '../../../psa.app.core/models/proband';
 
 @Component({
   templateUrl: 'proband.component.html',
@@ -26,7 +28,7 @@ import { CreateProbandError } from '../../../psa.app.core/models/proband';
 export class ProbandComponent implements OnInit, OnDestroy {
   public pseudonym: string;
   public isLoading: boolean;
-  public proband: UserWithStudyAccess = null;
+  public proband: Proband = null;
   public plannedProband: PlannedProband = null;
 
   public constructor(
@@ -58,7 +60,7 @@ export class ProbandComponent implements OnInit, OnDestroy {
 
       this.selectedProbandInfoService.updateSideNavInfoSelectedProband({
         ids: this.proband.ids,
-        pseudonym: this.proband.username,
+        pseudonym: this.proband.pseudonym,
       });
     }
     this.isLoading = false;
@@ -71,7 +73,7 @@ export class ProbandComponent implements OnInit, OnDestroy {
   public async changeTestprobandState(checked: boolean): Promise<void> {
     this.isLoading = true;
     try {
-      await this.userService.putUser(this.pseudonym, {
+      await this.userService.patchUser(this.pseudonym, {
         is_test_proband: checked,
       });
       await this.loadProband();
@@ -109,10 +111,12 @@ export class ProbandComponent implements OnInit, OnDestroy {
         return null;
       });
 
-    this.proband = await this.userService.getUser(this.pseudonym).catch((e) => {
-      console.log(e);
-      return null;
-    });
+    this.proband = await this.userService
+      .getProband(this.pseudonym)
+      .catch((e) => {
+        console.log(e);
+        return null;
+      });
   }
 
   private showFailureDialog(errorType: CreateProbandError): void {

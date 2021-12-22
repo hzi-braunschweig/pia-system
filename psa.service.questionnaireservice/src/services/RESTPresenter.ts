@@ -107,8 +107,8 @@ export class RESTPresenter {
    * @returns a study object as a REST compliant json object
    */
   public static presentStudy(
-    studyObj: Study | null
-  ): (RESTResponse & Study) | null {
+    studyObj: (Partial<Study> & { name: string }) | null
+  ): (RESTResponse & Partial<Study>) | null {
     if (studyObj) {
       return {
         ...studyObj,
@@ -141,8 +141,8 @@ export class RESTPresenter {
    * @returns a studies object as a REST compliant json object
    */
   public static presentStudies(
-    studiesArr: Study[]
-  ): RESTResponse & { studies: Study[] } {
+    studiesArr: Partial<Study>[]
+  ): RESTResponse & { studies: Partial<Study>[] } {
     return {
       studies: studiesArr,
       links: RESTPresenter.constructStudiesLinks(),

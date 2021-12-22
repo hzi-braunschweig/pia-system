@@ -7,6 +7,14 @@
 const { getDbTransactionFromOptionsOrDbConnection } = require('../db');
 
 class PendingDeletionRepository {
+  static async getPendingDeletionsOfStudy(studyName, options) {
+    const db = getDbTransactionFromOptionsOrDbConnection(options);
+    return await db.manyOrNone(
+      'SELECT * FROM pending_deletions WHERE study=$(studyName)',
+      { studyName }
+    );
+  }
+
   static async getPendingDeletion(probandId, options) {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
     return await db.one(

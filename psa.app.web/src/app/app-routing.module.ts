@@ -8,9 +8,9 @@ import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
 import { LoginComponent } from './pages/login/login.component';
 import { ChangePasswordComponent } from './features/changePassword/changePassword.component';
-import { QuestionnairesResearcherComponent } from './pages/questionnaires/questionnaires-researcher/index';
-import { QuestionnaireResearcherComponent } from './pages/questionnaires/questionnaire-researcher/index';
-import { QuestionProbandComponent } from './pages/questionnaires/question-proband/index';
+import { QuestionnairesResearcherComponent } from './pages/questionnaires/questionnaires-researcher/questionnaires-researcher.component';
+import { QuestionnaireResearcherComponent } from './pages/questionnaires/questionnaire-researcher/questionnaire-researcher.component';
+import { QuestionProbandComponent } from './pages/questionnaires/question-proband/question-proband.component';
 import { ProbandsComponent } from './pages/probands/probands/probands.component';
 import { CollectiveSampleLettersComponent } from './features/collective-sample-letters/collective-sample-letters.component';
 import { CollectiveLoginLettersComponent } from './features/collective-login-letters/collective-login-letters.component';
@@ -28,19 +28,15 @@ import { LaboratoryResultDetailsComponent } from './pages/laboratories/laborator
 import { ProbandsPersonalInfoComponent } from './pages/probands/probands-personal-info/probands-personal-info.component';
 import { ProbandPersonalInfoComponent } from './pages/probands/proband-personal-info/proband-personal-info.component';
 import { ContactProbandComponent } from './pages/probands/contact-proband/contact-proband.component';
-import { LogsResearcherComponent } from './pages/logs-researcher/logs-researcher.component';
 import { LogsDeleteSysAdminComponent } from './pages/logsDelete-sysAdmin/logsDelete-sysAdmin.component';
 import { ContactComponent } from './pages/contact/contact.component';
-import { ComplianceProbandsComponent } from './pages/compliance/compliance-probands/compliance-probands.component';
 import { ComplianceResearcherComponent } from './pages/compliance/compliance-researcher/compliance-researcher.component';
 import { NgModule } from '@angular/core';
 import { AuthGuard } from './_guards/auth.guard';
 import { ComplianceGuard } from './_guards/compliance.guard';
 import { RoleGuard } from './_guards/role.guard';
-import { TokenGuard } from './_guards/token.guard';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
 import { ComplianceType } from './psa.app.core/models/compliance';
-import { SormasIframeComponent } from './features/sormas-iframe/sormas-iframe.component';
 import { ProbandsToContactComponent } from './pages/probands-to-contact/probands-to-contact.component';
 import { ComplianceManagerComponent } from './pages/compliance/compliance-manager/compliance-manager.component';
 import { ComplianceExaminerComponent } from './pages/compliance/compliance-examiner/compliance-examiner.component';
@@ -48,6 +44,7 @@ import { StudyWelcomeTextComponent } from './pages/study-welcome-text/study-welc
 import { QuestionnaireInstancesListForProbandComponent } from './pages/questionnaire-instances/questionnaire-instances-list-for-proband/questionnaire-instances-list-for-proband.component';
 import { QuestionnaireInstancesListForInvestigatorComponent } from './pages/questionnaire-instances/questionnaire-instances-list-for-investigator/questionnaire-instances-list-for-investigator.component';
 import { LicenseListComponent } from './pages/license-list/license-list.component';
+import { ComplianceEditProbandComponent } from './pages/compliance/compliance-edit/compliance-edit-proband/compliance-edit-proband.component';
 
 const routes: Routes = [
   {
@@ -105,13 +102,6 @@ const routes: Routes = [
     pathMatch: 'full',
   },
   {
-    path: 'logs',
-    component: LogsResearcherComponent,
-    canActivate: [AuthGuard, RoleGuard],
-    data: { expectedRoles: ['Forscher'] },
-    pathMatch: 'full',
-  },
-  {
     path: 'deletelogs',
     component: LogsDeleteSysAdminComponent,
     canActivate: [AuthGuard, RoleGuard],
@@ -164,7 +154,7 @@ const routes: Routes = [
     path: 'studies',
     component: StudiesComponent,
     canActivate: [AuthGuard, RoleGuard],
-    data: { expectedRoles: ['Untersuchungsteam', 'SysAdmin', 'Forscher'] },
+    data: { expectedRoles: ['SysAdmin', 'Forscher'] },
     pathMatch: 'full',
   },
   {
@@ -178,7 +168,7 @@ const routes: Routes = [
     path: 'studies/:name/users',
     component: StudyAccessesComponent,
     canActivate: [AuthGuard, RoleGuard],
-    data: { expectedRoles: ['Untersuchungsteam', 'SysAdmin'] },
+    data: { expectedRoles: ['SysAdmin'] },
     pathMatch: 'full',
   },
   {
@@ -223,7 +213,7 @@ const routes: Routes = [
   },
   {
     path: 'compliance/agree',
-    component: ComplianceProbandsComponent,
+    component: ComplianceEditProbandComponent,
     canActivate: [AuthGuard, RoleGuard],
     data: { expectedRoles: ['Proband'] },
     pathMatch: 'full',
@@ -326,19 +316,12 @@ const routes: Routes = [
     data: { expectedRoles: ['ProbandenManager'] },
     pathMatch: 'full',
   },
-  {
-    path: 'sormas-iframe',
-    component: SormasIframeComponent,
-    canActivate: [TokenGuard, RoleGuard],
-    data: { expectedRoles: ['ProbandenManager'] },
-    pathMatch: 'full',
-  },
   // Otherwise redirect to home
   { path: '**', redirectTo: 'home', pathMatch: 'full' },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, { relativeLinkResolution: 'legacy' })],
   exports: [RouterModule],
 })
 export class AppRoutingModule {}

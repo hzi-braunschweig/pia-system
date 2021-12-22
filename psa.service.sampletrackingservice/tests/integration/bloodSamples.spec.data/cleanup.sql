@@ -1,15 +1,16 @@
 DELETE
 FROM blood_samples
-WHERE sample_id IN ('ZIFCO-1234567890', 'ZIFCO-1234567899', 'ZIFCO-1111111111');
+WHERE sample_id IN ('ZIFCO-1234567890', 'ZIFCO-1234567891', 'ZIFCO-1234567892', 'ZIFCO-1234567898', 'ZIFCO-1234567899',
+                    'ZIFCO-1111111111');
+
 DELETE
-FROM study_users
-WHERE user_id IN
-      ('QTestProband1', 'QTestForscher1', 'QTestProband2', 'QTestProbandenManager', 'QTestUntersuchungsteam');
+FROM accounts
+WHERE username LIKE 'QTest%';
+
 DELETE
-FROM users
-WHERE username IN
-      ('QTestProband1', 'QTestProband2', 'QTestProbandenManager', 'QTestForscher1', 'QTestUntersuchungsteam',
-       'QTestSystemAdmin');
+FROM probands
+WHERE pseudonym LIKE 'QTest%';
+
 DELETE
 FROM studies
-WHERE name IN ('ApiTestStudie', 'ApiTestStudie2', 'ApiTestMultiProband', 'ApiTestMultiProf');
+WHERE name LIKE 'QTest%';

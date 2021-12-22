@@ -30,7 +30,7 @@ export class UnauthorizedInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 401 && this.auth.getCurrentUser() !== null) {
+        if (error.status === 401 && this.auth.getToken() !== null) {
           void this.auth.logout();
         }
         return throwError(error);

@@ -41,7 +41,7 @@ export interface Questionnaire {
   notification_body_in_progress: string;
   notification_weekday: Weekday | null;
   notification_interval: number;
-  notification_interval_unit: string;
+  notification_interval_unit: 'days' | 'hours';
   activate_at_date: string;
   compliance_needed: boolean;
   expires_after_days: number;

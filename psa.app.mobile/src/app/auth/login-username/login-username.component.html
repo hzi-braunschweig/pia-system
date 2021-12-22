@@ -1,0 +1,96 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <ion-list>
+    <ion-item>
+      <ion-label position="stacked">{{
+        'LOGIN.USERNAME' | translate
+      }}</ion-label>
+      <ion-input
+        data-unit="input-username"
+        type="text"
+        formControlName="username"
+        [placeholder]="'LOGIN.USERNAME' | translate"
+      >
+      </ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>{{ 'GENERAL.LANGUAGE' | translate }}</ion-label>
+      <ion-select
+        [(ngModel)]="localeService.currentLocale"
+        [ngModelOptions]="{ standalone: true }"
+      >
+        <ion-select-option
+          *ngFor="let language of localeService.supportedLanguages"
+          [value]="language.locale"
+        >
+          {{ language.language }}
+        </ion-select-option>
+      </ion-select>
+      <div slot="end">
+        <ion-icon
+          *ngFor="let flag of localeService.currentFlagIcons"
+          class="small-margin flag-icon flag-icon-{{ flag }}"
+        >
+        </ion-icon>
+      </div>
+    </ion-item>
+
+    <ion-item>
+      <ion-label>{{ 'LOGIN.REMEMBER_ME' | translate }}</ion-label>
+      <ion-checkbox
+        data-unit="checkbox-remember-me"
+        formControlName="rememberMe"
+        slot="end"
+      >
+      </ion-checkbox>
+    </ion-item>
+
+    <ion-item *ngIf="form.get('customEndpointUrl').enabled">
+      <ion-label position="stacked">{{
+        'LOGIN.ENTER_BACKEND_URL' | translate
+      }}</ion-label>
+      <ion-input
+        data-unit="input-custom-url"
+        type="text"
+        formControlName="customEndpointUrl"
+        placeholder="https://www.example.com/"
+      ></ion-input>
+      <ion-button
+        data-unit="button-url-hide"
+        slot="end"
+        fill="clear"
+        color="tertiary"
+        (click)="toggleCustomEndpointField()"
+      >
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-item>
+  </ion-list>
+
+  <ion-row class="ion-justify-content-end ion-margin">
+    <ion-button
+      *ngIf="form.get('customEndpointUrl').disabled"
+      data-unit="button-url-show"
+      fill="clear"
+      color="tertiary"
+      (click)="toggleCustomEndpointField()"
+    >
+      <ion-icon name="link" slot="end"></ion-icon>
+    </ion-button>
+    <ion-button
+      type="submit"
+      color="primary"
+      size="large"
+      [disabled]="!form.valid"
+      data-unit="next-button"
+    >
+      {{ 'LOGIN.NEXT' | translate }}
+    </ion-button>
+  </ion-row>
+</form>

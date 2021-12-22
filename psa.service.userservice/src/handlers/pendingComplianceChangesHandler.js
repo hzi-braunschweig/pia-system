@@ -4,59 +4,49 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const postgresqlHelper = require('../services/postgresqlHelper.js');
-const pendingComplianceChangesInteractor = require('../interactors/pendingComplianceChangesInteractor.js');
-
+const pendingComplianceChangesInteractor = require('../interactors/pendingComplianceChangesInteractor');
+const { handleError } = require('./handleError');
 /**
  * @description HAPI Handler for pending compliance changes
  */
 const pendingComplianceChangesHandler = (function () {
-  function getOne(request) {
+  async function getOne(request) {
     const id = request.params.id;
 
-    return pendingComplianceChangesInteractor.getPendingComplianceChange(
-      request.auth.credentials,
-      id,
-      postgresqlHelper
-    );
+    return pendingComplianceChangesInteractor
+      .getPendingComplianceChange(request.auth.credentials, id)
+      .catch(handleError);
   }
 
-  function getOneForProband(request) {
-    const probandId = request.params.id;
-
-    return pendingComplianceChangesInteractor.getPendingComplianceChangeForProband(
-      request.auth.credentials,
-      probandId,
-      postgresqlHelper
-    );
+  async function getAllOfStudy(request) {
+    return pendingComplianceChangesInteractor
+      .getPendingComplianceChanges(
+        request.auth.credentials,
+        request.params.studyName
+      )
+      .catch(handleError);
   }
 
-  function createOne(request) {
-    return pendingComplianceChangesInteractor.createPendingComplianceChange(
-      request.auth.credentials,
-      request.payload,
-      postgresqlHelper
-    );
+  async function createOne(request) {
+    return pendingComplianceChangesInteractor
+      .createPendingComplianceChange(request.auth.credentials, request.payload)
+      .catch(handleError);
   }
 
-  function updateOne(request) {
+  async function updateOne(request) {
     const id = request.params.id;
 
-    return pendingComplianceChangesInteractor.updatePendingComplianceChange(
-      request.auth.credentials,
-      id,
-      postgresqlHelper
-    );
+    return pendingComplianceChangesInteractor
+      .updatePendingComplianceChange(request.auth.credentials, id)
+      .catch(handleError);
   }
 
-  function deleteOne(request) {
+  async function deleteOne(request) {
     const id = request.params.id;
 
-    return pendingComplianceChangesInteractor.deletePendingComplianceChange(
-      request.auth.credentials,
-      id,
-      postgresqlHelper
-    );
+    return pendingComplianceChangesInteractor
+      .deletePendingComplianceChange(request.auth.credentials, id)
+      .catch(handleError);
   }
 
   return {
@@ -69,10 +59,10 @@ const pendingComplianceChangesHandler = (function () {
 
     /**
      * @function
-     * @description gets the pending compliance change for a proband
+     * @description gets the pending compliance changes for a study
      * @memberof module:pendingComplianceChangesHandler
      */
-    getOneForProband: getOneForProband,
+    getAllOfStudy: getAllOfStudy,
 
     /**
      * @function

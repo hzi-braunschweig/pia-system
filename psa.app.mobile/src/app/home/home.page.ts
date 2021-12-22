@@ -6,7 +6,7 @@
 
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { QuestionnaireClientService } from '../questionnaire/questionnaire-client.service';
-import { PrimaryStudyService } from '../shared/services/primary-study/primary-study.service';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -18,14 +18,14 @@ export class HomePage implements OnInit {
   welcomeText: string;
 
   constructor(
-    private primaryStudy: PrimaryStudyService,
-    private questionnaireClient: QuestionnaireClientService
+    private questionnaireClient: QuestionnaireClientService,
+    private auth: AuthService
   ) {}
 
   async ngOnInit() {
-    const study = await this.primaryStudy.getPrimaryStudy();
+    const study = this.auth.getCurrentUser().study;
     const welcomeTextObj = await this.questionnaireClient.getStudyWelcomeText(
-      study.name
+      study
     );
     if (welcomeTextObj) {
       this.welcomeText = welcomeTextObj.welcome_text;

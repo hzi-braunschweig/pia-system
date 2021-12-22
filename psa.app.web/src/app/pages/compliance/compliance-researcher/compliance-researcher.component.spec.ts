@@ -14,7 +14,7 @@ import { ComplianceResearcherComponent } from './compliance-researcher.component
 import { ComplianceService } from '../../../psa.app.core/providers/compliance-service/compliance-service';
 import { QuestionnaireService } from '../../../psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../../_services/alert.service';
-import { Studie } from '../../../psa.app.core/models/studie';
+import { Study } from '../../../psa.app.core/models/study';
 import { ComplianceTextInEditMode } from '../../../psa.app.core/models/compliance';
 import { By } from '@angular/platform-browser';
 import { MockComponents, MockModule, MockProvider } from 'ng-mocks';
@@ -30,6 +30,8 @@ import { MatRadioModule } from '@angular/material/radio';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog/dialog-ref';
 import { Observable } from 'rxjs';
+import { LoadingSpinnerModule } from '../../../features/loading-spinner/loading-spinner.module';
+import { createStudy } from '../../../psa.app.core/models/instance.helper.spec';
 import SpyObj = jasmine.SpyObj;
 
 describe('ComplianceResearcherComponent', () => {
@@ -83,6 +85,7 @@ describe('ComplianceResearcherComponent', () => {
         MockModule(MatDividerModule),
         MockModule(MatCardModule),
         MockModule(MatRadioModule),
+        MockModule(LoadingSpinnerModule),
       ],
     });
   }));
@@ -179,11 +182,11 @@ describe('ComplianceResearcherComponent', () => {
     }));
   });
 
-  function getStudies(): Studie[] {
-    const studies = [new Studie(), new Studie()];
-    studies[0].name = 'Teststudie1';
-    studies[1].name = 'Teststudie2';
-    return studies;
+  function getStudies(): Study[] {
+    return [
+      createStudy({ name: 'Teststudie1' }),
+      createStudy({ name: 'Teststudie2' }),
+    ];
   }
 
   function getComplianceTextObject(): ComplianceTextInEditMode {

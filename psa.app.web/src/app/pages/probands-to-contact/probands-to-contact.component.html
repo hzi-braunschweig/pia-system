@@ -4,6 +4,8 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
+<app-loading-spinner *ngIf="isLoading" cover="true"></app-loading-spinner>
+
 <div class="jumbotron">
   <mat-grid-list [cols]="3" rowHeight="50px">
     <mat-grid-tile colspan="3">
@@ -28,18 +30,16 @@
       </button>
     </mat-grid-tile>
   </mat-grid-list>
-  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
 
-  <div *ngIf="isDataReady" class="probands-container mat-elevation-z8">
+  <div class="probands-container mat-elevation-z8">
     <mat-table
-      #table
       [dataSource]="dataSource"
       matSortActive="username"
       matSortDirection="asc"
       matSort
     >
       <!-- Username Column -->
-      <ng-container matColumnDef="username" matSortStart>
+      <ng-container matColumnDef="username">
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           {{ 'PROBAND.PSEUDONYM' | translate }}
         </mat-header-cell>
@@ -47,7 +47,7 @@
       </ng-container>
 
       <!-- IDS Column -->
-      <ng-container matColumnDef="ids" matSortStart>
+      <ng-container matColumnDef="ids">
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           {{ 'PROBAND.IDS' | translate }}
         </mat-header-cell>
@@ -86,14 +86,13 @@
       </ng-container>
 
       <!-- Questionnaire Instances Title Set 1 -->
-      <ng-container matColumnDef="questionnaire1">
+      <ng-container matColumnDef="notableAnswerQIs">
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           {{ 'GENERAL.QUESTIONNAIRE' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let row">
-          <ng-container
-            *ngFor="let item of row.notable_answer_questionnaire_instances"
-            >-{{ item.questionnaire_name }} <br
+          <ng-container *ngFor="let item of row.notableAnswerQIs"
+            >- {{ item }} <br
           /></ng-container>
         </mat-cell>
       </ng-container>
@@ -104,28 +103,23 @@
           {{ 'PROBANDS_TO_CONTACT.NOTABLE' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let row">
-          <span *ngIf="row.notable !== undefined">
-            <div class="marker">
-              <span [style.color]="row.processed == false ? 'red' : 'grey'"
-                >⚡</span
-              >
-            </div>
-            <div class="marker-date">
-              <small>{{ row.notable_timestamp | date: 'dd.MM.yyyy' }}</small>
-            </div>
-          </span>
+          <div *ngIf="row.notable !== undefined" class="date-cel">
+            <span [style.color]="row.processed == false ? 'red' : 'grey'"
+              >⚡</span
+            >
+            <small>{{ row.notable_timestamp | date }}</small>
+          </div>
         </mat-cell>
       </ng-container>
 
       <!-- Questionnaire Instances Title Set 2 -->
-      <ng-container matColumnDef="questionnaire2">
+      <ng-container matColumnDef="notFilledoutQIs">
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           {{ 'GENERAL.QUESTIONNAIRE' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let row">
-          <ng-container
-            *ngFor="let item of row.not_filledout_questionnaire_instances"
-            >-{{ item.questionnaire_name }} <br
+          <ng-container *ngFor="let item of row.notFilledoutQIs"
+            >- {{ item }} <br
           /></ng-container>
         </mat-cell>
       </ng-container>
@@ -136,18 +130,12 @@
           {{ 'PROBANDS_TO_CONTACT.QUESTIONNAIRE_STATUS' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let row">
-          <span *ngIf="row.notFilledout !== undefined">
-            <div class="marker">
-              <span [style.color]="row.processed == false ? 'red' : 'grey'"
-                >?</span
-              >
-            </div>
-            <div class="marker-date">
-              <small>{{
-                row.notFilledout_timestamp | date: 'dd.MM.yyyy'
-              }}</small>
-            </div>
-          </span>
+          <div *ngIf="row.notFilledout !== undefined" class="date-cel">
+            <span [style.color]="row.processed == false ? 'red' : 'grey'"
+              >?</span
+            >
+            <small>{{ row.notFilledout_timestamp | date }}</small>
+          </div>
         </mat-cell>
       </ng-container>
 
@@ -169,10 +157,10 @@
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
         <mat-cell *matCellDef="let row">
           <button
-            #delete
             mat-icon-button
-            (click)="contactProband([row.username])"
-            [disabled]="row.accountStatus !== 'PROBANDEN.STATUS_ACTIV'"
+            data-unit="contact-button"
+            (click)="contactProband(row.username)"
+            [disabled]="row.accountStatus !== 'PROBANDEN.STATUS_ACTIVE'"
           >
             <mat-icon>email</mat-icon>
           </button>
@@ -184,10 +172,10 @@
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
         <mat-cell *matCellDef="let row">
           <button
-            #delete
             mat-icon-button
+            data-unit="view-button"
             (click)="viewContactInfo(row.username)"
-            [disabled]="row.accountStatus !== 'PROBANDEN.STATUS_ACTIV'"
+            [disabled]="row.accountStatus !== 'PROBANDEN.STATUS_ACTIVE'"
           >
             <mat-icon>remove_red_eye</mat-icon>
           </button>
@@ -200,7 +188,7 @@
 
     <mat-paginator
       #paginator
-      [length]="dataSource.data.length"
+      [length]="dataSource.filteredData.length"
       [pageSize]="25"
       [pageSizeOptions]="[5, 10, 25, 100]"
     >

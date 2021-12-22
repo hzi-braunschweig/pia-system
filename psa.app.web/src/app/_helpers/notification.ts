@@ -4,12 +4,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component } from '@angular/core';
-import { Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {
-  MatDialogRef,
   MAT_DIALOG_DATA,
   MatDialog,
+  MatDialogRef,
 } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
@@ -18,6 +17,7 @@ import {
   QuestionnaireNotificationDto,
   SampleNotificationDto,
 } from '../psa.app.core/models/notification';
+import { AuthenticationManager } from '../_services/authentication-manager.service';
 
 @Component({
   selector: 'app-notification',
@@ -26,10 +26,12 @@ import {
 export class NotificationComponent {
   currentUsername: string;
 
-  constructor(public dialog: MatDialog, private router: Router) {
-    this.currentUsername = JSON.parse(
-      localStorage.getItem('currentUser')
-    ).username;
+  constructor(
+    public dialog: MatDialog,
+    private router: Router,
+    auth: AuthenticationManager
+  ) {
+    this.currentUsername = auth.getCurrentUsername();
   }
 
   presentLabReport(notificationData: SampleNotificationDto): void {

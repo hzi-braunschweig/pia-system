@@ -16,7 +16,7 @@ function validateAccessToken(db) {
             return { isValid: true };
         }
         try {
-            const result = await db.oneOrNone("SELECT username FROM users WHERE username=${username} AND role=${role} AND account_status!='deactivated'", {
+            const result = await db.oneOrNone('SELECT username FROM accounts WHERE username=${username} AND role=${role}', {
                 username: decoded.username,
                 role: decoded.role,
             });

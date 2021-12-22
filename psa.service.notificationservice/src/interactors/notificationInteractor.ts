@@ -8,27 +8,26 @@ import * as Boom from '@hapi/boom';
 import { AccessToken } from '@pia/lib-service-core';
 import postgresqlHelper from '../services/postgresqlHelper';
 
-import { isValid, addHours } from 'date-fns';
+import { addHours, isValid } from 'date-fns';
 import { NotificationHelper } from '../services/notificationHelper';
 
 import { FcmToken } from '../models/fcmToken';
-import { Notification, DbNotificationSchedules } from '../models/notification';
+import { DbNotificationSchedules, Notification } from '../models/notification';
 import { QuestionnaireInstance } from '../models/questionnaireInstance';
 
-import { QuestionnaireserviceClient } from '../clients/questionnaireserviceClient';
+import { questionnaireserviceClient } from '../clients/questionnaireserviceClient';
 import { assert } from 'ts-essentials';
 import StatusCodes from 'http-status-codes';
-import { UserserviceClient } from '../clients/userserviceClient';
+import { userserviceClient } from '../clients/userserviceClient';
 
 /**
- * @description interactor that handles notification requests based on users permissions
+ * interactor that handles notification requests based on users permissions
  */
 export class NotificationInteractor {
   /**
-   * @description creates a new notification based on the users permissions
-   * @param {string} userToken the jwt of the request
-   * @param {string} notification the fcm notification to create
-   * @returns object promise a promise that will be resolved in case of success or rejected otherwise
+   * creates a new notification based on the users permissions
+   * @param decodedToken the jwt of the request
+   * @param notification the fcm notification to create
    */
   public static async createNotification(
     decodedToken: Partial<AccessToken>,
@@ -66,14 +65,13 @@ export class NotificationInteractor {
   }
 
   /**
-   * @description get notification with id
-   * @param {string} userToken the jwt of the request
-   * @param {string} notification_id the fcm notification id
-   * @returns object promise a promise that will be resolved in case of success or rejected otherwise
+   * get notification with id
+   * @param decodedToken the jwt of the request
+   * @param notificationId the fcm notification id
    */
   public static async getNotification(
     decodedToken: Partial<AccessToken>,
-    notification_id: number
+    notificationId: number
   ): Promise<{
     notification_type: 'qReminder' | 'sample' | 'custom';
     reference_id: string;
@@ -91,7 +89,7 @@ export class NotificationInteractor {
     let resultNotificationByID: DbNotificationSchedules;
     try {
       resultNotificationByID = (await postgresqlHelper.getNotificationById(
-        notification_id
+        notificationId
       )) as DbNotificationSchedules;
     } catch (err) {
       console.error(err);
@@ -112,7 +110,7 @@ export class NotificationInteractor {
       case 'qReminder': {
         let qInstance: QuestionnaireInstance;
         try {
-          qInstance = await QuestionnaireserviceClient.getQuestionnaireInstance(
+          qInstance = await questionnaireserviceClient.getQuestionnaireInstance(
             Number.parseInt(resultNotificationByID.reference_id)
           );
         } catch (err) {
@@ -121,7 +119,8 @@ export class NotificationInteractor {
             err.output.statusCode === StatusCodes.NOT_FOUND
           ) {
             throw Boom.notFound('Could not get questionnaire instance');
-          } else throw err;
+          }
+          throw err;
         }
 
         if (qInstance.questionnaire.questions.length === 0) {
@@ -130,23 +129,23 @@ export class NotificationInteractor {
 
         let notification_body;
         if (qInstance.status === 'active') {
-          notification_body = qInstance.questionnaire.notification_body_new;
+          notification_body = qInstance.questionnaire.notificationBodyNew;
         } else {
           notification_body =
-            qInstance.questionnaire.notification_body_in_progress;
+            qInstance.questionnaire.notificationBodyInProgress;
         }
-        await postgresqlHelper.deleteScheduledNotification(notification_id);
+        await postgresqlHelper.deleteScheduledNotification(notificationId);
         return {
           notification_type: resultNotificationByID.notification_type,
           reference_id: resultNotificationByID.reference_id,
-          title: qInstance.questionnaire.notification_title,
+          title: qInstance.questionnaire.notificationTitle,
           body: notification_body,
-          questionnaire_id: qInstance.questionnaire_id,
-          questionnaire_version: qInstance.questionnaire_version,
+          questionnaire_id: qInstance.questionnaire.id,
+          questionnaire_version: qInstance.questionnaire.version,
         };
       }
       case 'sample': {
-        await postgresqlHelper.deleteScheduledNotification(notification_id);
+        await postgresqlHelper.deleteScheduledNotification(notificationId);
         return {
           notification_type: resultNotificationByID.notification_type,
           reference_id: resultNotificationByID.reference_id,
@@ -155,7 +154,7 @@ export class NotificationInteractor {
         };
       }
       case 'custom': {
-        await postgresqlHelper.deleteScheduledNotification(notification_id);
+        await postgresqlHelper.deleteScheduledNotification(notificationId);
         return {
           notification_type: resultNotificationByID.notification_type,
           reference_id: resultNotificationByID.reference_id,
@@ -188,7 +187,7 @@ export class NotificationInteractor {
       // we have no token to send the notification to
       // decide whether the recipient is missing or if we want to schedule the notification for later sending
       if (!failedSendTo.includes(recipient)) {
-        if (!(await UserserviceClient.isUserExistentByUsername(recipient))) {
+        if (!(await userserviceClient.isProbandExistentByUsername(recipient))) {
           failedSendTo.push(recipient);
           return;
         }

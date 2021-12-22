@@ -72,9 +72,6 @@ describe('Release Test, role: "Forscher", General', () => {
     cy.get('[data-e2e="e2e-sidenav-content"]')
       .contains('Begrüßungstext')
       .should('be.visible');
-    cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Logs')
-      .should('be.visible');
   });
   it('should logout', () => {
     cy.visit(appUrl);

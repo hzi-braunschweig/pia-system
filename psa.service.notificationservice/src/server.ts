@@ -67,7 +67,7 @@ export class Server {
     await registerPlugins(this.server, {
       name: packageJson.name,
       version: packageJson.version,
-      routes: './src/routes/*.js',
+      routes: 'src/routes/*',
     });
 
     await this.server.start();
@@ -77,10 +77,9 @@ export class Server {
     MailService.initService(config.servers.mailserver);
 
     this.listeningDbClient = new ListeningDbClient(db);
-    this.listeningDbClient.on(
-      'connected',
-      (client) => void Server.registerDbNotifications(client)
-    );
+    this.listeningDbClient.on('connected', (client: IClient) => {
+      Server.registerDbNotifications(client).catch(console.error);
+    });
     await this.listeningDbClient.connect();
     await messageQueueService.connect();
     // Starting cronJobs once the database service connection is made

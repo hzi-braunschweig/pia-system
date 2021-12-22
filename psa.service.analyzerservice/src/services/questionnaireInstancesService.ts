@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { SormasEndDateService } from './sormasEndDateService';
 import {
   add,
   addDays,
@@ -16,8 +15,7 @@ import {
   setDay,
   startOfToday,
 } from 'date-fns';
-import { pgp, db } from '../db';
-import { asyncForEach, asyncMap } from '@pia/lib-service-core';
+import { db, pgp } from '../db';
 import {
   CycleUnit,
   Questionnaire,
@@ -30,12 +28,12 @@ import {
   QuestionnaireInstanceNew,
   QuestionnaireInstanceStatus,
 } from '../models/questionnaireInstance';
-import { User } from '../models/user';
+import { Proband } from '../models/proband';
 import { Answer } from '../models/answer';
 import { Condition } from '../models/condition';
 import { AnswerType } from '../models/answerOption';
 import { LoggingService } from './loggingService';
-import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
+import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 import { config } from '../config';
 
 interface QuestionnaireInstanceStatusWithIdentifier {
@@ -101,13 +99,11 @@ export class QuestionnaireInstancesService {
                        questionnaires.type,
                        questionnaires.id        AS questionnaire_id,
                        qi.questionnaire_version AS questionnaire_version,
-                       questionnaires.name      AS questionnaire_name,
-                       users.ids
+                       questionnaires.name      AS questionnaire_name
                 FROM questionnaire_instances AS qi
                          JOIN questionnaires
                               ON qi.questionnaire_id = questionnaires.id AND
                                  qi.questionnaire_version = questionnaires.version
-                         JOIN users ON qi.user_id = users.username
                 WHERE (status = 'inactive' OR status = 'active' OR status = 'in_progress' OR
                        status = 'released_once')
                   AND date_of_issue <= NOW()`);
@@ -123,53 +119,49 @@ export class QuestionnaireInstancesService {
 
       if (qInstances.length > 0) {
         const curDate = new Date();
-        await asyncForEach<BaseQuestionnaireInstance>(
-          qInstances,
-          async (qInstance: BaseQuestionnaireInstance): Promise<void> => {
-            // Expire instance
-            if (
-              (qInstance.status === 'inactive' ||
-                qInstance.status === 'active' ||
-                qInstance.status === 'in_progress') &&
-              (await QuestionnaireInstancesService.isExpired(
-                curDate,
-                qInstance.date_of_issue,
-                qInstance.expires_after_days,
-                qInstance.ids
-              )) &&
-              qInstance.cycle_unit !== 'spontan' &&
-              qInstance.type === 'for_probands'
-            ) {
-              vQuestionnaireInstances.push({
-                id: qInstance.id,
-                status: 'expired',
-              });
-              instanceIdsToExpire.push(qInstance.id);
-            }
-            // Activate instance
-            else if (
-              qInstance.status === 'inactive' &&
-              qInstance.date_of_issue <= curDate
-            ) {
-              vQuestionnaireInstances.push({
-                id: qInstance.id,
-                status: 'active',
-              });
-            }
-
-            // Release instance twice
-            else if (
-              qInstance.status === 'released_once' &&
-              qInstance.date_of_release_v1 &&
-              addDays(
-                qInstance.date_of_release_v1,
-                qInstance.finalises_after_days
-              ) < curDate
-            ) {
-              instanceIdsToReleaseTwice.push(qInstance.id);
-            }
+        qInstances.forEach((qInstance: BaseQuestionnaireInstance) => {
+          // Expire instance
+          if (
+            (qInstance.status === 'inactive' ||
+              qInstance.status === 'active' ||
+              qInstance.status === 'in_progress') &&
+            QuestionnaireInstancesService.isExpired(
+              curDate,
+              qInstance.date_of_issue,
+              qInstance.expires_after_days
+            ) &&
+            qInstance.cycle_unit !== 'spontan' &&
+            qInstance.type === 'for_probands'
+          ) {
+            vQuestionnaireInstances.push({
+              id: qInstance.id,
+              status: 'expired',
+            });
+            instanceIdsToExpire.push(qInstance.id);
           }
-        );
+          // Activate instance
+          else if (
+            qInstance.status === 'inactive' &&
+            qInstance.date_of_issue <= curDate
+          ) {
+            vQuestionnaireInstances.push({
+              id: qInstance.id,
+              status: 'active',
+            });
+          }
+
+          // Release instance twice
+          else if (
+            qInstance.status === 'released_once' &&
+            qInstance.date_of_release_v1 &&
+            addDays(
+              qInstance.date_of_release_v1,
+              qInstance.finalises_after_days
+            ) < curDate
+          ) {
+            instanceIdsToReleaseTwice.push(qInstance.id);
+          }
+        });
         if (instanceIdsToReleaseTwice.length > 0) {
           await t.none(
             'UPDATE questionnaire_instances SET date_of_release_v2 = date_of_release_v1, status=$1 WHERE id IN($2:csv)',
@@ -229,10 +221,10 @@ export class QuestionnaireInstancesService {
   /**
    * Creates the next questionnaire instance for the given questionnaire instance
    */
-  public static async createNextQuestionnaireInstance(
+  public static createNextQuestionnaireInstance(
     questionnaire: Questionnaire,
     instance: QuestionnaireInstance
-  ): Promise<QuestionnaireInstanceNew> {
+  ): QuestionnaireInstanceNew {
     const cycleSettings: CycleSettings = {
       cycleUnit: questionnaire.cycle_unit,
       cyclePerDay: questionnaire.cycle_per_day ?? this.HOURS_PER_DAY,
@@ -254,7 +246,7 @@ export class QuestionnaireInstancesService {
       user_id: instance.user_id,
       date_of_issue: dateOfIssue,
       cycle: instance.cycle + 1,
-      status: await this.getQuestionnaireInstanceStatus(
+      status: this.getQuestionnaireInstanceStatus(
         dateOfIssue,
         questionnaire.expires_after_days,
         questionnaire.cycle_unit,
@@ -266,44 +258,34 @@ export class QuestionnaireInstancesService {
   /**
    * Creates questionnaire instances for the given (questionnaire,user) tuple
    */
-  public static async createQuestionnaireInstances(
+  public static createQuestionnaireInstances(
     questionnaire: Questionnaire,
-    user: User,
+    user: Proband,
     hasInternalCondition: boolean,
     onlyLoginDependantOnes = false
-  ): Promise<QuestionnaireInstanceNew[]> {
-    const zonedIssueDatesForQuestionnaireInstances =
-      this.getIssueDatesForQuestionnaireInstances(
-        questionnaire,
-        user,
-        hasInternalCondition,
-        onlyLoginDependantOnes
-      );
-
-    const issueDatesForQuestionnaireInstances =
-      zonedIssueDatesForQuestionnaireInstances.map((date) => {
-        return zonedTimeToUtc(date, config.timeZone);
-      });
-
-    return await asyncMap<Date, QuestionnaireInstanceNew>(
-      issueDatesForQuestionnaireInstances,
-      async (issueDate: Date, index) => ({
+  ): QuestionnaireInstanceNew[] {
+    return this.getIssueDatesForQuestionnaireInstances(
+      questionnaire,
+      user,
+      hasInternalCondition,
+      onlyLoginDependantOnes
+    )
+      .map((zonedIssueDate) => zonedTimeToUtc(zonedIssueDate, config.timeZone))
+      .map((issueDate, index) => ({
         study_id: questionnaire.study_id,
         questionnaire_id: questionnaire.id,
         questionnaire_version: questionnaire.version,
         questionnaire_name: questionnaire.name,
-        user_id: user.username,
+        user_id: user.pseudonym,
         date_of_issue: issueDate,
         cycle: index + 1,
-        status:
-          await QuestionnaireInstancesService.getQuestionnaireInstanceStatus(
-            issueDate,
-            questionnaire.expires_after_days,
-            questionnaire.cycle_unit,
-            questionnaire.type
-          ),
-      })
-    );
+        status: this.getQuestionnaireInstanceStatus(
+          issueDate,
+          questionnaire.expires_after_days,
+          questionnaire.cycle_unit,
+          questionnaire.type
+        ),
+      }));
   }
 
   /**
@@ -556,32 +538,20 @@ export class QuestionnaireInstancesService {
   }
 
   /**
-   * Returns true if either the sormas end date or the expiration date is reached
+   * Returns true if either the expiration date is reached
    *
    *
    */
-  public static async isExpired(
+  public static isExpired(
     curDate: Date,
     dateOfIssue: Date,
-    expires_after_days: number,
-    questionnaireInstanceUserIds?: string
-  ): Promise<boolean> {
-    let sormasExpirationDate;
-
-    if (questionnaireInstanceUserIds) {
-      sormasExpirationDate = await SormasEndDateService.getEndDateForUUID(
-        questionnaireInstanceUserIds
-      );
-    }
+    expires_after_days: number
+  ): boolean {
     const questionnaireExpirationDate = addDays(
       dateOfIssue,
       expires_after_days
     );
-
-    return (
-      (sormasExpirationDate && sormasExpirationDate < curDate) ||
-      questionnaireExpirationDate < curDate
-    );
+    return questionnaireExpirationDate < curDate;
   }
 
   /**
@@ -589,7 +559,7 @@ export class QuestionnaireInstancesService {
    */
   private static getIssueDatesForQuestionnaireInstances(
     questionnaire: Questionnaire,
-    user: User,
+    user: Proband,
     hasInternalCondition: boolean,
     onlyLoginDependantOnes: boolean
   ): Date[] {
@@ -732,6 +702,7 @@ export class QuestionnaireInstancesService {
     dayLimitReached: boolean
   ) => Date {
     if (cycleUnit === 'hour') {
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       return QuestionnaireInstancesService.addHours;
     } else {
       return (date: Date, amount: number): Date => {
@@ -829,16 +800,16 @@ export class QuestionnaireInstancesService {
     }
   }
 
-  private static async getQuestionnaireInstanceStatus(
+  private static getQuestionnaireInstanceStatus(
     dateOfIssue: Date,
     expiresAfterDays: number,
     cycleUnit: CycleUnit,
     questionnaireType: QuestionnaireType
-  ): Promise<QuestionnaireInstanceStatus> {
+  ): QuestionnaireInstanceStatus {
     const curDate = new Date();
     if (dateOfIssue <= curDate) {
       if (
-        (await this.isExpired(curDate, dateOfIssue, expiresAfterDays)) &&
+        this.isExpired(curDate, dateOfIssue, expiresAfterDays) &&
         cycleUnit !== 'spontan' &&
         questionnaireType === 'for_probands'
       ) {

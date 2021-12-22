@@ -8,8 +8,8 @@ import chai from 'chai';
 import { createSandbox, SinonSandbox, SinonStub } from 'sinon';
 import sinonChai from 'sinon-chai';
 import fetchMocker from 'fetch-mock';
-import * as fetch from 'node-fetch';
 
+import { HttpClient } from '@pia-system/lib-http-clients-internal';
 import { ModysImportService } from '../../src/services/modysImportService';
 import { StatusCodes } from 'http-status-codes';
 import {
@@ -21,14 +21,17 @@ import {
 const expect = chai.expect;
 chai.use(sinonChai);
 const fetchMock = fetchMocker.sandbox();
+
 const sandbox: SinonSandbox = createSandbox();
+
+sandbox.restore();
 
 describe('MODYS Import', () => {
   let fetchStub: SinonStub;
 
   beforeEach(() => {
     fetchStub = sandbox
-      .stub<typeof fetch, 'default'>(fetch, 'default')
+      .stub<typeof HttpClient, 'fetch'>(HttpClient, 'fetch')
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .callsFake(fetchMock);
@@ -47,7 +50,7 @@ describe('MODYS Import', () => {
     await ModysImportService.startImport();
 
     // Assert
-    expect(fetchStub.callCount).to.eq(1);
+    expect(fetchMock.calls().length).to.eq(1);
   });
 
   it('should request MODYS probands for given pseudonyms', async () => {
@@ -67,9 +70,8 @@ describe('MODYS Import', () => {
     expect(fetchStub).to.have.been.calledWithExactly(
       'http://externalmodys/api/pidByIdandType/Testproband1/1',
       {
-        method: 'get',
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: 'Basic dGVzdHVzZXI6dGVzdHBhc3N3b3Jk',
         },
       }
@@ -77,9 +79,8 @@ describe('MODYS Import', () => {
     expect(fetchStub).to.have.been.calledWithExactly(
       'http://externalmodys/api/probands/MODYS_Proband',
       {
-        method: 'get',
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: 'Basic dGVzdHVzZXI6dGVzdHBhc3N3b3Jk',
         },
       }
@@ -87,9 +88,8 @@ describe('MODYS Import', () => {
     expect(fetchStub).to.have.been.calledWithExactly(
       'http://externalmodys/api/probandContactDetails/MODYS_Proband',
       {
-        method: 'get',
+        method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: 'Basic dGVzdHVzZXI6dGVzdHBhc3N3b3Jk',
         },
       }
@@ -108,7 +108,7 @@ describe('MODYS Import', () => {
     await ModysImportService.startImport();
 
     // Assert
-    expect(fetchStub.callCount).to.eq(expectedCallCount);
+    expect(fetchMock.calls().length).to.eq(expectedCallCount);
   });
 
   it('should update mapped probands in personaldataservice', async () => {
@@ -124,11 +124,11 @@ describe('MODYS Import', () => {
     await ModysImportService.startImport();
 
     // Assert
-    expect(fetchStub.callCount).to.eq(expectedCallCount);
+    expect(fetchMock.calls().length).to.eq(expectedCallCount);
     expect(fetchStub).to.have.been.calledWithExactly(
       'http://personaldataservice:5000/personal/personalData/proband/Testproband1',
       {
-        method: 'put',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           anrede: 'Frau',
@@ -165,12 +165,12 @@ describe('MODYS Import', () => {
     await ModysImportService.startImport();
 
     // Assert
-    expect(fetchStub.callCount).to.eq(expectedCallCount);
+    expect(fetchMock.calls().length).to.eq(expectedCallCount);
   });
 
   function mockGetPseudonyms(body: string[]): void {
     fetchMock.get(
-      'http://userservice:5000/user/pseudonyms?study=Teststudy&accountStatus=active&accountStatus=deactivation_pending',
+      'http://userservice:5000/user/pseudonyms?study=Teststudy&complianceContact=true',
       { status: StatusCodes.OK, body }
     );
   }

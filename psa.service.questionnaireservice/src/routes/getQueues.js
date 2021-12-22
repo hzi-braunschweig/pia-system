@@ -6,7 +6,7 @@
 
 const Joi = require('joi');
 
-const queuesHandler = require('../handlers/queuesHandler.js');
+const queuesHandler = require('../handlers/queuesHandler');
 
 module.exports = {
   path: '/questionnaire/probands/{user_id}/queues',

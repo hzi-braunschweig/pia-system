@@ -15,7 +15,6 @@
  *    probandId: string,
  *    fromDate: Date,
  *    toDate: Date,
- *    deleteLogs: boolean,
  *    [forInstanceIds]: number[],
  *    [forLabResultsIds]: string[]
  *  }} PendingPartialDeletionReq
@@ -27,7 +26,6 @@
  *    probandId: string,
  *    fromDate: Date,
  *    toDate: Date,
- *    deleteLogs: boolean,
  *    [forInstanceIds]: number[],
  *    [forLabResultsIds]: string[]
  *  }} PendingPartialDeletionRes
@@ -39,7 +37,6 @@
  *    proband_id: string,
  *    from_date: Date,
  *    to_date: Date,
- *    delete_logs: boolean,
  *    for_instance_ids: number[]|null,
  *    for_lab_results_ids: string[]|null
  *  }} PendingPartialDeletionDb

@@ -30,13 +30,20 @@ const pmToken = JWT.sign(pmSession, secretOrPrivateKey, {
 const pmHeader = { authorization: pmToken };
 
 const { db } = require('../../src/db');
+const sinon = require('sinon');
+const {
+  LabResultImportHelper,
+} = require('../../src/services/labResultImportHelper');
 const client = new Client();
 const sftpConfig = config.servers.mhhftpserver;
 
 describe('HL7 Labresult import test', function () {
-  before(async function () {
-    this.timeout(5000);
+  before(async () => {
+    const startServerSandbox = sinon.createSandbox();
+    startServerSandbox.stub(LabResultImportHelper, 'importHl7FromMhhSftp');
+    startServerSandbox.stub(LabResultImportHelper, 'importCsvFromHziSftp');
     await server.init();
+    startServerSandbox.restore();
     await client.connect(sftpConfig).catch((err) => {
       console.error(
         `Could not connect to ${sftpConfig.host}:${sftpConfig.port}`,
@@ -64,18 +71,12 @@ describe('HL7 Labresult import test', function () {
       '/upload/M3'
     );
 
+    await db.none("INSERT INTO studies(name) VALUES ('QTestStudy')");
     await db.none(
-      "DELETE FROM lab_results WHERE user_id='QTestProband1' OR id='TEST-12345679012'  OR id ='TEST-12345679013'"
+      "INSERT INTO probands (pseudonym, study) VALUES ('QTestProband1', 'QTestStudy')"
     );
     await db.none(
-      "DELETE FROM users WHERE username='QTestProband1' OR username='QTestProbandenManager'"
-    );
-
-    await db.none(
-      "INSERT INTO users(username, password, role) VALUES ('QTestProband1', '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b', 'Proband')"
-    );
-    await db.none(
-      "INSERT INTO users(username, password, role) VALUES ('QTestProbandenManager', '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b', 'ProbandenManager')"
+      "INSERT INTO accounts (username, password, role) VALUES ('QTestProbandenManager', '', 'ProbandenManager')"
     );
     await db.none(
       "INSERT INTO lab_results(id, user_id, status, new_samples_sent) VALUES ('TEST-12345679012', 'QTestProband1', 'new', FALSE)"
@@ -93,11 +94,11 @@ describe('HL7 Labresult import test', function () {
     await client.delete('/upload/M3', true).catch((err) => console.error(err));
 
     await db.none(
-      "DELETE FROM lab_results WHERE user_id='QTestProband1' OR id='TEST-12345679012'  OR id ='TEST-12345679013'"
+      "DELETE FROM lab_results WHERE user_id LIKE 'QTest%' OR id='TEST-12345679012'  OR id ='TEST-12345679013'"
     );
-    await db.none(
-      "DELETE FROM users WHERE username='QTestProband1' OR username='QTestProbandenManager'"
-    );
+    await db.none("DELETE FROM probands WHERE pseudonym LIKE 'QTest%'");
+    await db.none("DELETE FROM accounts WHERE username LIKE 'QTest%'");
+    await db.none("DELETE FROM studies WHERE name LIKE 'QTest%'");
   });
 
   it('should import hl7 files with correct fields and correct Proband into database', async function () {

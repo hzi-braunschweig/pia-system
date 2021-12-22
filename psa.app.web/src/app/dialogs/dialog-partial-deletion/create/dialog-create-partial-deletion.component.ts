@@ -33,7 +33,6 @@ export interface DialogCreatePartialDeletionResult {
   templateUrl: 'dialog-create-partial-deletion.component.html',
 })
 export class DialogCreatePartialDeletionComponent {
-  deleteLogs: boolean = false;
   labResults: LabResult[] = [];
   questionnaireInstances: QuestionnaireInstance[] = [];
   isLoading: boolean = true;
@@ -62,8 +61,6 @@ export class DialogCreatePartialDeletionComponent {
         ? datePipe.transform(data.dataForDelete.endDate)
         : translate.instant('DIALOG.PARTIAL_DELETION.DATE_OF_TODAY'),
     };
-
-    this.deleteLogs = data.dataForDelete.deleteLogs;
 
     this.labResults = data.dataForDelete.labResults;
     const questionnaires = data.dataForDelete.questionnaires;
@@ -116,7 +113,6 @@ export class DialogCreatePartialDeletionComponent {
       probandId: this.data.dataForDelete.probandId,
       fromDate: this.data.dataForDelete.startDate,
       toDate: this.data.dataForDelete.endDate,
-      deleteLogs: this.data.dataForDelete.deleteLogs,
       forInstanceIds: this.questionnaireInstances.map(
         (instance) => instance.id
       ),

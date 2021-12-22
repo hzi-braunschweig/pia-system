@@ -12,17 +12,6 @@ WHERE user_id IN (
 DELETE FROM fcm_tokens;
 
 DELETE
-FROM study_users
-WHERE user_id IN (
-                  'QTestProband1',
-                  'QTestProband2',
-                  'QTestProband4',
-                  'QTestForscher1',
-                  'QTestProbandenManager',
-                  'QTestUntersuchungsteam'
-    );
-
-DELETE
 FROM answers
 WHERE questionnaire_instance_id IN (
     9999996
@@ -57,17 +46,12 @@ WHERE id IN (
 
 
 DELETE
-FROM users
-WHERE username IN (
-                   'QTestProband1',
-                   'QTestProband2',
-                   'QTestProband3',
-                   'QTestProband4',
-                   'QTestProbandenManager',
-                   'QTestForscher1',
-                   'QTestUntersuchungsteam',
-                   'QTestSystemAdmin'
-    );
+FROM accounts
+WHERE username LIKE 'QTest%';
+
+DELETE
+FROM probands
+WHERE pseudonym LIKE 'QTest%';
 
 
 DELETE
@@ -86,3 +70,7 @@ FROM lab_observations;
 DELETE
 FROM studies
 WHERE name = 'ApiTestStudie';
+
+DELETE
+FROM studies
+WHERE name LIKE 'QTest%';

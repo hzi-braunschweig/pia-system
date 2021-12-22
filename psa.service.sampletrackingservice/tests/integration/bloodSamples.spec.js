@@ -5,42 +5,47 @@
  */
 
 const chai = require('chai');
+const sinon = require('sinon');
 const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const expect = chai.expect;
-
-const secretOrPrivateKey = require('../secretOrPrivateKey');
+const fetchMocker = require('fetch-mock');
+const { StatusCodes } = require('http-status-codes');
 const JWT = require('jsonwebtoken');
 
-const server = require('../../src/server');
-const apiAddress = 'http://localhost:' + process.env.PORT + '/sample';
-
-const { db } = require('../../src/db');
+const secretOrPrivateKey = require('../secretOrPrivateKey');
 const { setup, cleanup } = require('./bloodSamples.spec.data/setup.helper');
+const {
+  LabResultImportHelper,
+} = require('../../src/services/labResultImportHelper');
+const server = require('../../src/server');
+const { HttpClient } = require('@pia-system/lib-http-clients-internal');
+
+const apiAddress = 'http://localhost:' + process.env.PORT + '/sample';
 
 const probandSession1 = {
   id: 1,
   role: 'Proband',
   username: 'QTestProband1',
-  groups: ['ApiTestStudie', 'ApiTestMultiProband'],
+  groups: ['QTestStudy'],
 };
 const forscherSession1 = {
   id: 1,
   role: 'Forscher',
   username: 'QTestForscher1',
-  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
+  groups: ['QTestStudy'],
 };
 const utSession = {
   id: 1,
   role: 'Untersuchungsteam',
   username: 'QTestUntersuchungsteam',
-  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
+  groups: ['QTestStudy'],
 };
 const pmSession = {
   id: 1,
   role: 'ProbandenManager',
   username: 'QTestProbandenManager',
-  groups: ['ApiTestStudie', 'ApiTestMultiProf'],
+  groups: ['QTestStudy'],
 };
 const sysadminSession = {
   id: 1,
@@ -97,13 +102,24 @@ const resultsProband2 = {
   remark: 'This is another simple comment',
 };
 
+const fetchMock = fetchMocker.sandbox();
+
 describe('/sample/probands/id/bloodSamples', () => {
+  const suiteSandbox = sinon.createSandbox();
   before(async function () {
+    suiteSandbox.stub(LabResultImportHelper, 'importHl7FromMhhSftp');
+    suiteSandbox.stub(LabResultImportHelper, 'importCsvFromHziSftp');
+    suiteSandbox.stub(HttpClient, 'fetch').callsFake(fetchMock);
     await server.init();
   });
 
   after(async function () {
     await server.stop();
+    suiteSandbox.restore();
+  });
+
+  afterEach(() => {
+    fetchMock.restore();
   });
 
   describe('GET /sample/probands/id/bloodSamples', async () => {
@@ -139,6 +155,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return http 404 if PM tries for proband not in his study', async () => {
+      fetchMock.get('express:/user/users/QTestProband2', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy2' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/probands/QTestProband2/bloodSamples')
@@ -147,6 +167,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return http 404 if PM tries for nonexisting Proband', async () => {
+      fetchMock.get('express:/user/users/NOTAPROBAND', {
+        status: StatusCodes.OK,
+        body: JSON.stringify(null),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/probands/NOTAPROBAND/bloodSamples')
@@ -155,6 +179,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return blood samples from database for PM', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/probands/QTestProband1/bloodSamples')
@@ -168,6 +196,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return blood samples from database for UT', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/probands/QTestProband1/bloodSamples')
@@ -181,6 +213,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return blood samples from database for Forscher', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/probands/QTestProband1/bloodSamples')
@@ -243,6 +279,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return http 404 if a PM is not in same study as Proband', async () => {
+      fetchMock.get('express:/user/users/QTestProband2', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy2' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/bloodResult/' + resultsProband2.sample_id)
@@ -251,6 +291,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return blood samples from database for PM', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/bloodResult/' + resultsProband1.sample_id)
@@ -314,6 +358,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return http 404 if a PM is not in same study as Proband', async () => {
+      fetchMock.get('express:/user/users/QTestProband2', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy2' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/bloodResult/' + resultsProband2.sample_id)
@@ -322,6 +370,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return blood samples from database for PM', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get('/bloodResult/' + resultsProband1.sample_id)
@@ -375,6 +427,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return blood samples from database for UT', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get(
@@ -390,6 +446,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return blood samples from database for PM', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get(
@@ -405,6 +465,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return blood samples from database for Forscher', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .get(
@@ -431,10 +495,10 @@ describe('/sample/probands/id/bloodSamples', () => {
       sample_id: 'ApiTest-123456789',
       wrong_param: 'something',
     };
-    before(async () => {
+    beforeEach(async () => {
       await setup();
     });
-    after(async function () {
+    afterEach(async function () {
       await cleanup();
     });
 
@@ -511,6 +575,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return http 200 and create the BloodSample for UT', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .post('/probands/QTestProband1/bloodSamples')
@@ -546,224 +614,11 @@ describe('/sample/probands/id/bloodSamples', () => {
       wrong_param: 'something',
     };
 
-    async function resetDb() {
-      await db.none('DELETE FROM blood_samples WHERE sample_id IN ($1:csv)', [
-        [
-          'ZIFCO-1234567890',
-          'ZIFCO-1234567899',
-          'ZIFCO-1111111111',
-          'ZIFCO-1234567891',
-          'ZIFCO-1234567892',
-        ],
-      ]);
-      await db.none('DELETE FROM study_users WHERE user_id IN($1:csv)', [
-        [
-          'QTestProband1',
-          'QTestForscher1',
-          'QTestProband2',
-          'QTestProband3',
-          'QTestProband4',
-          'QTestProbandenManager',
-          'QTestUntersuchungsteam',
-        ],
-      ]);
-      await db.none('DELETE FROM users WHERE username IN($1:csv)', [
-        [
-          'QTestProband1',
-          'QTestProband2',
-          'QTestProband3',
-          'QTestProband4',
-          'QTestProbandenManager',
-          'QTestForscher1',
-          'QTestUntersuchungsteam',
-          'QTestSystemAdmin',
-        ],
-      ]);
-      await db.none('DELETE FROM studies WHERE name IN($1:csv)', [
-        [
-          'ApiTestStudie',
-          'ApiTestStudie2',
-          'ApiTestMultiProband',
-          'ApiTestMultiProf',
-        ],
-      ]);
-    }
-
-    before(async () => {
-      await resetDb();
-
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband1',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Proband',
-          null,
-          'android',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband2',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Proband',
-          null,
-          null,
-          false,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestForscher1',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Forscher',
-          null,
-          'web',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProbandenManager',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'ProbandenManager',
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestUntersuchungsteam',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'Untersuchungsteam',
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestSystemAdmin',
-          '0a0ff736e8179cb486d87e30d86625957458e49bdc1df667e9bbfdb8f535ee6253aeda490c02d1370e8891e84bb5b54b38bdb1c2dbdf66b383b50711adc33b9b',
-          'SysAdmin',
-          null,
-          null,
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband3',
-          '',
-          'Proband',
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          'deactivated',
-          'active',
-        ],
-      ]);
-      await db.none('INSERT INTO users VALUES ($1:csv)', [
-        [
-          'QTestProband4',
-          '',
-          'Proband',
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          'deleted',
-          'deleted',
-        ],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1:csv)', [
-        ['ApiTestStudie', 'ApiTestStudie Beschreibung]'],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'ApiTestStudie2 Beschreibung]'],
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1, $2)', [
-        'ApiTestMultiProband',
-        'ApiTestMultiProband Beschreibung',
-      ]);
-      await db.none('INSERT INTO studies VALUES ($1, $2)', [
-        'ApiTestMultiProf',
-        'ApiTestMultiProf Beschreibung',
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProband3', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProband4', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie2', 'QTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestForscher1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestProbandenManager', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestStudie', 'QTestUntersuchungsteam', 'read'],
-      ]);
-
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestProband1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestProband3', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestProband4', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProband', 'QTestProband2', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestForscher1', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestProbandenManager', 'read'],
-      ]);
-      await db.none('INSERT INTO study_users VALUES ($1:csv)', [
-        ['ApiTestMultiProf', 'QTestUntersuchungsteam', 'read'],
-      ]);
-
-      await db.none('INSERT INTO blood_samples VALUES ($1:csv)', [
-        [99999, 'QTestProband1', 'ZIFCO-1234567899', null, null],
-      ]);
-      await db.none('INSERT INTO blood_samples VALUES ($1:csv)', [
-        [99998, 'QTestProband2', 'ZIFCO-1234567890', true, null],
-      ]);
-      await db.none('INSERT INTO blood_samples VALUES ($1:csv)', [
-        [99997, 'QTestProband3', 'ZIFCO-1234567891', null, null],
-      ]);
-      await db.none('INSERT INTO blood_samples VALUES ($1:csv)', [
-        [99996, 'QTestProband4', 'ZIFCO-1234567892', null, null],
-      ]);
+    beforeEach(async () => {
+      await setup();
     });
-
-    after(async function () {
-      await resetDb();
+    afterEach(async function () {
+      await cleanup();
     });
 
     it('should return http 401 if the header is invalid', async () => {
@@ -793,16 +648,24 @@ describe('/sample/probands/id/bloodSamples', () => {
       expect(result).to.have.status(403);
     });
 
-    it('should return http 403 if a UT tries for Proband that is not in his study', async () => {
+    it('should return http 404 if a UT tries for Proband that is not in his study', async () => {
+      fetchMock.get('express:/user/users/QTestProband2', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy2' }),
+      });
       const result = await chai
         .request(apiAddress)
         .put('/probands/QTestProband2/bloodSamples/ZIFCO-1234567899')
         .set(utHeader)
         .send(validBloodSampleUT1);
-      expect(result).to.have.status(403);
+      expect(result).to.have.status(404);
     });
 
     it('should return http 409 if a UT tries for nonexisting blood sample', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .put('/probands/QTestProband1/bloodSamples/ZIFCO-1111111111')
@@ -812,6 +675,10 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return http 403 if a UT tries but update params are wrong', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result = await chai
         .request(apiAddress)
         .put('/probands/QTestProband1/bloodSamples/ZIFCO-1234567899')
@@ -848,9 +715,13 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return http 200 and update blood sample blood_sample_carried_out for UT', async () => {
+      fetchMock.get('express:/user/users/QTestProband5', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result1 = await chai
         .request(apiAddress)
-        .put('/probands/QTestProband1/bloodSamples/ZIFCO-1234567899')
+        .put('/probands/QTestProband5/bloodSamples/ZIFCO-1234567898')
         .set(utHeader)
         .send(validBloodSampleUT1);
       expect(result1).to.have.status(200);
@@ -860,15 +731,23 @@ describe('/sample/probands/id/bloodSamples', () => {
     });
 
     it('should return http 409 because blood sample with blood_sample_carried_out is true already exist for UT', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result1 = await chai
         .request(apiAddress)
-        .put('/probands/QTestProband1/bloodSamples/ZIFCO-1234567890')
+        .put('/probands/QTestProband1/bloodSamples/ZIFCO-1234567899')
         .set(utHeader)
         .send(validBloodSampleUT1);
       expect(result1).to.have.status(409);
     });
 
     it('should return http 200 and change blood sample remark for UT', async () => {
+      fetchMock.get('express:/user/users/QTestProband1', {
+        status: StatusCodes.OK,
+        body: JSON.stringify({ study: 'QTestStudy' }),
+      });
       const result1 = await chai
         .request(apiAddress)
         .put('/probands/QTestProband1/bloodSamples/ZIFCO-1234567899')

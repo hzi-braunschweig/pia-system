@@ -6,11 +6,19 @@
 
 .pia-login-card {
   margin-top: 64px;
+}
 
-  .pia-logo {
-    position: relative;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
+.pia-logo-container {
+  display: flex;
+  justify-content: center;
+}
+
+.pia-logo {
+  max-height: 160px;
+  max-width: 40%;
+}
+
+.go-back-button {
+  position: fixed;
+  left: 0;
 }

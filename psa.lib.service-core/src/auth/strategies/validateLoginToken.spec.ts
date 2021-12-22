@@ -53,7 +53,7 @@ describe('validateLoginToken()', () => {
     expect(oneOrNoneStub.calledOnce).to.be.ok;
     expect(
       oneOrNoneStub.calledWith(
-        "SELECT username FROM users WHERE username=${username} AND account_status!='deactivated'",
+        'SELECT username FROM accounts WHERE username=${username}',
         { username: 'Testuser' }
       )
     ).to.be.ok;

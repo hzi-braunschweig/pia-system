@@ -52,7 +52,7 @@ elif [[ (${command} == 'start') && (${arg}) ]]; then
     docker-compose $ARGS up -d --build --no-deps ${arg}
 
 elif [[ ${command} == 'start' ]]; then
-    docker-compose $ARGS up -d --build;
+    docker-compose $ARGS up -d --build --remove-orphans;
 
 elif [[ ${command} == 'stop' ]]; then
     docker-compose $ARGS stop;
@@ -95,6 +95,6 @@ elif [[ ${command} == 'help' ]]; then
 else
     docker-compose $ARGS stop;
     docker-compose $ARGS build;
-    docker-compose $ARGS up -d;
+    docker-compose $ARGS up -d --remove-orphans;
     docker-compose $ARGS logs -f -t --tail="all";
 fi

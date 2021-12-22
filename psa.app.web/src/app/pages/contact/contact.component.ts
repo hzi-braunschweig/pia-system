@@ -53,7 +53,7 @@ export class ContactComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     try {
-      this.currentRole = this.auth.currentRole;
+      this.currentRole = this.auth.getCurrentRole();
       this.hasSampleCompliance =
         await this.complianceManager.userHasCompliances([
           ComplianceType.SAMPLES,

@@ -57,11 +57,11 @@ describe('ComplianceManagerComponent', () => {
 
   describe('showComplianceDetails()', () => {
     it('open compliance details dialog', () => {
-      component.showComplianceDetails('1234');
+      component.showComplianceDetails(1234);
       expect(dialog.open).toHaveBeenCalledWith(
         DialogViewComplianceComponent,
         jasmine.objectContaining({
-          data: { study: 'test-study', complianceId: '1234' },
+          data: { study: 'test-study', complianceId: 1234 },
         })
       );
     });

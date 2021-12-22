@@ -159,7 +159,10 @@ export class QuestionnaireRepository {
                          AND qa.version = $(version)`;
       const order = `ORDER BY q.position, ao.position`;
       const query = RepositoryHelper.createQuestionnaireQuery(filter, order);
-      const result = await t.many(query, { id, version });
+      const result = await t.many<QuestionnaireDbResult>(query, {
+        id,
+        version,
+      });
       return RepositoryHelper.resolveDbResultToQuestionnaireMap(result).get(
         id.toString() + '_' + version.toString()
       )!;
@@ -174,7 +177,7 @@ export class QuestionnaireRepository {
     const filter = `WHERE qa.study_id IN ($(ids:csv))`;
     const order = `ORDER BY qa.id, q.position, ao.position`;
     const query = RepositoryHelper.createQuestionnaireQuery(filter, order);
-    const result = await db.many(query, { ids });
+    const result = await db.many<QuestionnaireDbResult>(query, { ids });
     return Array.from(
       RepositoryHelper.resolveDbResultToQuestionnaireMap(result).values()
     );

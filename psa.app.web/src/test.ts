@@ -6,12 +6,13 @@
 
 // This file is required by karma.conf.js and loads recursively all the .spec and framework files
 
-import 'zone.js/dist/zone-testing';
+import 'zone.js/testing';
 import { getTestBed } from '@angular/core/testing';
 import {
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting,
 } from '@angular/platform-browser-dynamic/testing';
+import { MockInstance, ngMocks } from 'ng-mocks';
 
 declare const require: {
   context(
@@ -23,6 +24,17 @@ declare const require: {
     <T>(id: string): T;
   };
 };
+
+// @see https://ng-mocks.sudo.eu/extra/auto-spy
+ngMocks.autoSpy('jasmine');
+
+// auto restore MockInstances
+jasmine.getEnv().addReporter({
+  specDone: MockInstance.restore,
+  specStarted: MockInstance.remember,
+  suiteDone: MockInstance.restore,
+  suiteStarted: MockInstance.remember,
+});
 
 // First, initialize the Angular testing environment.
 getTestBed().initTestEnvironment(

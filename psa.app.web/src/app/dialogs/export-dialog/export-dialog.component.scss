@@ -4,53 +4,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-mat-checkbox {
-  padding-left: 20px;
+.mat-dialog-content {
+  overflow: visible;
 }
 
-.mat-grid-tile .mat-figure {
-  justify-content: flex-start !important;
-}
+.grid-container {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-gap: 1rem;
 
-.dialog-wrapper {
-  padding: 5px;
+  & > span {
+    align-self: baseline;
+  }
 
-  mat-dialog-content {
-    mat-grid-list {
-      mat-grid-tile {
-        .mat-figure > span {
-          &:first-child {
-            margin-bottom: 30px;
-          }
-        }
-
-        &:not(:first-child) {
-          span {
-            margin-right: 10px;
-          }
-        }
-      }
-
-      &:first-child {
-        mat-form-field {
-          margin-bottom: 30px;
-        }
-      }
-
-      &:nth-child(2) {
-        mat-form-field {
-          margin: 20px;
-        }
-      }
-
-      &:last-child {
-        mat-grid-tile {
-          &:first-child {
-            justify-content: flex-start;
-          }
-        }
-      }
-    }
+  ul {
+    list-style-type: none;
+    padding-left: 0;
   }
 }
 

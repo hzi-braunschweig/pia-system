@@ -5,7 +5,7 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { Studie } from 'src/app/psa.app.core/models/studie';
+import { Study } from 'src/app/psa.app.core/models/study';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from 'src/app/_services/alert.service';
 import { DialogPopUpComponent } from '../../_helpers/dialog-pop-up';
@@ -18,9 +18,9 @@ import { StudyWelcomeText } from 'src/app/psa.app.core/models/studyWelcomeText';
   styleUrls: ['./study-welcome-text.component.scss'],
 })
 export class StudyWelcomeTextComponent implements OnInit {
-  studies: Studie[];
-  newSelectedStudy: Studie;
-  selectedStudy: Studie;
+  studies: Study[];
+  newSelectedStudy: Study;
+  selectedStudy: Study;
   selectedStudyWelcomeText: string;
   preview = false;
 
@@ -37,13 +37,13 @@ export class StudyWelcomeTextComponent implements OnInit {
       .catch((err) => this.alertService.errorObject(err));
   }
 
-  async onSelectStudy(selectedStudy: Studie): Promise<void> {
+  async onSelectStudy(selectedStudy: Study): Promise<void> {
     this.selectedStudy = selectedStudy;
     this.questionnaireService
       .getStudyWelcomeText(this.selectedStudy.name)
       .then(
         (res: StudyWelcomeText) =>
-          (this.selectedStudyWelcomeText = res.welcome_text)
+          (this.selectedStudyWelcomeText = res?.welcome_text ?? '')
       )
       .catch((err) => {
         this.alertService.errorObject(err);

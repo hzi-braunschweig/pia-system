@@ -5,3 +5,5 @@ files:
     translation: /psa.app.mobile/src/assets/i18n/%locale%.json
   - source: /psa.service.complianceservice/resources/i18n/de-DE.json
     translation: /psa.service.complianceservice/resources/i18n/%locale%.json
+  - source: /psa.service.sormasservice/resources/i18n/de-DE.json
+    translation: /psa.service.sormasservice/resources/i18n/%locale%.json

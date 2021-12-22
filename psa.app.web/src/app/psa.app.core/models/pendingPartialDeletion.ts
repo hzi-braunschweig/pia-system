@@ -11,7 +11,6 @@ export interface PendingPartialDeletionResponse {
   probandId: string;
   fromDate: Date;
   toDate: Date;
-  deleteLogs: boolean;
   forInstanceIds: number[] | null;
   forLabResultsIds: string[] | null;
 }
@@ -21,7 +20,6 @@ export interface PendingPartialDeletionRequest {
   probandId: string;
   fromDate: Date;
   toDate: Date;
-  deleteLogs: boolean;
   forInstanceIds: number[] | null;
   forLabResultsIds: string[] | null;
 }

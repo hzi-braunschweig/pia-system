@@ -7,10 +7,10 @@
 import { Boom } from '@hapi/boom';
 import { StatusCodes } from 'http-status-codes';
 
-import { PersonaldataserviceClient } from '../../clients/personaldataserviceClient';
-import { PersonalDataReq } from '../../models/personalData';
+import { personaldataserviceClient } from '../../clients/personaldataserviceClient';
 import { TransformCallback, Writable } from 'stream';
 import { PersonalDataMapperStreamOutput } from './personalDataMapperStream';
+import { PersonalDataInternalDto } from '@pia-system/lib-http-clients-internal';
 
 export interface UpdateResult {
   successfull: number;
@@ -63,16 +63,19 @@ export class PersonalDataUpdateStream extends Writable {
    */
   public async updatePersonalData(
     pseudonym: string,
-    personalData: PersonalDataReq
+    personalData: PersonalDataInternalDto
   ): Promise<void> {
     try {
-      await PersonaldataserviceClient.updatePersonalData(
+      await personaldataserviceClient.updatePersonalData(
         pseudonym,
         personalData
       );
       this.updateResult.successfull++;
     } catch (error) {
-      if ((error as Boom).output.statusCode === StatusCodes.NOT_FOUND) {
+      if (
+        error instanceof Boom &&
+        error.output.statusCode === StatusCodes.NOT_FOUND
+      ) {
         this.updateResult.notFound++;
       } else {
         console.error(

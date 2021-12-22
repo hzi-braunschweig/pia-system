@@ -6,19 +6,25 @@
 
 import { AlertController, LoadingController } from '@ionic/angular';
 import { Router } from '@angular/router';
-import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
+import { MockBuilder } from 'ng-mocks';
 
 import { LoginPage } from './login.page';
 import { AuthClientService } from '../auth-client.service';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
 import { AuthModule } from '../auth.module';
-import { fakeAsync, tick } from '@angular/core/testing';
-import { User } from '../auth.model';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+  waitForAsync,
+} from '@angular/core/testing';
+import { AuthService } from '../auth.service';
 import SpyObj = jasmine.SpyObj;
 
 describe('LoginPage', () => {
   let component: LoginPage;
-  let fixture: MockedComponentFixture<LoginPage>;
+  let fixture: ComponentFixture<LoginPage>;
 
   let loadingCtrl: SpyObj<LoadingController>;
   let authClient: SpyObj<AuthClientService>;
@@ -61,75 +67,23 @@ describe('LoginPage', () => {
 
   beforeEach(fakeAsync(() => {
     // Create component
-    fixture = MockRender(LoginPage);
-    component = fixture.point.componentInstance;
-    fixture.detectChanges();
-    tick(); // wait for init to finish
+    fixture = TestBed.createComponent(LoginPage);
+    component = fixture.componentInstance;
+    fixture.detectChanges(); // run ngOnInit
+    tick(); // wait for ngOnInit to finish
   }));
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('login', () => {
-    it('should set the endpoint and send a login request', async () => {
-      const username = 'Test-1234567890';
-      endpoint.setEndpointForUser.and.returnValue(true);
-      endpoint.isEndpointCompatible.and.resolveTo(true);
-      authClient.login.and.resolveTo(createUser({ username }));
-      component.username = username;
-      await component.login();
-      expect(authClient.login).toHaveBeenCalled();
-      expect(router.navigate).toHaveBeenCalledOnceWith(['home']);
-    });
-  });
+  it(
+    'should remove current user',
+    waitForAsync(async () => {
+      const auth = TestBed.inject(AuthService) as SpyObj<AuthService>;
+      component.switchUser();
+      expect(component.username).toEqual('');
+      expect(auth.removeRememberedUsername).toHaveBeenCalledOnceWith();
+    })
+  );
 });
-
-function createUser(overwrite: Partial<User> = {}): User {
-  return {
-    compliance_bloodsamples: false,
-    compliance_labresults: false,
-    compliance_samples: false,
-    examination_wave: 0,
-    first_logged_in_at: '',
-    id: 0,
-    logged_in_with: '',
-    logging_active: false,
-    needs_material: false,
-    password: '',
-    pw_change_needed: false,
-    role: '',
-    study_center: '',
-    token_login:
-      btoa(JSON.stringify({ alg: 'RS512', typ: 'JWT' })) +
-      '.' +
-      btoa(
-        JSON.stringify({
-          id: 2,
-          username: overwrite?.username ?? '',
-          iat: Date.now(),
-          exp: Date.now() + 60000,
-        })
-      ) +
-      '.' +
-      btoa('signature'),
-    username: '',
-    token:
-      btoa(JSON.stringify({ alg: 'RS512', typ: 'JWT' })) +
-      '.' +
-      btoa(
-        JSON.stringify({
-          id: 1,
-          role: 'Proband',
-          username: overwrite?.username ?? '',
-          groups: ['test study'],
-          locale: 'de-DE',
-          app: 'web',
-          iat: Date.now(),
-          exp: Date.now() + 60000,
-        })
-      ) +
-      '.' +
-      btoa('signature'),
-  };
-}

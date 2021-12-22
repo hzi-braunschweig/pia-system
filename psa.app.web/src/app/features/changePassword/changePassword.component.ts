@@ -4,41 +4,41 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   AbstractControl,
   FormControl,
   FormGroup,
+  ValidationErrors,
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import {
-  PasswordChangeRequest,
-  PasswordChangeResponse,
-  User,
-} from '../../psa.app.core/models/user';
+import { PasswordChangeRequest, Role } from '../../psa.app.core/models/user';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
-import { DialogPopUpComponent } from '../../_helpers/dialog-pop-up';
+import {
+  DialogPopUpComponent,
+  DialogPopUpData,
+} from '../../_helpers/dialog-pop-up';
 import { AuthenticationManager } from '../../_services/authentication-manager.service';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-change-password-component',
   templateUrl: 'changePassword.component.html',
   styleUrls: ['changePassword.component.scss'],
 })
-export class ChangePasswordComponent implements OnInit {
-  loading = false;
-  form: FormGroup;
+export class ChangePasswordComponent {
+  public isLoading = false;
+  public form: FormGroup;
 
-  dropPassword = false;
-  currentUser: User = null;
-  minPasswordLength = 12;
+  public dropPassword = false;
+  public currentRole: Role = null;
+  public minPasswordLength = 12;
 
-  revealOldPassword = false;
-  revealNewPassword1 = false;
-  revealNewPassword2 = false;
+  public revealOldPassword = false;
+  public revealNewPassword1 = false;
+  public revealNewPassword2 = false;
 
   constructor(
     private router: Router,
@@ -46,6 +46,7 @@ export class ChangePasswordComponent implements OnInit {
     private authenticationService: AuthService,
     private auth: AuthenticationManager
   ) {
+    this.currentRole = this.auth.getCurrentRole();
     const newPassword1 = new FormControl('', [
       Validators.required,
       Validators.minLength(this.minPasswordLength),
@@ -66,18 +67,14 @@ export class ChangePasswordComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.currentUser = JSON.parse(localStorage.getItem('currentUser'));
-  }
-
-  deselectPassword(value): void {
-    this.dropPassword = value.checked;
+  public deselectPassword(value: boolean): void {
+    this.dropPassword = value;
     if (this.dropPassword) {
-      this.form.controls.newPassword1.disable();
-      this.form.controls.newPassword2.disable();
+      this.form.get('newPassword1').disable();
+      this.form.get('newPassword2').disable();
     } else {
-      this.form.controls.newPassword1.enable();
-      this.form.controls.newPassword2.enable();
+      this.form.get('newPassword1').enable();
+      this.form.get('newPassword2').enable();
     }
   }
 
@@ -85,81 +82,64 @@ export class ChangePasswordComponent implements OnInit {
    * Creates a validator function that checks if the password matches the other password field
    * @param passControl the FormControl for the other password field
    */
-  matchPassword(passControl: FormControl): ValidatorFn {
-    return (control: AbstractControl): { [key: string]: any } | null => {
+  private matchPassword(passControl: FormControl): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
       const pass = passControl.value;
       const confirmPass = control.value;
       return pass !== confirmPass ? { matchPassword: true } : null;
     };
   }
 
-  changePassword(): void {
-    const changeData: PasswordChangeRequest = {
-      oldPassword: this.form.value.oldPassword,
-      newPassword1: this.form.value.newPassword1,
-      newPassword2: this.form.value.newPassword2,
-    };
+  public async changePassword(): Promise<void> {
+    const changeData: PasswordChangeRequest = this.form.value;
 
     if (this.dropPassword) {
       changeData.newPassword1 = '';
       changeData.newPassword2 = '';
     }
 
-    if (this.form.valid || this.dropPassword) {
-      this.loading = true;
-      this.authenticationService.changePassword(changeData).then(
-        (result: PasswordChangeResponse) => {
-          this.auth.currentUser = {
-            ...this.currentUser,
-            pw_change_needed: result.pw_change_needed,
-          };
-          this.form.controls.newPassword1.enable();
-          this.form.controls.newPassword2.enable();
-          this.router.navigate(['/home']);
-        },
-        (err: any) => {
-          if (err.status === 403) {
-            if (this.dropPassword) {
-              if (changeData.oldPassword) {
-                this.showResultDialog(
-                  'CHANGE_PASSWORD.WRONG_OLD_PASSWORD',
-                  false
-                );
-              } else {
-                this.showResultDialog(
-                  'CHANGE_PASSWORD.DROPPING_NO_OLD_PASSWORD',
-                  false
-                );
-              }
-            } else {
-              if (changeData.oldPassword) {
-                this.showResultDialog(
-                  'CHANGE_PASSWORD.WRONG_OLD_PASSWORD',
-                  false
-                );
-              } else {
-                this.showResultDialog(
-                  'CHANGE_PASSWORD.CHANGING_NO_OLD_PASSWORD',
-                  false
-                );
-              }
-            }
-            this.loading = false;
-          }
-        }
-      );
+    if (!(this.form.valid || this.dropPassword)) {
+      return;
     }
+    this.isLoading = true;
+    try {
+      await this.authenticationService.changePassword(changeData);
+      this.auth.setPasswordChangeNeeded(false);
+      this.form.get('newPassword1').enable();
+      this.form.get('newPassword2').enable();
+      this.router.navigate(['/home']);
+    } catch (err) {
+      if (err.status === 403) {
+        this.showErrorDialog();
+      }
+    }
+    this.isLoading = false;
   }
 
-  showResultDialog(info: string, success: boolean): void {
+  private showErrorDialog(): void {
+    const emptyOldPassword = !this.form.get('oldPassword').value;
+    const popUpData: DialogPopUpData = { content: '', isSuccess: false };
+    if (this.dropPassword) {
+      if (!emptyOldPassword) {
+        popUpData.content = 'CHANGE_PASSWORD.WRONG_OLD_PASSWORD';
+      } else {
+        popUpData.content = 'CHANGE_PASSWORD.DROPPING_NO_OLD_PASSWORD';
+      }
+    } else {
+      if (!emptyOldPassword) {
+        popUpData.content = 'CHANGE_PASSWORD.WRONG_OLD_PASSWORD';
+      } else {
+        popUpData.content = 'CHANGE_PASSWORD.CHANGING_NO_OLD_PASSWORD';
+      }
+    }
     this.matDialog.open(DialogPopUpComponent, {
       width: '250px',
-      data: { content: info, isSuccess: success },
+      data: popUpData,
     });
   }
 
-  async logout(): Promise<void> {
-    await this.auth.logout();
+  public async logout(): Promise<void> {
+    this.auth.logout();
     await this.router.navigate(['login']);
   }
 }

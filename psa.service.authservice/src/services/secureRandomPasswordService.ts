@@ -29,8 +29,8 @@ export class SecureRandomPasswordService {
   }
 
   private static getPasswordLength(): number {
-    if (config.userPasswordLength >= this.MINIMUM_PASSWORD_LENGTH) {
-      return config.userPasswordLength;
+    if (config.minUserPasswordLength >= this.MINIMUM_PASSWORD_LENGTH) {
+      return config.minUserPasswordLength;
     } else {
       return this.MINIMUM_PASSWORD_LENGTH;
     }

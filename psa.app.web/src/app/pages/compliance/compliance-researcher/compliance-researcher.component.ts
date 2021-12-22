@@ -5,7 +5,7 @@
  */
 
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { Studie } from 'src/app/psa.app.core/models/studie';
+import { Study } from 'src/app/psa.app.core/models/study';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { ComplianceService } from 'src/app/psa.app.core/providers/compliance-service/compliance-service';
 import { AlertService } from 'src/app/_services/alert.service';
@@ -23,9 +23,9 @@ import { TemplateSegment } from '../../../psa.app.core/models/Segments';
 })
 export class ComplianceResearcherComponent implements OnInit {
   isLoading = true;
-  studies: Studie[];
-  newSelectedStudy: Studie;
-  selectedStudy: Studie;
+  studies: Study[];
+  newSelectedStudy: Study;
+  selectedStudy: Study;
   complianceTextFG: FormGroup;
   preview = false;
   previewText: TemplateSegment[];
@@ -56,7 +56,7 @@ export class ComplianceResearcherComponent implements OnInit {
   /**
    * Set the selected study and load the compliance text with config
    */
-  async onSelectStudy(selectedStudy: Studie): Promise<void> {
+  async onSelectStudy(selectedStudy: Study): Promise<void> {
     this.selectedStudy = selectedStudy;
     this.isLoading = true;
     try {

@@ -19,7 +19,7 @@ const {
   cleanup,
 } = require('./pendingPartialDeletions.spec.data/setup.helper');
 
-const server = require('../../src/server');
+const { Server } = require('../../src/server');
 const apiAddress = 'http://localhost:' + process.env.PORT + '/user';
 const serverSandbox = sinon.createSandbox();
 
@@ -28,42 +28,55 @@ const { MailService } = require('@pia/lib-service-core');
 const fetch = require('node-fetch');
 const { config } = require('../../src/config');
 const loggingserviceUrl = config.services.loggingservice.url;
+const { HttpClient } = require('@pia-system/lib-http-clients-internal');
 
-const probandSession1 = { id: 1, role: 'Proband', username: 'ApiTestProband1' };
+const probandSession1 = {
+  id: 1,
+  role: 'Proband',
+  username: 'QTestProband1',
+  groups: ['QTestStudie1'],
+};
 const forscherSession1 = {
   id: 1,
   role: 'Forscher',
-  username: 'forscher1@apitest.de',
+  username: 'forscher1@example.com',
+  groups: ['QTestStudie1'],
 };
 const forscherSession2 = {
   id: 1,
   role: 'Forscher',
-  username: 'forscher2@apitest.de',
+  username: 'forscher2@example.com',
+  groups: ['QTestStudie1'],
 };
 const forscherSession3 = {
   id: 1,
   role: 'Forscher',
   username: 'forscherNoEmail',
+  groups: ['QTestStudie1'],
 };
 const forscherSession4 = {
   id: 1,
   role: 'Forscher',
-  username: 'forscher4@apitest.de',
+  username: 'forscher4@example.com',
+  groups: ['QTestStudie2'],
 };
 const utSession1 = {
   id: 1,
   role: 'Untersuchungsteam',
-  username: 'ut1@apitest.de',
+  username: 'ut1@example.com',
+  groups: ['QTestStudie1'],
 };
 const sysadminSession1 = {
   id: 1,
   role: 'SysAdmin',
-  username: 'sa1@apitest.de',
+  username: 'sa1@example.com',
+  groups: [],
 };
 const pmSession1 = {
   id: 1,
   role: 'ProbandenManager',
-  username: 'pm1@apitest.de',
+  username: 'pm1@example.com',
+  groups: ['QTestStudie1'],
 };
 
 const invalidToken = JWT.sign(probandSession1, 'thisIsNotAValidPrivateKey', {
@@ -117,31 +130,25 @@ describe('/pendingPartialDeletions', function () {
 
   before(async function () {
     serverSandbox.stub(MailService, 'sendMail').resolves(true);
-    await server.init();
+    await Server.init();
   });
 
   after(async function () {
-    await server.stop();
+    await Server.stop();
     serverSandbox.restore();
   });
 
   beforeEach(() => {
-    fetchStub = testSandbox.stub(fetch, 'default');
+    fetchStub = testSandbox.stub(HttpClient, 'fetch');
     fetchStub.callsFake(async (url, options) => {
       console.log(url);
       let body;
       if (
         url === loggingserviceUrl + '/log/systemLogs' &&
-        options.method === 'post'
+        options.method === 'POST'
       ) {
         body = { ...options.body };
         body.timestamp = new Date();
-      } else if (
-        url.startsWith(
-          loggingserviceUrl + '/log/logs/ApiTestProband1?fromTime='
-        )
-      ) {
-        body = null;
       } else {
         return new fetch.Response(null, { status: 404 });
       }
@@ -225,8 +232,8 @@ describe('/pendingPartialDeletions', function () {
         .set(forscherHeader1);
       expect(result).to.have.status(200);
       expect(result.body.id).to.equal(1234560);
-      expect(result.body.requestedBy).to.equal('forscher1@apitest.de');
-      expect(result.body.requestedFor).to.equal('forscher2@apitest.de');
+      expect(result.body.requestedBy).to.equal('forscher1@example.com');
+      expect(result.body.requestedFor).to.equal('forscher2@example.com');
       expect(result.body.forInstanceIds.length).to.equal(2);
       expect(result.body.forLabResultsIds.length).to.equal(2);
     });
@@ -238,8 +245,8 @@ describe('/pendingPartialDeletions', function () {
         .set(forscherHeader2);
       expect(result).to.have.status(200);
       expect(result.body.id).to.equal(1234560);
-      expect(result.body.requestedBy).to.equal('forscher1@apitest.de');
-      expect(result.body.requestedFor).to.equal('forscher2@apitest.de');
+      expect(result.body.requestedBy).to.equal('forscher1@example.com');
+      expect(result.body.requestedFor).to.equal('forscher2@example.com');
       expect(result.body.forInstanceIds.length).to.equal(2);
       expect(result.body.forLabResultsIds.length).to.equal(2);
     });
@@ -251,8 +258,8 @@ describe('/pendingPartialDeletions', function () {
         .set(forscherHeader2);
       expect(result).to.have.status(200);
       expect(result.body.id).to.equal(1234561);
-      expect(result.body.requestedBy).to.equal('forscher1@apitest.de');
-      expect(result.body.requestedFor).to.equal('forscher2@apitest.de');
+      expect(result.body.requestedBy).to.equal('forscher1@example.com');
+      expect(result.body.requestedFor).to.equal('forscher2@example.com');
       expect(result.body.forInstanceIds.length).to.equal(2);
       expect(result.body.forLabResultsIds).to.equal(null);
     });
@@ -264,8 +271,8 @@ describe('/pendingPartialDeletions', function () {
         .set(forscherHeader2);
       expect(result).to.have.status(200);
       expect(result.body.id).to.equal(1234562);
-      expect(result.body.requestedBy).to.equal('forscher1@apitest.de');
-      expect(result.body.requestedFor).to.equal('forscher2@apitest.de');
+      expect(result.body.requestedBy).to.equal('forscher1@example.com');
+      expect(result.body.requestedFor).to.equal('forscher2@example.com');
       expect(result.body.forInstanceIds).to.equal(null);
       expect(result.body.forLabResultsIds.length).to.equal(2);
     });
@@ -281,37 +288,37 @@ describe('/pendingPartialDeletions', function () {
     });
 
     const pDValid1 = {
-      requestedFor: 'forscher2@apitest.de',
+      requestedFor: 'forscher2@example.com',
       fromDate: new Date(),
       toDate: new Date(),
-      probandId: 'ApiTestProband1',
+      probandId: 'QTestProband1',
       forInstanceIds: [123456, 123457],
       forLabResultsIds: ['APISAMPLE_11111', 'APISAMPLE_11112'],
     };
 
     const pDValid2 = {
-      requestedFor: 'forscher2@apitest.de',
+      requestedFor: 'forscher2@example.com',
       fromDate: new Date(),
       toDate: new Date(),
-      probandId: 'ApiTestProband1',
+      probandId: 'QTestProband1',
       forInstanceIds: [123456, 123457],
       forLabResultsIds: null,
     };
 
     const pDValid3 = {
-      requestedFor: 'forscher2@apitest.de',
+      requestedFor: 'forscher2@example.com',
       fromDate: new Date(),
       toDate: new Date(),
-      probandId: 'ApiTestProband1',
+      probandId: 'QTestProband1',
       forInstanceIds: null,
       forLabResultsIds: ['APISAMPLE_11111', 'APISAMPLE_11112'],
     };
 
     const pDwrongFor = {
-      requestedFor: 'nonexistingforscher@apitest.de',
+      requestedFor: 'nonexistingforscher@example.com',
       fromDate: new Date(),
       toDate: new Date(),
-      probandId: 'ApiTestProband1',
+      probandId: 'QTestProband1',
       forInstanceIds: [123456, 123457],
       forLabResultsIds: ['APISAMPLE_11111', 'APISAMPLE_11112'],
     };
@@ -320,52 +327,52 @@ describe('/pendingPartialDeletions', function () {
       requestedFor: 'forscherNoEmail',
       fromDate: new Date(),
       toDate: new Date(),
-      probandId: 'ApiTestProband1',
+      probandId: 'QTestProband1',
       forInstanceIds: [123456, 123457],
       forLabResultsIds: ['APISAMPLE_11111', 'APISAMPLE_11112'],
     };
 
     const pDWrongStudyFor = {
-      requestedFor: 'forscher4@apitest.de',
+      requestedFor: 'forscher4@example.com',
       fromDate: new Date(),
       toDate: new Date(),
-      probandId: 'ApiTestProband1',
+      probandId: 'QTestProband1',
       forInstanceIds: [123456, 123457],
       forLabResultsIds: ['APISAMPLE_11111', 'APISAMPLE_11112'],
     };
 
     const pDWrongStudyInstance = {
-      requestedFor: 'forscher2@apitest.de',
+      requestedFor: 'forscher2@example.com',
       fromDate: new Date(),
       toDate: new Date(),
-      probandId: 'ApiTestProband2',
+      probandId: 'QTestProband1',
       forInstanceIds: [123456, 123458],
       forLabResultsIds: ['APISAMPLE_11111', 'APISAMPLE_11112'],
     };
 
     const pDWrongStudySample = {
-      requestedFor: 'forscher2@apitest.de',
+      requestedFor: 'forscher2@example.com',
       fromDate: new Date(),
       toDate: new Date(),
-      probandId: 'ApiTestProband2',
+      probandId: 'QTestProband1',
       forInstanceIds: [123456, 123457],
       forLabResultsIds: ['APISAMPLE_11111', 'APISAMPLE_11113'],
     };
 
     const pDWrongInstance = {
-      requestedFor: 'forscher2@apitest.de',
+      requestedFor: 'forscher2@example.com',
       fromDate: new Date(),
       toDate: new Date(),
-      probandId: 'ApiTestProband1',
+      probandId: 'QTestProband1',
       forInstanceIds: [123456, 9999999],
       forLabResultsIds: ['APISAMPLE_11111', 'APISAMPLE_11112'],
     };
 
     const pDWrongSample = {
-      requestedFor: 'forscher2@apitest.de',
+      requestedFor: 'forscher2@example.com',
       fromDate: new Date(),
       toDate: new Date(),
-      probandId: 'ApiTestProband1',
+      probandId: 'QTestProband1',
       forInstanceIds: [123456, 123457],
       forLabResultsIds: ['APISAMPLE_11111', 'APINonExistingId'],
     };
@@ -424,14 +431,14 @@ describe('/pendingPartialDeletions', function () {
       expect(result).to.have.status(422);
     });
 
-    it('should return HTTP 403 when a researcher from wrong study tries', async function () {
+    it('should return HTTP 404 when a researcher from wrong study tries', async function () {
       const result = await chai
         .request(apiAddress)
         .post('/pendingpartialdeletions')
         .set(forscherHeader4)
         .send(pDValid1);
       console.log(result.body);
-      expect(result).to.have.status(403);
+      expect(result).to.have.status(404);
     });
 
     it('should return HTTP 422 when requestedFor is no email address', async function () {
@@ -509,8 +516,8 @@ describe('/pendingPartialDeletions', function () {
         .send(pDValid1);
       console.log(result.body);
       expect(result).to.have.status(200);
-      expect(result.body.requestedBy).to.equal('forscher1@apitest.de');
-      expect(result.body.requestedFor).to.equal('forscher2@apitest.de');
+      expect(result.body.requestedBy).to.equal('forscher1@example.com');
+      expect(result.body.requestedFor).to.equal('forscher2@example.com');
       expect(result.body.forInstanceIds).to.eql([123456, 123457]);
       expect(result.body.forLabResultsIds).to.eql([
         'APISAMPLE_11111',
@@ -527,7 +534,7 @@ describe('/pendingPartialDeletions', function () {
       console.log(result.body);
       expect(result).to.have.status(200);
       expect(result.body.requestedBy).to.equal('forscherNoEmail');
-      expect(result.body.requestedFor).to.equal('forscher2@apitest.de');
+      expect(result.body.requestedFor).to.equal('forscher2@example.com');
       expect(result.body.forInstanceIds).to.eql([123456, 123457]);
       expect(result.body.forLabResultsIds).to.eql([
         'APISAMPLE_11111',
@@ -543,8 +550,8 @@ describe('/pendingPartialDeletions', function () {
         .send(pDValid2);
       console.log(result.body);
       expect(result).to.have.status(200);
-      expect(result.body.requestedBy).to.equal('forscher1@apitest.de');
-      expect(result.body.requestedFor).to.equal('forscher2@apitest.de');
+      expect(result.body.requestedBy).to.equal('forscher1@example.com');
+      expect(result.body.requestedFor).to.equal('forscher2@example.com');
       expect(result.body.forInstanceIds).to.eql([123456, 123457]);
       expect(result.body.forLabResultsIds).to.equal(null);
     });
@@ -557,8 +564,8 @@ describe('/pendingPartialDeletions', function () {
         .send(pDValid3);
       console.log(result.body);
       expect(result).to.have.status(200);
-      expect(result.body.requestedBy).to.equal('forscher1@apitest.de');
-      expect(result.body.requestedFor).to.equal('forscher2@apitest.de');
+      expect(result.body.requestedBy).to.equal('forscher1@example.com');
+      expect(result.body.requestedFor).to.equal('forscher2@example.com');
       expect(result.body.forInstanceIds).to.equal(null);
       expect(result.body.forLabResultsIds).to.eql([
         'APISAMPLE_11111',
@@ -646,8 +653,8 @@ describe('/pendingPartialDeletions', function () {
         .set(forscherHeader2)
         .send({});
       expect(result).to.have.status(200);
-      expect(result.body.requestedBy).to.equal('forscher1@apitest.de');
-      expect(result.body.requestedFor).to.equal('forscher2@apitest.de');
+      expect(result.body.requestedBy).to.equal('forscher1@example.com');
+      expect(result.body.requestedFor).to.equal('forscher2@example.com');
       expect(result.body.forInstanceIds).to.eql([123456, 123457]);
       expect(result.body.forLabResultsIds).to.eql([
         'APISAMPLE_11111',
@@ -656,27 +663,27 @@ describe('/pendingPartialDeletions', function () {
 
       const lab_observations = await db.manyOrNone(
         'SELECT * FROM lab_observations WHERE lab_result_id=ANY(SELECT id FROM lab_results WHERE user_id=$1)',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const lab_result = await db.manyOrNone(
         'SELECT * FROM lab_results WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const questionnaire_instances = await db.manyOrNone(
         'SELECT * FROM questionnaire_instances WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const questionnaire_instances_queued = await db.manyOrNone(
         'SELECT * FROM questionnaire_instances_queued WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const answers = await db.manyOrNone(
         'SELECT * FROM answers WHERE questionnaire_instance_id=ANY(SELECT id FROM questionnaire_instances WHERE user_id=$1)',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const user_images = await db.manyOrNone(
         'SELECT * FROM user_files WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
 
       expect(lab_observations.length).to.equal(0);
@@ -686,16 +693,7 @@ describe('/pendingPartialDeletions', function () {
       expect(answers.length).to.equal(0);
       expect(user_images.length).to.equal(0);
 
-      const deleteLogsCall = fetchStub.getCall(0);
-      expect(deleteLogsCall.firstArg)
-        .to.be.a('string')
-        .and.satisfy((url) =>
-          url.startsWith(
-            loggingserviceUrl + '/log/logs/ApiTestProband1?fromTime='
-          )
-        );
-
-      const logDeletionCall = fetchStub.getCall(1);
+      const logDeletionCall = fetchStub.getCall(0);
       expect(logDeletionCall.firstArg)
         .to.be.a('string')
         .and.equal(loggingserviceUrl + '/log/systemLogs');
@@ -718,34 +716,34 @@ describe('/pendingPartialDeletions', function () {
         .set(forscherHeader2)
         .send({});
       expect(result).to.have.status(200);
-      expect(result.body.requestedBy).to.equal('forscher1@apitest.de');
-      expect(result.body.requestedFor).to.equal('forscher2@apitest.de');
+      expect(result.body.requestedBy).to.equal('forscher1@example.com');
+      expect(result.body.requestedFor).to.equal('forscher2@example.com');
       expect(result.body.forInstanceIds).to.eql([123456, 123457]);
       expect(result.body.forLabResultsIds).to.eql(null);
 
       const lab_observations = await db.manyOrNone(
         'SELECT * FROM lab_observations WHERE lab_result_id=ANY(SELECT id FROM lab_results WHERE user_id=$1)',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const lab_result = await db.manyOrNone(
         'SELECT * FROM lab_results WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const questionnaire_instances = await db.manyOrNone(
         'SELECT * FROM questionnaire_instances WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const questionnaire_instances_queued = await db.manyOrNone(
         'SELECT * FROM questionnaire_instances_queued WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const answers = await db.manyOrNone(
         'SELECT * FROM answers WHERE questionnaire_instance_id=ANY(SELECT id FROM questionnaire_instances WHERE user_id=$1)',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const user_images = await db.manyOrNone(
         'SELECT * FROM user_files WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
 
       expect(lab_observations.length).to.equal(4);
@@ -775,8 +773,8 @@ describe('/pendingPartialDeletions', function () {
         .set(forscherHeader2)
         .send({});
       expect(result).to.have.status(200);
-      expect(result.body.requestedBy).to.equal('forscher1@apitest.de');
-      expect(result.body.requestedFor).to.equal('forscher2@apitest.de');
+      expect(result.body.requestedBy).to.equal('forscher1@example.com');
+      expect(result.body.requestedFor).to.equal('forscher2@example.com');
       expect(result.body.forInstanceIds).to.eql(null);
       expect(result.body.forLabResultsIds).to.eql([
         'APISAMPLE_11111',
@@ -785,27 +783,27 @@ describe('/pendingPartialDeletions', function () {
 
       const lab_observations = await db.manyOrNone(
         'SELECT * FROM lab_observations WHERE lab_result_id=ANY(SELECT id FROM lab_results WHERE user_id=$1)',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const lab_result = await db.manyOrNone(
         'SELECT * FROM lab_results WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const questionnaire_instances = await db.manyOrNone(
         'SELECT * FROM questionnaire_instances WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const questionnaire_instances_queued = await db.manyOrNone(
         'SELECT * FROM questionnaire_instances_queued WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const answers = await db.manyOrNone(
         'SELECT * FROM answers WHERE questionnaire_instance_id=ANY(SELECT id FROM questionnaire_instances WHERE user_id=$1)',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
       const user_images = await db.manyOrNone(
         'SELECT * FROM user_files WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['QTestProband1']
       );
 
       expect(lab_observations.length).to.equal(0);

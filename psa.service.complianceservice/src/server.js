@@ -9,12 +9,13 @@ const {
   registerPlugins,
   registerAuthStrategies,
 } = require('@pia/lib-service-core');
-const I18n = require('./lib/plugins/hapi-i18n-plugin');
+const I18n = require('@pia/lib-hapi-i18n-plugin');
 
 const packageJson = require('../package.json');
 const { sequelize } = require('./db');
 const { config } = require('./config');
 const templatePipelineService = require('./services/pdfGeneratorService');
+const { messageQueueService } = require('./services/messageQueueService');
 
 let server;
 let serverInternal;
@@ -34,7 +35,7 @@ exports.init = async () => {
     app: {
       healthcheck: async () => {
         await sequelize.query('SELECT 1;');
-        return true;
+        return messageQueueService.isConnected();
       },
     },
   });
@@ -58,12 +59,12 @@ exports.init = async () => {
   await registerPlugins(server, {
     name: packageJson.name,
     version: packageJson.version,
-    routes: './src/routes/*.js',
+    routes: 'src/routes/*',
   });
   await registerPlugins(serverInternal, {
     name: packageJson.name,
     version: packageJson.version,
-    routes: './src/routes/internal/*.js',
+    routes: 'src/routes/internal/*',
     isInternal: true,
   });
 
@@ -77,6 +78,7 @@ exports.init = async () => {
     },
   });
 
+  await messageQueueService.connect();
   await server.start();
   server.log(['startup'], `Server running at ${server.info.uri}`);
   await serverInternal.start();
@@ -92,4 +94,5 @@ exports.stop = async () => {
   await serverInternal.stop();
   serverInternal.log(['startup'], `Internal server was stopped`);
   await templatePipelineService.stop();
+  await messageQueueService.disconnect();
 };

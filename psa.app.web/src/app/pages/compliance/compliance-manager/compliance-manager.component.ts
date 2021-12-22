@@ -6,7 +6,10 @@
 
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogViewComplianceComponent } from '../compliance-view-dialog/dialog-view-compliance.component';
+import {
+  DialogViewComplianceComponent,
+  DialogViewComplianceComponentData,
+} from '../compliance-view-dialog/dialog-view-compliance.component';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -102,11 +105,14 @@ export class ComplianceManagerComponent implements OnInit {
   }
 
   showComplianceDetails(complianceId): void {
-    const dialogData = {
+    const dialogData: DialogViewComplianceComponentData = {
       study: this.activeFilter.studyName,
       complianceId,
     };
-    this.dialog.open(DialogViewComplianceComponent, {
+    this.dialog.open<
+      DialogViewComplianceComponent,
+      DialogViewComplianceComponentData
+    >(DialogViewComplianceComponent, {
       width: '500px',
       autoFocus: true,
       disableClose: false,

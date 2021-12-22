@@ -5,17 +5,17 @@
  */
 
 import { Transform, TransformCallback } from 'stream';
-import { PersonalDataReq } from '../../models/personalData';
 import { PersonSummary } from '../../models/modys';
 import { config } from '../../config';
 import {
   ContactDetailTypeId,
   VPersonContactDetailOverview,
 } from '../../models/modysApi';
+import { PersonalDataInternalDto } from '@pia-system/lib-http-clients-internal';
 
 export interface PersonalDataMapperStreamOutput {
   pseudonym: string;
-  personalData: PersonalDataReq;
+  personalData: PersonalDataInternalDto;
 }
 
 export class PersonalDataMapperStream extends Transform {
@@ -33,7 +33,7 @@ export class PersonalDataMapperStream extends Transform {
 
   private static mapPersonSummaryToPersonalData(
     proband: PersonSummary
-  ): PersonalDataReq {
+  ): PersonalDataInternalDto {
     return {
       anrede: proband.overview.salutation,
       titel: proband.overview.title,

@@ -6,12 +6,13 @@
 
 import Boom from '@hapi/boom';
 import postgresqlHelper from '../services/postgresqlHelper';
-import { AccessToken } from '@pia/lib-service-core';
-import { User } from '../models/user';
-import { BloodSample } from '../models/bloodSample';
 import pgPromise from 'pg-promise';
 import queryResultErrorCode = pgPromise.errors.queryResultErrorCode;
 import QueryResultError = pgPromise.errors.QueryResultError;
+import { AccessToken } from '@pia/lib-service-core';
+import { User } from '../models/user';
+import { BloodSample } from '../models/bloodSample';
+import { userserviceClient } from '../clients/userserviceClient';
 
 export class BloodSamplesInteractor {
   /**
@@ -34,14 +35,11 @@ export class BloodSamplesInteractor {
       case 'Forscher':
       case 'Untersuchungsteam':
       case 'ProbandenManager': {
-        const overlappingStudies =
-          await postgresqlHelper.getStudyAccessByStudyIDsAndUsername(
-            pseudonym,
-            requesterStudies
-          );
-        if (!overlappingStudies.length) {
-          throw Boom.notFound('Proband not found in any of your studies');
-        }
+        await this.assertProfessionalHasAccessToProband(
+          pseudonym,
+          requesterStudies
+        );
+
         return (await postgresqlHelper.getAllBloodSamplesForProband(
           pseudonym
         )) as BloodSample[];
@@ -73,14 +71,10 @@ export class BloodSamplesInteractor {
       case 'Forscher':
       case 'Untersuchungsteam':
       case 'ProbandenManager': {
-        const overlappingStudies =
-          await postgresqlHelper.getStudyAccessByStudyIDsAndUsername(
-            pseudonym,
-            requesterStudies
-          );
-        if (!overlappingStudies.length) {
-          throw Boom.notFound('Proband not found in any of your studies');
-        }
+        await this.assertProfessionalHasAccessToProband(
+          pseudonym,
+          requesterStudies
+        );
 
         return (await postgresqlHelper.getBloodSample(
           pseudonym,
@@ -115,22 +109,26 @@ export class BloodSamplesInteractor {
         const bloodSamples = (await postgresqlHelper.getBloodSamplesBySampleId(
           sample_id
         )) as BloodSample[];
-        const filteredBloodSamples: BloodSample[] = [];
-        const promises = bloodSamples.map(async (bloodSample) => {
-          const overlappingStudies =
-            await postgresqlHelper.getStudyAccessByStudyIDsAndUsername(
-              bloodSample.user_id,
-              requesterStudies
-            );
-          if (overlappingStudies.length) {
-            filteredBloodSamples.push(bloodSample);
-          }
-        });
-        await Promise.all(promises);
-        if (!filteredBloodSamples.length) {
-          throw Boom.notFound('Blood sample not found in any of your studies');
+
+        if (!bloodSamples[0]) {
+          throw Boom.notFound('Blood sample not found');
         }
-        return filteredBloodSamples;
+
+        /**
+         * The expectation here is, that blood samples with the same
+         * sample_id always belong to the same proband (user_id). Since
+         * this assumption is not ensured anywhere, we check it here and
+         * throw if it does not hold true.
+         * Also see {@link BloodSamplesInteractor#createOneBloodSample} and
+         * {@link BloodSamplesInteractor#updateOneBloodSample}
+         */
+        for (const bloodSample of bloodSamples) {
+          await this.assertProfessionalHasAccessToProband(
+            bloodSample.user_id,
+            requesterStudies
+          );
+        }
+        return bloodSamples;
       }
       default:
         throw Boom.forbidden('unknown role for this command');
@@ -159,21 +157,18 @@ export class BloodSamplesInteractor {
         throw Boom.forbidden('Wrong role for this command');
 
       case 'Untersuchungsteam': {
-        const overlappingStudies =
-          await postgresqlHelper.getStudyAccessByStudyIDsAndUsername(
-            pseudonym,
-            requesterStudies
-          );
-        if (!overlappingStudies.length) {
-          throw Boom.notFound('Proband not found in any of your studies');
-        }
+        await this.assertProfessionalHasAccessToProband(
+          pseudonym,
+          requesterStudies
+        );
+
         const proband = (await postgresqlHelper
           .getUser(pseudonym)
           .catch((err) => {
             console.error(err);
             throw Boom.notFound('Proband not found');
           })) as User;
-        if (proband.account_status === 'deactivated') {
+        if (proband.status !== 'active') {
           throw Boom.forbidden(
             'Cannot create a blood sample if proband is not active'
           );
@@ -227,16 +222,13 @@ export class BloodSamplesInteractor {
         throw Boom.forbidden('Wrong role for this command');
 
       case 'Untersuchungsteam': {
-        const overlappingStudies =
-          await postgresqlHelper.getStudyAccessByStudyIDsAndUsername(
-            pseudonym,
-            requesterStudies
-          );
-        if (!overlappingStudies.length) {
-          throw Boom.forbidden('Proband not found in any of your studies');
-        }
+        await this.assertProfessionalHasAccessToProband(
+          pseudonym,
+          requesterStudies
+        );
+
         const proband = (await postgresqlHelper.getUser(pseudonym)) as User;
-        if (proband.account_status === 'deactivated') {
+        if (proband.status !== 'active') {
           throw Boom.forbidden(
             'Cannot update a blood sample if proband is not active'
           );
@@ -292,6 +284,19 @@ export class BloodSamplesInteractor {
       }
       default:
         throw Boom.forbidden('unknown role for this command');
+    }
+  }
+
+  private static async assertProfessionalHasAccessToProband(
+    pseudonym: string,
+    studyAccessOfProfessional: string[]
+  ): Promise<void> {
+    const studyOfProband = await userserviceClient.getStudyOfProband(pseudonym);
+    if (
+      !studyOfProband ||
+      !studyAccessOfProfessional.includes(studyOfProband)
+    ) {
+      throw Boom.notFound('Proband not found');
     }
   }
 }

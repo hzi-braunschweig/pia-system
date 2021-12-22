@@ -6,17 +6,11 @@
 
 import { Injectable } from '@angular/core';
 import {
+  LoginResponse,
   PasswordChangeRequest,
-  PasswordChangeResponse,
-  User,
-  UserWithSameRole,
+  ProfessionalUser,
 } from '../../models/user';
 import { PlannedProband } from '../../models/plannedProband';
-import {
-  SormasProband,
-  UserListResponse,
-  UserWithStudyAccess,
-} from '../../models/user-with-study-access';
 import { UserSettings } from '../../models/user_settings';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map, pluck } from 'rxjs/operators';
@@ -28,11 +22,21 @@ import { PendingComplianceChange } from '../../models/pendingComplianceChange';
 import {
   CreateIDSProbandRequest,
   CreateProbandRequest,
+  Proband,
 } from '../../models/proband';
+import {
+  PendingDeletion,
+  PendingProbandDeletion,
+  PendingSampleDeletion,
+} from '../../models/pendingDeletion';
 
 @Injectable()
 export class AuthService {
-  private static pendingPartialDeletionDateConverter = map(
+  constructor(public http: HttpClient) {}
+
+  private readonly apiUrl = 'api/v1/user/';
+
+  private pendingPartialDeletionDateConverter = map(
     (deletion: PendingPartialDeletionResponse) => {
       deletion.fromDate = deletion.fromDate
         ? new Date(deletion.fromDate)
@@ -42,22 +46,31 @@ export class AuthService {
     }
   );
 
-  private readonly apiUrl = 'api/v1/user/';
+  private mapProbandResponseDates = map((proband: Proband): Proband => {
+    return this.formatProbandResponseDates(proband);
+  });
 
-  constructor(public http: HttpClient) {}
+  private mapProbandsResponseDates = map((probands: Proband[]): Proband[] => {
+    return probands.map((proband) => this.formatProbandResponseDates(proband));
+  });
 
-  login(credentials: object): Promise<User> {
-    return this.http.post<User>(this.apiUrl + 'login', credentials).toPromise();
-  }
-
-  loginWithToken(credentials: object, token: string): Promise<User> {
-    const headers = new HttpHeaders().append('Authorization', token);
+  public login(credentials: object): Promise<LoginResponse> {
     return this.http
-      .post<User>(this.apiUrl + 'login', credentials, { headers })
+      .post<LoginResponse>(this.apiUrl + 'login', credentials)
       .toPromise();
   }
 
-  requestNewPassword(user_id: string, token: string): Promise<any> {
+  public loginWithToken(
+    credentials: object,
+    token: string
+  ): Promise<LoginResponse> {
+    const headers = new HttpHeaders().append('Authorization', token);
+    return this.http
+      .post<LoginResponse>(this.apiUrl + 'login', credentials, { headers })
+      .toPromise();
+  }
+
+  public requestNewPassword(user_id: string, token: string): Promise<string> {
     let headers = new HttpHeaders();
     if (token) {
       headers = headers.append('Authorization', token);
@@ -71,37 +84,60 @@ export class AuthService {
       .toPromise();
   }
 
-  changePassword(
+  public async changePassword(
     credentials: PasswordChangeRequest
-  ): Promise<PasswordChangeResponse> {
-    return this.http
-      .post<PasswordChangeResponse>(this.apiUrl + 'changePassword', credentials)
+  ): Promise<void> {
+    await this.http
+      .post(this.apiUrl + 'changePassword', credentials)
       .toPromise();
   }
 
-  getUsers(): Promise<UserListResponse> {
-    return this.http.get<UserListResponse>(this.apiUrl + 'users').toPromise();
-  }
-
-  getUsersWithSameRole(): Promise<{ users: UserWithSameRole[] }> {
+  private getUsers(): Promise<(Proband | ProfessionalUser)[]> {
     return this.http
-      .get<{ users: UserWithSameRole[] }>(this.apiUrl + 'usersWithSameRole')
+      .get<(Proband | ProfessionalUser)[]>(this.apiUrl + 'users')
+      .pipe(this.mapProbandsResponseDates)
       .toPromise();
   }
 
-  getUser(username: string): Promise<UserWithStudyAccess> {
+  /**
+   * only use as Sysadmin
+   */
+  public getProfessionalUsers(): Promise<ProfessionalUser[]> {
+    return this.getUsers() as Promise<ProfessionalUser[]>;
+  }
+
+  /**
+   * do not use as Sysadmin
+   * @deprecated use probandService.getProbands to get Probands per study
+   */
+  public getProbands(): Promise<Proband[]> {
+    return this.getUsers() as Promise<Proband[]>;
+  }
+
+  public getUsersWithSameRole(): Promise<ProfessionalUser[]> {
     return this.http
-      .get<User & UserWithStudyAccess>(this.apiUrl + 'users/' + username)
+      .get<ProfessionalUser[]>(this.apiUrl + 'usersWithSameRole')
       .toPromise();
   }
 
-  getUserByIDS(idsOrUuid: string): Promise<User & UserWithStudyAccess> {
+  public getProband(pseudonym: string): Promise<Proband> {
     return this.http
-      .get<User & UserWithStudyAccess>(this.apiUrl + 'users/ids/' + idsOrUuid)
+      .get<Proband>(this.apiUrl + 'users/' + pseudonym)
+      .pipe(this.mapProbandResponseDates)
       .toPromise();
   }
 
-  deleteUser(probandUsername: string, requested_for?: string): Promise<void> {
+  public getUserByIDS(ids: string): Promise<Proband> {
+    return this.http
+      .get<Proband>(this.apiUrl + 'users/ids/' + ids)
+      .pipe(this.mapProbandResponseDates)
+      .toPromise();
+  }
+
+  public deleteUser(
+    probandUsername: string,
+    requested_for?: string
+  ): Promise<void> {
     const requestUrl = requested_for
       ? this.apiUrl +
         'users/' +
@@ -112,19 +148,11 @@ export class AuthService {
     return this.http.delete<void>(requestUrl).toPromise();
   }
 
-  postUser(postData: object): Promise<UserWithStudyAccess> {
-    return this.http
-      .post<UserWithStudyAccess>(this.apiUrl + 'users', postData)
-      .toPromise();
+  public async postUser(postData: ProfessionalUser): Promise<void> {
+    await this.http.post(this.apiUrl + 'users', postData).toPromise();
   }
 
-  postSormasProband(postData: object): Promise<SormasProband> {
-    return this.http
-      .post<SormasProband>(this.apiUrl + 'sormasProbands', postData)
-      .toPromise();
-  }
-
-  postProband(
+  public postProband(
     postData: CreateProbandRequest,
     studyName: string
   ): Promise<void> {
@@ -133,7 +161,10 @@ export class AuthService {
       .toPromise();
   }
 
-  postIDS(postData: CreateIDSProbandRequest, studyName: string): Promise<void> {
+  public postIDS(
+    postData: CreateIDSProbandRequest,
+    studyName: string
+  ): Promise<void> {
     return this.http
       .post<void>(
         this.apiUrl + 'studies/' + studyName + '/probandsIDS',
@@ -142,12 +173,12 @@ export class AuthService {
       .toPromise();
   }
 
-  putUser(username: string, putData: object): Promise<UserWithStudyAccess> {
-    return this.http
-      .put<UserWithStudyAccess>(
-        this.apiUrl + 'users/' + username,
-        JSON.stringify(putData)
-      )
+  public async patchUser(
+    username: string,
+    changedData: Pick<Proband, 'is_test_proband'>
+  ): Promise<void> {
+    await this.http
+      .patch(this.apiUrl + 'users/' + username, changedData)
       .toPromise();
   }
 
@@ -200,38 +231,50 @@ export class AuthService {
       .toPromise();
   }
 
-  postPendingDeletion(postData: object): Promise<object> {
-    return this.http
+  public async postPendingDeletion(postData: object): Promise<void> {
+    await this.http
       .post(this.apiUrl + 'pendingdeletions', postData)
       .toPromise();
   }
 
-  putPendingDeletion(pendingDeletionId: string): Promise<object> {
-    return this.http
+  public async putPendingDeletion(pendingDeletionId: number): Promise<void> {
+    await this.http
       .put(this.apiUrl + 'pendingdeletions/' + pendingDeletionId, null)
       .toPromise();
   }
 
-  getPendingDeletion(pendingdeletionId: string): Promise<any> {
+  public async getPendingDeletion(
+    pendingdeletionId: number
+  ): Promise<PendingDeletion> {
     return this.http
-      .get(this.apiUrl + 'pendingdeletions/' + pendingdeletionId)
+      .get<PendingDeletion>(
+        this.apiUrl + 'pendingdeletions/' + pendingdeletionId
+      )
       .toPromise();
   }
 
-  getPendingDeletionForProbandId(probandId: string): Promise<any> {
+  public async getPendingDeletionForProbandId(
+    probandId: string
+  ): Promise<PendingProbandDeletion> {
     return this.http
-      .get(this.apiUrl + 'pendingdeletions/proband/' + probandId)
+      .get<PendingProbandDeletion>(
+        this.apiUrl + 'pendingdeletions/proband/' + probandId
+      )
       .toPromise();
   }
 
-  getPendingDeletionForSampleId(sampleId: string): Promise<any> {
+  public async getPendingDeletionForSampleId(
+    sampleId: string
+  ): Promise<PendingSampleDeletion> {
     return this.http
-      .get(this.apiUrl + 'pendingdeletions/sample/' + sampleId)
+      .get<PendingSampleDeletion>(
+        this.apiUrl + 'pendingdeletions/sample/' + sampleId
+      )
       .toPromise();
   }
 
-  deletePendingDeletion(pendingDeletionId: string): Promise<void> {
-    return this.http
+  public async deletePendingDeletion(pendingDeletionId: number): Promise<void> {
+    await this.http
       .delete<void>(this.apiUrl + 'pendingdeletions/' + pendingDeletionId)
       .toPromise();
   }
@@ -244,7 +287,7 @@ export class AuthService {
         this.apiUrl + 'pendingpartialdeletions',
         postData
       )
-      .pipe(AuthService.pendingPartialDeletionDateConverter)
+      .pipe(this.pendingPartialDeletionDateConverter)
       .toPromise();
   }
 
@@ -255,7 +298,7 @@ export class AuthService {
       .get<PendingPartialDeletionResponse>(
         this.apiUrl + 'pendingpartialdeletions/' + pendingPartialDeletionId
       )
-      .pipe(AuthService.pendingPartialDeletionDateConverter)
+      .pipe(this.pendingPartialDeletionDateConverter)
       .toPromise();
   }
 
@@ -267,7 +310,7 @@ export class AuthService {
         this.apiUrl + 'pendingpartialdeletions/' + pendingPartialDeletionId,
         null
       )
-      .pipe(AuthService.pendingPartialDeletionDateConverter)
+      .pipe(this.pendingPartialDeletionDateConverter)
       .toPromise();
   }
 
@@ -293,16 +336,6 @@ export class AuthService {
     return this.http
       .get<PendingComplianceChange>(
         this.apiUrl + 'pendingcompliancechanges/' + pendingComplianceChangeId
-      )
-      .toPromise();
-  }
-
-  getPendingComplianceChangeForProband(
-    probandId: string
-  ): Promise<PendingComplianceChange> {
-    return this.http
-      .get<PendingComplianceChange>(
-        this.apiUrl + 'pendingcompliancechanges/proband/' + probandId
       )
       .toPromise();
   }
@@ -347,5 +380,12 @@ export class AuthService {
     return this.http
       .delete<void>(this.apiUrl + 'pendingstudychanges/' + pendingStudyChangeId)
       .toPromise();
+  }
+
+  private formatProbandResponseDates(data: Proband): Proband {
+    if (typeof data.first_logged_in_at === 'string') {
+      data.first_logged_in_at = new Date(data.first_logged_in_at);
+    }
+    return data;
   }
 }

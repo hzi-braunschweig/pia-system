@@ -6,21 +6,40 @@
 
 import { Inject, Injectable } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 
-import { User } from './auth.model';
+import { AccessToken, LoginResponse, User } from './auth.model';
 import { DOCUMENT } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  public readonly loggedIn: Observable<void>;
-  private loggedInSubject = new Subject<void>();
+  private readonly currentUserSubject: BehaviorSubject<User>;
+  public readonly currentUser$: Observable<User>;
+
+  constructor(@Inject(DOCUMENT) private document: Document) {
+    this.currentUserSubject = new BehaviorSubject<User>(this.getCurrentUser());
+    this.currentUser$ = this.currentUserSubject.asObservable();
+  }
 
   private jwtHelper: JwtHelperService = new JwtHelperService();
 
   private readonly beforeLogout: (() => Promise<void>)[] = [];
+
+  private getUserFromToken(token: string | null): User | null {
+    if (!token) {
+      return null;
+    }
+    const payload: AccessToken = this.jwtHelper.decodeToken(token);
+    return payload
+      ? {
+          username: payload.username,
+          role: payload.role,
+          study: payload.groups[0],
+        }
+      : null;
+  }
 
   /**
    * Register an async task which needs to be executed before logout
@@ -29,36 +48,61 @@ export class AuthService {
     this.beforeLogout.push(beforeLogout);
   }
 
-  constructor(@Inject(DOCUMENT) private document: Document) {
-    this.loggedIn = this.loggedInSubject.asObservable();
+  public getToken(): string | null {
+    return localStorage.getItem('token');
   }
 
-  isAuthenticated(): boolean {
-    const currentUser = this.getCurrentUser();
-    return Boolean(
-      currentUser &&
-        currentUser.token &&
-        !this.jwtHelper.isTokenExpired(currentUser.token)
-    );
+  public isAuthenticated(): boolean {
+    const token = this.getToken();
+    return Boolean(token && !this.jwtHelper.isTokenExpired(token));
   }
 
-  isPasswordChangeNeeded(): boolean {
-    const currentUser = this.getCurrentUser();
-    return currentUser && currentUser.pw_change_needed;
+  public isPasswordChangeNeeded(): boolean {
+    return JSON.parse(localStorage.getItem('pwChangeNeeded'));
   }
 
-  getCurrentUser(): User {
-    return JSON.parse(localStorage.getItem('currentUser'));
+  public setPasswordChangeNeeded(isNeeded: boolean) {
+    localStorage.setItem('pwChangeNeeded', JSON.stringify(isNeeded));
   }
 
-  setPasswordNeeded(isNeeded: boolean) {
-    const currentUser: User = this.getCurrentUser();
-    currentUser.pw_change_needed = isNeeded;
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  public getCurrentUser(): User | null {
+    const token = this.getToken();
+    if (!token) {
+      return null;
+    }
+    return this.getUserFromToken(token);
   }
 
-  resetCurrentUser(): void {
-    localStorage.removeItem('currentUser');
+  public getRememberedUsername(): string | null {
+    let username = localStorage.getItem('remembered_username');
+    if (username) {
+      return username;
+    }
+    // migrate old implementation with login_token
+    const loginToken = localStorage.getItem('token_login');
+    if (loginToken) {
+      username = this.jwtHelper.decodeToken(loginToken).username;
+      localStorage.setItem('remembered_username', username);
+      localStorage.removeItem('token_login');
+    }
+    return username;
+  }
+
+  public setRememberedUsername(username: string | null) {
+    if (username) {
+      localStorage.setItem('remembered_username', username);
+    } else {
+      localStorage.removeItem('remembered_username');
+    }
+  }
+
+  public removeRememberedUsername(): void {
+    localStorage.removeItem('remembered_username');
+  }
+
+  public resetCurrentUser(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('pwChangeNeeded');
   }
 
   async logout(): Promise<void> {
@@ -68,10 +112,18 @@ export class AuthService {
     this.beforeLogout.length = 0;
     this.resetCurrentUser();
     this.reloadApp();
+    this.currentUserSubject.next(null);
   }
 
-  emitLogin() {
-    this.loggedInSubject.next();
+  public handleLoginResponse(loginData: LoginResponse): void {
+    localStorage.setItem('token', loginData.token);
+    if (typeof loginData.pw_change_needed === 'boolean') {
+      localStorage.setItem(
+        'pwChangeNeeded',
+        JSON.stringify(loginData.pw_change_needed)
+      );
+    }
+    this.currentUserSubject.next(this.getUserFromToken(loginData.token));
   }
 
   /**

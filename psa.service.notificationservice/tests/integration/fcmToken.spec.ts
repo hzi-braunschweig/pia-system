@@ -6,19 +6,20 @@
 
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
-chai.use(chaiHttp);
 import sinon from 'sinon';
 
 import { ListeningDbClient } from '@pia/lib-service-core';
 import { FcmHelper } from '../../src/services/fcmHelper';
 
-import { setup, cleanup } from './fcmToken.spec.data/setup.helper';
+import { cleanup, setup } from './fcmToken.spec.data/setup.helper';
 
 import secretOrPrivateKey from '../secretOrPrivateKey';
 import { Server } from '../../src/server';
 
 import JWT from 'jsonwebtoken';
 import StatusCodes from 'http-status-codes';
+
+chai.use(chaiHttp);
 
 const apiAddress = `http://localhost:${
   process.env['PORT'] ?? '80'
@@ -30,31 +31,25 @@ const probandSession1 = {
   id: 1,
   role: 'Proband',
   username: 'QTestProband1',
-  groups: ['study'],
+  groups: ['QTestStudy'],
 };
 const probandSession2 = {
   id: 1,
   role: 'Proband',
   username: 'QTestProband2',
-  groups: ['study'],
+  groups: ['QTestStudy'],
 };
 const forscherSession1 = {
   id: 1,
   role: 'Forscher',
   username: 'QTestForscher1',
-  groups: ['study'],
+  groups: ['QTestStudy'],
 };
 const utSession = {
   id: 1,
   role: 'Untersuchungsteam',
   username: 'QTestUntersuchungsteam',
-  groups: ['study'],
-};
-const probandWithoutStudies = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestProband3',
-  groups: [],
+  groups: ['QTestStudy'],
 };
 
 const invalidToken = JWT.sign(probandSession1, 'thisIsNotAValidPrivateKey', {
@@ -77,29 +72,18 @@ const utToken = JWT.sign(utSession, secretOrPrivateKey, {
   algorithm: 'RS512',
   expiresIn: '24h',
 });
-const probandWithoutStudiesToken = JWT.sign(
-  probandWithoutStudies,
-  secretOrPrivateKey,
-  {
-    algorithm: 'RS512',
-    expiresIn: '24h',
-  }
-);
 
 const invalidHeader = { authorization: invalidToken };
 const probandHeader1 = { authorization: probandToken1 };
 const probandHeader2 = { authorization: probandToken2 };
 const forscherHeader1 = { authorization: forscherToken1 };
 const utHeader = { authorization: utToken };
-const probandWithoutStudiesHeader = {
-  authorization: probandWithoutStudiesToken,
-};
 
 interface FcmToken {
   fcm_token: string;
 }
 
-describe('/fcmToken', function () {
+describe('/fcmToken', () => {
   before(async function () {
     suiteSandbox.stub(ListeningDbClient.prototype);
     suiteSandbox.stub(FcmHelper, 'sendDefaultNotification');
@@ -192,15 +176,6 @@ describe('/fcmToken', function () {
         .set(utHeader)
         .send(payload);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
-    });
-
-    it('should return HTTP 400 if Proband has no study access', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .post('/fcmToken')
-        .set(probandWithoutStudiesHeader)
-        .send(payload);
-      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
     });
 
     it('should return HTTP 200 and create the Probands token', async function () {

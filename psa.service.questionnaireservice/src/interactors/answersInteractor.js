@@ -9,6 +9,7 @@ const {
 } = require('../repositories/questionnaireInstanceRepository');
 const pgHelper = require('../services/postgresqlHelper');
 const answerTypesValidatorService = require('../services/answerTypesValidatorService');
+const { assertStudyAccess } = require('../services/studyAccessAssert');
 
 /**
  * @description interactor that handles answers requests based on users permissions
@@ -69,12 +70,7 @@ const answersInteractor = (function () {
               console.log(err);
               throw 'Could not update answers for questionnaire instance, because it does not exist';
             });
-          await pgHelper
-            .getStudyAccessForUser(result.study_id, userName)
-            .catch((err) => {
-              console.log(err);
-              throw 'Could not get answers for questionnaire instance, because user has no access to study';
-            });
+          assertStudyAccess(result.study_id, decodedToken);
           return await pgHelper
             .createOrUpdateAnswers(
               qInstanceId,
@@ -126,12 +122,7 @@ const answersInteractor = (function () {
             console.log(err);
             throw 'Could not get answers for questionnaire instance, because it does not exist';
           });
-        await pgHelper
-          .getStudyAccessForUser(result.study_id, userName)
-          .catch((err) => {
-            console.log(err);
-            throw 'Could not get answers for questionnaire instance, because user has no access to study';
-          });
+        assertStudyAccess(result.study_id, decodedToken);
         return await pgHelper.getAnswersForProband(qInstanceId).catch((err) => {
           console.log(err);
           throw 'Could not get answers for questionnaire instance: internal DB error';
@@ -155,12 +146,7 @@ const answersInteractor = (function () {
         ) {
           throw 'Could not get answers for questionnaire instance, because they are not released or deleted';
         }
-        await pgHelper
-          .getStudyAccessForUser(qInstanceResult.study_id, userName)
-          .catch((err) => {
-            console.log(err);
-            throw 'Could not get answers for questionnaire instance, because user has no access to study';
-          });
+        assertStudyAccess(qInstanceResult.study_id, decodedToken);
         return await pgHelper
           .getAnswersForForscher(qInstanceId)
           .catch((err) => {
@@ -175,7 +161,6 @@ const answersInteractor = (function () {
 
   async function getAnswersHistorical(decodedToken, qInstanceId) {
     const userRole = decodedToken.role;
-    const userName = decodedToken.username;
 
     switch (userRole) {
       case 'Untersuchungsteam': {
@@ -186,12 +171,7 @@ const answersInteractor = (function () {
             console.log(err);
             throw 'Could not get historical answers for questionnaire instance, because it does not exist';
           });
-        await pgHelper
-          .getStudyAccessForUser(result.study_id, userName)
-          .catch((err) => {
-            console.log(err);
-            throw 'Could not get historical answers for questionnaire instance, because user has no access to study';
-          });
+        assertStudyAccess(result.study_id, decodedToken);
         return pgHelper
           .getHistoricalAnswersForInstance(qInstanceId)
           .catch((err) => {
@@ -242,12 +222,7 @@ const answersInteractor = (function () {
             console.log(err);
             throw 'Could not delete answer for questionnaire instance, because it does not exist';
           });
-        await pgHelper
-          .getStudyAccessForUser(result.study_id, userName)
-          .catch((err) => {
-            console.log(err);
-            throw 'Could not delete answer for questionnaire instance, because user has no access to study';
-          });
+        assertStudyAccess(result.study_id, decodedToken);
         return await pgHelper
           .deleteAnswer(qInstanceId, answer_option_id)
           .catch((err) => {

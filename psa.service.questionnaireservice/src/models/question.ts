@@ -5,11 +5,18 @@
  */
 
 import {
+  AnswerOptionDto,
   AnswerOption,
   AnswerOptionRequest,
   AnswerOptionResponse,
 } from './answerOption';
-import { Condition, ConditionRequest, ConditionResponse } from './condition';
+import {
+  ConditionDto,
+  Condition,
+  ConditionRequest,
+  ConditionResponse,
+} from './condition';
+import { QuestionnaireDto } from './questionnaire';
 
 export interface DbQuestion {
   id: number;
@@ -20,9 +27,22 @@ export interface DbQuestion {
   is_mandatory: boolean | null;
 }
 
+/**
+ * @deprecated
+ */
 export interface Question extends DbQuestion {
   answer_options: AnswerOption[];
   condition: Condition | null;
+}
+
+export interface QuestionDto {
+  id: number;
+  isMandatory: boolean | null;
+  position: number;
+  text: string;
+  questionnaire?: QuestionnaireDto;
+  answerOptions?: AnswerOptionDto[];
+  condition?: ConditionDto | null;
 }
 
 export interface QuestionResponse extends DbQuestion {

@@ -4,79 +4,83 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const postgresqlHelper = require('../services/postgresqlHelper.js');
-const pendingDeletionsInteractor = require('../interactors/pendingDeletionsInteractor.js');
+const pendingDeletionsInteractor = require('../interactors/pendingDeletionsInteractor');
+const { handleError } = require('./handleError');
 
 /**
  * @description HAPI Handler for pending deletions
  */
 const pendingDeletionsHandler = (function () {
-  function getOne(request) {
+  async function getOne(request) {
     const id = request.params.id;
 
     return pendingDeletionsInteractor.getPendingDeletion(
       request.auth.credentials,
-      id,
-      postgresqlHelper
+      id
     );
   }
 
-  function getOneForProbandId(request) {
+  async function getOneForProbandId(request) {
     const proband_id = request.params.proband_id;
 
     return pendingDeletionsInteractor.getPendingDeletionForProbandId(
       request.auth.credentials,
-      proband_id,
-      postgresqlHelper
+      proband_id
     );
   }
 
-  function getOneForSampleId(request) {
+  async function getOneForSampleId(request) {
     const sample_id = request.params.sample_id;
 
     return pendingDeletionsInteractor.getPendingDeletionForSampleId(
       request.auth.credentials,
-      sample_id,
-      postgresqlHelper
+      sample_id
     );
   }
 
-  function getOneForStudyId(request) {
+  async function getOneForStudyId(request) {
     const study_id = request.params.study_id;
 
     return pendingDeletionsInteractor.getPendingDeletionForStudyId(
       request.auth.credentials,
-      study_id,
-      postgresqlHelper
+      study_id
     );
   }
 
-  function createOne(request) {
-    return pendingDeletionsInteractor.createPendingDeletion(
-      request.auth.credentials,
-      request.payload,
-      postgresqlHelper
-    );
+  async function getAllOfStudy(request) {
+    return pendingDeletionsInteractor
+      .getPendingDeletions(
+        request.auth.credentials,
+        request.params.studyName,
+        request.query.type
+      )
+      .catch(handleError);
   }
 
-  function updateOne(request) {
+  async function createOne(request) {
+    return pendingDeletionsInteractor
+      .createPendingDeletion(request.auth.credentials, request.payload)
+      .catch(handleError);
+  }
+
+  async function updateOne(request) {
     const id = request.params.id;
 
-    return pendingDeletionsInteractor.updatePendingDeletion(
+    await pendingDeletionsInteractor.updatePendingDeletion(
       request.auth.credentials,
-      id,
-      postgresqlHelper
+      id
     );
+    return null;
   }
 
-  function deleteOne(request) {
+  async function deleteOne(request) {
     const id = request.params.id;
 
-    return pendingDeletionsInteractor.cancelPendingDeletion(
+    await pendingDeletionsInteractor.cancelPendingDeletion(
       request.auth.credentials,
-      id,
-      postgresqlHelper
+      id
     );
+    return null;
   }
 
   return {
@@ -107,6 +111,8 @@ const pendingDeletionsHandler = (function () {
      * @memberof module:pendingDeletionsHandler
      */
     getOneForStudyId: getOneForStudyId,
+
+    getAllOfStudy: getAllOfStudy,
 
     /**
      * @function

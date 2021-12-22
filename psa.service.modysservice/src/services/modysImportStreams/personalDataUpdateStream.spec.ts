@@ -4,15 +4,19 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+/* eslint-disable @typescript-eslint/unbound-method */
+
 import chai, { expect } from 'chai';
 import { createSandbox, SinonStubbedInstance } from 'sinon';
 import sinonChai from 'sinon-chai';
 import chaiAsPromised from 'chai-as-promised';
 import stream, { Readable } from 'stream';
 import { promisify } from 'util';
-import { PersonalDataUpdateStream } from './personalDataUpdateStream';
-import { PersonaldataserviceClient } from '../../clients/personaldataserviceClient';
 import Boom from '@hapi/boom';
+
+import { PersonaldataserviceClient } from '@pia-system/lib-http-clients-internal';
+import { PersonalDataUpdateStream } from './personalDataUpdateStream';
+import { personaldataserviceClient } from '../../clients/personaldataserviceClient';
 import { PersonalDataMapperStreamOutput } from './personalDataMapperStream';
 
 const pipeline = promisify(stream.pipeline);
@@ -22,18 +26,10 @@ chai.use(chaiAsPromised);
 const sandbox = createSandbox();
 
 describe('PersonalDataService', () => {
-  let personaldataserviceClientStubbed: SinonStubbedInstance<
-    typeof PersonaldataserviceClient
-  >;
+  let personaldataserviceClientStubbed: SinonStubbedInstance<PersonaldataserviceClient>;
 
   beforeEach(() => {
-    personaldataserviceClientStubbed = {
-      updatePersonalData: sandbox.stub(
-        PersonaldataserviceClient,
-        'updatePersonalData'
-      ),
-      prototype: {},
-    };
+    personaldataserviceClientStubbed = sandbox.stub(personaldataserviceClient);
   });
 
   afterEach(() => {

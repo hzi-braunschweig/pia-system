@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const marked = require('marked');
+const { marked } = require('marked');
 const TemplateSegmentTypes = require('./templateSegmentTypes');
 
 const compileMarkdownFilter = (function () {
