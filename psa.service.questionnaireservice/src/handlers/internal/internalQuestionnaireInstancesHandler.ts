@@ -10,9 +10,9 @@ import { QuestionnaireInstanceStatus } from '../../models/questionnaireInstance'
 
 export class InternalQuestionnaireInstancesHandler {
   public static getOne: Lifecycle.Method = async (request) => {
-    const id = request.params['id'] as number;
     return await InternalQuestionnaireInstancesInteractor.getQuestionnaireInstance(
-      id
+      request.params['id'] as number,
+      request.query['filterQuestionnaireByConditions'] as boolean | undefined
     );
   };
 

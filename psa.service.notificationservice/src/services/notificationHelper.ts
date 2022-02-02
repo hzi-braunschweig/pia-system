@@ -441,7 +441,8 @@ export class NotificationHelper {
     try {
       const qInstance = await questionnaireserviceClient
         .getQuestionnaireInstance(
-          Number.parseInt(notificationSchedule.reference_id)
+          Number.parseInt(notificationSchedule.reference_id),
+          true
         )
         .catch((err) => {
           if (

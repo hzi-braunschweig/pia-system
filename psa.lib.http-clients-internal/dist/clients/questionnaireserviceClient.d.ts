@@ -5,6 +5,6 @@ export declare class QuestionnaireserviceClient extends ServiceClient {
     private static convertQuestionnaireInstanceDates;
     private static convertQuestionnaireDates;
     getQuestionnaireInstancesForProband(pseudonym: string): Promise<QuestionnaireInstanceInternalDto[]>;
-    getQuestionnaireInstance(id: number): Promise<QuestionnaireInstanceWithQuestionnaireInternalDto>;
+    getQuestionnaireInstance(id: number, filterQuestionnaireByConditions?: boolean): Promise<QuestionnaireInstanceWithQuestionnaireInternalDto>;
     getQuestionnaireInstanceAnswers(id: number): Promise<AnswerInternalDto[]>;
 }

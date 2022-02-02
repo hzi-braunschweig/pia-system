@@ -4,40 +4,40 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Questionnaire } from '../models/questionnaire';
-import { QuestionnaireInstance } from '../models/questionnaireInstance';
-import { Answer } from '../models/answer';
-import { Condition, ConditionType } from '../models/condition';
-import { db } from '../db';
+import { QuestionnaireDto } from '../models/questionnaire';
+import { QuestionnaireInstanceDto } from '../models/questionnaireInstance';
+import { AnswerDto } from '../models/answer';
+import { ConditionDto, ConditionType } from '../models/condition';
 import { endOfDay } from 'date-fns';
 import { QuestionCleaner } from './questionCleaner';
 import { ConditionChecker } from './conditionChecker';
-import { AnswerType } from '../models/answerOption';
-
-interface AnswerWithType extends Answer {
-  answer_type_id: AnswerType;
-}
+import { getRepository, In, LessThanOrEqual } from 'typeorm';
+import { Answer } from '../entities/answer';
 
 export class QuestionnaireFilter {
-  private conditionTargetAnswers: Map<number, AnswerWithType> = new Map<
+  private conditionTargetAnswers: Map<number, AnswerDto> = new Map<
     number,
-    AnswerWithType
+    AnswerDto
   >();
 
-  private constructor(private readonly qInstance: QuestionnaireInstance) {}
+  private constructor(private readonly qInstance: QuestionnaireInstanceDto) {}
 
   /**
    * Filters the questionnaires question in place
-   * @param {QuestionnaireInstance} qInstance
-   * @return {Promise<undefined|Questionnaire>}
    */
   public static async filterQuestionnaireOfInstance(
-    qInstance: QuestionnaireInstance
+    qInstance: QuestionnaireInstanceDto
   ): Promise<void> {
     await new QuestionnaireFilter(qInstance).runFilterQuestionnaireOfInstance();
   }
 
   private async runFilterQuestionnaireOfInstance(): Promise<void> {
+    if (
+      !this.qInstance.questionnaire ||
+      !this.qInstance.questionnaire.questions
+    ) {
+      return;
+    }
     await this.loadConditionTargetAnswers();
 
     // Go through questions and determine if it should be added based on conditions
@@ -48,13 +48,18 @@ export class QuestionnaireFilter {
         })
         .filter((question) => {
           // Go through answer_options of question and determine if it should be added based on conditions
-          const keepEmptyQuestion = question.answer_options.length === 0;
-          question.answer_options = question.answer_options.filter(
+          const keepEmptyQuestion =
+            question.answerOptions === undefined ||
+            question.answerOptions.length === 0;
+          question.answerOptions = question.answerOptions?.filter(
             (answerOption) => {
               return this.isConditionFulfilled(answerOption.condition);
             }
           );
-          return keepEmptyQuestion || question.answer_options.length > 0;
+          return (
+            keepEmptyQuestion ||
+            (question.answerOptions && question.answerOptions.length > 0)
+          );
         });
 
     // Cleanup questions with internal conditions that now point on a none existing answer option
@@ -64,7 +69,8 @@ export class QuestionnaireFilter {
 
     if (
       !this.qInstance.questionnaire.questions.some(
-        (question) => question.answer_options.length > 0
+        (question) =>
+          question.answerOptions && question.answerOptions.length > 0
       )
     ) {
       // if there is no answer option empty questions can also be deleted.
@@ -72,24 +78,24 @@ export class QuestionnaireFilter {
     }
   }
 
-  private isConditionFulfilled(condition: Condition | null): boolean {
+  private isConditionFulfilled(
+    condition: ConditionDto | null | undefined
+  ): boolean {
     if (
       condition &&
-      (condition.condition_type === ConditionType.EXTERNAL ||
-        condition.condition_type === ConditionType.INTERNAL_LAST)
+      (condition.type === ConditionType.EXTERNAL ||
+        condition.type === ConditionType.INTERNAL_LAST)
     ) {
       const answer =
-        condition.condition_target_answer_option &&
-        this.conditionTargetAnswers.get(
-          condition.condition_target_answer_option
-        );
+        condition.targetAnswerOption &&
+        this.conditionTargetAnswers.get(condition.targetAnswerOption.id);
       if (answer) {
         return ConditionChecker.isConditionMet(
           answer,
           condition,
-          answer.answer_type_id
+          answer.answerOption!.answerTypeId
         );
-      } else if (condition.condition_type === ConditionType.EXTERNAL) {
+      } else if (condition.type === ConditionType.EXTERNAL) {
         // if getConditionTargetAnswers did not find a target, condition is not full filled
         return false;
       } else if (this.qInstance.cycle > 1) {
@@ -101,22 +107,22 @@ export class QuestionnaireFilter {
   }
 
   private getConditionTargetAnswerOptionIdsForType(
-    questionnaire: Questionnaire,
+    questionnaire: QuestionnaireDto,
     conditionType: ConditionType
   ): number[] {
     const conditionTargetAnswerOptionIds: number[] = [];
-    questionnaire.questions.forEach((question) => {
-      if (question.condition?.condition_type === conditionType) {
-        question.condition.condition_target_answer_option &&
+    questionnaire.questions?.forEach((question) => {
+      if (question.condition?.type === conditionType) {
+        question.condition.targetAnswerOption &&
           conditionTargetAnswerOptionIds.push(
-            question.condition.condition_target_answer_option
+            question.condition.targetAnswerOption.id
           );
       }
-      question.answer_options.forEach((answerOption) => {
-        if (answerOption.condition?.condition_type === conditionType) {
-          answerOption.condition.condition_target_answer_option &&
+      question.answerOptions?.forEach((answerOption) => {
+        if (answerOption.condition?.type === conditionType) {
+          answerOption.condition.targetAnswerOption &&
             conditionTargetAnswerOptionIds.push(
-              answerOption.condition.condition_target_answer_option
+              answerOption.condition.targetAnswerOption.id
             );
         }
       });
@@ -128,62 +134,82 @@ export class QuestionnaireFilter {
     this.conditionTargetAnswers = new Map();
     const externalConditionTargetAnswerOptionIds =
       this.getConditionTargetAnswerOptionIdsForType(
-        this.qInstance.questionnaire,
+        this.qInstance.questionnaire!,
         ConditionType.EXTERNAL
       );
+    const answerRepo = getRepository(Answer);
     if (externalConditionTargetAnswerOptionIds.length > 0) {
-      const externalConditionTargetAnswers =
-        await db.manyOrNone<AnswerWithType>(
-          `SELECT DISTINCT ON (a.answer_option_id) a.*, ao.answer_type_id
-                     FROM answers AS a
-                              JOIN questionnaire_instances qi ON a.questionnaire_instance_id = qi.id
-                              JOIN answer_options ao ON ao.id = a.answer_option_id
-                     WHERE status IN ('released', 'released_once', 'released_twice')
-                       AND a.answer_option_id IN ($(aoIDs:csv))
-                       AND qi.user_id = $(userId)
-                       AND COALESCE(a.date_of_release, qi.date_of_release_v2, qi.date_of_release_v1) <=
-                           $(endOfDayOfIssue)
-                     ORDER BY a.answer_option_id, a.versioning DESC`,
+      const endOfDayOfIssue = endOfDay(this.qInstance.dateOfIssue);
+      const externalConditionTargetAnswers = await answerRepo.find({
+        where: [
           {
-            aoIDs: externalConditionTargetAnswerOptionIds,
-            /* endOfDay is needed for now - until date_of_issue is the real issue timestamp - because a QI Y that was issued
-                                                    after the answer of QI X gets the start of that day as date_of_issue. Conditions inside that QI Y would not
-                                                    relate to QI X because QI X was released later on that day. */
-            endOfDayOfIssue: endOfDay(this.qInstance.date_of_issue),
-            userId: this.qInstance.user_id,
-          }
-        );
-      externalConditionTargetAnswers.forEach((answer) =>
-        this.conditionTargetAnswers.set(answer.answer_option_id, answer)
-      );
+            answerOption: In(externalConditionTargetAnswerOptionIds),
+            questionnaireInstance: {
+              status: In(['released', 'released_once', 'released_twice']),
+              pseudonym: this.qInstance.pseudonym,
+            },
+            dateOfRelease: LessThanOrEqual(endOfDayOfIssue),
+          },
+          {
+            answerOption: In(externalConditionTargetAnswerOptionIds),
+            questionnaireInstance: {
+              status: In(['released', 'released_once', 'released_twice']),
+              pseudonym: this.qInstance.pseudonym,
+              dateOfReleaseV1: LessThanOrEqual(endOfDayOfIssue),
+              dateOfReleaseV2: null,
+            },
+          },
+          {
+            answerOption: In(externalConditionTargetAnswerOptionIds),
+            questionnaireInstance: {
+              status: In(['released', 'released_once', 'released_twice']),
+              pseudonym: this.qInstance.pseudonym,
+              dateOfReleaseV2: LessThanOrEqual(endOfDayOfIssue),
+            },
+          },
+        ],
+        relations: ['answerOption', 'questionnaireInstance'],
+        order: {
+          answerOption: 'ASC',
+          versioning: 'DESC',
+        },
+      });
+      externalConditionTargetAnswers.forEach((answer) => {
+        if (!this.conditionTargetAnswers.has(answer.answerOption!.id)) {
+          // the array is ordered by version descending. if a later version was already stored ignore the older version.
+          this.conditionTargetAnswers.set(answer.answerOption!.id, answer);
+        }
+      });
     }
+
     if (this.qInstance.cycle > 1) {
       const internalLastConditionTargetAnswerOptionIds =
         this.getConditionTargetAnswerOptionIdsForType(
-          this.qInstance.questionnaire,
+          this.qInstance.questionnaire!,
           ConditionType.INTERNAL_LAST
         );
       if (internalLastConditionTargetAnswerOptionIds.length > 0) {
-        const internalLastConditionTargetAnswers =
-          await db.manyOrNone<AnswerWithType>(
-            `SELECT DISTINCT ON (a.answer_option_id) a.*, ao.answer_type_id
-                         FROM answers AS a
-                                  JOIN questionnaire_instances qi ON a.questionnaire_instance_id = qi.id
-                                  JOIN answer_options ao ON ao.id = a.answer_option_id
-                         WHERE status IN ('released', 'released_once', 'released_twice')
-                           AND a.answer_option_id IN ($(aoIDs:csv))
-                           AND qi.user_id = $(userId)
-                           AND qi.cycle = $(cycle)
-                         ORDER BY a.answer_option_id, a.versioning DESC`,
-            {
-              aoIDs: internalLastConditionTargetAnswerOptionIds,
+        const internalLastConditionTargetAnswers = await answerRepo.find({
+          where: {
+            answerOption: In(externalConditionTargetAnswerOptionIds),
+            questionnaireInstance: {
+              status: In(['released', 'released_once', 'released_twice']),
+              pseudonym: this.qInstance.pseudonym,
               cycle: this.qInstance.cycle - 1,
-              userId: this.qInstance.user_id,
-            }
-          );
-        internalLastConditionTargetAnswers.forEach((answer) =>
-          this.conditionTargetAnswers.set(answer.answer_option_id, answer)
-        );
+            },
+          },
+          relations: ['answerOption'],
+          order: {
+            answerOption: 'ASC',
+            versioning: 'DESC',
+          },
+        });
+        internalLastConditionTargetAnswers.forEach((answer) => {
+          if (!this.conditionTargetAnswers.has(answer.answerOption!.id)) {
+            // the array is ordered by version descending. if a later version was already stored ignore the older version.
+            this.conditionTargetAnswers.set(answer.answerOption!.id, answer);
+          }
+        });
       }
     }
   }

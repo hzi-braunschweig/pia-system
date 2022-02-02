@@ -132,8 +132,8 @@ const postgresqlHelper = (function () {
 
   async function markInstanceAsScheduled(id) {
     return await db.none(
-      'UPDATE questionnaire_instances SET notifications_scheduled=$1 WHERE id=$2',
-      [true, id]
+      'UPDATE questionnaire_instances SET notifications_scheduled=true WHERE id=$(id)',
+      { id }
     );
   }
 
@@ -329,14 +329,20 @@ const postgresqlHelper = (function () {
 
   async function getNotFilledoutQuestionnaireInstanceIds() {
     const ids = [];
-    const query =
-      'SELECT questionnaire_instances.id AS id, questionnaire_instances.date_of_issue AS date_of_issue, ' +
-      'questionnaires.notify_when_not_filled_time as notify_when_not_filled_time, questionnaires.notify_when_not_filled_day as notify_when_not_filled_day ' +
-      'FROM questionnaire_instances, questionnaires ' +
-      "WHERE (questionnaire_instances.status = 'in_progress' OR questionnaire_instances.status = 'active' OR questionnaire_instances.status = 'expired') " +
-      'AND questionnaires.notify_when_not_filled=true AND questionnaire_instances.questionnaire_id=questionnaires.id ' +
-      'AND NOT EXISTS (SELECT id FROM users_to_contact WHERE questionnaire_instances.id=ANY(users_to_contact.not_filledout_questionnaire_instances) ' +
-      'AND now()::timestamp::date=users_to_contact.created_at::timestamp::date)';
+    const query = `SELECT questionnaire_instances.id                 AS id,
+                          questionnaire_instances.date_of_issue      AS date_of_issue,
+                          questionnaires.notify_when_not_filled_time AS notify_when_not_filled_time,
+                          questionnaires.notify_when_not_filled_day  AS notify_when_not_filled_day
+                   FROM questionnaire_instances
+                   JOIN questionnaires ON questionnaire_instances.questionnaire_id = questionnaires.id
+                   WHERE (questionnaire_instances.status = 'in_progress' OR questionnaire_instances.status = 'active' OR
+                          questionnaire_instances.status = 'expired')
+                     AND questionnaires.notify_when_not_filled = TRUE
+                     AND NOT EXISTS(SELECT id
+                                    FROM users_to_contact
+                                    WHERE questionnaire_instances.id = ANY
+                                          (users_to_contact.not_filledout_questionnaire_instances)
+                                      AND NOW()::timestamp::date = users_to_contact.created_at::timestamp::date)`;
     const ret = await db.manyOrNone(query);
     if (ret && ret.length > 0) {
       for (let i = 0; i < ret.length; i++) {

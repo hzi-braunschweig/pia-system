@@ -77,11 +77,18 @@ export class QuestionnaireserviceClient extends ServiceClient {
    * Gets all pseudonyms from pia that are in a specific study or have a specific status account
    */
   public async getQuestionnaireInstance(
-    id: number
+    id: number,
+    filterQuestionnaireByConditions?: boolean
   ): Promise<QuestionnaireInstanceWithQuestionnaireInternalDto> {
+    const params = new URLSearchParams();
+    params.append(
+      'filterQuestionnaireByConditions',
+      String(filterQuestionnaireByConditions ?? false)
+    );
+    const query = '?' + params.toString();
     const result =
       await this.httpClient.get<QuestionnaireInstanceWithQuestionnaireInternalDto>(
-        `/questionnaire/questionnaireInstances/${id.toString()}`
+        `/questionnaire/questionnaireInstances/${id.toString()}` + query
       );
     return QuestionnaireserviceClient.convertQuestionnaireInstanceDates(result);
   }

@@ -129,7 +129,7 @@ export function createQuestionnaire(
       }),
       createQuestion({
         id: id + 20,
-        position: 1,
+        position: 2,
         text: 'How do you feel now?',
         answerOptions: create5AnswerOptions(id + 20),
       }),

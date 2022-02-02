@@ -35,8 +35,11 @@ class QuestionnaireserviceClient extends serviceClient_1.ServiceClient {
         const instances = await this.httpClient.get(`/questionnaire/user/${pseudonym}/questionnaireInstances` + query);
         return instances.map((instance) => QuestionnaireserviceClient.convertQuestionnaireInstanceDates(instance));
     }
-    async getQuestionnaireInstance(id) {
-        const result = await this.httpClient.get(`/questionnaire/questionnaireInstances/${id.toString()}`);
+    async getQuestionnaireInstance(id, filterQuestionnaireByConditions) {
+        const params = new URLSearchParams();
+        params.append('filterQuestionnaireByConditions', String(filterQuestionnaireByConditions ?? false));
+        const query = '?' + params.toString();
+        const result = await this.httpClient.get(`/questionnaire/questionnaireInstances/${id.toString()}` + query);
         return QuestionnaireserviceClient.convertQuestionnaireInstanceDates(result);
     }
     async getQuestionnaireInstanceAnswers(id) {

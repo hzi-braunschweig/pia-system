@@ -4,8 +4,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Condition } from '../models/condition';
-import { Answer } from '../models/answer';
+import {
+  Condition,
+  ConditionDto,
+  ConditionLink,
+  ConditionOperand,
+  isConditionDto,
+} from '../models/condition';
+import { Answer, AnswerDto } from '../models/answer';
 import { isEqual } from 'date-fns';
 import { AnswerType } from '../models/answerOption';
 
@@ -14,8 +20,8 @@ export class ConditionChecker {
    * Returns true if the value of answer meets the condition, false otherwise
    */
   public static isConditionMet(
-    answer: Answer | undefined,
-    condition: Condition,
+    answer: Answer | AnswerDto | undefined,
+    condition: Condition | ConditionDto,
     type: AnswerType
   ): boolean {
     if (!answer) {
@@ -23,14 +29,30 @@ export class ConditionChecker {
     }
     const answer_values: (string | number | Date)[] =
       ConditionChecker.parseValues(answer.value, type);
-    const condition_values: (string | number | Date)[] =
-      ConditionChecker.parseValues(condition.condition_value ?? '', type);
-    const condition_link = condition.condition_link ?? 'OR';
 
-    switch (condition.condition_operand) {
+    let conditionValues: (string | number | Date)[];
+    let conditionLink: ConditionLink;
+    let conditionOperand: ConditionOperand | null;
+    if (isConditionDto(condition)) {
+      conditionValues = ConditionChecker.parseValues(
+        condition.value ?? '',
+        type
+      );
+      conditionLink = condition.link ?? condition.link ?? 'OR';
+      conditionOperand = condition.operand;
+    } else {
+      conditionValues = ConditionChecker.parseValues(
+        condition.condition_value ?? '',
+        type
+      );
+      conditionLink = condition.condition_link ?? 'OR';
+      conditionOperand = condition.condition_operand;
+    }
+
+    switch (conditionOperand) {
       case '<':
-        if (condition_link === 'AND') {
-          return condition_values.every(function (condition_value) {
+        if (conditionLink === 'AND') {
+          return conditionValues.every(function (condition_value) {
             if (condition_value === '') return true;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -38,8 +60,8 @@ export class ConditionChecker {
                 : false;
             });
           });
-        } else if (condition_link === 'OR') {
-          return condition_values.some(function (condition_value) {
+        } else if (conditionLink === 'OR') {
+          return conditionValues.some(function (condition_value) {
             if (condition_value === '') return false;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -49,8 +71,8 @@ export class ConditionChecker {
           });
           // a general else clause which catches all other values is not what we want here
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter(function (condition_value) {
+        } else if (conditionLink === 'XOR') {
+          const count = conditionValues.filter(function (condition_value) {
             if (condition_value === '') return false;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -64,8 +86,8 @@ export class ConditionChecker {
         }
 
       case '>':
-        if (condition_link === 'AND') {
-          return condition_values.every(function (condition_value) {
+        if (conditionLink === 'AND') {
+          return conditionValues.every(function (condition_value) {
             if (condition_value === '') return true;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -73,8 +95,8 @@ export class ConditionChecker {
                 : false;
             });
           });
-        } else if (condition_link === 'OR') {
-          return condition_values.some(function (condition_value) {
+        } else if (conditionLink === 'OR') {
+          return conditionValues.some(function (condition_value) {
             if (condition_value === '') return false;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -84,8 +106,8 @@ export class ConditionChecker {
           });
           // a general else clause which catches all other values is not what we want here
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter(function (condition_value) {
+        } else if (conditionLink === 'XOR') {
+          const count = conditionValues.filter(function (condition_value) {
             if (condition_value === '') return false;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -99,8 +121,8 @@ export class ConditionChecker {
         }
 
       case '<=':
-        if (condition_link === 'AND') {
-          return condition_values.every(function (condition_value) {
+        if (conditionLink === 'AND') {
+          return conditionValues.every(function (condition_value) {
             if (condition_value === '') return true;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -108,8 +130,8 @@ export class ConditionChecker {
                 : false;
             });
           });
-        } else if (condition_link === 'OR') {
-          return condition_values.some(function (condition_value) {
+        } else if (conditionLink === 'OR') {
+          return conditionValues.some(function (condition_value) {
             if (condition_value === '') return false;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -119,8 +141,8 @@ export class ConditionChecker {
           });
           // a general else clause which catches all other values is not what we want here
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter(function (condition_value) {
+        } else if (conditionLink === 'XOR') {
+          const count = conditionValues.filter(function (condition_value) {
             if (condition_value === '') return false;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -134,8 +156,8 @@ export class ConditionChecker {
         }
 
       case '>=':
-        if (condition_link === 'AND') {
-          return condition_values.every(function (condition_value) {
+        if (conditionLink === 'AND') {
+          return conditionValues.every(function (condition_value) {
             if (condition_value === '') return true;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -143,8 +165,8 @@ export class ConditionChecker {
                 : false;
             });
           });
-        } else if (condition_link === 'OR') {
-          return condition_values.some(function (condition_value) {
+        } else if (conditionLink === 'OR') {
+          return conditionValues.some(function (condition_value) {
             if (condition_value === '') return false;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -154,8 +176,8 @@ export class ConditionChecker {
           });
           // a general else clause which catches all other values is not what we want here
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter(function (condition_value) {
+        } else if (conditionLink === 'XOR') {
+          const count = conditionValues.filter(function (condition_value) {
             if (condition_value === '') return false;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -169,8 +191,8 @@ export class ConditionChecker {
         }
 
       case '==':
-        if (condition_link === 'AND') {
-          return condition_values.every(function (condition_value) {
+        if (conditionLink === 'AND') {
+          return conditionValues.every(function (condition_value) {
             if (condition_value === '') return true;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -180,8 +202,8 @@ export class ConditionChecker {
                 : false;
             });
           });
-        } else if (condition_link === 'OR') {
-          return condition_values.some(function (condition_value) {
+        } else if (conditionLink === 'OR') {
+          return conditionValues.some(function (condition_value) {
             if (condition_value === '') return false;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -193,8 +215,8 @@ export class ConditionChecker {
           });
           // a general else clause which catches all other values is not what we want here
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter(function (condition_value) {
+        } else if (conditionLink === 'XOR') {
+          const count = conditionValues.filter(function (condition_value) {
             if (condition_value === '') return false;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -210,8 +232,8 @@ export class ConditionChecker {
         }
 
       case '\\=':
-        if (condition_link === 'AND') {
-          return condition_values.every(function (condition_value) {
+        if (conditionLink === 'AND') {
+          return conditionValues.every(function (condition_value) {
             if (condition_value === '') return true;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -221,8 +243,8 @@ export class ConditionChecker {
                 : false;
             });
           });
-        } else if (condition_link === 'OR') {
-          return condition_values.some(function (condition_value) {
+        } else if (conditionLink === 'OR') {
+          return conditionValues.some(function (condition_value) {
             if (condition_value === '') return false;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''
@@ -234,8 +256,8 @@ export class ConditionChecker {
           });
           // a general else clause which catches all other values is not what we want here
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter(function (condition_value) {
+        } else if (conditionLink === 'XOR') {
+          const count = conditionValues.filter(function (condition_value) {
             if (condition_value === '') return false;
             return answer_values.some(function (answer_value) {
               return answer_value !== ''

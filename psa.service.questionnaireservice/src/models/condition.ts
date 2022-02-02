@@ -50,6 +50,35 @@ export enum ConditionType {
 export type ConditionOperand = '<' | '>' | '<=' | '>=' | '==' | '\\=';
 export type ConditionLink = 'AND' | 'OR' | 'XOR';
 
+export function isConditionDto(condition: unknown): condition is ConditionDto {
+  if (typeof condition !== 'object' || condition === null) {
+    return false;
+  }
+  const check = condition as ConditionDto;
+  return (
+    typeof check.id === 'number' &&
+    [
+      null,
+      ConditionType.EXTERNAL,
+      ConditionType.INTERNAL_THIS,
+      ConditionType.INTERNAL_LAST,
+    ].includes(check.type) &&
+    (check.value === null || typeof check.value === 'string') &&
+    [null, 'AND', 'OR', 'XOR'].includes(check.link) &&
+    [null, '<', '>', '<=', '>=', '==', '\\='].includes(check.operand) &&
+    (check.targetAnswerOption === undefined ||
+      typeof check.targetAnswerOption === 'object') &&
+    (check.targetQuestionnaire === undefined ||
+      typeof check.targetQuestionnaire === 'object') &&
+    (check.conditionAnswerOption === undefined ||
+      typeof check.conditionAnswerOption === 'object') &&
+    (check.conditionQuestion === undefined ||
+      typeof check.conditionQuestion === 'object') &&
+    (check.conditionQuestionnaire === undefined ||
+      typeof check.conditionQuestionnaire === 'object')
+  );
+}
+
 export interface ConditionResponse extends Condition {
   error?: number;
 }

@@ -22,6 +22,15 @@ const route: ServerRoute = {
           .description('the id of the questionnaire instance')
           .required(),
       }).unknown(),
+      query: Joi.object({
+        filterQuestionnaireByConditions: Joi.bool()
+          .optional()
+          .description(
+            'filters all questions and answer options of the questionnaire, ' +
+              'that are not required for this questionnaire instance, ' +
+              'because the conditions are not fulfilled'
+          ),
+      }),
     },
   },
 };

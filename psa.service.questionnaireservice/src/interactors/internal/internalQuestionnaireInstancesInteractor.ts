@@ -5,26 +5,36 @@
  */
 
 import Boom from '@hapi/boom';
-import { getRepository, getCustomRepository, In } from 'typeorm';
+import { getCustomRepository, getRepository, In } from 'typeorm';
 import { Answer } from '../../entities/answer';
 import { QuestionnaireInstance } from '../../entities/questionnaireInstance';
 import { QuestionnaireInstanceStatus } from '../../models/questionnaireInstance';
 import { CustomQuestionnaireInstanceRepository } from '../../repositories/questionnaireInstanceRepository';
+import { QuestionnaireFilter } from '../../services/questionnaireFilter';
 
 export class InternalQuestionnaireInstancesInteractor {
   public static async getQuestionnaireInstance(
-    id: number
+    id: number,
+    filterQuestionnaireByConditions?: boolean
   ): Promise<QuestionnaireInstance> {
     const qiRepo = getCustomRepository(CustomQuestionnaireInstanceRepository);
-    return await qiRepo
+    const qInstance = await qiRepo
       .findOneOrFailByIdWithQuestionnaire({
         where: {
           id: id,
         },
+        relations: [
+          'questionnaire.questions.condition.targetAnswerOption',
+          'questionnaire.questions.answerOptions.condition.targetAnswerOption',
+        ],
       })
       .catch((err) => {
         throw Boom.notFound('Could not get the questionnaire instance', err);
       });
+    if (filterQuestionnaireByConditions) {
+      await QuestionnaireFilter.filterQuestionnaireOfInstance(qInstance);
+    }
+    return qInstance;
   }
 
   public static async getQuestionnaireInstancesForProband(

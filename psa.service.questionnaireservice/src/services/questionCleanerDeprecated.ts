@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { QuestionDto } from '../models/question';
-import { AnswerOptionDto } from '../models/answerOption';
+import { Question } from '../models/question';
+import { AnswerOption } from '../models/answerOption';
 import { ConditionType } from '../models/condition';
 
 enum CanBeAdded {
@@ -15,11 +15,11 @@ enum CanBeAdded {
 }
 
 interface QuestionAnswerOptionPair {
-  question: QuestionDto;
-  answerOption: AnswerOptionDto;
+  question: Question;
+  answerOption: AnswerOption;
 }
 
-export class QuestionCleaner {
+export class QuestionCleanerDeprecated {
   private readonly questionsAndStatus: Map<number, CanBeAdded> = new Map<
     number,
     CanBeAdded
@@ -30,46 +30,47 @@ export class QuestionCleaner {
   >();
   private readonly questionAnswerOptionPairs: QuestionAnswerOptionPair[];
 
-  public constructor(private readonly questions: QuestionDto[]) {
+  public constructor(private readonly questions: Question[]) {
     this.questionAnswerOptionPairs = questions.flatMap((question) =>
-      question.answerOptions!.map((answerOption) => ({
+      question.answer_options.map((answerOption) => ({
         question,
         answerOption,
       }))
     );
   }
 
-  public getQuestionsToAdd(): QuestionDto[] {
+  public getQuestionsToAdd(): Question[] {
     return this.questions
       .filter(
         (question) => this.canQuestionBeAdded(question) === CanBeAdded.YES
       )
       .filter((question) => {
-        if (question.answerOptions!.length === 0) return true;
-        question.answerOptions = question.answerOptions!.filter(
+        if (question.answer_options.length === 0) return true;
+        question.answer_options = question.answer_options.filter(
           (answerOption) =>
             this.canAnswerOptionBeAdded(answerOption) === CanBeAdded.YES
         );
-        return question.answerOptions.length > 0;
+        return question.answer_options.length > 0;
       });
   }
 
-  private canQuestionBeAdded(question: QuestionDto): CanBeAdded {
+  private canQuestionBeAdded(question: Question): CanBeAdded {
     if (this.questionsAndStatus.has(question.id)) {
       return this.questionsAndStatus.get(question.id)!;
     }
 
     if (
       !question.condition ||
-      question.condition.type !== ConditionType.INTERNAL_THIS
+      question.condition.condition_type !== ConditionType.INTERNAL_THIS
     ) {
       this.questionsAndStatus.set(question.id, CanBeAdded.YES);
       return CanBeAdded.YES;
     }
 
-    const targetAnswerOption = question.condition.targetAnswerOption!;
+    const targetAnswerOption =
+      question.condition.condition_target_answer_option;
     const conditionTarget = this.questionAnswerOptionPairs.find(
-      (pair) => pair.answerOption.id === targetAnswerOption.id
+      (pair) => pair.answerOption.id === targetAnswerOption
     );
     if (!conditionTarget) {
       this.questionsAndStatus.set(question.id, CanBeAdded.NO);
@@ -100,22 +101,23 @@ export class QuestionCleaner {
     return targetAnswerOptionCanBeAdded;
   }
 
-  private canAnswerOptionBeAdded(answerOption: AnswerOptionDto): CanBeAdded {
+  private canAnswerOptionBeAdded(answerOption: AnswerOption): CanBeAdded {
     if (this.answerOptionsAndStatus.has(answerOption.id)) {
       return this.answerOptionsAndStatus.get(answerOption.id)!;
     }
 
     if (
       !answerOption.condition ||
-      answerOption.condition.type !== ConditionType.INTERNAL_THIS
+      answerOption.condition.condition_type !== ConditionType.INTERNAL_THIS
     ) {
       this.answerOptionsAndStatus.set(answerOption.id, CanBeAdded.YES);
       return CanBeAdded.YES;
     }
 
-    const targetAnswerOption = answerOption.condition.targetAnswerOption!;
+    const targetAnswerOption =
+      answerOption.condition.condition_target_answer_option;
     const conditionTarget = this.questionAnswerOptionPairs.find(
-      (pair) => pair.answerOption.id === targetAnswerOption.id
+      (pair) => pair.answerOption.id === targetAnswerOption
     );
     if (!conditionTarget) {
       this.answerOptionsAndStatus.set(answerOption.id, CanBeAdded.NO);

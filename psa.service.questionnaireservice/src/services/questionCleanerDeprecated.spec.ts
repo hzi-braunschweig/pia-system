@@ -6,104 +6,104 @@
 
 /* eslint-disable @typescript-eslint/no-magic-numbers,@typescript-eslint/no-non-null-assertion */
 import { expect } from 'chai';
+import { QuestionCleanerDeprecated } from './questionCleanerDeprecated';
 import { ConditionType } from '../models/condition';
-import { Question } from '../entities/question';
-import { QuestionCleaner } from './questionCleaner';
+import { Question } from '../models/question';
 
-describe('QuestionCleaner', () => {
+describe('QuestionCleanerDeprecated', () => {
   describe('#getQuestionsToAdd', function () {
-    it('should return an empty array if all answerOptions conditions point to missing internal answer_option', function () {
+    it('should return an empty array if all answer_options conditions point to missing internal answer_option', function () {
       const questions = [
         {
           id: 1,
-          answerOptions: [
+          answer_options: [
             {
               id: 1,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 5 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 5,
               },
             },
             {
               id: 2,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 5 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 5,
               },
             },
           ],
         },
         {
           id: 2,
-          answerOptions: [
+          answer_options: [
             {
               id: 3,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 5 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 5,
               },
             },
             {
               id: 4,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 5 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 5,
               },
             },
           ],
         },
       ];
 
-      const actual = new QuestionCleaner(
+      const actual = new QuestionCleanerDeprecated(
         questions as Question[]
       ).getQuestionsToAdd();
 
       expect(actual).to.have.length(0);
     });
 
-    it('should return an empty array if all answerOptions conditions point recursively to missing internal answer_option', function () {
+    it('should return an empty array if all answer_options conditions point recursively to missing internal answer_option', function () {
       const questions = [
         {
           id: 1,
-          answerOptions: [
+          answer_options: [
             {
               id: 1,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 5 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 5,
               },
             },
             {
               id: 2,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 1 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 1,
               },
             },
           ],
         },
         {
           id: 2,
-          answerOptions: [
+          answer_options: [
             {
               id: 3,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 4 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 4,
               },
             },
             {
               id: 4,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 2 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 2,
               },
             },
           ],
         },
       ];
 
-      const actual = new QuestionCleaner(
+      const actual = new QuestionCleanerDeprecated(
         questions as Question[]
       ).getQuestionsToAdd();
 
@@ -115,10 +115,10 @@ describe('QuestionCleaner', () => {
         {
           id: 1,
           condition: {
-            type: ConditionType.INTERNAL_THIS,
-            targetAnswerOption: { id: 5 },
+            condition_type: ConditionType.INTERNAL_THIS,
+            condition_target_answer_option: 5,
           },
-          answerOptions: [
+          answer_options: [
             {
               id: 1,
             },
@@ -131,10 +131,10 @@ describe('QuestionCleaner', () => {
         {
           id: 2,
           condition: {
-            type: ConditionType.INTERNAL_THIS,
-            targetAnswerOption: { id: 5 },
+            condition_type: ConditionType.INTERNAL_THIS,
+            condition_target_answer_option: 5,
           },
-          answerOptions: [
+          answer_options: [
             {
               id: 3,
             },
@@ -145,7 +145,7 @@ describe('QuestionCleaner', () => {
         },
       ];
 
-      const actual = new QuestionCleaner(
+      const actual = new QuestionCleanerDeprecated(
         questions as Question[]
       ).getQuestionsToAdd();
 
@@ -157,10 +157,10 @@ describe('QuestionCleaner', () => {
         {
           id: 1,
           condition: {
-            type: ConditionType.INTERNAL_THIS,
-            targetAnswerOption: { id: 10 },
+            condition_type: ConditionType.INTERNAL_THIS,
+            condition_target_answer_option: 10,
           },
-          answerOptions: [
+          answer_options: [
             {
               id: 1,
             },
@@ -172,10 +172,10 @@ describe('QuestionCleaner', () => {
         {
           id: 2,
           condition: {
-            type: ConditionType.INTERNAL_THIS,
-            targetAnswerOption: { id: 1 },
+            condition_type: ConditionType.INTERNAL_THIS,
+            condition_target_answer_option: 1,
           },
-          answerOptions: [
+          answer_options: [
             {
               id: 3,
             },
@@ -187,10 +187,10 @@ describe('QuestionCleaner', () => {
         {
           id: 3,
           condition: {
-            type: ConditionType.INTERNAL_THIS,
-            targetAnswerOption: { id: 4 },
+            condition_type: ConditionType.INTERNAL_THIS,
+            condition_target_answer_option: 4,
           },
-          answerOptions: [
+          answer_options: [
             {
               id: 5,
             },
@@ -201,7 +201,7 @@ describe('QuestionCleaner', () => {
         },
       ];
 
-      const actual = new QuestionCleaner(
+      const actual = new QuestionCleanerDeprecated(
         questions as Question[]
       ).getQuestionsToAdd();
 
@@ -212,19 +212,19 @@ describe('QuestionCleaner', () => {
       const questions = [
         {
           id: 1,
-          answerOptions: [
+          answer_options: [
             {
               id: 1,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 10 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 10,
               },
             },
             {
               id: 2,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 3 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 3,
               },
             },
           ],
@@ -232,10 +232,10 @@ describe('QuestionCleaner', () => {
         {
           id: 2,
           condition: {
-            type: ConditionType.INTERNAL_THIS,
-            targetAnswerOption: { id: 10 },
+            condition_type: ConditionType.INTERNAL_THIS,
+            condition_target_answer_option: 10,
           },
-          answerOptions: [
+          answer_options: [
             {
               id: 3,
             },
@@ -247,10 +247,10 @@ describe('QuestionCleaner', () => {
         {
           id: 3,
           condition: {
-            type: ConditionType.INTERNAL_THIS,
-            targetAnswerOption: { id: 2 },
+            condition_type: ConditionType.INTERNAL_THIS,
+            condition_target_answer_option: 2,
           },
-          answerOptions: [
+          answer_options: [
             {
               id: 5,
             },
@@ -261,26 +261,26 @@ describe('QuestionCleaner', () => {
         },
         {
           id: 4,
-          answerOptions: [
+          answer_options: [
             {
               id: 7,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 5 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 5,
               },
             },
             {
               id: 8,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 6 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 6,
               },
             },
           ],
         },
       ];
 
-      const actual = new QuestionCleaner(
+      const actual = new QuestionCleanerDeprecated(
         questions as Question[]
       ).getQuestionsToAdd();
 
@@ -291,71 +291,71 @@ describe('QuestionCleaner', () => {
       const questions = [
         {
           id: 1,
-          answerOptions: [
+          answer_options: [
             {
               id: 1,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 5 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 5,
               },
             },
             {
               id: 2,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 1 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 1,
               },
             },
           ],
         },
         {
           id: 2,
-          answerOptions: [
+          answer_options: [
             {
               id: 3,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 2 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 2,
               },
             },
             {
               id: 4,
               condition: {
-                type: ConditionType.EXTERNAL,
-                targetAnswerOption: { id: 999 },
+                condition_type: ConditionType.EXTERNAL,
+                condition_target_answer_option: 999,
               },
             },
           ],
         },
       ];
 
-      const actual = new QuestionCleaner(
+      const actual = new QuestionCleanerDeprecated(
         questions as Question[]
       ).getQuestionsToAdd()!;
 
       expect(actual).to.have.length(1);
       expect(actual[0]!.id).to.equal(2);
-      expect(actual[0]!.answerOptions).to.have.length(1);
-      expect(actual[0]!.answerOptions![0]!.id).to.equal(4);
+      expect(actual[0]!.answer_options).to.have.length(1);
+      expect(actual[0]!.answer_options[0]!.id).to.equal(4);
     });
 
-    it('should return correct questions with correct answerOptions filtered out of a complex mix of internal conditions', function () {
+    it('should return correct questions with correct answer_options filtered out of a complex mix of internal conditions', function () {
       const questions = [
         {
           id: 1,
-          answerOptions: [
+          answer_options: [
             {
               id: 1,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 999 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 999,
               },
             },
             {
               id: 2,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 3 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 3,
               },
             },
           ],
@@ -363,10 +363,10 @@ describe('QuestionCleaner', () => {
         {
           id: 2,
           condition: {
-            type: ConditionType.INTERNAL_THIS,
-            targetAnswerOption: { id: 999 },
+            condition_type: ConditionType.INTERNAL_THIS,
+            condition_target_answer_option: 999,
           },
-          answerOptions: [
+          answer_options: [
             {
               id: 3,
             },
@@ -378,10 +378,10 @@ describe('QuestionCleaner', () => {
         {
           id: 3,
           condition: {
-            type: ConditionType.INTERNAL_THIS,
-            targetAnswerOption: { id: 2 },
+            condition_type: ConditionType.INTERNAL_THIS,
+            condition_target_answer_option: 2,
           },
-          answerOptions: [
+          answer_options: [
             {
               id: 5,
             },
@@ -392,52 +392,52 @@ describe('QuestionCleaner', () => {
         },
         {
           id: 4,
-          answerOptions: [
+          answer_options: [
             {
               id: 7,
             },
             {
               id: 8,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 6 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 6,
               },
             },
           ],
         },
         {
           id: 5,
-          answerOptions: [
+          answer_options: [
             {
               id: 9,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 7 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 7,
               },
             },
             {
               id: 10,
               condition: {
-                type: ConditionType.INTERNAL_THIS,
-                targetAnswerOption: { id: 9 },
+                condition_type: ConditionType.INTERNAL_THIS,
+                condition_target_answer_option: 9,
               },
             },
           ],
         },
       ];
 
-      const actual = new QuestionCleaner(
+      const actual = new QuestionCleanerDeprecated(
         questions as Question[]
       ).getQuestionsToAdd()!;
 
       expect(actual).to.have.length(2);
       expect(actual[0]!.id).to.equal(4);
       expect(actual[1]!.id).to.equal(5);
-      expect(actual[0]!.answerOptions).to.have.length(1);
-      expect(actual[0]!.answerOptions![0]!.id).to.equal(7);
-      expect(actual[1]!.answerOptions).to.have.length(2);
-      expect(actual[1]!.answerOptions![0]!.id).to.equal(9);
-      expect(actual[1]!.answerOptions![1]!.id).to.equal(10);
+      expect(actual[0]!.answer_options).to.have.length(1);
+      expect(actual[0]!.answer_options[0]!.id).to.equal(7);
+      expect(actual[1]!.answer_options).to.have.length(2);
+      expect(actual[1]!.answer_options[0]!.id).to.equal(9);
+      expect(actual[1]!.answer_options[1]!.id).to.equal(10);
     });
   });
 });

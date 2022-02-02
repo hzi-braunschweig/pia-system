@@ -22,7 +22,7 @@ import {
 } from '../models/questionnaire';
 import pgPromise from 'pg-promise';
 import { RepositoryOptions } from '@pia/lib-service-core';
-import { QuestionnaireFilter } from '../services/questionnaireFilter';
+import { QuestionnaireFilterDeprecated } from '../services/questionnaireFilterDeprecated';
 import { QuestionnaireInstanceNotFoundError } from '../errors';
 import { EntityRepository, Repository } from 'typeorm';
 import { QuestionnaireInstance } from '../entities/questionnaireInstance';
@@ -200,7 +200,9 @@ export class QuestionnaireInstanceRepository {
       RepositoryHelper.resolveDbResultToQuestionnaireInstanceMap(result).get(
         id
       )!;
-    await QuestionnaireFilter.filterQuestionnaireOfInstance(qInstance);
+    await QuestionnaireFilterDeprecated.filterQuestionnaireOfInstance(
+      qInstance
+    );
     return qInstance;
   }
 
@@ -227,7 +229,7 @@ export class QuestionnaireInstanceRepository {
         ['for_probands', 'for_research_team']
       );
     for (const qi of resultQInstances) {
-      await QuestionnaireFilter.filterQuestionnaireOfInstance(qi);
+      await QuestionnaireFilterDeprecated.filterQuestionnaireOfInstance(qi);
       if (qi.questionnaire.questions.length > 0) {
         actualQInstances.push(qi);
       }
@@ -257,7 +259,7 @@ export class QuestionnaireInstanceRepository {
         }
       });
     for (const qi of resultQInstances) {
-      await QuestionnaireFilter.filterQuestionnaireOfInstance(qi);
+      await QuestionnaireFilterDeprecated.filterQuestionnaireOfInstance(qi);
       if (qi.questionnaire.questions.length > 0) {
         actualQInstances.push(qi);
       }
@@ -280,7 +282,7 @@ export class QuestionnaireInstanceRepository {
         'for_probands'
       );
     for (const qi of resultQInstances) {
-      await QuestionnaireFilter.filterQuestionnaireOfInstance(qi);
+      await QuestionnaireFilterDeprecated.filterQuestionnaireOfInstance(qi);
       if (qi.questionnaire.questions.length > 0) {
         actualQInstances.push({
           ...qi,
@@ -309,7 +311,7 @@ export class QuestionnaireInstanceRepository {
         'for_research_team'
       );
     for (const qi of resultQInstances) {
-      await QuestionnaireFilter.filterQuestionnaireOfInstance(qi);
+      await QuestionnaireFilterDeprecated.filterQuestionnaireOfInstance(qi);
       if (qi.questionnaire.questions.length > 0) {
         actualQInstances.push(qi);
       }
