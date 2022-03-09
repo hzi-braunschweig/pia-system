@@ -950,7 +950,10 @@ export class QuestionProbandComponent
     this.questionSwiper.swiper.allowSlidePrev = true;
     this.questionSwiper.swiper.allowSlideNext = true;
 
-    if (this.shouldLockActualSwipe(questionActiveIndex)[0]) {
+    if (
+      this.displayStatus !== DisplayStatus.OVERVIEW &&
+      this.shouldLockActualSwipe(questionActiveIndex)[0]
+    ) {
       this.questionSwiper.swiper.allowSlidePrev = false;
       this.questionSwiper.swiper.allowSlideNext = false;
       this.showLockWarning(this.shouldLockActualSwipe(questionActiveIndex)[1]);
