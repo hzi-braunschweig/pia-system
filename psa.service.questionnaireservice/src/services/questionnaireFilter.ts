@@ -198,7 +198,7 @@ export class QuestionnaireFilter {
               cycle: this.qInstance.cycle - 1,
             },
           },
-          relations: ['answerOption'],
+          relations: ['answerOption', 'questionnaireInstance'],
           order: {
             answerOption: 'ASC',
             versioning: 'DESC',
