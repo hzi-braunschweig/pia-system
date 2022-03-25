@@ -234,7 +234,7 @@ export class NotificationHandlers {
       [pseudonym]
     );
     NotificationHandlers.logger.info(
-      `Deleted ${deletedQIs.length} questionnaire instances for proband: ${pseudonym} because he was removed`
+      `Deleted ${deletedQIs.length} questionnaire instances for proband ${pseudonym} because he/she was removed`
     );
   }
 
@@ -318,8 +318,17 @@ export class NotificationHandlers {
         return;
       }
 
+      NotificationHandlers.logger.info(
+        'searching for proband with pseudonym ' + instance_new.user_id
+      );
+
       const user: Proband = await ProbandsRepository.findOneOrFail(
-        instance_new.user_id
+        instance_new.user_id,
+        { transaction: t }
+      );
+
+      NotificationHandlers.logger.info(
+        'found proband with pseudonym ' + instance_new.user_id
       );
 
       // Do not create new instances for deactivated or deleted probands
@@ -755,7 +764,7 @@ export class NotificationHandlers {
     onlyLoginDependantOnes = false
   ): Promise<void> {
     await db.tx(async function (t) {
-      // Retrieve questionnaires with newest version only
+      // Retrieve questionnaires with the newest version only
       const questionnaires: QuestionnaireWithConditionType[] =
         await t.manyOrNone(
           `SELECT questionnaires.*, conditions.condition_type

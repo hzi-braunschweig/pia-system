@@ -7,6 +7,7 @@
 import { MessageQueueClient } from '@pia/lib-messagequeue';
 import { config } from '../config';
 import { NotificationHandlers } from './notificationHandlers';
+import { performance } from 'perf_hooks';
 
 interface ProbandMessage {
   pseudonym: string;
@@ -14,18 +15,36 @@ interface ProbandMessage {
 
 export class MessageQueueService extends MessageQueueClient {
   private static async onProbandDeleted(pseudonym: string): Promise<void> {
+    const start = performance.now();
+    console.log('processing proband.deleted...');
     await NotificationHandlers.handleProbandDeleted(pseudonym);
-    console.log('processed proband.deleted');
+    console.log(
+      'processed proband.deleted (took ' +
+        Math.round(performance.now() - start).toString() +
+        ' ms)'
+    );
   }
 
   private static async onProbandCreated(pseudonym: string): Promise<void> {
+    const start = performance.now();
+    console.log('processing proband.created...');
     await NotificationHandlers.handleProbandCreated(pseudonym);
-    console.log('processed proband.created');
+    console.log(
+      'processed proband.created (took ' +
+        Math.round(performance.now() - start).toString() +
+        ' ms)'
+    );
   }
 
   private static async onProbandLoggedIn(pseudonym: string): Promise<void> {
+    const start = performance.now();
+    console.log('processing proband.logged_in...');
     await NotificationHandlers.handleLoginOfProband(pseudonym);
-    console.log('processed proband.logged_in');
+    console.log(
+      'processed proband.logged_in (took ' +
+        Math.round(performance.now() - start).toString() +
+        ' ms)'
+    );
   }
 
   public async connect(): Promise<void> {

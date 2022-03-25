@@ -96,7 +96,7 @@ export class QuestionnaireFilter {
           answer.answerOption!.answerTypeId
         );
       } else if (condition.type === ConditionType.EXTERNAL) {
-        // if getConditionTargetAnswers did not find a target, condition is not full filled
+        // if getConditionTargetAnswers did not find a target, condition is not fulfilled
         return false;
       } else if (this.qInstance.cycle > 1) {
         // if getConditionTargetAnswers did not find a target and it's not the first cycle, condition is not full filled

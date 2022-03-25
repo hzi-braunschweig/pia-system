@@ -4,11 +4,16 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { RepositoryOptions } from '@pia/lib-service-core';
 import { Proband } from '../models/proband';
-import { db } from '../db';
+import { getDbTransactionFromOptionsOrDbConnection } from '../db';
 
 export class ProbandsRepository {
-  public static async findOneOrFail(pseudonym: string): Promise<Proband> {
+  public static async findOneOrFail(
+    pseudonym: string,
+    options?: RepositoryOptions
+  ): Promise<Proband> {
+    const db = getDbTransactionFromOptionsOrDbConnection(options);
     return await db.one<Proband>(
       `SELECT pseudonym,
                 first_logged_in_at,
@@ -30,8 +35,10 @@ export class ProbandsRepository {
 
   public static async updateFirstLoggedInAt(
     pseudonym: string,
-    firstLoggedInAt: Date
+    firstLoggedInAt: Date,
+    options?: RepositoryOptions
   ): Promise<Proband> {
+    const db = getDbTransactionFromOptionsOrDbConnection(options);
     return db.one<Proband>(
       `UPDATE probands SET first_logged_in_at = $(firstLoggedInAt) 
                 WHERE pseudonym = $(pseudonym) 
