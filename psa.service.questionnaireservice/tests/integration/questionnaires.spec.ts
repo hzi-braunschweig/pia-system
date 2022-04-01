@@ -1508,7 +1508,7 @@ describe('/questionnaires', function () {
       expect(result2).to.have.status(StatusCodes.BAD_REQUEST);
     });
 
-    it('should deactivate a questionnaire, return HTTP 200 delete all active or inactive questionnaire instances but keep answered', async function () {
+    it('should deactivate a questionnaire, return HTTP 200 delete all active, inactive or in_progress questionnaire instances but keep answered', async function () {
       const result = await chai
         .request(apiAddress)
         .patch('/ApiTestStudy1/questionnaires/100300/1')
@@ -1520,7 +1520,7 @@ describe('/questionnaires', function () {
       const resultFromDatabse = await db.manyOrNone(
         'SELECT id FROM questionnaire_instances WHERE questionnaire_id=100300'
       );
-      expect(resultFromDatabse).to.deep.equal([{ id: 110300 }]);
+      expect(resultFromDatabse).to.deep.equal([{ id: 140300 }]);
     });
   });
 

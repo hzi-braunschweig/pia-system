@@ -56,7 +56,7 @@ describe('QuestionnaireService', () => {
     sandbox.restore();
   });
 
-  it('should delete all active and inactive questionnaire instances', async () => {
+  it('should delete all active, inactive and in_progress questionnaire instances', async () => {
     // Arrange
     const questionnaireId = 1234;
 
@@ -67,7 +67,7 @@ describe('QuestionnaireService', () => {
     expect(deleteQuestionnaireInstancesMock).to.have.been.calledWith(
       questionnaireId,
       1,
-      ['active', 'inactive']
+      ['active', 'inactive', 'in_progress']
     );
   });
 

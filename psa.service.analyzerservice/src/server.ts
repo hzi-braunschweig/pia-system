@@ -127,6 +127,5 @@ export class Server {
     });
     await client.query('LISTEN table_update');
     await client.query('LISTEN table_insert');
-    await client.query('LISTEN table_delete');
   }
 }

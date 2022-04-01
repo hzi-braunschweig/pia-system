@@ -1,0 +1,38 @@
+- vars:
+    ansible_python_interpreter: /usr/bin/python3
+  tags:
+    - prerequisites
+  block:
+    - name: Create directories for certificates
+      file:
+        path: '{{ pia_ssl_directory }}/{{ item.fullName }}'
+        state: directory
+      with_items: '{{ pia_services }}'
+      when:
+        - (pia_is_qpia and item.qpia) or (pia_is_ipia and item.ipia) or (pia_is_ewpia and item.ewpia)
+
+    - name: Copy ca.cert to services
+      copy:
+        src: '{{ pia_ssl_directory_local }}/ca.cert'
+        dest: '{{ pia_ssl_directory }}/{{ item.fullName }}/ca.cert'
+        mode: '0644'
+      with_items: '{{ pia_services }}'
+      when:
+        - (pia_is_qpia and item.qpia) or (pia_is_ipia and item.ipia) or (pia_is_ewpia and item.ewpia)
+
+    - name: Copy service certificates to PIA hosts
+      copy:
+        src: '{{ pia_ssl_directory_local }}/{{ item.fullName }}/{{ item.name }}.cert'
+        dest: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.cert'
+      with_items: '{{ pia_services }}'
+      when:
+        - (pia_is_qpia and item.qpia) or (pia_is_ipia and item.ipia) or (pia_is_ewpia and item.ewpia)
+
+    - name: Copy service keys to PIA hosts
+      copy:
+        src: '{{ pia_ssl_directory_local }}/{{ item.fullName }}/{{ item.name }}.key'
+        dest: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.key'
+        mode: '0644'
+      with_items: '{{ pia_services }}'
+      when:
+        - (pia_is_qpia and item.qpia) or (pia_is_ipia and item.ipia) or (pia_is_ewpia and item.ewpia)

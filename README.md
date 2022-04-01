@@ -3,6 +3,7 @@
 ![logo](psa.app.web/src/assets/images/pia_logo.png)
 
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+[![DOI](https://zenodo.org/badge/319654384.svg)](https://zenodo.org/badge/latestdoi/319654384)
 
 [**P**rospective Mon**i**toring and Management - **A**pp](https://info-pia.de/) (PIA).
 

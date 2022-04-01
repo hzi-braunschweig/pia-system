@@ -21,7 +21,7 @@ export class QuestionnaireService {
       await QuestionnaireInstanceRepository.deleteQuestionnaireInstancesByQuestionnaireId(
         id,
         version,
-        ['active', 'inactive'],
+        ['active', 'inactive', 'in_progress'],
         { transaction }
       );
       await QuestionnaireRepository.deactivateQuestionnaire(id, version, {

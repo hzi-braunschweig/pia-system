@@ -220,230 +220,25 @@
 # create certificates
 ####################################################################################
 
-- name: Create directory
-  file:
-    path: '{{ pia_ssl_directory }}'
-    state: directory
-  tags:
-    - prerequisites
-
-- name: Create ca.key
-  openssl_privatekey:
-    path: '{{ pia_ssl_directory }}/ca.key'
-  when: pia_is_certificate_master
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-  tags:
-    - prerequisites
-
-- name: Generate the CSR file signed with the private key
-  openssl_csr:
-    basic_constraints: CA:TRUE
-    basic_constraints_critical: true
-    path: '{{ pia_ssl_directory }}/ca.csr'
-    privatekey_path: '{{ pia_ssl_directory }}/ca.key'
-    common_name: 'PIA-CA'
-  when: pia_is_certificate_master
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-  tags:
-    - prerequisites
-
-- name: Sign the CSR file as a CA to turn it into a certificate
-  openssl_certificate:
-    path: '{{ pia_ssl_directory }}/ca.cert'
-    privatekey_path: '{{ pia_ssl_directory }}/ca.key'
-    csr_path: '{{ pia_ssl_directory }}/ca.csr'
-    provider: selfsigned
-  when: pia_is_certificate_master
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-  tags:
-    - prerequisites
-
-- name: Create directory
-  file:
-    path: '{{ pia_ssl_directory }}/{{ item.fullName }}/'
-    state: directory
-  with_items: '{{ pia_services }}'
-  when:
-    - pia_is_certificate_master or (pia_is_qpia and item.qpia) or (pia_is_ipia and item.ipia) or (pia_is_ewpia and item.ewpia)
-  tags:
-    - prerequisites
-
-- name: Generate private key
-  openssl_privatekey:
-    path: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.key'
-    size: 4096
-  with_items: '{{ pia_services }}'
-  when: pia_is_certificate_master
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-  tags:
-    - prerequisites
-
-- name: Generate an OpenSSL Certificate Signing Request with a passphrase protected private key
-  openssl_csr:
-    path: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.csr'
-    privatekey_path: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.key'
-    country_name: '{{ pia_ssl_country_name }}'
-    state_or_province_name: '{{ pia_ssl_state_or_province_name }}'
-    locality_name: '{{ pia_ssl_locality_name }}'
-    organization_name: '{{ pia_ssl_organization_name }}'
-    organizational_unit_name: '{{ pia_ssl_organizational_unit_name }}'
-    common_name: '{{ item.fullName }}'
-    #subject_alt_name: "DNS:localhost,DNS:{{ item.fullName }},IP:{{ survey_IP }}"
-    subject_alt_name: 'DNS:localhost,DNS:{{ item.fullName }}'
-  with_items: '{{ pia_services }}'
-  when: pia_is_certificate_master
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-  tags:
-    - prerequisites
-
-- name: Generate an OpenSSL certificate signed with your own CA certificate
-  openssl_certificate:
-    path: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.cert'
-    csr_path: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.csr'
-    ownca_path: '{{ pia_ssl_directory }}/ca.cert'
-    ownca_privatekey_path: '{{ pia_ssl_directory }}/ca.key'
-    selfsigned_not_after: '+3650d'
-    provider: ownca
-  with_items: '{{ pia_services }}'
-  when: pia_is_certificate_master
-  vars:
-    ansible_python_interpreter: /usr/bin/python3
-  tags:
-    - prerequisites
+- name: Generate certificates
+  include_tasks: generate-certificates.yml
 
 ####################################################################################
-# fetching from certificate master
+# Deploy certificates to hosts
 ####################################################################################
 
-- name: fetch ca.cert from certificate master
-  fetch:
-    src: '{{ pia_ssl_directory }}/ca.cert'
-    dest: '/tmp/shared/'
-  when: pia_is_certificate_master
-  tags:
-    - prerequisites
-
-- name: fetch servcie certificates from certificate master
-  fetch:
-    src: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.cert'
-    dest: '/tmp/shared/'
-  when: pia_is_certificate_master
-  with_items: '{{ pia_services }}'
-  tags:
-    - prerequisites
-
-- name: fetch service keys from certificate master
-  fetch:
-    src: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.key'
-    dest: '/tmp/shared/'
-  when: pia_is_certificate_master
-  with_items: '{{ pia_services }}'
-  tags:
-    - prerequisites
-
-####################################################################################
-# pushing
-####################################################################################
-
-- name: Copy ca.cert to services
-  copy:
-    src: '/tmp/shared/{{ pia_certificate_master }}{{ pia_ssl_directory }}/ca.cert'
-    dest: '{{ pia_ssl_directory }}/{{ item.fullName }}/ca.cert'
-    mode: '0644'
-  with_items: '{{ pia_services }}'
-  when:
-    - (pia_is_qpia and item.qpia) or (pia_is_ipia and item.ipia) or (pia_is_ewpia and item.ewpia)
-  tags:
-    - prerequisites
-
-- name: Copy servcie certificates to services
-  copy:
-    src: '/tmp/shared/{{ pia_certificate_master }}{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.cert'
-    dest: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.cert'
-  with_items: '{{ pia_services }}'
-  when:
-    - (pia_is_qpia and item.qpia) or (pia_is_ipia and item.ipia) or (pia_is_ewpia and item.ewpia)
-  tags:
-    - prerequisites
-
-- name: Copy servcie keys to services
-  copy:
-    src: '/tmp/shared/{{ pia_certificate_master }}{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.key'
-    dest: '{{ pia_ssl_directory }}/{{ item.fullName }}/{{ item.name }}.key'
-    mode: '0644'
-  with_items: '{{ pia_services }}'
-  when:
-    - (pia_is_qpia and item.qpia) or (pia_is_ipia and item.ipia) or (pia_is_ewpia and item.ewpia)
-  tags:
-    - prerequisites
+- name: Deploy certificates
+  include_tasks: deploy-certificates.yml
 
 ####################################################################################
 # generate authkey
 ####################################################################################
 
-- name: Create authKey directory
-  file:
-    path: '{{ pia_auth_key_directory }}'
-    state: directory
-  tags:
-    - prerequisites
+- name: Generate authkey
+  include_tasks: generate-authkey.yml
 
-- name: Generate authKey private
-  command: openssl genrsa -out {{ pia_auth_key_directory }}/private.key 4096
-  args:
-    creates: '{{ pia_auth_key_directory }}/private.key'
-  when: pia_is_certificate_master
-  tags:
-    - prerequisites
-
-- name: Generate authKey public
-  command: openssl rsa -in {{ pia_auth_key_directory }}/private.key -pubout -out {{ pia_auth_key_directory }}/public.pem
-  args:
-    creates: '{{ pia_auth_key_directory }}/public.pem'
-  when: pia_is_certificate_master
-  tags:
-    - prerequisites
-
-- name: Pull authKey private
-  fetch:
-    src: '{{ pia_auth_key_directory }}/private.key'
-    dest: '/tmp/shared/'
-  when: pia_is_certificate_master
-  tags:
-    - prerequisites
-
-- name: Pull authKey public
-  fetch:
-    src: '{{ pia_auth_key_directory }}/public.pem'
-    dest: '/tmp/shared/'
-  when: pia_is_certificate_master
-  tags:
-    - prerequisites
-
-- name: Push authKey private to qpia
-  copy:
-    src: '/tmp/shared/{{ pia_certificate_master }}{{ pia_auth_key_directory }}/private.key'
-    dest: '{{ pia_auth_key_directory }}/private.key'
-    mode: '0600'
-    owner: '1000'
-  when: pia_is_qpia
-  tags:
-    - prerequisites
-
-- name: Push authKey public to qpia, ewpia and ipia
-  copy:
-    src: '/tmp/shared/{{ pia_certificate_master }}{{ pia_auth_key_directory }}/public.pem'
-    dest: '{{ pia_auth_key_directory }}/public.pem'
-    mode: '0600'
-    owner: '1000'
-  when: (pia_is_qpia or pia_is_ipia or pia_is_ewpia)
-  tags:
-    - prerequisites
+- name: Deploy authkey
+  include_tasks: deploy-authkey.yml
 
 ####################################################################################
 # qpia
