@@ -32,6 +32,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { FormControl } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { isSpecificHttpError } from '../../../psa.app.core/models/specificHttpError';
+import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
+import { filter } from 'rxjs/operators';
 
 @Component({
   templateUrl: 'studies.component.html',
@@ -315,6 +317,30 @@ export class StudiesComponent implements OnInit {
       }
       this.router.navigate(['/studies']);
     });
+  }
+
+  public cancelPendingStudyChange(pendingStudyChangeId: number): void {
+    this.dialog
+      .open(DialogYesNoComponent, {
+        data: { content: 'STUDIES.CANCEL_STUDY_CHANGES_CONFIRMATION_QUESTION' },
+      })
+      .afterClosed()
+      .pipe(filter((result) => result === 'yes'))
+      .subscribe(async () => {
+        try {
+          await this.authService.deletePendingStudyChange(pendingStudyChangeId);
+          this.initTable();
+          this.showResultDialog({
+            content: 'STUDIES.CHANGE_COMPLIANCES_REJECTED',
+            isSuccess: true,
+          });
+        } catch (err) {
+          this.showResultDialog({
+            content: this.getErrorMessage(err),
+            isSuccess: false,
+          });
+        }
+      });
   }
 
   showResultDialog(data): void {

@@ -73,7 +73,7 @@ export class PendingDeletionsHandler {
     return pendingDeletionsInteractor
       .deletePendingDeletion(
         request.auth.credentials,
-        request.params['proband_id'] as string
+        request.params['pseudonym'] as string
       )
       .then(() => null)
       .catch((err) =>

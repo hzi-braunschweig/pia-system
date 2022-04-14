@@ -607,7 +607,7 @@
     "SUCCESS_DELETED_PROBAND": "Partecipante {{for_id}} eliminato.",
     "SUCCESS_DELETED_STUDY": "Studio {{for_id}} eliminato.",
     "SUCCESS_DELETED_SAMPLE": "Campione {{for_id}} eliminato.",
-    "DELECTION_REJECTED_PROBAND": "Eliminazione della persona {{for_id}} rifiutata.",
+    "DELETION_REJECTED_PROBAND": "Eliminazione della persona {{for_id}} rifiutata.",
     "DELECTION_REJECTED_STUDY": "Eliminazione degli studi {{for_id}} rifiutata.",
     "DELECTION_REJECTED_SAMPLE": "Eliminazione del campione {{for_id}} rifiutata.",
     "SUCCESS_REQUESTED_PROBAND": "Richiesta di eliminazione della persona {{for_id}} inviata a {{requested_for}}",

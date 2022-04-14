@@ -26,39 +26,52 @@ import {
   createStudy,
 } from '../../../psa.app.core/models/instance.helper.spec';
 import { AlertService } from '../../../_services/alert.service';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Subject } from 'rxjs';
+import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
 import SpyObj = jasmine.SpyObj;
 
 describe('ProbandsPersonalInfoComponent', () => {
   let fixture: MockedComponentFixture;
   let component: ProbandsPersonalInfoComponent;
   let queryParamMap: Map<string, string>;
+  let matDialog: SpyObj<MatDialog>;
   let questionnaireService: SpyObj<QuestionnaireService>;
   let authService: SpyObj<AuthService>;
   let alertService: SpyObj<AlertService>;
   let personalDataService: SpyObj<PersonalDataService>;
   let probandService: SpyObj<ProbandService>;
+  let afterClosedSubject: Subject<string>;
 
   beforeEach(async () => {
     // Provider and Services
     queryParamMap = new Map();
-    questionnaireService = jasmine.createSpyObj(QuestionnaireService, [
+    afterClosedSubject = new Subject();
+    matDialog = jasmine.createSpyObj('MatDialog', ['open']);
+    matDialog.open.and.returnValue({
+      afterClosed: () => afterClosedSubject.asObservable(),
+    } as MatDialogRef<unknown>);
+    questionnaireService = jasmine.createSpyObj('QuestionnaireService', [
       'getStudies',
     ]);
-    authService = jasmine.createSpyObj(AuthService, [
+    authService = jasmine.createSpyObj('AuthService', [
       'getPendingDeletionForProbandId',
       'getPendingComplianceChange',
+      'deletePendingDeletion',
+      'deletePendingComplianceChange',
     ]);
-    personalDataService = jasmine.createSpyObj(PersonalDataService, [
+    personalDataService = jasmine.createSpyObj('PersonalDataService', [
       'getPendingDeletionForProbandId',
       'getPersonalDataAll',
       'getPendingPersonalDataDeletions',
+      'deletePendingDeletion',
     ]);
-    probandService = jasmine.createSpyObj(ProbandService, [
+    probandService = jasmine.createSpyObj('ProbandService', [
       'getProbands',
       'getPendingComplianceChanges',
       'getPendingProbandDeletions',
     ]);
-    alertService = jasmine.createSpyObj(AlertService, ['errorObject']);
+    alertService = jasmine.createSpyObj('AlertService', ['errorObject']);
     alertService.errorObject.and.callFake(console.error);
 
     questionnaireService.getStudies.and.resolveTo({
@@ -78,6 +91,7 @@ describe('ProbandsPersonalInfoComponent', () => {
       .keep(MatInputModule)
       .keep(MatPaginatorModule)
       .keep(MatSortModule)
+      .mock(MatDialog, matDialog)
       .mock(ProbandService, probandService)
       .mock(QuestionnaireService, questionnaireService)
       .mock(AuthService, authService)
@@ -192,5 +206,137 @@ describe('ProbandsPersonalInfoComponent', () => {
       expect(component).toBeDefined();
       expect(alertService.errorObject).not.toHaveBeenCalled();
     });
+  });
+
+  describe('cancelTotalOpposition()', () => {
+    beforeEach(fakeAsync(() => {
+      // Create component
+      fixture = MockRender(ProbandsPersonalInfoComponent);
+      component = fixture.point.componentInstance;
+      tick(); // wait for ngOnInit to finish
+      fixture.detectChanges();
+    }));
+
+    it('should cancel a pending deletion after successful confirmation', fakeAsync(() => {
+      component.cancelTotalOpposition(1, 'TEST-1234');
+      afterClosedSubject.next('yes');
+      tick();
+      expect(authService.deletePendingDeletion).toHaveBeenCalledOnceWith(1);
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'DIALOG.DELETION_REJECTED_PROBAND',
+          values: { for_id: 'TEST-1234' },
+          isSuccess: true,
+        },
+      });
+    }));
+
+    it('should show an error if cancellation fails', fakeAsync(() => {
+      authService.deletePendingDeletion.and.rejectWith('some error occurred');
+      component.cancelTotalOpposition(1, 'TEST-1234');
+      afterClosedSubject.next('yes');
+      tick();
+      expect(authService.deletePendingDeletion).toHaveBeenCalledOnceWith(1);
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'DIALOG.ERROR_DELETE_REJECT',
+          isSuccess: false,
+        },
+      });
+    }));
+  });
+
+  describe('cancelCommunicationBan()', () => {
+    beforeEach(fakeAsync(() => {
+      // Create component
+      fixture = MockRender(ProbandsPersonalInfoComponent);
+      component = fixture.point.componentInstance;
+      tick(); // wait for ngOnInit to finish
+      fixture.detectChanges();
+    }));
+
+    it('should cancel a pending communication ban after successful confirmation', fakeAsync(() => {
+      component.cancelCommunicationBan('TEST-1234');
+      afterClosedSubject.next('yes');
+      tick();
+      expect(
+        personalDataService.deletePendingDeletion
+      ).toHaveBeenCalledOnceWith('TEST-1234');
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'DIALOG.DELETION_REJECTED_PROBAND',
+          values: { for_id: 'TEST-1234' },
+          isSuccess: true,
+        },
+      });
+    }));
+
+    it('should show an error if a cancellation fails', fakeAsync(() => {
+      personalDataService.deletePendingDeletion.and.rejectWith(
+        'some error occurred'
+      );
+      component.cancelCommunicationBan('TEST-1234');
+      afterClosedSubject.next('yes');
+      tick();
+      expect(
+        personalDataService.deletePendingDeletion
+      ).toHaveBeenCalledOnceWith('TEST-1234');
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'DIALOG.ERROR_DELETE_REJECT',
+          isSuccess: false,
+        },
+      });
+    }));
+  });
+
+  describe('cancelPendingComplianceChange()', () => {
+    beforeEach(fakeAsync(() => {
+      // Create component
+      fixture = MockRender(ProbandsPersonalInfoComponent);
+      component = fixture.point.componentInstance;
+      tick(); // wait for ngOnInit to finish
+      fixture.detectChanges();
+    }));
+
+    it('should cancel a pending compliance change after successful confirmation', fakeAsync(() => {
+      component.cancelPendingComplianceChange(1, 'TEST-1234');
+      afterClosedSubject.next('yes');
+      tick();
+      expect(
+        authService.deletePendingComplianceChange
+      ).toHaveBeenCalledOnceWith(1);
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'PROBANDEN.CHANGE_COMPLIANCES_REJECTED',
+          values: { probandUsername: 'TEST-1234' },
+          isSuccess: true,
+        },
+      });
+    }));
+
+    it('should show an error if cancellation fails', fakeAsync(() => {
+      authService.deletePendingComplianceChange.and.rejectWith(
+        'some error occurred'
+      );
+      component.cancelPendingComplianceChange(1, 'TEST-1234');
+      afterClosedSubject.next('yes');
+      tick();
+      expect(
+        authService.deletePendingComplianceChange
+      ).toHaveBeenCalledOnceWith(1);
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'DIALOG.ERROR_COMPLIANCE_REQUEST',
+          isSuccess: false,
+        },
+      });
+    }));
   });
 });

@@ -183,7 +183,7 @@ export class PendingStudyChangesInteractor {
     id: number
   ): Promise<PendingStudyChange> {
     const userRole = decodedToken.role;
-    const userName = decodedToken.username;
+    const userStudies = decodedToken.groups;
 
     if (userRole !== 'Forscher') {
       throw Boom.forbidden(
@@ -196,10 +196,7 @@ export class PendingStudyChangesInteractor {
         console.log(err);
         throw Boom.notFound('The pending compliance change could not be found');
       })) as PendingStudyChange;
-    if (
-      pendingStudyChange.requested_for !== userName &&
-      pendingStudyChange.requested_by !== userName
-    ) {
+    if (!userStudies.includes(pendingStudyChange.study_id)) {
       throw Boom.forbidden(
         'The requester is not allowed to delete this pending study change'
       );

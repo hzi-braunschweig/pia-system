@@ -308,6 +308,7 @@ describe('/pendingDeletions', function () {
 
     it('should return HTTP 200 when a pm tries that is not involved in the deletion', async function () {
       const studyName = 'ApiTestStudie1';
+      const expectedResultsCount = 2;
       const result = await chai
         .request(apiAddress)
         .get(`/studies/${studyName}/pendingdeletions`)
@@ -316,20 +317,9 @@ describe('/pendingDeletions', function () {
         })
         .set(pmHeader3);
       expect(result).to.have.status(StatusCodes.OK);
-      expect(result.body).to.be.an('array').and.to.have.length(1);
-    });
-
-    it('should return HTTP 200 when requesting for wrong study', async function () {
-      const studyName = 'ApiTestStudie1';
-      const result: Response<PendingProbandDeletionDto> = await chai
-        .request(apiAddress)
-        .get(`/studies/${studyName}/pendingdeletions`)
-        .query({
-          type: 'proband',
-        })
-        .set(pmHeader1);
-      expect(result).to.have.status(StatusCodes.OK);
-      expect(result.body).to.be.an('array').and.to.have.length(1);
+      expect(result.body)
+        .to.be.an('array')
+        .and.to.have.length(expectedResultsCount);
     });
 
     it('should return HTTP 403 with the pending deletion for pm who is requested_for', async function () {
@@ -1523,11 +1513,11 @@ describe('/pendingDeletions', function () {
   });
 
   describe('DELETE pendingdeletions/id', function () {
-    before(async function () {
+    beforeEach(async function () {
       await setup();
     });
 
-    after(async function () {
+    afterEach(async function () {
       await cleanup();
     });
 
@@ -1567,11 +1557,11 @@ describe('/pendingDeletions', function () {
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
-    it('should return HTTP 403 wrong pm tries', async function () {
+    it('should return HTTP 403 when pm of another study tries', async function () {
       const result = await chai
         .request(apiAddress)
         .delete('/pendingdeletions/1234560')
-        .set(pmHeader3)
+        .set(pmHeader4)
         .send({});
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -1609,6 +1599,34 @@ describe('/pendingDeletions', function () {
         .request(apiAddress)
         .delete(`/pendingdeletions/${id}`)
         .set(pmHeader2)
+        .send({});
+      expect(result).to.have.status(StatusCodes.NO_CONTENT);
+
+      const proband: Proband = await db.one(
+        'SELECT * FROM probands WHERE pseudonym=$1',
+        ['ApiTestProband2']
+      );
+      const account = (await db.oneOrNone(
+        'SELECT * FROM accounts WHERE username=$1',
+        ['ApiTestProband2']
+      )) as unknown;
+
+      const hasPendingDeletion =
+        (await db.oneOrNone('SELECT * FROM pending_deletions WHERE id=$1', [
+          id,
+        ])) !== null;
+
+      expect(hasPendingDeletion).to.be.false;
+      expect(proband.status).to.equal('active');
+      expect(account).to.be.not.null;
+    });
+
+    it('should return HTTP 204 and cancel deletion of proband data for another pm of the same study', async function () {
+      const id = 1234561;
+      const result: Response<PendingProbandDeletionDto> = await chai
+        .request(apiAddress)
+        .delete(`/pendingdeletions/${id}`)
+        .set(pmHeader3)
         .send({});
       expect(result).to.have.status(StatusCodes.NO_CONTENT);
 

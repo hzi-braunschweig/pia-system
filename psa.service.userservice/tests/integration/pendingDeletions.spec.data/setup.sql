@@ -30,7 +30,7 @@ VALUES ('ApiTestProband1', '', 'Proband'),
 
 INSERT INTO probands (pseudonym, compliance_labresults, compliance_samples, compliance_bloodsamples, study)
 VALUES ('ApiTestProband1', TRUE, TRUE, TRUE, 'ApiTestStudie1'),
-       ('ApiTestProband2', TRUE, TRUE, TRUE, 'ApiTestStudie2'),
+       ('ApiTestProband2', TRUE, TRUE, TRUE, 'ApiTestStudie1'),
        ('ApiTestProband3', TRUE, TRUE, TRUE, 'ApiTestStudie3'),
        ('ApiTestProband4', TRUE, TRUE, TRUE, 'ApiTestStudie1');
 

@@ -140,5 +140,5 @@ module.exports = [
   { prefix: 'RYEY', url: 'https://pia.ship-med.uni-greifswald.de' },
   { prefix: 'ITPH', url: 'https://pia.ship-med.uni-greifswald.de' },
   { prefix: 'JTHB', url: 'https://pia.ship-med.uni-greifswald.de' },
-  { prefix: 'LOCAL', url: 'http://localhost' },
+  { prefix: 'LOCAL', url: 'https://localhost' },
 ];

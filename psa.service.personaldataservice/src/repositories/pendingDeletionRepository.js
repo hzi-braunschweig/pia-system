@@ -15,11 +15,11 @@ class PendingDeletionRepository {
     );
   }
 
-  static async getPendingDeletion(probandId, options) {
+  static async getPendingDeletion(pseudonym, options) {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
     return await db.one(
-      'SELECT * FROM pending_deletions WHERE proband_id=$(probandId)',
-      { probandId }
+      'SELECT * FROM pending_deletions WHERE proband_id=$(pseudonym)',
+      { pseudonym }
     );
   }
 

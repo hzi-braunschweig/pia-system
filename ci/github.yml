@@ -3,7 +3,9 @@ mirror-github:
     name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.ci-git-mirror:$IMAGE_ID
     entrypoint: ['/bin/sh', '-c']
   stage: push
-  needs: []
+  needs:
+    - job: build-docker
+      artifacts: false
   dependencies: []
   script:
     - mkdir ~/.ssh
@@ -19,6 +21,9 @@ mirror-github:
     - git tag -a "$CI_COMMIT_TAG" -m "PIA Release $CI_COMMIT_TAG"
     - echo GITHUB_COMMIT=`git rev-parse HEAD` > github.env
     - git push --tags
+    # https://docs.github.com/en/rest/reference/releases#create-a-release--code-samples
+    # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+    - curl -X POST -u "$GITHUB_AUTH_USER:$GITHUB_AUTH_PERSONAL_ACCESS_TOKEN" https://api.github.com/repos/hzi-braunschweig/pia-system/releases -d "{\"tag_name\":\"$CI_COMMIT_TAG\",\"name\":\"$CI_COMMIT_TAG\",\"body\":\"PIA Release $CI_COMMIT_TAG\"}"
   artifacts:
     paths:
       - pia-system-github/github.env

@@ -607,7 +607,7 @@
     "SUCCESS_DELETED_PROBAND": "Teilnehmer:in {{for_id}} wurde erfolgreich gelöscht.",
     "SUCCESS_DELETED_STUDY": "Die Studie {{for_id}} wurde erfolgreich gelöscht.",
     "SUCCESS_DELETED_SAMPLE": "Die Probe {{for_id}} wurde erfolgreich gelöscht.",
-    "DELECTION_REJECTED_PROBAND": "Löschung der Person{{for_id}} wurde abgelehnt.",
+    "DELETION_REJECTED_PROBAND": "Löschung der Person{{for_id}} wurde abgelehnt.",
     "DELECTION_REJECTED_STUDY": "Löschung der Studie {{for_id}} wurde abgelehnt.",
     "DELECTION_REJECTED_SAMPLE": "Löschung der Probe {{for_id}} wurde abgelehnt.",
     "SUCCESS_REQUESTED_PROBAND": "Die Anforderung zum Löschen der Person {{for_id}} wurde an {{requested_for}} gesendet",

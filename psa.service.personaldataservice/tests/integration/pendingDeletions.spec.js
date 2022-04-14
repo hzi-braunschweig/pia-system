@@ -74,6 +74,12 @@ const pmSession4 = {
   username: 'pm4@example.com',
   groups: ['QTestStudy1'],
 };
+const pmSession5 = {
+  id: 1,
+  role: 'ProbandenManager',
+  username: 'pm5@example.com',
+  groups: ['QTestStudy2'],
+};
 
 const invalidToken = JWT.sign(probandSession1, 'thisIsNotAValidPrivateKey', {
   expiresIn: '24h',
@@ -110,6 +116,10 @@ const pmToken4 = JWT.sign(pmSession4, secretOrPrivateKey, {
   algorithm: 'RS512',
   expiresIn: '24h',
 });
+const pmToken5 = JWT.sign(pmSession5, secretOrPrivateKey, {
+  algorithm: 'RS512',
+  expiresIn: '24h',
+});
 
 const invalidHeader = { authorization: invalidToken };
 const probandHeader1 = { authorization: probandToken1 };
@@ -120,6 +130,7 @@ const pmHeader1 = { authorization: pmToken1 };
 const pmHeader2 = { authorization: pmToken2 };
 const pmHeader3 = { authorization: pmToken3 };
 const pmHeader4 = { authorization: pmToken4 };
+const pmHeader5 = { authorization: pmToken5 };
 
 describe('/pendingDeletions', function () {
   before(async function () {
@@ -543,11 +554,11 @@ describe('/pendingDeletions', function () {
       expect(result, result.text).to.have.status(403);
     });
 
-    it('should return HTTP 403 when a wrong pm tries', async () => {
+    it('should return HTTP 403 when a pm of another study tries', async () => {
       const result = await chai
         .request(apiAddress)
         .delete('/pendingdeletions/QTestProband1')
-        .set(pmHeader3);
+        .set(pmHeader5);
       expect(result, result.text).to.have.status(403);
     });
 
@@ -576,6 +587,26 @@ describe('/pendingDeletions', function () {
         .request(apiAddress)
         .delete('/pendingdeletions/QTestProband1')
         .set(pmHeader2);
+      expect(result, result.text).to.have.status(204);
+      const pendingDeletion = await db.oneOrNone(
+        'SELECT * FROM pending_deletions WHERE id=$1',
+        1234560
+      );
+      expect(pendingDeletion).to.be.null;
+      const personalData = await db.oneOrNone(
+        'SELECT * FROM personal_data WHERE pseudonym=$1',
+        'QTestProband1'
+      );
+      expect(personalData).to.be.be.an('object');
+      expect(personalData.pseudonym).to.equal('QTestProband1');
+      expect(fetchMock.called('setComplianceContact')).to.be.false;
+    });
+
+    it('should return HTTP 204 and cancel deletion of proband data for another pm of same study', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .delete('/pendingdeletions/QTestProband1')
+        .set(pmHeader3);
       expect(result, result.text).to.have.status(204);
       const pendingDeletion = await db.oneOrNone(
         'SELECT * FROM pending_deletions WHERE id=$1',

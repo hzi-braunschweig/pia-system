@@ -37,6 +37,8 @@ import { PersonalData } from '../../../psa.app.core/models/personalData';
 import { PendingPersonalDataDeletion } from '../../../psa.app.core/models/pendingPersonalDataDeletion';
 import { PendingProbandDeletion } from '../../../psa.app.core/models/pendingDeletion';
 import { AccountStatusPipe } from '../../../pipes/account-status.pipe';
+import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
+import { filter } from 'rxjs/operators';
 
 interface TableRow {
   pseudonym: string;
@@ -444,7 +446,7 @@ export class ProbandsPersonalInfoComponent implements OnInit {
               break;
             case 'rejected':
               data = {
-                content: 'DIALOG.DELECTION_REJECTED_PROBAND',
+                content: 'DIALOG.DELETION_REJECTED_PROBAND',
                 values: { for_id: result.deletedId },
                 isSuccess: true,
               };
@@ -579,6 +581,95 @@ export class ProbandsPersonalInfoComponent implements OnInit {
             }
             this.showResultDialog(dataError);
           }
+        }
+      });
+  }
+
+  public cancelTotalOpposition(
+    pendingdeletionId: number,
+    deletedId: string
+  ): void {
+    this.dialog
+      .open(DialogYesNoComponent, {
+        data: {
+          content: 'PROBANDEN.CANCEL_TOTAL_OPPOSITION_CONFIRMATION_QUESTION',
+        },
+      })
+      .afterClosed()
+      .pipe(filter((result) => result === 'yes'))
+      .subscribe(async () => {
+        try {
+          await this.authService.deletePendingDeletion(pendingdeletionId);
+          void this.initTable();
+          this.showResultDialog({
+            content: 'DIALOG.DELETION_REJECTED_PROBAND',
+            values: { for_id: deletedId },
+            isSuccess: true,
+          });
+        } catch (err) {
+          this.showResultDialog({
+            content: 'DIALOG.ERROR_DELETE_REJECT',
+            isSuccess: false,
+          });
+        }
+      });
+  }
+
+  public cancelCommunicationBan(pseudonym: string): void {
+    this.dialog
+      .open(DialogYesNoComponent, {
+        data: {
+          content: 'PROBANDEN.CANCEL_COMMUNICATION_BAN_CONFIRMATION_QUESTION',
+        },
+      })
+      .afterClosed()
+      .pipe(filter((result) => result === 'yes'))
+      .subscribe(async () => {
+        try {
+          await this.personalDataService.deletePendingDeletion(pseudonym);
+          void this.initTable();
+          this.showResultDialog({
+            content: 'DIALOG.DELETION_REJECTED_PROBAND',
+            values: { for_id: pseudonym },
+            isSuccess: true,
+          });
+        } catch (err) {
+          this.showResultDialog({
+            content: 'DIALOG.ERROR_DELETE_REJECT',
+            isSuccess: false,
+          });
+        }
+      });
+  }
+
+  public cancelPendingComplianceChange(
+    pendingComplianceChangeId: number,
+    pseudonym: string
+  ): void {
+    this.dialog
+      .open(DialogYesNoComponent, {
+        data: {
+          content: 'PROBANDEN.CANCEL_COMPLIANCE_CHANGE_CONFIRMATION_QUESTION',
+        },
+      })
+      .afterClosed()
+      .pipe(filter((result) => result === 'yes'))
+      .subscribe(async () => {
+        try {
+          await this.authService.deletePendingComplianceChange(
+            pendingComplianceChangeId
+          );
+          void this.initTable();
+          this.showResultDialog({
+            content: 'PROBANDEN.CHANGE_COMPLIANCES_REJECTED',
+            values: { probandUsername: pseudonym },
+            isSuccess: true,
+          });
+        } catch (err) {
+          this.showResultDialog({
+            content: 'DIALOG.ERROR_COMPLIANCE_REQUEST',
+            isSuccess: false,
+          });
         }
       });
   }

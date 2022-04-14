@@ -607,7 +607,7 @@
     "SUCCESS_DELETED_PROBAND": "Le participant {{for_id}} a été supprimé avec succès.",
     "SUCCESS_DELETED_STUDY": "L'étude {{for_id}} a été supprimée avec succès.",
     "SUCCESS_DELETED_SAMPLE": "L'échantillon {{for_id}} a été supprimé avec succès.",
-    "DELECTION_REJECTED_PROBAND": "La suppression du participant {{for_id}} a été refusée.",
+    "DELETION_REJECTED_PROBAND": "La suppression du participant {{for_id}} a été refusée.",
     "DELECTION_REJECTED_STUDY": "La suppression de l'étude {{for_id}} a été refusée.",
     "DELECTION_REJECTED_SAMPLE": "La suppression de l'échantillon {{for_id}} a été refusée.",
     "SUCCESS_REQUESTED_PROBAND": "La demande de suppression de la personne {{for_id}} a été envoyée à {{requested_for}}.",

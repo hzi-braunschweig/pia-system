@@ -125,14 +125,28 @@
           <button
             mat-icon-button
             (click)="openDialogChangeStudy(row)"
-            [disabled]="
-              row.pendingStudyChange.requested_for != currentUsername ||
-              row.status === 'deleted'
-            "
+            [disabled]="row.status === 'deleted'"
             matTooltip="{{ 'STUDIES.CONFIRM_CHANGES' | translate }}"
-            *ngIf="row.pendingStudyChange && currentRole === 'Forscher'"
+            *ngIf="
+              row.pendingStudyChange &&
+              currentRole === 'Forscher' &&
+              row.pendingStudyChange.requested_for === currentUsername
+            "
           >
             <mat-icon>check_circle_outline</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="cancelPendingStudyChange(row.pendingStudyChange.id)"
+            [disabled]="row.status === 'deleted'"
+            matTooltip="{{ 'STUDIES.CANCEL_STUDY_CHANGES' | translate }}"
+            *ngIf="
+              row.pendingStudyChange &&
+              currentRole === 'Forscher' &&
+              row.pendingStudyChange.requested_for !== currentUsername
+            "
+          >
+            <mat-icon>highlight_off_outlined</mat-icon>
           </button>
         </mat-cell>
       </ng-container>

@@ -600,7 +600,6 @@ export async function cancelPendingDeletion(
   id: number
 ): Promise<void> {
   const userRole = decodedToken.role;
-  const userName = decodedToken.username;
 
   if (!(userRole === 'ProbandenManager' || userRole === 'SysAdmin')) {
     throw Boom.forbidden(
@@ -617,13 +616,7 @@ export async function cancelPendingDeletion(
   }
 
   // Check
-  if (
-    (pendingDeletion.requested_for !== userName &&
-      pendingDeletion.requested_by !== userName) ||
-    (pendingDeletion.type === 'study' && userRole !== 'SysAdmin') ||
-    (pendingDeletion.type === 'sample' && userRole !== 'ProbandenManager') ||
-    (pendingDeletion.type === 'proband' && userRole !== 'ProbandenManager')
-  ) {
+  if (!(await isUserAllowedToCancel(decodedToken, pendingDeletion))) {
     throw Boom.forbidden(
       'The requester is not allowed to delete this pending deletion'
     );
@@ -631,4 +624,38 @@ export async function cancelPendingDeletion(
 
   // Delete
   await pgHelper.cancelPendingDeletion(id);
+}
+
+async function isUserAllowedToCancel(
+  { username, role, groups }: AccessToken,
+  pendingDeletion: PendingDeletionDto
+): Promise<boolean> {
+  switch (pendingDeletion.type) {
+    case 'proband': {
+      if (role !== 'ProbandenManager') {
+        return false;
+      }
+      const proband = await ProbandsRepository.getProband(
+        pendingDeletion.for_id
+      );
+      if (!proband?.study) {
+        throw Boom.notFound('Could not find proband to delete');
+      }
+      return groups.includes(proband.study);
+    }
+    case 'sample': {
+      return (
+        role === 'ProbandenManager' &&
+        (pendingDeletion.requested_for === username ||
+          pendingDeletion.requested_by === username)
+      );
+    }
+    case 'study': {
+      return (
+        role === 'SysAdmin' &&
+        (pendingDeletion.requested_for === username ||
+          pendingDeletion.requested_by === username)
+      );
+    }
+  }
 }

@@ -161,15 +161,31 @@
                 row.pendingProbandDeletion.id
               )
             "
-            [disabled]="
-              row.pendingProbandDeletion.requested_for !== currentUsername
-            "
             matTooltip="{{ 'PROBANDEN.CONFIRM_TOTAL_OPPOSITION' | translate }}"
             *ngIf="
-              currentStudy.has_total_opposition && row.pendingProbandDeletion
+              currentStudy.has_total_opposition &&
+              row.pendingProbandDeletion &&
+              row.pendingProbandDeletion.requested_for === currentUsername
             "
           >
             <mat-icon>check_circle_outline</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="
+              cancelTotalOpposition(
+                row.pendingProbandDeletion.id,
+                row.pendingProbandDeletion.for_id
+              )
+            "
+            matTooltip="{{ 'PROBANDEN.CANCEL_TOTAL_OPPOSITION' | translate }}"
+            *ngIf="
+              currentStudy.has_total_opposition &&
+              row.pendingProbandDeletion &&
+              row.pendingProbandDeletion.requested_for !== currentUsername
+            "
+          >
+            <mat-icon>highlight_off_outlined</mat-icon>
           </button>
 
           <!-- Communication ban buttons -->
@@ -195,16 +211,28 @@
                 row.pendingPersonalDataDeletion.id
               )
             "
-            [disabled]="
-              row.pendingPersonalDataDeletion.requested_for !== currentUsername
-            "
             matTooltip="{{ 'PROBANDEN.CONFIRM_COMMUNICATION_BAN' | translate }}"
             *ngIf="
               currentStudy.has_partial_opposition &&
-              row.pendingPersonalDataDeletion
+              row.pendingPersonalDataDeletion &&
+              row.pendingPersonalDataDeletion.requested_for === currentUsername
             "
           >
             <mat-icon>check_circle_outline</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="
+              cancelCommunicationBan(row.pendingPersonalDataDeletion.proband_id)
+            "
+            matTooltip="{{ 'PROBANDEN.CANCEL_COMMUNICATION_BAN' | translate }}"
+            *ngIf="
+              currentStudy.has_partial_opposition &&
+              row.pendingPersonalDataDeletion &&
+              row.pendingPersonalDataDeletion.requested_for !== currentUsername
+            "
+          >
+            <mat-icon>highlight_off_outlined</mat-icon>
           </button>
 
           <!-- Compliance change buttons -->
@@ -230,16 +258,37 @@
             "
             [disabled]="
               row.proband.status === 'deleted' ||
-              row.proband.accountStatus === 'no_account' ||
-              row.pendingComplianceChange.requested_for !== currentUsername
+              row.proband.accountStatus === 'no_account'
             "
             matTooltip="{{ 'PROBANDEN.CONFIRM_COMPLIANCES' | translate }}"
             *ngIf="
               currentStudy.has_compliance_opposition &&
-              row.pendingComplianceChange
+              row.pendingComplianceChange &&
+              row.pendingComplianceChange.requested_for === currentUsername
             "
           >
             <mat-icon>check_circle_outline</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="
+              cancelPendingComplianceChange(
+                row.pendingComplianceChange.id,
+                row.pendingComplianceChange.proband_id
+              )
+            "
+            [disabled]="
+              row.proband.status === 'deleted' ||
+              row.proband.accountStatus === 'no_account'
+            "
+            matTooltip="{{ 'PROBANDEN.CANCEL_COMPLIANCE_CHANGE' | translate }}"
+            *ngIf="
+              currentStudy.has_compliance_opposition &&
+              row.pendingComplianceChange &&
+              row.pendingComplianceChange.requested_for !== currentUsername
+            "
+          >
+            <mat-icon>highlight_off_outlined</mat-icon>
           </button>
         </mat-cell>
       </ng-container>

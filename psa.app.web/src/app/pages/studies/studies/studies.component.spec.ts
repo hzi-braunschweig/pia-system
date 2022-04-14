@@ -26,6 +26,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { QuestionnaireService } from '../../../psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
 import { createStudy } from '../../../psa.app.core/models/instance.helper.spec';
+import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Subject } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
 import Spy = jasmine.Spy;
 import createSpyObj = jasmine.createSpyObj;
@@ -37,6 +40,8 @@ describe('StudiesComponent', () => {
   let questionnaireService: SpyObj<QuestionnaireService>;
   let authService: SpyObj<AuthService>;
   let snapshot: SpyObj<ActivatedRouteSnapshot>;
+  let matDialog: SpyObj<MatDialog>;
+  let afterClosedSubject: Subject<string>;
 
   beforeEach(async () => {
     // Provider and Services
@@ -51,7 +56,13 @@ describe('StudiesComponent', () => {
     ).get as Spy;
     authService = createSpyObj<AuthService>('AuthService', [
       'getPendingDeletion',
+      'deletePendingStudyChange',
     ]);
+    afterClosedSubject = new Subject();
+    matDialog = jasmine.createSpyObj('MatDialog', ['open']);
+    matDialog.open.and.returnValue({
+      afterClosed: () => afterClosedSubject.asObservable(),
+    } as MatDialogRef<unknown>);
 
     // Build Base Module
     await MockBuilder(StudiesComponent, AppModule)
@@ -63,6 +74,7 @@ describe('StudiesComponent', () => {
       .keep(MatInputModule)
       .keep(MatPaginatorModule)
       .keep(MatSortModule)
+      .mock(MatDialog, matDialog)
       .mock(AuthService, authService);
   });
 
@@ -143,5 +155,49 @@ describe('StudiesComponent', () => {
       expect(component).toBeDefined();
       fixture.detectChanges();
     });
+  });
+
+  describe('cancelPendingStudyChange()', () => {
+    beforeEach(fakeAsync(() => {
+      // Setup mocks before creating component
+      queryParamMapGetter.and.returnValue(convertToParamMap({}));
+
+      // Create component
+      fixture = TestBed.createComponent(StudiesComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges(); // run ngOnInit
+      tick(); // wait for ngOnInit to finish
+    }));
+
+    it('should cancel a pending compliance change after successful confirmation', fakeAsync(() => {
+      component.cancelPendingStudyChange(1);
+      afterClosedSubject.next('yes');
+      tick();
+      expect(authService.deletePendingStudyChange).toHaveBeenCalledOnceWith(1);
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'STUDIES.CHANGE_COMPLIANCES_REJECTED',
+          isSuccess: true,
+        },
+      });
+    }));
+
+    it('should show an error if cancellation fails', fakeAsync(() => {
+      authService.deletePendingStudyChange.and.rejectWith(
+        'some error occurred'
+      );
+      component.cancelPendingStudyChange(1);
+      afterClosedSubject.next('yes');
+      tick();
+      expect(authService.deletePendingStudyChange).toHaveBeenCalledOnceWith(1);
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'ERROR.ERROR_UNKNOWN',
+          isSuccess: false,
+        },
+      });
+    }));
   });
 });

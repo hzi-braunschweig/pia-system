@@ -9,7 +9,7 @@ import { PendingDeletionsHandler } from '../handlers/pendingDeletionsHandler';
 import { ServerRoute } from '@hapi/hapi';
 
 const route: ServerRoute = {
-  path: '/personal/pendingdeletions/{proband_id}',
+  path: '/personal/pendingdeletions/{pseudonym}',
   method: 'DELETE',
   handler: PendingDeletionsHandler.deleteOne,
   options: {
@@ -18,8 +18,8 @@ const route: ServerRoute = {
     tags: ['api'],
     validate: {
       params: Joi.object({
-        proband_id: Joi.string()
-          .description('the proband id for deletion to cancel')
+        pseudonym: Joi.string()
+          .description('the pseudonym for deletion to cancel')
           .required(),
       }).unknown(),
     },

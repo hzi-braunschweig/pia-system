@@ -271,17 +271,17 @@ const pendingComplianceChangesInteractor = (function () {
 
   async function deletePendingComplianceChange(decodedToken, id) {
     const userRole = decodedToken.role;
-    const userName = decodedToken.username;
+    const userStudies = decodedToken.groups;
 
     switch (userRole) {
       case 'ProbandenManager':
         try {
           const pendingComplianceChange =
             await pgHelper.getPendingComplianceChange(id);
-          if (
-            pendingComplianceChange.requested_for !== userName &&
-            pendingComplianceChange.requested_by !== userName
-          ) {
+          const proband = await ProbandsRepository.getProband(
+            pendingComplianceChange.proband_id
+          );
+          if (!proband || !userStudies.includes(proband.study)) {
             return Boom.forbidden(
               'The requester is not allowed to delete this pending compliance change'
             );

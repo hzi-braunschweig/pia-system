@@ -607,7 +607,7 @@
     "SUCCESS_DELETED_PROBAND": "The participant {{for_id}} was deleted successfully.",
     "SUCCESS_DELETED_STUDY": "The study {{for_id}} was deleted successfully.",
     "SUCCESS_DELETED_SAMPLE": "The sample {{for_id}} was deleted successfully.",
-    "DELECTION_REJECTED_PROBAND": "Deletion of the participant {{for_id}} was rejected.",
+    "DELETION_REJECTED_PROBAND": "Deletion of the participant {{for_id}} was rejected.",
     "DELECTION_REJECTED_STUDY": "Deletion of the study {{for_id}} was rejected.",
     "DELECTION_REJECTED_SAMPLE": "Deletion of the SAMPLE {{for_id}} was rejected.",
     "SUCCESS_REQUESTED_PROBAND": "The request to delete the participant {{for_id}} has been sent to {{requested_for}}",

@@ -35,36 +35,43 @@ const forscherSession1 = {
   id: 1,
   role: 'Forscher',
   username: 'forscher1@example.com',
+  groups: ['QTestStudie1', 'QTestStudie2', 'QTestStudie3'],
 };
 const forscherSession2 = {
   id: 1,
   role: 'Forscher',
   username: 'forscher2@example.com',
+  groups: ['QTestStudie1', 'QTestStudie2', 'QTestStudie3'],
 };
 const forscherSession3 = {
   id: 1,
   role: 'Forscher',
   username: 'forscherNoEmail',
+  groups: ['QTestStudie1', 'QTestStudie3'],
 };
 const forscherSession4 = {
   id: 1,
   role: 'Forscher',
   username: 'forscher4@example.com',
+  groups: ['QTestStudie3'],
 };
 const utSession1 = {
   id: 1,
   role: 'Untersuchungsteam',
   username: 'ut1@example.com',
+  groups: ['QTestStudie1', 'QTestStudie3'],
 };
 const sysadminSession1 = {
   id: 1,
   role: 'SysAdmin',
   username: 'sa1@example.com',
+  groups: [],
 };
 const pmSession1 = {
   id: 1,
   role: 'ProbandenManager',
   username: 'pm1@example.com',
+  groups: ['QTestStudie1'],
 };
 
 const invalidToken = JWT.sign(probandSession1, 'thisIsNotAValidPrivateKey', {
@@ -119,6 +126,7 @@ describe('/pendingStudyChanges', function () {
   before(async function () {
     await Server.init();
     suiteSandbox.stub(MailService, 'sendMail').resolves(true);
+    suiteSandbox.stub(config, 'backendApiUrl').value('https://localhost/');
   });
 
   after(async function () {
@@ -680,11 +688,11 @@ describe('/pendingStudyChanges', function () {
       expect(result, result.text).to.have.status(403);
     });
 
-    it('should return HTTP 403 wrong forscher tries', async function () {
+    it('should return HTTP 403 when forscher of another study tries', async function () {
       const result = await chai
         .request(apiAddress)
         .delete('/pendingstudychanges/1234560')
-        .set(forscherHeader3)
+        .set(forscherHeader4)
         .send({});
       expect(result, result.text).to.have.status(403);
     });
@@ -725,6 +733,37 @@ describe('/pendingStudyChanges', function () {
         .request(apiAddress)
         .delete('/pendingstudychanges/1234560')
         .set(forscherHeader2)
+        .send({});
+      expect(result, result.text).to.have.status(200);
+
+      const study = await db.one('SELECT * FROM studies WHERE name=$1', [
+        'QTestStudie1',
+      ]);
+      const pending_study_change = await db.oneOrNone(
+        'SELECT * FROM pending_study_changes WHERE id=$1',
+        [1234560]
+      );
+
+      expect(pending_study_change).to.equal(null);
+
+      expect(study.description).to.equal('QTestStudie1 Beschreibung');
+      expect(study.has_rna_samples).to.equal(true);
+      expect(study.sample_prefix).to.equal('ZIFCO');
+      expect(study.sample_suffix_length).to.equal(10);
+      expect(study.has_answers_notify_feature).to.equal(false);
+      expect(study.has_answers_notify_feature_by_mail).to.equal(false);
+      expect(study.has_four_eyes_opposition).to.equal(true);
+      expect(study.has_partial_opposition).to.equal(true);
+      expect(study.has_total_opposition).to.equal(true);
+      expect(study.has_compliance_opposition).to.equal(true);
+      expect(study.has_logging_opt_in).to.equal(false);
+    });
+
+    it('should return HTTP 200 and cancel changing of study data for another forscher of same study', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .delete('/pendingstudychanges/1234560')
+        .set(forscherHeader3)
         .send({});
       expect(result, result.text).to.have.status(200);
 

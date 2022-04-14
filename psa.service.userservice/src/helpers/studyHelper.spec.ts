@@ -13,7 +13,7 @@ const sandbox = sinon.createSandbox();
 
 describe('StudyHelper', function () {
   before(() => {
-    sandbox.stub(config, 'backendApiUrl').value('http://localhost/');
+    sandbox.stub(config, 'backendApiUrl').value('https://localhost/');
   });
   after(() => {
     sandbox.restore();

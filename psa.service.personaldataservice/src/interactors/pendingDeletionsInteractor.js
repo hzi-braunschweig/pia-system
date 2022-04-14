@@ -161,33 +161,28 @@ class PendingDeletionsInteractor {
   /**
    * Deletes a pending deletion and cancels the deletion request
    * @param {AccessToken} decodedToken the jwt of the request
-   * @param {string} probandId the id of the user to delete
+   * @param {string} pseudonym the id of the user to delete
    * @returns object promise a promise that will be resolved in case of success or rejected otherwise
    */
-  static async deletePendingDeletion(decodedToken, probandId) {
+  static async deletePendingDeletion(decodedToken, pseudonym) {
     const userRole = decodedToken.role;
-    const userName = decodedToken.username;
     const studies = decodedToken.groups;
 
     if (userRole !== 'ProbandenManager') {
       throw Boom.forbidden('Wrong role for this command');
     }
     const pendingDeletion = await pendingDeletionRepository
-      .getPendingDeletion(probandId)
+      .getPendingDeletion(pseudonym)
       .catch((err) => {
         console.error(err);
         throw Boom.notFound('The pending deletion was not found');
       });
-    if (
-      (pendingDeletion.requested_for !== userName &&
-        pendingDeletion.requested_by !== userName) ||
-      !studies.includes(pendingDeletion.study)
-    ) {
+    if (!studies.includes(pendingDeletion.study)) {
       throw Boom.forbidden(
         'The requester is not allowed to delete this pending deletion'
       );
     }
-    await PendingDeletionService.deletePendingDeletion(probandId);
+    await PendingDeletionService.deletePendingDeletion(pseudonym);
   }
 }
 

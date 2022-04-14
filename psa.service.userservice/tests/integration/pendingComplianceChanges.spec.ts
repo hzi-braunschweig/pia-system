@@ -754,11 +754,11 @@ describe('/pendingComplianceChanges', function () {
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
-    it('should return HTTP 403 wrong pm tries', async function () {
+    it('should return HTTP 403 pm of another study tries', async function () {
       const result = await chai
         .request(apiAddress)
         .delete('/pendingcompliancechanges/1234560')
-        .set(pmHeader3)
+        .set(pmHeader4)
         .send({});
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -807,6 +807,44 @@ describe('/pendingComplianceChanges', function () {
         .request(apiAddress)
         .delete(`/pendingcompliancechanges/${id}`)
         .set(pmHeader2)
+        .send({});
+      const response = result.body as PendingComplianceChange;
+
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(response.requested_by).to.equal('pm1@apitest.de');
+      expect(response.requested_for).to.equal('pm2@apitest.de');
+      expect(response.proband_id).to.equal('ApiTestProband1');
+
+      expect(response.compliance_labresults_to).to.equal(false);
+      expect(response.compliance_samples_to).to.equal(false);
+      expect(response.compliance_bloodsamples_to).to.equal(true);
+
+      expect(response.compliance_labresults_from).to.equal(true);
+      expect(response.compliance_samples_from).to.equal(true);
+      expect(response.compliance_bloodsamples_from).to.equal(true);
+
+      const proband: ProbandCompliance = await db.one(
+        'SELECT * FROM probands WHERE pseudonym=$1',
+        ['ApiTestProband1']
+      );
+      const hasPendingComplianceChange =
+        (await db.oneOrNone(
+          'SELECT * FROM pending_compliance_changes WHERE id=$1',
+          [id]
+        )) !== null;
+
+      expect(hasPendingComplianceChange).to.be.false;
+      expect(proband.compliance_labresults).to.equal(true);
+      expect(proband.compliance_samples).to.equal(true);
+      expect(proband.compliance_bloodsamples).to.equal(true);
+    });
+
+    it('should return HTTP 200 and cancel changing of proband compliances for another pm of the same study', async function () {
+      const id = 1234560;
+      const result = await chai
+        .request(apiAddress)
+        .delete(`/pendingcompliancechanges/${id}`)
+        .set(pmHeader3)
         .send({});
       const response = result.body as PendingComplianceChange;
 
