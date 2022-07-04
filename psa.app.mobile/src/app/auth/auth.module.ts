@@ -15,8 +15,8 @@ import { ChangePasswordPage } from './change-password/change-password.page';
 import { AuthRoutingModule } from './auth-routing.module';
 import { SharedModule } from '../shared/shared.module';
 import { InputPasswordComponent } from './input-password/input-password.component';
-import { Market } from '@ionic-native/market/ngx';
-import { AppVersion } from '@ionic-native/app-version/ngx';
+import { Market } from '@awesome-cordova-plugins/market/ngx';
+import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { LoginUsernameComponent } from './login-username/login-username.component';
 import { LoginPasswordLegacyComponent } from './login-password-legacy/login-password-legacy.component';
 

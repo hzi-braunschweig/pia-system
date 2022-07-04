@@ -71,6 +71,8 @@ export function createProbandNew(
     complianceContact: false,
     examinationWave: 0,
     studyCenter: '',
+    deactivatedAt: null,
+    deletedAt: null,
     ...overwrite,
   };
 }

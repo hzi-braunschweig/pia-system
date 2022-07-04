@@ -6,8 +6,8 @@
 
 import { Component, forwardRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { Camera, CameraOptions } from '@ionic-native/camera/ngx';
-import { Chooser, ChooserResult } from '@ionic-native/chooser/ngx';
+import { Camera, CameraOptions } from '@awesome-cordova-plugins/camera/ngx';
+import { Chooser, ChooserResult } from '@awesome-cordova-plugins/chooser/ngx';
 import { AbstractControlValueAccessor } from '../../shared/components/abstract-control-value-accessor/abstract-control-value-accessor';
 import { FormControlValue } from '../questionnaire-form/questionnaire-form.service';
 

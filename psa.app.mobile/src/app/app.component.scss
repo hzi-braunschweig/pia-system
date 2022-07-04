@@ -126,3 +126,18 @@ ion-item.selected {
   font-size: 1.2em;
   color: var(--ion-color-dark-tint);
 }
+
+/* Show ion-datetime always on white background (iOS fix) */
+ion-datetime {
+  --background: #fff;
+}
+
+ion-item[fill='filled'] {
+  --background: var(--ion-color-primary-light);
+  --border-radius: 5px 5px 0 0;
+
+  &.pia-item-input-disabled {
+    --background: var(--ion-color-light-shade);
+    --border-radius: 5px 5px 0 0;
+  }
+}

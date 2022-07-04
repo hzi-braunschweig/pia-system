@@ -30,7 +30,6 @@ import {
 } from '../../errors';
 import { getRepository } from 'typeorm';
 import { Proband } from '../../entities/proband';
-import { authserviceClient } from '../../clients/authserviceClient';
 import { ProbandStatus } from '../../models/probandStatus';
 import { ProbandsRepository } from '../../repositories/probandsRepository';
 
@@ -193,17 +192,13 @@ export class InternalProbandsInteractor {
       isProbandComplianceContactPatch(attributes) &&
       !attributes.complianceContact
     ) {
-      await authserviceClient.deleteAccount(pseudonym);
-      await messageQueueService.sendProbandDeactivated(pseudonym);
-      await repo.update(proband.pseudonym, {
-        complianceContact: false,
-        status: ProbandStatus.DEACTIVATED,
-      });
+      await ProbandService.revokeComplianceContact(pseudonym);
     } else if (
       isProbandStatusPatch(attributes) &&
       attributes.status === ProbandStatus.DEACTIVATED
     ) {
       proband.status = ProbandStatus.DEACTIVATED;
+      proband.deactivatedAt = new Date();
       await repo.save(proband);
       await messageQueueService.sendProbandDeactivated(pseudonym);
     }

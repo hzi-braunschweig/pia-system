@@ -39,6 +39,8 @@ import { PendingProbandDeletion } from '../../../psa.app.core/models/pendingDele
 import { AccountStatusPipe } from '../../../pipes/account-status.pipe';
 import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
 import { filter } from 'rxjs/operators';
+import { TranslateService } from '@ngx-translate/core';
+import { DatePipe } from '@angular/common';
 
 interface TableRow {
   pseudonym: string;
@@ -95,7 +97,9 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     private router: Router,
     private dialog: MatDialog,
     private activatedRoute: ActivatedRoute,
-    private accountStatusPipe: AccountStatusPipe
+    private accountStatusPipe: AccountStatusPipe,
+    private translate: TranslateService,
+    private datePipe: DatePipe
   ) {
     const probandIdToDelete =
       this.activatedRoute.snapshot.queryParamMap.get('probandIdToDelete');
@@ -359,6 +363,23 @@ export class ProbandsPersonalInfoComponent implements OnInit {
         }
       }
     });
+  }
+
+  public getTranslatedAccountStatusTooltipText(proband: ProbandNew): string {
+    const dateFormat = 'dd.MM.yyyy';
+    if (proband.deactivatedAt) {
+      return this.translate.instant('PROBANDEN.ACCOUNT_STATUS_DEACTIVATED_AT', {
+        deactivatedAt: this.datePipe.transform(
+          proband.deactivatedAt,
+          dateFormat
+        ),
+      });
+    } else if (proband.deletedAt) {
+      return this.translate.instant('PROBANDEN.ACCOUNT_STATUS_DELETED_AT', {
+        deletedAt: this.datePipe.transform(proband.deletedAt, dateFormat),
+      });
+    }
+    return null;
   }
 
   private async doDeletion(

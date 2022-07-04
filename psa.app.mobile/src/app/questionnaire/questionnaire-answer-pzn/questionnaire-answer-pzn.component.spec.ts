@@ -6,8 +6,8 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
-import { Keyboard } from '@ionic-native/keyboard/ngx';
-import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
+import { Keyboard } from '@awesome-cordova-plugins/keyboard/ngx';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MockPipe } from 'ng-mocks';
 import SpyObj = jasmine.SpyObj;

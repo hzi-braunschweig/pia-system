@@ -19,20 +19,20 @@ import {
   HttpClientModule,
 } from '@angular/common/http';
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
-import { SplashScreen } from '@ionic-native/splash-screen/ngx';
-import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
+import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { AppVersion } from '@ionic-native/app-version/ngx';
-import { FileOpener } from '@ionic-native/file-opener/ngx';
-import { File } from '@ionic-native/file/ngx';
-import { Keyboard } from '@ionic-native/keyboard/ngx';
-import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
-import { Camera } from '@ionic-native/camera/ngx';
-import { Chooser } from '@ionic-native/chooser/ngx';
+import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
+import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
+import { File } from '@awesome-cordova-plugins/file/ngx';
+import { Keyboard } from '@awesome-cordova-plugins/keyboard/ngx';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { Camera } from '@awesome-cordova-plugins/camera/ngx';
+import { Chooser } from '@awesome-cordova-plugins/chooser/ngx';
 import { MarkdownModule } from 'ngx-markdown';
-import { FirebaseX } from '@ionic-native/firebase-x/ngx';
-import { Network } from '@ionic-native/network/ngx';
+import { FirebaseX } from '@awesome-cordova-plugins/firebase-x/ngx';
+import { Network } from '@awesome-cordova-plugins/network/ngx';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -51,7 +51,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
 
 @NgModule({
   declarations: [AppComponent],
-  entryComponents: [],
   imports: [
     BrowserModule,
     HttpClientModule,

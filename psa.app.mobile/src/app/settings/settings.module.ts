@@ -14,6 +14,7 @@ import { SettingsPageRoutingModule } from './settings-routing.module';
 import { SettingsPage } from './settings.page';
 import { SharedModule } from '../shared/shared.module';
 import { LicenseListPage } from './license-list/license-list.page';
+import { AccountModule } from '../account/account.module';
 
 @NgModule({
   imports: [
@@ -23,6 +24,7 @@ import { LicenseListPage } from './license-list/license-list.page';
     TranslateModule.forChild(),
     SettingsPageRoutingModule,
     SharedModule,
+    AccountModule,
   ],
   declarations: [SettingsPage, LicenseListPage],
 })

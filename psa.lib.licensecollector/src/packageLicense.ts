@@ -28,6 +28,10 @@ export class PackageLicense {
     'DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE',
     // CC-BY-4.0
     'Attribution 4.0 International',
+    // CC0-1.0
+    'CC0 1.0 Universal',
+    // MPL-2.0
+    'Mozilla Public License, version 2.0',
   ];
 
   public constructor(

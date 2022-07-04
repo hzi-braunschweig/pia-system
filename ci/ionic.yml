@@ -8,7 +8,7 @@ build-ionic-ios-store:
       artifacts: false
   script:
     - cd psa.app.mobile
-    - ionic package build ios app-store --native-config="iOS-Store" --environment="pia_build_node_14" --signing-certificate="PIA_Store" --commit="$CI_COMMIT_SHA"
+    - ionic-cloud build ios app-store --app-id="5be00d76" --native-config="iOS-Store" --environment="pia_build_node_14" --signing-cert="PIA_Store" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
       when: never
@@ -33,7 +33,8 @@ build-and-push-ionic-ios-store:
       artifacts: false
   script:
     - cd psa.app.mobile
-    - ionic package build ios app-store --native-config="iOS-Store" --environment="pia_build_node_14" --signing-certificate="PIA_Store" --commit="$CI_COMMIT_SHA" --destination="Apple App Store"
+    - BUILD_ID=$(ionic-cloud build ios app-store --app-id="5be00d76" --native-config="iOS-Store" --environment="pia_build_node_14" --signing-cert="PIA_Store" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}" --json  | jq -r '.buildId')
+    - ionic-cloud deploy ios --app-id="5be00d76" --build-id=$BUILD_ID --destination="Apple App Store" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
       when: never
@@ -58,7 +59,7 @@ build-ionic-android-store:
       artifacts: false
   script:
     - cd psa.app.mobile
-    - ionic package build android release --native-config="Android-Store" --build-stack="Linux - 2021.09" --signing-certificate="PIA_Android" --commit="$CI_COMMIT_SHA"
+    - ionic-cloud build android release --app-id="5be00d76" --native-config="Android-Store" --environment="pia_build_node_14" --build-stack="Linux - 2021.09" --signing-cert="PIA_Android" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
       when: never
@@ -83,7 +84,8 @@ build-and-push-ionic-android-store:
       artifacts: false
   script:
     - cd psa.app.mobile
-    - ionic package build android release --native-config="Android-Store" --build-stack="Linux - 2021.09" --signing-certificate="PIA_Android" --commit="$CI_COMMIT_SHA" --destination="Google Play Store, Produktion"
+    - BUILD_ID=$(ionic-cloud build android release --app-id="5be00d76" --native-config="Android-Store" --environment="pia_build_node_14" --build-stack="Linux - 2021.09" --signing-cert="PIA_Android" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}" --json  | jq -r '.buildId')
+    - ionic-cloud deploy android --app-id="5be00d76" --build-id=$BUILD_ID --destination="Google Play Store, Produktion" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
       when: never

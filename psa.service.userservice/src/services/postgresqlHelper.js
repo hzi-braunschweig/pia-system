@@ -161,7 +161,8 @@ const postgresqlHelper = (function () {
                 study_center=NULL,
                 examination_wave=NULL,
                 status='deleted',
-                logging_active=NULL
+                logging_active=NULL,
+                deleted_at=NOW()
             WHERE pseudonym = $(pseudonym)`,
         { pseudonym }
       );

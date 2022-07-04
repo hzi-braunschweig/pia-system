@@ -12,7 +12,7 @@ import {
 } from '../../models/user';
 import { PlannedProband } from '../../models/plannedProband';
 import { UserSettings } from '../../models/user_settings';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { map, pluck } from 'rxjs/operators';
 import {
   PendingPartialDeletionRequest,
@@ -29,6 +29,12 @@ import {
   PendingProbandDeletion,
   PendingSampleDeletion,
 } from '../../models/pendingDeletion';
+
+/**
+ * Probands may choose to delete their account and all health data (full) or
+ * to delete their account and contact data but leave their health data.
+ */
+export type ProbandAccountDeletionType = 'full' | 'contact';
 
 @Injectable()
 export class AuthService {
@@ -379,6 +385,18 @@ export class AuthService {
   deletePendingStudyChange(pendingStudyChangeId: number): Promise<void> {
     return this.http
       .delete<void>(this.apiUrl + 'pendingstudychanges/' + pendingStudyChangeId)
+      .toPromise();
+  }
+
+  public deleteProbandAccount(
+    pseudonym: string,
+    deletionType: ProbandAccountDeletionType
+  ): Promise<void> {
+    const params = new HttpParams().set('deletionType', deletionType);
+    return this.http
+      .delete<void>(`${this.apiUrl}probands/${pseudonym}/account`, {
+        params,
+      })
       .toPromise();
   }
 

@@ -6,8 +6,8 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
-import { Camera } from '@ionic-native/camera/ngx';
-import { Chooser } from '@ionic-native/chooser/ngx';
+import { Camera } from '@awesome-cordova-plugins/camera/ngx';
+import { Chooser } from '@awesome-cordova-plugins/chooser/ngx';
 import SpyObj = jasmine.SpyObj;
 
 import { QuestionnaireAnswerImageComponent } from './questionnaire-answer-image.component';

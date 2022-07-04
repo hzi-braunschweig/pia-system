@@ -24,11 +24,10 @@
   <ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
     <ion-label class="ion-text-wrap">{{ label }}</ion-label>
   </ion-item>
-  <ion-item lines="inset">
+  <ion-item fill="filled" mode="md" class="ion-margin">
     <ion-input
       type="text"
       formControlName="sampleId1"
-      [placeholder]="label"
       [disabled]="form.get('sampleId1').disabled"
       [name]="name"
       (keyup.enter)="hideKeyboard($event)"
@@ -49,7 +48,9 @@
   </app-questionnaire-answer-error>
 
   <ion-item
-    lines="none"
+    fill="filled"
+    mode="md"
+    class="ion-margin"
     *ngIf="putSampleError === 'sample_id_1_does_not_exist'"
   >
     <ion-text color="danger" class="ion-margin-top">
@@ -70,11 +71,10 @@
   </ion-button>
 
   <span *ngIf="hasRnaSamples">
-    <ion-item lines="inset">
+    <ion-item fill="filled" mode="md" class="ion-margin">
       <ion-input
         type="text"
         formControlName="sampleId2"
-        [placeholder]="label"
         [disabled]="form.get('sampleId2').disabled"
         [name]="name"
         (keyup.enter)="hideKeyboard($event)"

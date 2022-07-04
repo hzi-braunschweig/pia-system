@@ -5,8 +5,7 @@
   "license": "AGPL-3.0-or-later",
   "main": "index.js",
   "files": [
-    "index.js",
-    "js-only.js"
+    "index.js"
   ],
   "dependencies": {
     "@typescript-eslint/parser": "^5.7.0",

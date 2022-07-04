@@ -12,7 +12,7 @@ import { AuthModule } from '../auth.module';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { AlertController, LoadingController, Platform } from '@ionic/angular';
-import { AppVersion } from '@ionic-native/app-version/ngx';
+import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
 import { createLoginResponse } from '../auth.model.spec';
 import { AuthClientService } from '../auth-client.service';

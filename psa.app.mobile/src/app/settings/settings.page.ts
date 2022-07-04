@@ -5,10 +5,17 @@
  */
 
 import { Component } from '@angular/core';
+import { DeleteAccountModalService } from '../account/services/delete-account-modal.service';
 
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
 })
-export class SettingsPage {}
+export class SettingsPage {
+  constructor(private deleteAccountModalService: DeleteAccountModalService) {}
+
+  async openDeleteAccountModal(): Promise<void> {
+    await this.deleteAccountModalService.showDeleteAccountModal();
+  }
+}

@@ -144,9 +144,9 @@ export class QuestionnaireClientService {
   deleteQuestionnaireInstanceQueue(
     username: string,
     instanceId: number
-  ): Promise<QuestionnaireInstanceQueue> {
+  ): Promise<void> {
     return this.http
-      .delete<QuestionnaireInstanceQueue>(
+      .delete<void>(
         this.getApiUrl() + 'probands/' + username + '/queues/' + instanceId
       )
       .toPromise();

@@ -4,14 +4,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import chai, { expect } from 'chai';
+import { expect } from 'chai';
 import sinon from 'sinon';
-import sinonChai from 'sinon-chai';
 
 import { asyncPassErrors } from './asyncWithErrors';
 import { CommandOptions } from './cli';
-
-chai.use(sinonChai);
 
 describe('asyncWithErrors', () => {
   let sandbox: sinon.SinonSandbox;
@@ -31,7 +28,7 @@ describe('asyncWithErrors', () => {
       throw new Error('license is missing');
     })('root', createCommandOptions());
 
-    expect(exitStub).to.have.been.calledWith(1);
+    expect(exitStub.calledWith(1)).to.be.true;
   });
 
   function createCommandOptions(): CommandOptions {

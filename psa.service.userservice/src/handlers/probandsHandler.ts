@@ -13,6 +13,7 @@ import {
 } from '../models/proband';
 import { config } from '../config';
 import Boom from '@hapi/boom';
+import { ProbandAccountDeletionType } from '../services/probandService';
 
 interface AuthRequestFromExternal {
   apiKey: string;
@@ -71,5 +72,19 @@ export class ProbandsHandler {
 
     await ProbandsInteractor.createIDSProband(studyName, payload.ids, token);
     return null;
+  };
+
+  public static deleteAccount: Lifecycle.Method = async (request) => {
+    const pseudonym = request.params['pseudonym'] as string;
+    const deletionType = request.query[
+      'deletionType'
+    ] as ProbandAccountDeletionType;
+    const token = request.auth.credentials as AccessToken;
+
+    return await ProbandsInteractor.deleteAccount(
+      pseudonym,
+      deletionType,
+      token
+    );
   };
 }

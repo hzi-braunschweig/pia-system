@@ -79,7 +79,7 @@
     "TOAST_MSG_PASSWORD_LENGTH_ERROR": "Passwort muss mindestens {{len}} Zeichen lang sein."
   },
   "COMPLIANCE": {
-    "TITLE": "Einwilligung",
+    "TITLE": "Einwilligungen",
     "FIRSTNAME": "Vorname",
     "LASTNAME": "Nachname",
     "LOCATION": "Ort",

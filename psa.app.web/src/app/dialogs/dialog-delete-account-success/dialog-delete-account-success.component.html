@@ -1,0 +1,25 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<h1 mat-dialog-title>
+  {{ 'SETTINGS.DELETE_ACCOUNT_AND_PERSONAL_DATA' | translate }}
+</h1>
+<div mat-dialog-content>
+  <p data-unit="success-text" data-e2e="delete-account-success-text">
+    {{ 'SETTINGS.ACCOUNT_DELETION_SUCCESS' | translate }}
+  </p>
+</div>
+<div mat-dialog-actions>
+  <button
+    mat-button
+    mat-dialog-close="agree"
+    routerLink="/login"
+    data-e2e="back-to-login-button"
+    cdkFocusInitial
+  >
+    {{ 'SETTINGS.BACK_TO_LOGIN' | translate }}
+  </button>
+</div>

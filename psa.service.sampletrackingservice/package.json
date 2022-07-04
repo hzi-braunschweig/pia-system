@@ -8,8 +8,7 @@
     "start": "node --insecure-http-parser src/index.js",
     "test.int": "DOTENV_CONFIG_PATH=tests/test.env nyc mocha -r '../psa.utils.scripts/test.int/setup.hook' 'tests/integration/**/*.spec.{js,ts}' --timeout 30000",
     "test.unit": "IGNORE_MISSING_CONFIG=1 nyc mocha 'src/**/*.spec.{js,ts}' --timeout 5000",
-    "lint": "eslint . --ext .ts",
-    "postlint": "eslint . --ext .js -c .eslintrc.js.json --no-eslintrc # ONLY_FOR_JS: remove script after complete migration to ts"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@hapi/boom": "^9.1.4",

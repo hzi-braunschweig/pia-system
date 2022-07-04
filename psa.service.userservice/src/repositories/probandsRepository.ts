@@ -37,7 +37,9 @@ export class ProbandsRepository {
                 needs_material          AS "needsMaterial",
                 study_center            AS "studyCenter",
                 examination_wave        AS "examinationWave",
-                is_test_proband         AS "isTestProband"
+                is_test_proband         AS "isTestProband",
+                deactivated_at          AS "deactivatedAt",
+                deleted_at              AS "deletedAt"
          FROM probands
          LEFT OUTER JOIN accounts as a ON a.username = pseudonym AND a.role = 'Proband'
          WHERE study = $(studyName)`,

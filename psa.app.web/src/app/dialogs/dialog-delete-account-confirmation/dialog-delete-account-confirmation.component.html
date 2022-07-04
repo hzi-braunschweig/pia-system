@@ -1,0 +1,31 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<h1 mat-dialog-title>
+  {{ 'SETTINGS.DELETE_ACCOUNT_AND_PERSONAL_DATA' | translate }}
+</h1>
+<div mat-dialog-content>
+  <p *ngIf="!keepHealthData" data-unit="confirmation-text-all-data">
+    {{ 'SETTINGS.CONFIRM_ACCOUNT_DELETION_AND_ALL_DATA' | translate }}
+  </p>
+  <p *ngIf="keepHealthData" data-unit="confirmation-text">
+    {{ 'SETTINGS.CONFIRM_ACCOUNT_DELETION_KEEP_HEALTH_DATA' | translate }}
+  </p>
+</div>
+<div mat-dialog-actions>
+  <button
+    mat-button
+    mat-dialog-close="delete"
+    data-e2e="delete-account-confirm-button"
+    color="warn"
+    cdkFocusInitial
+  >
+    {{ 'SETTINGS.DELETE_NOW' | translate }}
+  </button>
+  <button mat-button mat-dialog-close>
+    {{ 'SETTINGS.CANCEL' | translate }}
+  </button>
+</div>

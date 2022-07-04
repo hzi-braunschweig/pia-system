@@ -448,6 +448,12 @@
   shell: "cat /root/.env | grep '^{{ item }}' |  sed -r 's/^{{ item }}=//'"
   with_items:
     - IPIA_PASSWORD
+    - MODYS_BASE_URL
+    - MODYS_USERNAME
+    - MODYS_PASSWORD
+    - MODYS_STUDY
+    - MODYS_IDENTIFIER_TYPE_ID
+    - MODYS_REQUEST_CONCURRENCY
   register: ipia_environment_vars
   tags:
     - ansible-tower

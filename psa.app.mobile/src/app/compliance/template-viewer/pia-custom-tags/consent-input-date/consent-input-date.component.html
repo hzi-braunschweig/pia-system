@@ -4,14 +4,47 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<ion-item>
-  <ion-label position="floating">{{ label }}</ion-label>
-  <ion-datetime
-    [disabled]="form.disabled"
-    displayFormat="DD.MM.YYYY"
-    [formControl]="formControl"
-    cancelText="{{ 'GENERAL.CANCEL_TEXT' | translate }}"
-    doneText="{{ 'GENERAL.DONE_TEXT' | translate }}"
-  >
-  </ion-datetime>
+<ion-item
+  [id]="'open-datetime-' + consentName"
+  lines="full"
+  fill="filled"
+  mode="md"
+  class="ion-margin-start ion-margin-end"
+>
+  <ion-label class="ion-text-wrap" position="stacked">{{ label }}</ion-label>
+
+  <ion-input
+    *ngIf="displayValue"
+    [value]="displayValue"
+    [disabled]="formControl.disabled"
+    [readonly]="!formControl.disabled"
+    data-unit="display-value"
+  ></ion-input>
+  <ion-input
+    *ngIf="!displayValue"
+    [value]="'GENERAL.PLEASE_CLICK' | translate"
+    readonly
+  ></ion-input>
+
+  <ion-modal [trigger]="'open-datetime-' + consentName" *ngIf="!form.disabled">
+    <ng-template>
+      <ion-content>
+        <ion-datetime
+          [id]="'datetime-' + consentName"
+          size="cover"
+          presentation="date"
+          firstDayOfWeek="1"
+          showDefaultTitle="true"
+          [formControl]="formControl"
+          [cancelText]="'GENERAL.CANCEL_TEXT' | translate"
+          [doneText]="'GENERAL.DONE_TEXT' | translate"
+          [showDefaultButtons]="true"
+        >
+          <div slot="title">
+            {{ 'GENERAL.SELECT_DATE' | translate }}
+          </div>
+        </ion-datetime>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-item>

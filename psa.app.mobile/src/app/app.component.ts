@@ -6,9 +6,9 @@
 
 import { Component, ViewEncapsulation } from '@angular/core';
 import { AlertController, Platform } from '@ionic/angular';
-import { SplashScreen } from '@ionic-native/splash-screen/ngx';
-import { StatusBar } from '@ionic-native/status-bar/ngx';
-import { AppVersion } from '@ionic-native/app-version/ngx';
+import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
+import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
+import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from './auth/auth.service';
@@ -105,7 +105,7 @@ export class AppComponent {
     }
 
     if (this.platform.is('cordova')) {
-      this.statusBar.styleDefault();
+      this.styleStatusBar();
       this.splashScreen.hide();
       this.piaVersion = await this.appVersion.getVersionNumber();
     }
@@ -170,5 +170,11 @@ export class AppComponent {
         isShown: true,
       },
     ].filter((page) => page.isShown);
+  }
+
+  private styleStatusBar() {
+    this.statusBar.overlaysWebView(false);
+    this.statusBar.styleLightContent();
+    this.statusBar.backgroundColorByHexString('599118'); // --ion-color-tertiary
   }
 }

@@ -21,6 +21,8 @@ export interface ProbandNew extends ExternalCompliance {
   studyCenter: string | null;
   examinationWave: number | null;
   isTestProband: boolean;
+  deactivatedAt: string;
+  deletedAt: string;
 }
 
 export type AccountStatus = 'account' | 'no_account';

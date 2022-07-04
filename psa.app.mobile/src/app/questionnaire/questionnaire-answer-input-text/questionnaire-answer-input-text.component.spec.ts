@@ -6,7 +6,7 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
-import { Keyboard } from '@ionic-native/keyboard/ngx';
+import { Keyboard } from '@awesome-cordova-plugins/keyboard/ngx';
 import SpyObj = jasmine.SpyObj;
 
 import { QuestionnaireAnswerInputTextComponent } from './questionnaire-answer-input-text.component';

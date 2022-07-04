@@ -14,7 +14,10 @@ import {
 import { ProbandsRepository } from '../repositories/probandsRepository';
 import { AccessToken } from '@pia/lib-service-core';
 import Boom from '@hapi/boom';
-import { ProbandService } from '../services/probandService';
+import {
+  ProbandAccountDeletionType,
+  ProbandService,
+} from '../services/probandService';
 import { ProfessionalRole } from '../models/role';
 import {
   AccountCreateError,
@@ -210,6 +213,25 @@ export class ProbandsInteractor {
         e as Error
       );
     }
+  }
+
+  public static async deleteAccount(
+    pseudonym: string,
+    deletionType: ProbandAccountDeletionType,
+    token: AccessToken
+  ): Promise<null> {
+    if (token.role !== 'Proband') {
+      throw Boom.forbidden('wrong role');
+    }
+    if (pseudonym !== token.username) {
+      throw Boom.forbidden('probands can only delete their own accounts');
+    }
+    if (deletionType === 'full') {
+      await ProbandService.delete(pseudonym);
+    } else {
+      await ProbandService.revokeComplianceContact(pseudonym);
+    }
+    return null;
   }
 
   private static createCreateProbandFromExternalError(

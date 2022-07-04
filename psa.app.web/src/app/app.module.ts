@@ -156,6 +156,9 @@ import {
   VAPID_KEY,
 } from '@angular/fire/compat/messaging';
 import { environment } from '../environments/environment';
+import { DialogDeleteAccountHealthDataPermissionComponent } from './dialogs/dialog-delete-account-health-data-permission/dialog-delete-account-health-data-permission.component';
+import { DialogDeleteAccountConfirmationComponent } from './dialogs/dialog-delete-account-confirmation/dialog-delete-account-confirmation.component';
+import { DialogDeleteAccountSuccessComponent } from './dialogs/dialog-delete-account-success/dialog-delete-account-success.component';
 
 // === LOCALE ===
 // Setup ngx-translate
@@ -232,6 +235,9 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     DialogYesNoComponent,
     DialogOkCancelComponent,
     DialogInfoComponent,
+    DialogDeleteAccountHealthDataPermissionComponent,
+    DialogDeleteAccountConfirmationComponent,
+    DialogDeleteAccountSuccessComponent,
     ChangePasswordComponent,
     QuestionnairesResearcherComponent,
     QuestionnaireResearcherComponent,
@@ -317,6 +323,9 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     DialogNotificationComponent,
     DialogViewComplianceComponent,
     DialogEditComplianceComponent,
+    DialogDeleteAccountHealthDataPermissionComponent,
+    DialogDeleteAccountConfirmationComponent,
+    DialogDeleteAccountSuccessComponent,
   ],
   providers: [
     {

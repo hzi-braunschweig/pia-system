@@ -14,8 +14,8 @@ import { NotificationService } from './shared/services/notification/notification
 import { User } from './auth/auth.model';
 import { AppModule } from './app.module';
 import { Platform } from '@ionic/angular';
-import { SplashScreen } from '@ionic-native/splash-screen/ngx';
-import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
+import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
 import { TranslatePipe } from '@ngx-translate/core';
 import SpyObj = jasmine.SpyObj;
 
@@ -35,7 +35,9 @@ describe('AppComponent', () => {
 
   beforeEach(async () => {
     statusBarSpy = jasmine.createSpyObj<StatusBar>('StatusBar', [
-      'styleDefault',
+      'overlaysWebView',
+      'styleLightContent',
+      'backgroundColorByHexString',
     ]);
     splashScreenSpy = jasmine.createSpyObj<SplashScreen>('SplashScreen', [
       'hide',
@@ -89,7 +91,9 @@ describe('AppComponent', () => {
     TestBed.createComponent(AppComponent);
     expect(platformSpy.ready).toHaveBeenCalled();
     tick();
-    expect(statusBarSpy.styleDefault).toHaveBeenCalled();
+    expect(statusBarSpy.overlaysWebView).toHaveBeenCalledOnceWith(false);
+    expect(statusBarSpy.styleLightContent).toHaveBeenCalled();
+    expect(statusBarSpy.backgroundColorByHexString).toHaveBeenCalled();
     expect(splashScreenSpy.hide).toHaveBeenCalled();
   }));
 

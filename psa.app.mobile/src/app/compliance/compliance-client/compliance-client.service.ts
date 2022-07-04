@@ -6,8 +6,8 @@
 
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { File } from '@ionic-native/file/ngx';
-import { FileOpener } from '@ionic-native/file-opener/ngx';
+import { File } from '@awesome-cordova-plugins/file/ngx';
+import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -120,7 +120,7 @@ export class ComplianceClientService {
   private downloadFile(blob: Blob, fileName: string, mimeType: string) {
     this.file
       .writeFile(this.file.dataDirectory, fileName, blob, { replace: true })
-      .then((fileEntry) => this.fileOpener.open(fileEntry.toURL(), mimeType))
+      .then((fileEntry) => this.fileOpener.open(fileEntry.nativeURL, mimeType))
       .catch((err) => console.log(JSON.stringify(err)));
   }
 }

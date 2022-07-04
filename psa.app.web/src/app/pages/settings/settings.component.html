@@ -9,14 +9,28 @@
     <h1>{{ 'SIDENAV.SETTINGS' | translate }}</h1>
 
     <mat-card-content>
-      <span>{{ 'SETTINGS.MANAGE_PASSWORD' | translate }}</span>
-      <button
-        data-e2e="e2e-change-password-icon"
-        mat-icon-button
-        routerLink="/settings/change-password"
-      >
-        <mat-icon>subdirectory_arrow_right</mat-icon>
-      </button>
+      <div>
+        {{ 'SETTINGS.MANAGE_PASSWORD' | translate }}:
+        <button
+          data-e2e="change-password-button"
+          mat-icon-button
+          routerLink="/settings/change-password"
+        >
+          <mat-icon>subdirectory_arrow_right</mat-icon>
+        </button>
+      </div>
+
+      <div>
+        {{ 'SETTINGS.DELETE_ACCOUNT_AND_PERSONAL_DATA' | translate }}:
+        <button
+          data-e2e="delete-account-button"
+          data-unit="delete-account-button"
+          mat-icon-button
+          (click)="initiateAccountDeletion()"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
     </mat-card-content>
   </mat-card>
 </div>

@@ -1,0 +1,11 @@
+DELETE FROM accounts;
+DELETE FROM probands;
+DELETE FROM studies;
+DELETE FROM lab_results;
+DELETE FROM lab_observations;
+DELETE FROM blood_samples;
+DELETE FROM questionnaires;
+DELETE FROM questionnaire_instances;
+DELETE FROM questionnaire_instances_queued;
+DELETE FROM user_files;
+DELETE FROM notification_schedules;

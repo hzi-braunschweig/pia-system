@@ -8,7 +8,7 @@
     "start": "node --insecure-http-parser src/index.js",
     "test.int": "DOTENV_CONFIG_PATH=tests/test.env nyc mocha -r '../psa.utils.scripts/test.int/setup.hook' 'tests/integration/**/*.spec.ts' --timeout 10000",
     "test.unit": "IGNORE_MISSING_CONFIG=1 nyc mocha 'src/**/*.spec.ts' --timeout 5000",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@hapi/hapi": "^20.2.1",

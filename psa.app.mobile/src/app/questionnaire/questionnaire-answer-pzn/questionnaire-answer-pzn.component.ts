@@ -6,8 +6,8 @@
 
 import { Component, forwardRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
-import { Keyboard } from '@ionic-native/keyboard/ngx';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
+import { Keyboard } from '@awesome-cordova-plugins/keyboard/ngx';
 import { BackButtonService } from '../../shared/services/back-button/back-button.service';
 import { AbstractTextInputControlValueAccessor } from '../../shared/components/abstract-control-value-accessor/abstract-text-input-control-value-accessor';
 import { FormControlValue } from '../questionnaire-form/questionnaire-form.service';

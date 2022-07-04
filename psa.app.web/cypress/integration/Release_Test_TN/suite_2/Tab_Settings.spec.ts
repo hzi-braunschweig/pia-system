@@ -55,45 +55,72 @@ describe('Release Test, role: "Proband", Tab: Settings', () => {
       });
   });
 
-  it('should test "Manage Password" functionality', () => {
-    cy.visit(appUrl);
-    login(probandCredentials.username, probandCredentials.password);
-    changePassword(probandCredentials.password, newPassword);
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
-    cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Einstellungen')
-      .click();
+  describe('manage password', () => {
+    it('should test "Manage Password" functionality', () => {
+      cy.visit(appUrl);
+      login(probandCredentials.username, probandCredentials.password);
+      changePassword(probandCredentials.password, newPassword);
+      cy.get('[data-e2e="e2e-sidenav-content"]').click();
+      cy.get('[data-e2e="e2e-sidenav-content"]')
+        .contains('Einstellungen')
+        .click();
 
-    cy.get('[data-e2e="e2e-change-password-icon"]').click();
+      cy.get('[data-e2e="change-password-button"]').click();
 
-    cy.expectPathname('/settings/change-password');
+      cy.expectPathname('/settings/change-password');
+    });
+
+    it('should test change password', () => {
+      const updatePassword = ',dYv3zg;r:CD';
+
+      cy.visit(appUrl);
+      login(probandCredentials.username, probandCredentials.password);
+      changePassword(probandCredentials.password, newPassword);
+      cy.get('[data-e2e="e2e-sidenav-content"]').click();
+      cy.get('[data-e2e="e2e-sidenav-content"]')
+        .contains('Einstellungen')
+        .click();
+
+      cy.get('[data-e2e="change-password-button"]').click();
+
+      cy.get('#oldPassword').type(newPassword, {
+        parseSpecialCharSequences: false,
+      });
+      cy.get('#newPassword1').type(updatePassword, {
+        parseSpecialCharSequences: false,
+      });
+      cy.get('#newPassword2').type(updatePassword, {
+        parseSpecialCharSequences: false,
+      });
+
+      cy.get('#changePasswordButton').click();
+
+      cy.expectPathname('/home');
+    });
   });
 
-  it('should test change password', () => {
-    const updatePassword = ',dYv3zg;r:CD';
+  describe('account deletion', () => {
+    it.only('should delete its own account', () => {
+      cy.visit(appUrl);
+      login(probandCredentials.username, probandCredentials.password);
+      changePassword(probandCredentials.password, newPassword);
 
-    cy.visit(appUrl);
-    login(probandCredentials.username, probandCredentials.password);
-    changePassword(probandCredentials.password, newPassword);
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
-    cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Einstellungen')
-      .click();
+      cy.get('[data-e2e="e2e-sidenav-content"]').click();
+      cy.get('[data-e2e="e2e-sidenav-content"]')
+        .contains('Einstellungen')
+        .click();
 
-    cy.get('[data-e2e="e2e-change-password-icon"]').click();
+      cy.get('[data-e2e="delete-account-button"]').click();
 
-    cy.get('#oldPassword').type(newPassword, {
-      parseSpecialCharSequences: false,
+      cy.get('[data-e2e="delete-account-keep-health-data-button"]').click();
+
+      cy.get('[data-e2e="delete-account-confirm-button"]').click();
+
+      cy.get('[data-e2e="delete-account-success-text"]');
+
+      cy.get('[data-e2e="back-to-login-button"]').click();
+
+      cy.expectPathname('/login');
     });
-    cy.get('#newPassword1').type(updatePassword, {
-      parseSpecialCharSequences: false,
-    });
-    cy.get('#newPassword2').type(updatePassword, {
-      parseSpecialCharSequences: false,
-    });
-
-    cy.get('#changePasswordButton').click();
-
-    cy.expectPathname('/home');
   });
 });

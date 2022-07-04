@@ -6,7 +6,7 @@
 
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { FirebaseX } from '@ionic-native/firebase-x/ngx';
+import { FirebaseX } from '@awesome-cordova-plugins/firebase-x/ngx';
 import { Platform } from '@ionic/angular';
 import SpyObj = jasmine.SpyObj;
 

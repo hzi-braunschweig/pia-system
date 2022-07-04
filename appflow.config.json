@@ -2,7 +2,8 @@
   "apps": [
     {
       "appId": "5be00d76",
-      "root": "psa.app.mobile"
+      "root": "psa.app.mobile",
+      "dependencyInstallCommand": "npm ci"
     }
   ]
 }

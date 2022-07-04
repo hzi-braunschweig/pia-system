@@ -7,7 +7,7 @@
 import { BadgeService } from './badge.service';
 import { MockBuilder, MockInstance, MockRender } from 'ng-mocks';
 import { AppModule } from '../../../app.module';
-import { FirebaseX } from '@ionic-native/firebase-x/ngx';
+import { FirebaseX } from '@awesome-cordova-plugins/firebase-x/ngx';
 
 describe('BadgeService', () => {
   let service: BadgeService;

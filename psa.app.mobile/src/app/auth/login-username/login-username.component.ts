@@ -7,11 +7,11 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../auth.service';
-import { AppVersion } from '@ionic-native/app-version/ngx';
+import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
 import { AlertController, LoadingController, Platform } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
-import { Market } from '@ionic-native/market/ngx';
+import { Market } from '@awesome-cordova-plugins/market/ngx';
 import { environment } from '../../../environments/environment';
 import { LocaleService } from '../../shared/services/locale/locale.service';
 import { ToastPresenterService } from '../../shared/services/toast-presenter/toast-presenter.service';

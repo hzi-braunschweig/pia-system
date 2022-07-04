@@ -5,7 +5,7 @@
  */
 
 import { Component } from '@angular/core';
-import { Keyboard } from '@ionic-native/keyboard/ngx';
+import { Keyboard } from '@awesome-cordova-plugins/keyboard/ngx';
 import { AbstractControlValueAccessor } from './abstract-control-value-accessor';
 
 /**
@@ -16,7 +16,7 @@ import { AbstractControlValueAccessor } from './abstract-control-value-accessor'
  * @see {@link https://v9.angular.io/guide/deprecations#undecorated-base-classes-using-angular-features}
  */
 @Component({ template: '' })
-// tslint:disable-next-line:component-class-suffix
+// eslint-disable-next-line @angular-eslint/component-class-suffix
 export abstract class AbstractTextInputControlValueAccessor<
   V
 > extends AbstractControlValueAccessor<V> {

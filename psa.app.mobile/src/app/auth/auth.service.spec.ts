@@ -25,6 +25,7 @@ describe('AuthService', () => {
 
     // Build Base Module
     TestBed.configureTestingModule({
+      teardown: { destroyAfterEach: false }, // is needed due to document mock
       providers: [
         {
           provide: DOCUMENT,

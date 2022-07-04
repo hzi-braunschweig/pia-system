@@ -71,6 +71,8 @@ export interface ProbandResponseNew extends ExternalCompliance {
   studyCenter: string | null;
   examinationWave: number | null;
   isTestProband: boolean;
+  deactivatedAt: Date;
+  deletedAt: Date;
 }
 
 // Patch Proband

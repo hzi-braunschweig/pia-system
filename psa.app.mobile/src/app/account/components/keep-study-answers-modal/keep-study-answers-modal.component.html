@@ -1,0 +1,49 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-title>{{ 'DELETE_ACCOUNT.TITLE_SHORT' | translate }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <h4>
+    {{ 'DELETE_ACCOUNT.TITLE' | translate }}
+  </h4>
+  <div class="ion-margin-bottom">
+    <ion-text>
+      {{ 'DELETE_ACCOUNT.TEXT_KEEP_STUDY_ANSWERS' | translate }}
+    </ion-text>
+  </div>
+
+  <div class="ion-text-center">
+    <ion-button
+      color="success"
+      expand="block"
+      class="ion-margin-bottom"
+      (click)="allow()"
+    >
+      {{ 'DELETE_ACCOUNT.BUTTON_ALLOW' | translate }}
+    </ion-button>
+    <ion-button
+      color="danger"
+      expand="block"
+      class="ion-margin-bottom"
+      (click)="deny()"
+    >
+      {{ 'DELETE_ACCOUNT.BUTTON_DENY' | translate }}
+    </ion-button>
+    <ion-button
+      color="light"
+      expand="block"
+      class="ion-margin-bottom"
+      (click)="dismiss()"
+    >
+      {{ 'GENERAL.CANCEL' | translate }}
+    </ion-button>
+  </div>
+</ion-content>

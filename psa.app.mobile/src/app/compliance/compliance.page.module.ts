@@ -37,6 +37,5 @@ import { ConsentSwitchRadioComponent } from './template-viewer/pia-custom-tags/c
     ConsentSwitchRadioComponent,
   ],
   providers: [DatePipe],
-  entryComponents: [CompliancePage],
 })
 export class CompliancePageModule {}

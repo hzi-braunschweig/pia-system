@@ -9,6 +9,7 @@ export interface Study {
   has_rna_samples?: boolean;
   sample_prefix?: string;
   sample_suffix_length?: number;
+  has_partial_opposition: boolean;
 }
 
 export interface Questionnaire {

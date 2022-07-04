@@ -7,7 +7,11 @@
 <ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
   <ion-label class="ion-text-wrap">{{ label }}</ion-label>
 </ion-item>
-<ion-item lines="inset">
+<ion-item
+  fill="filled"
+  mode="md"
+  class="pia-item-input-disabled ion-margin-start ion-margin-end"
+>
   <ion-input
     type="text"
     [placeholder]="'QUESTIONNAIRE_QUESTIONS.TIME_INPUT_TIMESTAMP' | translate"

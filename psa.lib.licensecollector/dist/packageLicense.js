@@ -56,5 +56,7 @@ PackageLicense.VALID_LICENSE_TEXT_SNIPPETS = [
     'Anyone is free to copy, modify, publish, use, compile, sell, or',
     'DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE',
     'Attribution 4.0 International',
+    'CC0 1.0 Universal',
+    'Mozilla Public License, version 2.0',
 ];
 //# sourceMappingURL=packageLicense.js.map

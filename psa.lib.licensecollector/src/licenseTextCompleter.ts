@@ -14,7 +14,12 @@ export class LicenseTextCompleter {
   public static MIT_ANGULAR: string;
   public static MIT_ANGULAR_FIRE: string;
   public static MIT_IONIC: string;
+  public static MIT_AWESOME_CORDOVA_PLUGINS: string;
+  public static MIT_DEFINITELY_TYPED: string;
   public static MIT_ZENO_ROCHA: string;
+  public static MIT_ESBUILD: string;
+  public static MIT_SINDRE_SORHUS: string;
+  public static MIT_JASMINE: string;
   public static knownMissingLicenseTexts: Map<string, string> | undefined;
   private static initialize: Promise<void> | null = null;
 
@@ -85,6 +90,31 @@ export class LicenseTextCompleter {
       'https://raw.githubusercontent.com/ionic-team/ionic-framework/main/LICENSE'
     ).then(async (res) => {
       LicenseTextCompleter.MIT_IONIC = await res.text();
+    });
+    fetchP[i++] = fetch(
+      'https://raw.githubusercontent.com/danielsogl/awesome-cordova-plugins/master/LICENSE'
+    ).then(async (res) => {
+      LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS = await res.text();
+    });
+    fetchP[i++] = fetch(
+      'https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/LICENSE'
+    ).then(async (res) => {
+      LicenseTextCompleter.MIT_DEFINITELY_TYPED = await res.text();
+    });
+    fetchP[i++] = fetch(
+      'https://raw.githubusercontent.com/evanw/esbuild/master/LICENSE.md'
+    ).then(async (res) => {
+      LicenseTextCompleter.MIT_ESBUILD = await res.text();
+    });
+    fetchP[i++] = fetch(
+      'https://raw.githubusercontent.com/sindresorhus/is-path-cwd/main/license'
+    ).then(async (res) => {
+      LicenseTextCompleter.MIT_SINDRE_SORHUS = await res.text();
+    });
+    fetchP[i++] = fetch(
+      'https://raw.githubusercontent.com/jasmine/jasmine/main/MIT.LICENSE'
+    ).then(async (res) => {
+      LicenseTextCompleter.MIT_JASMINE = await res.text();
     });
     fetchP[i++] = fetch('https://zenorocha.mit-license.org/license.txt').then(
       async (res) => {
@@ -192,31 +222,61 @@ export class LicenseTextCompleter {
       ['@firebase/storage-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
       ['@firebase/util', LicenseTextCompleter.APACHE_LICENSE_2_0],
       ['@firebase/webchannel-wrapper', LicenseTextCompleter.APACHE_LICENSE_2_0],
-      ['@ionic-native/core', LicenseTextCompleter.MIT_IONIC],
-      ['@ionic-native/app-version', LicenseTextCompleter.MIT_IONIC],
-      ['@ionic-native/barcode-scanner', LicenseTextCompleter.MIT_IONIC],
-      ['@ionic-native/camera', LicenseTextCompleter.MIT_IONIC],
-      ['@ionic-native/chooser', LicenseTextCompleter.MIT_IONIC],
-      ['@ionic-native/file-opener', LicenseTextCompleter.MIT_IONIC],
-      ['@ionic-native/file', LicenseTextCompleter.MIT_IONIC],
-      ['@ionic-native/firebase-x', LicenseTextCompleter.MIT_IONIC],
-      ['@ionic-native/keyboard', LicenseTextCompleter.MIT_IONIC],
-      ['@ionic-native/market', LicenseTextCompleter.MIT_IONIC],
-      ['@ionic-native/network', LicenseTextCompleter.MIT_IONIC],
-      ['@ionic-native/splash-screen', LicenseTextCompleter.MIT_IONIC],
-      ['@ionic-native/status-bar', LicenseTextCompleter.MIT_IONIC],
-      ['@ionic/angular', LicenseTextCompleter.MIT_IONIC],
       [
-        '@types/cordova',
-        'This project is licensed under the MIT license.\n' +
-          'Copyrights are respective of each contributor listed at the beginning of each definition file.\n' +
-          '\n' +
-          'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n' +
-          '\n' +
-          'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n' +
-          '\n' +
-          'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.',
+        '@awesome-cordova-plugins/core',
+        LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
       ],
+      [
+        '@awesome-cordova-plugins/app-version',
+        LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
+      ],
+      [
+        '@awesome-cordova-plugins/barcode-scanner',
+        LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
+      ],
+      [
+        '@awesome-cordova-plugins/camera',
+        LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
+      ],
+      [
+        '@awesome-cordova-plugins/chooser',
+        LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
+      ],
+      [
+        '@awesome-cordova-plugins/file-opener',
+        LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
+      ],
+      [
+        '@awesome-cordova-plugins/file',
+        LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
+      ],
+      [
+        '@awesome-cordova-plugins/firebase-x',
+        LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
+      ],
+      [
+        '@awesome-cordova-plugins/keyboard',
+        LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
+      ],
+      [
+        '@awesome-cordova-plugins/market',
+        LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
+      ],
+      [
+        '@awesome-cordova-plugins/network',
+        LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
+      ],
+      [
+        '@awesome-cordova-plugins/splash-screen',
+        LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
+      ],
+      [
+        '@awesome-cordova-plugins/status-bar',
+        LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
+      ],
+      ['@ionic/angular', LicenseTextCompleter.MIT_IONIC],
+      ['@types/cordova', LicenseTextCompleter.MIT_DEFINITELY_TYPED],
+      ['@types/q', LicenseTextCompleter.MIT_DEFINITELY_TYPED],
       [
         '@ngx-translate/core',
         'Copyright (c) 2018 Olivier Combe\n' +
@@ -327,18 +387,7 @@ export class LicenseTextCompleter {
           'SOFTWARE.',
       ],
       ['delegate', LicenseTextCompleter.MIT_ZENO_ROCHA],
-      [
-        'exit-hook',
-        'MIT License\n' +
-          '\n' +
-          'Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)\n' +
-          '\n' +
-          'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n' +
-          '\n' +
-          'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n' +
-          '\n' +
-          'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.',
-      ],
+      ['exit-hook', LicenseTextCompleter.MIT_SINDRE_SORHUS],
       ['firebase', LicenseTextCompleter.APACHE_LICENSE_2_0],
       ['good-listener', LicenseTextCompleter.MIT_ZENO_ROCHA],
       [
@@ -658,18 +707,7 @@ export class LicenseTextCompleter {
           'IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN\n' +
           'CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n',
       ],
-      [
-        'set-immediate-shim',
-        'MIT License\n' +
-          '\n' +
-          'Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)\n' +
-          '\n' +
-          'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n' +
-          '\n' +
-          'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n' +
-          '\n' +
-          'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n',
-      ],
+      ['set-immediate-shim', LicenseTextCompleter.MIT_SINDRE_SORHUS],
       [
         'memory-fs',
         'Copyright JS Foundation and other contributors\n' +
@@ -732,6 +770,100 @@ export class LicenseTextCompleter {
           'TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE\n' +
           'SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.',
       ],
+      [
+        'keycloak-angular',
+        'Copyright (c) 2017-2019 Mauricio Gemelli Vigolo and contributors.\n' +
+          '\n' +
+          'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n' +
+          '\n' +
+          'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n' +
+          '\n' +
+          'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.',
+      ],
+      ['keycloak-js', LicenseTextCompleter.APACHE_LICENSE_2_0],
+      ['@assemblyscript/loader', LicenseTextCompleter.APACHE_LICENSE_2_0],
+      [
+        'boolbase',
+        'Copyright (c) 2014-2015, Felix Boehm <me@feedic.com>\n' +
+          '\n' +
+          'Permission to use, copy, modify, and/or distribute this software for any\n' +
+          'purpose with or without fee is hereby granted, provided that the above\n' +
+          'copyright notice and this permission notice appear in all copies.\n' +
+          '\n' +
+          'THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES\n' +
+          'WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF\n' +
+          'MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR\n' +
+          'ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES\n' +
+          'WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN\n' +
+          'ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF\n' +
+          'OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.',
+      ],
+      ['critters', LicenseTextCompleter.APACHE_LICENSE_2_0],
+      [
+        'dom-serialize',
+        '(The MIT License)\n' +
+          '\n' +
+          'Copyright 2017 Nathan Rajlich\n' +
+          '\n' +
+          'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n' +
+          '\n' +
+          'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n' +
+          '\n' +
+          'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.',
+      ],
+      [
+        'es6-promisify',
+        'Copyright (c) 2014 Mike Hall\n' +
+          '\n' +
+          'Permission is hereby granted, free of charge, to any person obtaining a copy\n' +
+          'of this software and associated documentation files (the "Software"), to deal\n' +
+          'in the Software without restriction, including without limitation the rights\n' +
+          'to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n' +
+          'copies of the Software, and to permit persons to whom the Software is\n' +
+          'furnished to do so, subject to the following conditions:\n' +
+          '\n' +
+          'The above copyright notice and this permission notice shall be included in all\n' +
+          'copies or substantial portions of the Software.\n' +
+          '\n' +
+          'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n' +
+          'IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n' +
+          'FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n' +
+          'AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n' +
+          'LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n' +
+          'OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n' +
+          'SOFTWARE.',
+      ],
+      ['esbuild', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-wasm', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-android-arm64', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-darwin-64', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-darwin-arm64', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-freebsd-64', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-freebsd-arm64', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-linux-32', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-linux-64', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-linux-arm', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-linux-arm64', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-linux-mips64le', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-linux-ppc64le', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-linux-riscv64', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-linux-s390x', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-netbsd-64', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-openbsd-64', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-sunos-64', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-windows-32', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-windows-64', LicenseTextCompleter.MIT_ESBUILD],
+      ['esbuild-windows-arm64', LicenseTextCompleter.MIT_ESBUILD],
+      ['is-path-cwd', LicenseTextCompleter.MIT_SINDRE_SORHUS],
+      ['jasmine-core', LicenseTextCompleter.MIT_JASMINE],
+      ['jasmine', LicenseTextCompleter.MIT_JASMINE],
+      ['less', LicenseTextCompleter.APACHE_LICENSE_2_0],
+      [
+        'typed-assert',
+        'The MIT License (MIT)', // https://github.com/elierotenberg/typed-assert/issues/9
+      ],
+      ['@angular/flex-layout', LicenseTextCompleter.MIT_ANGULAR],
+      ['rxfire', LicenseTextCompleter.APACHE_LICENSE_2_0],
     ]);
   }
 }

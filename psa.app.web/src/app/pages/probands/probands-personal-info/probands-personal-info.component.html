@@ -103,19 +103,23 @@
           {{ 'PROBANDEN.ACCOUNT_STATUS' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let row" class="account-status-column">
-          {{ row.accountStatus | translate }}
-          <ng-container *ngIf="row.pendingProbandDeletion">
-            - {{ 'PROBANDEN.STATUS_PROBAND_DELETION_REQUESTED' | translate }}
-          </ng-container>
-          <ng-container *ngIf="row.pendingPersonalDataDeletion">
-            -
-            {{
-              'PROBANDEN.STATUS_PERSONAL_DATA_DELETION_REQUESTED' | translate
-            }}
-          </ng-container>
-          <ng-container *ngIf="row.pendingComplianceChange">
-            - {{ 'PROBANDEN.STATUS_COMPLIANCE_CHANGE_REQUESTED' | translate }}
-          </ng-container>
+          <span
+            [matTooltip]="getTranslatedAccountStatusTooltipText(row.proband)"
+          >
+            {{ row.accountStatus | translate }}
+            <ng-container *ngIf="row.pendingProbandDeletion">
+              - {{ 'PROBANDEN.STATUS_PROBAND_DELETION_REQUESTED' | translate }}
+            </ng-container>
+            <ng-container *ngIf="row.pendingPersonalDataDeletion">
+              -
+              {{
+                'PROBANDEN.STATUS_PERSONAL_DATA_DELETION_REQUESTED' | translate
+              }}
+            </ng-container>
+            <ng-container *ngIf="row.pendingComplianceChange">
+              - {{ 'PROBANDEN.STATUS_COMPLIANCE_CHANGE_REQUESTED' | translate }}
+            </ng-container>
+          </span>
         </mat-cell>
       </ng-container>
 

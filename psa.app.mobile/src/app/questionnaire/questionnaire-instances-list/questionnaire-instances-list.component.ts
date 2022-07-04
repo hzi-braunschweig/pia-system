@@ -15,7 +15,7 @@ import {
   templateUrl: './questionnaire-instances-list.component.html',
   styleUrls: ['./questionnaire-instances-list.component.scss'],
 })
-export class QuestionnaireInstancesListComponent implements OnInit {
+export class QuestionnaireInstancesListComponent {
   private static readonly order = new Map<QuestionnaireStatus, number>([
     ['in_progress', 1],
     ['active', 2],
@@ -44,8 +44,6 @@ export class QuestionnaireInstancesListComponent implements OnInit {
       (instance) => !this.isForSpontanList(instance)
     );
   }
-
-  ngOnInit() {}
 
   isEmpty() {
     return (

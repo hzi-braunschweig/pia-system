@@ -6,7 +6,7 @@
 
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { FirebaseX } from '@ionic-native/firebase-x/ngx';
+import { FirebaseX } from '@awesome-cordova-plugins/firebase-x/ngx';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 

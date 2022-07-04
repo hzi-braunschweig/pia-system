@@ -19,9 +19,9 @@ import { AuthModule } from '../auth.module';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../auth.service';
-import { AppVersion } from '@ionic-native/app-version/ngx';
+import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
-import { Market } from '@ionic-native/market/ngx';
+import { Market } from '@awesome-cordova-plugins/market/ngx';
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
 

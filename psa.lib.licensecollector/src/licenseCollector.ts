@@ -29,6 +29,7 @@ export class LicenseCollector {
     'CC0-1.0',
     'ISC',
     'MIT',
+    'MPL-2.0',
     'Unlicense',
     'WTFPL',
   ];

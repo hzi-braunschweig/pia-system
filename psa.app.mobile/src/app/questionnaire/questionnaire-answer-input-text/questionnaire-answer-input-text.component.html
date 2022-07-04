@@ -7,10 +7,9 @@
 <ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
   <ion-label class="ion-text-wrap">{{ label }}</ion-label>
 </ion-item>
-<ion-item lines="inset">
+<ion-item fill="filled" mode="md" class="ion-margin-start ion-margin-end">
   <ion-input
     type="text"
-    [placeholder]="label"
     [disabled]="disabled"
     [name]="name"
     [formControl]="control"

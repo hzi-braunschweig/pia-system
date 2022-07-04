@@ -253,6 +253,7 @@ function getDockerLicenses() {
             'LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n' +
             'OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n' +
             'SOFTWARE.'),
+        new packageLicense_1.PackageLicense('adorsys/keycloak-config-cli', 'Apache-2.0', licenseTextCompleter_1.LicenseTextCompleter.APACHE_LICENSE_2_0),
     ];
 }
 exports.getDockerLicenses = getDockerLicenses;

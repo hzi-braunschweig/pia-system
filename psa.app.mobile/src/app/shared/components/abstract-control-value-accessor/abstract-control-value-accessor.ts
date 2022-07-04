@@ -16,7 +16,7 @@ import { Subscription } from 'rxjs';
  * @see {@link https://v9.angular.io/guide/deprecations#undecorated-base-classes-using-angular-features}
  */
 @Component({ template: '' })
-// tslint:disable-next-line:component-class-suffix
+// eslint-disable-next-line @angular-eslint/component-class-suffix
 export abstract class AbstractControlValueAccessor<V>
   implements ControlValueAccessor, OnDestroy
 {

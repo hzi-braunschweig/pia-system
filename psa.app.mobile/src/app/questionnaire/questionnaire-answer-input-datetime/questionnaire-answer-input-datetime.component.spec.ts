@@ -4,12 +4,19 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  flush,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
 import { QuestionnaireAnswerInputDatetimeComponent } from './questionnaire-answer-input-datetime.component';
 import { MockPipe } from 'ng-mocks';
 import { TranslatePipe } from '@ngx-translate/core';
+import { By } from '@angular/platform-browser';
 
 describe('QuestionnaireAnswerInputDatetimeComponent', () => {
   let component: QuestionnaireAnswerInputDatetimeComponent;
@@ -31,7 +38,17 @@ describe('QuestionnaireAnswerInputDatetimeComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+  it('should display a formatted date', fakeAsync(() => {
+    component.writeValue(new Date('2022-05-01'));
+
+    tick();
+    fixture.detectChanges();
+
+    const displayValueElement = fixture.debugElement.query(
+      By.css('[data-unit="display-value"]')
+    ).nativeElement;
+
+    expect(displayValueElement.value).toEqual('01.05.2022');
+    flush();
+  }));
 });

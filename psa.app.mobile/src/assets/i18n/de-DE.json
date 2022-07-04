@@ -16,7 +16,9 @@
     "WARNING": "Warnung",
     "SUBMISSION": "Einreichung",
     "CLOSE": "Schließen",
-    "OPEN": "Öffnen"
+    "OPEN": "Öffnen",
+    "PLEASE_CLICK": "Bitte klicken",
+    "SELECT_DATE": "Datum auswählen"
   },
   "APP": {
     "MENU": {
@@ -24,7 +26,7 @@
       "HOME": "Startseite",
       "QUESTIONNAIRES": "Fragebögen",
       "LAB_RESULTS": "Laborergebnisse",
-      "COMPLIANCES": "Einwilligungen",
+      "COMPLIANCES": "Einwilligung",
       "SETTINGS": "Einstellungen",
       "CONTACT": "Kontakt"
     },
@@ -52,7 +54,7 @@
     "TOAST_MSG_LOGIN_NO_BACKEND_MAPPING_EXISTS": "Ein Backend-Mapping existiert für diese:n Benutzer:in nicht.",
     "TOAST_MSG_LOGIN_GIVE_USERNAME": "Bitte geben Sie zunächst Ihren Nutzernamen an.",
     "TOAST_MSG_NEW_PASSWORD_CONFIRMATION": "Sind Sie sicher, dass Sie ein neues Passwort per E-Mail anfordern möchten?",
-    "TOAST_MSG_NEW_PASSWORD_RESULT": "Falls es sich um eine:n gültige:n Benutzer:in mit bekannter E-Mail-Adresse handelt, wurde eine E-Mail mit einem neuem Passwort versandt.",
+    "TOAST_MSG_NEW_PASSWORD_RESULT": "Falls Sie ein:e PIA-Nutzer:in mit registrierter E-Mail-Adresse sind, wurde an Sie eine E-Mail mit einem neuen Passwort versendet.",
     "CONNECTING_TO_SERVER": "Verbinde...",
     "AUTHENTICATING": "Authentifiziere...",
     "ENTER_BACKEND_URL": "URL eingeben",
@@ -100,7 +102,6 @@
   "QUESTIONNAIRE_QUESTIONS": {
     "NUMERIC_INPUT_MSG_NUMBER_BETWEEN": "Bitte geben Sie einen Wert zwischen {{restriction_min}} und {{restriction_max}} an.",
     "NUMERIC_INPUT_MSG_MUST_FULL_NUMBER": "Der Wert muss eine ganze Zahl sein.",
-    "PLEASE_CLICK": "Bitte klicken",
     "DATE_INPUT_MSG1": "Bitte geben Sie ein Datum zwischen dem {{restriction_min}} und dem {{restriction_max}} an.",
     "SAMPLE_INPUT_MSG_PROBES_NO_MATCH": "Proben-IDs passen nicht zueinander.",
     "SAMPLE_INPUT_MSG_PROBE_ALREADY_SCANNED": "Eine Probe mit dieser ID ist leider schon eingescannt.",
@@ -137,6 +138,7 @@
   "SETTINGS": {
     "TITLE": "Einstellungen",
     "MANAGE_PASSWORD": "Passwort verwalten",
+    "DELETE_ACCOUNT": "Account und persönliche Daten löschen",
     "LICENSES": "Software-Lizenzen",
     "GROUP_TITLE_ACCOUNT": "Account",
     "GROUP_TITLE_ABOUT": "Über PIA"
@@ -148,5 +150,18 @@
     "NO_ADDRESS_TEXT": "Derzeit sind keine Kontaktinformationen für diese Studie verfügbar.",
     "CONFIRMATION_MSG1": "Sind Sie sicher, dass Sie neues Material anfordern möchten?",
     "TOAST_MSG_NEW_SET_REQUESTED": "Neues Nasenabstrich-Set ist erfolgreich angefragt worden!"
+  },
+  "DELETE_ACCOUNT": {
+    "TITLE": "Account und persönliche Daten löschen",
+    "TITLE_SHORT": "Account löschen",
+    "TEXT_KEEP_STUDY_ANSWERS": "Sie möchten Ihren PIA Account dauerhaft löschen. Wollen Sie der Studie ermöglichen, Ihre bereits eingegebenen Fragebogenantworten weiterhin auszuwerten?",
+    "TEXT_DELETE": "Hiermit löschen Sie Ihren PIA Account und Ihre in PIA gespeicherten Kontaktdaten dauerhaft und unwiderruflich. Ihre bereits eingegebenen Fragebogenantworten bleiben erhalten. Sind Sie sich sicher?",
+    "TEXT_DELETE_INCLUDING_ANSWERS": "Hiermit löschen Sie Ihren PIA Account, Ihre in PIA gespeicherten Kontaktdaten und Fragenbogenantworten dauerhaft und unwiderruflich. Sind Sie sich sicher?",
+    "TEXT_CONFIRM": "Ihr Account und Ihre Daten wurden wie gewünscht gelöscht.",
+    "TEXT_ERROR": "Fehler beim Löschen Ihres PIA Accounts. Bitte wenden Sie sich an das Studienzentrum.",
+    "BUTTON_DELETE_NOW": "Jetzt löschen",
+    "BUTTON_ALLOW": "Ja, ermöglichen",
+    "BUTTON_DENY": "Nein, alles löschen",
+    "BUTTON_LOGOUT": "Zur Anmeldung"
   }
 }

@@ -6,7 +6,7 @@
 
 import { Injectable } from '@angular/core';
 import { merge, Observable } from 'rxjs';
-import { Network } from '@ionic-native/network/ngx';
+import { Network } from '@awesome-cordova-plugins/network/ngx';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 
 export enum ConnectionStatus {

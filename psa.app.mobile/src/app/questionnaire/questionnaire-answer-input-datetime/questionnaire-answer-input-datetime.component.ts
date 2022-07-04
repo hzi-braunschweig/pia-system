@@ -6,9 +6,10 @@
 
 import { Component, forwardRef, Input } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { AbstractControlValueAccessor } from '../../shared/components/abstract-control-value-accessor/abstract-control-value-accessor';
 import { FormControlValue } from '../questionnaire-form/questionnaire-form.service';
+import { format } from 'date-fns';
 
 const QUESTIONNAIRE_ANSWER_INPUT_DATETIME_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -34,15 +35,27 @@ export class QuestionnaireAnswerInputDatetimeComponent extends AbstractControlVa
   @Input()
   maxDate: Date;
 
+  displayValue: string;
+
   registerOnChange(onChange: (value: Date) => void) {
     this.subscription = this.control.valueChanges
-      .pipe(map((value) => new Date(value)))
+      .pipe(
+        map((value) => new Date(value)),
+        tap((value) => this.setDisplayValue(value))
+      )
       .subscribe((value) => onChange(value));
   }
 
   writeValue(value: Date) {
     if (value instanceof Date) {
       this.control.patchValue(value.toISOString());
+      this.setDisplayValue(value);
+    }
+  }
+
+  private setDisplayValue(date: Date | null): void {
+    if (date) {
+      this.displayValue = format(date, 'dd.MM.yyyy');
     }
   }
 }

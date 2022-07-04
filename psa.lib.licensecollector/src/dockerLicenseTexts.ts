@@ -325,5 +325,10 @@ export function getDockerLicenses(): PackageLicense[] {
         'OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n' +
         'SOFTWARE.'
     ),
+    new PackageLicense(
+      'adorsys/keycloak-config-cli',
+      'Apache-2.0',
+      LicenseTextCompleter.APACHE_LICENSE_2_0
+    ),
   ];
 }

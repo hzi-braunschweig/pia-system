@@ -34,6 +34,10 @@ export class Proband {
   public isTestProband!: boolean;
   @Column({ type: 'varchar', nullable: false })
   public mappingId!: string;
+  @Column({ type: 'timestamptz', nullable: true })
+  public deactivatedAt!: Date;
+  @Column({ type: 'timestamptz', nullable: true })
+  public deletedAt!: Date;
 
   @ManyToOne(() => Study)
   @JoinColumn({

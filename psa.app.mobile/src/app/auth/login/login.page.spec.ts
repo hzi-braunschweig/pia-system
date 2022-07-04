@@ -77,13 +77,10 @@ describe('LoginPage', () => {
     expect(component).toBeTruthy();
   });
 
-  it(
-    'should remove current user',
-    waitForAsync(async () => {
-      const auth = TestBed.inject(AuthService) as SpyObj<AuthService>;
-      component.switchUser();
-      expect(component.username).toEqual('');
-      expect(auth.removeRememberedUsername).toHaveBeenCalledOnceWith();
-    })
-  );
+  it('should remove current user', async () => {
+    const auth = TestBed.inject(AuthService) as SpyObj<AuthService>;
+    component.switchUser();
+    expect(component.username).toEqual('');
+    expect(auth.removeRememberedUsername).toHaveBeenCalledOnceWith();
+  });
 });

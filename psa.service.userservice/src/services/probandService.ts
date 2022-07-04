@@ -21,7 +21,7 @@ import {
 } from '../errors';
 import { CreateProbandRequest } from '../models/proband';
 import { SecureRandomPasswordService } from './secureRandomPasswordService';
-import { getConnection } from 'typeorm';
+import { getConnection, getManager } from 'typeorm';
 import { PlannedProband } from '../entities/plannedProband';
 import { RepositoryOptions } from '@pia/lib-service-core';
 import { Proband } from '../entities/proband';
@@ -32,6 +32,12 @@ export type ProbandDeletionType =
   | 'default' // delete all proband data but keep the pseudonym
   | 'keep_usage_data' // delete all proband data but keep usage data like logs and the pseudonym
   | 'full'; // fully delete all proband data
+
+/**
+ * Probands may choose to delete their account and all health data (full) or
+ * to delete their account and contact data but leave their health data.
+ */
+export type ProbandAccountDeletionType = 'full' | 'contact';
 
 export class ProbandService {
   /**
@@ -224,6 +230,20 @@ export class ProbandService {
       }
     });
     return password;
+  }
+
+  public static async revokeComplianceContact(
+    pseudonym: string
+  ): Promise<void> {
+    await getManager().transaction(async (entityManager) => {
+      await entityManager.getRepository(Proband).update(pseudonym, {
+        complianceContact: false,
+        status: ProbandStatus.DEACTIVATED,
+        deactivatedAt: new Date(),
+      });
+      await authserviceClient.deleteAccount(pseudonym);
+      await messageQueueService.sendProbandDeactivated(pseudonym);
+    });
   }
 
   /**

@@ -20,31 +20,28 @@
   "dependencies": {
     "commander": "^8.3.0",
     "license-checker": "^25.0.1",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.7"
   },
   "devDependencies": {
-    "@pia/eslint-config": "file:../psa.eslint-config",
     "@types/chai": "^4.3.0",
     "@types/license-checker": "^25.0.3",
     "@types/mocha": "^9.0.0",
-    "@types/node": "^14.17.34",
-    "@types/node-fetch": "^2.5.12",
-    "@types/sinon": "^10.0.6",
-    "@types/sinon-chai": "^3.2.6",
-    "@typescript-eslint/eslint-plugin": "^5.7.0",
-    "@typescript-eslint/parser": "^5.7.0",
-    "chai": "^4.3.4",
-    "eslint": "^8.4.1",
-    "eslint-config-prettier": "^8.3.0",
+    "@types/node": "^14.18.12",
+    "@types/node-fetch": "^2.6.1",
+    "@types/sinon": "^10.0.11",
+    "@typescript-eslint/eslint-plugin": "^5.12.1",
+    "@typescript-eslint/parser": "^5.12.1",
+    "chai": "^4.3.6",
+    "eslint": "^8.15.0",
+    "eslint-config-prettier": "^8.4.0",
     "eslint-plugin-no-only-tests": "^2.6.0",
     "eslint-plugin-security": "^1.4.0",
-    "mocha": "^9.1.3",
+    "mocha": "^9.2.1",
     "mocha-multi-reporters": "^1.5.1",
     "nyc": "^15.1.0",
-    "sinon": "^12.0.1",
-    "sinon-chai": "^3.7.0",
+    "sinon": "^14.0.0",
     "source-map-support": "^0.5.21",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.4"
+    "ts-node": "^10.6.0",
+    "typescript": "^4.6.2"
   }
 }

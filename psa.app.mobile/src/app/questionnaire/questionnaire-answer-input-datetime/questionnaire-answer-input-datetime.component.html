@@ -7,17 +7,40 @@
 <ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
   <ion-label class="ion-text-wrap">{{ label }}</ion-label>
 </ion-item>
-<ion-item lines="inset">
-  <ion-datetime
-    [formControl]="control"
-    [placeholder]="'QUESTIONNAIRE_QUESTIONS.PLEASE_CLICK' | translate"
-    [disabled]="disabled"
-    [name]="name"
-    [cancelText]="'GENERAL.CANCEL_TEXT' | translate"
-    [doneText]="'GENERAL.DONE_TEXT' | translate"
-    [min]="minDate?.toISOString() || undefined"
-    [max]="maxDate?.toISOString() || undefined"
-    displayFormat="DD.MM.YYYY"
-  >
-  </ion-datetime>
+<ion-item
+  fill="filled"
+  mode="md"
+  class="ion-margin-start ion-margin-end"
+  [id]="'open-datetime-' + name"
+>
+  <ion-input
+    type="text"
+    data-unit="display-value"
+    readonly
+    [value]="displayValue ?? ('GENERAL.PLEASE_CLICK' | translate)"
+  ></ion-input>
+
+  <ion-modal [trigger]="'open-datetime-' + name">
+    <ng-template>
+      <ion-content>
+        <ion-datetime
+          id="datetime"
+          size="cover"
+          presentation="date"
+          firstDayOfWeek="1"
+          showDefaultTitle="true"
+          [formControl]="control"
+          [disabled]="disabled"
+          [name]="name"
+          [cancelText]="'GENERAL.CANCEL_TEXT' | translate"
+          [doneText]="'GENERAL.DONE_TEXT' | translate"
+          [min]="minDate?.toISOString() || undefined"
+          [max]="maxDate?.toISOString() || undefined"
+          [showDefaultButtons]="true"
+        >
+          <div slot="title">{{ 'GENERAL.SELECT_DATE' | translate }}</div>
+        </ion-datetime>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-item>

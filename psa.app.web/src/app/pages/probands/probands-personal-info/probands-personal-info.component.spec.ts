@@ -29,6 +29,8 @@ import { AlertService } from '../../../_services/alert.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
+import { DatePipe } from '@angular/common';
+import { TranslateService } from '@ngx-translate/core';
 import SpyObj = jasmine.SpyObj;
 
 describe('ProbandsPersonalInfoComponent', () => {
@@ -42,6 +44,8 @@ describe('ProbandsPersonalInfoComponent', () => {
   let personalDataService: SpyObj<PersonalDataService>;
   let probandService: SpyObj<ProbandService>;
   let afterClosedSubject: Subject<string>;
+  let datePipe: SpyObj<DatePipe>;
+  let translate: SpyObj<TranslateService>;
 
   beforeEach(async () => {
     // Provider and Services
@@ -81,8 +85,14 @@ describe('ProbandsPersonalInfoComponent', () => {
       ],
     });
 
+    datePipe = jasmine.createSpyObj('DatePipe', ['transform']);
+    datePipe.transform.and.returnValue('28-07-2020');
+    translate = jasmine.createSpyObj('TranslateService', ['instant']);
+    translate.instant.and.callFake((value) => value);
+
     // Build Base Module
     await MockBuilder(ProbandsPersonalInfoComponent, AppModule)
+      .provide({ provide: DatePipe, useValue: datePipe })
       .provide({
         provide: ActivatedRoute,
         useValue: { snapshot: { queryParamMap } },
@@ -96,7 +106,8 @@ describe('ProbandsPersonalInfoComponent', () => {
       .mock(QuestionnaireService, questionnaireService)
       .mock(AuthService, authService)
       .mock(AlertService, alertService)
-      .mock(PersonalDataService, personalDataService);
+      .mock(PersonalDataService, personalDataService)
+      .mock(TranslateService, translate);
   });
 
   describe('with no params', () => {
@@ -338,5 +349,57 @@ describe('ProbandsPersonalInfoComponent', () => {
         },
       });
     }));
+  });
+
+  describe('getTranslatedAccountStatusTooltipText()', () => {
+    beforeEach(fakeAsync(() => {
+      // Create component
+      fixture = MockRender(ProbandsPersonalInfoComponent);
+      component = fixture.point.componentInstance;
+      tick(); // wait for ngOnInit to finish
+      fixture.detectChanges();
+    }));
+
+    it('should return a translated tooltip text for deactivated probands', () => {
+      // Arrange
+      const proband = createProbandNew({
+        pseudonym: 'TEST-0001',
+        status: 'deactivated',
+        deactivatedAt: '2020-07-28T00:00:00.000Z',
+      });
+
+      // Act
+      const result = component.getTranslatedAccountStatusTooltipText(proband);
+
+      // Assert
+      expect(result).toEqual('PROBANDEN.ACCOUNT_STATUS_DEACTIVATED_AT');
+      expect(translate.instant).toHaveBeenCalledWith(
+        'PROBANDEN.ACCOUNT_STATUS_DEACTIVATED_AT',
+        {
+          deactivatedAt: '28-07-2020',
+        }
+      );
+    });
+
+    it('should return a translated tooltip text for deleted probands', () => {
+      // Arrange
+      const proband = createProbandNew({
+        pseudonym: 'TEST-0001',
+        status: 'deleted',
+        deletedAt: '2020-07-28T00:00:00.000Z',
+      });
+
+      // Act
+      const result = component.getTranslatedAccountStatusTooltipText(proband);
+
+      // Assert
+      expect(result).toEqual('PROBANDEN.ACCOUNT_STATUS_DELETED_AT');
+      expect(translate.instant).toHaveBeenCalledWith(
+        'PROBANDEN.ACCOUNT_STATUS_DELETED_AT',
+        {
+          deletedAt: '28-07-2020',
+        }
+      );
+    });
   });
 });

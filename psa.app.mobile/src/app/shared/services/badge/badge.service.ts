@@ -5,7 +5,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { FirebaseX } from '@ionic-native/firebase-x/ngx';
+import { FirebaseX } from '@awesome-cordova-plugins/firebase-x/ngx';
 
 @Injectable({
   providedIn: 'root',

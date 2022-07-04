@@ -9,8 +9,8 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import { File } from '@ionic-native/file/ngx';
-import { FileOpener } from '@ionic-native/file-opener/ngx';
+import { File } from '@awesome-cordova-plugins/file/ngx';
+import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
 import SpyObj = jasmine.SpyObj;
 
 import { ComplianceClientService } from './compliance-client.service';
@@ -33,7 +33,7 @@ describe('ComplianceClientService', () => {
     file = jasmine.createSpyObj('File', ['writeFile']);
     file.dataDirectory = '/some/path';
     file.writeFile.and.returnValue(
-      Promise.resolve({ toURL: () => '/some/path/somefile.pdf' })
+      Promise.resolve({ nativeURL: '/some/path/somefile.pdf' })
     );
     fileOpener = jasmine.createSpyObj('FileOpener', ['open']);
     fileOpener.open.and.returnValue(Promise.resolve());

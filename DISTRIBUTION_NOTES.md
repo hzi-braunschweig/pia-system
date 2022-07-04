@@ -2,6 +2,17 @@
 
 This file contains notes about changes that are important to the operations team.
 
+## 1.29.7
+
+- this release adds the possibility to set the MODYS configuration within the IPIA host vars
+  - the following vars can AND should now be set within the IPIA host vars if MODYS is used
+    - PIA_MODYS_BASE_URL
+    - PIA_MODYS_USERNAME
+    - PIA_MODYS_PASSWORD
+    - PIA_MODYS_STUDY
+    - PIA_MODYS_IDENTIFIER_TYPE_ID
+    - PIA_MODYS_REQUEST_CONCURRENCY
+
 ## 1.29
 
 - the `pia_sormas_on_pia_password` variable is expected to be secure and not guessable. Please make sure that it has a length of 32 random characters.
