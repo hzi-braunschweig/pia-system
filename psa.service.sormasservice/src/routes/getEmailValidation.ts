@@ -8,7 +8,7 @@ import { ServerRoute } from '@hapi/hapi';
 import { SymptomDiaryHandler } from '../handlers/symptomDiaryHandler';
 
 const route: ServerRoute = {
-  path: '/sormas/symptomdiary/probands',
+  path: '/symptomdiary/probands',
   method: 'GET',
   handler: SymptomDiaryHandler.getEmailValidation,
   options: {

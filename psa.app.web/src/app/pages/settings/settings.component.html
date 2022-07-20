@@ -10,11 +10,12 @@
 
     <mat-card-content>
       <div>
-        {{ 'SETTINGS.MANAGE_PASSWORD' | translate }}:
+        {{ 'SETTINGS.MANAGE_PASSWORD' | translate }}
         <button
-          data-e2e="change-password-button"
+          data-e2e="e2e-change-password-icon"
+          unit-change-password-icon
           mat-icon-button
-          routerLink="/settings/change-password"
+          (click)="changePassword()"
         >
           <mat-icon>subdirectory_arrow_right</mat-icon>
         </button>

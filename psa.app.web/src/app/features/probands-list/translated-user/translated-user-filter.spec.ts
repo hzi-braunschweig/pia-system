@@ -6,7 +6,6 @@
 
 import { TranslatedUserFilter } from './translated-user-filter';
 import { TranslatedUser } from './translated-user.model';
-import { Proband } from '../../../psa.app.core/models/proband';
 import { createProband } from '../../../psa.app.core/models/instance.helper.spec';
 
 describe('TranslatedUserFilter', () => {

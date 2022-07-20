@@ -17,6 +17,7 @@ import { AuthService } from '../../auth/auth.service';
 
 /**
  * Injects Authorization Header to every request
+ * @todo can be removed when legacy login support has been dropped
  */
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -26,14 +27,16 @@ export class AuthInterceptor implements HttpInterceptor {
     request: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
-    const token = this.auth.getToken();
-    if (token !== null) {
+    // new logins handle adding the authorization header themselves
+    if (this.auth.isLegacyLogin() && this.auth.isAuthenticated()) {
+      let token = this.auth.getToken();
       request = request.clone({
         setHeaders: {
           Authorization: token,
         },
       });
     }
+
     return next.handle(request);
   }
 }

@@ -6,6 +6,7 @@
 
 import Boom from '@hapi/boom';
 import { Request } from '@hapi/hapi';
+import { AccessToken } from '@pia/lib-service-core';
 
 import { FcmTokenInteractor } from '../interactors/fcmTokenInteractor';
 
@@ -24,7 +25,7 @@ export class FcmTokenHandler {
   ): Promise<{ fcm_token: string }> {
     try {
       return await FcmTokenInteractor.createFCMToken(
-        request.auth.credentials,
+        request.auth.credentials as AccessToken,
         (request.payload as { fcm_token: string }).fcm_token
       );
     } catch (err) {

@@ -15,12 +15,13 @@ import {
 } from '@angular/forms';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../_services/alert.service';
-import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { APP_DATE_FORMATS, AppDateAdapter } from '../../_helpers/date-adapter';
-import { combineLatest, Observable } from 'rxjs';
+import { combineLatest, concatMap, Observable, tap } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { HttpEvent, HttpResponse } from '@angular/common/http';
 import { Proband } from '../../psa.app.core/models/proband';
+import { CurrentUser } from '../../_services/current-user.service';
+import { ProbandService } from '../../psa.app.core/providers/proband-service/proband.service';
 
 interface StudyQuestionnaire {
   id: number;
@@ -47,12 +48,11 @@ interface StudyQuestionnaire {
 export class DialogExportDataComponent implements OnInit {
   form: FormGroup = this.getExportForm();
 
-  studiesForSelection: Observable<string[]>;
+  studiesForSelection: string[] = this.currentUser.studies;
   questionnairesForSelection: Observable<StudyQuestionnaire[]>;
   probandsForSelection: Observable<Proband[]>;
-  allStudyProbandsUsernames: string[];
+  allProbandsOfSelectedStudy: string[];
 
-  studyFilterCtrl: FormControl = new FormControl();
   probandFilterCtrl: FormControl = new FormControl();
   questionnaireFilterCtrl: FormControl = new FormControl();
 
@@ -70,9 +70,10 @@ export class DialogExportDataComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<DialogExportDataComponent>,
-    private authService: AuthService,
+    private probandService: ProbandService,
     private alertService: AlertService,
-    private questionnaireService: QuestionnaireService
+    private questionnaireService: QuestionnaireService,
+    private currentUser: CurrentUser
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -98,7 +99,7 @@ export class DialogExportDataComponent implements OnInit {
     const exportRequestData = this.form.value;
 
     if (this.form.get('probands').value === 'allProbandsCheckbox') {
-      exportRequestData.probands = this.allStudyProbandsUsernames;
+      exportRequestData.probands = this.allProbandsOfSelectedStudy;
     } else {
       exportRequestData.probands = [this.form.get('probands').value];
     }
@@ -144,13 +145,7 @@ export class DialogExportDataComponent implements OnInit {
   private async fetchSelectionData(): Promise<void> {
     this.isLoading = true;
     try {
-      const users = await this.authService.getProbands();
-      const studies = new Set<string>(users.map((user) => user.study));
-      this.studiesForSelection = this.getStudiesForSelection(
-        Array.from(studies.values())
-      );
-      this.probandsForSelection = this.getProbandsForSelection(users);
-      this.setAllStudyProbandsUsernames(users);
+      this.probandsForSelection = this.getProbandsForSelection();
 
       const { questionnaires } =
         await this.questionnaireService.getQuestionnaires();
@@ -165,31 +160,28 @@ export class DialogExportDataComponent implements OnInit {
     this.isLoading = false;
   }
 
-  private getStudiesForSelection(studies: string[]): Observable<string[]> {
-    return this.studyFilterCtrl.valueChanges.pipe(
-      map((searchValue) =>
-        studies.filter((study_id) =>
-          DialogExportDataComponent.containsSearchValue(study_id, searchValue)
-        )
-      ),
-      startWith(studies)
-    );
-  }
-
-  private getProbandsForSelection(probands: Proband[]): Observable<Proband[]> {
+  private getProbandsForSelection(): Observable<Proband[]> {
     return combineLatest([
       this.form.get('study_name').valueChanges,
       this.probandFilterCtrl.valueChanges.pipe(startWith('')),
     ]).pipe(
-      map(([studyId, searchValue]: [string, string]) =>
-        probands.filter(
-          (proband) =>
-            DialogExportDataComponent.containsSearchValue(
-              proband.pseudonym,
-              searchValue
-            ) && proband.study === studyId
-        )
+      concatMap(async ([studyName, searchValue]: [string, string]) => {
+        return [await this.probandService.getProbands(studyName), searchValue];
+      }),
+      tap(
+        ([probands, _searchValue]: [Proband[], string]) =>
+          (this.allProbandsOfSelectedStudy = probands.map(
+            (proband) => proband.pseudonym
+          ))
       ),
+      map(([probands, searchValue]: [Proband[], string]) => {
+        return probands.filter((proband) =>
+          DialogExportDataComponent.containsSearchValue(
+            proband.pseudonym,
+            searchValue
+          )
+        );
+      }),
       startWith([])
     );
   }
@@ -221,17 +213,6 @@ export class DialogExportDataComponent implements OnInit {
       this.form.get('probands').setValue([]);
       this.form.get('probands').enable();
     });
-  }
-
-  private setAllStudyProbandsUsernames(probands: Proband[]): void {
-    this.form
-      .get('study_name')
-      .valueChanges.subscribe(
-        (studyId) =>
-          (this.allStudyProbandsUsernames = probands
-            .filter((proband) => proband.study === studyId)
-            .map((proband) => proband.pseudonym))
-      );
   }
 
   private validateCheckboxes(control: AbstractControl): {

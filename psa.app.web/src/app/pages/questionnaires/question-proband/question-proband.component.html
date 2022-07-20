@@ -11,7 +11,7 @@
     fxHide.lt-md="true"
     *ngIf="
       questionnaire_instance_status !== 'released_twice' &&
-      (currentRole == 'Proband' || currentRole == 'Untersuchungsteam')
+      (user.hasRole('Proband') || user.hasRole('Untersuchungsteam'))
     "
   >
     <h2 mat-line>Fragen</h2>
@@ -47,7 +47,7 @@
       <mat-icon>forward</mat-icon>
     </button>
     <button
-      *ngIf="currentRole == 'Untersuchungsteam'"
+      *ngIf="user.hasRole('Untersuchungsteam')"
       id="navigationbutton2"
       mat-button
       (click)="goToHistoryView()"
@@ -71,7 +71,7 @@
       <div
         *ngIf="
           questionnaire_instance_status !== 'released_twice' &&
-          (currentRole == 'Proband' || currentRole == 'Untersuchungsteam')
+          (user.hasRole('Proband') || user.hasRole('Untersuchungsteam'))
         "
       >
         <button mat-button [matMenuTriggerFor]="menu">
@@ -109,7 +109,7 @@
           <mat-icon>forward</mat-icon>
         </button>
       </div>
-      <div *ngIf="currentRole == 'Untersuchungsteam'">
+      <div *ngIf="user.hasRole('Untersuchungsteam')">
         <button id="navigationbutton2" mat-button (click)="goToHistoryView()">
           {{ 'QUESTIONNAIRES_PROBAND.HISTORY_LINK' | translate }}
           <mat-icon>forward</mat-icon>
@@ -130,7 +130,7 @@
           [hidden]="
             questionnaire_instance_status == 'released_twice' ||
             displayStatus != DisplayStatus.QUESTIONS ||
-            currentRole == 'Forscher'
+            user.hasRole('Forscher')
           "
         >
           <swiper id="questionSwiper" #questionSwiper [config]="config">
@@ -690,14 +690,14 @@
           *ngIf="
             displayStatus == DisplayStatus.OVERVIEW ||
             questionnaire_instance_status == 'released_twice' ||
-            currentRole == 'Forscher'
+            user.hasRole('Forscher')
           "
         >
           <mat-card-title>
             <button
               *ngIf="
                 questionnaire_instance_status == 'released_twice' ||
-                currentRole == 'Forscher'
+                user.hasRole('Forscher')
               "
               id="arrowback"
               mat-button
@@ -1214,7 +1214,7 @@
                 *ngIf="
                   questionnaire_instance_status != 'released_once' &&
                   questionnaire_instance_status != 'released_twice' &&
-                  currentRole != 'Forscher'
+                  !user.hasRole('Forscher')
                 "
               >
                 {{ 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE1' | translate }}
@@ -1223,7 +1223,7 @@
                 *ngIf="
                   questionnaire_instance_status == 'released_once' &&
                   questionnaire_instance_status != 'released_twice' &&
-                  currentRole != 'Forscher'
+                  !user.hasRole('Forscher')
                 "
               >
                 {{ 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE2' | translate }}
@@ -1235,10 +1235,10 @@
           class="questionnaire-card untersuchungsteam"
           *ngIf="
             displayStatus == DisplayStatus.HISTORY &&
-            currentRole == 'Untersuchungsteam'
+            user.hasRole('Untersuchungsteam')
           "
         >
-          <mat-card-title>
+          <mat-card-title data-unit="history-view">
             {{ 'ANSWERS_PROBAND.HISTORY' | translate }}
           </mat-card-title>
           <div class="bordered">

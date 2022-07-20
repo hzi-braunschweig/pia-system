@@ -9,7 +9,6 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AlertService } from '../../_services/alert.service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import {
   DialogPopUpComponent,
   DialogPopUpData,
@@ -17,6 +16,7 @@ import {
 import { Observable } from 'rxjs';
 import { CreateIDSProbandRequest } from '../../psa.app.core/models/proband';
 import { map, shareReplay, startWith } from 'rxjs/operators';
+import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 
 @Component({
   selector: 'dialog-new-ids',
@@ -33,7 +33,7 @@ export class DialogNewIdsComponent implements OnInit {
     private dialogRef: MatDialogRef<DialogNewIdsComponent>,
     private authService: AuthService,
     private alertService: AlertService,
-    private questionnaireService: QuestionnaireService,
+    private userService: UserService,
     private dialog: MatDialog
   ) {
     this.form = new FormGroup({
@@ -46,9 +46,9 @@ export class DialogNewIdsComponent implements OnInit {
     this.isLoading = true;
     let studies: string[] = [];
     try {
-      const result = await this.questionnaireService.getStudies();
+      const result = await this.userService.getStudies();
       // Hard coded filtering of ZIFCO-Studie
-      studies = result.studies
+      studies = result
         .map((study) => study.name)
         .filter((name) => name !== 'ZIFCO-Studie');
     } catch (err) {

@@ -4,18 +4,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { fetchPasswordForUserFromMailHog } from '../../../support/user.commands';
+import {
+  createProfessionalUser,
+  fetchPasswordResetLinkForUserFromMailHog,
+  loginProfessional,
+  UserCredentials,
+} from '../../../support/user.commands';
 import {
   changePassword,
   createPlannedProband,
   createProband,
   createStudy,
-  createUser,
   generateRandomProbandForStudy,
   generateRandomStudy,
   getCredentialsForProbandByUsername,
-  getToken,
   login,
+  logout,
   updateProbandData,
 } from '../../../support/commands';
 import { CreateProbandRequest } from '../../../../src/app/psa.app.core/models/proband';
@@ -39,23 +43,32 @@ describe('Release Test, role: "Proband", General', () => {
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
       role: 'Untersuchungsteam',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
     };
 
     pm = {
       username: `e2e-pm-${translator.new()}@testpia-app.de`,
       role: 'ProbandenManager',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
     };
 
-    createStudy(study)
-      .then(() => createUser(ut))
-      .then(() => createUser(pm))
-      .then(() => getToken(ut.username))
-      .then((token) => createPlannedProband(proband.pseudonym, token))
-      .then(() => getToken(ut.username))
-      .then((token) => createProband(proband, study.name, token))
-      .then(() => getToken(pm.username))
+    createStudy(study);
+    createProfessionalUser(ut, study.name).as('utCred');
+    createProfessionalUser(pm, study.name).as('pmCred');
+
+    cy.get<UserCredentials>('@utCred')
+      .then(loginProfessional)
+      .then((token) => {
+        createPlannedProband(proband.pseudonym, token);
+        createProband(proband, study.name, token);
+        getCredentialsForProbandByUsername(proband.pseudonym, token).then(
+          (cred) => {
+            probandCredentials.username = cred.username;
+            probandCredentials.password = cred.password;
+          }
+        );
+      });
+
+    cy.get<UserCredentials>('@pmCred')
+      .then(loginProfessional)
       .then((token) =>
         updateProbandData(
           proband.pseudonym,
@@ -66,15 +79,7 @@ describe('Release Test, role: "Proband", General', () => {
           },
           token
         )
-      )
-      .then(() => getToken(ut.username))
-      .then((token) =>
-        getCredentialsForProbandByUsername(proband.pseudonym, token)
-      )
-      .then((cred) => {
-        probandCredentials.username = cred.username;
-        probandCredentials.password = cred.password;
-      });
+      );
   });
 
   it('should login and change password', () => {
@@ -86,29 +91,29 @@ describe('Release Test, role: "Proband", General', () => {
 
   it('should test "Forgot password" functionality', () => {
     cy.visit(appUrl);
-    cy.get('[data-e2e-login-input-username]').type(proband.pseudonym);
 
     // Request new Password
-    cy.get('#forgottenPW').click();
-    cy.get('#confirmButton').click();
-    cy.get('#confirmbutton').click();
+    cy.get('.login-pf-settings a').click();
+    cy.get('#kc-info-wrapper').contains('Geben Sie Ihren Benutzernamen ein');
 
-    fetchPasswordForUserFromMailHog(`${proband.pseudonym}@testpia-app.de`).then(
-      (res) => {
-        expect(res.password).to.be.a('string');
-        cy.get('[data-e2e-login-input-password]').type(res.password);
-        cy.get('#loginbutton').click({ force: true });
+    cy.get('.pf-c-form-control').type(proband.pseudonym);
+    cy.get('input[type="submit"]').click();
 
-        // Change password
-        cy.get('#oldPassword').type(res.password);
-        cy.get('#newPassword1').type(newPassword);
-        cy.get('#newPassword2').type(newPassword);
-        cy.get('#changePasswordButton').click({ force: true });
+    fetchPasswordResetLinkForUserFromMailHog(
+      `${proband.pseudonym}@testpia-app.de`
+    ).then((passwordResetUrl) => {
+      expect(passwordResetUrl).to.be.a('string');
+      cy.visit(passwordResetUrl);
 
-        cy.expectPathname('/home');
-      }
-    );
+      // Change password
+      cy.get('#password-new').type(newPassword);
+      cy.get('#password-confirm').type(newPassword);
+      cy.get('input[type="submit"]').click();
+
+      cy.expectPathname('/home');
+    });
   });
+
   it('it should test "Login"', () => {
     cy.visit(appUrl);
 
@@ -117,13 +122,12 @@ describe('Release Test, role: "Proband", General', () => {
     changePassword(probandCredentials.password, newPassword);
     cy.expectPathname('/home');
   });
+
   it('it should test "Logout"', () => {
     cy.visit(appUrl);
     login(probandCredentials.username, probandCredentials.password);
     // Change password
     changePassword(probandCredentials.password, newPassword);
-    cy.get('.mat-button-toggle-label-content > span').click();
-    cy.get('#confirmButton').click();
-    cy.expectPathname('/login');
+    logout();
   });
 });

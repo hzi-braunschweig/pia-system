@@ -41,14 +41,16 @@ cd pia-ansible/local
 ```
 
 Use `docker ps` to check and wait until all services are healthy.
-After that PIA can be accessed using [localhost](http://localhost/).
+After that PIA can be accessed using [pia-app.local](http://pia-app.local/).
+
+Please make sure to add `pia-app.local` to your hosts file, pointing to `127.0.0.1`.
 
 ### Add the first user
 
 To add the first admin user, you can use the following command:
 
 ```bash
-docker exec authservice node src/scripts/useradd.js --user=TestAdmin --password=TestPassword
+docker exec authserver /add-sysadmin.sh --email test@example.com --password TestPassword
 ```
 
 ## Usage
@@ -92,6 +94,24 @@ RUN npm ci --production
 ```
 
 After that [`psa.utils.repo-tool generate`](./psa.utils.repo-tool) has to be executed to update the generated [dockerfiles](./psa.utils.repo-tool/generated/).
+
+### Retrieving an administrator access token without OAuth
+
+Setting the Ansible variable `pia_is_direct_access_grant_enabled` to `true` (or directly the environment variable
+`IS_DIRECT_ACCESS_GRANT_ENABLED` for the `authserver` service), will allow administrator accounts to retrieve
+access tokens via username/password authentication.
+
+> Make sure the user you want to authenticate with, **has logged in at least once to change their initial password** or login will fail.
+
+To retrieve an access token, send the following HTTP request with the corresponding credentials.
+
+```http request
+POST https://pia-app.local/api/v1/auth/realms/pia-admin-realm/protocol/openid-connect/token
+
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=pia-admin-web-app-client&username={{username}}&password={{password}}
+```
 
 <!--
 ## Roadmap

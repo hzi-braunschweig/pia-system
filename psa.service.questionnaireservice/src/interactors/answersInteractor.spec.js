@@ -12,8 +12,8 @@ const {
 } = require('../repositories/questionnaireInstanceRepository');
 const pgHelper = require('../services/postgresqlHelper');
 
-const answersInteractor = require('./answersInteractor');
-const answerTypesValidatorService = require('../services/answerTypesValidatorService');
+const { AnswersInteractor } = require('./answersInteractor');
+const answerTypesValidator = require('../services/answerTypesValidator');
 
 describe('answersInteractor', function () {
   afterEach(() => {
@@ -34,8 +34,11 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'getAnswersForForscher')
         .resolves(null);
 
-      const session = { id: 1, role: 'NoValidRole', username: 'Testproband' };
-      await answersInteractor.getAnswers(session, 1).catch(() => {
+      const session = {
+        scope: ['realm:NoValidRole'],
+        username: 'Testproband',
+      };
+      await AnswersInteractor.getAnswers(session, 1).catch(() => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(0);
         expect(getAnswersForProbandStub.callCount).to.equal(0);
         expect(getAnswersForForscherStub.callCount).to.equal(0);
@@ -56,8 +59,11 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'getAnswersForForscher')
         .resolves(null);
 
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
-      await answersInteractor.getAnswers(session, 1).catch(() => {
+      const session = {
+        scope: ['realm:Proband'],
+        username: 'Testproband',
+      };
+      await AnswersInteractor.getAnswers(session, 1).catch(() => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
         expect(getAnswersForProbandStub.callCount).to.equal(0);
         expect(getAnswersForForscherStub.callCount).to.equal(0);
@@ -78,8 +84,11 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'getAnswersForForscher')
         .resolves(null);
 
-      const session = { id: 1, role: 'Forscher', username: 'Testforscher' };
-      await answersInteractor.getAnswers(session, 1).catch(() => {
+      const session = {
+        scope: ['realm:Forscher'],
+        username: 'Testforscher',
+      };
+      await AnswersInteractor.getAnswers(session, 1).catch(() => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
         expect(getAnswersForProbandStub.callCount).to.equal(0);
         expect(getAnswersForForscherStub.callCount).to.equal(0);
@@ -100,8 +109,11 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'getAnswersForForscher')
         .resolves(null);
 
-      const session = { id: 1, role: 'Forscher', username: 'Testforscher' };
-      await answersInteractor.getAnswers(session, 1).catch(() => {
+      const session = {
+        scope: ['realm:Forscher'],
+        username: 'Testforscher',
+      };
+      await AnswersInteractor.getAnswers(session, 1).catch(() => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
         expect(getAnswersForProbandStub.callCount).to.equal(0);
         expect(getAnswersForForscherStub.callCount).to.equal(0);
@@ -122,8 +134,11 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'getAnswersForForscher')
         .resolves(null);
 
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
-      await answersInteractor.getAnswers(session, 1).then((result) => {
+      const session = {
+        scope: ['realm:Proband'],
+        username: 'Testproband',
+      };
+      await AnswersInteractor.getAnswers(session, 1).then((result) => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
         expect(getAnswersForProbandStub.callCount).to.equal(1);
         expect(getAnswersForForscherStub.callCount).to.equal(0);
@@ -146,12 +161,11 @@ describe('answersInteractor', function () {
         .resolves([{ question_id: 1 }]);
 
       const session = {
-        id: 1,
-        role: 'Forscher',
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['Study1'],
+        studies: ['Study1'],
       };
-      await answersInteractor.getAnswers(session, 1).then((result) => {
+      await AnswersInteractor.getAnswers(session, 1).then((result) => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
         expect(getAnswersForProbandStub.callCount).to.equal(0);
         expect(getAnswersForForscherStub.callCount).to.equal(1);
@@ -172,13 +186,16 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'createOrUpdateAnswers')
         .resolves(null);
 
-      const session = { id: 1, role: 'NoValidRole', username: 'Testproband' };
-      await answersInteractor
-        .createOrUpdateAnswers(session, 1, {})
-        .catch(() => {
+      const session = {
+        scope: ['realm:NoValidRole'],
+        username: 'Testproband',
+      };
+      await AnswersInteractor.createOrUpdateAnswers(session, 1, {}).catch(
+        () => {
           expect(getQuestionnaireInstanceStub.callCount).to.equal(0);
           expect(createOrUpdateAnswersStub.callCount).to.equal(0);
-        });
+        }
+      );
     });
 
     it('should not update the answers, if the user has role Forscher', async function () {
@@ -192,13 +209,16 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'createOrUpdateAnswers')
         .resolves(null);
 
-      const session = { id: 1, role: 'Forscher', username: 'Testforscher' };
-      await answersInteractor
-        .createOrUpdateAnswers(session, 1, {})
-        .catch(() => {
+      const session = {
+        scope: ['realm:Forscher'],
+        username: 'Testforscher',
+      };
+      await AnswersInteractor.createOrUpdateAnswers(session, 1, {}).catch(
+        () => {
           expect(getQuestionnaireInstanceStub.callCount).to.equal(0);
           expect(createOrUpdateAnswersStub.callCount).to.equal(0);
-        });
+        }
+      );
     });
 
     it('should not update the answers, if the user has role "Proband" but its not his QI', async function () {
@@ -209,15 +229,18 @@ describe('answersInteractor', function () {
         )
         .resolves({ user_id: 'NotTestproband' });
       const validateFileAndImageStub = sandbox
-        .stub(answerTypesValidatorService, 'validateFileAndImage')
+        .stub(answerTypesValidator, 'isFileContentAllowed')
         .resolves(true);
       const createOrUpdateAnswersStub = sandbox
         .stub(pgHelper, 'createOrUpdateAnswers')
         .resolves(null);
 
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
+      const session = {
+        scope: ['realm:Proband'],
+        username: 'Testproband',
+      };
       try {
-        await answersInteractor.createOrUpdateAnswers(session, 1, []);
+        await AnswersInteractor.createOrUpdateAnswers(session, 1, []);
       } catch (e) {
         console.log(e);
       }
@@ -234,15 +257,18 @@ describe('answersInteractor', function () {
         )
         .resolves({ user_id: 'Testproband', status: 'inactive' });
       const validateFileAndImageStub = sandbox
-        .stub(answerTypesValidatorService, 'validateFileAndImage')
+        .stub(answerTypesValidator, 'isFileContentAllowed')
         .resolves(true);
       const createOrUpdateAnswersStub = sandbox
         .stub(pgHelper, 'createOrUpdateAnswers')
         .resolves(null);
 
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
+      const session = {
+        scope: ['realm:Proband'],
+        username: 'Testproband',
+      };
       try {
-        await answersInteractor.createOrUpdateAnswers(session, 1, []);
+        await AnswersInteractor.createOrUpdateAnswers(session, 1, []);
       } catch (e) {
         console.log(e);
       }
@@ -259,15 +285,18 @@ describe('answersInteractor', function () {
         )
         .resolves({ user_id: 'Testproband', status: 'released_twice' });
       const validateFileAndImageStub = sandbox
-        .stub(answerTypesValidatorService, 'validateFileAndImage')
+        .stub(answerTypesValidator, 'isFileContentAllowed')
         .resolves(true);
       const createOrUpdateAnswersStub = sandbox
         .stub(pgHelper, 'createOrUpdateAnswers')
         .resolves(null);
 
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
+      const session = {
+        scope: ['realm:Proband'],
+        username: 'Testproband',
+      };
       try {
-        await answersInteractor.createOrUpdateAnswers(session, 1, []);
+        await AnswersInteractor.createOrUpdateAnswers(session, 1, []);
       } catch (e) {
         console.log(e);
       }
@@ -284,14 +313,17 @@ describe('answersInteractor', function () {
         )
         .resolves({ user_id: 'Testproband', status: 'active' });
       const validateFileAndImageStub = sandbox
-        .stub(answerTypesValidatorService, 'validateFileAndImage')
+        .stub(answerTypesValidator, 'isFileContentAllowed')
         .resolves(true);
       const createOrUpdateAnswersStub = sandbox
         .stub(pgHelper, 'createOrUpdateAnswers')
         .resolves([{ question_id: 1 }]);
 
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
-      const result = await answersInteractor.createOrUpdateAnswers(
+      const session = {
+        scope: ['realm:Proband'],
+        username: 'Testproband',
+      };
+      const result = await AnswersInteractor.createOrUpdateAnswers(
         session,
         1,
         []
@@ -310,14 +342,17 @@ describe('answersInteractor', function () {
         )
         .resolves({ user_id: 'Testproband', status: 'released_once' });
       const validateFileAndImageStub = sandbox
-        .stub(answerTypesValidatorService, 'validateFileAndImage')
+        .stub(answerTypesValidator, 'isFileContentAllowed')
         .resolves(true);
       const createOrUpdateAnswersStub = sandbox
         .stub(pgHelper, 'createOrUpdateAnswers')
         .resolves([{ question_id: 1 }]);
 
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
-      const result = await answersInteractor.createOrUpdateAnswers(
+      const session = {
+        scope: ['realm:Proband'],
+        username: 'Testproband',
+      };
+      const result = await AnswersInteractor.createOrUpdateAnswers(
         session,
         1,
         {}
@@ -341,8 +376,11 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'deleteAnswer')
         .resolves(null);
 
-      const session = { id: 1, role: 'NoValidRole', username: 'Testproband' };
-      await answersInteractor.deleteAnswer(session, 1, {}).catch(() => {
+      const session = {
+        scope: ['realm:NoValidRole'],
+        username: 'Testproband',
+      };
+      await AnswersInteractor.deleteAnswer(session, 1, {}).catch(() => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(0);
         expect(deleteAnswerStub.callCount).to.equal(0);
       });
@@ -359,8 +397,11 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'deleteAnswer')
         .resolves(null);
 
-      const session = { id: 1, role: 'Forscher', username: 'Testforscher' };
-      await answersInteractor.deleteAnswer(session, 1, {}).catch(() => {
+      const session = {
+        scope: ['realm:Forscher'],
+        username: 'Testforscher',
+      };
+      await AnswersInteractor.deleteAnswer(session, 1, {}).catch(() => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(0);
         expect(deleteAnswerStub.callCount).to.equal(0);
       });
@@ -377,8 +418,11 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'deleteAnswer')
         .resolves(null);
 
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
-      await answersInteractor.deleteAnswer(session, 1, {}).catch(() => {
+      const session = {
+        scope: ['realm:Proband'],
+        username: 'Testproband',
+      };
+      await AnswersInteractor.deleteAnswer(session, 1, {}).catch(() => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
         expect(deleteAnswerStub.callCount).to.equal(0);
       });
@@ -395,8 +439,11 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'deleteAnswer')
         .resolves(null);
 
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
-      await answersInteractor.deleteAnswer(session, 1, {}).catch(() => {
+      const session = {
+        scope: ['realm:Proband'],
+        username: 'Testproband',
+      };
+      await AnswersInteractor.deleteAnswer(session, 1, {}).catch(() => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
         expect(deleteAnswerStub.callCount).to.equal(0);
       });
@@ -413,8 +460,11 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'deleteAnswer')
         .resolves(null);
 
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
-      await answersInteractor.deleteAnswer(session, 1, {}).catch(() => {
+      const session = {
+        scope: ['realm:Proband'],
+        username: 'Testproband',
+      };
+      await AnswersInteractor.deleteAnswer(session, 1, {}).catch(() => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
         expect(deleteAnswerStub.callCount).to.equal(0);
       });
@@ -431,8 +481,11 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'deleteAnswer')
         .resolves(null);
 
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
-      await answersInteractor.deleteAnswer(session, 1, {}).then((result) => {
+      const session = {
+        scope: ['realm:Proband'],
+        username: 'Testproband',
+      };
+      await AnswersInteractor.deleteAnswer(session, 1, {}).then((result) => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
         expect(deleteAnswerStub.callCount).to.equal(1);
         expect(result).to.equal(null);
@@ -450,8 +503,11 @@ describe('answersInteractor', function () {
         .stub(pgHelper, 'deleteAnswer')
         .resolves(null);
 
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
-      await answersInteractor.deleteAnswer(session, 1, {}).then((result) => {
+      const session = {
+        scope: ['realm:Proband'],
+        username: 'Testproband',
+      };
+      await AnswersInteractor.deleteAnswer(session, 1, {}).then((result) => {
         expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
         expect(deleteAnswerStub.callCount).to.equal(1);
         expect(result).to.equal(null);

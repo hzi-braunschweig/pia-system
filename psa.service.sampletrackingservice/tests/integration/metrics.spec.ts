@@ -7,7 +7,7 @@
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import StatusCodes from 'http-status-codes';
-import server from '../../src/server';
+import { Server } from '../../src/server';
 import { config } from '../../src/config';
 
 chai.use(chaiHttp);
@@ -16,11 +16,11 @@ const apiAddress = `http://localhost:${config.public.port}`;
 
 describe('/metrics', () => {
   before(async () => {
-    await server.init();
+    await Server.init();
   });
 
   after(async function () {
-    await server.stop();
+    await Server.stop();
   });
 
   describe('GET /metrics', () => {

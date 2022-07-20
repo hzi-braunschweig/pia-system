@@ -13,7 +13,6 @@ import {
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AlertService } from '../../_services/alert.service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import {
   DialogPopUpComponent,
   DialogPopUpData,
@@ -21,6 +20,7 @@ import {
 import { Observable } from 'rxjs';
 import { CreateProbandRequest } from '../../psa.app.core/models/proband';
 import { map, shareReplay, startWith } from 'rxjs/operators';
+import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 
 export interface DialogNewProbandComponentData {
   ids: string;
@@ -41,7 +41,7 @@ export class DialogNewProbandComponent implements OnInit {
     private dialogRef: MatDialogRef<DialogNewProbandComponent>,
     private authService: AuthService,
     private alertService: AlertService,
-    private questionnaireService: QuestionnaireService,
+    private userService: UserService,
     private dialog: MatDialog,
     @Inject(MAT_DIALOG_DATA) public data?: DialogNewProbandComponentData
   ) {
@@ -61,11 +61,12 @@ export class DialogNewProbandComponent implements OnInit {
     let studies: string[] = [];
     try {
       if (this.data) {
-        const idsUser = await this.authService.getUserByIDS(this.data.ids);
+        const idsUser = await this.authService.getProbandByIDS(this.data.ids);
         studies = [idsUser.study];
       } else {
-        const result = await this.questionnaireService.getStudies();
-        studies = result.studies.map((study) => study.name);
+        studies = (await this.userService.getStudies()).map(
+          (study) => study.name
+        );
       }
     } catch (err) {
       this.alertService.errorObject(err);

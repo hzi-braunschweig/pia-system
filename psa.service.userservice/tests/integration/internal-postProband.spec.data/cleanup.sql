@@ -1,9 +1,6 @@
 DELETE
-FROM accounts
-WHERE username IN ('QTestProband1', 'QTestProband2', 'QTestProband3');
-DELETE
 FROM probands
-WHERE pseudonym IN ('QTestProband1', 'QTestProband2', 'QTestProband3');
+WHERE pseudonym IN ('qtest-proband1', 'qtest-proband2', 'qtest-proband3');
 
 DELETE
 FROM studies

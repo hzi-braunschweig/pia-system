@@ -14,7 +14,7 @@ import { Proband } from '../../../psa.app.core/models/proband';
   templateUrl: './compliance-examiner.component.html',
 })
 export class ComplianceExaminerComponent {
-  isLoading = true;
+  isLoading = false;
 
   constructor(private readonly dialog: MatDialog) {}
 

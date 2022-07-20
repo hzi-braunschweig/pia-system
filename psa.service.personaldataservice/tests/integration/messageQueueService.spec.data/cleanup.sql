@@ -4,5 +4,5 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-DELETE FROM personal_data WHERE pseudonym = 'QTestProband1';
-DELETE FROM pending_deletions WHERE proband_id = 'QTestProband1';
+DELETE FROM personal_data WHERE pseudonym = 'qtest-proband1';
+DELETE FROM pending_deletions WHERE proband_id = 'qtest-proband1';

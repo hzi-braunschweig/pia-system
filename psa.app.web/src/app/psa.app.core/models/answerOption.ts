@@ -5,6 +5,7 @@
  */
 
 import { Condition } from './questionnaire';
+import { AnswerType } from './answerType';
 
 export interface AnswerOption {
   id: number;
@@ -12,7 +13,7 @@ export interface AnswerOption {
   label: string;
   position: number;
   question_id: number;
-  answer_type_id: number;
+  answer_type_id: AnswerType;
   answer_value: string;
   is_condition_target: boolean;
   restriction_min: number;

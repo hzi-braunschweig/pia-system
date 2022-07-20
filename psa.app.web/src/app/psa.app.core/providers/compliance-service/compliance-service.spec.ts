@@ -6,9 +6,6 @@
 
 import { TestBed } from '@angular/core/testing';
 import { ComplianceService } from './compliance-service';
-import { HTTP_INTERCEPTORS, HttpRequest } from '@angular/common/http';
-import { AuthenticationManager } from '../../../_services/authentication-manager.service';
-import { AuthInterceptor } from '../../../_interceptors/auth-interceptor';
 import { GenericFieldDescription } from '../../models/compliance';
 import { SegmentType, TemplateSegment } from '../../models/Segments';
 import {
@@ -23,22 +20,8 @@ describe('ComplianceService', () => {
   const testStudyName = 'Teststudie1';
 
   beforeEach(() => {
-    const authMock = jasmine.createSpyObj<AuthenticationManager>(
-      'AuthenticationManager',
-      ['getToken']
-    );
-    authMock.getToken.and.returnValue('ValidToken');
-
     TestBed.configureTestingModule({
-      providers: [
-        { provide: AuthenticationManager, useValue: authMock },
-        {
-          provide: HTTP_INTERCEPTORS,
-          useClass: AuthInterceptor,
-          multi: true,
-        },
-        ComplianceService,
-      ],
+      providers: [ComplianceService],
       imports: [HttpClientTestingModule],
     });
     httpMock = TestBed.inject(HttpTestingController);
@@ -52,7 +35,7 @@ describe('ComplianceService', () => {
         done();
       });
       const mockReq = httpMock.expectOne(
-        urlWithAuthHeader(`api/v1/compliance/${testStudyName}/active`)
+        `api/v1/compliance/${testStudyName}/active`
       );
       expect(mockReq.request.method).toBe('GET');
       mockReq.flush('true');
@@ -65,7 +48,7 @@ describe('ComplianceService', () => {
         done();
       });
       const mockReq = httpMock.expectOne(
-        urlWithAuthHeader(`api/v1/compliance/${testStudyName}/active`)
+        `api/v1/compliance/${testStudyName}/active`
       );
       expect(mockReq.request.method).toBe('GET');
       mockReq.flush('false');
@@ -83,7 +66,7 @@ describe('ComplianceService', () => {
       });
 
       const mockReq = httpMock.expectOne(
-        urlWithAuthHeader(`api/v1/compliance/${testStudyName}/text`)
+        `api/v1/compliance/${testStudyName}/text`
       );
       expect(mockReq.request.method).toBe('GET');
       mockReq.flush({
@@ -103,9 +86,7 @@ describe('ComplianceService', () => {
       });
 
       const mockReq = httpMock.expectOne(
-        urlWithAuthHeader(
-          `api/v1/compliance/${testStudyName}/questionnaire-placeholder`
-        )
+        `api/v1/compliance/${testStudyName}/questionnaire-placeholder`
       );
       expect(mockReq.request.method).toBe('GET');
       mockReq.flush([
@@ -126,9 +107,7 @@ describe('ComplianceService', () => {
         });
 
       const mockReq = httpMock.expectOne(
-        urlWithAuthHeader(
-          `api/v1/compliance/${testStudyName}/questionnaire-placeholder`
-        )
+        `api/v1/compliance/${testStudyName}/questionnaire-placeholder`
       );
       expect(mockReq.request.method).toBe('POST');
       mockReq.flush([
@@ -142,7 +121,7 @@ describe('ComplianceService', () => {
   describe('getComplianceAgreementForUser()', () => {
     it('should get Testproband1 agreement on Teststudie1', (done) => {
       service
-        .getComplianceAgreementForUser('Teststudie1', 'Testproband1')
+        .getComplianceAgreementForProband('Teststudie1', 'Testproband1')
         .then((agreement) => {
           expect(agreement).toBeTruthy();
           expect(agreement).toEqual({
@@ -166,9 +145,7 @@ describe('ComplianceService', () => {
         });
 
       const mockReq = httpMock.expectOne(
-        urlWithAuthHeader(
-          `api/v1/compliance/${testStudyName}/agree/Testproband1`
-        )
+        `api/v1/compliance/${testStudyName}/agree/Testproband1`
       );
       expect(mockReq.request.method).toBe('GET');
       mockReq.flush({
@@ -193,31 +170,19 @@ describe('ComplianceService', () => {
 
     it('should get null if no agreement exists', (done) => {
       service
-        .getComplianceAgreementForUser('Teststudie1', 'Testproband1')
+        .getComplianceAgreementForProband('Teststudie1', 'Testproband1')
         .then((agreement) => {
           expect(agreement).toBeNull();
           done();
         });
       const mockReq = httpMock.expectOne(
-        urlWithAuthHeader(
-          `api/v1/compliance/${testStudyName}/agree/Testproband1`
-        )
+        `api/v1/compliance/${testStudyName}/agree/Testproband1`
       );
       expect(mockReq.request.method).toBe('GET');
       mockReq.flush(null);
       httpMock.verify();
     });
   });
-
-  function urlWithAuthHeader(
-    url: string
-  ): (req: HttpRequest<unknown>) => boolean {
-    return (req) => {
-      return (
-        req.url === url && req.headers.get('Authorization') === 'ValidToken'
-      );
-    };
-  }
 
   function createGenericFieldDescription(): GenericFieldDescription {
     return { type: 'TEXT', placeholder: 'address', label: 'Adresse' };

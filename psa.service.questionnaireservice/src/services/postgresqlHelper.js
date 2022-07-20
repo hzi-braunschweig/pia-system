@@ -1090,14 +1090,6 @@ const postgresqlHelper = (function () {
     });
   }
 
-  async function getAnswertype(id) {
-    return db.one('SELECT * FROM answer_types WHERE id=${id}', { id: id });
-  }
-
-  async function getAnswertypes() {
-    return db.many('SELECT * FROM answer_types');
-  }
-
   async function getStudyAccessForUser(study_id, user_id) {
     return db.one(
       'SELECT * FROM study_users WHERE study_id=${study_id} AND user_id=${user_id}',
@@ -1105,84 +1097,14 @@ const postgresqlHelper = (function () {
     );
   }
 
-  async function deleteStudyAccess(study_name, username) {
-    return db.one(
-      'DELETE FROM study_users WHERE study_id=${study_id} AND user_id=${user_id} RETURNING *',
-      { study_id: study_name, user_id: username }
-    );
-  }
-
-  async function getAnsweredQuestionnaireInstances(study_id, username) {
-    return db.manyOrNone(
-      'SELECT questionnaire_instance_id FROM answers WHERE questionnaire_instance_id IN (SELECT id FROM questionnaire_instances WHERE user_id=$1 AND study_id=$2)',
-      [username, study_id]
-    );
-  }
-
-  async function createStudyAccess(study_name, study_access) {
-    return db.one(
-      'INSERT INTO study_users(study_id, user_id, access_level) VALUES(${study_id}, ${user_id}, ${access_level}) RETURNING *',
-      {
-        study_id: study_name,
-        user_id: study_access.user_id,
-        access_level: study_access.access_level,
-      }
-    );
-  }
-
-  async function updateStudyAccess(study_name, username, study_access) {
-    return db.one(
-      'UPDATE study_users SET access_level=${access_level} WHERE study_id=${study_id} AND user_id=${user_id} RETURNING *',
-      {
-        access_level: study_access.access_level,
-        study_id: study_name,
-        user_id: username,
-      }
-    );
-  }
-
   async function getStudy(id) {
     return db.one('SELECT * FROM studies WHERE name=${id}', { id: id });
   }
 
-  async function getStudyAddresses(ids) {
+  async function getStudyAddresses(studyNames) {
     return db.manyOrNone(
       'SELECT address, name FROM studies WHERE name IN($1:csv) AND address IS NOT NULL',
-      [ids]
-    );
-  }
-
-  async function createStudy(study) {
-    return db.one(
-      'INSERT INTO studies(name, description, pm_email, hub_email) VALUES(${name}, ${description}, ${pm_email}, ${hub_email}) RETURNING *',
-      {
-        name: study.name,
-        description: study.description,
-        pm_email: study.pm_email,
-        hub_email: study.hub_email,
-      }
-    );
-  }
-
-  async function updateStudyAsAdmin(id, study) {
-    return db.one(
-      'UPDATE studies SET name=${name}, description=${description}, pm_email=${pm_email}, hub_email=${hub_email} WHERE name=${id} RETURNING *',
-      {
-        name: study.name,
-        description: study.description,
-        pm_email: study.pm_email,
-        hub_email: study.hub_email,
-        id: id,
-      }
-    );
-  }
-
-  async function updateStudyWelcomeText(study_id, welcomeText) {
-    return db.one(
-      'INSERT INTO study_welcome_text (study_id, welcome_text)' +
-        ' VALUES ($1, $2) ON CONFLICT (study_id, language) DO UPDATE' +
-        ' SET welcome_text=excluded.welcome_text RETURNING *',
-      [study_id, welcomeText]
+      [studyNames]
     );
   }
 
@@ -1193,37 +1115,12 @@ const postgresqlHelper = (function () {
     );
   }
 
-  async function getStudiesByStudyIds(ids) {
-    const studies = await db.many(
-      'SELECT * FROM studies WHERE name = ANY(${sIds})',
-      { sIds: ids }
-    );
-
-    if (studies.length > 0) {
-      const pendingStudyChanges = await db.manyOrNone(
-        'SELECT * FROM pending_study_changes WHERE study_id IN($1:csv)',
-        [studies.map((study) => study.name)]
-      );
-
-      studies.forEach((study) => {
-        study.pendingStudyChange = pendingStudyChanges.find((sc) => {
-          return sc.study_id === study.name;
-        });
-      });
-    }
-    return studies;
-  }
-
-  async function getStudies() {
-    return db.manyOrNone('SELECT * FROM studies');
-  }
-
   async function createOrUpdateAnswers(
     qInstanceId,
     answers,
     version,
-    date_of_release = null,
-    releasing_person = null
+    date_of_release,
+    releasing_person
   ) {
     return db.tx(async (t) => {
       return t
@@ -1340,8 +1237,8 @@ const postgresqlHelper = (function () {
                 answer_option_id: answer.answer_option_id,
                 versioning: version,
                 value: answer.value,
-                date_of_release: date_of_release,
-                releasing_person: releasing_person,
+                date_of_release: date_of_release ?? null,
+                releasing_person: releasing_person ?? null,
               });
             } else {
               if (
@@ -1371,8 +1268,8 @@ const postgresqlHelper = (function () {
                 answer_option_id: answer.answer_option_id,
                 versioning: version,
                 value: answer.value,
-                date_of_release: date_of_release,
-                releasing_person: releasing_person,
+                date_of_release: date_of_release ?? null,
+                releasing_person: releasing_person ?? null,
               });
             }
           }
@@ -1456,37 +1353,19 @@ const postgresqlHelper = (function () {
       });
   }
 
-  async function getAllAnswersForProband(username) {
-    return db
-      .manyOrNone(
-        'SELECT * FROM answers WHERE questionnaire_instance_id=ANY(SELECT id FROM questionnaire_instances WHERE user_id=$1)',
-        [username]
-      )
-      .then(function (result) {
-        return result;
-      });
-  }
-
   async function getAllQueuesForProband(user_id) {
-    return db
-      .manyOrNone(
-        'SELECT * FROM questionnaire_instances_queued WHERE user_id=$1 ORDER BY date_of_queue DESC',
-        [user_id]
-      )
-      .then(function (result) {
-        return result;
-      });
+    return db.manyOrNone(
+      'SELECT * FROM questionnaire_instances_queued WHERE user_id=$1 ORDER BY date_of_queue DESC',
+      [user_id]
+    );
   }
 
   async function deleteQueue(user_id, instance_id) {
-    return db
-      .one(
-        'DELETE FROM questionnaire_instances_queued WHERE user_id=$1 AND questionnaire_instance_id=$2 RETURNING *',
-        [user_id, instance_id]
-      )
-      .then(function (result) {
-        return result;
-      });
+    // one() is used here in order to get an error, if nothing was deleted
+    await db.one(
+      'DELETE FROM questionnaire_instances_queued WHERE user_id=$1 AND questionnaire_instance_id=$2 RETURNING *',
+      [user_id, instance_id]
+    );
   }
 
   async function getAnswersForForscher(id) {
@@ -1517,10 +1396,10 @@ const postgresqlHelper = (function () {
   async function deleteAnswer(
     questionnaire_instance_id,
     answer_option_id,
-    version = null
+    version
   ) {
     return db.tx(async (t) => {
-      if (version === null) {
+      if (!version) {
         const maxVersionResult = await t.one(
           'SELECT MAX(versioning) AS max FROM answers WHERE questionnaire_instance_id=$1 AND answer_option_id=$2',
           [questionnaire_instance_id, answer_option_id]
@@ -1546,7 +1425,7 @@ const postgresqlHelper = (function () {
             'SELECT * FROM answers WHERE questionnaire_instance_id=$1 AND answer_option_id=$2 AND value = $3 AND versioning != $4',
             [questionnaire_instance_id, answer_option_id, fileId.value, version]
           );
-          if (foundReferences.length == 0) {
+          if (foundReferences.length === 0) {
             await t.any('DELETE FROM user_files WHERE id=$1', [fileId.value]);
           }
         }
@@ -1562,14 +1441,6 @@ const postgresqlHelper = (function () {
         }
       );
     });
-  }
-
-  async function getRoleOfUser(username) {
-    const account = await db.one(
-      'SELECT role FROM accounts WHERE username=$1',
-      [username]
-    );
-    return account.role;
   }
 
   function createQueryStream(query, queryParameter) {
@@ -1717,8 +1588,7 @@ const postgresqlHelper = (function () {
 
   async function getAnswerOptionsWithTypes(answerOptionIDs) {
     return await db.manyOrNone(
-      'SELECT at.type, ao.id FROM answer_options AS ao, answer_types AS at WHERE ' +
-        'ao.id=ANY($1::int[]) AND ao.answer_type_id=at.id',
+      'SELECT id, answer_type_id FROM answer_options WHERE id IN ($1:csv)',
       [answerOptionIDs]
     );
   }
@@ -1763,82 +1633,13 @@ const postgresqlHelper = (function () {
 
     /**
      * @function
-     * @description gets the answertype with the specified id
-     * @memberof module:postgresqlHelper
-     * @param {number} id the id of the answertype to find
-     * @returns {Promise} a resolved promise with the found answertype or a rejected promise with the error
-     */
-    getAnswertype: getAnswertype,
-
-    /**
-     * @function
-     * @description gets the answertypes
-     * @memberof module:postgresqlHelper
-     * @returns {Promise} a resolved promise with the found answertypes or a rejected promise with the error
-     */
-    getAnswertypes: getAnswertypes,
-
-    /**
-     * @function
      * @description gets the study access for the given study and user
      * @memberof module:postgresqlHelper
      * @param {string} study_id the id of the study to find
      * @param {string} user_id the id of the user to find
      * @returns {Promise} a resolved promise with the found access level or a rejected promise with the error
      */
-
     getStudyAccessForUser: getStudyAccessForUser,
-
-    /**
-     * @function
-     * @description deletes the study access
-     * @memberof module:postgresqlHelper
-     * @param {string} study_name the study_name of the access to delete
-     * @param {string} username the username of the access to delete
-     * @returns {Promise} a resolved promise with the deleted study access or a rejected promise with the error
-     */
-    deleteStudyAccess: deleteStudyAccess,
-
-    /**
-     * @function
-     * @description checks if the proband answers questionnaires in a study
-     * @memberof module:postgresqlHelper
-     * @param {string} study_name the study_name of the questionnaires to check
-     * @param {string} username the username of the questionnaires to check
-     * @returns {Promise} a resolved promise with the answered questionnaire instance ids
-     */
-    getAnsweredQuestionnaireInstances: getAnsweredQuestionnaireInstances,
-
-    /**
-     * @function
-     * @description creates a study Access
-     * @memberof module:postgresqlHelper
-     * @param {string} study_name the study_name of the access to create
-     * @param {object} study_access the study access to create
-     * @returns {Promise} a resolved promise with the created study access or a rejected promise with the error
-     */
-    createStudyAccess: createStudyAccess,
-
-    /**
-     * @function
-     * @description updates the study Access with the specified id
-     * @memberof module:postgresqlHelper
-     * @param {string} study_name the study_name of the access to update
-     * @param {string} username the username of the access to update
-     * @param {object} study_access the updateed study access
-     * @returns {Promise} a resolved promise with the updated study access or a rejected promise with the error
-     */
-    updateStudyAccess: updateStudyAccess,
-
-    /**
-     * @function
-     * @description updates the study Access with the specified id
-     * @memberof module:postgresqlHelper
-     * @param {string} study_name the study_name of the access to update
-     * @param {string} welcomeText the welcome text of study to update
-     * @returns {Promise} a resolved promise with the updated study access or a rejected promise with the error
-     */
-    updateStudyWelcomeText: updateStudyWelcomeText,
 
     /**
      * @function
@@ -1860,46 +1661,13 @@ const postgresqlHelper = (function () {
 
     /**
      * @function
-     * @description creates a study
-     * @memberof module:postgresqlHelper
-     * @param {object} study the study to create
-     * @returns {Promise} a resolved promise with the created study or a rejected promise with the error
-     */
-    createStudy: createStudy,
-
-    /**
-     * @function
-     * @description updates the study with the specified id
-     * @memberof module:postgresqlHelper
-     * @param {string} id the id of the study to update
-     * @param {object} study the updated study
-     * @returns {Promise} a resolved promise with the updated study or a rejected promise with the error
-     */
-    updateStudyAsAdmin: updateStudyAsAdmin,
-
-    /**
-     * @function
-     * @description gets the studies with the specified ids
-     * @memberof module:postgresqlHelper
-     * @returns {Promise} a resolved promise with the found studies or a rejected promise with the error
-     */
-    getStudiesByStudyIds: getStudiesByStudyIds,
-
-    /**
-     * @function
-     * @description gets all studies
-     * @memberof module:postgresqlHelper
-     * @returns {Promise} a resolved promise with the found studies or a rejected promise with the error
-     */
-    getStudies: getStudies,
-
-    /**
-     * @function
      * @description creates or updates answers for a questionnaire instance
      * @memberof module:postgresqlHelper
      * @param {number} qInstanceId the id of the questionnaire instance to create or update answers for
      * @param {array} answers the array of answers to create or update
      * @param {number} version the version of the answers to post, 1 or 2
+     * @param {string | undefined} date_of_release
+     * @param {string | undefined} releasing_person
      * @returns {Promise} a resolved promise with the created or updated answers or a rejected promise with the error
      */
     createOrUpdateAnswers: createOrUpdateAnswers,
@@ -1924,19 +1692,10 @@ const postgresqlHelper = (function () {
 
     /**
      * @function
-     * @description gets the answers for the questionnaire instance with id for a Proband (v2 if existing, v1 else)
-     * @memberof module:postgresqlHelper
-     * @param {string} username the id of proband to get answers for
-     * @returns {Promise} a resolved promise with the found answers or a rejected promise with the error
-     */
-    getAllAnswersForProband: getAllAnswersForProband,
-
-    /**
-     * @function
      * @description gets the instance queues for the proband
      * @memberof module:postgresqlHelper
      * @param {string} username the id of proband to get queues for
-     * @returns {Promise} a resolved promise with the found queues or a rejected promise with the error
+     * @returns {Promise<QuestionnaireInstanceQueue[]>} a resolved promise with the found queues or a rejected promise with the error
      */
     getAllQueuesForProband: getAllQueuesForProband,
 
@@ -1946,7 +1705,7 @@ const postgresqlHelper = (function () {
      * @memberof module:postgresqlHelper
      * @param {string} user_id the id of proband to get answers for
      * @param {string} instance_id the id of instance to delete queue for
-     * @returns {Promise} a resolved promise with the deleted queue or a rejected promise with the error
+     * @returns {Promise<void>} a resolved promise with the deleted queue or a rejected promise with the error
      */
     deleteQueue: deleteQueue,
 
@@ -1964,19 +1723,11 @@ const postgresqlHelper = (function () {
      * @description deletes the answer with the specified questionnaire instance id and answer option id
      * @memberof module:postgresqlHelper
      * @param {number} questionnaire_instance_id the id of the questionnaire instance to delete an answer from
-     * @param {array} answer_option_id the id of the answer option to delete an answer from
+     * @param {number} answer_option_id the id of the answer option to delete an answer from
+     * @param {number} version the version of the answers to post, 1 or 2
      * @returns {Promise} a resolved promise with the deleted answer or a rejected promise with the error
      */
     deleteAnswer: deleteAnswer,
-
-    /**
-     * @function
-     * @description gets the user with the specified username
-     * @memberof module:postgresqlHelper
-     * @param {string} username the username of the user to find
-     * @returns {Promise} a resolved promise with the found user or a rejected promise with the error
-     */
-    getRoleOfUser: getRoleOfUser,
 
     /**
      * @function
@@ -2034,12 +1785,13 @@ const postgresqlHelper = (function () {
      * @description gets a stream of user files
      * @memberof module:postgresqlHelper
      * @param {fileIDs} the ids of the files
-     * @returns {Readable} stream of the files
+     * @returns {Readable<UserFile>} stream of the files
      */
     streamFiles: streamFiles,
     /**
      * @function
      * @description get one image from the database
+     * @returns {Promise<UserFile>}
      */
     getFileBy: getFileBy,
 

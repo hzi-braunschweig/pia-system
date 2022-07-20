@@ -28,7 +28,7 @@ import { SegmentType } from '../../../../psa.app.core/models/Segments';
 import SpyObj = jasmine.SpyObj;
 
 class MockAuthManager {
-  currentUser = {
+  public currentUser = {
     username: 'Testproband1',
   };
 }
@@ -43,8 +43,8 @@ describe('ComplianceEditExaminerComponent', () => {
   beforeEach(() => {
     complianceService = jasmine.createSpyObj('ComplianceService', [
       'getComplianceText',
-      'getComplianceAgreementForUser',
-      'createComplianceAgreementForUser',
+      'getComplianceAgreementForProband',
+      'createComplianceAgreementForProband',
     ]);
     alertService = jasmine.createSpyObj('AlertService', ['errorObject']);
     dialog = jasmine.createSpyObj('MatDialog', ['open']);
@@ -74,7 +74,9 @@ describe('ComplianceEditExaminerComponent', () => {
     complianceText: ComplianceText
   ): void {
     // mocks
-    complianceService.getComplianceAgreementForUser.and.resolveTo(compliance);
+    complianceService.getComplianceAgreementForProband.and.resolveTo(
+      compliance
+    );
     complianceService.getComplianceText.and.resolveTo(complianceText);
     // create component
     fixture = TestBed.createComponent(ComplianceEditExaminerComponent);
@@ -112,7 +114,7 @@ describe('ComplianceEditExaminerComponent', () => {
         getComplianceText().compliance_text_object
       );
       expect(
-        complianceService.getComplianceAgreementForUser
+        complianceService.getComplianceAgreementForProband
       ).toHaveBeenCalledTimes(1);
     }));
 
@@ -126,14 +128,14 @@ describe('ComplianceEditExaminerComponent', () => {
       expect(component.study).toEqual('Teststudie1');
       expect(component.studyWrapper).toBeUndefined();
       expect(
-        complianceService.getComplianceAgreementForUser
+        complianceService.getComplianceAgreementForProband
       ).toHaveBeenCalledTimes(1);
     }));
 
     it('should send any upcoming error to alert service', fakeAsync(() => {
       // mocks
       const err = new Error('Example error');
-      complianceService.getComplianceAgreementForUser.and.rejectWith(err);
+      complianceService.getComplianceAgreementForProband.and.rejectWith(err);
       // create component
       fixture = TestBed.createComponent(ComplianceEditExaminerComponent);
       component = fixture.componentInstance;
@@ -145,7 +147,7 @@ describe('ComplianceEditExaminerComponent', () => {
       // check result
       expect(component).toBeTruthy();
       expect(
-        complianceService.getComplianceAgreementForUser
+        complianceService.getComplianceAgreementForProband
       ).toHaveBeenCalledTimes(1);
       expect(alertService.errorObject).toHaveBeenCalledTimes(1);
       expect(alertService.errorObject).toHaveBeenCalledWith(err);
@@ -163,10 +165,10 @@ describe('ComplianceEditExaminerComponent', () => {
       component.onSubmit(component.studyWrapper);
 
       expect(
-        complianceService.createComplianceAgreementForUser
+        complianceService.createComplianceAgreementForProband
       ).toHaveBeenCalledTimes(1);
       expect(
-        complianceService.createComplianceAgreementForUser
+        complianceService.createComplianceAgreementForProband
       ).toHaveBeenCalledWith('Teststudie1', 'Testproband1', {
         compliance_text: getComplianceText().compliance_text,
         textfields: {},

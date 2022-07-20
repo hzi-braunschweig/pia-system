@@ -14,11 +14,15 @@ import {
   generateRandomProbandForStudy,
   generateRandomStudy,
   getCredentialsForProbandByUsername,
-  getToken,
   login,
   updateProbandData,
 } from '../../../support/commands';
 import { CreateProbandRequest } from '../../../../src/app/psa.app.core/models/proband';
+import {
+  createProfessionalUser,
+  loginProfessional,
+  UserCredentials,
+} from 'cypress/support/user.commands';
 
 const short = require('short-uuid');
 const translator = short();
@@ -45,35 +49,49 @@ describe('Release Test, role: "Proband", Tab: Lab Results', () => {
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
       role: 'Untersuchungsteam',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
+      study_accesses: [],
     };
 
     pm = {
       username: `e2e-pm-${translator.new()}@testpia-app.de`,
       role: 'ProbandenManager',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
+      study_accesses: [],
     };
 
     forscher = {
       username: `e2e-f-${translator.new()}@testpia-app.de`,
       role: 'Forscher',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
+      study_accesses: [],
     };
 
-    createStudy(study)
-      .then(() => createUser(ut))
-      .then(() => createUser(pm))
-      .then(() => createUser(forscher))
-      .then(() => getToken(ut.username))
-      .then((token) => createPlannedProband(proband.pseudonym, token))
-      .then(() => getToken(ut.username))
-      .then((token) => createProband(proband, study.name, token))
-      .then(() => getToken(forscher.username))
-      .then((token) =>
-        createConsentForStudy(testProbandConsent, study.name, token)
-      )
-      .then(() => getToken(pm.username))
-      .then((token) =>
+    createStudy(study);
+
+    createProfessionalUser(ut, study.name).as('utCred');
+    createProfessionalUser(pm, study.name).as('pmCred');
+    createProfessionalUser(forscher, study.name).as('fCred');
+
+    cy.get<UserCredentials>('@utCred')
+      .then(loginProfessional)
+      .then((token) => {
+        createPlannedProband(proband.pseudonym, token);
+        createProband(proband, study.name, token);
+        getCredentialsForProbandByUsername(proband.pseudonym, token).then(
+          (cred) => {
+            probandCredentials.username = cred.username;
+            probandCredentials.password = cred.password;
+          }
+        );
+      });
+
+    cy.get<UserCredentials>('@fCred')
+      .then(loginProfessional)
+      .then((token) => {
+        createConsentForStudy(testProbandConsent, study.name, token);
+      });
+
+    cy.get<UserCredentials>('@pmCred')
+      .then(loginProfessional)
+      .then((token) => {
         updateProbandData(
           proband.pseudonym,
           {
@@ -82,22 +100,24 @@ describe('Release Test, role: "Proband", Tab: Lab Results', () => {
             plz: '53117',
           },
           token
-        )
-      )
-      .then(() => getToken(ut.username))
-      .then((token) =>
-        getCredentialsForProbandByUsername(proband.pseudonym, token)
-      )
-      .then((cred) => {
-        probandCredentials.username = cred.username;
-        probandCredentials.password = cred.password;
+        );
       });
   });
 
   it('should display "Es stehen Ihnen keine Laborergebnisse zur Verfügung"', () => {
     cy.visit(appUrl);
+
+    cy.intercept({
+      method: 'GET',
+      url: `/api/v1/compliance/${study.name}/text`,
+    }).as('getText');
+
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
+
+    cy.wait('@getText');
+
+    cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
     cy.get('[data-e2e="e2e-consent-name-firstname"]')
       .find('input')
@@ -142,8 +162,17 @@ describe('Release Test, role: "Proband", Tab: Lab Results', () => {
 
   it('should test laboratory results format', () => {
     cy.visit(appUrl);
+
+    cy.intercept({
+      method: 'GET',
+      url: `/api/v1/compliance/${study.name}/text`,
+    }).as('getText');
+
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
+
+    cy.wait('@getText');
+    cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
     cy.get('[data-e2e="e2e-consent-name-firstname"]')
       .find('input')

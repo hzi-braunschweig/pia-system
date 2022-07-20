@@ -14,7 +14,6 @@ import {
   ComplianceTextInEditMode,
   GenericFieldDescription,
 } from '../../models/compliance';
-import { AuthenticationManager } from '../../../_services/authentication-manager.service';
 import { TemplateSegment } from '../../models/Segments';
 
 @Injectable({
@@ -23,7 +22,7 @@ import { TemplateSegment } from '../../models/Segments';
 export class ComplianceService {
   private readonly apiUrl = 'api/v1/compliance/';
 
-  constructor(private http: HttpClient, private auth: AuthenticationManager) {}
+  constructor(private http: HttpClient) {}
 
   getInternalComplianceActive(studyName: string): Promise<boolean> {
     return this.http
@@ -97,15 +96,15 @@ export class ComplianceService {
   /**
    * for getting compliance data please use the ComplianceManager
    * @param studyName The name of the study for that complianceData are fetched
-   * @param username The name of the user for that complianceData are fetched
+   * @param pseudonym The name of the user for that complianceData are fetched
    */
-  getComplianceAgreementForUser(
+  getComplianceAgreementForProband(
     studyName: string,
-    username: string
+    pseudonym: string
   ): Promise<ComplianceDataResponse> {
     return this.http
       .get<ComplianceDataResponse>(
-        `${this.apiUrl}${studyName}/agree/${username}`
+        `${this.apiUrl}${studyName}/agree/${pseudonym}`
       )
       .toPromise()
       .then((data: ComplianceDataResponse) => {
@@ -116,34 +115,36 @@ export class ComplianceService {
   /**
    * for changing compliance data please use the ComplianceManager
    * @param studyName The name of the study for that complianceData are changed
-   * @param username The name of the user for that complianceData are changed
+   * @param pseudonym The name of the user for that complianceData are changed
    * @param complianceData The new complianceData without a timestamp
    */
-  createComplianceAgreementForUser(
+  createComplianceAgreementForProband(
     studyName: string,
-    username: string,
+    pseudonym: string,
     complianceData: ComplianceDataRequest
   ): Promise<ComplianceDataResponse> {
     return this.http
       .post<ComplianceDataResponse>(
-        `${this.apiUrl}${studyName}/agree/${username}`,
+        `${this.apiUrl}${studyName}/agree/${pseudonym}`,
         complianceData
       )
       .toPromise();
   }
 
-  getComplianceNeeded(studyName: string): Promise<boolean> {
+  isComplianceNeededForProband(
+    studyName: string,
+    pseudonym: string
+  ): Promise<boolean> {
     return this.http
-      .get<boolean>(
-        `${
-          this.apiUrl
-        }${studyName}/agree/${this.auth.getCurrentUsername()}/needed`
-      )
+      .get<boolean>(`${this.apiUrl}${studyName}/agree/${pseudonym}/needed`)
       .toPromise();
   }
 
-  getComplianceAgreementPdfForUser(studyName: string, username: string): void {
-    this.getPdfFromUrl(`${this.apiUrl}${studyName}/agree-pdf/${username}`);
+  getComplianceAgreementPdfForProband(
+    studyName: string,
+    pseudonym: string
+  ): void {
+    this.getPdfFromUrl(`${this.apiUrl}${studyName}/agree-pdf/${pseudonym}`);
   }
 
   getComplianceAgreementPdfById(studyName: string, complianceId: number): void {

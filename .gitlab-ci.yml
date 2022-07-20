@@ -42,5 +42,3 @@ include:
   - /ci/github.yml
   - /ci/create-release-merge-requests.yml
   - /ci/detect-secrets.yml
-
-

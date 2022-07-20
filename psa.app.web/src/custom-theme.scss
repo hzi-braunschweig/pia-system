@@ -1,0 +1,32 @@
+/*!
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+@import 'node_modules/@angular/material/theming';
+@include mat-core();
+$primary: mat-palette($mat-light-green, 800, 500);
+$accent: mat-palette($mat-light-blue, 600, 100, 800);
+$warn: mat-palette($mat-red, 600);
+$theme: mat-light-theme($primary, $accent, $warn);
+
+@mixin theme-fixes($theme) {
+  $primary: map-get($theme, primary);
+  $accent: map-get($theme, accent);
+
+  .mat-button-toggle-checked {
+    background-color: mat-color($primary, 500);
+    color: mat-color($accent, default-contrast);
+  }
+  .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle {
+    border-color: mat-color($mat-blue-grey, 800);
+  }
+
+  .mat-radio-button.mat-accent .mat-radio-inner-circle {
+    background-color: mat-color($mat-blue-grey, 800);
+  }
+}
+
+@include angular-material-theme($theme);
+@include theme-fixes($theme);

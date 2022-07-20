@@ -1,5 +1,5 @@
 import { ServiceClient } from '../core/serviceClient';
-import { ProbandInternalDto, ProbandRequestInternalDto, ProbandResponseInternalDto, ProbandStatus } from '../dtos/proband';
+import { ProbandExternalIdResponseInternalDto, ProbandInternalDto, ProbandRequestInternalDto, ProbandResponseInternalDto, ProbandStatus } from '../dtos/proband';
 import { StudyInternalDto } from '../dtos/study';
 import { ExternalComplianceInternalDto } from '../dtos/externalCompliance';
 export interface PseudonymsFilter {
@@ -7,8 +7,13 @@ export interface PseudonymsFilter {
     complianceContact?: boolean;
     probandStatus?: ProbandStatus | ProbandStatus[];
 }
+export interface ExternalIdsFilter {
+    study: string;
+    complianceContact: boolean;
+}
 export declare class UserserviceClient extends ServiceClient {
     getPseudonyms(filter?: PseudonymsFilter): Promise<string[]>;
+    getExternalIds(filter: ExternalIdsFilter): Promise<ProbandExternalIdResponseInternalDto[]>;
     lookupIds(pseudonym: string): Promise<string | null>;
     lookupMappingId(pseudonym: string): Promise<string>;
     retrieveUserExternalCompliance(pseudonym: string): Promise<ExternalComplianceInternalDto>;

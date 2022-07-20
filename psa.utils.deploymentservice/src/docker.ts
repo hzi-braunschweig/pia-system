@@ -10,6 +10,7 @@ import * as childProcess from 'child_process';
 const exec = promisify(childProcess.exec);
 
 export interface IResult {
+  containerName: string;
   success: boolean;
   stderr: string;
 }
@@ -19,11 +20,13 @@ export class Docker {
     try {
       const result = await exec(`docker restart ${containerName}`);
       return {
+        containerName,
         success: true,
         stderr: result.stderr,
       };
     } catch {
       return {
+        containerName,
         success: false,
         stderr: '',
       };

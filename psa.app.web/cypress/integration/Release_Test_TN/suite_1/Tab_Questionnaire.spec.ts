@@ -14,10 +14,15 @@ import {
   generateRandomProbandForStudy,
   generateRandomStudy,
   getCredentialsForProbandByUsername,
-  getToken,
   login,
 } from '../../../support/commands';
 import { CreateProbandRequest } from '../../../../src/app/psa.app.core/models/proband';
+import {
+  createProfessionalUser,
+  loginProfessional,
+  ProfessionalUser,
+  UserCredentials,
+} from 'cypress/support/user.commands';
 
 const short = require('short-uuid');
 const translator = short();
@@ -25,9 +30,9 @@ const translator = short();
 let study;
 let anotherTestStudy;
 let proband: CreateProbandRequest;
-let ut;
-let pm;
-let forscher;
+let ut: ProfessionalUser;
+let pm: ProfessionalUser;
+let forscher: ProfessionalUser;
 const probandCredentials = { username: '', password: '' };
 const newPassword = ',dYv3zg;r:CB';
 
@@ -37,7 +42,8 @@ let q;
 let conditionalQ;
 let questionnaireFromAnotherStudy;
 
-describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
+// TODO: activate after PIA-2799 has been implemented
+describe.skip('Release Test, role: "Proband", Tab: Questionnaire', () => {
   beforeEach(() => {
     study = generateRandomStudy();
     anotherTestStudy = generateRandomStudy();
@@ -45,20 +51,19 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
       role: 'Untersuchungsteam',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
+      study_accesses: [],
     };
 
     pm = {
       username: `e2e-pm-${translator.new()}@testpia-app.de`,
       role: 'ProbandenManager',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
+      study_accesses: [],
     };
 
     forscher = {
       username: `e2e-f-${translator.new()}@testpia-app.de`,
       role: 'Forscher',
       study_accesses: [
-        { study_id: study.name, access_level: 'admin' },
         { study_id: anotherTestStudy.name, access_level: 'admin' },
       ],
     };
@@ -278,42 +283,46 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
       ],
     };
-    createStudy(study)
-      .then(() => createStudy(anotherTestStudy))
-      .then(() => createUser(ut))
-      .then(() => createUser(pm))
-      .then(() => createUser(forscher))
-      .then(() => getToken(ut.username))
-      .then((token) => createPlannedProband(proband.pseudonym, token))
-      .then(() => getToken(ut.username))
-      .then((token) => createProband(proband, study.name, token))
 
-      .then(() => getToken(ut.username))
-      .then((token) =>
-        getCredentialsForProbandByUsername(proband.pseudonym, token)
-      )
-      .then((cred) => {
-        probandCredentials.username = cred.username;
-        probandCredentials.password = cred.password;
-      })
-      .then(() => createQuestionnaire(q, forscher.username))
-      .then((res) => {
-        const condition = {
-          condition_type: 'external',
-          condition_target_questionnaire: res.body.id,
-          condition_target_answer_option:
-            res.body.questions[0].answer_options[0].id,
-          condition_operand: '==',
-          condition_value: 'Foo',
-          condition_link: 'OR',
-          condition_target_questionnaire_version: '1',
-        };
-        conditionalQ.condition = condition;
-        return createQuestionnaire(conditionalQ, forscher.username);
-      })
-      .then(() =>
-        createQuestionnaire(questionnaireFromAnotherStudy, forscher.username)
-      );
+    createStudy(study);
+    createStudy(anotherTestStudy);
+
+    createProfessionalUser(ut, study.name).as('utCred');
+    createProfessionalUser(pm, study.name).as('pmCred');
+    createProfessionalUser(forscher, study.name).as('fCred');
+
+    cy.get<UserCredentials>('@utCred')
+      .then(loginProfessional)
+      .then((token) => {
+        createPlannedProband(proband.pseudonym, token);
+        createProband(proband, study.name, token);
+        getCredentialsForProbandByUsername(proband.pseudonym, token).then(
+          (cred) => {
+            probandCredentials.username = cred.username;
+            probandCredentials.password = cred.password;
+          }
+        );
+      });
+
+    cy.get<UserCredentials>('@fCred')
+      .then(loginProfessional)
+      .then((token) => {
+        createQuestionnaire(q, token).then((res) => {
+          const condition = {
+            condition_type: 'external',
+            condition_target_questionnaire: res.body.id,
+            condition_target_answer_option:
+              res.body.questions[0].answer_options[0].id,
+            condition_operand: '==',
+            condition_value: 'Foo',
+            condition_link: 'OR',
+            condition_target_questionnaire_version: '1',
+          };
+          conditionalQ.condition = condition;
+          return createQuestionnaire(conditionalQ, token);
+        });
+        createQuestionnaire(questionnaireFromAnotherStudy, token);
+      });
   });
 
   it('should only display questionnaires that belong to study', () => {
@@ -344,6 +353,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       .contains(questionnaireFromAnotherStudy.name)
       .should('not.exist');
   });
+
   it('should fill out any questionnaire and submit it', () => {
     cy.visit(appUrl);
     login(probandCredentials.username, probandCredentials.password);
@@ -398,6 +408,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       .contains(q.name)
       .should('be.visible');
   });
+
   it('should display second questionnaire only if condition defined in the first questionnaire is fulfilled', () => {
     cy.visit(appUrl);
     login(probandCredentials.username, probandCredentials.password);
@@ -460,6 +471,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       .contains(conditionalQ.name)
       .should('be.visible');
   });
+
   it('should display a new questionnaire at the time specified by the researcher (role "Forscher")', () => {
     const q2 = {
       name: 'Created just now',
@@ -599,19 +611,21 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       .find('.mat-row')
       .contains(q2.name)
       .should('not.exist');
-    createQuestionnaire(q2, forscher.username).then((res) => {
-      cy.wait(3000); // Wait till analyzerservice makes questionnaire available
+    cy.get<UserCredentials>('@fCred')
+      .then(loginProfessional)
+      .then((token) => {
+        createQuestionnaire(q2, token);
 
-      cy.expectPathname('/questionnaires/user');
-      cy.reload();
+        cy.expectPathname('/questionnaires/user');
+        cy.reload();
 
-      cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
-        .find('.mat-row')
-        .should('have.length', 2);
-      cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
-        .find('.mat-row')
-        .contains(q2.name)
-        .should('be.visible');
-    });
+        cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
+          .find('.mat-row')
+          .should('have.length', 2);
+        cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
+          .find('.mat-row')
+          .contains(q2.name)
+          .should('be.visible');
+      });
   });
 });

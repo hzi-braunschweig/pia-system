@@ -10,8 +10,13 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ReplaySubject } from 'rxjs';
 import { AlertService } from '../../_services/alert.service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
-import { ProfessionalUser } from '../../psa.app.core/models/user';
-import { StudyAccessOfUser } from '../../psa.app.core/models/study_access';
+import { UserService } from '../../psa.app.core/providers/user-service/user.service';
+import { ProfessionalAccount } from '../../psa.app.core/models/professionalAccount';
+import { Study } from '../../psa.app.core/models/study';
+
+export interface DialogChangeStudyData {
+  study: Study;
+}
 
 @Component({
   selector: 'app-dialog-change-study',
@@ -19,38 +24,34 @@ import { StudyAccessOfUser } from '../../psa.app.core/models/study_access';
   styleUrls: ['dialog-change-study.component.scss'],
 })
 export class DialogChangeStudyComponent implements OnInit {
-  form: FormGroup;
+  public form: FormGroup;
   public usernameFilterCtrl: FormControl = new FormControl();
-  public filteredUsers: ReplaySubject<ProfessionalUser[]> = new ReplaySubject<
-    ProfessionalUser[]
-  >(1);
-  usersWithSameRole: ProfessionalUser[];
+  public filteredUsers: ReplaySubject<ProfessionalAccount[]> =
+    new ReplaySubject(1);
+
+  private usersWithSameRole: ProfessionalAccount[];
 
   constructor(
-    public dialogRef: MatDialogRef<DialogChangeStudyComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    public alertService: AlertService,
-    public authService: AuthService
+    @Inject(MAT_DIALOG_DATA) public data: DialogChangeStudyData,
+    private dialogRef: MatDialogRef<DialogChangeStudyComponent>,
+    private alertService: AlertService,
+    private authService: AuthService,
+    private userService: UserService
   ) {}
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     // New change request
     if (!this.data.study.pendingStudyChange) {
-      this.authService
-        .getUsersWithSameRole()
+      this.userService
+        .getProfessionalAccounts({
+          studyName: this.data.study.name,
+          onlyMailAddresses: true,
+          filterSelf: true,
+          accessLevel: 'admin',
+        })
         .then((users) => {
           // Filter users that have admin access to study and a valid email as username
-          this.usersWithSameRole = users.filter((user) => {
-            const control = new FormControl(user.username, Validators.email);
-            return (
-              !!user.study_accesses.find(
-                (studyAccess: StudyAccessOfUser) =>
-                  studyAccess.access_level === 'admin' &&
-                  studyAccess.study_id === this.data.study.name
-              ) &&
-              (!control.errors || !control.errors.email)
-            );
-          });
+          this.usersWithSameRole = users;
           this.filteredUsers.next(this.usersWithSameRole);
         })
         .catch((err) => {

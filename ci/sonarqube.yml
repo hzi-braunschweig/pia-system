@@ -1,7 +1,7 @@
 check-sonarqube:
   stage: push
   image:
-    name: sonarsource/sonar-scanner-cli:4.6@sha256:5b09af200f24ea231dedef48c0106db817088ccb5466742c60130a1814b16598
+    name: sonarsource/sonar-scanner-cli:4.7@sha256:d94a8fc33800f3d3330154768d6527984e9caeff969001018d2e5a9d82155b67
     entrypoint: ['']
   needs:
     - job: accumulate-coverage

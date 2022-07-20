@@ -5,14 +5,15 @@
  */
 
 import { Component } from '@angular/core';
+import { KeycloakService } from 'keycloak-angular';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogDeleteAccountHealthDataPermissionComponent } from '../../dialogs/dialog-delete-account-health-data-permission/dialog-delete-account-health-data-permission.component';
 import { DialogDeleteAccountConfirmationComponent } from '../../dialogs/dialog-delete-account-confirmation/dialog-delete-account-confirmation.component';
 import { filter, map } from 'rxjs/operators';
 import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
-import { AuthenticationManager } from '../../_services/authentication-manager.service';
 import { AlertService } from '../../_services/alert.service';
 import { DialogDeleteAccountSuccessComponent } from '../../dialogs/dialog-delete-account-success/dialog-delete-account-success.component';
+import { CurrentUser } from '../../_services/current-user.service';
 import { QuestionnaireService } from '../../psa.app.core/providers/questionnaire-service/questionnaire-service';
 
 type AccountDeletionType = 'full' | 'contact';
@@ -22,17 +23,20 @@ type AccountDeletionType = 'full' | 'contact';
 })
 export class SettingsComponent {
   constructor(
+    private readonly keycloak: KeycloakService,
     private dialog: MatDialog,
     private authService: AuthService,
-    private authManager: AuthenticationManager,
+    private user: CurrentUser,
     private alertService: AlertService,
     private questionnaireService: QuestionnaireService
   ) {}
 
+  public changePassword(): void {
+    this.keycloak.getKeycloakInstance().accountManagement();
+  }
+
   public async initiateAccountDeletion(): Promise<void> {
-    const study = await this.questionnaireService.getStudy(
-      this.authManager.getCurrentStudy()
-    );
+    const study = await this.questionnaireService.getStudy(this.user.study);
 
     if (study.has_partial_opposition) {
       this.requestKeepHealthDataPermission();
@@ -76,7 +80,7 @@ export class SettingsComponent {
     deletionType: AccountDeletionType
   ): Promise<void> {
     try {
-      const pseudonym = this.authManager.getCurrentUsername();
+      const pseudonym = this.user.username;
       await this.authService.deleteProbandAccount(pseudonym, deletionType);
       this.dialog.open(DialogDeleteAccountSuccessComponent, {
         width: '500px',

@@ -126,7 +126,7 @@ export class AppComponent {
         },
       ],
     });
-    alert.present();
+    await alert.present();
   }
 
   private async setupSideMenu() {

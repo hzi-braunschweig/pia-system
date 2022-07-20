@@ -13,8 +13,8 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import {
-  QuestionnaireInstanceStatus,
   QuestionnaireInstanceDto,
+  QuestionnaireInstanceStatus,
 } from '../models/questionnaireInstance';
 import { Questionnaire } from './questionnaire';
 import { Answer } from './answer';
@@ -69,16 +69,4 @@ export class QuestionnaireInstance implements QuestionnaireInstanceDto {
 
   @OneToMany(() => Answer, (answer) => answer.questionnaireInstance)
   public answers?: Answer[];
-
-  /**
-   * @deprecated will be deleted after migration
-   */
-  @Column({ type: 'timestamp', nullable: true })
-  public transmissionTsV1?: Date | null;
-
-  /**
-   * @deprecated will be deleted after migration
-   */
-  @Column({ type: 'timestamp', nullable: true })
-  public transmissionTsV2?: Date | null;
 }

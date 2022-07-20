@@ -7,10 +7,9 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../_services/alert.service';
-import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
-import { AccessLevel } from '../../psa.app.core/models/study_access';
+import { AccessLevel } from '../../psa.app.core/models/studyAccess';
+import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 
 export interface DialogUserEditComponentData {
   accessLevel: AccessLevel;
@@ -40,9 +39,8 @@ export class DialogUserEditComponent {
       DialogUserEditComponent,
       DialogUserEditComponentReturn
     >,
-    private authService: AuthService,
     private alertService: AlertService,
-    private questionnaireService: QuestionnaireService
+    private userService: UserService
   ) {
     this.studyName = data.studyName;
     this.username = data.username;
@@ -51,15 +49,16 @@ export class DialogUserEditComponent {
     });
   }
 
-  public submit(): void {
-    const access_level = { access_level: this.form.value.accessLevel };
-    this.questionnaireService
-      .putStudyAccess(this.username, access_level, this.studyName)
-      .then(() => {
-        this.dialogRef.close(true);
-      })
-      .catch((err) => {
-        this.alertService.errorObject(err);
+  public async submit(): Promise<void> {
+    try {
+      await this.userService.putStudyAccess({
+        username: this.username,
+        studyName: this.studyName,
+        accessLevel: this.form.get('accessLevel').value as AccessLevel,
       });
+      this.dialogRef.close(true);
+    } catch (err) {
+      this.alertService.errorObject(err);
+    }
   }
 }

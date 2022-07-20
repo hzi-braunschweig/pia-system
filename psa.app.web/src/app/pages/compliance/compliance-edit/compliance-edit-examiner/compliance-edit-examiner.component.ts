@@ -59,10 +59,11 @@ export class ComplianceEditExaminerComponent
     this.isLoading = true;
     try {
       // get the current compliance data
-      const data = await this.complianceService.getComplianceAgreementForUser(
-        this.study,
-        this.username
-      );
+      const data =
+        await this.complianceService.getComplianceAgreementForProband(
+          this.study,
+          this.username
+        );
       if (data && !ComplianceEditExaminerComponent.hasComplianceText(data)) {
         this.isComplianceNeeded = false;
       } else if (!ComplianceEditExaminerComponent.isAlreadyFilled(data)) {
@@ -77,7 +78,7 @@ export class ComplianceEditExaminerComponent
   async updateComplianceAgreement(
     complianceData: ComplianceDataRequest
   ): Promise<ComplianceDataResponse> {
-    return this.complianceService.createComplianceAgreementForUser(
+    return this.complianceService.createComplianceAgreementForProband(
       this.study,
       this.username,
       complianceData

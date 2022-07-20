@@ -5,7 +5,7 @@
  */
 
 const { ComplianceText } = require('../db');
-const transactionWrapper = require('../lib/transactionWrapper');
+const transactionWrapper = require('../utils/transactionWrapper');
 
 class ComplianceTextRepository {
   /**

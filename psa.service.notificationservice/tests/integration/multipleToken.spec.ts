@@ -11,14 +11,13 @@ import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import fetchMocker from 'fetch-mock';
 import { StatusCodes } from 'http-status-codes';
-import JWT from 'jsonwebtoken';
 
 import { FcmHelper } from '../../src/services/fcmHelper';
 import { cleanup, setup } from './multipleToken.spec.data/setup.helper';
-import secretOrPrivateKey from '../secretOrPrivateKey';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
 import { HttpClient } from '@pia-system/lib-http-clients-internal';
+import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 
 interface FcmToken {
   fcm_token: string;
@@ -27,38 +26,22 @@ interface FcmToken {
 chai.use(chaiHttp);
 chai.use(sinonChai);
 
-const apiAddress =
-  'http://localhost:' + config.public.port.toString() + '/notification';
+const apiAddress = `http://localhost:${config.public.port}`;
 
 const fetchMock = fetchMocker.sandbox();
 const suiteSandbox = sinon.createSandbox();
 const testSandbox = sinon.createSandbox();
 
-const probandSession1 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestProband1',
-  groups: ['QTestStudie'],
-};
-
-const pmSession = {
-  id: 1,
-  role: 'ProbandenManager',
-  username: 'QTestProbandenManager',
-  groups: ['QTestStudie'],
-};
-
-const probandToken1 = JWT.sign(probandSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const probandHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband1',
+  studies: ['QTestStudie'],
 });
-const pmToken = JWT.sign(pmSession, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const pmHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['ProbandenManager'],
+  username: 'qtest-probandenmanager',
+  studies: ['QTestStudie'],
 });
-
-const probandHeader1 = { authorization: probandToken1 };
-const pmHeader = { authorization: pmToken };
 
 const FcmHelperMock = {
   sendDefaultNotification: sinon.stub().resolves({
@@ -82,6 +65,9 @@ describe('/multipleToken', () => {
   });
 
   beforeEach(async () => {
+    AuthServerMock.probandRealm().returnValid();
+    AuthServerMock.adminRealm().returnValid();
+
     await setup();
     testSandbox
       .stub<typeof HttpClient, 'fetch'>(HttpClient, 'fetch')
@@ -96,6 +82,8 @@ describe('/multipleToken', () => {
     fetchMock.restore();
 
     FcmHelperMock.sendDefaultNotification.resetHistory();
+
+    AuthServerMock.cleanAll();
   });
 
   it('should be able to send notifications to multiple devices', async () => {
@@ -108,6 +96,8 @@ describe('/multipleToken', () => {
       });
     expect(resultPostToken1).to.have.status(StatusCodes.OK);
     expect((resultPostToken1.body as FcmToken).fcm_token).to.equal('token1');
+
+    AuthServerMock.probandRealm().returnValid();
 
     const resultPostToken2 = await chai
       .request(apiAddress)
@@ -122,12 +112,12 @@ describe('/multipleToken', () => {
     const validNotification = {
       title: 'A valid Notification',
       body: 'A valid body',
-      recipients: ['QTestProband1'],
+      recipients: ['qtest-proband1'],
     };
 
     const resultPostNotification = await chai
       .request(apiAddress)
-      .post('/notification')
+      .post('/admin/notification')
       .set(pmHeader)
       .send(validNotification);
     expect(resultPostNotification).to.have.status(200);
@@ -147,6 +137,8 @@ describe('/multipleToken', () => {
     expect(resultPostToken1).to.have.status(StatusCodes.OK);
     expect((resultPostToken1.body as FcmToken).fcm_token).to.equal('token1');
 
+    AuthServerMock.probandRealm().returnValid();
+
     const resultPostToken2 = await chai
       .request(apiAddress)
       .post('/fcmToken')
@@ -160,12 +152,12 @@ describe('/multipleToken', () => {
     const validNotification = {
       title: 'A valid Notification',
       body: 'A valid body',
-      recipients: ['QTestProband1'],
+      recipients: ['qtest-proband1'],
     };
 
     const resultPostNotification1 = await chai
       .request(apiAddress)
-      .post('/notification')
+      .post('/admin/notification')
       .set(pmHeader)
       .send(validNotification);
     expect(resultPostNotification1).to.have.status(200);
@@ -173,9 +165,11 @@ describe('/multipleToken', () => {
 
     expect(FcmHelperMock.sendDefaultNotification.callCount).to.equal(2);
 
+    AuthServerMock.adminRealm().returnValid();
+
     const resultPostNotification2 = await chai
       .request(apiAddress)
-      .post('/notification')
+      .post('/admin/notification')
       .set(pmHeader)
       .send(validNotification);
     expect(resultPostNotification2).to.have.status(200);
@@ -195,6 +189,8 @@ describe('/multipleToken', () => {
     expect(resultPostToken1).to.have.status(StatusCodes.OK);
     expect((resultPostToken1.body as FcmToken).fcm_token).to.equal('token');
 
+    AuthServerMock.probandRealm().returnValid();
+
     const resultPostToken2 = await chai
       .request(apiAddress)
       .post('/fcmToken')
@@ -208,12 +204,12 @@ describe('/multipleToken', () => {
     const validNotification = {
       title: 'A valid Notification',
       body: 'A valid body',
-      recipients: ['QTestProband1'],
+      recipients: ['qtest-proband1'],
     };
 
     const resultPostNotification1 = await chai
       .request(apiAddress)
-      .post('/notification')
+      .post('/admin/notification')
       .set(pmHeader)
       .send(validNotification);
     expect(resultPostNotification1).to.have.status(200);

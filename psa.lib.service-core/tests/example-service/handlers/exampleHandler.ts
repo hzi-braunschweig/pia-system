@@ -9,9 +9,6 @@ import { ExampleInteractor } from '../interactors/exampleInteractor';
 
 export class ExampleHandler {
   public static getExample: Lifecycle.Method = (request) => {
-    if (!request.params['name']) {
-      return null;
-    }
     return ExampleInteractor.getExample(request.params['name'] as string);
   };
 }

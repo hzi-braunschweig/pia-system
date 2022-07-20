@@ -25,9 +25,9 @@ describe('/example/version', () => {
     await Server.stop();
   });
 
-  describe('GET /example/version', () => {
+  describe('GET /version', () => {
     it('should return http 200 with version information', async () => {
-      const result = await chai.request(apiAddress).get('/example/version');
+      const result = await chai.request(apiAddress).get('/version');
       expect(result, result.text).to.have.status(StatusCodes.OK);
       expect(result.body).to.eql({
         PIPELINE_ID: '17479',

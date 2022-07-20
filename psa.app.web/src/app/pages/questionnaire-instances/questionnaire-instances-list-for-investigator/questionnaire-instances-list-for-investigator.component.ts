@@ -35,11 +35,10 @@ export class QuestionnaireInstancesListForInvestigatorComponent
     this.pseudonym = this.activatedRoute.snapshot.paramMap.get('pseudonym');
     this.isLoading = true;
     try {
-      const questionnaireInstances =
+      this.currentQuestionnaireInstances =
         await this.questionnaireService.getQuestionnaireInstancesForUser(
           this.pseudonym
         );
-      this.currentQuestionnaireInstances = questionnaireInstances;
       const proband = await this.userService.getProband(this.pseudonym);
       this.selectedProbandInfoService.updateSideNavInfoSelectedProband({
         ids: proband.ids,

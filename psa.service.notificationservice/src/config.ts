@@ -45,8 +45,13 @@ const conf = {
   servers: {
     mailserver: GlobalConfig.mailserver,
     messageQueue: GlobalConfig.getMessageQueue('notificationservice'),
+    authserver: {
+      probandTokenIntrospectionClient:
+        GlobalConfig.authserver.probandTokenIntrospectionClient,
+      adminTokenIntrospectionClient:
+        GlobalConfig.authserver.adminTokenIntrospectionClient,
+    },
   },
-  publicAuthKey: GlobalConfig.publicAuthKey,
   webappUrl: GlobalConfig.webappUrl,
   fireBaseCredentials: fireBaseCredentials,
   timeZone: GlobalConfig.timeZone,

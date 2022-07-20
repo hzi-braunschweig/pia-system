@@ -1,0 +1,103 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<h1 mat-dialog-title>
+  {{ 'SAMPLES.SCAN_DIALOG' + (isBloodSample ? '_BLOOD' : '') | translate }}
+</h1>
+<form class="form-container" [formGroup]="scanForm">
+  <mat-dialog-content>
+    <mat-grid-list [cols]="1" rowHeight="50px">
+      <mat-grid-tile [rowspan]="2">
+        <h3>{{ study.name }}</h3>
+      </mat-grid-tile>
+
+      <mat-grid-tile [rowspan]="2">
+        <mat-form-field>
+          <input
+            type="text"
+            formControlName="sample_id"
+            matInput
+            placeholder="{{
+              (isBloodSample ? 'SAMPLES.PROBEN_ID' : 'SAMPLES.VIREN_PROBE_ID')
+                | translate
+            }}"
+          />
+          <mat-error *ngIf="scanForm.get('sample_id').hasError('required')"
+            >{{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+          </mat-error>
+          <mat-error
+            *ngIf="
+              !scanForm.get('sample_id').hasError('required') &&
+              scanForm.get('sample_id').hasError('sampleWrongFormat')
+            "
+          >
+            {{
+              'SAMPLES.WRONG_SAMPLE_FORMAT'
+                | translate
+                  : {
+                      prefix: study.sample_prefix
+                        ? study.sample_prefix + '-'
+                        : 'XXX',
+                      length: study.sample_suffix_length
+                        ? study.sample_suffix_length
+                        : '0-N'
+                    }
+            }}
+          </mat-error>
+        </mat-form-field>
+      </mat-grid-tile>
+
+      <mat-grid-tile [rowspan]="2" *ngIf="hasDummySampleId()">
+        <mat-form-field>
+          <input
+            type="text"
+            formControlName="dummy_sample_id"
+            matInput
+            placeholder="{{ 'SAMPLES.BAKT_PROBE_ID' | translate }}"
+          />
+          <mat-error
+            *ngIf="scanForm.get('dummy_sample_id').hasError('required')"
+            >{{
+              'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate
+            }}</mat-error
+          >
+          <mat-error
+            *ngIf="
+              !scanForm.get('dummy_sample_id').hasError('required') &&
+              scanForm.get('dummy_sample_id').hasError('sampleWrongFormat')
+            "
+          >
+            {{
+              'SAMPLES.WRONG_SAMPLE_FORMAT'
+                | translate
+                  : {
+                      prefix: study.sample_prefix
+                        ? study.sample_prefix + '-'
+                        : 'XXX',
+                      length: study.sample_suffix_length
+                        ? study.sample_suffix_length
+                        : '0-N'
+                    }
+            }}
+          </mat-error>
+        </mat-form-field>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <button mat-button mat-dialog-close>
+      <mat-icon>cancel</mat-icon>
+    </button>
+    <button
+      mat-button
+      [disabled]="!scanForm.valid"
+      [mat-dialog-close]="getScanResult()"
+    >
+      <mat-icon>done</mat-icon>
+    </button>
+  </mat-dialog-actions>
+</form>

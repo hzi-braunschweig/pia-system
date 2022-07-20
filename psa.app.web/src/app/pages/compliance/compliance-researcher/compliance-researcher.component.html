@@ -12,9 +12,10 @@
       <mat-card-content>
         <div>
           <mat-form-field>
-            <mat-label>{{ 'COMPLIANCE.STUDY' | translate }}</mat-label>
+            <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
             <mat-select
               disableOptionCentering
+              id="selectstudy"
               [(value)]="newSelectedStudy"
               (selectionChange)="onSelectStudy(newSelectedStudy)"
               data-e2e="e2e-setup-compliance-study-select"

@@ -1,0 +1,69 @@
+/*!
+ * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+#pia-logo {
+  display: block;
+  margin: 0 auto 1.5rem;
+  width: 160px;
+  height: 160px;
+}
+
+.login-pf body {
+  height: 100%;
+}
+
+.login-pf-settings {
+  > div + div {
+    margin-top: 0.5rem;
+  }
+}
+
+.login-pf-header {
+  position: relative;
+}
+
+#kc-locale {
+  position: absolute;
+  top: -1rem;
+  right: -1rem;
+
+  .pf-c-dropdown__menu {
+    left: unset;
+    right: 0;
+  }
+}
+
+#kc-form-login,
+#kc-reset-password-form {
+  .login-pf-settings {
+    text-align: center;
+  }
+}
+
+#kc-form-buttons {
+  text-align: center;
+}
+
+@media screen and (max-height: 760px) {
+  .login-pf-page {
+    display: block;
+    padding-bottom: 4rem;
+  }
+
+  .card-pf {
+    margin: 0 auto;
+  }
+}
+
+@media screen and (min-height: 761px) {
+  .login-pf-page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+}

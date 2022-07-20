@@ -35,7 +35,7 @@ import { MailService } from '@pia/lib-service-core';
 chai.use(chaiHttp);
 chai.use(sinonChai);
 
-const apiAddress = 'http://localhost:' + config.public.port.toString();
+const apiAddress = `http://localhost:${config.public.port}`;
 
 describe('/symptomdiary', () => {
   const suiteSandbox = createSandbox();
@@ -68,13 +68,13 @@ describe('/symptomdiary', () => {
     await getRepository(FollowUp).clear();
   });
 
-  describe('GET /sormas/symptomdiary/probands', () => {
+  describe('GET /symptomdiary/probands', () => {
     it('should return http 401 if auth header is missing', async () => {
       // Arrange
       // Act
       const result = await chai
         .request(apiAddress)
-        .get('/sormas/symptomdiary/probands');
+        .get('/symptomdiary/probands');
 
       // Assert
       expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
@@ -91,14 +91,14 @@ describe('/symptomdiary', () => {
       // Act
       await chai
         .request(apiAddress)
-        .get('/sormas/symptomdiary/probands')
+        .get('/symptomdiary/probands')
         .set(authHeader);
 
       clock.tick(validityDuration);
 
       const result = await chai
         .request(apiAddress)
-        .get('/sormas/symptomdiary/probands')
+        .get('/symptomdiary/probands')
         .set(authHeader);
 
       // Assert
@@ -113,7 +113,7 @@ describe('/symptomdiary', () => {
       // Act
       const result = await chai
         .request(apiAddress)
-        .get('/sormas/symptomdiary/probands')
+        .get('/symptomdiary/probands')
         .set(await getAuthHeader());
 
       // Assert
@@ -122,7 +122,7 @@ describe('/symptomdiary', () => {
     });
   });
 
-  describe('POST /sormas/symptomdiary/external-data/{personUUID}', () => {
+  describe('POST /symptomdiary/external-data/{personUUID}', () => {
     it('should return http 401 if auth header is missing', async () => {
       // Arrange
       const personUUID = 'test-person2-uuid';
@@ -130,7 +130,7 @@ describe('/symptomdiary', () => {
       // Act
       const result = await chai
         .request(apiAddress)
-        .post('/sormas/symptomdiary/external-data/' + personUUID)
+        .post('/symptomdiary/external-data/' + personUUID)
         .send();
 
       // Assert
@@ -160,7 +160,7 @@ describe('/symptomdiary', () => {
       // Act
       await chai
         .request(apiAddress)
-        .post('/sormas/symptomdiary/external-data/' + personUUID)
+        .post('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -199,7 +199,7 @@ describe('/symptomdiary', () => {
       // Act
       const result: { body: RegisterProbandResponse } = await chai
         .request(apiAddress)
-        .post('/sormas/symptomdiary/external-data/' + personUUID)
+        .post('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -231,7 +231,7 @@ describe('/symptomdiary', () => {
       // Act
       await chai
         .request(apiAddress)
-        .post('/sormas/symptomdiary/external-data/' + personUUID)
+        .post('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -275,7 +275,7 @@ describe('/symptomdiary', () => {
       // Act
       const result: { body: RegisterProbandResponse } = await chai
         .request(apiAddress)
-        .post('/sormas/symptomdiary/external-data/' + personUUID)
+        .post('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -319,7 +319,7 @@ describe('/symptomdiary', () => {
       // Act
       const result: { body: RegisterProbandResponse } = await chai
         .request(apiAddress)
-        .post('/sormas/symptomdiary/external-data/' + personUUID)
+        .post('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -363,7 +363,7 @@ describe('/symptomdiary', () => {
       // Act
       await chai
         .request(apiAddress)
-        .post('/sormas/symptomdiary/external-data/' + personUUID)
+        .post('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -402,7 +402,7 @@ describe('/symptomdiary', () => {
       // Act
       await chai
         .request(apiAddress)
-        .post('/sormas/symptomdiary/external-data/' + personUUID)
+        .post('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -437,7 +437,7 @@ describe('/symptomdiary', () => {
       // Act
       const result: { body: RegisterProbandResponse } = await chai
         .request(apiAddress)
-        .post('/sormas/symptomdiary/external-data/' + personUUID)
+        .post('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -453,7 +453,7 @@ describe('/symptomdiary', () => {
     });
   });
 
-  describe('PUT /sormas/symptomdiary/external-data/{personUuid}', () => {
+  describe('PUT /symptomdiary/external-data/{personUuid}', () => {
     it('should return http 401 if auth header is missing', async () => {
       // Arrange
       const personUUID = 'test-person2-uuid';
@@ -461,7 +461,7 @@ describe('/symptomdiary', () => {
       // Act
       const result = await chai
         .request(apiAddress)
-        .put('/sormas/symptomdiary/external-data/' + personUUID)
+        .put('/symptomdiary/external-data/' + personUUID)
         .send();
 
       // Assert
@@ -478,7 +478,7 @@ describe('/symptomdiary', () => {
       // Act
       const result = await chai
         .request(apiAddress)
-        .put('/sormas/symptomdiary/external-data/' + personUUID)
+        .put('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -504,7 +504,7 @@ describe('/symptomdiary', () => {
       // Act
       const result: { body: UpdateProbandResponse } = await chai
         .request(apiAddress)
-        .put('/sormas/symptomdiary/external-data/' + personUUID)
+        .put('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -543,7 +543,7 @@ describe('/symptomdiary', () => {
       // Act
       const result: { body: UpdateProbandResponse } = await chai
         .request(apiAddress)
-        .put('/sormas/symptomdiary/external-data/' + personUUID)
+        .put('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -583,7 +583,7 @@ describe('/symptomdiary', () => {
       // Act
       const result: { body: UpdateProbandResponse } = await chai
         .request(apiAddress)
-        .put('/sormas/symptomdiary/external-data/' + personUUID)
+        .put('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -630,7 +630,7 @@ describe('/symptomdiary', () => {
       // Act
       const result: { body: UpdateProbandResponse } = await chai
         .request(apiAddress)
-        .put('/sormas/symptomdiary/external-data/' + personUUID)
+        .put('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -646,7 +646,7 @@ describe('/symptomdiary', () => {
     });
   });
 
-  describe('DELETE /sormas/symptomdiary/external-data/{personUuid}', () => {
+  describe('DELETE /symptomdiary/external-data/{personUuid}', () => {
     it('should return http 401 if auth header is missing', async () => {
       // Arrange
       const personUUID = 'test-person2-uuid';
@@ -654,7 +654,7 @@ describe('/symptomdiary', () => {
       // Act
       const result = await chai
         .request(apiAddress)
-        .delete('/sormas/symptomdiary/external-data/' + personUUID)
+        .delete('/symptomdiary/external-data/' + personUUID)
         .send();
 
       // Assert
@@ -671,7 +671,7 @@ describe('/symptomdiary', () => {
       // Act
       const result: { body: DeactivateProbandResponse } = await chai
         .request(apiAddress)
-        .delete('/sormas/symptomdiary/external-data/' + personUUID)
+        .delete('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -690,7 +690,7 @@ describe('/symptomdiary', () => {
       // Act
       const result: { body: DeactivateProbandResponse } = await chai
         .request(apiAddress)
-        .delete('/sormas/symptomdiary/external-data/' + personUUID)
+        .delete('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -715,7 +715,7 @@ describe('/symptomdiary', () => {
       // Act
       const result: { body: DeactivateProbandResponse } = await chai
         .request(apiAddress)
-        .delete('/sormas/symptomdiary/external-data/' + personUUID)
+        .delete('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -741,7 +741,7 @@ describe('/symptomdiary', () => {
       // Act
       const result: { body: DeactivateProbandResponse } = await chai
         .request(apiAddress)
-        .delete('/sormas/symptomdiary/external-data/' + personUUID)
+        .delete('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -772,7 +772,7 @@ describe('/symptomdiary', () => {
       // Act
       const result: { body: DeactivateProbandResponse } = await chai
         .request(apiAddress)
-        .delete('/sormas/symptomdiary/external-data/' + personUUID)
+        .delete('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
@@ -803,7 +803,7 @@ describe('/symptomdiary', () => {
       // Act
       await chai
         .request(apiAddress)
-        .delete('/sormas/symptomdiary/external-data/' + personUUID)
+        .delete('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
       const followUp = await getRepository(FollowUp).findOne({ pseudonym });
@@ -813,14 +813,14 @@ describe('/symptomdiary', () => {
     });
   });
 
-  describe('GET /sormas/symptomdiary/probands/data', () => {
+  describe('GET /symptomdiary/probands/data', () => {
     it('should return http 400 if auth token is missing', async () => {
       // Arrange
       const personUUID = 'test-person2-uuid';
       // Act
       const result = await chai
         .request(apiAddress)
-        .get('/sormas/symptomdiary/probands/data')
+        .get('/symptomdiary/probands/data')
         .query({
           q: personUUID,
         });
@@ -839,19 +839,16 @@ describe('/symptomdiary', () => {
         (config.sormasOnPia.tokenValidity + 1) * MILLISECONDS_PER_SECOND;
 
       // Act
-      await chai
-        .request(apiAddress)
-        .get('/sormas/symptomdiary/probands/data')
-        .query({
-          q: personUUID,
-          token: authToken,
-        });
+      await chai.request(apiAddress).get('/symptomdiary/probands/data').query({
+        q: personUUID,
+        token: authToken,
+      });
 
       clock.tick(validityDuration);
 
       const result = await chai
         .request(apiAddress)
-        .get('/sormas/symptomdiary/probands/data')
+        .get('/symptomdiary/probands/data')
         .query({
           q: personUUID,
           token: authToken,
@@ -876,7 +873,7 @@ describe('/symptomdiary', () => {
 
       const result = await chai
         .request(apiAddress)
-        .get('/sormas/symptomdiary/probands/data')
+        .get('/symptomdiary/probands/data')
         .set('accept-language', 'de-DE')
         .query({
           q: personUUID,
@@ -915,7 +912,7 @@ describe('/symptomdiary', () => {
 
       const result = await chai
         .request(apiAddress)
-        .get('/sormas/symptomdiary/probands/data')
+        .get('/symptomdiary/probands/data')
         .set('accept-language', 'de-DE')
         .query({
           q: personUUID,
@@ -959,13 +956,10 @@ describe('/symptomdiary', () => {
     };
   }
   async function getAuthToken(): Promise<string> {
-    const response = await chai
-      .request(apiAddress)
-      .post('/sormas/requestToken')
-      .send({
-        email: config.sormasOnPia.username,
-        password: config.sormasOnPia.password,
-      });
+    const response = await chai.request(apiAddress).post('/requestToken').send({
+      email: config.sormasOnPia.username,
+      password: config.sormasOnPia.password,
+    });
     return (response.body as RequestTokenResponseSuccess).token;
   }
 

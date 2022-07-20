@@ -8,8 +8,12 @@ const secretDetectionReportPath = process.argv[2];
 const secretDetectionReportJson = require(`${secretDetectionReportPath}`);
 
 const falsePositives = [
-  'psa.lib.service-core/tests/private.key:8bcac7908eb950419537b91e19adc83ce2c9cbfdacf4f81157fdadfec11f7017:RSA private key',
-  'psa.service.authservice/tests/unit/private.key:8bcac7908eb950419537b91e19adc83ce2c9cbfdacf4f81157fdadfec11f7017:RSA private key',
+  // There seems to be a bug in detecting Hashicorp Vault service token (everything with ...s.any_text)
+  // since analyzers/secrets:3.24.5 (https://gitlab.com/gitlab-org/security-products/analyzers/secrets/-/blob/master/CHANGELOG.md)
+  // The issue is reported here https://gitlab.com/gitlab-org/gitlab/-/issues/351714
+  // as long as this is not fixed we need to set those issues as false positive
+  'psa.app.web/src/app/pages/samples/samples/samples.component.ts:6cede7bb77877c5fed36e38c786a233313b737d1ff120bc4af42706f8a713311:Hashicorp Vault service token',
+  'psa.lib.service-core/dist/src/plugins/registerPlugins.js:be490c3fbe8370c45a40eaa14243498bc6938817d0a7e3e3e4a84da5f31d0c1e:Hashicorp Vault service token',
 ];
 
 if (hasVulnerabilities(secretDetectionReportJson)) {

@@ -1,7 +1,0 @@
--- creates a default admin user that can be used for tests
-
-\connect pia_database;
-
-COPY accounts (username, password, role, number_of_wrong_attempts, third_wrong_password_at, salt) FROM stdin;
-Administrator	1881afc6614abb3d600db62aebc4fdca433a9fa931e6f58acae797111deb41dd11b0cffc29c1cbd36392f9120ed4d5746acaa213f3b9883cf58f8e5ca46ab4ac5a0bc6b7bf61a285c676299bcb6143fe70acd17372f8bff91d014e4edd34b7fe7521590a0a46fb361f058a324d79be9eb08be7b129f17b9e4091362b1f39798a	SysAdmin	0	\N	207da6658074436e
-\.

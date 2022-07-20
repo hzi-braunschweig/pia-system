@@ -7,3 +7,9 @@ files:
     translation: /psa.service.complianceservice/resources/i18n/%locale%.json
   - source: /psa.service.sormasservice/resources/i18n/de-DE.json
     translation: /psa.service.sormasservice/resources/i18n/%locale%.json
+  - source: /psa.server.auth/themes/pia/login/messages/messages_de_DE.properties
+    translation: /psa.server.auth/themes/pia/login/messages/messages_%locale_with_underscore%.properties
+  - source: /psa.server.auth/themes/pia/email/messages/messages_de_DE.properties
+    translation: /psa.server.auth/themes/pia/email/messages/messages_%locale_with_underscore%.properties
+  - source: /psa.server.auth/themes/pia/account/messages/messages_de_DE.properties
+    translation: /psa.server.auth/themes/pia/account/messages/messages_%locale_with_underscore%.properties

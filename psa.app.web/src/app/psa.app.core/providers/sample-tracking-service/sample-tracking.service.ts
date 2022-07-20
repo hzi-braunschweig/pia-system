@@ -7,14 +7,13 @@
 import { Injectable } from '@angular/core';
 import { BloodSample, LabResult } from '../../models/labresult';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { AuthenticationManager } from '../../../_services/authentication-manager.service';
 import { Questionnaire } from '../../models/questionnaire';
 
 @Injectable()
 export class SampleTrackingService {
   private readonly apiUrl = 'api/v1/sample/';
 
-  constructor(private http: HttpClient, private auth: AuthenticationManager) {}
+  constructor(private http: HttpClient) {}
 
   /**
    * Return a list with laboratory results for proband
@@ -155,7 +154,8 @@ export class SampleTrackingService {
    */
   updateSampleStatusAndSampleDateFor(
     sampleID: string,
-    dummySampleId: string
+    dummySampleId: string,
+    pseudonym: string
   ): Promise<LabResult> {
     const data = {
       remark: '', // will be ignored from back end
@@ -163,16 +163,15 @@ export class SampleTrackingService {
       date_of_sampling: new Date(), // only relevant information for background
       dummy_sample_id: dummySampleId ? dummySampleId : undefined,
     };
-    return this.putLabResult(this.auth.getCurrentUsername(), sampleID, data);
+    return this.putLabResult(pseudonym, sampleID, data);
   }
 
-  requestMaterialForCurrentUser(): Promise<Questionnaire> {
+  public async requestMaterialForProband(
+    pseudonym: string
+  ): Promise<Questionnaire> {
     return this.http
       .post<Questionnaire>(
-        this.apiUrl +
-          'probands/' +
-          this.auth.getCurrentUsername() +
-          '/needsMaterial',
+        this.apiUrl + 'probands/' + pseudonym + '/needsMaterial',
         {}
       )
       .toPromise();

@@ -1,4 +1,17 @@
-CREATE TABLE personal_data
+CREATE ROLE personaldataservice_role;
+CREATE SCHEMA personaldataservice;
+GRANT ALL ON SCHEMA personaldataservice TO personaldataservice_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA personaldataservice GRANT ALL ON TABLES TO personaldataservice_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA personaldataservice GRANT ALL ON SEQUENCES TO personaldataservice_role;
+
+CREATE ROLE authserver_role;
+CREATE SCHEMA authserver;
+GRANT ALL ON SCHEMA authserver TO authserver_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA authserver GRANT ALL ON TABLES TO authserver_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA authserver GRANT ALL ON SEQUENCES TO authserver_role;
+
+
+CREATE TABLE personaldataservice.personal_data
 (
     pseudonym      varchar(32) PRIMARY KEY,
     study          TEXT NOT NULL,
@@ -18,7 +31,7 @@ CREATE TABLE personal_data
     comment        varchar(500) DEFAULT NULL
 );
 
-CREATE TABLE pending_deletions
+CREATE TABLE personaldataservice.pending_deletions
 (
     id            SERIAL PRIMARY KEY,
     study         TEXT        NOT NULL,
@@ -26,3 +39,13 @@ CREATE TABLE pending_deletions
     requested_for TEXT        NOT NULL,
     proband_id    TEXT UNIQUE NOT NULL
 );
+
+
+CREATE TABLE public.db_migrations
+(
+    name text NOT NULL,
+    date timestamp WITH TIME ZONE NOT NULL
+);
+
+INSERT INTO public.db_migrations(name, date)
+VALUES ('/migrations/1638890579__create_roles_for_schemas.sql', NOW());

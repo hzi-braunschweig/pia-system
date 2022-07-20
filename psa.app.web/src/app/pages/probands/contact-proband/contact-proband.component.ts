@@ -4,20 +4,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
+import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
-import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { MatChipInputEvent } from '@angular/material/chips';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
 import { PersonalDataService } from '../../../psa.app.core/providers/personaldata-service/personaldata-service';
 import { NotificationService } from '../../../psa.app.core/providers/notification-service/notification-service';
-import { ReplaySubject } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
+import { CurrentUser } from '../../../_services/current-user.service';
+import { ProbandService } from '../../../psa.app.core/providers/proband-service/proband.service';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-contact-proband',
@@ -25,43 +22,24 @@ import { Location } from '@angular/common';
   styleUrls: ['./contact-proband.component.scss'],
 })
 export class ContactProbandComponent implements OnInit {
-  @ViewChild('pseudonymInput', { static: true })
-  public pseudonymInput: ElementRef;
-
   public isChildWindow = false;
-  public selectable = true;
-  public removable = true;
-  public submitButtonIsDisabled = false;
 
-  public contactAll = false;
-  public notifyByEmail = false;
-  public notifyByNotification = false;
+  public studyName = new FormControl(null, [Validators.required]);
 
-  public separatorKeysCodes = [ENTER, COMMA];
-
-  public receiver = new FormControl('', [Validators.required]);
-  public subject = new FormControl('', [Validators.required]);
-  public content = new FormControl('', [Validators.required]);
-
-  public messageFormGroup = new FormGroup({
-    receiver: this.receiver,
-    subject: this.subject,
-    content: this.content,
+  public message = new FormGroup({
+    recipients: new FormControl([], [Validators.required]),
+    title: new FormControl('', [Validators.required]),
+    body: new FormControl('', [Validators.required]),
   });
 
-  public pseudonyms: string[] = [];
+  public notifyByEmail = new FormControl(false);
+  public notifyByNotification = new FormControl(false);
 
-  public autoCompletePseudonyms: ReplaySubject<string[]> = new ReplaySubject<
-    string[]
-  >(1);
-
-  private allPseudonyms = [];
-  private autoCompletePseudonymsArray = [];
-  private personalData = [];
+  public allPseudonyms = [];
 
   constructor(
-    private translate: TranslateService,
-    private auth: AuthService,
+    public currentUser: CurrentUser,
+    private probandService: ProbandService,
     private matDialog: MatDialog,
     private activatedRoute: ActivatedRoute,
     private location: Location,
@@ -69,227 +47,131 @@ export class ContactProbandComponent implements OnInit {
     private notificationService: NotificationService
   ) {
     if (this.activatedRoute.snapshot.paramMap.has('usernames')) {
-      this.pseudonyms = this.activatedRoute.snapshot.paramMap
-        .get('usernames')
-        .split(';');
-      this.notifyByEmail = true;
+      this.message
+        .get('recipients')
+        .setValue(
+          this.activatedRoute.snapshot.paramMap.get('usernames').split(';')
+        );
+      this.notifyByEmail.setValue(true);
       this.isChildWindow = true;
     }
   }
 
   public async ngOnInit(): Promise<void> {
-    // listen for search field value changes
-    this.receiver.valueChanges.subscribe(() => {
-      this.updateAutoCompletePseudonyms();
-    });
-
-    const res = await this.auth.getProbands();
-    this.allPseudonyms = res
-      .filter((user) => user.status === 'active')
-      .map((user) => user.pseudonym);
-    this.autoCompletePseudonymsArray = this.allPseudonyms;
-    this.updateAutoCompletePseudonyms();
-    this.personalData = await this.personalDataService.getPersonalDataAll();
+    this.studyName.valueChanges
+      .pipe(filter(Boolean))
+      .subscribe(async (studyName) => {
+        this.allPseudonyms = (await this.probandService.getProbands(studyName))
+          .filter((user) => user.status === 'active')
+          .map((user) => user.pseudonym);
+      });
   }
 
-  filter(name: string): string[] {
-    return this.allPseudonyms.filter(
-      (pseudonym) => pseudonym.toLowerCase().indexOf(name.toLowerCase()) === 0
-    );
-  }
-
-  onSubmit(): void {
-    if (this.pseudonyms.length === 0 && this.contactAll === false) {
+  public async onSubmit(): Promise<void> {
+    let dialogMessage;
+    if (this.message.get('recipients').value.length === 0) {
+      dialogMessage = 'CONTACT_PROBAND.RECIPIENT_IS_REQUIRED';
+    } else if (this.message.get('title').invalid) {
+      dialogMessage = 'CONTACT_PROBAND.SUBJECT_IS_REQUIRED';
+    } else if (this.message.get('body').invalid) {
+      dialogMessage = 'CONTACT_PROBAND.ENTER_MESSAGE_WARNING';
+    }
+    if (dialogMessage) {
       this.matDialog.open(DialogPopUpComponent, {
         width: '500px',
         data: {
           data: '',
-          content: 'CONTACT_PROBAND.RECIPIENT_IS_REQUIRED',
+          content: dialogMessage,
           isSuccess: false,
         },
       });
-    } else if (this.messageFormGroup.get('subject').invalid) {
-      this.matDialog.open(DialogPopUpComponent, {
-        width: '500px',
-        data: {
-          data: '',
-          content: 'CONTACT_PROBAND.SUBJECT_IS_REQUIRED',
-          isSuccess: false,
-        },
-      });
-    } else if (this.messageFormGroup.get('content').invalid) {
-      this.matDialog.open(DialogPopUpComponent, {
-        width: '500px',
-        data: {
-          data: '',
-          content: 'CONTACT_PROBAND.ENTER_MESSAGE_WARNING',
-          isSuccess: false,
-        },
-      });
-    } else {
-      this.disableAllElements();
-
-      const requestData = {
-        recipients: this.contactAll ? this.allPseudonyms : this.pseudonyms,
-        title: this.messageFormGroup.get('subject').value,
-        body: this.messageFormGroup.get('content').value,
-      };
-
-      if (this.notifyByNotification) {
-        this.notificationService
-          .sendNotification(requestData)
-          .then(() => {
-            this.matDialog.open(DialogPopUpComponent, {
-              width: '500px',
-              data: {
-                data: '',
-                content: 'CONTACT_PROBAND.NOTIFICATIONS_SENT',
-                values: { probanden: requestData.recipients.join(',\n') },
-                isSuccess: true,
-              },
-            });
-          })
-          .catch((err) => {
-            console.log(err);
-            this.matDialog.open(DialogPopUpComponent, {
-              width: '500px',
-              data: {
-                data: '',
-                content: 'SAMPLE_MANAGEMENT.ERROR_MATERIAL_REQUEST',
-                isSuccess: false,
-              },
-            });
-          })
-          .finally(() => this.enableAllElements());
-      }
-
-      if (this.notifyByEmail) {
-        this.notificationService
-          .sendEmail(requestData)
-          .then((emailAddresses) => {
-            const mailsSentToText = this.personalData
-              .filter((personalData) =>
-                emailAddresses.includes(personalData.email)
-              )
-              .map(
-                (personalData) =>
-                  personalData.pseudonym + '(' + personalData.email + ')'
-              )
-              .join(',\n');
-
-            this.matDialog.open(DialogPopUpComponent, {
-              width: '500px',
-              data: {
-                data: '',
-                content: 'CONTACT_PROBAND.EMAILS_SENT',
-                values: { probanden: mailsSentToText },
-                isSuccess: true,
-              },
-            });
-          })
-          .catch((err) => {
-            this.matDialog.open(DialogPopUpComponent, {
-              width: '500px',
-              data: {
-                data: '',
-                content: 'SAMPLE_MANAGEMENT.ERROR_MATERIAL_REQUEST',
-                isSuccess: false,
-              },
-            });
-          })
-          .finally(() => {
-            this.contactAll = false;
-            this.notifyByEmail = false;
-            this.notifyByNotification = false;
-            this.enableAllElements();
-          });
-      }
-    }
-  }
-
-  disableAllElements(): void {
-    this.messageFormGroup.get('receiver').disable();
-    this.messageFormGroup.get('subject').disable();
-    this.messageFormGroup.get('content').disable();
-    this.submitButtonIsDisabled = true;
-    this.removable = false;
-  }
-
-  enableAllElements(): void {
-    this.messageFormGroup.get('receiver').enable();
-    this.messageFormGroup.get('subject').enable();
-    this.messageFormGroup.get('content').enable();
-
-    this.pseudonyms = [];
-    this.messageFormGroup.get('subject').setValue('');
-    this.messageFormGroup.get('content').setValue('');
-
-    this.submitButtonIsDisabled = false;
-    this.removable = true;
-    this.updateAutoCompletePseudonyms();
-  }
-
-  add(event: MatChipInputEvent): void {
-    const input = event.input;
-    const value = event.value;
-
-    if ((value || '').trim()) {
-      this.pseudonyms.push(value.trim());
-    }
-
-    // Reset the input value
-    if (input) {
-      input.value = '';
-    }
-
-    this.receiver.setValue(null);
-  }
-
-  remove(pseudonym: any): void {
-    const index = this.pseudonyms.indexOf(pseudonym);
-
-    if (index >= 0) {
-      this.pseudonyms.splice(index, 1);
-    }
-    this.autoCompletePseudonymsArray.push(pseudonym);
-    this.updateAutoCompletePseudonyms();
-  }
-
-  selected(event: MatAutocompleteSelectedEvent): void {
-    this.pseudonyms.push(event.option.viewValue);
-    const indexAutoComplete = this.autoCompletePseudonymsArray.indexOf(
-      event.option.viewValue
-    );
-    if (indexAutoComplete >= 0) {
-      this.autoCompletePseudonymsArray.splice(indexAutoComplete, 1);
-    }
-    this.pseudonymInput.nativeElement.value = '';
-    this.receiver.setValue(null);
-    this.pseudonymInput.nativeElement.blur();
-    this.updateAutoCompletePseudonyms();
-  }
-
-  updateAutoCompletePseudonyms(): void {
-    this.autoCompletePseudonyms.next(this.allPseudonyms);
-    if (!this.autoCompletePseudonymsArray) {
       return;
     }
-    // get the search keyword
-    let search = this.pseudonymInput.nativeElement.value;
-    if (!search) {
-      this.autoCompletePseudonyms.next(
-        this.autoCompletePseudonymsArray.slice()
+    this.message.disable();
+
+    if (this.notifyByNotification.value) {
+      await this.sendNotification();
+    }
+    if (this.notifyByEmail.value) {
+      await this.sendMail();
+    }
+
+    this.message.enable();
+    this.resetValues();
+  }
+
+  private async sendNotification(): Promise<void> {
+    try {
+      await this.notificationService.sendNotification(this.message.value);
+      this.matDialog.open(DialogPopUpComponent, {
+        width: '500px',
+        data: {
+          data: '',
+          content: 'CONTACT_PROBAND.NOTIFICATIONS_SENT',
+          values: {
+            probanden: this.message.get('recipients').value.join(',\n'),
+          },
+          isSuccess: true,
+        },
+      });
+    } catch (err) {
+      console.log(err);
+      this.matDialog.open(DialogPopUpComponent, {
+        width: '500px',
+        data: {
+          data: '',
+          content: 'SAMPLE_MANAGEMENT.ERROR_MATERIAL_REQUEST',
+          isSuccess: false,
+        },
+      });
+    }
+  }
+
+  private async sendMail(): Promise<void> {
+    try {
+      const emailAddresses = await this.notificationService.sendEmail(
+        this.message.value
       );
-      return;
-    } else {
-      search = search.toLowerCase();
-    }
-    // filter the lab results
-    this.autoCompletePseudonyms.next(
-      this.autoCompletePseudonymsArray.filter((pseudonym) =>
-        pseudonym.toLowerCase().includes(search)
+
+      const mailsSentToText = (
+        await this.personalDataService.getPersonalDataAll()
       )
-    );
+        .filter((personalData) => emailAddresses.includes(personalData.email))
+        .map(
+          (personalData) =>
+            personalData.pseudonym + '(' + personalData.email + ')'
+        )
+        .join(',\n');
+
+      this.matDialog.open(DialogPopUpComponent, {
+        width: '500px',
+        data: {
+          data: '',
+          content: 'CONTACT_PROBAND.EMAILS_SENT',
+          values: { probanden: mailsSentToText },
+          isSuccess: true,
+        },
+      });
+    } catch (err) {
+      this.matDialog.open(DialogPopUpComponent, {
+        width: '500px',
+        data: {
+          data: '',
+          content: 'SAMPLE_MANAGEMENT.ERROR_MATERIAL_REQUEST',
+          isSuccess: false,
+        },
+      });
+    }
+  }
+
+  private resetValues(): void {
+    this.notifyByEmail.reset(false);
+    this.notifyByNotification.reset(false);
+    this.message.reset({
+      receipients: [],
+      title: '',
+      body: '',
+    });
   }
 
   goBackInHistory(): void {

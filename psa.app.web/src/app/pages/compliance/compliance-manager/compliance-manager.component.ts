@@ -17,7 +17,7 @@ import { AlertService } from '../../../_services/alert.service';
 import { ProbandsListEntryActionConfig } from '../../../features/probands-list/probands-list.component';
 import { ComplianceAgreement } from '../../../psa.app.core/models/compliance';
 import { CompliancesFilter } from './compliances-filter';
-import { QuestionnaireService } from '../../../psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { ComplianceService } from '../../../psa.app.core/providers/compliance-service/compliance-service';
 
 @Component({
@@ -29,7 +29,7 @@ export class ComplianceManagerComponent implements OnInit {
   constructor(
     private readonly dialog: MatDialog,
     private readonly complianceService: ComplianceService,
-    private readonly questionnaireService: QuestionnaireService,
+    private readonly userService: UserService,
     private readonly alertService: AlertService
   ) {}
 
@@ -86,8 +86,9 @@ export class ComplianceManagerComponent implements OnInit {
     try {
       const compliances =
         await this.complianceService.getAllCompliancesForProfessional();
-      const studiesResp = await this.questionnaireService.getStudies();
-      this.studyFilterValues = studiesResp.studies.map((value) => value.name);
+      this.studyFilterValues = (await this.userService.getStudies()).map(
+        (value) => value.name
+      );
       this.dataSource = new MatTableDataSource<ComplianceAgreement>(
         compliances
       );

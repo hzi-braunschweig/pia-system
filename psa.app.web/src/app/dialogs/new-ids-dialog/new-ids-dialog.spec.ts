@@ -9,7 +9,7 @@ import { AppModule } from '../../app.module';
 import { DialogNewIdsComponent } from './new-ids-dialog';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
-import { QuestionnaireService } from '../../psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 import { CreateIDSProbandRequest } from '../../psa.app.core/models/proband';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { createStudy } from '../../psa.app.core/models/instance.helper.spec';
@@ -22,13 +22,13 @@ describe('DialogNewIdsComponent', () => {
   let component: DialogNewIdsComponent;
   let dialogRef: SpyObj<MatDialogRef<DialogNewIdsComponent>>;
   let authService: SpyObj<AuthService>;
-  let questionnaireService: SpyObj<QuestionnaireService>;
+  let userService: SpyObj<UserService>;
 
   beforeEach(async () => {
     // Provider and Services
     dialogRef = createSpyObj<MatDialogRef<DialogNewIdsComponent>>(['close']);
     authService = createSpyObj<AuthService>(['postIDS']);
-    questionnaireService = createSpyObj<QuestionnaireService>(['getStudies']);
+    userService = createSpyObj<UserService>(['getStudies']);
 
     // Build Base Module
     await MockBuilder(DialogNewIdsComponent, AppModule)
@@ -37,14 +37,15 @@ describe('DialogNewIdsComponent', () => {
         useValue: dialogRef,
       })
       .mock(AuthService, authService)
-      .mock(QuestionnaireService, questionnaireService);
+      .mock(UserService, userService);
   });
 
   beforeEach(fakeAsync(() => {
     // Setup mocks before creating component
-    questionnaireService.getStudies.and.resolveTo({
-      studies: [createStudy({ name: 'Test1' }), createStudy({ name: 'Test2' })],
-    });
+    userService.getStudies.and.resolveTo([
+      createStudy({ name: 'Test1' }),
+      createStudy({ name: 'Test2' }),
+    ]);
     authService.postIDS.and.resolveTo(null);
 
     // Create component

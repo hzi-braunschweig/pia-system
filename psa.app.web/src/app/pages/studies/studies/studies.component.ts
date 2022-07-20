@@ -7,7 +7,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { AlertService } from '../../../_services/alert.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -27,10 +27,10 @@ import {
 } from '../../../_helpers/dialog-delete-partner';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
 import { DialogChangeStudyComponent } from 'src/app/dialogs/dialog-change-study/dialog-change-study.component';
-import { AuthenticationManager } from '../../../_services/authentication-manager.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { FormControl } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { CurrentUser } from '../../../_services/current-user.service';
 import { isSpecificHttpError } from '../../../psa.app.core/models/specificHttpError';
 import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
 import { filter } from 'rxjs/operators';
@@ -51,31 +51,25 @@ export class StudiesComponent implements OnInit {
   @ViewChild(MatSort, { static: true })
   private sort: MatSort;
 
-  public currentRole: string;
-  public currentUsername: string;
-
   public displayedColumns = ['name', 'description', 'status', 'view'];
   public dataSource = new MatTableDataSource<Study>();
   public isLoading = false;
   public filterKeyword = new FormControl('');
 
   constructor(
-    private questionnaireService: QuestionnaireService,
-    private alertService: AlertService,
-    private activatedRoute: ActivatedRoute,
-    private authService: AuthService,
-    private router: Router,
-    private dialog: MatDialog,
-    auth: AuthenticationManager
-  ) {
-    this.currentUsername = auth.getCurrentUsername();
-    this.currentRole = auth.getCurrentRole();
+    public readonly user: CurrentUser,
+    private readonly userService: UserService,
+    private readonly alertService: AlertService,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly dialog: MatDialog
+  ) {}
+
+  public async ngOnInit(): Promise<void> {
     this.filterKeyword.valueChanges.subscribe(
       (value) => (this.dataSource.filter = value.trim().toLowerCase())
     );
-  }
-
-  public async ngOnInit(): Promise<void> {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
     await this.initTable();
@@ -149,7 +143,7 @@ export class StudiesComponent implements OnInit {
         correspondingStudy &&
         correspondingStudy.pendingStudyChange &&
         correspondingStudy.pendingStudyChange.requested_for ===
-          this.currentUsername
+          this.user.username
       ) {
         this.openDialogChangeStudy(correspondingStudy);
       }
@@ -160,8 +154,7 @@ export class StudiesComponent implements OnInit {
     this.isLoading = true;
     this.dataSource.data = [];
     try {
-      const { studies } = await this.questionnaireService.getStudies();
-      this.dataSource.data = studies;
+      this.dataSource.data = await this.userService.getStudies();
     } catch (err) {
       this.alertService.errorObject(err);
     }
@@ -185,40 +178,39 @@ export class StudiesComponent implements OnInit {
     });
   }
 
-  openDialogChangeStudy(study: Study): void {
-    const dialogRef = this.dialog.open(DialogChangeStudyComponent, {
-      width: study.pendingStudyChange ? '1100px' : '700px',
-      height: 'auto',
-      data: { study },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result && result === 'rejected') {
-        const data = {
-          content: 'STUDIES.CHANGE_COMPLIANCES_REJECTED',
-          isSuccess: false,
-        };
-        this.showResultDialog(data);
-      } else if (result && result === 'accepted') {
-        const data = {
-          content: 'STUDIES.CHANGE_COMPLIANCES_ACCEPTED',
-          isSuccess: true,
-        };
-        this.showResultDialog(data);
-      } else if (result && result === 'requested') {
-        const data = {
-          content: 'STUDIES.CHANGE_COMPLIANCES_REQUESTED',
-          isSuccess: true,
-        };
-        this.showResultDialog(data);
-      } else if (result) {
-        this.showResultDialog({
-          content: this.getErrorMessage(result),
-          isSuccess: false,
-        });
-      }
-      this.initTable();
-    });
+  public openDialogChangeStudy(study: Study): void {
+    this.dialog
+      .open(DialogChangeStudyComponent, {
+        width: study.pendingStudyChange ? '1100px' : '700px',
+        height: 'auto',
+        data: { study },
+      })
+      .afterClosed()
+      .pipe(filter((result) => !!result))
+      .subscribe((result) => {
+        if (result === 'rejected') {
+          this.showResultDialog({
+            content: 'STUDIES.CHANGE_COMPLIANCES_REJECTED',
+            isSuccess: false,
+          });
+        } else if (result === 'accepted') {
+          this.showResultDialog({
+            content: 'STUDIES.CHANGE_COMPLIANCES_ACCEPTED',
+            isSuccess: true,
+          });
+        } else if (result === 'requested') {
+          this.showResultDialog({
+            content: 'STUDIES.CHANGE_COMPLIANCES_REQUESTED',
+            isSuccess: true,
+          });
+        } else {
+          this.showResultDialog({
+            content: this.getErrorMessage(result),
+            isSuccess: false,
+          });
+        }
+        this.initTable();
+      });
   }
 
   openDialog(name: string, type: DeletionType): void {

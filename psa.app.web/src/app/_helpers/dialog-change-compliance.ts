@@ -10,7 +10,9 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { ReplaySubject } from 'rxjs';
 import { AlertService } from '../_services/alert.service';
-import { ProfessionalUser } from '../psa.app.core/models/user';
+import { UserService } from '../psa.app.core/providers/user-service/user.service';
+import { DialogChangeComplianceData } from '../pages/probands/probands-personal-info/probands-personal-info.component';
+import { ProfessionalAccount } from '../psa.app.core/models/professionalAccount';
 
 @Component({
   selector: 'dialog-change-compliance',
@@ -119,17 +121,20 @@ import { ProfessionalUser } from '../psa.app.core/models/user';
   `,
 })
 export class DialogChangeComplianceComponent implements OnInit {
-  form: FormGroup;
+  public form: FormGroup;
   public usernameFilterCtrl: FormControl = new FormControl();
-  public filteredUsers: ReplaySubject<any[]> = new ReplaySubject<any[]>(1);
-  usersWithSameRole: ProfessionalUser[];
-  usernames: any = { usernameProband: '', usernamePM: '' };
+  public filteredUsers: ReplaySubject<ProfessionalAccount[]> =
+    new ReplaySubject(1);
+  public usernames = { usernameProband: '', usernamePM: '' };
+
+  private usersWithSameRole: ProfessionalAccount[];
 
   constructor(
-    public dialogRef: MatDialogRef<DialogChangeComplianceComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    public alertService: AlertService,
-    public authService: AuthService
+    @Inject(MAT_DIALOG_DATA) public data: DialogChangeComplianceData,
+    private dialogRef: MatDialogRef<DialogChangeComplianceComponent>,
+    private alertService: AlertService,
+    private authService: AuthService,
+    private userService: UserService
   ) {
     this.usernames.usernameProband = data.usernameProband;
     this.usernames.usernamePM = data.requested_by;
@@ -137,17 +142,15 @@ export class DialogChangeComplianceComponent implements OnInit {
 
   public ngOnInit(): void {
     if (!this.data.requested_by && this.data.has_four_eyes_opposition) {
-      this.authService
-        .getUsersWithSameRole()
+      this.userService
+        .getProfessionalAccounts({
+          studyName: this.data.studyName,
+          onlyMailAddresses: true,
+          filterSelf: true,
+        })
         .then((users) => {
           this.usersWithSameRole = users;
-          this.filteredUsers.next(
-            this.usersWithSameRole.filter((user) => {
-              // use validator to filter users without email address
-              const control = new FormControl(user.username, Validators.email);
-              return !control.errors || !control.errors.email;
-            })
-          );
+          this.filteredUsers.next(this.usersWithSameRole);
         })
         .catch((err) => {
           this.alertService.errorObject(err);
@@ -244,7 +247,9 @@ export class DialogChangeComplianceComponent implements OnInit {
       );
     } else {
       this.authService
-        .putPendingComplianceChange(this.data.deletePendingComplianceChangeId)
+        .putPendingComplianceChange(
+          this.data.deletePendingComplianceChangeId.toString()
+        )
         .then(
           (result: any) => {
             dialogResult.push(result);

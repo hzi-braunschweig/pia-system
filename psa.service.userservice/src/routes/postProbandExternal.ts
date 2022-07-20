@@ -10,7 +10,7 @@ import { ProbandsHandler } from '../handlers/probandsHandler';
 
 // This route is only used by NatCoEdc
 const route: ServerRoute = {
-  path: '/user/probands',
+  path: '/probands',
   method: 'POST',
   handler: ProbandsHandler.createProbandFromExternal,
   options: {
@@ -22,6 +22,7 @@ const route: ServerRoute = {
         apiKey: Joi.string().required().description('a valid api key'),
         ut_email: Joi.string()
           .required()
+          .lowercase()
           .description('the email/username of the requesting ut'),
         pseudonym: Joi.string()
           .required()

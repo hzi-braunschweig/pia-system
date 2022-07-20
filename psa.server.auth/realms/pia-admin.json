@@ -1,0 +1,210 @@
+{
+  "realm": "pia-admin-realm",
+  "enabled": true,
+  "displayName": "PIA Admin App",
+  "defaultSignatureAlgorithm": "RS512",
+  "revokeRefreshToken": true,
+  "refreshTokenMaxReuse": 3,
+  "sslRequired": "all",
+  "rememberMe": true,
+  "loginWithEmailAllowed": true,
+  "verifyEmail": true,
+  "resetPasswordAllowed": true,
+  "bruteForceProtected": true,
+  "failureFactor": 5,
+  "passwordPolicy": "hashIterations(100000) and hashAlgorithm(pbkdf2-sha512)",
+  "smtpServer": {
+    "password": "[[env:MAIL_PASSWORD]]",
+    "starttls": "[[env:MAIL_REQUIRE_TLS]]",
+    "auth": "true",
+    "port": "[[env:MAIL_PORT]]",
+    "host": "[[env:MAIL_HOST]]",
+    "from": "[[env:MAIL_FROM_ADDRESS]]",
+    "fromDisplayName": "[[env:MAIL_FROM_NAME]]",
+    "ssl": "[[env:MAIL_REQUIRE_TLS]]",
+    "user": "[[env:MAIL_USER]]"
+  },
+  "loginTheme": "pia",
+  "accountTheme": "pia",
+  "emailTheme": "pia",
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "de-DE",
+    "de-CH",
+    "en-US"
+  ],
+  "defaultLocale": "de-DE",
+  "userManagedAccessAllowed": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "Untersuchungsteam",
+        "description": "Untersuchungsteam"
+      },
+      {
+        "name": "Forscher",
+        "description": "Forscher:in"
+      },
+      {
+        "name": "SysAdmin",
+        "description": "Systemadministrator:in"
+      },
+      {
+        "name": "EinwilligungsManager",
+        "description": "EinwilligungsManager:in"
+      },
+      {
+        "name": "ProbandenManager",
+        "description": "ProbandenManager:in"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "service-account-pia-admin-management-client",
+      "serviceAccountClientId": "pia-admin-management-client",
+      "clientRoles": {
+        "realm-management": ["view-users", "view-realm", "manage-users"]
+      }
+    },
+    {
+      "username": "service-account-pia-admin-token-introspection-client",
+      "serviceAccountClientId": "pia-admin-token-introspection-client"
+    }
+  ],
+  "scopeMappings": [
+    {
+      "client": "pia-admin-web-app-client",
+      "roles": [
+        "Untersuchungsteam",
+        "Forscher",
+        "SysAdmin",
+        "EinwilligungsManager",
+        "ProbandenManager"
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "account-console",
+      "redirectUris": ["[[env:WEBAPP_URL]]/*", "https://localhost:4200/*"],
+      "webOrigins": ["[[env:WEBAPP_URL]]", "https://localhost:4200"]
+    },
+    {
+      "clientId": "pia-admin-management-client",
+      "name": "PIA Admin Realm Management Client",
+      "description": "Used by backend services to manage users and roles of the admin realm",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "[[env:AUTHSERVER_ADMIN_MANAGEMENT_CLIENT_SECRET]]",
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "pia-admin-token-introspection-client",
+      "name": "PIA Admin Realm Token Introspection Client",
+      "description": "Used by backend services to validate access tokens of proffessional users",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "[[env:AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET]]",
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": false
+    },
+    {
+      "clientId": "pia-admin-web-app-client",
+      "name": "PIA Admin App",
+      "rootUrl": "[[env:WEBAPP_URL]]/admin",
+      "adminUrl": "",
+      "baseUrl": "[[env:WEBAPP_URL]]/",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "redirectUris": [
+        "[[env:WEBAPP_URL]]/admin/*",
+        "https://localhost:4200/*"
+      ],
+      "webOrigins": ["[[env:WEBAPP_URL]]", "https://localhost:4200"],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": [[env:IS_DIRECT_ACCESS_GRANT_ENABLED]],
+      "serviceAccountsEnabled": false,
+      "publicClient": true,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "username",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "studies",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "studies",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ],
+      "fullScopeAllowed": false
+    }
+  ],
+  "requiredActions": [
+    {
+      "alias": "UPDATE_PASSWORD",
+      "name": "Update Password",
+      "providerId": "UPDATE_PASSWORD",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 30,
+      "config": {}
+    },
+    {
+      "alias": "VERIFY_EMAIL",
+      "name": "Verify Email",
+      "providerId": "VERIFY_EMAIL",
+      "enabled": [[env:IS_NOT_DEVELOPMENT_SYSTEM]],
+      "defaultAction": false,
+      "priority": 50,
+      "config": {}
+    }
+  ]
+}

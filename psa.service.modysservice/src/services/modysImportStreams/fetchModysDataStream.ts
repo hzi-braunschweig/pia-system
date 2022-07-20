@@ -5,11 +5,13 @@
  */
 
 import { Transform, TransformCallback } from 'stream';
-import { ModysClient } from '../../clients/modysClient';
-import { ModysConfig, PersonSummary } from '../../models/modys';
-import { config } from '../../config';
 import { Boom } from '@hapi/boom';
 import httpStatusCode from 'http-status-codes';
+
+import { config } from '../../config';
+import { ModysClient } from '../../clients/modysClient';
+import { ModysConfig, PersonSummary } from '../../models/modys';
+import { ProbandExternalId } from '../../models/probandExternalId';
 
 export class FetchModysDataStream extends Transform {
   private readonly modysClient = new ModysClient(this.modysConfig);
@@ -36,27 +38,28 @@ export class FetchModysDataStream extends Transform {
   }
 
   public _transform(
-    pseudonym: string,
+    proband: ProbandExternalId,
     _encoding: BufferEncoding,
     callback: TransformCallback
   ): void {
     if (!this.initialized) {
       this._construct();
     }
-    this.push(this.getModysProband(pseudonym));
+    this.push(this.getModysProband(proband));
     return callback();
   }
 
-  private async getModysProband(
-    pseudonym: string
-  ): Promise<PersonSummary | null> {
+  private async getModysProband({
+    pseudonym,
+    externalId,
+  }: ProbandExternalId): Promise<PersonSummary | null> {
     try {
       const probandId = await this.modysClient
-        .getProbandIdentifierbyId(pseudonym, this.modysConfig.identifierTypeId)
+        .getProbandIdentifierbyId(externalId, this.modysConfig.identifierTypeId)
         .catch((e) => {
           console.log(
             'MODYS Import: Could not find identifier for:',
-            pseudonym
+            externalId
           );
           throw e;
         });
@@ -65,7 +68,7 @@ export class FetchModysDataStream extends Transform {
         .catch((e) => {
           console.log(
             'MODYS Import: Could not find proband data for:',
-            pseudonym
+            externalId
           );
           throw e;
         });
@@ -74,7 +77,7 @@ export class FetchModysDataStream extends Transform {
         .catch((e) => {
           console.log(
             'MODYS Import: Could not find contact data for:',
-            pseudonym
+            externalId
           );
           throw e;
         });

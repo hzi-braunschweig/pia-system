@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-export const environment = {
+import { environmentBase } from './environment.base';
+import { Environment } from './interfaces/environment';
+
+export const environment: Environment = {
+  ...environmentBase,
   production: true,
-  locale: 'en-US',
-  androidAppId: 'de.pia.app',
-  iOSAppId: 'id1510929221',
 };

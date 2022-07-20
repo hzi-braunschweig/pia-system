@@ -9,16 +9,13 @@ import {
   CreateProbandExternalResponse,
   CreateProbandRequest,
   CreateProbandResponse,
-  ProbandResponseNew,
+  ProbandDto,
 } from '../models/proband';
-import { ProbandsRepository } from '../repositories/probandsRepository';
-import { AccessToken } from '@pia/lib-service-core';
 import Boom from '@hapi/boom';
 import {
   ProbandAccountDeletionType,
   ProbandService,
 } from '../services/probandService';
-import { ProfessionalRole } from '../models/role';
 import {
   AccountCreateError,
   IdsAlreadyExistsError,
@@ -30,87 +27,51 @@ import {
   StudyNotFoundError,
   WrongRoleError,
 } from '../errors';
-import postgresHelper from '../services/postgresqlHelper';
 import { config } from '../config';
 import { StatusCodes } from 'http-status-codes';
-import { ProfessionalRequester } from '../models/professionalRequester';
-import { ProfessionalUser } from '../models/user';
+import { ProfessionalAccountService } from '../services/professionalAccountService';
+import { ProfessionalAccount } from '../models/account';
+import { getRepository } from 'typeorm';
+import { Proband } from '../entities/proband';
+import { AccountStatus } from '../models/accountStatus';
+import { ProbandAccountService } from '../services/probandAccountService';
+import { AccessToken } from '@pia/lib-service-core';
 
 export class ProbandsInteractor {
   public static async getAllProbandsOfStudy(
-    studyName: string,
-    decodedToken: AccessToken
-  ): Promise<ProbandResponseNew[]> {
-    if (decodedToken.role !== 'ProbandenManager') {
-      throw Boom.forbidden('User has wrong role');
-    }
-    if (!decodedToken.groups.includes(studyName)) {
-      throw Boom.forbidden('User is not in the requested study');
-    }
-    return ProbandsRepository.find({ studyName: studyName });
-  }
+    studyName: string
+  ): Promise<ProbandDto[]> {
+    const probandAccountsList =
+      await ProbandAccountService.getProbandAccountsByStudyName(studyName);
+    const probandAccountsSet = new Set(
+      probandAccountsList.map((account) => account.username)
+    );
 
-  public static async createIDSProband(
-    studyName: string,
-    ids: string,
-    decodedToken: AccessToken
-  ): Promise<void> {
-    try {
-      this.checkAccessOfInvestigatorToStudy(
-        {
-          username: decodedToken.username,
-          role: decodedToken.role as ProfessionalRole,
-          studies: decodedToken.groups,
-        },
-        studyName
-      );
-      await ProbandService.createIDSProbandWithoutAccount(studyName, ids);
-    } catch (e) {
-      if (e instanceof WrongRoleError) {
-        throw Boom.forbidden('wrong role');
-      } else if (e instanceof NoAccessToStudyError) {
-        throw Boom.forbidden('no access to study');
-      } else if (e instanceof StudyNotFoundError) {
-        throw Boom.preconditionRequired('study not found');
-      } else if (e instanceof PseudonymAlreadyExistsError) {
-        throw Boom.conflict('proband with same pseudonym already exists');
-      } else if (e instanceof IdsAlreadyExistsError) {
-        throw Boom.conflict('proband with same ids already exists');
-      } else if (e instanceof ProbandSaveError) {
-        throw Boom.internal('a problem occurred while saving the proband');
-      } else {
-        console.error(e);
-        throw Boom.badImplementation('an unknown error occurred');
-      }
-    }
+    return (
+      await getRepository(Proband).find({ study: { name: studyName } })
+    ).map((proband) => ({
+      ...proband,
+      study: studyName,
+      accountStatus: probandAccountsSet.has(proband.pseudonym)
+        ? AccountStatus.ACCOUNT
+        : AccountStatus.NO_ACCOUNT,
+    }));
   }
 
   public static async createProband(
     studyName: string,
-    probandRequest: CreateProbandRequest,
-    decodedToken: AccessToken
+    probandRequest: CreateProbandRequest
   ): Promise<CreateProbandResponse> {
     let password: string;
     try {
-      this.checkAccessOfInvestigatorToStudy(
-        {
-          username: decodedToken.username,
-          role: decodedToken.role as ProfessionalRole,
-          studies: decodedToken.groups,
-        },
-        studyName
-      );
       password = await ProbandService.createProbandWithAccount(
         studyName,
         probandRequest,
-        true
+        true,
+        probandRequest.temporaryPassword ?? true
       );
     } catch (e) {
-      if (e instanceof WrongRoleError) {
-        throw Boom.forbidden('wrong role');
-      } else if (e instanceof NoAccessToStudyError) {
-        throw Boom.forbidden('no access to study');
-      } else if (e instanceof StudyNotFoundError) {
+      if (e instanceof StudyNotFoundError) {
         throw Boom.preconditionRequired('study not found');
       } else if (e instanceof PlannedProbandNotFoundError) {
         throw Boom.preconditionRequired('planned proband not found');
@@ -139,11 +100,42 @@ export class ProbandsInteractor {
     };
   }
 
+  public static async createIDSProband(
+    studyName: string,
+    ids: string
+  ): Promise<void> {
+    try {
+      await ProbandService.createIDSProbandWithoutAccount(studyName, ids);
+    } catch (e) {
+      if (e instanceof StudyNotFoundError) {
+        throw Boom.preconditionRequired('study not found');
+      } else if (e instanceof PseudonymAlreadyExistsError) {
+        throw Boom.conflict('proband with same pseudonym already exists');
+      } else if (e instanceof IdsAlreadyExistsError) {
+        throw Boom.conflict('proband with same ids already exists');
+      } else if (e instanceof ProbandSaveError) {
+        throw Boom.internal('a problem occurred while saving the proband');
+      } else {
+        console.error(e);
+        throw Boom.badImplementation('an unknown error occurred');
+      }
+    }
+  }
+
   public static async createProbandFromExternal(
     studyName: string,
     newProbandData: CreateProbandRequest,
     utMail: string
   ): Promise<CreateProbandExternalResponse> {
+    /**
+     * Save the pseudonym from the external system as is (in mixed case)
+     */
+    const externalPseudonym = newProbandData.pseudonym;
+    /**
+     * Convert the pseudonym from the external system to PIAs lower case convention
+     */
+    newProbandData.pseudonym = newProbandData.pseudonym.toLowerCase();
+
     const response: CreateProbandExternalResponse = {
       pseudonym: newProbandData.pseudonym,
       resultURL: new URL(
@@ -152,34 +144,32 @@ export class ProbandsInteractor {
       ),
     };
 
-    const requester = (await postgresHelper.getProfessionalUser(
-      utMail,
-      'Untersuchungsteam'
-    )) as null | ProfessionalUser;
-    if (!requester) {
+    let requester: ProfessionalAccount | undefined;
+    try {
+      requester = await ProfessionalAccountService.getProfessionalAccount(
+        utMail
+      );
+    } catch (err) {
       throw this.createCreateProbandFromExternalError(
         response,
         CreateProbandError.USER_NOT_FOUND,
         StatusCodes.FORBIDDEN,
-        new Error(
-          'the user from ut_mail does not exist as a user with role "Untersuchungsteam"'
-        )
+        new Error('the user from ut_mail does not exist as a user')
       );
     }
 
     try {
-      this.checkAccessOfInvestigatorToStudy(
-        {
-          username: requester.username,
-          role: requester.role,
-          studies: requester.study_accesses.map((sa) => sa.study_id),
-        },
-        studyName
-      );
+      this.checkAccessOfInvestigatorToStudy(requester, studyName);
+
       await ProbandService.createProbandWithAccount(
         studyName,
         newProbandData,
+        true,
         true
+      );
+      await ProbandService.updateExternalId(
+        newProbandData.pseudonym,
+        externalPseudonym
       );
       response.resultURL.searchParams.set('created', 'true');
       return response;
@@ -216,14 +206,11 @@ export class ProbandsInteractor {
   }
 
   public static async deleteAccount(
+    decodedToken: AccessToken,
     pseudonym: string,
-    deletionType: ProbandAccountDeletionType,
-    token: AccessToken
+    deletionType: ProbandAccountDeletionType
   ): Promise<null> {
-    if (token.role !== 'Proband') {
-      throw Boom.forbidden('wrong role');
-    }
-    if (pseudonym !== token.username) {
+    if (pseudonym !== decodedToken.username) {
       throw Boom.forbidden('probands can only delete their own accounts');
     }
     if (deletionType === 'full') {
@@ -249,7 +236,7 @@ export class ProbandsInteractor {
   }
 
   private static checkAccessOfInvestigatorToStudy(
-    requester: ProfessionalRequester,
+    requester: ProfessionalAccount,
     studyName: string
   ): void {
     if (requester.role !== 'Untersuchungsteam') {

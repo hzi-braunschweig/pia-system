@@ -9,29 +9,33 @@ import { AppModule } from 'src/app/app.module';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router';
 import { ContactProbandComponent } from './contact-proband.component';
-import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
-import createSpyObj = jasmine.createSpyObj;
-import SpyObj = jasmine.SpyObj;
 import { createProband } from '../../../psa.app.core/models/instance.helper.spec';
-import createSpy = jasmine.createSpy;
 import { NotificationService } from '../../../psa.app.core/providers/notification-service/notification-service';
 import { MatDialog } from '@angular/material/dialog';
 import { PersonalDataService } from '../../../psa.app.core/providers/personaldata-service/personaldata-service';
 import { PersonalData } from '../../../psa.app.core/models/personalData';
+import { CurrentUser } from '../../../_services/current-user.service';
+import { ProbandService } from '../../../psa.app.core/providers/proband-service/proband.service';
+import createSpyObj = jasmine.createSpyObj;
+import SpyObj = jasmine.SpyObj;
 
 describe('ContactProbandComponent', () => {
   let fixture: MockedComponentFixture;
   let component: ContactProbandComponent;
 
-  let authService: SpyObj<AuthService>;
+  let currentUser: SpyObj<CurrentUser>;
+  let probandService: SpyObj<ProbandService>;
   let notificationService: SpyObj<NotificationService>;
   let personalDataService: SpyObj<PersonalDataService>;
   let matDialog: SpyObj<MatDialog>;
 
   beforeEach(async () => {
     // Provider and Services
-    authService = createSpyObj<AuthService>(['getProbands']);
-    authService.getProbands.and.resolveTo([
+    currentUser = createSpyObj<CurrentUser>('CurrentUser', [], {
+      studies: ['NAKO Test'],
+    });
+    probandService = createSpyObj<ProbandService>(['getProbands']);
+    probandService.getProbands.and.resolveTo([
       createProband({ pseudonym: 'TestProband1' }),
       createProband({ pseudonym: 'TestProband2', status: 'deactivated' }),
     ]);
@@ -62,10 +66,11 @@ describe('ContactProbandComponent', () => {
           },
         },
       })
-      .mock(AuthService, authService)
-      .mock(NotificationService, notificationService)
+      .mock(CurrentUser, currentUser)
+      .mock(ProbandService, probandService)
+      .mock(MatDialog, matDialog)
       .mock(PersonalDataService, personalDataService)
-      .mock(MatDialog, matDialog);
+      .mock(NotificationService, notificationService);
   });
 
   beforeEach(fakeAsync(() => {
@@ -77,23 +82,19 @@ describe('ContactProbandComponent', () => {
     tick(); // wait for ngOnInit to finish
   }));
 
-  it('should prefill given usernames', () => {
-    expect(component).toBeDefined();
-    expect(component.pseudonyms).toEqual(['TestProband1', 'TestProband2']);
-  });
-
-  it('should request all available active probands for autocomplete', fakeAsync(() => {
-    const allPseudonymsSpy = createSpy();
-    component.autoCompletePseudonyms.subscribe(allPseudonymsSpy);
+  it('should request available active probands of selected study for autocomplete', fakeAsync(() => {
+    component.studyName.setValue('NAKO Test');
     tick();
-    expect(allPseudonymsSpy).toHaveBeenCalledOnceWith(['TestProband1']);
+    expect(probandService.getProbands).toHaveBeenCalledOnceWith('NAKO Test');
+    expect(component.allPseudonyms).toEqual(['TestProband1']);
   }));
 
-  it('should send notification request', () => {
-    component.contactAll = true;
-    component.notifyByNotification = true;
-    component.subject.setValue('Test Subject');
-    component.content.setValue('Test Content');
+  it('should send notification request', fakeAsync(() => {
+    component.notifyByNotification.setValue(true);
+    component.message.get('recipients').setValue(['TestProband1']);
+    component.message.get('title').setValue('Test Subject');
+    component.message.get('body').setValue('Test Content');
+    tick();
 
     component.onSubmit();
 
@@ -102,13 +103,14 @@ describe('ContactProbandComponent', () => {
       title: 'Test Subject',
       body: 'Test Content',
     });
-  });
+  }));
 
-  it('should send email notification request', () => {
-    component.contactAll = true;
-    component.notifyByEmail = true;
-    component.subject.setValue('Test Subject');
-    component.content.setValue('Test Content');
+  it('should send email notification request', fakeAsync(() => {
+    component.notifyByEmail.setValue(true);
+    component.message.get('recipients').setValue(['TestProband1']);
+    component.message.get('title').setValue('Test Subject');
+    component.message.get('body').setValue('Test Content');
+    tick();
 
     component.onSubmit();
 
@@ -117,5 +119,5 @@ describe('ContactProbandComponent', () => {
       title: 'Test Subject',
       body: 'Test Content',
     });
-  });
+  }));
 });

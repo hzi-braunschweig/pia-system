@@ -106,10 +106,11 @@ services:
       - POSTGRES_USER=${IPIA_USER}
       - POSTGRES_PASSWORD=${IPIA_PASSWORD}
       - POSTGRES_DB=${IPIA_DB}
-      - IS_SORMAS_ACTIVE=${IS_SORMAS_ACTIVE}
       # service users
       - DB_PERSONALDATA_USER=${DB_PERSONALDATA_USER}
       - DB_PERSONALDATA_PASSWORD=${DB_PERSONALDATA_PASSWORD}
+      - DB_AUTHSERVER_USER=${DB_AUTHSERVER_USER}
+      - DB_AUTHSERVER_PASSWORD=${DB_AUTHSERVER_PASSWORD}
 {% if pia_local_development %}
     build:
       context: "../../../"
@@ -117,13 +118,66 @@ services:
       args:
         DIR: psa.database.ipia
 {% endif %}
-{% if pia_expose_postgres_ports and pia_local_development %}
+{% if pia_expose_postgres_ports %}
     ports:
+{% if pia_local_development %}
       - "2345:5432"
+{% elif pia_is_development_system %}
+      - "5432:5432"
+{% endif %}
 {% endif %}
     volumes:
       - $SSL_DIRECTORY/ipiaservice:/tmp_config/ssl
       - "$IPIA_DATA_DIRECTORY:/var/lib/postgresql/data"
+    logging: *default-logging
+    networks:
+      pia:
+
+  authserver:
+    image: "${PIA_DOCKER_REGISTRY}/pia/psa.server.auth:${PIA_DOCKER_TAG}"
+    restart: unless-stopped
+    container_name: authserver
+    extra_hosts: *default-extra_hosts
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=${AUTHSERVER_ADMIN_PASSWORD}
+
+      - DB_AUTHSERVER_HOST=${DB_AUTHSERVER_HOST}
+      - DB_AUTHSERVER_PORT=${DB_AUTHSERVER_PORT}
+      - DB_AUTHSERVER_USER=${DB_AUTHSERVER_USER}
+      - DB_AUTHSERVER_PASSWORD=${DB_AUTHSERVER_PASSWORD}
+      - DB_AUTHSERVER_DB=${DB_AUTHSERVER_DB}
+
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USER=${MAIL_USER}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - MAIL_REQUIRE_TLS=${MAIL_REQUIRE_TLS}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+
+      - AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET=${AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET}
+      - AUTHSERVER_ADMIN_MANAGEMENT_CLIENT_SECRET=${AUTHSERVER_ADMIN_MANAGEMENT_CLIENT_SECRET}
+      - AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET}
+      - AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET}
+
+      - WEBAPP_URL
+      - EXTERNAL_PROTOCOL=${EXTERNAL_PROTOCOL}
+      - EXTERNAL_PORT=${EXTERNAL_PORT}
+      - EXTERNAL_HOST=${EXTERNAL_HOST}
+      - IS_DEVELOPMENT_SYSTEM=${IS_DEVELOPMENT_SYSTEM}
+      - IS_DIRECT_ACCESS_GRANT_ENABLED=${IS_DIRECT_ACCESS_GRANT_ENABLED}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.server.auth/Dockerfile
+      args:
+        DIR: psa.server.auth
+{% endif %}
+    ports:
+      - "${AUTHSERVER_PORT_EXPOSED}:4000"
+    volumes:
+      - $SSL_DIRECTORY/authserver:/certs/
     logging: *default-logging
     networks:
       pia:
@@ -136,8 +190,8 @@ services:
       - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
       - WEBAPP_URL=${WEBAPP_URL}
       - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
-      - DB_PERSONALDATA_HOST=${DB_PERSONALDATA_HOST}
-      - DB_PERSONALDATA_PORT=${DB_PERSONALDATA_PORT}
+      - DB_PERSONALDATA_HOST=${IPIASERVICE_HOST}
+      - DB_PERSONALDATA_PORT=${IPIASERVICE_PORT}
       - DB_PERSONALDATA_USER=${DB_PERSONALDATA_USER}
       - DB_PERSONALDATA_PASSWORD=${DB_PERSONALDATA_PASSWORD}
       - DB_PERSONALDATA_DB=${DB_PERSONALDATA_DB}
@@ -152,12 +206,13 @@ services:
       - LOGGINGSERVICE_INTERNAL_PORT=${LOGGINGSERVICE_INTERNAL_PORT}
       - USERSERVICE_HOST=${USERSERVICE_HOST}
       - USERSERVICE_INTERNAL_PORT=${USERSERVICE_INTERNAL_PORT}
-      - AUTHSERVICE_HOST=${AUTHSERVICE_HOST}
-      - AUTHSERVICE_INTERNAL_PORT=${AUTHSERVICE_INTERNAL_PORT}
       - MESSAGEQUEUE_HOST=${MESSAGEQUEUE_HOST}
       - MESSAGEQUEUE_PORT=${MESSAGEQUEUE_PORT}
       - MESSAGEQUEUE_APP_PASSWORD=${MESSAGEQUEUE_APP_PASSWORD}
       - MESSAGEQUEUE_APP_USER=${MESSAGEQUEUE_APP_USER}
+      - AUTHSERVER_PORT=${AUTHSERVER_PORT}
+      - AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET}
+      - AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET=${AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET}
 {% if pia_local_development %}
     build:
       context: "../../../"
@@ -171,7 +226,6 @@ services:
       - "${PERSONALDATASERVICE_INTERNAL_PORT_EXPOSED}:5000"
     volumes:
       - $SSL_DIRECTORY/personaldataservice:/usr/src/node-app/ssl
-      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
     logging: *default-logging
     networks:
       pia:
@@ -227,7 +281,6 @@ services:
       - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
       - WEBAPP_URL=${WEBAPP_URL}
       - API_KEY=${API_KEY}
-      - BACKEND_API_URL=${BACKEND_API_URL}
       - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
       - USER_PASSWORD_LENGTH=${USER_PASSWORD_LENGTH}
       - LOGGINGSERVICE_HOST=${LOGGINGSERVICE_HOST}
@@ -246,12 +299,16 @@ services:
       - MAIL_REQUIRE_TLS=${MAIL_REQUIRE_TLS}
       - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
       - MAIL_FROM_NAME=${MAIL_FROM_NAME}
-      - AUTHSERVICE_HOST=${AUTHSERVICE_HOST}
-      - AUTHSERVICE_INTERNAL_PORT=${AUTHSERVICE_INTERNAL_PORT}
       - MESSAGEQUEUE_HOST=${MESSAGEQUEUE_HOST}
       - MESSAGEQUEUE_PORT=${MESSAGEQUEUE_PORT}
       - MESSAGEQUEUE_APP_PASSWORD=${MESSAGEQUEUE_APP_PASSWORD}
       - MESSAGEQUEUE_APP_USER=${MESSAGEQUEUE_APP_USER}
+      - AUTHSERVER_PORT=${AUTHSERVER_PORT}
+      - AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET=${AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET}
+      - AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET}
+      - AUTHSERVER_ADMIN_MANAGEMENT_CLIENT_SECRET=${AUTHSERVER_ADMIN_MANAGEMENT_CLIENT_SECRET}
+      - AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET}
+      - IS_DEVELOPMENT_SYSTEM=${IS_DEVELOPMENT_SYSTEM}
 {% if pia_local_development %}
     build:
       context: "../../../"
@@ -267,64 +324,12 @@ services:
       - "${USERSERVICE_INTERNAL_PORT_EXPOSED}:5000"
     volumes:
       - $SSL_DIRECTORY/userservice:/usr/src/node-app/ssl
-      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
-      - $AUTH_KEY_DIRECTORY/private.key:/usr/src/node-app/authKey/private.key
     logging: *default-logging
     networks:
       pia:
 {% if hostvars[inventory_hostname]['PIA_IS_SORMAS_ACTIVE'] is sameas true | default(pia_has_sormas) %}
       sormas:
 {% endif %}
-
-  authservice:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.authservice:${PIA_DOCKER_TAG}
-    restart: unless-stopped
-    extra_hosts: *default-extra_hosts
-    environment:
-      - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
-      - WEBAPP_URL=${WEBAPP_URL}
-      - CERT_CHECK_ENABLED=${CERT_CHECK_ENABLED}
-      - IP_CHECK_ENABLED=${CERT_CHECK_ENABLED}
-      - PERSONALDATASERVICE_HOST=${PERSONALDATASERVICE_HOST}
-      - PERSONALDATASERVICE_INTERNAL_PORT=${PERSONALDATASERVICE_INTERNAL_PORT}
-      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
-      - USER_PASSWORD_LENGTH=${USER_PASSWORD_LENGTH}
-      - QPIA_HOST=${QPIA_HOST}
-      - QPIA_PORT=${QPIA_PORT}
-      - QPIA_USER=${QPIA_USER}
-      - QPIA_PASSWORD=${QPIA_PASSWORD}
-      - QPIA_DB=${QPIA_DB}
-      - MAIL_HOST=${MAIL_HOST}
-      - MAIL_PORT=${MAIL_PORT}
-      - MAIL_USER=${MAIL_USER}
-      - MAIL_PASSWORD=${MAIL_PASSWORD}
-      - MAIL_REQUIRE_TLS=${MAIL_REQUIRE_TLS}
-      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS}
-      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
-      - MESSAGEQUEUE_HOST=${MESSAGEQUEUE_HOST}
-      - MESSAGEQUEUE_PORT=${MESSAGEQUEUE_PORT}
-      - MESSAGEQUEUE_APP_PASSWORD=${MESSAGEQUEUE_APP_PASSWORD}
-      - MESSAGEQUEUE_APP_USER=${MESSAGEQUEUE_APP_USER}
-{% if pia_local_development %}
-    build:
-      context: "../../../"
-      dockerfile: psa.service.authservice/Dockerfile
-      args:
-        DIR: psa.service.authservice
-{% endif %}
-    container_name: authservice
-    depends_on:
-      - databaseservice
-    ports:
-      - "${AUTHSERVICE_PORT_EXPOSED}:4000"
-      - "${AUTHSERVICE_INTERNAL_PORT_EXPOSED}:5000"
-    volumes:
-      - $SSL_DIRECTORY/authservice:/usr/src/node-app/ssl
-      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
-      - $AUTH_KEY_DIRECTORY/private.key:/usr/src/node-app/authKey/private.key
-    logging: *default-logging
-    networks:
-      pia:
 
   questionnaireservice:
     image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.questionnaireservice:${PIA_DOCKER_TAG}
@@ -348,6 +353,9 @@ services:
       - QPIA_USER=${QPIA_USER}
       - QPIA_PASSWORD=${QPIA_PASSWORD}
       - QPIA_DB=${QPIA_DB}
+      - AUTHSERVER_PORT=${AUTHSERVER_PORT}
+      - AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET}
+      - AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET}
 {% if pia_local_development %}
     build:
       context: "../../../"
@@ -363,7 +371,6 @@ services:
       - "${QUESTIONNAIRESERVICE_INTERNAL_PORT_EXPOSED}:5000"
     volumes:
       - $SSL_DIRECTORY/questionnaireservice:/usr/src/node-app/ssl
-      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
     logging: *default-logging
     networks:
       pia:
@@ -388,6 +395,9 @@ services:
       - MESSAGEQUEUE_PORT=${MESSAGEQUEUE_PORT}
       - MESSAGEQUEUE_APP_PASSWORD=${MESSAGEQUEUE_APP_PASSWORD}
       - MESSAGEQUEUE_APP_USER=${MESSAGEQUEUE_APP_USER}
+      - AUTHSERVER_PORT=${AUTHSERVER_PORT}
+      - AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET}
+      - AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET}
 {% if pia_local_development %}
     build:
       context: "../../../"
@@ -401,7 +411,6 @@ services:
       - "${COMPLIANCESERVICE_INTERNAL_PORT_EXPOSED}:5000"
     volumes:
       - $SSL_DIRECTORY/complianceservice:/usr/src/node-app/ssl
-      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
     logging: *default-logging
     networks:
       pia:
@@ -437,7 +446,6 @@ services:
       - "${ANALYZERSERVICE_INTERNAL_PORT_EXPOSED}:5000"
     volumes:
       - $SSL_DIRECTORY/analyzerservice:/usr/src/node-app/ssl
-      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
     logging: *default-logging
     networks:
       pia:
@@ -472,6 +480,9 @@ services:
       - MESSAGEQUEUE_PORT=${MESSAGEQUEUE_PORT}
       - MESSAGEQUEUE_APP_PASSWORD=${MESSAGEQUEUE_APP_PASSWORD}
       - MESSAGEQUEUE_APP_USER=${MESSAGEQUEUE_APP_USER}
+      - AUTHSERVER_PORT=${AUTHSERVER_PORT}
+      - AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET}
+      - AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET}
 {% if pia_local_development %}
     build:
       context: "../../../"
@@ -489,7 +500,6 @@ services:
       - $SSL_DIRECTORY/notificationservice:/usr/src/node-app/ssl
       # there should be a credential.json
       - $FIREBASE_DIRECTORY:/usr/src/node-app/firebase/
-      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
     logging: *default-logging
     networks:
       pia:
@@ -521,6 +531,9 @@ services:
       - COMPLIANCESERVICE_INTERNAL_PORT=${COMPLIANCESERVICE_INTERNAL_PORT}
       - USERSERVICE_HOST=${USERSERVICE_HOST}
       - USERSERVICE_INTERNAL_PORT=${USERSERVICE_INTERNAL_PORT}
+      - AUTHSERVER_PORT=${AUTHSERVER_PORT}
+      - AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET}
+      - AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET}
 {% if pia_local_development %}
     build:
       context: "../../../"
@@ -536,7 +549,6 @@ services:
       - "${SAMPLETRACKINGSERVICE_INTERNAL_PORT_EXPOSED}:5000"
     volumes:
       - $SSL_DIRECTORY/sampletrackingservice:/usr/src/node-app/ssl
-      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
     logging: *default-logging
     networks:
       pia:
@@ -556,6 +568,8 @@ services:
       - WEBAPP_URL=${WEBAPP_URL}
       - USERSERVICE_HOST=${USERSERVICE_HOST}
       - USERSERVICE_INTERNAL_PORT=${USERSERVICE_INTERNAL_PORT}
+      - AUTHSERVER_PORT=${AUTHSERVER_PORT}
+      - AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET}
 {% if pia_local_development %}
     build:
       context: "../../../"
@@ -571,7 +585,6 @@ services:
       - "${LOGGINGSERVICE_INTERNAL_PORT_EXPOSED}:5000"
     volumes:
       - $SSL_DIRECTORY/loggingservice:/usr/src/node-app/ssl
-      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
     logging: *default-logging
     networks:
       pia:
@@ -615,7 +628,6 @@ services:
     environment:
       - DEFAULT_LANGUAGE=${DEFAULT_LANGUAGE}
       - IS_DEVELOPMENT_SYSTEM=${IS_DEVELOPMENT_SYSTEM}
-      - API_ADDRESS=${API_ADDRESS}
       - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
       - WEBAPPSERVER_HTTP_PORT=${WEBAPPSERVER_HTTP_PORT}
       - WEBAPPSERVER_HTTPS_PORT=${WEBAPPSERVER_HTTPS_PORT}
@@ -659,7 +671,7 @@ services:
       - "mobileappasset-browser:/dest/browser/"
     logging: *default-logging
 
-{% if hostvars[inventory_hostname]['PIA_IS_DEVELOPMENT_SYSTEM'] | default(pia_is_development_system) %}
+{% if pia_is_development_system %}
   # this service is ONLY for testing stages!
   # NEVER DEPLOY IT TO A PRODUCTIVE SYSTEM!
   deploymentservice:
@@ -672,6 +684,11 @@ services:
       - QPIA_USER=${QPIA_USER}
       - QPIA_PASSWORD=${QPIA_PASSWORD}
       - QPIA_DB=${QPIA_DB}
+      - IPIA_HOST=${IPIASERVICE_HOST}
+      - IPIA_PORT=${IPIASERVICE_PORT}
+      - IPIA_USER=${IPIA_USER}
+      - IPIA_PASSWORD=${IPIA_PASSWORD}
+      - IPIA_DB=${IPIA_DB}
       - ENABLE_DB_IMPORT=${ENABLE_DB_IMPORT}
       - ENABLE_DB_EXPORT=${ENABLE_DB_EXPORT}
       - DEPLOYMENT_USER=${DEPLOYMENT_USER}
@@ -762,7 +779,6 @@ services:
       - $SSL_DIRECTORY/sormasservice:/ssl
       # new path:
       - $SSL_DIRECTORY/sormasservice:/usr/src/node-app/ssl
-      - $AUTH_KEY_DIRECTORY/public.pem:/usr/src/node-app/authKey/public.pem
     logging: *default-logging
     networks:
       pia:
@@ -811,7 +827,6 @@ services:
       - WEBAPPSERVER_HTTP_PORT=${WEBAPPSERVER_HTTP_PORT}
       - WEBAPPSERVER_HTTPS_PORT=${WEBAPPSERVER_HTTPS_PORT}
       - USERSERVICE_PORT=${USERSERVICE_PORT}
-      - AUTHSERVICE_PORT=${AUTHSERVICE_PORT}
       - QUESTIONNAIRESERVICE_PORT=${QUESTIONNAIRESERVICE_PORT}
       - NOTIFICATIONSERVICE_PORT=${NOTIFICATIONSERVICE_PORT}
       - SAMPLETRACKINGSERVICE_PORT=${SAMPLETRACKINGSERVICE_PORT}
@@ -822,6 +837,7 @@ services:
       - ANALYZERSERVICE_PORT=${ANALYZERSERVICE_PORT}
       - SORMASSERVICE_PORT=${SORMASSERVICE_PORT}
       - DEPLOYMENTSERVICE_PORT=${DEPLOYMENTSERVICE_PORT}
+      - AUTHSERVER_PORT=${AUTHSERVER_PORT}
       # the CA certificate that is used for checks against the communication to the internal services
       - SSL_CA=/etc/ssl/ca.cert
       - X_FRAME_OPTIONS=${X_FRAME_OPTIONS}
@@ -889,7 +905,6 @@ services:
       - PROTOCOL=${PROTOCOL}
       - METRICS_EXTERNAL_PROTOCOL=${METRICS_EXTERNAL_PROTOCOL}
       - METRICS_ENABLED_FOR=${METRICS_ENABLED_FOR}
-      - AUTHSERVICE_PORT=$AUTHSERVICE_PORT
       - MODYSSERVICE_PORT=MODYSSERVICE_PORT
       - QUESTIONNAIRESERVICE_PORT=$QUESTIONNAIRESERVICE_PORT
       - NOTIFICATIONSERVICE_PORT=$NOTIFICATIONSERVICE_PORT

@@ -5,15 +5,11 @@ WHERE id IN (9999991, 9999992, 9999993, 9999994, 9999995, 9999996, 9999997, 9999
 DELETE
 FROM lab_results
 WHERE id IN ('APITEST-123456789', 'APITEST-123456790', 'APITEST-123456791')
-   OR user_id IN ('QTestProband1');
-
-DELETE
-FROM accounts
-WHERE username LIKE 'QTest%';
+   OR user_id IN ('qtest-proband1');
 
 DELETE
 FROM probands
-WHERE pseudonym LIKE 'QTest%';
+WHERE pseudonym LIKE 'qtest%';
 
 DELETE
 FROM studies

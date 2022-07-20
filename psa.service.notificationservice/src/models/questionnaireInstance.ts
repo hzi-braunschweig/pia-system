@@ -47,6 +47,4 @@ export interface DbQuestionnaireInstance {
   notifications_scheduled: boolean | null;
   progress: number | null;
   release_version: number | null;
-  transmission_ts_v1: Date | null;
-  transmission_ts_v2: Date | null;
 }

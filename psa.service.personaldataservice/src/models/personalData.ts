@@ -5,6 +5,7 @@
  */
 
 export interface PersonalData {
+  pseudonym: string;
   anrede: string;
   titel: string;
   name: string;
@@ -19,6 +20,7 @@ export interface PersonalData {
   telefon_mobil: string;
   email: string;
   comment: string;
+  study: string;
 }
 
 export type PersonalDataReq = Partial<PersonalData>;

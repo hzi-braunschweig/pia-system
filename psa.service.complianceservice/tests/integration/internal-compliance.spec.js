@@ -12,6 +12,7 @@ const sinon = require('sinon');
 const fetchMocker = require('fetch-mock');
 
 const { HttpClient } = require('@pia-system/lib-http-clients-internal');
+const { config } = require('../../src/config');
 const server = require('../../src/server');
 const { sequelize, ComplianceText, Compliance } = require('../../src/db');
 
@@ -20,7 +21,7 @@ chai.use(chaiExclude);
 
 const testSandbox = sinon.createSandbox();
 
-const apiAddress = 'http://localhost:' + process.env.INTERNAL_PORT;
+const apiAddress = `http://localhost:${config.internal.port}`;
 
 const fetchMock = fetchMocker.sandbox();
 
@@ -41,14 +42,14 @@ describe('Internal: Compliance API', () => {
     testSandbox.stub(HttpClient, 'fetch').callsFake(fetchMock);
 
     fetchMock
-      .get('express:/user/users/QTestproband1/externalcompliance', {
+      .get('express:/user/users/qtest-proband1/externalcompliance', {
         body: JSON.stringify({
           complianceSamples: true,
           complianceBloodsamples: false,
           complianceLabresults: true,
         }),
       })
-      .get('express:/user/users/QTestproband1/mappingId', {
+      .get('express:/user/users/qtest-proband1/mappingId', {
         body: 'e959c22a-ab73-4b70-8871-48c23080b87b',
       })
       .catch(503);
@@ -59,11 +60,11 @@ describe('Internal: Compliance API', () => {
     fetchMock.restore();
   });
 
-  describe('GET /compliance/{study}/agree/{userId}', () => {
+  describe('GET /compliance/{studyName}/agree/{userId}', () => {
     it('should return http 200 and true with no questioned compliance', async () => {
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/QTeststudie1/agree/QTestproband1');
+        .get('/compliance/QTeststudie1/agree/qtest-proband1');
 
       // Assert
       expect(res).to.have.status(200);
@@ -73,7 +74,7 @@ describe('Internal: Compliance API', () => {
     it('should return http 200 true for single app question', async () => {
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/QTeststudie1/agree/QTestproband1')
+        .get('/compliance/QTeststudie1/agree/qtest-proband1')
         .query({ system: 'app' });
 
       // Assert
@@ -84,7 +85,7 @@ describe('Internal: Compliance API', () => {
     it('should return http 200 false for single bloodsamples question', async () => {
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/QTeststudie1/agree/QTestproband1')
+        .get('/compliance/QTeststudie1/agree/qtest-proband1')
         .query({ system: 'bloodsamples' });
 
       // Assert
@@ -95,7 +96,7 @@ describe('Internal: Compliance API', () => {
     it('should return http 200 true for samples and labresults question', async () => {
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/QTeststudie1/agree/QTestproband1')
+        .get('/compliance/QTeststudie1/agree/qtest-proband1')
         .query({ system: ['samples', 'labresults'] });
 
       // Assert
@@ -106,7 +107,7 @@ describe('Internal: Compliance API', () => {
     it('should return http 200 false for bloodsamples and labresults question', async () => {
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/QTeststudie1/agree/QTestproband1')
+        .get('/compliance/QTeststudie1/agree/qtest-proband1')
         .query({ system: ['bloodsamples', 'labresults'] });
 
       // Assert
@@ -123,7 +124,7 @@ describe('Internal: Compliance API', () => {
       await Compliance.create(compl2);
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/QTeststudie1/agree/QTestproband1')
+        .get('/compliance/QTeststudie1/agree/qtest-proband1')
         .query({ system: 'app' });
 
       // Assert

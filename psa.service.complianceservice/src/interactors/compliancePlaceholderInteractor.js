@@ -13,7 +13,7 @@ class CompliancePlaceholderInteractor {
    * Gets the questionnaire-placeholder of a specific study
    * @param {import('@hapi/hapi').Request} request the request
    * @param {string} study the name of the study
-   * @returns {Array} the questionnaire-placeholder of a specific study
+   * @returns {Promise<Array>} the questionnaire-placeholder of a specific study
    */
   static async getComplianceQuestionnairePlaceholders(request, study) {
     try {
@@ -36,8 +36,8 @@ class CompliancePlaceholderInteractor {
    * Creates questionnaire-placeholder for a specific study
    * @param {import('@hapi/hapi').Request} request the request
    * @param {string} study the name of the study
-   * @param {string} genericFieldDescription the placeholder
-   * @returns {Array} the questionnaire-placeholder of a specific study
+   * @param {GenericFieldDescription} genericFieldDescription the placeholder
+   * @returns {Promise<Array>} the questionnaire-placeholder of a specific study
    */
   static async createNewComplianceQuestionnairePlaceholder(
     request,

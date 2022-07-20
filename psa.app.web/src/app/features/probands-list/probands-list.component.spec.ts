@@ -17,13 +17,16 @@ import {
 } from './probands-list.component';
 import { ProbandsListActionComponent } from './probands-list-action.component';
 import { ProbandsListEntryActionComponent } from './probands-list-entry-action.component';
-import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { AlertService } from '../../_services/alert.service';
 import { TranslatedUserFactory } from './translated-user/translated-user.factory';
 import { TranslatedUser } from './translated-user/translated-user.model';
 import { MatTableModule } from '@angular/material/table';
 import { Proband } from '../../psa.app.core/models/proband';
 import { createProband } from '../../psa.app.core/models/instance.helper.spec';
+import { ProbandService } from '../../psa.app.core/providers/proband-service/proband.service';
+import { TranslatePipe } from '@ngx-translate/core';
+import { MockPipe } from 'ng-mocks';
+import { CurrentUser } from '../../_services/current-user.service';
 
 @Pipe({ name: 'translate' })
 class MockTranslatePipe implements PipeTransform {
@@ -36,18 +39,22 @@ describe('ProbandsListComponent', () => {
   let component: ProbandsListComponent;
   let fixture: ComponentFixture<ProbandsListComponent>;
 
-  let authService: jasmine.SpyObj<AuthService>;
+  let probandService: jasmine.SpyObj<ProbandService>;
   let alertService: jasmine.SpyObj<AlertService>;
   let translatedUserFactory: jasmine.SpyObj<TranslatedUserFactory>;
+  let currentUser: jasmine.SpyObj<CurrentUser>;
 
   beforeEach(() => {
-    authService = jasmine.createSpyObj(AuthService, ['getProbands']);
-    alertService = jasmine.createSpyObj(AlertService, ['errorObject']);
-    translatedUserFactory = jasmine.createSpyObj(TranslatedUserFactory, [
+    probandService = jasmine.createSpyObj('ProbandService', ['getProbands']);
+    alertService = jasmine.createSpyObj('AlertService', ['errorObject']);
+    translatedUserFactory = jasmine.createSpyObj('TranslatedUserFactory', [
       'create',
     ]);
+    currentUser = jasmine.createSpyObj('CurrentUser', [], {
+      studies: ['NAKO Test'],
+    });
 
-    authService.getProbands.and.resolveTo([createProband()]);
+    probandService.getProbands.and.resolveTo([createProband()]);
     translatedUserFactory.create.and.returnValue(getTranslatedUser());
 
     TestBed.configureTestingModule({
@@ -56,12 +63,13 @@ describe('ProbandsListComponent', () => {
         ProbandsListComponent,
         ProbandsListActionComponent,
         ProbandsListEntryActionComponent,
-        MockTranslatePipe,
+        MockPipe(TranslatePipe),
       ],
       providers: [
-        { provide: AuthService, useValue: authService },
+        { provide: ProbandService, useValue: probandService },
         { provide: AlertService, useValue: alertService },
         { provide: TranslatedUserFactory, useValue: translatedUserFactory },
+        { provide: CurrentUser, useValue: currentUser },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -70,36 +78,30 @@ describe('ProbandsListComponent', () => {
     component = fixture.componentInstance;
   });
 
-  describe('ngOnInit()', () => {
-    it('should fetch users and extract studies from response', async () => {
-      await component.ngOnInit();
-      expect(authService.getProbands).toHaveBeenCalledTimes(1);
-      expect(component.studyFilterValues.length).toBeGreaterThan(0);
-      expect(component.studyFilterValues[0]).toEqual('NAKO Test');
+  describe('fetchProbands()', () => {
+    beforeEach(() => (component.activeFilter.studyName = 'NAKO Test'));
+
+    it('should fetch probands based on selected study', async () => {
+      await component.fetchProbands();
+      expect(probandService.getProbands).toHaveBeenCalledOnceWith('NAKO Test');
     });
 
     it('should set table data of data source', async () => {
-      await component.ngOnInit();
+      await component.fetchProbands();
       expect(component.dataSource.data).toEqual([getTranslatedUser()]);
     });
 
     it('should show an error alert on errors', async () => {
-      (authService.getProbands as jasmine.Spy).and.returnValue(
+      (probandService.getProbands as jasmine.Spy).and.returnValue(
         Promise.reject()
       );
-      await component.ngOnInit();
+      await component.fetchProbands();
       expect(alertService.errorObject).toHaveBeenCalled();
-    });
-
-    it('should reset loading state', async () => {
-      expect(component.isLoading).toBe(true);
-      await component.ngOnInit();
-      expect(component.isLoading).toBe(false);
     });
   });
 
   describe('updateEntryAction()', () => {
-    beforeEach(async () => await component.ngOnInit());
+    beforeEach(() => component.ngOnInit());
 
     it('should add an entry to the entry actions map', () => {
       component.updateEntryAction(getEntryAction());
@@ -116,7 +118,7 @@ describe('ProbandsListComponent', () => {
   });
 
   describe('updateFilter()', () => {
-    beforeEach(async () => await component.ngOnInit());
+    beforeEach(() => component.ngOnInit());
 
     it('should update the data sources filter', () => {
       expect(component.dataSource.filter).toBe('null__null');

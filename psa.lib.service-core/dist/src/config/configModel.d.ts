@@ -36,6 +36,18 @@ export interface SftpServerConnection extends Connection {
     username: string;
     password: string;
 }
+export interface AuthSettings {
+    probandTokenIntrospectionClient?: AuthClientSettings;
+    probandManagementClient?: AuthClientSettings;
+    adminTokenIntrospectionClient?: AuthClientSettings;
+    adminManagementClient?: AuthClientSettings;
+}
+export interface AuthClientSettings {
+    connection: HttpConnection;
+    realm: string;
+    clientId: string;
+    secret: string;
+}
 export interface TlsSettings {
     cert: Buffer;
     key: Buffer;
@@ -54,20 +66,18 @@ export interface ServiceConfig {
     internal?: Connection;
     database?: DatabaseConnection;
     services?: {
-        authservice?: HttpConnection;
         complianceservice?: HttpConnection;
         loggingservice?: HttpConnection;
         personaldataservice?: HttpConnection;
-        sormasservice?: HttpConnection;
         userservice?: HttpConnection;
     };
     servers?: {
         mailserver?: MailserverConnection;
         mhhftpserver?: SftpServerConnection;
-        hzistpserver?: SftpServerConnection;
+        hziftpserver?: SftpServerConnection;
         messageQueue?: MessageQueueConnection;
+        authserver?: AuthSettings;
     };
-    publicAuthKey?: Buffer;
     webappUrl?: string;
     backendApiUrl?: string;
 }

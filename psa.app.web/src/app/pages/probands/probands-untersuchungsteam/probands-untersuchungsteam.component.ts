@@ -23,7 +23,7 @@ export class ProbandsUntersuchungsteamComponent {
   @ViewChild(ProbandsListComponent, { static: true })
   probandsList: ProbandsListComponent;
 
-  isLoading = true;
+  isLoading = false;
 
   constructor(private router: Router, private dialog: MatDialog) {}
 
@@ -36,7 +36,7 @@ export class ProbandsUntersuchungsteamComponent {
 
     dialogRef.afterClosed().subscribe((pseudonym) => {
       if (pseudonym) {
-        this.probandsList.fetchUsers();
+        this.probandsList.fetchProbands();
       }
     });
   }

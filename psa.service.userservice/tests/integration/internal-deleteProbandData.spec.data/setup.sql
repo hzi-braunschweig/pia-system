@@ -8,15 +8,10 @@ INSERT INTO studies(name)
 VALUES ('QTestStudy1'),
        ('QTestStudy2');
 
-INSERT INTO accounts(username, password, role)
-VALUES ('QTestProband1', '', 'Proband'),
-       ('DeleteMe', '', 'Proband'),
-       ('DeleteMeFully', '', 'Proband');
-
 INSERT INTO probands(pseudonym, ids, study)
-VALUES ('QTestProband1', NULL, 'QTestStudy1'),
-       ('DeleteMe', '53ae2aea-67bc-4365-9d63-8acdc275d98c', 'QTestStudy2'),
-       ('DeleteMeFully', NULL, 'QTestStudy2');
+VALUES ('qtest-proband1', NULL, 'QTestStudy1'),
+       ('qtest-deleteme', '53ae2aea-67bc-4365-9d63-8acdc275d98c', 'QTestStudy2'),
+       ('qtest-deleteme_fully', NULL, 'QTestStudy2');
 
 INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
@@ -32,8 +27,8 @@ VALUES (123456, 123456, 'subquestion_text1', 1, NULL, NULL, 0),
 
 INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, cycle,
                                      status)
-VALUES (123456, 'QTestStudy1', 123456, 'ApiQuestionnaireName1', 'QTestProband1', NOW(), 0, 'active'),
-       (123457, 'QTestStudy1', 123456, 'ApiQuestionnaireName1', 'QTestProband1', NOW(), 1, 'active');
+VALUES (123456, 'QTestStudy1', 123456, 'ApiQuestionnaireName1', 'qtest-proband1', NOW(), 0, 'active'),
+       (123457, 'QTestStudy1', 123456, 'ApiQuestionnaireName1', 'qtest-proband1', NOW(), 1, 'active');
 
 INSERT INTO lab_results (id, user_id)
-VALUES ('APISAMPLE_11111', 'QTestProband1');
+VALUES ('APISAMPLE_11111', 'qtest-proband1');

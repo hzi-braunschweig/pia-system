@@ -21,9 +21,8 @@ export type AccessLevel = 'read' | 'write' | 'admin';
 
 export interface ProbandInternalDto {
   pseudonym: string;
-  role: 'Proband';
   study: string;
-  first_logged_in_at: string | null;
+  firstLoggedInAt: string | null;
   complianceLabresults: boolean;
   complianceSamples: boolean;
   complianceBloodsamples: boolean;
@@ -31,10 +30,6 @@ export interface ProbandInternalDto {
   accountStatus: AccountStatus;
   status: ProbandStatus;
   ids: string | null;
-  /**
-   * @deprecated use {@link ProbandInternalDto#study} instead
-   */
-  study_accesses: StudyAccess[];
 }
 
 export type ProbandRequestInternalDto = Omit<
@@ -52,4 +47,9 @@ export interface ProbandResponseInternalDto {
   complianceBloodsamples: boolean;
   studyCenter: string | null;
   examinationWave: number;
+}
+
+export interface ProbandExternalIdResponseInternalDto {
+  pseudonym: string;
+  externalId: string;
 }

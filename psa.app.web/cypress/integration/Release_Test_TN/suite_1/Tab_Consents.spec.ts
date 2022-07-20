@@ -14,10 +14,14 @@ import {
   generateRandomProbandForStudy,
   generateRandomStudy,
   getCredentialsForProbandByUsername,
-  getToken,
   login,
 } from '../../../support/commands';
 import { CreateProbandRequest } from '../../../../src/app/psa.app.core/models/proband';
+import {
+  createProfessionalUser,
+  loginProfessional,
+  UserCredentials,
+} from 'cypress/support/user.commands';
 
 const short = require('short-uuid');
 const translator = short();
@@ -35,7 +39,8 @@ const testProbandConsent = {
     '<pia-consent-input-text-lastname></pia-consent-input-text-lastname>\n<pia-consent-input-text-firstname></pia-consent-input-text-firstname>\n\nIch williger ein meine Proben zu verwalten\n<pia-consent-input-radio-samples></pia-consent-input-radio-samples>\n\nIch williger ein meine Laborergebnisse zu verwalten\n<pia-consent-input-radio-labresults></pia-consent-input-radio-labresults>\n\nIch williger ein meine Blut Proben zu verwalten\n<pia-consent-input-radio-bloodsamples></pia-consent-input-radio-bloodsamples>\n\nIch willige in die Verarbeitung und Nutzung meiner personenbezogenen Daten gemäß der vorstehenden Datenschutzerklärung ein.\n<pia-consent-input-radio-app></pia-consent-input-radio-app>\n',
 };
 
-const appUrl = '/';
+const adminAppUrl = '/admin/';
+const probandAppUrl = '/';
 
 describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwilligungen', () => {
   beforeEach(() => {
@@ -44,38 +49,40 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
       role: 'Untersuchungsteam',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
     };
 
     forscher = {
       username: `e2e-f-${translator.new()}@testpia-app.de`,
       role: 'Forscher',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
     };
 
-    createStudy(study)
-      .then(() => createUser(ut))
-      .then(() => createUser(forscher))
-      .then(() => getToken(ut.username))
-      .then((token) => createPlannedProband(proband.pseudonym, token))
-      .then(() => getToken(ut.username))
-      .then((token) => createProband(proband, study.name, token))
-      .then(() => getToken(forscher.username))
+    createStudy(study);
+
+    createProfessionalUser(ut, study.name).as('utCred');
+    createProfessionalUser(forscher, study.name).as('fCred');
+
+    cy.get<UserCredentials>('@utCred')
+      .then(loginProfessional)
+      .then((token) => {
+        createPlannedProband(proband.pseudonym, token);
+        createProband(proband, study.name, token);
+        getCredentialsForProbandByUsername(proband.pseudonym, token).then(
+          (cred) => {
+            probandCredentials.username = cred.username;
+            probandCredentials.password = cred.password;
+          }
+        );
+      });
+
+    cy.get<UserCredentials>('@fCred')
+      .then(loginProfessional)
       .then((token) =>
         createConsentForStudy(testProbandConsent, study.name, token)
-      )
-      .then(() => getToken(ut.username))
-      .then((token) =>
-        getCredentialsForProbandByUsername(proband.pseudonym, token)
-      )
-      .then((cred) => {
-        probandCredentials.username = cred.username;
-        probandCredentials.password = cred.password;
-      });
+      );
   });
 
   it('Ohne Zustimmung zur App-Nutzung darf Appnutzung nicht möglich sein', () => {
-    cy.visit(appUrl);
+    cy.visit(probandAppUrl);
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
@@ -94,8 +101,9 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Kontakt').click();
     cy.expectPathname('/compliance/agree');
   });
+
   it('Prüfen, ob nur Buttons vorhanden sind, die dort sein dürfen', () => {
-    cy.visit(appUrl);
+    cy.visit(probandAppUrl);
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
@@ -144,12 +152,14 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
     cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').click();
     cy.get('#confirmbutton').click();
 
+    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Einwilligung').click();
     cy.get('[data-e2e="e2e-compliance-edit-component"]')
       .contains('button', 'Als PDF herunterladen')
       .should('be.visible');
   });
+
   it('Die Menüpunkte (z.B. Laborergebnisse) werden enstprechend der Einwilligung angezeigt bzw. nicht angezeigt.', () => {
-    cy.visit(appUrl);
+    cy.visit(probandAppUrl);
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
@@ -193,7 +203,7 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
       .contains('Laborergebnisse')
       .should('be.visible');
     cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Einwilligungen')
+      .contains('Einwilligung')
       .should('be.visible');
     cy.get('[data-e2e="e2e-sidenav-content"]')
       .contains('Einstellungen')
@@ -202,8 +212,9 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
       .contains('Kontakt')
       .should('be.visible');
   });
+
   it('Bei Zustimmung: Einwilligungstext wird angezeigt', () => {
-    cy.visit(appUrl);
+    cy.visit(probandAppUrl);
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
 
@@ -269,8 +280,9 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
 
     cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').contains('OK');
   });
+
   it('Bei Zustimmung:  Einwilligung ist als PDF downloadbar', () => {
-    cy.visit(appUrl);
+    cy.visit(probandAppUrl);
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
 
@@ -299,6 +311,7 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
     cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').click();
     cy.get('#confirmbutton').click();
 
+    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Einwilligung').click();
     cy.get('[data-e2e="e2e-compliance-edit-component"]')
       .contains('button', 'Als PDF herunterladen')
       .click();

@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-export * from './clients/authserviceClient';
 export * from './clients/complianceserviceClient';
 export * from './clients/loggingserviceClient';
 export * from './clients/personaldataserviceClient';

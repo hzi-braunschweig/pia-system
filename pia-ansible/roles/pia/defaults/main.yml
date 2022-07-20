@@ -38,7 +38,6 @@ pia_ssl_organization_name: 'HZI'
 pia_ssl_organizational_unit_name: 'HZI'
 
 pia_ssh_key_directory: /etc/pia/ssh
-pia_auth_key_directory: /etc/pia/authKey
 pia_ssl_directory: /etc/pia/ssl
 pia_firebase_directory: /etc/pia/firebase/
 
@@ -47,12 +46,6 @@ pia_ewpia_data_directory: /srv/dockerdata/ewpia/
 pia_ipia_data_directory: /srv/dockerdata/ipia/
 pia_messagequeue_data_directory: /srv/dockerdata/messagequeue/
 
-# NOTE: if both are enabled only one of both checks must succeed
-# specify if certificate checks are required for non proband users
-pia_ip_check_enabled: false
-# specify if ip checks are required for non proband users
-pia_cert_check_enabled: false
-
 # Required for external services that can create probands. Not used by sormas.
 # Use a complex unique key on productive systems (also for sormas)!
 pia_api_key: 66w66666-w666-666w-www6-666w6w666w66
@@ -60,7 +53,7 @@ pia_api_key: 66w66666-w666-666w-www6-666w6w666w66
 generate_random_key: false
 
 # the default language, unless another language is explicitly set. Possible values:
-# de-CH, de-DE, en-US, fr-CH, it-CH
+# de-CH, de-DE, en-US
 pia_default_language: de-DE
 
 pia_mail_user: pia@some-faked-domain-that-hopefully-will-never-exist.faked
@@ -69,6 +62,14 @@ pia_mail_host: some-faked-domain-that-hopefully-will-never-exist.faked
 pia_mail_port: 465
 pia_mail_from_address: pia@some-faked-domain-that-hopefully-will-never-exist.faked
 pia_mail_from_name: PIA App
+
+# sets directAccessGrantsEnabled for keycloak admin realm
+pia_is_direct_access_grant_enabled: false
+
+pia_authserver_proband_management_client_secret: generated-client-secret
+pia_authserver_proband_token_introspection_client_secret: generated-client-secret
+pia_authserver_admin_management_client_secret: generated-client-secret
+pia_authserver_admin_token_introspection_client_secret: generated-client-secret
 
 # should always be true on productive systems
 pia_mail_require_tls: true
@@ -145,8 +146,8 @@ pia_services:
     }
   - {
       fullName: ipiaservice,
-      # on ipia all services are already using DB_* aliases
-      # so we don't need the QPIA variable set for host and port
+      variableName: IPIASERVICE,
+      port: 5432,
       name: 'ipia',
       qpia: false,
       ewpia: false,
@@ -184,15 +185,6 @@ pia_services:
       variableName: USERSERVICE,
       portOffset: 1,
       name: 'us',
-      qpia: true,
-      ewpia: false,
-      ipia: false,
-    }
-  - {
-      fullName: authservice,
-      variableName: AUTHSERVICE,
-      portOffset: 2,
-      name: 'auth',
       qpia: true,
       ewpia: false,
       ipia: false,
@@ -275,6 +267,15 @@ pia_services:
       qpia: true,
       ewpia: false,
       ipia: false,
+    }
+  - {
+      fullName: authserver,
+      variableName: AUTHSERVER,
+      portOffset: 14,
+      name: 'authserver',
+      qpia: false,
+      ewpia: false,
+      ipia: true,
     }
   - {
       fullName: deploymentservice,

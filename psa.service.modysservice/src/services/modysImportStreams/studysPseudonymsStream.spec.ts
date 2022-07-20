@@ -16,6 +16,7 @@ import { getStudysPseudonymsReadable } from './studysPseudonymsStream';
 import { WriteIntoArrayStream } from '@pia/lib-service-core';
 import { UserserviceClient } from '@pia-system/lib-http-clients-internal';
 import { userserviceClient } from '../../clients/userserviceClient';
+import { ProbandExternalId } from '../../models/probandExternalId';
 
 const pipeline = promisify(stream.pipeline);
 
@@ -35,7 +36,7 @@ describe('StudysPseudonymsStream', () => {
 
   it('should end the stream with no error, if userservice is not available', async () => {
     // Arrange
-    userserviceClientStubbed.getPseudonyms.rejects(
+    userserviceClientStubbed.getExternalIds.rejects(
       Boom.internal('userservice not available')
     );
     const results: string[] = [];
@@ -46,14 +47,14 @@ describe('StudysPseudonymsStream', () => {
 
     // Assert
     expect(studysPseudonymsReadable.readableEnded).to.be.true;
-    expect(userserviceClientStubbed.getPseudonyms).to.have.been.calledOnce;
+    expect(userserviceClientStubbed.getExternalIds).to.have.been.calledOnce;
     expect(results).to.be.empty;
   });
 
   it('should end the stream with no error, if no pseudonyms in given study', async () => {
     // Arrange
-    const pseudonyms: string[] = [];
-    userserviceClientStubbed.getPseudonyms.resolves(pseudonyms);
+    const pseudonyms: ProbandExternalId[] = [];
+    userserviceClientStubbed.getExternalIds.resolves(pseudonyms);
     const results: string[] = [];
 
     // Act
@@ -62,14 +63,27 @@ describe('StudysPseudonymsStream', () => {
 
     // Assert
     expect(studysPseudonymsReadable.readableEnded).to.be.true;
-    expect(userserviceClientStubbed.getPseudonyms).to.have.been.calledOnce;
+    expect(userserviceClientStubbed.getExternalIds).to.have.been.calledOnce;
     expect(results).to.deep.equal(pseudonyms);
   });
 
   it('should push all pseudonyms from userservice', async () => {
     // Arrange
-    const pseudonyms: string[] = ['TEST-0001', 'TEST-0002', 'TEST-0003'];
-    userserviceClientStubbed.getPseudonyms.resolves(pseudonyms);
+    const pseudonyms: ProbandExternalId[] = [
+      {
+        pseudonym: 'test-0001',
+        externalId: 'TEST-0001',
+      },
+      {
+        pseudonym: 'test-0002',
+        externalId: 'TEST-0002',
+      },
+      {
+        pseudonym: 'test-0003',
+        externalId: 'TEST-0003',
+      },
+    ];
+    userserviceClientStubbed.getExternalIds.resolves(pseudonyms);
     const results: string[] = [];
 
     // Act
@@ -78,7 +92,7 @@ describe('StudysPseudonymsStream', () => {
 
     // Assert
     expect(studysPseudonymsReadable.readableEnded).to.be.true;
-    expect(userserviceClientStubbed.getPseudonyms).to.have.been.calledOnce;
+    expect(userserviceClientStubbed.getExternalIds).to.have.been.calledOnce;
     expect(results).to.deep.equal(pseudonyms);
   });
 });

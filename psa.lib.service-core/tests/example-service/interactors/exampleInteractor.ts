@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Nullable } from '../../../src/utils/types';
+import { Nullable } from '../../../src';
 import { Example } from '../models/example';
 
 export class ExampleInteractor {

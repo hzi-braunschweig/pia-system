@@ -28,6 +28,7 @@ import Router from 'hapi-router';
 import { Version } from './version';
 import { Metrics } from './metrics';
 import { ErrorHandler } from './errorHandler';
+import { AssertStudyAccess } from './assertStudyAccess';
 
 export interface ServicePluginOptions {
   name: string;
@@ -45,6 +46,9 @@ const logSqueezeArgs = [
   },
 ];
 
+export const defaultPublicRoutesPaths = 'src/routes/{admin,proband}/*';
+export const defaultInternalRoutesPaths = 'src/routes/internal/*';
+
 export const registerPlugins = async (
   server: Server,
   options: ServicePluginOptions
@@ -54,7 +58,8 @@ export const registerPlugins = async (
     Vision, // required by hapi-swagger
     Version, // registers the application version route
     Metrics, // registers the application metrics route
-    ErrorHandler, // registers a error handler that logs server side errors (>=500)
+    ErrorHandler, // registers an error handler that logs server side errors (>=500)
+    AssertStudyAccess, // registers a handler which checks study access at route level
   ]);
 
   if (options.routes) {

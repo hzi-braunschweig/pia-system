@@ -9,7 +9,7 @@ import { expect } from 'chai';
 
 import { MessageQueueClient } from '@pia/lib-messagequeue';
 import { config } from '../../src/config';
-import server from '../../src/server';
+import { Server } from '../../src/server';
 import { db } from '../../src/db';
 import { setup, cleanup } from './messageQueueService.spec.data/setup.helper';
 
@@ -21,13 +21,13 @@ describe('message queue service', function () {
 
   before(async function () {
     await setup();
-    await server.init();
+    await Server.init();
     await mqc.connect(true);
   });
 
   after(async function () {
     await mqc.disconnect();
-    await server.stop();
+    await Server.stop();
     await cleanup();
   });
 
@@ -37,21 +37,21 @@ describe('message queue service', function () {
 
     // Act
     await producer.publish({
-      pseudonym: 'QTestProband1',
+      pseudonym: 'qtest-proband1',
       deletionType: 'default',
     });
 
     let personalData = await db.manyOrNone(
-      "SELECT * from personal_data WHERE pseudonym='QTestProband1'"
+      "SELECT * from personal_data WHERE pseudonym='qtest-proband1'"
     );
     while (personalData.length) {
       await delay(DELAY_TIME);
       personalData = await db.manyOrNone(
-        "SELECT * from personal_data WHERE pseudonym='QTestProband1'"
+        "SELECT * from personal_data WHERE pseudonym='qtest-proband1'"
       );
     }
     const pendingDeletion = await db.manyOrNone(
-      "SELECT * FROM pending_deletions WHERE proband_id='QTestProband1'"
+      "SELECT * FROM pending_deletions WHERE proband_id='qtest-proband1'"
     );
 
     // Assert

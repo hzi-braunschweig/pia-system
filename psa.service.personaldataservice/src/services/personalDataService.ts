@@ -9,6 +9,8 @@ import { runTransaction } from '../db';
 import { PersonalDataRepository } from '../repositories/personalDataRepository';
 import { userserviceClient } from '../clients/userserviceClient';
 import { PersonalData, PersonalDataReq } from '../models/personalData';
+import { probandAuthClient } from '../clients/authServerClient';
+import { assert } from 'ts-essentials';
 
 export class PersonalDataService {
   /**
@@ -33,20 +35,25 @@ export class PersonalDataService {
         pseudonym,
         { transaction }
       );
+      let result: PersonalData;
       if (existingPersonalData) {
-        return await PersonalDataRepository.updatePersonalData(
+        result = await PersonalDataRepository.updatePersonalData(
           pseudonym,
           personalData,
           { transaction }
         );
       } else {
-        return await PersonalDataRepository.createPersonalData(
+        result = await PersonalDataRepository.createPersonalData(
           pseudonym,
           proband.study,
           personalData,
           { transaction }
         );
       }
+      if (personalData.email) {
+        await this.updateAccountMailAddress(pseudonym, personalData.email);
+      }
+      return result;
     });
   }
 
@@ -72,5 +79,27 @@ export class PersonalDataService {
 
   public static async deletePersonalData(pseudonym: string): Promise<void> {
     return PersonalDataRepository.deletePersonalData(pseudonym);
+  }
+
+  private static async updateAccountMailAddress(
+    pseudonym: string,
+    email: string
+  ): Promise<void> {
+    // search by username must always return zero or one results
+    const [user] = await probandAuthClient.users.find({
+      username: pseudonym,
+      realm: probandAuthClient.realm,
+    });
+    assert(
+      user?.id && user.username === pseudonym,
+      'Could not update personal data. Proband account was not found'
+    );
+    await probandAuthClient.users.update(
+      {
+        id: user.id,
+        realm: probandAuthClient.realm,
+      },
+      { email }
+    );
   }
 }

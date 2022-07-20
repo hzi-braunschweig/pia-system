@@ -23,7 +23,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { QuestionnaireService } from '../../../psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
 import { createStudy } from '../../../psa.app.core/models/instance.helper.spec';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
@@ -32,16 +32,22 @@ import { Subject } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
 import Spy = jasmine.Spy;
 import createSpyObj = jasmine.createSpyObj;
+import { DialogChangeStudyComponent } from '../../../dialogs/dialog-change-study/dialog-change-study.component';
+import { HttpErrorResponse } from '@angular/common/http';
+import { SpecificHttpError } from '../../../psa.app.core/models/specificHttpError';
+import { DialogDeletePartnerData } from '../../../_helpers/dialog-delete-partner';
 
 describe('StudiesComponent', () => {
   let fixture: ComponentFixture<StudiesComponent>;
   let component: StudiesComponent;
   let queryParamMapGetter: Spy<() => ParamMap>;
-  let questionnaireService: SpyObj<QuestionnaireService>;
+  let userService: SpyObj<UserService>;
   let authService: SpyObj<AuthService>;
   let snapshot: SpyObj<ActivatedRouteSnapshot>;
   let matDialog: SpyObj<MatDialog>;
-  let afterClosedSubject: Subject<string>;
+  let afterClosedSubject: Subject<
+    string | (HttpErrorResponse & SpecificHttpError)
+  >;
 
   beforeEach(async () => {
     // Provider and Services
@@ -58,6 +64,11 @@ describe('StudiesComponent', () => {
       'getPendingDeletion',
       'deletePendingStudyChange',
     ]);
+    userService = createSpyObj<UserService>('UserService', ['getStudies']);
+    userService.getStudies.and.resolveTo([
+      createStudy({ name: 'Teststudy1' }),
+      createStudy({ name: 'Teststudy2' }),
+    ]);
     afterClosedSubject = new Subject();
     matDialog = jasmine.createSpyObj('MatDialog', ['open']);
     matDialog.open.and.returnValue({
@@ -66,37 +77,21 @@ describe('StudiesComponent', () => {
 
     // Build Base Module
     await MockBuilder(StudiesComponent, AppModule)
-      .provide({
-        provide: ActivatedRoute,
-        useValue: { snapshot },
-      })
       .keep(MatFormFieldModule)
       .keep(MatInputModule)
       .keep(MatPaginatorModule)
       .keep(MatSortModule)
       .mock(MatDialog, matDialog)
-      .mock(AuthService, authService);
+      .mock(ActivatedRoute, { snapshot })
+      .mock(AuthService, authService)
+      .mock(UserService, userService);
   });
 
   describe('init without params', () => {
     beforeEach(fakeAsync(() => {
       // Setup mocks before creating component
       queryParamMapGetter.and.returnValue(convertToParamMap(undefined));
-      questionnaireService = TestBed.inject(
-        QuestionnaireService
-      ) as SpyObj<QuestionnaireService>;
-      questionnaireService.getStudies.and.resolveTo({
-        studies: [
-          createStudy({ name: 'Teststudy1' }),
-          createStudy({ name: 'Teststudy2' }),
-        ],
-      });
-
-      // Create component
-      fixture = TestBed.createComponent(StudiesComponent);
-      component = fixture.componentInstance;
-      fixture.detectChanges(); // run ngOnInit
-      tick(); // wait for ngOnInit to finish
+      createComponent();
     }));
 
     it('should create the component', () => {
@@ -121,12 +116,7 @@ describe('StudiesComponent', () => {
         requested_for: 'PM-Me',
         requested_by: 'PM-Partner',
       });
-
-      // Create component
-      fixture = TestBed.createComponent(StudiesComponent);
-      component = fixture.componentInstance;
-      fixture.detectChanges(); // run ngOnInit
-      tick(); // wait for ngOnInit to finish
+      createComponent();
     }));
 
     it('should create the component', () => {
@@ -143,18 +133,193 @@ describe('StudiesComponent', () => {
           pendingStudyChangeId: '1',
         })
       );
-
-      // Create component
-      fixture = TestBed.createComponent(StudiesComponent);
-      component = fixture.componentInstance;
-      fixture.detectChanges(); // run ngOnInit
-      tick(); // wait for ngOnInit to finish
+      createComponent();
     }));
 
     it('should create the component', () => {
       expect(component).toBeDefined();
       fixture.detectChanges();
     });
+  });
+
+  describe('openDialogChangeStudy()', () => {
+    beforeEach(fakeAsync(() => {
+      // Setup mocks before creating component
+      queryParamMapGetter.and.returnValue(
+        convertToParamMap({
+          pendingStudyChangeId: '1',
+        })
+      );
+      createComponent();
+    }));
+
+    it('should open the change study dialog', fakeAsync(() => {
+      const study = createStudy();
+      component.openDialogChangeStudy(study);
+      expect(matDialog.open).toHaveBeenCalledWith(DialogChangeStudyComponent, {
+        width: '700px',
+        height: 'auto',
+        data: { study },
+      });
+    }));
+
+    it('should handle "rejected" result', fakeAsync(() => {
+      // Arrange
+      const study = createStudy();
+
+      // Act
+      component.openDialogChangeStudy(study);
+      afterClosedSubject.next('rejected');
+      tick();
+
+      // Assert
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'STUDIES.CHANGE_COMPLIANCES_REJECTED',
+          isSuccess: false,
+        },
+      });
+    }));
+
+    it('should handle "accepted" result', fakeAsync(() => {
+      // Arrange
+      const study = createStudy();
+
+      // Act
+      component.openDialogChangeStudy(study);
+      afterClosedSubject.next('accepted');
+      tick();
+
+      // Assert
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'STUDIES.CHANGE_COMPLIANCES_ACCEPTED',
+          isSuccess: true,
+        },
+      });
+    }));
+
+    it('should handle "requested" result', fakeAsync(() => {
+      // Arrange
+      const study = createStudy();
+
+      // Act
+      component.openDialogChangeStudy(study);
+      afterClosedSubject.next('requested');
+      tick();
+
+      // Assert
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'STUDIES.CHANGE_COMPLIANCES_REQUESTED',
+          isSuccess: true,
+        },
+      });
+    }));
+
+    it('should handle specific missing permission error', fakeAsync(() => {
+      // Arrange
+      const study = createStudy();
+
+      // Act
+      component.openDialogChangeStudy(study);
+      afterClosedSubject.next(createSpecificError('MISSING_PERMISSION'));
+      tick();
+
+      // Assert
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'STUDIES.MISSING_PERMISSION',
+          isSuccess: false,
+        },
+      });
+    }));
+
+    it('should handle specific existing pending change error', fakeAsync(() => {
+      // Arrange
+      const study = createStudy();
+
+      // Act
+      component.openDialogChangeStudy(study);
+      afterClosedSubject.next(
+        createSpecificError('4_EYE_OPPOSITION.PENDING_CHANGE_ALREADY_EXISTS')
+      );
+      tick();
+
+      // Assert
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'STUDIES.PENDING_CHANGE_ALREADY_EXISTS',
+          isSuccess: false,
+        },
+      });
+    }));
+
+    it('should handle specific requested for not reached error', fakeAsync(() => {
+      // Arrange
+      const study = createStudy();
+
+      // Act
+      component.openDialogChangeStudy(study);
+      afterClosedSubject.next(
+        createSpecificError('4_EYE_OPPOSITION.REQUESTED_FOR_NOT_REACHED')
+      );
+      tick();
+
+      // Assert
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'STUDIES.REQUESTED_FOR_NOT_REACHED',
+          isSuccess: false,
+        },
+      });
+    }));
+
+    it('should handle specific invalid pseudonym prefix error', fakeAsync(() => {
+      // Arrange
+      const study = createStudy();
+
+      // Act
+      component.openDialogChangeStudy(study);
+      afterClosedSubject.next(
+        createSpecificError('STUDY.INVALID_PSEUDONYM_PREFIX')
+      );
+      tick();
+
+      // Assert
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'STUDIES.INVALID_PSEUDONYM_PREFIX',
+          isSuccess: false,
+        },
+      });
+    }));
+
+    it('should handle unknown error', fakeAsync(() => {
+      // Arrange
+      const study = createStudy();
+
+      // Act
+      component.openDialogChangeStudy(study);
+      afterClosedSubject.next('some unknown error');
+      tick();
+
+      // Assert
+      expect(matDialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'ERROR.ERROR_UNKNOWN',
+          isSuccess: false,
+        },
+      });
+    }));
   });
 
   describe('cancelPendingStudyChange()', () => {
@@ -200,4 +365,25 @@ describe('StudiesComponent', () => {
       });
     }));
   });
+
+  function createComponent(): void {
+    // Create component
+    fixture = TestBed.createComponent(StudiesComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges(); // run ngOnInit
+    tick(); // wait for ngOnInit to finish
+  }
+
+  function createSpecificError(
+    errorCode: string
+  ): HttpErrorResponse & SpecificHttpError {
+    return new HttpErrorResponse({
+      error: {
+        error: 'the error',
+        errorCode,
+        message: 'the message',
+        statusCode: 403,
+      },
+    });
+  }
 });

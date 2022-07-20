@@ -35,10 +35,10 @@ describe('Internal: pseudonyms', () => {
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body).to.be.an('array');
       expect(result.body).to.have.length(4);
-      expect(result.body).to.include('ApiTestProband1');
-      expect(result.body).to.include('ApiTestProband2');
-      expect(result.body).to.include('ApiTestProband3');
-      expect(result.body).to.include('ApiTestProband4');
+      expect(result.body).to.include('qtest-api-proband1');
+      expect(result.body).to.include('qtest-api-proband2');
+      expect(result.body).to.include('qtest-api-proband3');
+      expect(result.body).to.include('qtest-api-proband4');
     });
 
     it('should return HTTP 200 with some pseudonyms if filtered by study', async function () {
@@ -50,8 +50,8 @@ describe('Internal: pseudonyms', () => {
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body).to.be.an('array');
       expect(result.body).to.have.length(2);
-      expect(result.body).to.include('ApiTestProband1');
-      expect(result.body).to.include('ApiTestProband4');
+      expect(result.body).to.include('qtest-api-proband1');
+      expect(result.body).to.include('qtest-api-proband4');
     });
 
     it('should return HTTP 200 with some pseudonyms if filtered by status active', async function () {
@@ -63,9 +63,9 @@ describe('Internal: pseudonyms', () => {
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body).to.be.an('array');
       expect(result.body).to.have.length(3);
-      expect(result.body).to.include('ApiTestProband1');
-      expect(result.body).to.include('ApiTestProband3');
-      expect(result.body).to.include('ApiTestProband4');
+      expect(result.body).to.include('qtest-api-proband1');
+      expect(result.body).to.include('qtest-api-proband3');
+      expect(result.body).to.include('qtest-api-proband4');
     });
 
     it('should return HTTP 200 with some pseudonyms if filtered by status deactivated', async function () {
@@ -77,7 +77,7 @@ describe('Internal: pseudonyms', () => {
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body).to.be.an('array');
       expect(result.body).to.have.length(1);
-      expect(result.body).to.include('ApiTestProband2');
+      expect(result.body).to.include('qtest-api-proband2');
     });
 
     it('should return HTTP 200 with some pseudonyms if filtered by status active and deleted', async function () {
@@ -90,9 +90,9 @@ describe('Internal: pseudonyms', () => {
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body).to.be.an('array');
       expect(result.body).to.have.length(3);
-      expect(result.body).to.include('ApiTestProband1');
-      expect(result.body).to.include('ApiTestProband3');
-      expect(result.body).to.include('ApiTestProband4');
+      expect(result.body).to.include('qtest-api-proband1');
+      expect(result.body).to.include('qtest-api-proband3');
+      expect(result.body).to.include('qtest-api-proband4');
     });
 
     it('should return HTTP 200 with some pseudonyms if filtered by study and status active', async function () {
@@ -105,8 +105,8 @@ describe('Internal: pseudonyms', () => {
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body).to.be.an('array');
       expect(result.body).to.have.length(2);
-      expect(result.body).to.include('ApiTestProband1');
-      expect(result.body).to.include('ApiTestProband4');
+      expect(result.body).to.include('qtest-api-proband1');
+      expect(result.body).to.include('qtest-api-proband4');
     });
 
     it('should return HTTP 200 with no pseudonyms if filter by study and status is too strict', async function () {
@@ -131,8 +131,8 @@ describe('Internal: pseudonyms', () => {
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body).to.be.an('array');
       expect(result.body).to.have.length(2);
-      expect(result.body).to.include('ApiTestProband1');
-      expect(result.body).to.include('ApiTestProband4');
+      expect(result.body).to.include('qtest-api-proband1');
+      expect(result.body).to.include('qtest-api-proband4');
     });
 
     it('should return HTTP 200 with some pseudonyms if filtered by study and complianceContact = false', async function () {
@@ -145,7 +145,7 @@ describe('Internal: pseudonyms', () => {
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body).to.be.an('array');
       expect(result.body).to.have.length(1);
-      expect(result.body).to.include('ApiTestProband2');
+      expect(result.body).to.include('qtest-api-proband2');
     });
   });
 });

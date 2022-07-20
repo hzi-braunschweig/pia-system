@@ -8,7 +8,6 @@ const chai = require('chai');
 const chaiHttp = require('chai-http');
 const chaiExclude = require('chai-exclude');
 const binaryParser = require('superagent-binary-parser');
-const JWT = require('jsonwebtoken');
 const sinon = require('sinon');
 const fs = require('fs');
 const fetchMocker = require('fetch-mock');
@@ -23,7 +22,10 @@ const {
   QuestionnaireTextCompliance,
 } = require('../../../src/db');
 const { config } = require('../../../src/config');
-const secretOrPrivateKey = require('../../secretOrPrivateKey');
+const {
+  AuthTokenMockBuilder,
+  AuthServerMock,
+} = require('@pia/lib-service-core');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -31,62 +33,28 @@ chai.use(chaiExclude);
 
 const testSandbox = sinon.createSandbox();
 
-const apiAddress = 'http://localhost:' + config.public.port;
+const apiAddress = `http://localhost:${config.public.port}`;
 
-const probandSession1 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestproband1',
-  groups: ['QTeststudie1'],
-};
-const probandSession2 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestproband2',
-  groups: ['QTeststudie44'],
-};
-const complianceManagerSession = {
-  id: 1,
-  role: 'EinwilligungsManager',
-  username: 'ewManager',
-  groups: ['QTeststudie1'],
-};
-const complianceManagerSession2 = {
-  id: 1,
-  role: 'EinwilligungsManager',
-  username: 'ewManager2',
-  groups: ['QTeststudie66, QTeststudie77'],
-};
-
-const probandToken1 = JWT.sign(probandSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const probandHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband1',
+  studies: ['QTeststudie1'],
 });
-const probandToken2 = JWT.sign(probandSession2, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const probandHeader2 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband2',
+  studies: ['QTeststudie44'],
 });
-const complianceManagerToken = JWT.sign(
-  complianceManagerSession,
-  secretOrPrivateKey,
-  {
-    algorithm: 'RS512',
-    expiresIn: '24h',
-  }
-);
-const complianceManagerToken2 = JWT.sign(
-  complianceManagerSession2,
-  secretOrPrivateKey,
-  {
-    algorithm: 'RS512',
-    expiresIn: '24h',
-  }
-);
-
-const probandHeader = { authorization: probandToken1 };
-const probandHeader2 = { authorization: probandToken2 };
-const complianceManagerHeader = { authorization: complianceManagerToken };
-const complianceManagerHeader2 = { authorization: complianceManagerToken2 };
+const complianceManagerHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['EinwilligungsManager'],
+  username: 'qtest-ewmanager',
+  studies: ['QTeststudie1'],
+});
+const complianceManagerHeader2 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['EinwilligungsManager'],
+  username: 'qtest-ewmanager2',
+  studies: ['QTeststudie66, QTeststudie77'],
+});
 
 const fetchMock = fetchMocker.sandbox();
 
@@ -107,7 +75,7 @@ describe('Compliance PDF API', function () {
     testSandbox.stub(HttpClient, 'fetch').callsFake(fetchMock);
 
     fetchMock
-      .get('express:/user/users/QTestproband1/mappingId', {
+      .get('express:/user/users/qtest-proband1/mappingId', {
         body: 'e959c22a-ab73-4b70-8871-48c23080b87b',
       })
       .catch(503);
@@ -117,11 +85,14 @@ describe('Compliance PDF API', function () {
     fetchMock.restore();
   });
 
-  describe('GET /compliance/{study}/agree-pdf/{userId}', () => {
+  describe('GET /{studyName}/agree-pdf/{pseudonym}', () => {
+    beforeEach(() => AuthServerMock.probandRealm().returnValid());
+    afterEach(AuthServerMock.cleanAll);
+
     it('should return http 404 if no compliance exists', async function () {
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/QTeststudie1/agree-pdf/QTestproband1')
+        .get('/QTeststudie1/agree-pdf/qtest-proband1')
         .set(probandHeader);
 
       // Assert
@@ -135,7 +106,7 @@ describe('Compliance PDF API', function () {
       });
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/QTeststudie1/agree-pdf/QTestproband1')
+        .get('/QTeststudie1/agree-pdf/qtest-proband1')
         .set(probandHeader)
         .parse(binaryParser)
         .buffer();
@@ -157,7 +128,7 @@ describe('Compliance PDF API', function () {
       });
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/QTeststudie1/agree-pdf/QTestproband1')
+        .get('/QTeststudie1/agree-pdf/qtest-proband1')
         .set(probandHeader)
         .buffer();
 
@@ -171,28 +142,46 @@ describe('Compliance PDF API', function () {
       require('fs').writeFileSync('./tests/reports/meine2.pdf', res.body);
     });
 
-    it('should return 401 if an unauthorized proband tries', async function () {
+    it('should also accept pseudonyms in uppercase and return http 200', async function () {
+      this.timeout(5000);
+      await Compliance.create(compl1, {
+        include: [QuestionnaireCompliance, QuestionnaireTextCompliance],
+      });
+      const res = await chai
+        .request(apiAddress)
+        .get('/QTeststudie1/agree-pdf/QTest-Proband1')
+        .set(probandHeader)
+        .buffer();
+
+      // Assert
+      expect(res).to.have.status(200);
+    });
+
+    it('should return 403 if an unauthorized proband tries', async function () {
       this.timeout(5000);
       await Compliance.create(compl2, {
         include: [QuestionnaireCompliance, QuestionnaireTextCompliance],
       });
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/QTeststudie1/agree-pdf/QTestproband2')
+        .get('/QTeststudie1/agree-pdf/qtest-proband2')
         .set(probandHeader2)
         .parse(binaryParser)
         .buffer();
 
       // Assert
-      expect(res).to.have.status(401);
+      expect(res).to.have.status(403);
     });
   });
 
-  describe('GET /compliance/{study}/agree-pdf/instance/{id}', () => {
+  describe('GET /admin/{studyName}/agree-pdf/instance/{id}', () => {
+    beforeEach(() => AuthServerMock.adminRealm().returnValid());
+    afterEach(AuthServerMock.cleanAll);
+
     it('should return http 404 if no compliance exists', async function () {
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/QTeststudie1/agree-pdf/instance/123465')
+        .get('/admin/QTeststudie1/agree-pdf/instance/123465')
         .set(complianceManagerHeader);
       expect(res).to.have.status(404);
     });
@@ -204,7 +193,7 @@ describe('Compliance PDF API', function () {
       });
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/QTeststudie1/agree-pdf/instance/${compliance.id}`)
+        .get(`/admin/QTeststudie1/agree-pdf/instance/${compliance.id}`)
         .set(complianceManagerHeader)
         .parse(binaryParser)
         .buffer();
@@ -219,20 +208,20 @@ describe('Compliance PDF API', function () {
       require('fs').writeFileSync('./tests/reports/meine1.pdf', res.body);
     });
 
-    it('should return 401 if an unauthorized compliance manager tries', async function () {
+    it('should return 403 if an unauthorized compliance manager tries', async function () {
       this.timeout(5000);
       const compliance = await Compliance.create(compl2, {
         include: [QuestionnaireCompliance, QuestionnaireTextCompliance],
       });
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/QTeststudie1/agree-pdf/instance/${compliance.id}`)
+        .get(`/admin/QTeststudie1/agree-pdf/instance/${compliance.id}`)
         .set(complianceManagerHeader2)
         .parse(binaryParser)
         .buffer();
 
       // Assert
-      expect(res).to.have.status(401);
+      expect(res).to.have.status(403);
     });
   });
 

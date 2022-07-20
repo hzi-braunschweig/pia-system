@@ -8,34 +8,31 @@ import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import sinonChai from 'sinon-chai';
 import { StatusCodes } from 'http-status-codes';
-import sinon, { SinonSpy } from 'sinon';
-import fetchMocker from 'fetch-mock';
-import {
-  CreateAccountRequestInternalDto,
-  HttpClient,
-} from '@pia-system/lib-http-clients-internal';
+import sinon, { SinonStub, SinonStubbedInstance } from 'sinon';
 import { cleanup, setup } from './internal-postProband.spec.data/setup.helper';
 import { db } from '../../src/db';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
-import { authserviceClient } from '../../src/clients/authserviceClient';
 import {
   CreateProbandRequest,
   CreateProbandResponse,
 } from '../../src/models/proband';
-import { Response } from './instance.helper.spec';
+import { Response } from '@pia/lib-service-core';
+import { probandAuthClient } from '../../src/clients/authServerClient';
+import { Users } from '@keycloak/keycloak-admin-client/lib/resources/users';
 
 chai.use(chaiHttp);
 chai.use(sinonChai);
 
-const fetchMock = fetchMocker.sandbox();
 const serverSandbox = sinon.createSandbox();
 const testSandbox = sinon.createSandbox();
 
 const internalApiAddress = `http://localhost:${config.internal.port}`;
 
 describe('Internal: post proband', function () {
-  let createUserSpy: SinonSpy;
+  let authClientUsersStub: SinonStubbedInstance<Users>;
+  let authClientGroupsStub: SinonStub;
+  let authClientRolesStub: SinonStub;
 
   before(async function () {
     await Server.init();
@@ -47,35 +44,33 @@ describe('Internal: post proband', function () {
   });
 
   beforeEach(async function () {
-    testSandbox
-      .stub<typeof HttpClient, 'fetch'>(HttpClient, 'fetch')
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      .callsFake(fetchMock);
-    fetchMock.post('express:/auth/user', async (_url, opts) => {
-      const user = JSON.parse(
-        opts.body as string
-      ) as CreateAccountRequestInternalDto;
-      try {
-        await db.none(
-          "INSERT INTO accounts (username, password, role) VALUES ($(username), 'hashed_password', $(role))",
-          user
-        );
-        return {
-          body: null,
-        };
-      } catch (e) {
-        return StatusCodes.CONFLICT;
-      }
+    authClientUsersStub = testSandbox.stub(probandAuthClient.users);
+    authClientUsersStub.create.resolves({ id: '1234' });
+    authClientUsersStub.addClientRoleMappings.resolves();
+
+    authClientGroupsStub = testSandbox.stub(probandAuthClient.groups, 'find');
+    authClientGroupsStub.resolves([
+      {
+        id: 'xyz',
+        name: 'QTestStudy1',
+        path: '/QTestStudy1',
+      },
+    ]);
+    authClientRolesStub = testSandbox.stub(
+      probandAuthClient.roles,
+      'findOneByName'
+    );
+    authClientRolesStub.resolves({
+      id: 'abc-123',
+      name: 'Proband',
     });
-    createUserSpy = testSandbox.spy(authserviceClient, 'createAccount');
+
     await setup();
   });
 
   afterEach(async function () {
     await cleanup();
     testSandbox.restore();
-    fetchMock.restore();
   });
 
   describe('POST /user/studies/{studyName}/probands', function () {
@@ -92,12 +87,12 @@ describe('Internal: post proband', function () {
 
       // Assert
       expect(result).to.have.status(StatusCodes.CONFLICT);
-      expect(createUserSpy.notCalled).to.be.true;
+      expect(authClientUsersStub.create.notCalled).to.be.true;
     });
 
     it('should return 409 if IDS is already in use', async function () {
       // Arrange
-      const body = createProbandRequest({ pseudonym: 'QTestProband2' });
+      const body = createProbandRequest({ pseudonym: 'qtest-proband2' });
       const studyName = 'QTestStudy1';
 
       // Act
@@ -108,10 +103,10 @@ describe('Internal: post proband', function () {
 
       // Assert
       expect(result).to.have.status(StatusCodes.CONFLICT);
-      expect(createUserSpy.notCalled).to.be.true;
+      expect(authClientUsersStub.create.notCalled).to.be.true;
     });
 
-    it('should return 428 if study does not exist', async function () {
+    it('should return 428 if study does not exist in DB', async function () {
       // Arrange
       const body = createProbandRequest();
       const studyName = 'NoStudy';
@@ -124,7 +119,41 @@ describe('Internal: post proband', function () {
 
       // Assert
       expect(result).to.have.status(StatusCodes.PRECONDITION_REQUIRED);
-      expect(createUserSpy.notCalled).to.be.true;
+      expect(authClientUsersStub.create.notCalled).to.be.true;
+    });
+
+    it('should return 428 if study does not exist in authserver', async function () {
+      // Arrange
+      const body = createProbandRequest();
+      const studyName = 'QTestStudy1';
+      authClientGroupsStub.resolves([]);
+
+      // Act
+      const result = await chai
+        .request(internalApiAddress)
+        .post(`/user/studies/${studyName}/probands`)
+        .send(body);
+
+      // Assert
+      expect(result).to.have.status(StatusCodes.PRECONDITION_REQUIRED);
+      expect(authClientUsersStub.create.notCalled).to.be.true;
+    });
+
+    it('should return 500 if role does not exist in authserver', async function () {
+      // Arrange
+      const body = createProbandRequest();
+      const studyName = 'QTestStudy1';
+      authClientRolesStub.resolves(undefined);
+
+      // Act
+      const result = await chai
+        .request(internalApiAddress)
+        .post(`/user/studies/${studyName}/probands`)
+        .send(body);
+
+      // Assert
+      expect(result).to.have.status(StatusCodes.INTERNAL_SERVER_ERROR);
+      expect(authClientUsersStub.create.notCalled).to.be.true;
     });
 
     it('should create a user with a random password', async () => {
@@ -139,20 +168,38 @@ describe('Internal: post proband', function () {
         .send(body);
 
       // Assert
-      expect(createUserSpy).to.be.calledOnce;
       expect(result, result.text).to.have.status(StatusCodes.OK);
       expect(result.body.password).to.be.a('string');
       expect(result.body.password.length).to.equal(config.userPasswordLength);
       expect(result.body.pseudonym).to.equal(body.pseudonym);
+
+      expect(authClientUsersStub.create).to.be.calledOnceWith({
+        realm: 'pia-proband-realm',
+        username: 'qtest-proband3',
+        groups: ['/QTestStudy1'],
+        enabled: true,
+        credentials: [
+          {
+            type: 'password',
+            value: result.body.password,
+            temporary: true,
+          },
+        ],
+      });
+      expect(authClientUsersStub.addRealmRoleMappings).to.be.calledOnceWith({
+        id: '1234',
+        realm: 'pia-proband-realm',
+        roles: [{ id: 'abc-123', name: 'Proband' }],
+      });
     });
 
-    it('should update proband and return 200', async () => {
+    it('should create the proband and return 200', async () => {
       // Arrange
       const body = createProbandRequest({ ids: 'doesnotexist' });
       const studyName = 'QTestStudy1';
 
       // Act
-      const result = await chai
+      const result: Response<CreateProbandResponse> = await chai
         .request(internalApiAddress)
         .post(`/user/studies/${studyName}/probands`)
         .send(body);
@@ -178,13 +225,32 @@ describe('Internal: post proband', function () {
         examination_wave: null,
         ids: 'doesnotexist',
       });
+
+      expect(authClientUsersStub.create).to.be.calledOnceWith({
+        realm: 'pia-proband-realm',
+        username: 'qtest-proband3',
+        groups: ['/QTestStudy1'],
+        enabled: true,
+        credentials: [
+          {
+            type: 'password',
+            value: result.body.password,
+            temporary: true,
+          },
+        ],
+      });
+      expect(authClientUsersStub.addRealmRoleMappings).to.be.calledOnceWith({
+        id: '1234',
+        realm: 'pia-proband-realm',
+        roles: [{ id: 'abc-123', name: 'Proband' }],
+      });
     });
 
     function createProbandRequest(
       proband: Partial<CreateProbandRequest> = {}
     ): CreateProbandRequest {
       return {
-        pseudonym: 'QTestProband3',
+        pseudonym: 'qtest-proband3',
         complianceLabresults: false,
         complianceSamples: false,
         complianceBloodsamples: false,

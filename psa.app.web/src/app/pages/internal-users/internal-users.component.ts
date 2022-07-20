@@ -19,6 +19,9 @@ import {
   ProfessionalUser,
 } from '../../psa.app.core/models/user';
 import { MatTableDataSource } from '@angular/material/table';
+import { UserService } from '../../psa.app.core/providers/user-service/user.service';
+import { ProfessionalAccount } from '../../psa.app.core/models/professionalAccount';
+import { FormControl } from '@angular/forms';
 
 @Component({
   templateUrl: 'internal-users.component.html',
@@ -33,22 +36,24 @@ import { MatTableDataSource } from '@angular/material/table';
 export class InternalUsersComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) private paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) private sort: MatSort;
-  private professionalUsers: ProfessionalUser[] = [];
+
   public roles: { value: ProfessionalRole; viewValue: string }[] = [
     { value: 'Forscher', viewValue: 'ROLES.RESEARCHER' },
     { value: 'ProbandenManager', viewValue: 'ROLES.PROBANDS_MANAGER' },
     { value: 'EinwilligungsManager', viewValue: 'ROLES.COMPLIANCE_MANAGER' },
     { value: 'Untersuchungsteam', viewValue: 'ROLES.RESEARCH_TEAM' },
   ];
-  public dataSource: MatTableDataSource<ProfessionalUser> =
-    new MatTableDataSource<ProfessionalUser>();
+  public selectedRole = new FormControl('Forscher');
+
+  public dataSource: MatTableDataSource<ProfessionalAccount> =
+    new MatTableDataSource<ProfessionalAccount>();
   public displayedColumns = ['username', 'role', 'view'];
-  public currentRole?: ProfessionalRole;
   public filterKeyword: string = '';
   public isLoading: boolean = true;
 
   constructor(
     private authService: AuthService,
+    private userService: UserService,
     private alertService: AlertService,
     public dialog: MatDialog
   ) {}
@@ -56,13 +61,11 @@ export class InternalUsersComponent implements OnInit {
   public async ngOnInit(): Promise<void> {
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
-    await this.loadData();
-  }
 
-  public initTable(): void {
-    this.dataSource.data = this.professionalUsers.filter(
-      (user) => user.role === this.currentRole
-    );
+    await this.fetchAccountsForSelectedRole();
+    this.selectedRole.valueChanges.subscribe(async () => {
+      await this.fetchAccountsForSelectedRole();
+    });
   }
 
   public applyFilter(): void {
@@ -70,9 +73,7 @@ export class InternalUsersComponent implements OnInit {
   }
 
   public resetFilter(): void {
-    this.dataSource.data = [];
     this.dataSource.filter = '';
-    this.currentRole = undefined;
     this.filterKeyword = '';
   }
 
@@ -97,7 +98,7 @@ export class InternalUsersComponent implements OnInit {
             )
             .afterClosed()
             .subscribe(() => {
-              this.loadData();
+              this.fetchAccountsForSelectedRole();
             });
         }
       });
@@ -116,21 +117,22 @@ export class InternalUsersComponent implements OnInit {
     });
   }
 
-  private async loadData(): Promise<void> {
+  private async fetchAccountsForSelectedRole(): Promise<void> {
     this.isLoading = true;
     try {
-      this.professionalUsers = await this.authService.getProfessionalUsers();
+      this.dataSource.data = await this.userService.getProfessionalAccounts({
+        role: this.selectedRole.value,
+      });
     } catch (err) {
       this.alertService.errorObject(err);
     }
-    this.initTable();
     this.isLoading = false;
   }
 
   private async deleteUser(username: string): Promise<void> {
     try {
       await this.authService.deleteUser(username);
-      await this.loadData();
+      await this.fetchAccountsForSelectedRole();
     } catch (err) {
       this.alertService.errorObject(err);
     }

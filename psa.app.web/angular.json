@@ -20,72 +20,103 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/psa",
+            "outputPath": "dist",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "allowedCommonJsDependencies": ["datejs", "jspdf-autotable"],
+            "allowedCommonJsDependencies": ["jspdf-autotable", "keycloak-js"],
             "assets": [
               "src/favicon.png",
               "src/assets",
               "src/firebase-messaging-sw.js"
             ],
             "styles": [
-              "src/app/psa.app.core/theme/custom-theme.scss",
+              "src/custom-theme.scss",
               "src/styles.scss",
               "./node_modules/flag-icon-css/css/flag-icons.min.css",
               "./node_modules/swiper/swiper-bundle.css",
               "./node_modules/material-design-icons-iconfont/dist/material-design-icons.css"
             ],
-            "scripts": ["./node_modules/marked/lib/marked.js"]
+            "scripts": ["./node_modules/marked/marked.min.js"]
           },
           "configurations": {
-            "production": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "6mb",
-                  "maximumError": "8mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "10kb"
-                }
-              ],
+            "production-proband-app": {
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "with": "src/environments/environment.proband.prod.ts"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "baseHref": "/",
+              "outputPath": "./dist/out"
             },
-            "development": {
+            "production-admin-app": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.admin.prod.ts"
+                }
+              ],
+              "outputHashing": "all",
+              "baseHref": "/admin/",
+              "outputPath": "./dist/out/admin"
+            },
+            "development-proband-app": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.proband.ts"
+                }
+              ],
               "buildOptimizer": false,
               "optimization": false,
               "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true
+              "namedChunks": true,
+              "baseHref": "/"
+            },
+            "development-admin-app": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.admin.ts"
+                }
+              ],
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true,
+              "baseHref": "/admin/",
+              "outputPath": "./dist/admin"
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "throw-on-default"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
-            "production": {
-              "browserTarget": "psa:build:production"
+            "production-proband-app": {
+              "browserTarget": "psa:build:production-proband-app"
             },
-            "development": {
-              "browserTarget": "psa:build:development",
-              "proxyConfig": "src/proxy.conf.json"
+            "production-admin-app": {
+              "browserTarget": "psa:build:production-admin-app"
+            },
+            "development-proband-app": {
+              "browserTarget": "psa:build:development-proband-app",
+              "proxyConfig": "proxy.conf.json"
+            },
+            "development-admin-app": {
+              "browserTarget": "psa:build:development-admin-app",
+              "proxyConfig": "proxy.conf.json"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "throw-on-default"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
@@ -109,51 +140,62 @@
           }
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": ["tsconfig.app.json", "tsconfig.spec.json"],
-            "exclude": ["**/node_modules/**"]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         },
         "cypress-run": {
-          "builder": "@briebug/cypress-schematic:cypress",
+          "builder": "@cypress/schematic:cypress",
           "options": {
             "devServerTarget": "psa:serve"
           },
           "configurations": {
-            "production": {
-              "devServerTarget": "psa:serve:production"
+            "production-proband-app": {
+              "devServerTarget": "psa:serve:production-proband-app"
+            },
+            "production-admin-app": {
+              "devServerTarget": "psa:serve:production-admin-app"
             }
           }
         },
         "cypress-open": {
-          "builder": "@briebug/cypress-schematic:cypress",
+          "builder": "@cypress/schematic:cypress",
           "options": {
             "devServerTarget": "psa:serve",
             "watch": true,
             "headless": false
           },
           "configurations": {
-            "production": {
-              "devServerTarget": "psa:serve:production"
+            "production-proband-app": {
+              "devServerTarget": "psa:serve:production-proband-app"
+            },
+            "production-admin-app": {
+              "devServerTarget": "psa:serve:production-admin-app"
             }
           }
         },
         "e2e": {
-          "builder": "@briebug/cypress-schematic:cypress",
+          "builder": "@cypress/schematic:cypress",
           "options": {
             "devServerTarget": "psa:serve",
             "watch": true,
             "headless": false
           },
           "configurations": {
-            "production": {
-              "devServerTarget": "psa:serve:production"
+            "production-proband-app": {
+              "devServerTarget": "psa:serve:production-proband-app"
+            },
+            "production-admin-app": {
+              "devServerTarget": "psa:serve:production-admin-app"
             }
           }
         }
       }
     }
   },
-  "defaultProject": "psa"
+  "defaultProject": "psa",
+  "cli": {
+    "defaultCollection": "@angular-eslint/schematics"
+  }
 }

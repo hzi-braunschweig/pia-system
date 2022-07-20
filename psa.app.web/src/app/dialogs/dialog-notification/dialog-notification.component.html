@@ -1,0 +1,37 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<h1
+  mat-dialog-title
+  style="display: flex; justify-content: center"
+  unit-notification-title
+>
+  {{ notification.title }}
+</h1>
+<div mat-dialog-content unit-notification-body>
+  {{ notification.body }}
+</div>
+<hr />
+<mat-dialog-actions>
+  <button
+    id="cancelButton"
+    unit-notification-cancel-button
+    mat-raised-button
+    (click)="cancel()"
+  >
+    {{ 'PLANNED_PROBANDS.CLOSE' | translate }}
+  </button>
+  <button
+    id="confirmButton"
+    unit-notification-confirm-button
+    mat-raised-button
+    color="primary"
+    *ngIf="notification.notification_type !== 'custom'"
+    (click)="confirmSelection()"
+  >
+    {{ 'GENERAL.OPEN' | translate }}
+  </button>
+</mat-dialog-actions>

@@ -20,7 +20,7 @@ if [[ $UID -ne $NODE_USER_ID ]] && [[ -d $PWD/generated/secrets ]]; then
 fi
 
 # create weak secrets that are required to run this locally
-docker build --build-arg AUTH_KEY_SIZE=1024 --build-arg CA_KEY_SIZE=1024 --build-arg SERVICE_KEY_SIZE=1024 --build-arg CA_VALIDITY_DAYS=36500 --build-arg SERVICE_VALIDITY_DAYS=36500 -o generated/secrets/ ../../psa.utils.scripts/generate-secrets/
+docker build --build-arg AUTH_KEY_SIZE=2048 --build-arg CA_KEY_SIZE=2048 --build-arg SERVICE_KEY_SIZE=2048 --build-arg CA_VALIDITY_DAYS=825 --build-arg SERVICE_VALIDITY_DAYS=825 -o generated/secrets/ ../../psa.utils.scripts/generate-secrets/
 
 if [[ $UID -ne $NODE_USER_ID ]] && [[ -d $PWD/generated/secrets ]]; then
     # own the secrets as the node user

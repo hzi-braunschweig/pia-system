@@ -9,7 +9,7 @@ import { Proxy as HttpProxy } from './proxy';
 import { Route } from './proxyRoute';
 import { HttpServer } from './httpServer';
 import { Headers } from './headers';
-import { StatusCode } from './statusCode';
+import { StatusCodes } from 'http-status-codes';
 import { default as fetch, Response } from 'node-fetch';
 
 import * as http from 'http';
@@ -66,7 +66,7 @@ class Helper {
     const response = await fetch(
       `http://localhost:${proxy.getPort()}${requestUrl}`
     );
-    expect(response.status).to.equal(StatusCode.OK);
+    expect(response.status).to.equal(StatusCodes.OK);
     expect(await response.json()).to.deep.equal({
       url: expectedUrl,
     });
@@ -134,7 +134,7 @@ describe('Proxy', () => {
 
   it('gives 404 if no route is matched', async () => {
     const proxy = await Helper.startProxy([]);
-    await Helper.expectStatus(proxy, '/', StatusCode.NOT_FOUND);
+    await Helper.expectStatus(proxy, '/', StatusCodes.NOT_FOUND);
   });
 
   it('gives 502 on invalid upstream', async () => {
@@ -151,7 +151,7 @@ describe('Proxy', () => {
       },
     ]);
 
-    await Helper.expectStatus(proxy, '/test', StatusCode.BAD_GATEWAY);
+    await Helper.expectStatus(proxy, '/test', StatusCodes.BAD_GATEWAY);
   });
 
   it('can proxy a simple request', async () => {
@@ -291,8 +291,8 @@ describe('Proxy', () => {
       false
     );
 
-    dummy.setStatusCode(StatusCode.NOT_FOUND);
-    await Helper.expectStatus(proxy, '/test', StatusCode.NOT_FOUND);
+    dummy.setStatusCode(StatusCodes.NOT_FOUND);
+    await Helper.expectStatus(proxy, '/test', StatusCodes.NOT_FOUND);
   });
 
   it('passes 301', async () => {
@@ -313,8 +313,8 @@ describe('Proxy', () => {
       false
     );
 
-    dummy.setStatusCode(StatusCode.MOVED_PERMANENTLY);
-    await Helper.expectStatus(proxy, '/test', StatusCode.MOVED_PERMANENTLY);
+    dummy.setStatusCode(StatusCodes.MOVED_PERMANENTLY);
+    await Helper.expectStatus(proxy, '/test', StatusCodes.MOVED_PERMANENTLY);
   });
 
   it('passes 502', async () => {
@@ -335,8 +335,8 @@ describe('Proxy', () => {
       false
     );
 
-    dummy.setStatusCode(StatusCode.BAD_GATEWAY);
-    await Helper.expectStatus(proxy, '/test', StatusCode.BAD_GATEWAY);
+    dummy.setStatusCode(StatusCodes.BAD_GATEWAY);
+    await Helper.expectStatus(proxy, '/test', StatusCodes.BAD_GATEWAY);
   });
 
   it('adds headers', async () => {
@@ -443,7 +443,52 @@ describe('Proxy', () => {
     const response = await fetch(
       `http://localhost:${proxy.getPort()}/api/test`
     );
-    expect(response.status).to.equal(StatusCode.OK);
+    expect(response.status).to.equal(StatusCodes.OK);
     expect(await response.text()).to.equal('{"test":"value"}');
+  });
+
+  it('can add a route with a predefined status code response', async () => {
+    const dummy = await Helper.startHttpServer();
+    const proxy = await Helper.startProxy([
+      {
+        path: '/special/route',
+        response: {
+          statusCode: StatusCodes.NOT_FOUND,
+        },
+      },
+      {
+        path: '/',
+        upstream: {
+          host: 'localhost',
+          serviceName: 'localhost',
+          port: dummy.getPort(),
+          path: '/',
+          protocol: 'http',
+        },
+      },
+    ]);
+
+    await Helper.expectUrl(proxy, '/', '/');
+
+    const response = await fetch(
+      `http://localhost:${proxy.getPort()}/special/route`
+    );
+    expect(response.status).to.equal(StatusCodes.NOT_FOUND);
+  });
+
+  it('can answer to an OPTIONS request', async () => {
+    const proxy = await Helper.startProxy([
+      {
+        path: '/',
+        response: {
+          body: '{}',
+        },
+      },
+    ]);
+
+    const response = await fetch(`http://localhost:${proxy.getPort()}/`, {
+      method: 'OPTIONS',
+    });
+    expect(response.status).to.equal(StatusCodes.NO_CONTENT);
   });
 });

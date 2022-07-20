@@ -13,12 +13,7 @@
         {{ 'SETTINGS.GROUP_TITLE_ACCOUNT' | translate }}
       </ion-label>
     </ion-item-divider>
-    <ion-item
-      lines="none"
-      button
-      [routerLink]="['..', 'auth', 'change-password']"
-      [queryParams]="{ isUserIntent: true, returnTo: 'settings' }"
-    >
+    <ion-item lines="none" button (click)="changePasswort()">
       <ion-label>{{ 'SETTINGS.MANAGE_PASSWORD' | translate }}</ion-label>
     </ion-item>
     <ion-item lines="none" button (click)="openDeleteAccountModal()">

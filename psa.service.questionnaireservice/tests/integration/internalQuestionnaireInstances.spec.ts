@@ -33,8 +33,8 @@ chai.use(chaiHttp);
 const apiAddress = `http://localhost:${config.internal.port}`;
 
 describe('Internal: QuestionnaireInstances', () => {
-  const pseudonym1 = 'QTestProband1';
-  const pseudonym2 = 'QTestProband2';
+  const pseudonym1 = 'qtest-proband1';
+  const pseudonym2 = 'qtest-proband2';
   before(async () => {
     await db.none("INSERT INTO studies(name) VALUES ('QTestStudy')");
     await db.none(
@@ -54,7 +54,7 @@ describe('Internal: QuestionnaireInstances', () => {
 
   after(async () => {
     await Server.stop();
-    await db.none("DELETE FROM probands WHERE pseudonym LIKE 'QTest%'");
+    await db.none("DELETE FROM probands WHERE pseudonym LIKE 'qtest%'");
     await db.none("DELETE FROM studies WHERE name LIKE 'QTest%'");
   });
 

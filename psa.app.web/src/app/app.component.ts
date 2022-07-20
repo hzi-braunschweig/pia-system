@@ -5,10 +5,7 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { Title } from '@angular/platform-browser';
-import { AuthenticationManager } from './_services/authentication-manager.service';
 import { FCMService } from './_services/fcm.service';
-import { Router } from '@angular/router';
 import { MediaChange, MediaObserver } from '@angular/flex-layout';
 import { LocaleService } from './_services/locale.service';
 import { environment } from '../environments/environment';
@@ -22,27 +19,25 @@ import { first } from 'rxjs/operators';
   styleUrls: ['app.component.scss'],
 })
 export class AppComponent implements OnInit {
-  isLtMd: boolean;
+  public isLoading: boolean = true;
+  public isLtMd: boolean;
 
   constructor(
     private fcmService: FCMService,
-    private auth: AuthenticationManager,
     private localeService: LocaleService,
-    private router: Router,
-    private titleService: Title,
     private mediaObserver: MediaObserver,
     private snackBar: MatSnackBar,
     private translate: TranslateService
-  ) {
+  ) {}
+
+  public async ngOnInit(): Promise<void> {
+    this.isLoading = false;
     this.mediaObserver
       .asObservable()
-      .subscribe((mediaChange: MediaChange[]) => {
-        this.isLtMd =
-          mediaChange.map((value) => value.mqAlias).indexOf('lt-md') > -1;
+      .subscribe((mediaChanges: MediaChange[]) => {
+        this.isLtMd = mediaChanges.some((change) => change.mqAlias === 'lt-md');
       });
-  }
 
-  ngOnInit(): void {
     if (environment.isDevelopmentSystem) {
       console.warn('we are running on a development system!');
       this.translate
@@ -55,17 +50,9 @@ export class AppComponent implements OnInit {
           });
         });
     }
-    this.titleService.setTitle('PIA Web App');
   }
 
-  get navigationVisible(): boolean {
-    return (
-      !this.router.url.includes('/login') &&
-      !this.router.url.includes('changePassword')
-    );
-  }
-
-  get navigationMode(): 'over' | 'push' | 'side' {
+  public get navigationMode(): 'over' | 'push' | 'side' {
     return this.isLtMd ? 'over' : 'side';
   }
 }

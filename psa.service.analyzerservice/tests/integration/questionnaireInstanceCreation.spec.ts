@@ -36,6 +36,7 @@ import {
   MessageQueueTestUtils,
 } from '@pia/lib-messagequeue';
 import { messageQueueService } from '../../src/services/messageQueueService';
+import * as Mockdate from 'mockdate';
 
 function localTimeToUtc(date: Date): Date {
   return zonedTimeToUtc(date, config.timeZone);
@@ -97,7 +98,7 @@ describe('Questionnaire instance creation', function () {
     });
 
     it('should create questionaire instances for research_team on proband.created message', async () => {
-      const pseudonym = 'QTestProband1';
+      const pseudonym = 'qtest-proband1';
       const dateOfQuestionnaireCreation = subDays(new Date(), 100);
 
       await db.none('DELETE FROM probands WHERE pseudonym=$(pseudonym)', {
@@ -157,7 +158,7 @@ describe('Questionnaire instance creation', function () {
     });
 
     it('should delete questionaire instances on proband.deleted message', async () => {
-      const pseudonym = 'QTestProband1';
+      const pseudonym = 'qtest-proband1';
 
       await db.none('DELETE FROM probands WHERE pseudonym=$(pseudonym)', {
         pseudonym: pseudonym,
@@ -245,7 +246,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       const addedQI: QuestionnaireInstance[] = await db.manyOrNone(
@@ -260,7 +261,7 @@ describe('Questionnaire instance creation', function () {
         "UPDATE probands SET first_logged_in_at=$(date), status='deactivated' WHERE pseudonym=$(pseudonym)",
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -283,7 +284,7 @@ describe('Questionnaire instance creation', function () {
         "UPDATE probands SET first_logged_in_at=$(date), status='deactivated' WHERE pseudonym=$(pseudonym)",
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       const addedQI: QuestionnaireInstance[] = await db.manyOrNone(
@@ -299,7 +300,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -319,7 +320,7 @@ describe('Questionnaire instance creation', function () {
           ).getTime()
       ).to.equal(0);
       expect(addedQI[0]?.study_id).to.equal('ApiTestStudie');
-      expect(addedQI[0]?.user_id).to.equal('QTestProband1');
+      expect(addedQI[0]?.user_id).to.equal('qtest-proband1');
       expect(addedQI[0]?.cycle).to.equal(1);
     });
 
@@ -332,7 +333,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -356,7 +357,7 @@ describe('Questionnaire instance creation', function () {
       ).to.equal(0);
 
       expect(addedQI[0]?.study_id).to.equal('ApiTestStudie');
-      expect(addedQI[0]?.user_id).to.equal('QTestProband1');
+      expect(addedQI[0]?.user_id).to.equal('qtest-proband1');
       expect(addedQI[0]?.cycle).to.equal(1);
     });
 
@@ -377,7 +378,7 @@ describe('Questionnaire instance creation', function () {
           ).getTime()
       ).to.equal(0);
       expect(addedQI[0]?.study_id).to.equal('ApiTestStudie');
-      expect(addedQI[0]?.user_id).to.equal('QTestProband1');
+      expect(addedQI[0]?.user_id).to.equal('qtest-proband1');
       expect(addedQI[0]?.cycle).to.equal(1);
     });
 
@@ -386,7 +387,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date), compliance_samples=false WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
 
@@ -407,7 +408,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date), compliance_samples=true WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
 
@@ -428,7 +429,7 @@ describe('Questionnaire instance creation', function () {
           ).getTime()
       ).to.equal(0);
       expect(addedQI[0]?.study_id).to.equal('ApiTestStudie');
-      expect(addedQI[0]?.user_id).to.equal('QTestProband1');
+      expect(addedQI[0]?.user_id).to.equal('qtest-proband1');
       expect(addedQI[0]?.cycle).to.equal(1);
     });
 
@@ -441,7 +442,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -461,7 +462,7 @@ describe('Questionnaire instance creation', function () {
       );
 
       expect(addedQI[0]?.study_id).to.equal('ApiTestStudie');
-      expect(addedQI[0]?.user_id).to.equal('QTestProband1');
+      expect(addedQI[0]?.user_id).to.equal('qtest-proband1');
       expect(addedQI[0]?.cycle).to.equal(1);
     });
 
@@ -479,7 +480,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -495,7 +496,7 @@ describe('Questionnaire instance creation', function () {
 
       for (let i = 0; i < addedQI.length; i++) {
         expect(addedQI[i]?.study_id).to.equal('ApiTestStudie');
-        expect(addedQI[i]?.user_id).to.equal('QTestProband1');
+        expect(addedQI[i]?.user_id).to.equal('qtest-proband1');
         expect(addedQI[i]?.date_of_issue.toString()).to.equal(
           localTimeToUtc(
             setHours(
@@ -520,7 +521,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -559,9 +560,9 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI[1]?.study_id).to.equal('ApiTestStudie');
       expect(addedQI[32]?.study_id).to.equal('ApiTestStudie');
 
-      expect(addedQI[0]?.user_id).to.equal('QTestProband1');
-      expect(addedQI[1]?.user_id).to.equal('QTestProband1');
-      expect(addedQI[32]?.user_id).to.equal('QTestProband1');
+      expect(addedQI[0]?.user_id).to.equal('qtest-proband1');
+      expect(addedQI[1]?.user_id).to.equal('qtest-proband1');
+      expect(addedQI[32]?.user_id).to.equal('qtest-proband1');
 
       expect(addedQI[0]?.cycle).to.equal(1);
       expect(addedQI[1]?.cycle).to.equal(2);
@@ -581,7 +582,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -616,9 +617,9 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI[1]?.study_id).to.equal('ApiTestStudie');
       expect(addedQI[32]?.study_id).to.equal('ApiTestStudie');
 
-      expect(addedQI[0]?.user_id).to.equal('QTestProband1');
-      expect(addedQI[1]?.user_id).to.equal('QTestProband1');
-      expect(addedQI[32]?.user_id).to.equal('QTestProband1');
+      expect(addedQI[0]?.user_id).to.equal('qtest-proband1');
+      expect(addedQI[1]?.user_id).to.equal('qtest-proband1');
+      expect(addedQI[32]?.user_id).to.equal('qtest-proband1');
 
       expect(addedQI[0]?.cycle).to.equal(1);
       expect(addedQI[1]?.cycle).to.equal(2);
@@ -630,7 +631,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -666,9 +667,9 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI[1]?.study_id).to.equal('ApiTestStudie');
       expect(addedQI[10]?.study_id).to.equal('ApiTestStudie');
 
-      expect(addedQI[0]?.user_id).to.equal('QTestProband1');
-      expect(addedQI[1]?.user_id).to.equal('QTestProband1');
-      expect(addedQI[10]?.user_id).to.equal('QTestProband1');
+      expect(addedQI[0]?.user_id).to.equal('qtest-proband1');
+      expect(addedQI[1]?.user_id).to.equal('qtest-proband1');
+      expect(addedQI[10]?.user_id).to.equal('qtest-proband1');
 
       expect(addedQI[0]?.cycle).to.equal(1);
       expect(addedQI[1]?.cycle).to.equal(2);
@@ -677,7 +678,7 @@ describe('Questionnaire instance creation', function () {
 
     it('should create correct weekly questionnaire instances when user becomes active in study', async function () {
       // Arrange
-      const pseudonym = 'QTestProband1';
+      const pseudonym = 'qtest-proband1';
       const weekQuestionnaire = createQuestionnaire({
         cycle_amount: 2,
         cycle_unit: 'week',
@@ -731,14 +732,14 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI[1]?.study_id).to.equal('ApiTestStudie');
       expect(addedQI[7]?.study_id).to.equal('ApiTestStudie');
 
-      expect(addedQI[0]?.user_id).to.equal('QTestProband1');
-      expect(addedQI[1]?.user_id).to.equal('QTestProband1');
-      expect(addedQI[7]?.user_id).to.equal('QTestProband1');
+      expect(addedQI[0]?.user_id).to.equal('qtest-proband1');
+      expect(addedQI[1]?.user_id).to.equal('qtest-proband1');
+      expect(addedQI[7]?.user_id).to.equal('qtest-proband1');
     });
 
     it('should create correct weekly questionnaire instances on correct week day when user becomes active in study', async function () {
       // Arrange
-      const pseudonym = 'QTestProband1';
+      const pseudonym = 'qtest-proband1';
       const weekQuestionnaireWithNotificationDay = createQuestionnaire({
         cycle_amount: 2,
         cycle_unit: 'week',
@@ -778,7 +779,7 @@ describe('Questionnaire instance creation', function () {
       for (let i = 0; i < addedQI.length; i++) {
         expect(addedQI[i]?.date_of_issue.getDay()).to.equal(dateNo);
         expect(addedQI[i]?.study_id).to.equal('ApiTestStudie');
-        expect(addedQI[i]?.user_id).to.equal('QTestProband1');
+        expect(addedQI[i]?.user_id).to.equal('qtest-proband1');
         expect(addedQI[i]?.date_of_issue.toISOString()).to.equal(
           localTimeToUtc(
             nextDayXOfWeek(
@@ -798,7 +799,7 @@ describe('Questionnaire instance creation', function () {
 
     it('should create correct monthly questionnaire instances', async function () {
       // Arrange
-      const pseudonym = 'QTestProband1';
+      const pseudonym = 'qtest-proband1';
       const monthQuestionnaire = createQuestionnaire({
         cycle_amount: 2,
         cycle_unit: 'month',
@@ -834,7 +835,7 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI.length).to.equal(7);
       for (let i = 0; i < addedQI.length; i++) {
         expect(addedQI[i]?.study_id).to.equal('ApiTestStudie');
-        expect(addedQI[i]?.user_id).to.equal('QTestProband1');
+        expect(addedQI[i]?.user_id).to.equal('qtest-proband1');
         expect(addedQI[i]?.date_of_issue.toISOString()).to.equal(
           localTimeToUtc(
             addMonths(
@@ -848,7 +849,7 @@ describe('Questionnaire instance creation', function () {
 
     it('should create correct monthly questionnaire instances on correct week days', async function () {
       // Arrange
-      const pseudonym = 'QTestProband1';
+      const pseudonym = 'qtest-proband1';
       const monthQuestionnaireWithNotificationDay = createQuestionnaire({
         cycle_amount: 2,
         cycle_unit: 'month',
@@ -889,7 +890,7 @@ describe('Questionnaire instance creation', function () {
       for (let i = 0; i < addedQI.length; i++) {
         expect(addedQI[i]?.date_of_issue.getDay()).to.equal(dateNo);
         expect(addedQI[i]?.study_id).to.equal('ApiTestStudie');
-        expect(addedQI[i]?.user_id).to.equal('QTestProband1');
+        expect(addedQI[i]?.user_id).to.equal('qtest-proband1');
         expect(addedQI[i]?.date_of_issue.toISOString()).to.equal(
           localTimeToUtc(
             nextDayXOfWeek(
@@ -909,7 +910,7 @@ describe('Questionnaire instance creation', function () {
 
     it('should create correct monthly questionnaire and set the date_of_issue starting from current date and not from first_logged_in_at', async function () {
       // Arrange
-      const pseudonym = 'QTestProband1';
+      const pseudonym = 'qtest-proband1';
       const monthQuestionnaire2 = createQuestionnaire({
         cycle_amount: 2,
         cycle_unit: 'month',
@@ -953,7 +954,7 @@ describe('Questionnaire instance creation', function () {
           2 * i
         );
         expect(addedQI[i]?.study_id).to.equal('ApiTestStudie');
-        expect(addedQI[i]?.user_id).to.equal('QTestProband1');
+        expect(addedQI[i]?.user_id).to.equal('qtest-proband1');
         expect(addedQI[i]?.date_of_issue.toISOString()).to.equal(
           localTimeToUtc(expectedDate).toISOString()
         );
@@ -965,7 +966,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       const condition = {
@@ -1013,7 +1014,7 @@ describe('Questionnaire instance creation', function () {
           ).getTime()
       ).to.equal(0);
       expect(addedQI[0]?.study_id).to.equal('ApiTestStudie');
-      expect(addedQI[0]?.user_id).to.equal('QTestProband1');
+      expect(addedQI[0]?.user_id).to.equal('qtest-proband1');
     });
 
     it('should not create any questionnaire instances when adding a questionnaire with condition_type=external that has no answer', async function () {
@@ -1063,7 +1064,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -1156,7 +1157,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -1275,7 +1276,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -1393,7 +1394,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -1494,7 +1495,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
 
@@ -1599,7 +1600,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -1736,7 +1737,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -1875,7 +1876,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -1979,7 +1980,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
 
@@ -2022,9 +2023,9 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI[1]?.study_id).to.equal('ApiTestStudie');
       expect(addedQI[5]?.study_id).to.equal('ApiTestStudie');
 
-      expect(addedQI[0]?.user_id).to.equal('QTestProband1');
-      expect(addedQI[1]?.user_id).to.equal('QTestProband1');
-      expect(addedQI[5]?.user_id).to.equal('QTestProband1');
+      expect(addedQI[0]?.user_id).to.equal('qtest-proband1');
+      expect(addedQI[1]?.user_id).to.equal('qtest-proband1');
+      expect(addedQI[5]?.user_id).to.equal('qtest-proband1');
     });
 
     it('should create one instance for spontan fb when adding the questionnaire and disregard pseudonym notification settings', async function () {
@@ -2040,7 +2041,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 10),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -2058,7 +2059,7 @@ describe('Questionnaire instance creation', function () {
           localTimeToUtc(addDays(startOfToday(), -10)).getTime()
       ).to.equal(0);
       expect(addedQI[0]?.study_id).to.equal('ApiTestStudie');
-      expect(addedQI[0]?.user_id).to.equal('QTestProband1');
+      expect(addedQI[0]?.user_id).to.equal('qtest-proband1');
       expect(addedQI[0]?.cycle).to.equal(1);
     });
 
@@ -2067,7 +2068,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -2111,7 +2112,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 10),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -2129,7 +2130,7 @@ describe('Questionnaire instance creation', function () {
           localTimeToUtc(addDays(startOfToday(), -5)).getTime()
       ).to.equal(0);
       expect(addedQI[0]?.study_id).to.equal('ApiTestStudie');
-      expect(addedQI[0]?.user_id).to.equal('QTestProband1');
+      expect(addedQI[0]?.user_id).to.equal('qtest-proband1');
       expect(addedQI[0]?.cycle).to.equal(1);
     });
 
@@ -2138,7 +2139,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date), compliance_samples=false WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -2168,7 +2169,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date), compliance_samples=false WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
 
@@ -2201,7 +2202,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -2233,7 +2234,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
 
@@ -2412,7 +2413,7 @@ describe('Questionnaire instance creation', function () {
             'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
           arg: {
             date: subDays(new Date(), 5),
-            pseudonym: 'QTestProband1',
+            pseudonym: 'qtest-proband1',
           },
         },
         {
@@ -2575,7 +2576,7 @@ describe('Questionnaire instance creation', function () {
             'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
           arg: {
             date: subDays(new Date(), 5),
-            pseudonym: 'QTestProband1',
+            pseudonym: 'qtest-proband1',
           },
         },
         {
@@ -2701,7 +2702,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -2854,7 +2855,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
       await dbWait(
@@ -2976,7 +2977,7 @@ describe('Questionnaire instance creation', function () {
             'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
           arg: {
             date: subDays(new Date(), 5),
-            pseudonym: 'QTestProband1',
+            pseudonym: 'qtest-proband1',
           },
         },
       ]);
@@ -3057,7 +3058,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
 
@@ -3165,7 +3166,7 @@ describe('Questionnaire instance creation', function () {
             'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
           arg: {
             date: subDays(new Date(), 5),
-            pseudonym: 'QTestProband1',
+            pseudonym: 'qtest-proband1',
           },
         },
       ]);
@@ -3326,7 +3327,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
 
@@ -3386,7 +3387,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: fiveDaysAgo,
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
 
@@ -3430,6 +3431,8 @@ describe('Questionnaire instance creation', function () {
     });
 
     it('should create all instance queues when inserting answers that meet external condition', async function () {
+      Mockdate.set(new Date('2022-04-29T09:00:00+02:00'));
+
       const firstQuestionnaire = {
         id: 88880,
         study_id: 'ApiTestStudie',
@@ -3602,7 +3605,7 @@ describe('Questionnaire instance creation', function () {
         'UPDATE probands SET first_logged_in_at=$(date) WHERE pseudonym=$(pseudonym)',
         {
           date: subDays(new Date(), 5),
-          pseudonym: 'QTestProband1',
+          pseudonym: 'qtest-proband1',
         }
       );
 
@@ -3772,9 +3775,11 @@ describe('Questionnaire instance creation', function () {
         [fourthQuestionnaire.id, 1]
       );
       const queues = await db.many(
-        "SELECT * FROM questionnaire_instances_queued WHERE user_id='QTestProband1'"
+        "SELECT * FROM questionnaire_instances_queued WHERE user_id='qtest-proband1'"
       );
       expect(queues.length).to.equal(3);
+
+      Mockdate.reset();
     });
   });
 

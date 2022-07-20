@@ -28,8 +28,8 @@ describe('MessageQueueService', () => {
   const endOfMessageHandlingEmitter: EventEmitter = new EventEmitter();
   const mqc = new MessageQueueClient(config.servers.messageQueue);
 
-  const pseudonym1 = 'QTestProband1';
-  const pseudonym2 = 'QTestProband2';
+  const pseudonym1 = 'qtest-proband1';
+  const pseudonym2 = 'qtest-proband2';
 
   let qiRepo: Repository<QuestionnaireInstance>;
 
@@ -51,7 +51,7 @@ describe('MessageQueueService', () => {
   after(async function () {
     await mqc.disconnect();
     await Server.stop();
-    await db.none("DELETE FROM probands WHERE pseudonym LIKE 'QTest%'");
+    await db.none("DELETE FROM probands WHERE pseudonym LIKE 'qtest%'");
     await db.none("DELETE FROM studies WHERE name LIKE 'QTest%'");
   });
 

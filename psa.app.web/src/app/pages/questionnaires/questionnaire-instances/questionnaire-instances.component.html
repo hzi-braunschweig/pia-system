@@ -123,7 +123,7 @@
             mat-icon-button
             (click)="viewAnswers(row.questionnaire_id, row.id, row.status)"
             *ngIf="
-              currentRole == 'Forscher' &&
+              user.hasRole('Forscher') &&
               (row.status === 'released' ||
                 row.status === 'released_once' ||
                 row.status === 'released_twice')

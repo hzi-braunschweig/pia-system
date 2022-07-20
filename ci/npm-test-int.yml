@@ -3,7 +3,6 @@ int:
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$FOLDER-npm-install:$IMAGE_ID
   script:
     - mkdir -p $FOLDER/tests/
-    - cp -r secrets/authKey/private.key $FOLDER/tests/
     - cp -r secrets/* $FOLDER
     - ln -s $NODE_PATH $FOLDER/node_modules
     - cd $FOLDER
@@ -47,6 +46,12 @@ int:
     DB_PERSONALDATA_HOST: ipiaservice
     DB_PERSONALDATA_PORT: '5432'
 
+    DB_AUTHSERVER_USER: authserver
+    DB_AUTHSERVER_PASSWORD: authserver
+    DB_AUTHSERVER_DB: pia_database
+    DB_AUTHSERVER_HOST: ipiaservice
+    DB_AUTHSERVER_PORT: '5432'
+
     QPIA_USER: superuser
     QPIA_PASSWORD: superpassword
     QPIA_DB: pia_database
@@ -77,6 +82,10 @@ int:
     MESSAGEQUEUE_APP_USER: app
     MESSAGEQUEUE_APP_PASSWORD: app
     MESSAGEQUEUE_PORT: '5672'
+
+    AUTHSERVER_PROTOCOL: http
+    AUTHSERVER_HOST: authserver
+    AUTHSERVER_PORT: 5000
   services:
     # don't use a variable for alias - it doesn't get resolved!
     - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.sftpserver:$IMAGE_ID-with-faked-secrets

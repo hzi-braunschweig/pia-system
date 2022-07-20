@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, forwardRef } from '@angular/core';
+import { Component, forwardRef, ViewChild } from '@angular/core';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Camera, CameraOptions } from '@awesome-cordova-plugins/camera/ngx';
 import { Chooser, ChooserResult } from '@awesome-cordova-plugins/chooser/ngx';
 import { AbstractControlValueAccessor } from '../../shared/components/abstract-control-value-accessor/abstract-control-value-accessor';
 import { FormControlValue } from '../questionnaire-form/questionnaire-form.service';
+import { IonModal } from '@ionic/angular';
+import { format } from 'date-fns';
 
 const QUESTIONNAIRE_ANSWER_IMAGE_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -29,8 +31,19 @@ export class QuestionnaireAnswerImageComponent extends AbstractControlValueAcces
     targetHeight: 1000,
   };
 
+  @ViewChild(IonModal) modal: IonModal;
+
+  imageName: string;
+
   constructor(private camera: Camera, private chooser: Chooser) {
     super();
+    this.control.valueChanges.subscribe(
+      (value) => (this.imageName = value?.fileName ?? null)
+    );
+  }
+
+  cancel() {
+    this.modal.dismiss(null, 'cancel');
   }
 
   async onOpenCamera() {
@@ -38,7 +51,8 @@ export class QuestionnaireAnswerImageComponent extends AbstractControlValueAcces
       const imageData = await this.camera.getPicture(this.cameraOptions);
       if (imageData) {
         const base64Image = 'data:image/jpeg;base64,' + imageData;
-        this.control.setValue({ fileName: imageData.name, file: base64Image });
+        const fileName = 'photo_' + format(new Date(), 'yyyyMMddHHmm') + '.jpg';
+        this.control.setValue({ fileName, file: base64Image });
       }
     } catch (error) {
       console.error(error);
@@ -59,5 +73,9 @@ export class QuestionnaireAnswerImageComponent extends AbstractControlValueAcces
     } catch (error) {
       console.warn(error);
     }
+  }
+
+  async onDeleteImage() {
+    this.control.reset(null);
   }
 }

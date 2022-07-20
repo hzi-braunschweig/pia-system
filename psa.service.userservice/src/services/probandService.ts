@@ -9,9 +9,7 @@ import { ITask } from 'pg-promise';
 import { runTransaction } from '../db';
 import postgresqlHelper from './postgresqlHelper';
 import { messageQueueService } from './messageQueueService';
-import { authserviceClient } from '../clients/authserviceClient';
 import {
-  AccountCreateError,
   IdsAlreadyExistsError,
   PlannedProbandNotFoundError,
   ProbandNotFoundError,
@@ -19,14 +17,18 @@ import {
   PseudonymAlreadyExistsError,
   StudyNotFoundError,
 } from '../errors';
-import { CreateProbandRequest } from '../models/proband';
+import { CreateProbandRequest, ProbandDto } from '../models/proband';
 import { SecureRandomPasswordService } from './secureRandomPasswordService';
-import { getConnection, getManager } from 'typeorm';
+import { getConnection, getRepository, getManager, In } from 'typeorm';
 import { PlannedProband } from '../entities/plannedProband';
 import { RepositoryOptions } from '@pia/lib-service-core';
 import { Proband } from '../entities/proband';
 import { Study } from '../entities/study';
 import { ProbandStatus } from '../models/probandStatus';
+import { ProbandAccountService } from './probandAccountService';
+import { AccountStatus } from '../models/accountStatus';
+import assert from 'assert';
+import { FindConditions } from 'typeorm/find-options/FindConditions';
 
 export type ProbandDeletionType =
   | 'default' // delete all proband data but keep the pseudonym
@@ -40,6 +42,33 @@ export type ProbandDeletionType =
 export type ProbandAccountDeletionType = 'full' | 'contact';
 
 export class ProbandService {
+  public static async getProbandByPseudonymOrFail(
+    pseudonym: string,
+    studyAccess?: string[]
+  ): Promise<ProbandDto> {
+    const studyAccessFilter = studyAccess
+      ? { study: { name: In(studyAccess) } }
+      : {};
+    return await this.getProband({ pseudonym, ...studyAccessFilter });
+  }
+
+  public static async getProbandByIdsOrFail(
+    ids: string,
+    studyAccess?: string[]
+  ): Promise<ProbandDto> {
+    const studyAccessFilter = studyAccess
+      ? { study: { name: In(studyAccess) } }
+      : {};
+    return await this.getProband({ ids, ...studyAccessFilter });
+  }
+
+  public static async assertProbandExistsWithStudyAccess(
+    pseudonym: string,
+    studyAccess: string[]
+  ): Promise<void> {
+    await this.getProband({ pseudonym, study: { name: In(studyAccess) } });
+  }
+
   /**
    *
    * @param studyName
@@ -114,10 +143,11 @@ export class ProbandService {
   public static async createProbandWithAccount(
     studyName: string,
     newProbandData: CreateProbandRequest,
-    usePlannedProband: boolean
+    usePlannedProband: boolean,
+    temporaryPassword: boolean
   ): Promise<string> {
-    let password = '';
-    await getConnection().transaction(async (transactionEM) => {
+    return getConnection().transaction(async (transactionEM) => {
+      let password = '';
       const probandRepo = transactionEM.getRepository(Proband);
 
       // Check if pseudonym already exists
@@ -211,25 +241,18 @@ export class ProbandService {
         throw new ProbandSaveError('could not create the proband', e);
       });
 
-      // Create new account for this proband
-      try {
-        await authserviceClient.createAccount({
-          username: newProbandData.pseudonym,
-          password: password,
-          role: 'Proband',
-          pwChangeNeeded: true,
-          initialPasswordValidityDate:
-            SecureRandomPasswordService.generateInitialPasswordValidityDate(),
-        });
-      } catch (error) {
-        throw new AccountCreateError('Could not activate the account', error);
-      }
+      await ProbandAccountService.createProbandAccount(
+        newProband.pseudonym,
+        newProband.study.name,
+        password,
+        temporaryPassword
+      );
 
       if (probandCreated) {
         await messageQueueService.sendProbandCreated(newProbandData.pseudonym);
       }
+      return password;
     });
-    return password;
   }
 
   public static async revokeComplianceContact(
@@ -241,7 +264,7 @@ export class ProbandService {
         status: ProbandStatus.DEACTIVATED,
         deactivatedAt: new Date(),
       });
-      await authserviceClient.deleteAccount(pseudonym);
+      await ProbandAccountService.deleteProbandAccount(pseudonym);
       await messageQueueService.sendProbandDeactivated(pseudonym);
     });
   }
@@ -272,12 +295,57 @@ export class ProbandService {
     }
   }
 
+  public static async updateExternalId(
+    pseudonym: string,
+    externalId: string
+  ): Promise<void> {
+    await getRepository(Proband).update(pseudonym, { externalId });
+  }
+
+  public static async getProbandAccountStatus(
+    pseudonym: string
+  ): Promise<AccountStatus> {
+    try {
+      await ProbandAccountService.getProbandAccount(pseudonym);
+      return AccountStatus.ACCOUNT;
+    } catch (e) {
+      return AccountStatus.NO_ACCOUNT;
+    }
+  }
+
+  public static async mapProbandToProbandDto(
+    proband: Proband
+  ): Promise<ProbandDto> {
+    assert(proband.study, 'Proband account is not assigned to a study');
+    return {
+      ...proband,
+      accountStatus: await this.getProbandAccountStatus(proband.pseudonym),
+      study: proband.study.name,
+    };
+  }
+
+  private static async getProband(
+    where: FindConditions<Proband>
+  ): Promise<ProbandDto> {
+    return this.mapProbandToProbandDto(
+      await getRepository(Proband).findOneOrFail({
+        where,
+        loadRelationIds: {
+          relations: ['study'],
+          disableMixedMap: true,
+        },
+      })
+    );
+  }
+
   private static async deleteWithTransaction(
     pseudonym: string,
     deletionType: ProbandDeletionType,
     options: RepositoryOptions
   ): Promise<void> {
     await postgresqlHelper.deleteProbandData(pseudonym, deletionType, options);
+
+    await ProbandAccountService.deleteProbandAccount(pseudonym, false);
 
     await messageQueueService.sendProbandDelete(pseudonym, deletionType);
   }

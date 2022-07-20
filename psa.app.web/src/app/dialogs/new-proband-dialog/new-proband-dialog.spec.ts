@@ -12,7 +12,7 @@ import {
 } from './new-proband-dialog';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
-import { QuestionnaireService } from '../../psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 import { CreateProbandRequest } from '../../psa.app.core/models/proband';
 import {
   ComponentFixture,
@@ -33,7 +33,7 @@ describe('DialogNewProbandComponent', () => {
   let component: DialogNewProbandComponent;
   let dialogRef: SpyObj<MatDialogRef<DialogNewProbandComponent>>;
   let authService: SpyObj<AuthService>;
-  let questionnaireService: SpyObj<QuestionnaireService>;
+  let userService: SpyObj<UserService>;
   let moduleBase: IMockBuilder;
 
   beforeEach(() => {
@@ -41,8 +41,8 @@ describe('DialogNewProbandComponent', () => {
     dialogRef = createSpyObj<MatDialogRef<DialogNewProbandComponent>>([
       'close',
     ]);
-    authService = createSpyObj<AuthService>(['getUserByIDS', 'postProband']);
-    questionnaireService = createSpyObj<QuestionnaireService>(['getStudies']);
+    authService = createSpyObj<AuthService>(['getProbandByIDS', 'postProband']);
+    userService = createSpyObj<UserService>(['getStudies']);
 
     // Build Base Module
     moduleBase = MockBuilder(DialogNewProbandComponent, AppModule)
@@ -51,7 +51,7 @@ describe('DialogNewProbandComponent', () => {
         useValue: dialogRef,
       })
       .mock(AuthService, authService)
-      .mock(QuestionnaireService, questionnaireService);
+      .mock(UserService, userService);
 
     // Setup  general mocks
     authService.postProband.and.resolveTo(null);
@@ -64,12 +64,10 @@ describe('DialogNewProbandComponent', () => {
     });
     beforeEach(fakeAsync(() => {
       // Setup mocks before creating component
-      questionnaireService.getStudies.and.resolveTo({
-        studies: [
-          createStudy({ name: 'Test1' }),
-          createStudy({ name: 'Test2' }),
-        ],
-      });
+      userService.getStudies.and.resolveTo([
+        createStudy({ name: 'Test1' }),
+        createStudy({ name: 'Test2' }),
+      ]);
 
       // Create component
       fixture = TestBed.createComponent(DialogNewProbandComponent);
@@ -172,7 +170,7 @@ describe('DialogNewProbandComponent', () => {
       const u = createProband({
         study: 'Test3',
       });
-      authService.getUserByIDS.and.resolveTo(u);
+      authService.getProbandByIDS.and.resolveTo(u);
 
       // Create component
       fixture = TestBed.createComponent(DialogNewProbandComponent);
@@ -192,7 +190,7 @@ describe('DialogNewProbandComponent', () => {
     });
 
     it('should submit the form', async () => {
-      expect(authService.getUserByIDS).toHaveBeenCalled();
+      expect(authService.getProbandByIDS).toHaveBeenCalled();
 
       const postData: CreateProbandRequest = {
         pseudonym: 'Test-1234567890',

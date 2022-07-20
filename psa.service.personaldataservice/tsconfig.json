@@ -1,7 +1,3 @@
 {
-  "extends": "@pia/lib-service-core",
-  "compilerOptions": {
-    // ONLY_FOR_JS:
-    "allowJs": true
-  }
+  "extends": "@pia/lib-service-core"
 }

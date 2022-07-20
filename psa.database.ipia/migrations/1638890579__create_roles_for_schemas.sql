@@ -1,0 +1,22 @@
+BEGIN;
+CREATE ROLE personaldataservice_role;
+GRANT ALL ON SCHEMA personaldataservice TO personaldataservice_role;
+GRANT ALL ON ALL TABLES IN SCHEMA personaldataservice TO personaldataservice_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA personaldataservice GRANT ALL ON TABLES TO personaldataservice_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA personaldataservice TO personaldataservice_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA personaldataservice GRANT ALL ON SEQUENCES TO personaldataservice_role;
+ALTER TABLE personaldataservice.pending_deletions OWNER TO personaldataservice_role;
+ALTER TABLE personaldataservice.personal_data OWNER TO personaldataservice_role;
+ALTER SEQUENCE personaldataservice.pending_deletions_id_seq OWNER TO personaldataservice_role;
+REASSIGN OWNED BY personaldataservice TO personaldataservice_role;
+DROP OWNED BY personaldataservice;
+DROP USER IF EXISTS personaldataservice;
+
+CREATE ROLE authserver_role;
+CREATE SCHEMA IF NOT EXISTS authserver;
+GRANT ALL ON SCHEMA authserver TO authserver_role;
+GRANT ALL ON ALL TABLES IN SCHEMA authserver TO authserver_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA authserver GRANT ALL ON TABLES TO authserver_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA authserver TO authserver_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA authserver GRANT ALL ON SEQUENCES TO authserver_role;
+COMMIT;

@@ -1,0 +1,311 @@
+{
+  "realm": "pia-proband-realm",
+  "enabled": true,
+  "displayName": "PIA App",
+  "defaultSignatureAlgorithm": "RS512",
+  "revokeRefreshToken": true,
+  "refreshTokenMaxReuse": 3,
+  "sslRequired": "all",
+  "rememberMe": true,
+  "loginWithEmailAllowed": false,
+  "duplicateEmailsAllowed": true,
+  "verifyEmail": false,
+  "resetPasswordAllowed": true,
+  "bruteForceProtected": true,
+  "failureFactor": 10,
+  "passwordPolicy": "passwordHistory(1) and hashIterations(100000) and hashAlgorithm(pbkdf2-sha512)",
+  "smtpServer": {
+    "password": "[[env:MAIL_PASSWORD]]",
+    "starttls": "[[env:MAIL_REQUIRE_TLS]]",
+    "auth": "true",
+    "port": "[[env:MAIL_PORT]]",
+    "host": "[[env:MAIL_HOST]]",
+    "from": "[[env:MAIL_FROM_ADDRESS]]",
+    "fromDisplayName": "[[env:MAIL_FROM_NAME]]",
+    "ssl": "[[env:MAIL_REQUIRE_TLS]]",
+    "user": "[[env:MAIL_USER]]"
+  },
+  "loginTheme": "pia",
+  "accountTheme": "pia",
+  "emailTheme": "pia",
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "de-DE",
+    "de-CH",
+    "en-US"
+  ],
+  "defaultLocale": "de-DE",
+  "userManagedAccessAllowed": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "Proband",
+        "description": "Teilnehmer:in"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "service-account-pia-proband-management-client",
+      "serviceAccountClientId": "pia-proband-management-client",
+      "clientRoles": {
+        "realm-management": ["view-users", "view-realm", "manage-users"]
+      }
+    },
+    {
+      "username": "service-account-pia-proband-token-introspection-client",
+      "serviceAccountClientId": "pia-proband-token-introspection-client"
+    }
+  ],
+  "scopeMappings": [
+    {
+      "client": "pia-proband-web-app-client",
+      "roles": ["Proband"]
+    },
+    {
+      "client": "pia-proband-mobile-app-client",
+      "roles": ["Proband"]
+    }
+  ],
+  "requiredActions": [
+    {
+      "alias": "CONFIGURE_TOTP",
+      "name": "Configure OTP",
+      "providerId": "CONFIGURE_TOTP",
+      "enabled": false,
+      "defaultAction": false,
+      "priority": 10,
+      "config": {}
+    },
+    {
+      "alias": "terms_and_conditions",
+      "name": "Terms and Conditions",
+      "providerId": "terms_and_conditions",
+      "enabled": false,
+      "defaultAction": false,
+      "priority": 20,
+      "config": {}
+    },
+    {
+      "alias": "UPDATE_PASSWORD",
+      "name": "Update Password",
+      "providerId": "UPDATE_PASSWORD",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 30,
+      "config": {}
+    },
+    {
+      "alias": "UPDATE_PROFILE",
+      "name": "Update Profile",
+      "providerId": "UPDATE_PROFILE",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 40,
+      "config": {}
+    },
+    {
+      "alias": "VERIFY_EMAIL",
+      "name": "Verify Email",
+      "providerId": "VERIFY_EMAIL",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 50,
+      "config": {}
+    },
+    {
+      "alias": "delete_account",
+      "name": "Delete Account",
+      "providerId": "delete_account",
+      "enabled": false,
+      "defaultAction": false,
+      "priority": 60,
+      "config": {}
+    },
+    {
+      "alias": "update_user_locale",
+      "name": "Update User Locale",
+      "providerId": "update_user_locale",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 1000,
+      "config": {}
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "account-console",
+      "redirectUris": ["[[env:WEBAPP_URL]]/*", "https://localhost:4200/*"],
+      "webOrigins": ["[[env:WEBAPP_URL]]", "https://localhost:4200"]
+    },
+    {
+      "clientId": "pia-proband-management-client",
+      "name": "PIA Proband Realm Management Client",
+      "description": "Used by backend services to manage users and roles of the proband realm",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "[[env:AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET]]",
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "pia-proband-token-introspection-client",
+      "name": "PIA Proband Realm Token Introspection Client",
+      "description": "Used by backend services to validate access tokens of probands",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "[[env:AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET]]",
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": false
+    },
+    {
+      "clientId": "pia-proband-web-app-client",
+      "name": "PIA App",
+      "rootUrl": "[[env:WEBAPP_URL]]",
+      "adminUrl": "",
+      "baseUrl": "[[env:WEBAPP_URL]]/",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "redirectUris": ["[[env:WEBAPP_URL]]/*", "https://localhost:4200/*"],
+      "webOrigins": ["[[env:WEBAPP_URL]]", "https://localhost:4200"],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": [[env:IS_DEVELOPMENT_SYSTEM]],
+      "serviceAccountsEnabled": false,
+      "publicClient": true,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "username",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "studies",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "studies",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ],
+      "fullScopeAllowed": false
+    },
+    {
+      "clientId": "pia-proband-mobile-app-client",
+      "name": "PIA App",
+      "rootUrl": "[[env:WEBAPP_URL]]",
+      "adminUrl": "",
+      "baseUrl": "[[env:WEBAPP_URL]]",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "redirectUris": ["[[env:WEBAPP_URL]]/*", "http://localhost/*", "https://localhost/*", "ionic://localhost/*"],
+      "webOrigins": ["[[env:WEBAPP_URL]]", "http://localhost", "https://localhost", "ionic://localhost"],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": [[env:IS_DEVELOPMENT_SYSTEM]],
+      "serviceAccountsEnabled": false,
+      "publicClient": true,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "username",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "studies",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "studies",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ],
+      "fullScopeAllowed": false
+    }
+  ],
+  "requiredActions": [
+    {
+      "alias": "UPDATE_PASSWORD",
+      "name": "Update Password",
+      "providerId": "UPDATE_PASSWORD",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 30,
+      "config": {}
+    },
+    {
+      "alias": "VERIFY_EMAIL",
+      "name": "Verify Email",
+      "providerId": "VERIFY_EMAIL",
+      "enabled": false,
+      "defaultAction": false,
+      "priority": 50,
+      "config": {}
+    }
+  ]
+}

@@ -60,11 +60,11 @@
             <mat-grid-list [cols]="1" rowHeight="75px">
               <mat-grid-tile>
                 <mat-form-field fxFlex>
+                  <mat-label>{{
+                    'GENERAL.SELECT_STUDY' | translate
+                  }}</mat-label>
                   <mat-select
                     id="selectstudy"
-                    placeholder="{{
-                      'QUESTIONNAIRE_FORSCHER.STUDY' | translate
-                    }}"
                     (click)="showError = false"
                     formControlName="study_id"
                   >

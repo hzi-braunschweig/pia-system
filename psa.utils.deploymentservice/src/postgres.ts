@@ -13,11 +13,12 @@ import config from './config';
 
 const pipeline = util.promisify(stream.pipeline);
 
-interface IDbInfo {
+export interface IDbInfo {
   host: string;
   port: string;
   user: string;
   password: string;
+  restartServices: string[];
 }
 
 export interface IResult {

@@ -10,7 +10,7 @@ import { NO_ERRORS_SCHEMA, Pipe, PipeTransform } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogViewComplianceComponent } from '../compliance-view-dialog/dialog-view-compliance.component';
 import { AlertService } from '../../../_services/alert.service';
-import { QuestionnaireService } from '../../../psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { HttpClientModule } from '@angular/common/http';
 import { AuthenticationManager } from '../../../_services/authentication-manager.service';
 import { MockModule } from 'ng-mocks';
@@ -28,22 +28,20 @@ describe('ComplianceManagerComponent', () => {
 
   let dialog: MatDialog;
   let alertService: AlertService;
-  let questionnaireService: QuestionnaireService;
+  let userService: UserService;
   const authManager = { currentRole: 'EinwilligungsManager' };
 
   beforeEach(() => {
     dialog = jasmine.createSpyObj('MatDialog', ['open']);
     alertService = jasmine.createSpyObj('AlertService', ['errorObject']);
-    questionnaireService = jasmine.createSpyObj('QuestionnaireService', [
-      'getStudies',
-    ]);
+    userService = jasmine.createSpyObj('UserService', ['getStudies']);
 
     TestBed.configureTestingModule({
       declarations: [ComplianceManagerComponent, MockTranslatePipe],
       providers: [
         { provide: MatDialog, useValue: dialog },
         { provide: AlertService, useValue: alertService },
-        { provide: QuestionnaireService, useValue: questionnaireService },
+        { provide: UserService, useValue: userService },
         { provide: AuthenticationManager, useValue: authManager },
       ],
       imports: [MockModule(HttpClientModule)],

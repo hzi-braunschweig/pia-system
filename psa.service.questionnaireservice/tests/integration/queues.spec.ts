@@ -7,77 +7,53 @@
 
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
-import JWT from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
 
-import secretOrPrivateKey from '../secretOrPrivateKey';
+import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
 import { cleanup, setup } from './queues.spec.data/setup.helper';
 
 chai.use(chaiHttp);
 
-const apiAddress =
-  'http://localhost:' + config.public.port.toString() + '/questionnaire';
+const apiAddress = `http://localhost:${config.public.port}`;
 
-const probandSession1 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestStudieProband1',
-};
-const probandSession2 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestStudi2Proband2',
-};
-const forscherSession1 = {
-  id: 1,
-  role: 'Forscher',
-  username: 'QTestForscher1',
-};
-
-const invalidToken = JWT.sign(probandSession1, 'thisIsNotAValidPrivateKey', {
-  algorithm: 'HS256',
-  expiresIn: '24h',
+const probandHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-studie-proband1',
+  studies: [],
 });
-const probandToken1 = JWT.sign(probandSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const probandHeader2 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-studi2-proband',
+  studies: [],
 });
-const probandToken2 = JWT.sign(probandSession2, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-const forscherToken1 = JWT.sign(forscherSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const forscherHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
+  username: 'qtest-forscher1',
+  studies: [],
 });
 
-const invalidHeader = { authorization: invalidToken };
-const probandHeader1 = { authorization: probandToken1 };
-const probandHeader2 = { authorization: probandToken2 };
-const forscherHeader1 = { authorization: forscherToken1 };
-
-describe('/probands/user_id/queues', function () {
-  before(async function () {
+describe('/probands/{pseudonym}/queues', function () {
+  before(async () => {
     await Server.init();
-    await setup();
   });
 
-  after(async function () {
+  after(async () => {
     await Server.stop();
-    await cleanup();
   });
 
-  describe('GET probands/user_id/queues', function () {
-    it('should return HTTP 401 if the token is wrong', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .get('/probands/QTestStudieProband1/queues')
-        .set(invalidHeader);
-      expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
-    });
+  beforeEach(async () => {
+    await setup();
+    AuthServerMock.probandRealm().returnValid();
+  });
 
+  afterEach(async () => {
+    await cleanup();
+    AuthServerMock.cleanAll;
+  });
+
+  describe('GET /probands/{pseudonym}/queues', function () {
     it('should return HTTP 403 if the user_id is wrong', async function () {
       const result = await chai
         .request(apiAddress)
@@ -89,7 +65,7 @@ describe('/probands/user_id/queues', function () {
     it('should return HTTP 403 if proband asks for other proband', async function () {
       const result = await chai
         .request(apiAddress)
-        .get('/probands/QTestStudieProband1/queues')
+        .get('/probands/qtest-studie-proband1/queues')
         .set(probandHeader2);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -97,7 +73,7 @@ describe('/probands/user_id/queues', function () {
     it('should return HTTP 403 if a Forscher tries ', async function () {
       const result = await chai
         .request(apiAddress)
-        .get('/probands/QTestStudieProband1/queues')
+        .get('/probands/qtest-studie-proband1/queues')
         .set(forscherHeader1);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -105,16 +81,16 @@ describe('/probands/user_id/queues', function () {
     it('should return HTTP 200 with the correct queues in correct order if the correct Proband tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .get('/probands/QTestStudieProband1/queues')
+        .get('/probands/qtest-studie-proband1/queues')
         .set(probandHeader1);
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body.queues.length).to.equal(4);
-      expect(result.body.queues[0].user_id).to.equal('QTestStudieProband1');
+      expect(result.body.queues[0].user_id).to.equal('qtest-studie-proband1');
       expect(result.body.queues[0].questionnaire_instance_id).to.not.equal(
         undefined
       );
       expect(result.body.queues[0].date_of_queue).to.not.equal(undefined);
-      expect(result.body.queues[0].user_id).to.equal('QTestStudieProband1');
+      expect(result.body.queues[0].user_id).to.equal('qtest-studie-proband1');
       expect(
         result.body.queues[0].date_of_queue >
           result.body.queues[1].date_of_queue
@@ -132,45 +108,34 @@ describe('/probands/user_id/queues', function () {
     it('should return HTTP 200 empty array if proband tries that has no queues', async function () {
       const result = await chai
         .request(apiAddress)
-        .get('/probands/QTestStudi2Proband2/queues')
+        .get('/probands/qtest-studi2-proband/queues')
         .set(probandHeader2);
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body.queues.length).to.equal(0);
     });
   });
 
-  describe('DELETE probands/user_id/queues/instance_id', function () {
-    it('should return HTTP 401 if the token is wrong', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .delete('/probands/QTestStudieProband1/queues/99996')
-        .set(invalidHeader)
-        .send({});
-      expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
-    });
-
+  describe('DELETE /probands/{pseudonym}/queues/{instanceId}', function () {
     it('should return HTTP 403 if the user_id is wrong', async function () {
       const result = await chai
         .request(apiAddress)
         .delete('/probands/nonexistingUser/queues/99996')
-        .set(probandHeader1)
-        .send({});
+        .set(probandHeader1);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
-    it('should return HTTP 403 if the instance_id is wrong', async function () {
+    it('should return HTTP 404 if the instance_id is wrong', async function () {
       const result = await chai
         .request(apiAddress)
-        .delete('/probands/QTestStudieProband1/queues/3298789')
-        .set(probandHeader1)
-        .send({});
-      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+        .delete('/probands/qtest-studie-proband1/queues/3298789')
+        .set(probandHeader1);
+      expect(result).to.have.status(StatusCodes.NOT_FOUND);
     });
 
     it('should return HTTP 403 if proband tries for other proband', async function () {
       const result = await chai
         .request(apiAddress)
-        .delete('/probands/QTestStudieProband1/queues/99996')
+        .delete('/probands/qtest-studie-proband1/queues/99996')
         .set(probandHeader2)
         .send({});
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -179,25 +144,23 @@ describe('/probands/user_id/queues', function () {
     it('should return HTTP 403 if a Forscher tries ', async function () {
       const result = await chai
         .request(apiAddress)
-        .delete('/probands/QTestStudieProband1/queues/99996')
-        .set(forscherHeader1)
-        .send({});
+        .delete('/probands/qtest-studie-proband1/queues/99996')
+        .set(forscherHeader1);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
-    it('should return HTTP 200 and delete correct queue', async function () {
+    it('should return HTTP 204 and delete correct queue', async function () {
       const result = await chai
         .request(apiAddress)
-        .delete('/probands/QTestStudieProband1/queues/99996')
-        .set(probandHeader1)
-        .send({});
-      expect(result).to.have.status(StatusCodes.OK);
-      expect(result.body.user_id).to.equal('QTestStudieProband1');
-      expect(result.body.questionnaire_instance_id).to.equal(99996);
+        .delete('/probands/qtest-studie-proband1/queues/99996')
+        .set(probandHeader1);
+      expect(result).to.have.status(StatusCodes.NO_CONTENT);
+
+      AuthServerMock.probandRealm().returnValid();
 
       const result2 = await chai
         .request(apiAddress)
-        .get('/probands/QTestStudieProband1/queues')
+        .get('/probands/qtest-studie-proband1/queues')
         .set(probandHeader1);
       expect(result2).to.have.status(StatusCodes.OK);
       expect(result2.body.queues.length).to.equal(3);
@@ -210,6 +173,14 @@ describe('/probands/user_id/queues', function () {
       expect(result2.body.queues[2].questionnaire_instance_id).to.not.equal(
         99996
       );
+    });
+
+    it('should also accept pseudonyms in uppercase and return HTTP 204', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .delete('/probands/QTest-Studie-Proband1/queues/99996')
+        .set(probandHeader1);
+      expect(result).to.have.status(StatusCodes.NO_CONTENT);
     });
   });
 });

@@ -1,17 +1,12 @@
 DELETE
 FROM study_users
 WHERE user_id IN
-      ('QTestProband1', 'QTestForscher1', 'QTestProband2', 'QTestForscher2', 'ut@apitest.de', 'ut2@apitest.de',
-       'QTestProbandenManager');
-DELETE
-FROM accounts
-WHERE username IN
-      ('QTestProband1', 'QTestProband2', 'QTestForscher1', 'QTestForscher2', 'ut@apitest.de', 'ut2@apitest.de',
-       'QTestSystemAdmin', 'QTestProbandenManager');
+      ('qtest-proband1', 'qtest-forscher1', 'qtest-proband2', 'qtest-forscher2', 'ut@apitest.de', 'ut2@apitest.de',
+       'qtest-probandenmanager');
 DELETE
 FROM probands
 WHERE pseudonym IN
-      ('QTestProband1', 'QTestProband2');
+      ('qtest-proband1', 'qtest-proband2');
 
 DELETE
 FROM planned_probands

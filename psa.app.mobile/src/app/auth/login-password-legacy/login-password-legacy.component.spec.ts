@@ -14,7 +14,7 @@ import { AuthService } from '../auth.service';
 import { AlertController, LoadingController, Platform } from '@ionic/angular';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
-import { createLoginResponse } from '../auth.model.spec';
+import { createLegacyLoginResponse } from '../auth.model.spec';
 import { AuthClientService } from '../auth-client.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastPresenterService } from '../../shared/services/toast-presenter/toast-presenter.service';
@@ -108,10 +108,10 @@ describe('LoginPasswordLegacyComponent', () => {
   it(
     'should login successfully set the user and navigate to home',
     waitForAsync(async () => {
-      const response = createLoginResponse({ username });
+      const response = createLegacyLoginResponse({ username });
       authClient.login.and.resolveTo(response);
       await component.login();
-      expect(auth.handleLoginResponse).toHaveBeenCalledOnceWith(response);
+      expect(auth.handleLegacyLoginResponse).toHaveBeenCalledOnceWith(response);
       expect(router.navigate).toHaveBeenCalledOnceWith(['home']);
     })
   );
@@ -119,7 +119,7 @@ describe('LoginPasswordLegacyComponent', () => {
   it(
     'should not be able to login as a professional user',
     waitForAsync(async () => {
-      const response = createLoginResponse({
+      const response = createLegacyLoginResponse({
         username: 'TEST-Forscher',
         role: 'Forscher',
       });
@@ -128,7 +128,7 @@ describe('LoginPasswordLegacyComponent', () => {
       expect(toastPresenter.presentToast).toHaveBeenCalledOnceWith(
         'LOGIN.TOAST_MSG_ONLY_PROBANDS_ALLOWED'
       );
-      expect(auth.handleLoginResponse).not.toHaveBeenCalled();
+      expect(auth.handleLegacyLoginResponse).not.toHaveBeenCalled();
       expect(router.navigate).not.toHaveBeenCalled();
     })
   );
@@ -157,7 +157,7 @@ describe('LoginPasswordLegacyComponent', () => {
       jasmine.clock().uninstall();
 
       // Assert
-      expect(auth.handleLoginResponse).not.toHaveBeenCalled();
+      expect(auth.handleLegacyLoginResponse).not.toHaveBeenCalled();
       expect(router.navigate).not.toHaveBeenCalled();
     })
   );

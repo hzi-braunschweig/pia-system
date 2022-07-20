@@ -11,8 +11,7 @@ import { PendingStudyChangeRequest } from '../models/pendingStudyChange';
 
 export class PendingStudyChangesHandler {
   /**
-   * creates the pending compliance change
-   * @param request
+   * Creates the pending compliance change
    */
   public static createOne: Lifecycle.Method = async (request) => {
     return PendingStudyChangesInteractor.createPendingStudyChange(
@@ -22,28 +21,22 @@ export class PendingStudyChangesHandler {
   };
 
   /**
-   * executes the pending compliance change
-   * @param request
+   * Executes the pending compliance change
    */
   public static updateOne: Lifecycle.Method = async (request) => {
-    const id = request.params['id'] as number;
-
     return PendingStudyChangesInteractor.updatePendingStudyChange(
       request.auth.credentials as AccessToken,
-      id
+      request.params['id'] as number
     );
   };
 
   /**
-   * deletes the pending compliance change
-   * @param request
+   * Deletes the pending compliance change
    */
   public static deleteOne: Lifecycle.Method = async (request) => {
-    const id = request.params['id'] as number;
-
     return PendingStudyChangesInteractor.deletePendingStudyChange(
       request.auth.credentials as AccessToken,
-      id
+      request.params['id'] as number
     );
   };
 }

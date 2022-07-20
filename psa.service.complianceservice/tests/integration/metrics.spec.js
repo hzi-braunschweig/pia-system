@@ -9,8 +9,9 @@ const chaiHttp = require('chai-http');
 chai.use(chaiHttp);
 const expect = chai.expect;
 
+const { config } = require('../../src/config');
 const server = require('../../src/server');
-const apiAddress = 'http://localhost:' + process.env.PORT;
+const apiAddress = `http://localhost:${config.public.port}`;
 
 describe('/metrics', () => {
   before(async () => {

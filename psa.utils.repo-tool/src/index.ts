@@ -60,6 +60,12 @@ class Program {
         Program.handleError(Runner.executeNpmOutdate(repoMetaData, repoDir));
       });
     program
+      .command('audit')
+      .description('run audit on packages that are used')
+      .action(() => {
+        Program.handleError(Runner.executeNpmAudit(repoMetaData, repoDir));
+      });
+    program
       .command('scan-routes')
       .description('scans all api routes and collects its meta data')
       .action(() => {

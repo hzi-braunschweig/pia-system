@@ -17,18 +17,21 @@ const conf = {
   internal: GlobalConfig.internal,
   database: GlobalConfig.getQPia(dummySslCerts),
   services: {
-    authservice: GlobalConfig.authservice,
     loggingservice: GlobalConfig.loggingservice,
     userservice: GlobalConfig.userservice,
     personaldataservice: GlobalConfig.personaldataservice,
-    sormasservice: GlobalConfig.sormasservice,
   },
   servers: {
     mailserver: GlobalConfig.mailserver,
     messageQueue: GlobalConfig.getMessageQueue('exampleservice'),
+    authserver: {
+      probandTokenIntrospectionClient:
+        GlobalConfig.authserver.probandTokenIntrospectionClient,
+      adminTokenIntrospectionClient:
+        GlobalConfig.authserver.adminTokenIntrospectionClient,
+    },
   },
   webappUrl: GlobalConfig.webappUrl,
-  publicAuthKey: GlobalConfig.publicAuthKey,
 };
 
 export const config: SupersetOfServiceConfig<typeof conf> = conf;

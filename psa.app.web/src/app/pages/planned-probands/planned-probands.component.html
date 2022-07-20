@@ -15,7 +15,7 @@
       <mat-form-field>
         <input
           matInput
-          #filter
+          [formControl]="filterFormControl"
           placeholder="{{ 'DIALOG.FILTER' | translate }}"
         />
       </mat-form-field>

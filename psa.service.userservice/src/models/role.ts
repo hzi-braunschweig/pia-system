@@ -4,11 +4,20 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+export const professionalRoles: ProfessionalRole[] = [
+  'Forscher',
+  'ProbandenManager',
+  'EinwilligungsManager',
+  'Untersuchungsteam',
+  'SysAdmin',
+];
+
 export type ProfessionalRole =
   | 'Forscher'
   | 'ProbandenManager'
   | 'EinwilligungsManager'
-  | 'Untersuchungsteam';
+  | 'Untersuchungsteam'
+  | 'SysAdmin';
 
 export type ProbandRole = 'Proband';
 

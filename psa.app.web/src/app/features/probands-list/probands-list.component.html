@@ -6,11 +6,11 @@
 
 <div class="filter-area">
   <mat-form-field class="study-filter">
-    <mat-label>{{ 'QUESTIONNAIRE_FORSCHER.STUDY' | translate }}</mat-label>
+    <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
     <mat-select
       disableOptionCentering
       id="selectstudy"
-      (selectionChange)="updateFilter()"
+      (selectionChange)="onStudyChange()"
       [(ngModel)]="activeFilter.studyName"
       data-e2e="e2e-compliance-management-study-select"
     >

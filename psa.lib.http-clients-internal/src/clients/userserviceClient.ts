@@ -6,6 +6,7 @@
 
 import { ServiceClient } from '../core/serviceClient';
 import {
+  ProbandExternalIdResponseInternalDto,
   ProbandInternalDto,
   ProbandRequestInternalDto,
   ProbandResponseInternalDto,
@@ -20,9 +21,14 @@ export interface PseudonymsFilter {
   probandStatus?: ProbandStatus | ProbandStatus[];
 }
 
+export interface ExternalIdsFilter {
+  study: string;
+  complianceContact: boolean;
+}
+
 export class UserserviceClient extends ServiceClient {
   /**
-   * Gets all pseudonyms from pia that are in a specific study or have a specific status account
+   * Gets all pseudonyms that are in a specific study or have a specific status account
    */
   public async getPseudonyms(filter: PseudonymsFilter = {}): Promise<string[]> {
     const query = new URLSearchParams();
@@ -39,6 +45,21 @@ export class UserserviceClient extends ServiceClient {
     }
     return await this.httpClient.get<string[]>(
       `/user/pseudonyms?${query.toString()}`
+    );
+  }
+
+  /**
+   * Gets all external IDs that are in a specific study and have compliance contact or not
+   */
+  public async getExternalIds(
+    filter: ExternalIdsFilter
+  ): Promise<ProbandExternalIdResponseInternalDto[]> {
+    const query = new URLSearchParams();
+    query.append('study', filter.study);
+    query.append('complianceContact', filter.complianceContact.toString());
+
+    return await this.httpClient.get<ProbandExternalIdResponseInternalDto[]>(
+      `/user/externalIds?${query.toString()}`
     );
   }
 

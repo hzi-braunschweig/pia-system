@@ -5,7 +5,12 @@
  */
 
 import Hapi from '@hapi/hapi';
-import { registerPlugins, registerAuthStrategies } from '@pia/lib-service-core';
+import {
+  registerPlugins,
+  registerAuthStrategies,
+  defaultInternalRoutesPaths,
+  defaultPublicRoutesPaths,
+} from '@pia/lib-service-core';
 import packageJson from '../package.json';
 import { connectDatabase, db } from './db';
 import { config } from './config';
@@ -52,20 +57,16 @@ export class Server {
 
     await messageQueueService.connect();
 
-    await registerAuthStrategies(this.instance, {
-      strategies: ['jwt'],
-      publicAuthKey: config.publicAuthKey,
-      db: db,
-    });
+    await registerAuthStrategies(this.instance, config.servers.authserver);
     await registerPlugins(this.instance, {
       name: packageJson.name,
       version: packageJson.version,
-      routes: 'src/routes/*',
+      routes: defaultPublicRoutesPaths,
     });
     await registerPlugins(this.instanceInternal, {
       name: packageJson.name,
       version: packageJson.version,
-      routes: 'src/routes/internal/*',
+      routes: defaultInternalRoutesPaths,
       isInternal: true,
     });
 

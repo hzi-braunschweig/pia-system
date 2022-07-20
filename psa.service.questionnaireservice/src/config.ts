@@ -27,8 +27,13 @@ const conf = {
   },
   servers: {
     messageQueue: GlobalConfig.getMessageQueue('questionnaireservice'),
+    authserver: {
+      probandTokenIntrospectionClient:
+        GlobalConfig.authserver.probandTokenIntrospectionClient,
+      adminTokenIntrospectionClient:
+        GlobalConfig.authserver.adminTokenIntrospectionClient,
+    },
   },
-  publicAuthKey: GlobalConfig.publicAuthKey,
   timeZone: GlobalConfig.timeZone,
   isTestMode: ConfigUtils.getEnvVariable('IS_TEST_MODE', 'false') === 'true',
 };

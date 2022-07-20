@@ -44,8 +44,8 @@ export class ProbandsListEntryActionButtonComponent implements OnChanges {
   @Input()
   showOnlyForIdsAndPseudonymInequality = false;
 
-  // tslint:disable-next-line:no-output-native
   @Output()
+  // eslint-disable-next-line @angular-eslint/no-output-native
   click: EventEmitter<Proband> = new EventEmitter<Proband>();
 
   constructor(

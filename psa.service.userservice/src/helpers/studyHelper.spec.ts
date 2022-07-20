@@ -13,7 +13,7 @@ const sandbox = sinon.createSandbox();
 
 describe('StudyHelper', function () {
   before(() => {
-    sandbox.stub(config, 'backendApiUrl').value('https://localhost/');
+    sandbox.stub(config, 'webappUrl').value('https://pia-app.local/');
   });
   after(() => {
     sandbox.restore();
@@ -31,6 +31,13 @@ describe('StudyHelper', function () {
 
   it('should trim trailing dashes', function () {
     const result = hasExistingPseudonymPrefix('LOCAL-');
+    expect(result).to.be.true;
+  });
+
+  it('should return true if prefix is DEV and it is a development system', () => {
+    sandbox.stub(config, 'webappUrl').value('https://some-odd-url');
+    sandbox.stub(config, 'isDevelopmentSystem').value(true);
+    const result = hasExistingPseudonymPrefix('DEV');
     expect(result).to.be.true;
   });
 });

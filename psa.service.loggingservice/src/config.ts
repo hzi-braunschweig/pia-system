@@ -38,7 +38,12 @@ const conf = {
   services: {
     userservice: GlobalConfig.userservice,
   },
-  publicAuthKey: GlobalConfig.publicAuthKey,
+  servers: {
+    authserver: {
+      adminTokenIntrospectionClient:
+        GlobalConfig.authserver.adminTokenIntrospectionClient,
+    },
+  },
 };
 
 export const config: SupersetOfServiceConfig<typeof conf> = conf;

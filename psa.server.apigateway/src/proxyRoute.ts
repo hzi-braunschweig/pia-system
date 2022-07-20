@@ -6,7 +6,6 @@
 
 export interface Upstream {
   host: string;
-  serviceName: string;
   port: number;
   path: string;
   protocol: 'http' | 'https';
@@ -31,8 +30,9 @@ export function isProxyRoute(route: unknown): route is ProxyRoute {
 
 export interface ResponseRoute extends IRoute {
   response: {
-    headers: Record<string, string>;
-    body: string;
+    headers?: Record<string, string>;
+    body?: string;
+    statusCode?: number;
   };
 }
 export function isResponseRoute(route: unknown): route is ResponseRoute {

@@ -8,7 +8,6 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../../_services/alert.service';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
@@ -26,8 +25,8 @@ import {
 import { Study } from '../../../psa.app.core/models/study';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
 import { MatTableDataSource } from '@angular/material/table';
-import { AccessLevel } from '../../../psa.app.core/models/study_access';
-import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
+import { AccessLevel } from '../../../psa.app.core/models/studyAccess';
+import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 
 interface TableRow {
   username: string;
@@ -58,8 +57,7 @@ export class StudyAccessesComponent implements OnInit {
   public sort: MatSort;
 
   constructor(
-    private questionnaireService: QuestionnaireService,
-    private authService: AuthService,
+    private userService: UserService,
     private activatedRoute: ActivatedRoute,
     private alertService: AlertService,
     public dialog: MatDialog,
@@ -74,27 +72,23 @@ export class StudyAccessesComponent implements OnInit {
 
   private async initTable(): Promise<void> {
     this.isLoading = true;
-    const data: TableRow[] = [];
     try {
       const studyName = this.activatedRoute.snapshot.paramMap.get('name');
-      this.study = await this.questionnaireService.getStudy(studyName);
-      const users = await this.authService.getProfessionalUsers();
-      users.forEach((user) => {
-        const access = user.study_accesses.find(
-          (a) => a.study_id === studyName
-        );
-        if (access) {
-          data.push({
-            username: user.username,
-            role: user.role,
-            accessLevel: access.access_level,
-          });
-        }
+      this.study = await this.userService.getStudy(studyName);
+      const accounts = await this.userService.getProfessionalAccounts({
+        studyName,
       });
+      const studyAccesses = await this.userService.getStudyAccesses(studyName);
+      this.dataSource.data = accounts.map((account) => ({
+        username: account.username,
+        role: account.role,
+        accessLevel: studyAccesses.find(
+          (access) => access.username === account.username
+        )?.accessLevel,
+      }));
     } catch (err) {
       this.alertService.errorObject(err);
     }
-    this.dataSource.data = data;
     this.isLoading = false;
   }
 
@@ -119,10 +113,7 @@ export class StudyAccessesComponent implements OnInit {
 
   private async deleteUserFromStudy(username: string): Promise<void> {
     try {
-      await this.questionnaireService.deleteUserFromStudy(
-        username,
-        this.study.name
-      );
+      await this.userService.deleteUserFromStudy(username, this.study.name);
       this.dataSource.data = this.dataSource.data.filter(
         (d) => d.username !== username
       );

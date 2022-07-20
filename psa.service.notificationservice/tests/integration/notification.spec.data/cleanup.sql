@@ -1,12 +1,12 @@
 DELETE
 FROM notification_schedules
 WHERE user_id IN (
-                  'QTestProband1',
-                  'QTestProband2',
-                  'QTestProband4',
-                  'QTestForscher1',
-                  'QTestProbandenManager',
-                  'QTestUntersuchungsteam'
+                  'qtest-proband1',
+                  'qtest-proband2',
+                  'qtest-proband4',
+                  'qtest-forscher1',
+                  'qtest-probandenmanager',
+                  'qtest-untersuchungsteam'
     );
 
 DELETE FROM fcm_tokens;
@@ -44,14 +44,9 @@ WHERE id IN (
              9999998
     );
 
-
-DELETE
-FROM accounts
-WHERE username LIKE 'QTest%';
-
 DELETE
 FROM probands
-WHERE pseudonym LIKE 'QTest%';
+WHERE pseudonym LIKE 'qtest%';
 
 
 DELETE

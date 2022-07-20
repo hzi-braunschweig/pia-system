@@ -22,7 +22,9 @@ const setupIpia = {
 
       dbPersonaldataUser: 'user_' + random.createRandomString(16),
       dbPersonaldataPassword: random.createRandomString(16),
-      dbPersonaldataName: random.createRandomString(16),
+
+      dbAuthserverUser: 'user_' + random.createRandomString(16),
+      dbAuthserverPassword: random.createRandomString(16),
     };
 
     // In beforeAll it is too late to set the process.env, so we need to do everything sync!
@@ -35,6 +37,13 @@ const setupIpia = {
     config.env.DB_PERSONALDATA_PASSWORD = config.dbPersonaldataPassword;
     config.env.DB_PERSONALDATA_DB = config.dbName;
     config.env.DB_PERSONALDATA_ACCEPT_UNAUTHORIZED = 'true';
+
+    config.env.DB_AUTHSERVER_HOST = 'localhost';
+    config.env.DB_AUTHSERVER_PORT = config.dbPort.toString();
+    config.env.DB_AUTHSERVER_USER = config.dbAuthserverUser;
+    config.env.DB_AUTHSERVER_PASSWORD = config.dbAuthserverPassword;
+    config.env.DB_AUTHSERVER_DB = config.dbName;
+    config.env.DB_AUTHSERVER_ACCEPT_UNAUTHORIZED = 'true';
 
     env.update(config.env);
 

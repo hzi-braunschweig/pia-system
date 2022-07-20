@@ -53,6 +53,35 @@ export interface SftpServerConnection extends Connection {
   password: string;
 }
 
+export interface AuthSettings {
+  probandTokenIntrospectionClient?: AuthClientSettings;
+  probandManagementClient?: AuthClientSettings;
+  adminTokenIntrospectionClient?: AuthClientSettings;
+  adminManagementClient?: AuthClientSettings;
+}
+
+export interface AuthClientSettings {
+  /**
+   * The Keycloak connection
+   */
+  connection: HttpConnection;
+
+  /**
+   * ID of the Keycloak realm
+   */
+  realm: string;
+
+  /**
+   * Identifier of the Keycloak client
+   */
+  clientId: string;
+
+  /**
+   * Related secret of the Keycloak client
+   */
+  secret: string;
+}
+
 export interface TlsSettings {
   cert: Buffer;
   key: Buffer;
@@ -77,20 +106,18 @@ export interface ServiceConfig {
   internal?: Connection;
   database?: DatabaseConnection;
   services?: {
-    authservice?: HttpConnection;
     complianceservice?: HttpConnection;
     loggingservice?: HttpConnection;
     personaldataservice?: HttpConnection;
-    sormasservice?: HttpConnection;
     userservice?: HttpConnection;
   };
   servers?: {
     mailserver?: MailserverConnection;
     mhhftpserver?: SftpServerConnection;
-    hzistpserver?: SftpServerConnection;
+    hziftpserver?: SftpServerConnection;
     messageQueue?: MessageQueueConnection;
+    authserver?: AuthSettings;
   };
-  publicAuthKey?: Buffer;
   webappUrl?: string;
   backendApiUrl?: string;
 }

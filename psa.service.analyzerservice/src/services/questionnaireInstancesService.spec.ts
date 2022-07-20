@@ -17,6 +17,7 @@ import { Condition } from '../models/condition';
 import sinonChai from 'sinon-chai';
 import { zonedTimeToUtc } from 'date-fns-tz';
 import { config } from '../config';
+import * as mockdate from 'mockdate';
 
 chai.use(sinonChai);
 
@@ -183,6 +184,8 @@ describe('questionnaireInstancesService', function () {
     });
 
     it('should return correct questionnaire instances for one time questionnaire', function () {
+      mockdate.set('2022-05-04T09:00:00+02:00');
+
       const date = subDays(startOfToday(), 1);
       const user: Proband = createUser('Testuser1', date);
       const questionnaire: Questionnaire = createQuestionnaire({
@@ -214,6 +217,8 @@ describe('questionnaireInstancesService', function () {
         ).toString()
       );
       expect(res[0]?.status).to.equal('active');
+
+      mockdate.reset();
     });
 
     it('should be able to keep the time correct when timeZone changes to DST', function () {

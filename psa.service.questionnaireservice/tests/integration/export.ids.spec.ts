@@ -9,10 +9,10 @@ import chaiHttp from 'chai-http';
 import { createSandbox } from 'sinon';
 import JSZip, * as zip from 'jszip';
 import * as csv from 'csv-parse/sync';
-import JWT from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
 import { Response } from 'superagent';
 
+import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 import {
   CsvAnswerRow,
   CsvBloodSampleRow,
@@ -21,28 +21,19 @@ import {
   CsvUserSettingsRow,
 } from '../../src/models/csvExportRows';
 import { cleanup, setup } from './export.ids.spec.data/setup.helper';
-import secretOrPrivateKey from '../secretOrPrivateKey';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
 import { userserviceClient } from '../../src/clients/userserviceClient';
 
 chai.use(chaiHttp);
 
-const apiAddress =
-  'http://localhost:' + config.public.port.toString() + '/questionnaire';
+const apiAddress = `http://localhost:${config.public.port}`;
 
-const forscherSession1 = {
-  id: 1,
-  role: 'Forscher',
-  username: 'QExportTestForscher',
-  groups: ['Teststudie - Export'],
-};
-
-const forscherToken1 = JWT.sign(forscherSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const forscherHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
+  username: 'qtest-exportforscher',
+  studies: ['Teststudie - Export'],
 });
-const forscherHeader1 = { authorization: forscherToken1 };
 
 const binaryParser = function (
   res: Response,
@@ -86,6 +77,8 @@ describe('/dataExport/searches should work with ids field', function () {
       .stub(userserviceClient, 'getPseudonyms')
       .resolves(['test-1', 'test-ids2']);
 
+    const authRequest = AuthServerMock.adminRealm().returnValid();
+
     const search = {
       start_date: new Date('2000-01-01'),
       end_date: new Date('2999-01-01'),
@@ -100,12 +93,13 @@ describe('/dataExport/searches should work with ids field', function () {
 
     const response = await chai
       .request(apiAddress)
-      .post('/dataExport/searches')
+      .post('/admin/dataExport/searches')
       .set(forscherHeader1)
       .send(search)
       .parse(binaryParser)
       .buffer();
     expect(response).to.have.status(StatusCodes.OK);
+    authRequest.isDone();
 
     const result = await zip.loadAsync(response.body as string);
 
