@@ -12,11 +12,10 @@ import * as path from 'path';
 import * as csv from 'csv-parse/sync';
 import { StatusCodes } from 'http-status-codes';
 import { createSandbox } from 'sinon';
-import JWT from 'jsonwebtoken';
 import { Response } from 'superagent';
 
+import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 import { cleanup, setup } from './export.spec.data/setup.helper';
-import secretOrPrivateKey from '../secretOrPrivateKey';
 import {
   CsvAnswerRow,
   CsvUserSettingsRow,
@@ -27,21 +26,13 @@ import { userserviceClient } from '../../src/clients/userserviceClient';
 
 chai.use(chaiHttp);
 
-const apiAddress =
-  'http://localhost:' + config.public.port.toString() + '/questionnaire';
+const apiAddress = `http://localhost:${config.public.port}`;
 
-const forscherSession1 = {
-  id: 1,
-  role: 'Forscher',
-  username: 'QExportTestForscher',
-  groups: ['Teststudie - Export'],
-};
-
-const forscherToken1 = JWT.sign(forscherSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const forscherHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
+  username: 'qtest-exportforscher',
+  studies: ['Teststudie - Export'],
 });
-const forscherHeader1 = { authorization: forscherToken1 };
 
 const binaryParser = function (
   res: Response,
@@ -139,12 +130,12 @@ describe('/dataExport/searches content should match the expected csv', function 
     sandbox
       .stub(userserviceClient, 'getPseudonyms')
       .resolves([
-        'QTest-0000000002',
-        'QTest-0000000003',
-        'QTest-0000000004',
-        'QTest-0000000005',
-        'QTest-0000000006',
-        'QTest-0000000007',
+        'qtest-0000000002',
+        'qtest-0000000003',
+        'qtest-0000000004',
+        'qtest-0000000005',
+        'qtest-0000000006',
+        'qtest-0000000007',
       ]);
 
     const questionnaires = [
@@ -160,11 +151,11 @@ describe('/dataExport/searches content should match the expected csv', function 
       study_name: 'Teststudie - Export',
       questionnaires,
       probands: [
-        'QTest-0000000002',
-        'QTest-0000000003',
-        'QTest-0000000004',
-        'QTest-0000000005',
-        'QTest-0000000006',
+        'qtest-0000000002',
+        'qtest-0000000003',
+        'qtest-0000000004',
+        'qtest-0000000005',
+        'qtest-0000000006',
       ],
       exportAnswers: true,
       exportLabResults: true,
@@ -172,14 +163,17 @@ describe('/dataExport/searches content should match the expected csv', function 
       exportSettings: true,
     };
 
+    const authRequest = AuthServerMock.adminRealm().returnValid();
+
     const response: Response = await chai
       .request(apiAddress)
-      .post('/dataExport/searches')
+      .post('/admin/dataExport/searches')
       .set(forscherHeader1)
       .send(search)
       .parse(binaryParser)
       .buffer();
     expect(response).to.have.status(StatusCodes.OK);
+    authRequest.isDone();
 
     const result = await zip.loadAsync(response.body as string);
     const answersCsv = result.files['answers.csv'];

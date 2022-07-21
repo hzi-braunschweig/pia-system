@@ -5,8 +5,6 @@
  */
 
 const startOfToday = require('date-fns/startOfToday');
-const addDays = require('date-fns/addDays');
-const addHours = require('date-fns/addHours');
 const subDays = require('date-fns/subDays');
 
 const { db } = require('../db');
@@ -204,49 +202,24 @@ const postgresqlHelper = (function () {
   }
 
   async function postponeNotificationByInstanceId(id) {
-    return db.tx(async (t) => {
-      const notifications = await t.manyOrNone(
-        'SELECT * FROM notification_schedules WHERE reference_id=$1 AND notification_type=$2',
-        [id, 'qReminder']
-      );
-      for (let i = 0; i < notifications.length; i++) {
-        await t.none(
-          'UPDATE notification_schedules SET send_on=$1 WHERE id=$2 AND notification_type=$3',
-          [
-            addDays(new Date(notifications[i].send_on), 1),
-            notifications[i].id,
-            'qReminder',
-          ]
-        );
-      }
-      return;
-    });
+    await db.none(
+      "UPDATE notification_schedules SET send_on = send_on + INTERVAL '1' DAY WHERE reference_id=$1 AND notification_type='qReminder'",
+      [id]
+    );
   }
 
   async function postponeNotification(id) {
-    return db.tx(async (t) => {
-      const notification = await t.one(
-        'SELECT * FROM notification_schedules WHERE id=$1',
-        [id]
-      );
-      return await t.none(
-        'UPDATE notification_schedules SET send_on=$1 WHERE id=$2',
-        [addDays(new Date(notification.send_on), 1), notification.id]
-      );
-    });
+    await db.none(
+      "UPDATE notification_schedules SET send_on = send_on + INTERVAL '1' DAY WHERE id=$1",
+      [id]
+    );
   }
 
   async function postponeNotificationByOneHour(id) {
-    return db.tx(async (t) => {
-      const notification = await t.one(
-        'SELECT * FROM notification_schedules WHERE id=$1',
-        [id]
-      );
-      return await t.none(
-        'UPDATE notification_schedules SET send_on=$1 WHERE id=$2',
-        [addHours(new Date(notification.send_on), 1), notification.id]
-      );
-    });
+    await db.none(
+      "UPDATE notification_schedules SET send_on = send_on + INTERVAL '1' HOUR WHERE id=$1",
+      [id]
+    );
   }
 
   async function getLabResult(id) {

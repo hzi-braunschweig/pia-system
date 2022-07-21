@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import util from 'util';
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import sinonChai from 'sinon-chai';
@@ -13,23 +12,37 @@ import { cleanup, setup } from './internal-patchProband.spec.data/setup.helper';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
 import { ProbandStatusPatch } from '../../src/models/proband';
-import { messageQueueService } from '../../src/services/messageQueueService';
 import { ProbandStatus } from '../../src/models/probandStatus';
+import { SinonStubbedInstance } from 'sinon';
+import { Users } from '@keycloak/keycloak-admin-client/lib/resources/users';
+import { probandAuthClient } from '../../src/clients/authServerClient';
+import { MailService } from '@pia/lib-service-core';
+import * as sinon from 'sinon';
+import {
+  MessageQueueClient,
+  MessageQueueTestUtils,
+} from '@pia/lib-messagequeue';
 
 chai.use(chaiHttp);
 chai.use(sinonChai);
 
 const internalApiAddress = `http://localhost:${config.internal.port}`;
 
-const delay = util.promisify(setTimeout);
-const DELAY_TIME = 10;
+const testSandbox = sinon.createSandbox();
 
 describe('Internal: patch proband', function () {
+  const mqc = new MessageQueueClient(config.servers.messageQueue);
+
   before(async function () {
     await Server.init();
+    await mqc.connect(true);
+    await mqc.createConsumer('proband.deactivated', async () =>
+      Promise.resolve()
+    );
   });
 
   after(async function () {
+    await mqc.disconnect();
     await Server.stop();
   });
 
@@ -38,74 +51,140 @@ describe('Internal: patch proband', function () {
   });
 
   afterEach(async function () {
+    testSandbox.restore();
     await cleanup();
   });
 
   describe('PATCH /user/users/{pseudonym}', function () {
-    it('should return 404 if user does not exist', async function () {
-      // Arrange
-      const body: ProbandStatusPatch = { status: ProbandStatus.DEACTIVATED };
+    describe('update status', function () {
+      it('should return 404 if user does not exist in DB', async function () {
+        // Arrange
+        const body: ProbandStatusPatch = { status: ProbandStatus.DEACTIVATED };
 
-      // Act
-      const result = await chai
-        .request(internalApiAddress)
-        .patch('/user/users/DoesNotExist')
-        .send(body);
+        // Act
+        const result = await chai
+          .request(internalApiAddress)
+          .patch('/user/users/DoesNotExist')
+          .send(body);
 
-      // Assert
-      expect(result).to.have.status(StatusCodes.NOT_FOUND);
+        // Assert
+        expect(result).to.have.status(StatusCodes.NOT_FOUND);
+      });
+
+      it('should return 400 if study_status is not valid', async function () {
+        // Arrange
+        const body = { status: 'isnotvalid' };
+
+        // Act
+        const result = await chai
+          .request(internalApiAddress)
+          .patch('/user/users/qtest-proband1')
+          .send(body);
+
+        // Assert
+        expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+      });
+
+      it('should update the user`s status', async () => {
+        // Arrange
+        const body: ProbandStatusPatch = { status: ProbandStatus.DEACTIVATED };
+
+        // Act
+        const result = await chai
+          .request(internalApiAddress)
+          .patch('/user/users/qtest-proband1')
+          .send(body);
+
+        // Assert
+        expect(result).to.have.status(StatusCodes.NO_CONTENT);
+      });
+
+      it('should send the "proband.deactivated" message', async function () {
+        // Arrange
+        const body: ProbandStatusPatch = { status: ProbandStatus.DEACTIVATED };
+        const probandDeactivated =
+          MessageQueueTestUtils.injectMessageProcessedAwaiter(
+            mqc,
+            'proband.deactivated',
+            testSandbox
+          );
+
+        // Act
+        await chai
+          .request(internalApiAddress)
+          .patch('/user/users/qtest-proband1')
+          .send(body);
+
+        // Assert
+        await probandDeactivated;
+      });
     });
 
-    it('should return 400 if study_status is not valid', async function () {
-      // Arrange
-      const body = { status: 'isnotvalid' };
+    describe('update compliance contact', function () {
+      let authClientUsersMock: SinonStubbedInstance<Users>;
 
-      // Act
-      const result = await chai
-        .request(internalApiAddress)
-        .patch('/user/users/QTestProband1')
-        .send(body);
+      beforeEach(() => {
+        authClientUsersMock = testSandbox.stub(probandAuthClient.users);
+        authClientUsersMock.find.resolves([
+          { username: 'qtest-proband1', id: '1234' },
+        ]);
+        authClientUsersMock.del.resolves();
 
-      // Assert
-      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
-    });
+        testSandbox.stub(MailService, 'sendMail').resolves(true);
+      });
 
-    it('should update the user`s status', async () => {
-      // Arrange
-      const body: ProbandStatusPatch = { status: ProbandStatus.DEACTIVATED };
+      it('should send the "proband.deactivated" message', async function () {
+        // Arrange
+        const body = { complianceContact: false };
 
-      // Act
-      const result = await chai
-        .request(internalApiAddress)
-        .patch('/user/users/QTestProband1')
-        .send(body);
+        const probandDeactivated =
+          MessageQueueTestUtils.injectMessageProcessedAwaiter(
+            mqc,
+            'proband.deactivated',
+            testSandbox
+          );
 
-      // Assert
-      expect(result).to.have.status(StatusCodes.NO_CONTENT);
-    });
+        // Act
+        await chai
+          .request(internalApiAddress)
+          .patch('/user/users/qtest-proband1')
+          .send(body);
 
-    it('should send the "proband.deactivated" message', async function () {
-      // Arrange
-      const body: ProbandStatusPatch = { status: ProbandStatus.DEACTIVATED };
-      let pseudonym: string | undefined;
-      await messageQueueService.createConsumer(
-        'proband.deactivated',
-        async (message: { pseudonym: string }) => {
-          pseudonym = message.pseudonym;
-          return Promise.resolve();
-        }
-      );
+        // Assert
+        await probandDeactivated;
+      });
 
-      // Act
-      await chai
-        .request(internalApiAddress)
-        .patch('/user/users/QTestProband1')
-        .send(body);
+      it('should return 404 if user does not exist in authserver', async function () {
+        // Arrange
+        authClientUsersMock.find.resolves([]);
+        const body = { complianceContact: false };
 
-      // Assert
-      while (pseudonym !== 'QTestProband1') {
-        await delay(DELAY_TIME);
-      }
+        // Act
+        const result = await chai
+          .request(internalApiAddress)
+          .patch('/user/users/qtest-proband1')
+          .send(body);
+
+        // Assert
+        expect(result).to.have.status(StatusCodes.NOT_FOUND);
+      });
+
+      it('should delete the probands account', async function () {
+        // Arrange
+        const body = { complianceContact: false };
+
+        // Act
+        await chai
+          .request(internalApiAddress)
+          .patch('/user/users/qtest-proband1')
+          .send(body);
+
+        // Assert
+        expect(authClientUsersMock.del).to.have.been.calledWith({
+          id: '1234',
+          realm: 'pia-proband-realm',
+        });
+      });
     });
   });
 });

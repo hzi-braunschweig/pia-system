@@ -17,11 +17,12 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { TranslatedUser } from './translated-user/translated-user.model';
 import { TranslatedUserFilter } from './translated-user/translated-user-filter';
-import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { AlertService } from '../../_services/alert.service';
 import { TranslatedUserFactory } from './translated-user/translated-user.factory';
 import { MatPaginatorIntlGerman } from '../../_helpers/mat-paginator-intl';
 import { Proband } from '../../psa.app.core/models/proband';
+import { ProbandService } from '../../psa.app.core/providers/proband-service/proband.service';
+import { CurrentUser } from '../../_services/current-user.service';
 
 export interface ProbandsListEntryActionConfig {
   columnName: string;
@@ -72,16 +73,16 @@ export class ProbandsListComponent implements OnInit {
     'accountStatus',
   ];
 
-  // tslint:disable-next-line:no-output-rename
+  // eslint-disable-next-line @angular-eslint/no-output-rename
   @Output('isLoading')
   isLoadingEvent = new EventEmitter<boolean>();
 
-  isLoading: boolean = true;
+  isLoading: boolean = false;
 
   dataSource: MatTableDataSource<TranslatedUser> =
     new MatTableDataSource<TranslatedUser>([]);
 
-  studyFilterValues: string[] = [];
+  studyFilterValues: string[] = this.currentUser.studies;
 
   activeFilter: TranslatedUserFilter = new TranslatedUserFilter();
 
@@ -91,13 +92,17 @@ export class ProbandsListComponent implements OnInit {
   >();
 
   constructor(
-    private readonly authService: AuthService,
+    private readonly probandService: ProbandService,
     private readonly alertService: AlertService,
-    private readonly translatedUserFactory: TranslatedUserFactory
+    private readonly translatedUserFactory: TranslatedUserFactory,
+    private readonly currentUser: CurrentUser
   ) {}
 
-  ngOnInit(): void {
-    this.fetchUsers();
+  public ngOnInit(): void {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+    this.dataSource.filter = this.activeFilter.filterKey;
+    this.dataSource.filterPredicate = (data) => this.activeFilter.filter(data);
   }
 
   /**
@@ -111,8 +116,30 @@ export class ProbandsListComponent implements OnInit {
     this.entryActions.set(entryActionConfig.columnName, entryActionConfig);
   }
 
+  public async onStudyChange(): Promise<void> {
+    await this.fetchProbands();
+  }
+
+  public async fetchProbands(): Promise<void> {
+    this.isLoading = true;
+    this.isLoadingEvent.emit(this.isLoading);
+    try {
+      const probands = await this.probandService.getProbands(
+        this.activeFilter.studyName
+      );
+      this.dataSource.data = probands.map((proband) =>
+        this.translatedUserFactory.create(proband)
+      );
+      this.updateFilter();
+    } catch (error) {
+      this.alertService.errorObject(error);
+    }
+    this.isLoading = false;
+    this.isLoadingEvent.emit(false);
+  }
+
   /**
-   * Asures that the filter will be updated within the data source
+   * Assures that the filter will be updated within the data source
    * and the page is reset to the first page
    */
   updateFilter(): void {
@@ -142,38 +169,5 @@ export class ProbandsListComponent implements OnInit {
     buttonConfig: ProbandsListEntryActionButtonConfig
   ): boolean {
     return buttonConfig.disableForDeletedProbands && user.status === 'deleted';
-  }
-
-  /**
-   * Configure DataSource. Has to be done on init as ViewChilds need to be available.
-   */
-  async fetchUsers(): Promise<void> {
-    this.isLoading = true;
-    this.isLoadingEvent.emit(this.isLoading);
-    try {
-      const response = await this.authService.getProbands();
-      this.studyFilterValues = this.extractStudyFilterValues(response);
-      this.dataSource.data = response.map((user) =>
-        this.translatedUserFactory.create(user)
-      );
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-      this.dataSource.filterPredicate = (data) =>
-        this.activeFilter.filter(data);
-      this.updateFilter();
-    } catch (error) {
-      this.alertService.errorObject(error);
-    }
-    this.isLoading = false;
-    this.isLoadingEvent.emit(false);
-  }
-
-  /**
-   * Extracts all unique study names from the user list
-   *
-   * @param users users from which the study name will be extracted
-   */
-  private extractStudyFilterValues(users: Proband[]): string[] {
-    return Array.from(new Set(users.map((user) => user.study)));
   }
 }

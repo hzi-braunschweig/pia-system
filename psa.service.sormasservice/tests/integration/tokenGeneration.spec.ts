@@ -20,7 +20,7 @@ import { TaskScheduler } from '../../src/services/taskScheduler';
 
 chai.use(chaiHttp);
 
-const apiAddress = `http://localhost:${process.env['PORT'] ?? ''}/sormas`;
+const apiAddress = `http://localhost:${config.public.port}`;
 
 const payload = {
   email: config.sormasOnPia.username,

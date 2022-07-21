@@ -24,6 +24,7 @@ import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
+import { InAppBrowser } from '@awesome-cordova-plugins/in-app-browser/ngx';
 import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { Keyboard } from '@awesome-cordova-plugins/keyboard/ngx';
@@ -41,6 +42,7 @@ import { AuthInterceptor } from './shared/interceptors/auth-interceptor';
 import { ContentTypeInterceptor } from './shared/interceptors/content-type-interceptor';
 import { UnauthorizedInterceptor } from './shared/interceptors/unauthorized-interceptor';
 import { HttpErrorInterceptor } from './shared/interceptors/http-error-interceptor.service';
+import { KeycloakAngularModule } from 'keycloak-angular';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/');
@@ -65,6 +67,7 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     MarkdownModule.forRoot(),
     AppRoutingModule,
     ReactiveFormsModule,
+    KeycloakAngularModule,
   ],
   providers: [
     {
@@ -109,6 +112,7 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     Chooser,
     FirebaseX,
     Network,
+    InAppBrowser,
   ],
   bootstrap: [AppComponent],
 })

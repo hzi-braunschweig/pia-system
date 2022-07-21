@@ -6,7 +6,7 @@
 
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { Study } from 'src/app/psa.app.core/models/study';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { ComplianceService } from 'src/app/psa.app.core/providers/compliance-service/compliance-service';
 import { AlertService } from 'src/app/_services/alert.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -33,7 +33,7 @@ export class ComplianceResearcherComponent implements OnInit {
   @ViewChild('complianceTextarea') complianceTextarea: ElementRef;
 
   constructor(
-    private questionnaireService: QuestionnaireService,
+    private userService: UserService,
     private alertService: AlertService,
     private complianceService: ComplianceService,
     private dialog: MatDialog
@@ -46,7 +46,7 @@ export class ComplianceResearcherComponent implements OnInit {
 
   async ngOnInit(): Promise<void> {
     try {
-      this.studies = (await this.questionnaireService.getStudies()).studies;
+      this.studies = await this.userService.getStudies();
     } catch (err) {
       this.alertService.errorObject(err);
     }

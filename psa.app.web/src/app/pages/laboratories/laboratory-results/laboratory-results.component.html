@@ -11,11 +11,15 @@
     [labResultsList]="labResultsList"
     [user_id]="user_id"
     *ngIf="showLaboratoryResultTable"
+    unit-lab-result-table
   ></app-laboratory-results-list>
-  <h1 *ngIf="showEmptyResultTable && currentRole === 'Proband'">
+  <h1
+    *ngIf="showEmptyResultTable && user.isProband()"
+    unit-empty-results-message
+  >
     {{ 'LABRESULTS.EMPTY_RESULTS_MESSAGE_PROBAND' | translate }}
   </h1>
-  <h1 *ngIf="showEmptyResultTable && currentRole === 'Forscher'">
+  <h1 *ngIf="showEmptyResultTable && user.hasRole('Forscher')">
     {{ 'LABRESULTS.EMPTY_RESULTS_MESSAGE_FORSCHER' | translate }}
   </h1>
 </div>

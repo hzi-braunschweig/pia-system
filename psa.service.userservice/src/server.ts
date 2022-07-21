@@ -4,15 +4,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 import Hapi from '@hapi/hapi';
+import { getConnection } from 'typeorm';
+
 import {
+  defaultInternalRoutesPaths,
   MailService,
   registerAuthStrategies,
   registerPlugins,
 } from '@pia/lib-service-core';
 import packageJson from '../package.json';
-import { connectDatabase, db } from './db';
 import { config } from './config';
-import { getConnection } from 'typeorm';
+import { connectDatabase, db } from './db';
 import { messageQueueService } from './services/messageQueueService';
 
 export class Server {
@@ -21,6 +23,7 @@ export class Server {
 
   public static async init(): Promise<void> {
     await connectDatabase();
+
     this.instance = Hapi.server({
       host: config.public.host,
       port: config.public.port,
@@ -52,20 +55,16 @@ export class Server {
         },
       },
     });
-    await registerAuthStrategies(this.instance, {
-      strategies: ['jwt'],
-      publicAuthKey: config.publicAuthKey,
-      db: db,
-    });
+    await registerAuthStrategies(this.instance, config.servers.authserver);
     await registerPlugins(this.instance, {
       name: packageJson.name,
       version: packageJson.version,
-      routes: 'src/routes/*',
+      routes: 'src/routes/{postProbandExternal.ts,admin/*,proband/*}',
     });
     await registerPlugins(this.instanceInternal, {
       name: packageJson.name,
       version: packageJson.version,
-      routes: 'src/routes/internal/*',
+      routes: defaultInternalRoutesPaths,
       isInternal: true,
     });
 

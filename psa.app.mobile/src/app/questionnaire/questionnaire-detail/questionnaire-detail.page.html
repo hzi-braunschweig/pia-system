@@ -41,6 +41,9 @@
               <ion-card-header
                 class="pia-questionnaire-question pia-questionnaire-question-header"
               >
+                <ion-card-subtitle *ngIf="question.is_mandatory" color="medium"
+                  >Pflichtangabe</ion-card-subtitle
+                >
                 <markdown
                   ngPreserveWhitespaces
                   [data]="question.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"

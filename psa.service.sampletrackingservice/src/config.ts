@@ -62,8 +62,13 @@ const conf = {
   servers: {
     mhhftpserver: mhhftpserver,
     hziftpserver: hziftpserver,
+    authserver: {
+      probandTokenIntrospectionClient:
+        GlobalConfig.authserver.probandTokenIntrospectionClient,
+      adminTokenIntrospectionClient:
+        GlobalConfig.authserver.adminTokenIntrospectionClient,
+    },
   },
-  publicAuthKey: GlobalConfig.publicAuthKey,
   webappUrl: GlobalConfig.webappUrl,
 };
 

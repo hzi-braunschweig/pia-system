@@ -15,33 +15,23 @@ VALUES ('ApiTestMultiProfs', 'ApiTestMultiProfs Beschreibung'),
 
 -- Users
 INSERT INTO probands(pseudonym, compliance_labresults, compliance_samples, study)
-VALUES ('QTestStudieProband1', FALSE, FALSE, 'ApiTestStudie'),
-       ('QTestStudi2Proband2', FALSE, FALSE, 'ApiTestStudi2'),
-       ('QTestStudi4Proband3', FALSE, FALSE, 'ApiTestStudi4'),
-       ('QTestStudieProband4', FALSE, FALSE, 'ApiTestStudie');
-
-INSERT INTO accounts(username, password, role)
-VALUES ('QTestForscher1', '', 'Forscher'),
-       ('QTestForscher2', '', 'Forscher'),
-       ('QTestStudieProband1', '', 'Proband'),
-       ('QTestStudi2Proband2', '', 'Proband'),
-       ('QTestStudi4Proband3', '', 'Proband'),
-       ('QTestProbandenManager', '', 'ProbandenManager'),
-       ('QTestUntersuchungsteam', '', 'Untersuchungsteam'),
-       ('QTestUntersuchungsteam2', '', 'Untersuchungsteam');
+VALUES ('qtest-studie-proband1', FALSE, FALSE, 'ApiTestStudie'),
+       ('qtest-studi2-proband', FALSE, FALSE, 'ApiTestStudi2'),
+       ('qtest-studi4-proband3', FALSE, FALSE, 'ApiTestStudi4'),
+       ('qtest-studie-proband4', FALSE, FALSE, 'ApiTestStudie');
 
 INSERT INTO study_users
-VALUES ('ApiTestMultiProfs', 'QTestForscher1', 'write'),
-       ('ApiTestMultiProfs', 'QTestForscher2', 'write'),
-       ('ApiTestMultiProfs', 'QTestProbandenManager', 'write'),
-       ('ApiTestMultiProfs', 'QTestUntersuchungsteam', 'write'),
-       ('ApiTestMultiProfs', 'QTestUntersuchungsteam2', 'write'),
-       ('ApiTestStudi2', 'QTestForscher2', 'admin'),
-       ('ApiTestStudi2', 'QTestUntersuchungsteam2', 'write'),
-       ('ApiTestStudi4', 'QTestForscher2', 'write'),
-       ('ApiTestStudie', 'QTestForscher1', 'write'),
-       ('ApiTestStudie', 'QTestProbandenManager', 'write'),
-       ('ApiTestStudie', 'QTestUntersuchungsteam', 'write');
+VALUES ('ApiTestMultiProfs', 'qtest-forscher1', 'write'),
+       ('ApiTestMultiProfs', 'qtest-forscher2', 'write'),
+       ('ApiTestMultiProfs', 'qtest-probandenmanager', 'write'),
+       ('ApiTestMultiProfs', 'qtest-untersuchungsteam', 'write'),
+       ('ApiTestMultiProfs', 'qtest-untersuchungsteam2', 'write'),
+       ('ApiTestStudi2', 'qtest-forscher2', 'admin'),
+       ('ApiTestStudi2', 'qtest-untersuchungsteam2', 'write'),
+       ('ApiTestStudi4', 'qtest-forscher2', 'write'),
+       ('ApiTestStudie', 'qtest-forscher1', 'write'),
+       ('ApiTestStudie', 'qtest-probandenmanager', 'write'),
+       ('ApiTestStudie', 'qtest-untersuchungsteam', 'write');
 
 -- Questionnaires
 INSERT INTO questionnaires VALUES (55555, 'ApiTestStudie', 'ApiImageTestQuestionnaire', 2, 1, 'week', 1, 365, 3, 'PIA Fragebogen', 'NeuNachricht', 'AltNachricht', null, null, null, null, true);
@@ -142,41 +132,41 @@ VALUES ('internal_last', NULL, 777777, NULL, '==', 'Ja', 777777, 777777);
 -- Questionnaire Instances
 INSERT INTO questionnaire_instances(id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue,
                                     date_of_release_v1, date_of_release_v2, cycle, status)
-VALUES (100777777, 'ApiTestStudi4', 777777, 'ApiTestNoDataQuestionnaire', 'QTestStudi4Proband3', '2017-08-08', '2017-08-08',
+VALUES (100777777, 'ApiTestStudi4', 777777, 'ApiTestNoDataQuestionnaire', 'qtest-studi4-proband3', '2017-08-08', '2017-08-08',
         NULL, 1, 'released_once'),
-       (100777778, 'ApiTestStudi4', 777777, 'ApiTestNoDataQuestionnaire', 'QTestStudi4Proband3', '2017-08-10', NULL, NULL, 2,
+       (100777778, 'ApiTestStudi4', 777777, 'ApiTestNoDataQuestionnaire', 'qtest-studi4-proband3', '2017-08-10', NULL, NULL, 2,
         'active'),
-       (100888888, 'ApiTestStudi4', 888888, 'ApiTestConditionTargetQuestionnaire', 'QTestStudi4Proband3', '2017-08-08',
+       (100888888, 'ApiTestStudi4', 888888, 'ApiTestConditionTargetQuestionnaire', 'qtest-studi4-proband3', '2017-08-08',
         '2017-08-08', NULL, 1, 'released_once'),
-       (100888889, 'ApiTestStudi4', 888888, 'ApiTestConditionTargetQuestionnaire', 'QTestStudi4Proband3', '2017-08-15',
+       (100888889, 'ApiTestStudi4', 888888, 'ApiTestConditionTargetQuestionnaire', 'qtest-studi4-proband3', '2017-08-15',
         '2017-08-15', '2017-08-15', 2, 'released_twice'),
-       (100888890, 'ApiTestStudi4', 888888, 'ApiTestConditionTargetQuestionnaire', 'QTestStudi4Proband3', '2017-08-22', NULL,
+       (100888890, 'ApiTestStudi4', 888888, 'ApiTestConditionTargetQuestionnaire', 'qtest-studi4-proband3', '2017-08-22', NULL,
         NULL, 3, 'active'),
-       (100888891, 'ApiTestStudi4', 888889, 'ApiTestConditionSourceQuestionnaire', 'QTestStudi4Proband3', '2017-08-09',
+       (100888891, 'ApiTestStudi4', 888889, 'ApiTestConditionSourceQuestionnaire', 'qtest-studi4-proband3', '2017-08-09',
         '2017-08-09', '2017-08-09', 1, 'released_twice'),
-       (100888892, 'ApiTestStudi4', 888889, 'ApiTestConditionSourceQuestionnaire', 'QTestStudi4Proband3', '2017-08-16', NULL,
+       (100888892, 'ApiTestStudi4', 888889, 'ApiTestConditionSourceQuestionnaire', 'qtest-studi4-proband3', '2017-08-16', NULL,
         NULL, 2, 'active'),
-       (100888893, 'ApiTestStudi4', 888889, 'ApiTestConditionSourceQuestionnaire', 'QTestStudi4Proband3', '2017-08-23', NULL,
+       (100888893, 'ApiTestStudi4', 888889, 'ApiTestConditionSourceQuestionnaire', 'qtest-studi4-proband3', '2017-08-23', NULL,
         NULL, 3, 'active'),
-       (100888894, 'ApiTestStudi4', 888889, 'ApiTestEmptyQuestionQuestionnaire', 'QTestStudi4Proband3', '2017-08-23', NULL,
+       (100888894, 'ApiTestStudi4', 888889, 'ApiTestEmptyQuestionQuestionnaire', 'qtest-studi4-proband3', '2017-08-23', NULL,
         NULL, 3, 'active'),
-       (55555, 'ApiTestStudie', 55555, 'ApiImageTestQuestionnaire', 'QTestStudieProband1', '2017-08-08', NULL, NULL, 1,
+       (55555, 'ApiTestStudie', 55555, 'ApiImageTestQuestionnaire', 'qtest-studie-proband1', '2017-08-08', NULL, NULL, 1,
         'released_once'),
-       (55556, 'ApiTestStudie', 55555, 'ApiImageTestQuestionnaire', 'QTestStudieProband1', '2017-08-08', NULL, NULL, 1,
+       (55556, 'ApiTestStudie', 55555, 'ApiImageTestQuestionnaire', 'qtest-studie-proband1', '2017-08-08', NULL, NULL, 1,
         'released_once'),
-       (7777771, 'ApiTestStudie', 7777771, 'ApiImageTestQuestionnaire2', 'QTestStudieProband1', '2017-08-08', NULL, NULL, 1,
+       (7777771, 'ApiTestStudie', 7777771, 'ApiImageTestQuestionnaire2', 'qtest-studie-proband1', '2017-08-08', NULL, NULL, 1,
         'active'),
-       (99995, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'QTestStudieProband1', '2017-08-07', NULL, NULL, 5,
+       (99995, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'qtest-studie-proband1', '2017-08-07', NULL, NULL, 5,
         'released_once'),
-       (99996, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'QTestStudieProband1', '2017-08-08', NULL, NULL, 1, 'active'),
-       (99997, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'QTestStudieProband1', '2017-08-09', NULL, NULL, 2,
+       (99996, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'qtest-studie-proband1', '2017-08-08', NULL, NULL, 1, 'active'),
+       (99997, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'qtest-studie-proband1', '2017-08-09', NULL, NULL, 2,
         'inactive'),
-       (99998, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'QTestStudieProband1', '2017-08-10', NULL, NULL, 3, 'active'),
-       (99999, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'QTestStudieProband1', '2017-08-24', NULL, NULL, 4, 'active');
+       (99998, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'qtest-studie-proband1', '2017-08-10', NULL, NULL, 3, 'active'),
+       (99999, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'qtest-studie-proband1', '2017-08-24', NULL, NULL, 4, 'active');
 INSERT INTO questionnaire_instances(id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue,
                                     date_of_release_v1, date_of_release_v2, cycle, status,
                                     progress)
-VALUES (1234567, 'ApiTestStudie', 1234567, 'ApiTestQuestionnaire', 'QTestStudieProband4', '2017-08-24', NULL, NULL,
+VALUES (1234567, 'ApiTestStudie', 1234567, 'ApiTestQuestionnaire', 'qtest-studie-proband4', '2017-08-24', NULL, NULL,
         1, 'active', 1);
 
 INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value)

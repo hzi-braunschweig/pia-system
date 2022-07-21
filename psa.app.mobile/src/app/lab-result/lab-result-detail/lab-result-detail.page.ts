@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { SampleTrackingClientService } from '../sample-tracking-client.service';
@@ -16,7 +16,7 @@ import { AuthService } from '../../auth/auth.service';
   styleUrls: ['./lab-result-detail.page.scss'],
   encapsulation: ViewEncapsulation.None,
 })
-export class LabResultDetailPage {
+export class LabResultDetailPage implements OnInit {
   labResultId: string =
     this.activatedRoute.snapshot.paramMap.get('labResultId');
 
@@ -28,8 +28,10 @@ export class LabResultDetailPage {
     private activatedRoute: ActivatedRoute,
     private sampleTrackingClient: SampleTrackingClientService,
     private auth: AuthService
-  ) {
-    this.getLabResult();
+  ) {}
+
+  public async ngOnInit() {
+    await this.getLabResult();
   }
 
   async getLabResult() {

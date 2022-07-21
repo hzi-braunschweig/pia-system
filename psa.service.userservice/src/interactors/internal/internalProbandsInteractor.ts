@@ -11,11 +11,11 @@ import {
   isProbandComplianceContactPatch,
   isProbandStatusPatch,
   ProbandComplianceContactPatch,
-  ProbandResponse,
+  ProbandDto,
+  ProbandExternalIdResponse,
   ProbandStatusPatch,
 } from '../../models/proband';
 import { ExternalCompliance } from '../../models/externalCompliance';
-import { StudyAccessRepository } from '../../repositories/studyAccessRepository';
 import { messageQueueService } from '../../services/messageQueueService';
 import {
   ProbandDeletionType,
@@ -28,10 +28,11 @@ import {
   PseudonymAlreadyExistsError,
   StudyNotFoundError,
 } from '../../errors';
-import { getRepository } from 'typeorm';
+import { getRepository, IsNull, Not } from 'typeorm';
 import { Proband } from '../../entities/proband';
 import { ProbandStatus } from '../../models/probandStatus';
 import { ProbandsRepository } from '../../repositories/probandsRepository';
+import { StudyAccess } from '../../entities/studyAccess';
 
 /**
  * Internal interactor that handles proband requests
@@ -46,7 +47,8 @@ export class InternalProbandsInteractor {
       password = await ProbandService.createProbandWithAccount(
         studyName,
         probandRequest,
-        false
+        false,
+        probandRequest.temporaryPassword ?? true
       );
     } catch (e) {
       if (e instanceof StudyNotFoundError) {
@@ -105,36 +107,55 @@ export class InternalProbandsInteractor {
     }
   }
 
-  public static async getProbandByIDS(ids: string): Promise<ProbandResponse> {
-    const proband = await ProbandsRepository.getProbandByIDS(ids);
-    if (!proband) {
-      throw Boom.notFound('proband not found');
+  /**
+   * Gets the proband by pseudonym
+   */
+  public static async getProband(pseudonym: string): Promise<ProbandDto> {
+    try {
+      return await ProbandService.getProbandByPseudonymOrFail(pseudonym);
+    } catch (err) {
+      throw Boom.notFound(
+        'The proband with the given pseudonym does not exist'
+      );
     }
-    return proband;
+  }
+
+  public static async getProbandByIDS(ids: string): Promise<ProbandDto> {
+    try {
+      return await ProbandService.getProbandByIdsOrFail(ids);
+    } catch (err) {
+      throw Boom.notFound('The proband with the given ids does not exist');
+    }
   }
 
   /**
    * Gets the proband's IDS from DB
    */
   public static async lookupIds(pseudonym: string): Promise<string | null> {
-    const repo = getRepository(Proband);
-    const proband = await repo.findOne(pseudonym, { select: ['ids'] });
-    if (!proband) {
-      throw Boom.notFound('proband not found');
+    try {
+      return (await ProbandService.getProbandByPseudonymOrFail(pseudonym)).ids;
+    } catch (err) {
+      throw Boom.notFound(
+        'The proband with the given pseudonym does not exist'
+      );
     }
-    return proband.ids;
   }
 
   /**
    * Fets the proband's MappingId from DB
    */
   public static async lookupMappingId(pseudonym: string): Promise<string> {
-    const repo = getRepository(Proband);
-    const proband = await repo.findOne(pseudonym, { select: ['mappingId'] });
-    if (!proband) {
-      throw Boom.notFound('proband not found');
+    try {
+      return (
+        await getRepository(Proband).findOneOrFail(pseudonym, {
+          select: ['mappingId'],
+        })
+      ).mappingId;
+    } catch (err) {
+      throw Boom.notFound(
+        'The proband with the given pseudonym does not exist'
+      );
     }
-    return proband.mappingId;
   }
 
   /**
@@ -155,25 +176,21 @@ export class InternalProbandsInteractor {
     return proband ?? null;
   }
 
-  public static async getProbandsWithAcessToFromProfessional(
-    pseudonym: string
+  public static async getProbandsWithAccessToFromProfessional(
+    username: string
   ): Promise<string[]> {
-    return StudyAccessRepository.getProbandsWithAcessToFromProfessional(
-      pseudonym
-    );
-  }
-
-  /**
-   * Gets the proband by pseudonym
-   */
-  public static async getProband(pseudonym: string): Promise<ProbandResponse> {
-    const proband = await ProbandsRepository.getProband(pseudonym);
-    if (!proband) {
-      throw Boom.notFound(
-        'The proband with the given pseudonym does not exist'
-      );
-    }
-    return proband;
+    return (
+      await getRepository(Proband)
+        .createQueryBuilder('proband')
+        .select('proband.pseudonym')
+        .innerJoin(
+          StudyAccess,
+          'access',
+          'proband.study.name = access.studyName'
+        )
+        .where('access.username = :username', { username })
+        .getMany()
+    ).map((proband) => proband.pseudonym);
   }
 
   /**
@@ -210,5 +227,20 @@ export class InternalProbandsInteractor {
     complianceContact?: boolean
   ): Promise<string[]> {
     return ProbandsRepository.getPseudonyms(study, status, complianceContact);
+  }
+
+  public static async getExternalIds(
+    study: string,
+    complianceContact: boolean
+  ): Promise<ProbandExternalIdResponse[]> {
+    const probandRepo = getRepository(Proband);
+    return probandRepo.find({
+      select: ['pseudonym', 'externalId'],
+      where: {
+        externalId: Not(IsNull()),
+        study,
+        complianceContact,
+      },
+    });
   }
 }

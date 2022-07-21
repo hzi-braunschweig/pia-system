@@ -9,25 +9,13 @@ VALUES ('QTestStudie1', 'QTestStudie1 Beschreibung', FALSE),
        ('QTestStudie2', 'QTestStudie2 Beschreibung', FALSE),
        ('QTestStudie3', 'QTestStudie3 Beschreibung]', FALSE);
 
-INSERT INTO accounts (username, password, role)
-VALUES ('QTestProband1', '', 'Proband'),
-
-       ('forscher1@example.com', '', 'Forscher'),
-       ('forscher2@example.com', '', 'Forscher'),
-       ('forscherNoEmail', '', 'Forscher'),
-       ('forscher4@example.com', '', 'Forscher'),
-       ('ut1@example.com', '', 'Untersuchungsteam'),
-       ('pm1@example.com', '', 'ProbandenManager'),
-       ('sa1@example.com', '', 'SysAdmin'),
-       ('sa2@example.com', '', 'SysAdmin');
-
 INSERT INTO probands (pseudonym, compliance_labresults, compliance_samples, compliance_bloodsamples, study)
-VALUES ('QTestProband1', TRUE, TRUE, TRUE, 'QTestStudie1');
+VALUES ('qtest-proband1', TRUE, TRUE, TRUE, 'QTestStudie1');
 
 INSERT INTO study_users (study_id, user_id, access_level)
 VALUES ('QTestStudie1', 'forscher1@example.com', 'admin'),
        ('QTestStudie1', 'forscher2@example.com', 'admin'),
-       ('QTestStudie1', 'forscherNoEmail', 'admin'),
+       ('QTestStudie1', 'qtest-forscher_no_email', 'admin'),
        ('QTestStudie1', 'ut1@example.com', 'write'),
        ('QTestStudie1', 'pm1@example.com', 'write'),
 
@@ -37,7 +25,7 @@ VALUES ('QTestStudie1', 'forscher1@example.com', 'admin'),
        ('QTestStudie3', 'ut1@example.com', 'write'),
        ('QTestStudie3', 'forscher1@example.com', 'admin'),
        ('QTestStudie3', 'forscher2@example.com', 'admin'),
-       ('QTestStudie3', 'forscherNoEmail', 'admin'),
+       ('QTestStudie3', 'qtest-forscher_no_email', 'admin'),
        ('QTestStudie3', 'forscher4@example.com', 'write');
 
 INSERT INTO pending_study_changes(id, requested_by, requested_for, study_id, description_from, description_to,

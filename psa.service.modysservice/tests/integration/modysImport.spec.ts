@@ -44,7 +44,7 @@ describe('MODYS Import', () => {
 
   it('should finish import if no pseudonyms were found for study', async () => {
     // Arrange
-    mockGetPseudonyms([]);
+    mockGetExternalIds([]);
 
     // Act
     await ModysImportService.startImport();
@@ -53,9 +53,9 @@ describe('MODYS Import', () => {
     expect(fetchMock.calls().length).to.eq(1);
   });
 
-  it('should request MODYS probands for given pseudonyms', async () => {
+  it('should request MODYS probands for given external IDs', async () => {
     // Arrange
-    mockGetPseudonyms(['Testproband1', 'Testproband2', 'Testproband3']);
+    mockGetExternalIds(['TestProband1', 'TestProband2', 'TestProband3']);
     mockGetProbandIdentifierbyId();
     mockGetProbandWithId();
     mockGetProbandContactDetails();
@@ -68,7 +68,7 @@ describe('MODYS Import', () => {
     // Assert
     expect(fetchStub.callCount).to.eq(expectedCallCount);
     expect(fetchStub).to.have.been.calledWithExactly(
-      'http://externalmodys/api/pidByIdandType/Testproband1/1',
+      'http://externalmodys/api/pidByIdandType/TestProband1/1',
       {
         method: 'GET',
         headers: {
@@ -98,7 +98,7 @@ describe('MODYS Import', () => {
 
   it('should finish import if no probands were found in MODYS', async () => {
     // Arrange
-    mockGetPseudonyms(['Testproband1', 'Testproband2', 'Testproband3']);
+    mockGetExternalIds(['TestProband1', 'TestProband2', 'TestProband3']);
     fetchMock.get('glob:http://externalmodys/api/pidByIdandType/*/1', {
       status: StatusCodes.NOT_FOUND,
     });
@@ -113,7 +113,7 @@ describe('MODYS Import', () => {
 
   it('should update mapped probands in personaldataservice', async () => {
     // Arrange
-    mockGetPseudonyms(['Testproband1', 'Testproband2', 'Testproband3']);
+    mockGetExternalIds(['TestProband1', 'TestProband2', 'TestProband3']);
     mockGetProbandIdentifierbyId();
     mockGetProbandWithId();
     mockGetProbandContactDetails();
@@ -126,7 +126,7 @@ describe('MODYS Import', () => {
     // Assert
     expect(fetchMock.calls().length).to.eq(expectedCallCount);
     expect(fetchStub).to.have.been.calledWithExactly(
-      'http://personaldataservice:5000/personal/personalData/proband/Testproband1',
+      'http://personaldataservice:5000/personal/personalData/proband/testproband1',
       {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -151,7 +151,7 @@ describe('MODYS Import', () => {
 
   it('should also finish if no personal data could be updated', async () => {
     // Arrange
-    mockGetPseudonyms(['Testproband1', 'Testproband2', 'Testproband3']);
+    mockGetExternalIds(['TestProband1', 'TestProband2', 'TestProband3']);
     mockGetProbandIdentifierbyId();
     mockGetProbandWithId();
     mockGetProbandContactDetails();
@@ -168,10 +168,16 @@ describe('MODYS Import', () => {
     expect(fetchMock.calls().length).to.eq(expectedCallCount);
   });
 
-  function mockGetPseudonyms(body: string[]): void {
+  function mockGetExternalIds(externalIds: string[]): void {
     fetchMock.get(
-      'http://userservice:5000/user/pseudonyms?study=Teststudy&complianceContact=true',
-      { status: StatusCodes.OK, body }
+      'http://userservice:5000/user/externalIds?study=Teststudy&complianceContact=true',
+      {
+        status: StatusCodes.OK,
+        body: externalIds.map((externalId) => ({
+          pseudonym: externalId.toLowerCase(),
+          externalId,
+        })),
+      }
     );
   }
 

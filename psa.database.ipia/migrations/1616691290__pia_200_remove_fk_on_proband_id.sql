@@ -1,3 +1,0 @@
-ALTER TABLE IF EXISTS pending_deletions
-    DROP CONSTRAINT IF EXISTS  fk_proband_id,
-    ADD COLUMN IF NOT EXISTS study TEXT NULL;

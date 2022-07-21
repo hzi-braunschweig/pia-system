@@ -14,10 +14,14 @@ import {
 } from '@angular/forms';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { PersonalDataService } from 'src/app/psa.app.core/providers/personaldata-service/personaldata-service';
-import { ProfessionalUser } from '../psa.app.core/models/user';
 import { AlertService } from '../_services/alert.service';
 import { ReplaySubject } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
+import {
+  GetProfessionalAccountsFilters,
+  UserService,
+} from '../psa.app.core/providers/user-service/user.service';
+import { ProfessionalAccount } from '../psa.app.core/models/professionalAccount';
 
 export type DeletionType = 'general' | 'personal' | 'study' | 'sample';
 export type DeletionAction = 'requested' | 'rejected' | 'confirmed';
@@ -32,6 +36,7 @@ export interface DialogDeletePartnerData {
     usernameProband?: string;
   };
   type: DeletionType;
+  affectedStudy?: string;
 }
 
 export interface DialogDeletePartnerResult {
@@ -112,7 +117,9 @@ export interface DialogDeletePartnerResult {
                 </mat-select>
                 <mat-error
                   *ngIf="form.controls['user_for_approve'].hasError('required')"
-                  >{{ 'DIALOG.ADMIN_REQUIRED' | translate }}</mat-error
+                  >{{
+                    'DIALOG.CONFIRMATION_PARTNER_REQUIRED' | translate
+                  }}</mat-error
                 >
               </mat-form-field>
             </mat-grid-tile>
@@ -181,13 +188,12 @@ export interface DialogDeletePartnerResult {
   `,
 })
 export class DialogDeletePartnerComponent implements OnInit {
-  usersWithSameRole: ProfessionalUser[];
+  usersWithSameRole: ProfessionalAccount[];
   form: FormGroup;
   acceptDelete: boolean = false;
   public usernameFilterCtrl: FormControl = new FormControl();
-  public filteredUsers: ReplaySubject<ProfessionalUser[]> = new ReplaySubject<
-    ProfessionalUser[]
-  >(1);
+  public filteredUsers: ReplaySubject<ProfessionalAccount[]> =
+    new ReplaySubject(1);
   isLoading: boolean = false;
 
   constructor(
@@ -197,6 +203,7 @@ export class DialogDeletePartnerComponent implements OnInit {
       DialogDeletePartnerResult
     >,
     private authService: AuthService,
+    private userService: UserService,
     private personalDataService: PersonalDataService,
     private alertService: AlertService,
     @Inject(MAT_DIALOG_DATA) public data: DialogDeletePartnerData
@@ -208,17 +215,21 @@ export class DialogDeletePartnerComponent implements OnInit {
     ) {
       this.acceptDelete = true;
     } else {
-      this.authService
-        .getUsersWithSameRole()
+      const filter: GetProfessionalAccountsFilters = {
+        onlyMailAddresses: true,
+        filterSelf: true,
+      };
+      if (data.type === 'study') {
+        filter.role = 'SysAdmin';
+      }
+      if (data.affectedStudy) {
+        filter.studyName = data.affectedStudy;
+      }
+      this.userService
+        .getProfessionalAccounts(filter)
         .then((users) => {
           this.usersWithSameRole = users;
-          this.filteredUsers.next(
-            this.usersWithSameRole.filter((user) => {
-              // use validator to filter users without email address
-              const control = new FormControl(user.username, Validators.email);
-              return !control.errors || !control.errors.email;
-            })
-          );
+          this.filteredUsers.next(this.usersWithSameRole);
         })
         .catch((err: HttpErrorResponse) => {
           this.alertService.errorObject(err);

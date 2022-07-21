@@ -12,7 +12,7 @@ import { InternalUsersHandler } from '../../handlers/internal/internalUsersHandl
 const route: ServerRoute = {
   path: '/user/professional/{username}/allProbands',
   method: 'GET',
-  handler: InternalUsersHandler.getProbandsWithAcessToFromProfessional,
+  handler: InternalUsersHandler.getProbandsWithAccessToFromProfessional,
   options: {
     description:
       'gets all the probands a user with a professional role has access to',

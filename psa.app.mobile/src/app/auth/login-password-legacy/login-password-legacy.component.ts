@@ -132,7 +132,7 @@ export class LoginPasswordLegacyComponent {
       this.toastPresenter.presentToast('LOGIN.TOAST_MSG_ONLY_PROBANDS_ALLOWED');
       return;
     }
-    this.auth.handleLoginResponse(user);
+    this.auth.handleLegacyLoginResponse(user);
     await this.router.navigate(['home']);
     await this.menuCtrl.enable(true);
   }

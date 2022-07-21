@@ -1,0 +1,52 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<mat-form-field>
+  <mat-label>{{ label }}</mat-label>
+  <mat-chip-list #chipList>
+    <mat-chip
+      *ngFor="let value of valuesFormControl.value"
+      (removed)="remove(value)"
+    >
+      {{ value }}
+      <button matChipRemove>
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </mat-chip>
+    <input
+      type="text"
+      matInput
+      data-e2e="e2e-chip-autocomplete-input"
+      #valueInput
+      [placeholder]="placeholder"
+      [formControl]="filterFormControl"
+      [matAutocomplete]="auto"
+      [matChipInputFor]="chipList"
+      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+      (matChipInputTokenEnd)="add($event)"
+      (blur)="onTouched()"
+    />
+  </mat-chip-list>
+  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="select($event)">
+    <mat-option
+      class="mat-option-highlighted"
+      (onSelectionChange)="selectAll()"
+      *ngIf="
+        allowedValues.length &&
+        valuesFormControl.value.length !== allowedValues.length
+      "
+    >
+      {{ 'CONTACTS.SELECT_ALL' | translate }}
+    </mat-option>
+
+    <mat-option *ngFor="let value of filteredValues | async" [value]="value">
+      {{ value }}
+    </mat-option>
+  </mat-autocomplete>
+  <mat-error *ngIf="showError">
+    {{ errorMessage }}
+  </mat-error>
+</mat-form-field>

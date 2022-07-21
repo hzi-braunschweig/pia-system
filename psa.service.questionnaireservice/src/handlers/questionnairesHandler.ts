@@ -15,30 +15,24 @@ export class QuestionnairesHandler {
    * Creates a new questionnaire
    */
   public static create: Lifecycle.Method = async (request) => {
-    const newQuestionnaire = request.payload as QuestionnaireRequest;
-
     const questionnaire: Questionnaire =
       await QuestionnairesInteractor.createQuestionnaire(
         request.auth.credentials as AccessToken,
-        newQuestionnaire
+        request.payload as QuestionnaireRequest
       );
     return RESTPresenter.presentQuestionnaire(questionnaire);
   };
 
   /**
-   * updates the questionnaire with the specified id
+   * Updates the questionnaire with the specified id
    */
   public static update: Lifecycle.Method = async (request) => {
-    const id: number = request.params['id'] as number;
-    const version: number = request.params['version'] as number;
-    const newQuestionnaire = request.payload as QuestionnaireRequest;
-
     const questionnaire: Questionnaire =
       await QuestionnairesInteractor.updateQuestionnaire(
         request.auth.credentials as AccessToken,
-        id,
-        version,
-        newQuestionnaire
+        request.params['id'] as number,
+        request.params['version'] as number,
+        request.payload as QuestionnaireRequest
       );
     return RESTPresenter.presentQuestionnaire(questionnaire);
   };
@@ -47,14 +41,11 @@ export class QuestionnairesHandler {
    * Revises the questionnaire from the specified id
    */
   public static revise: Lifecycle.Method = async (request) => {
-    const id = request.params['id'] as number;
-    const newQuestionnaire = request.payload as QuestionnaireRequest;
-
     const questionnaire: Questionnaire =
       await QuestionnairesInteractor.reviseQuestionnaire(
         request.auth.credentials as AccessToken,
-        id,
-        newQuestionnaire
+        request.params['id'] as number,
+        request.payload as QuestionnaireRequest
       );
     return RESTPresenter.presentQuestionnaire(questionnaire);
   };
@@ -63,21 +54,17 @@ export class QuestionnairesHandler {
    * Gets the questionnaire
    */
   public static getOne: Lifecycle.Method = async (request) => {
-    const id = request.params['id'] as number;
-    const version = request.params['version'] as number;
-
     const questionnaire: Questionnaire =
       await QuestionnairesInteractor.getQuestionnaire(
         request.auth.credentials as AccessToken,
-        id,
-        version
+        request.params['id'] as number,
+        request.params['version'] as number
       );
     return RESTPresenter.presentQuestionnaire(questionnaire);
   };
 
   /**
    * Get all questionnaires the user has access to
-   * @param request
    */
   public static getAll: Lifecycle.Method = async (request) => {
     const questionnaires: Questionnaire[] =
@@ -89,35 +76,25 @@ export class QuestionnairesHandler {
 
   /**
    * Deletes the questionnaire
-   * @param request
    */
   public static deleteOne: Lifecycle.Method = async (request) => {
-    const id = request.params['id'] as number;
-    const version = request.params['version'] as number;
-
     await QuestionnairesInteractor.deleteQuestionnaire(
       request.auth.credentials as AccessToken,
-      id,
-      version
+      request.params['id'] as number,
+      request.params['version'] as number
     );
     return null;
   };
 
   /**
    * Deactivates the questionnaire
-   * @param request
    */
   public static patch: Lifecycle.Method = async (request) => {
-    const id = request.params['id'] as number;
-    const version = request.params['version'] as number;
-    const patchedQuestionnaireAttributes =
-      request.payload as Partial<QuestionnaireRequest>;
-
     const questionnaire: Questionnaire = await QuestionnairesInteractor.patch(
       request.auth.credentials as AccessToken,
-      id,
-      version,
-      patchedQuestionnaireAttributes
+      request.params['id'] as number,
+      request.params['version'] as number,
+      request.payload as Partial<QuestionnaireRequest>
     );
     return RESTPresenter.presentQuestionnaire(questionnaire);
   };

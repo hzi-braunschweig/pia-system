@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { StudyAccess } from './study_access';
+import { PlannedProbandStudyAccess } from './studyAccess';
 
 export class PlannedProband {
   user_id: string;
@@ -12,5 +12,5 @@ export class PlannedProband {
   activated_at: Date;
   wasCreated: boolean;
   studies?: string;
-  study_accesses?: StudyAccess[];
+  study_accesses?: PlannedProbandStudyAccess[];
 }

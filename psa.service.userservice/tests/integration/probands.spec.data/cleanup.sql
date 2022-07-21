@@ -1,11 +1,12 @@
-DELETE
-FROM accounts
-WHERE username LIKE 'QTest%'
-   OR username LIKE '%@example.com';
+/*
+ * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 
 DELETE
 FROM probands
-WHERE pseudonym LIKE 'QTest%'
+WHERE pseudonym LIKE 'qtest%'
    OR pseudonym LIKE '%@example.com'
    OR study LIKE 'QTest%';
 
@@ -16,4 +17,4 @@ WHERE name LIKE 'QTestStudy%'
 
 DELETE
 FROM planned_probands
-WHERE user_id LIKE 'QTest%';
+WHERE user_id LIKE 'qtest%';

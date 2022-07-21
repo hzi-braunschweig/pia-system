@@ -11,67 +11,37 @@ chai.use(chaiHttp);
 chai.use(chaiExclude);
 const expect = chai.expect;
 
-const secretOrPrivateKey = require('../secretOrPrivateKey');
-const JWT = require('jsonwebtoken');
-
+const { config } = require('../../src/config');
 const server = require('../../src/server');
-const apiAddress = 'http://localhost:' + process.env.PORT;
+const apiAddress = `http://localhost:${config.public.port}`;
 
 const { sequelize, ComplianceText } = require('../../src/db');
+const {
+  AuthTokenMockBuilder,
+  AuthServerMock,
+} = require('@pia/lib-service-core');
 
-const researcherSession = {
-  id: 1,
-  role: 'Forscher',
-  username: 'QTestforscher1',
-  groups: ['QTeststudy', 'QTeststudie2'],
-};
-
-const researcherSession2 = {
-  id: 1,
-  role: 'Forscher',
-  username: 'QTestforscher2',
-  groups: ['QTeststudy44', 'QTeststudie33'],
-};
-
-const researcherToken = JWT.sign(researcherSession, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const researcherHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
+  username: 'qtest-forscher1',
+  studies: ['QTeststudy', 'QTeststudie2'],
+});
+const researcherHeader2 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
+  username: 'qtest-forscher2',
+  studies: ['QTeststudy44', 'QTeststudie33'],
 });
 
-const researcherToken2 = JWT.sign(researcherSession2, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const probandHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband1',
+  studies: ['QTeststudy'],
 });
-
-const researcherHeader = { authorization: researcherToken };
-const researcherHeader2 = { authorization: researcherToken2 };
-
-const probandSession = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestProband1',
-  groups: ['QTeststudy', 'QTeststudie2'],
-};
-
-const probandSession2 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestProband2',
-  groups: ['QTeststudy33'],
-};
-
-const probandToken = JWT.sign(probandSession, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const probandHeader2 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband2',
+  studies: ['QTeststudy33'],
 });
-
-const probandToken2 = JWT.sign(probandSession2, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-
-const probandHeader = { authorization: probandToken };
-const probandHeader2 = { authorization: probandToken2 };
 
 describe('Compliance Text API', () => {
   const studyName = 'QTeststudy';
@@ -88,11 +58,14 @@ describe('Compliance Text API', () => {
     await ComplianceText.destroy({ truncate: true, cascade: true });
   });
 
-  describe('POST /compliance/text/preview', () => {
+  describe('POST /admin/compliance/text/preview', () => {
+    beforeEach(() => AuthServerMock.adminRealm().returnValid());
+    afterEach(AuthServerMock.cleanAll);
+
     it('should return 200 and the converted text', async () => {
       const res = await chai
         .request(apiAddress)
-        .post('/compliance/text/preview')
+        .post('/admin/text/preview')
         .set(researcherHeader)
         .send({
           compliance_text:
@@ -132,7 +105,7 @@ describe('Compliance Text API', () => {
     it('should return 403 if proband tries', async () => {
       const res = await chai
         .request(apiAddress)
-        .post('/compliance/text/preview')
+        .post('/admin/text/preview')
         .send({ compliance_text: '# hello world' })
         .set(probandHeader);
 
@@ -141,11 +114,14 @@ describe('Compliance Text API', () => {
     });
   });
 
-  describe('GET /compliance/{study}/text', () => {
+  describe('GET /{studyName}/text', () => {
+    beforeEach(() => AuthServerMock.probandRealm().returnValid());
+    afterEach(AuthServerMock.cleanAll);
+
     it('should return 204 if no text exists', async () => {
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/text`)
+        .get(`/${studyName}/text`)
         .set(probandHeader);
 
       // Assert
@@ -160,7 +136,7 @@ describe('Compliance Text API', () => {
       });
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/text`)
+        .get(`/${studyName}/text`)
         .set(probandHeader);
 
       // Assert
@@ -175,7 +151,7 @@ describe('Compliance Text API', () => {
       });
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/text`)
+        .get(`/${studyName}/text`)
         .set(probandHeader);
 
       // Assert
@@ -194,27 +170,30 @@ describe('Compliance Text API', () => {
     it('should return 403 if a researcher tries', async () => {
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/text`)
+        .get(`/${studyName}/text`)
         .set(researcherHeader);
 
       // Assert
       expect(res).to.have.status(403);
     });
 
-    it('should return 401 if an unauthorized proband tires', async () => {
+    it('should return 403 if an unauthorized proband tires', async () => {
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/text`)
+        .get(`/${studyName}/text`)
         .set(probandHeader2);
-      expect(res).to.have.status(401);
+      expect(res).to.have.status(403);
     });
   });
 
-  describe('GET /compliance/{study}/text/edit', () => {
+  describe('GET /admin/{studyName}/text/edit', () => {
+    beforeEach(() => AuthServerMock.adminRealm().returnValid());
+    afterEach(AuthServerMock.cleanAll);
+
     it('should return 204 if no text exists', async () => {
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/text/edit`)
+        .get(`/admin/${studyName}/text/edit`)
         .set(researcherHeader);
 
       // Assert
@@ -229,7 +208,7 @@ describe('Compliance Text API', () => {
       });
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/text/edit`)
+        .get(`/admin/${studyName}/text/edit`)
         .set(researcherHeader);
 
       // Assert
@@ -241,18 +220,18 @@ describe('Compliance Text API', () => {
       });
     });
 
-    it('should return 401 if an unauthorized researcher tires', async () => {
+    it('should return 403 if an unauthorized researcher tires', async () => {
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/text/edit`)
+        .get(`/admin/${studyName}/text/edit`)
         .set(researcherHeader2);
-      expect(res).to.have.status(401);
+      expect(res).to.have.status(403);
     });
 
     it('should return 403 if proband tries', async () => {
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/text/edit`)
+        .get(`/admin/${studyName}/text/edit`)
         .set(probandHeader);
 
       // Assert
@@ -260,11 +239,14 @@ describe('Compliance Text API', () => {
     });
   });
 
-  describe('PUT /compliance/{study}/text', () => {
+  describe('PUT /admin/{studyName}/text', () => {
+    beforeEach(() => AuthServerMock.adminRealm().returnValid());
+    afterEach(AuthServerMock.cleanAll);
+
     it('should return 200 and true if text exists', async () => {
       const res = await chai
         .request(apiAddress)
-        .put(`/compliance/${studyName}/text`)
+        .put(`/admin/${studyName}/text`)
         .set(researcherHeader)
         .send({
           compliance_text:
@@ -276,10 +258,10 @@ describe('Compliance Text API', () => {
       expect(res).to.have.status(200);
     });
 
-    it('should return 401 if an unauthorized researcher tires', async () => {
+    it('should return 403 if an unauthorized researcher tires', async () => {
       const res = await chai
         .request(apiAddress)
-        .put(`/compliance/${studyName}/text`)
+        .put(`/admin/${studyName}/text`)
         .set(researcherHeader2)
         .send({
           compliance_text:
@@ -288,13 +270,13 @@ describe('Compliance Text API', () => {
         });
 
       // Assert
-      expect(res).to.have.status(401);
+      expect(res).to.have.status(403);
     });
 
     it('should return 403 if proband tries', async () => {
       const res = await chai
         .request(apiAddress)
-        .put(`/compliance/${studyName}/text`)
+        .put(`/admin/${studyName}/text`)
         .set(probandHeader)
         .send({
           compliance_text:
@@ -307,11 +289,14 @@ describe('Compliance Text API', () => {
     });
   });
 
-  describe('GET /compliance/{study}/active', () => {
+  describe('GET /{studyName}/active', () => {
+    beforeEach(() => AuthServerMock.probandRealm().returnValid());
+    afterEach(AuthServerMock.cleanAll);
+
     it('should return 200 and false if no text exists', async () => {
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/active`)
+        .get(`/${studyName}/active`)
         .set(probandHeader);
 
       // Assert
@@ -327,7 +312,7 @@ describe('Compliance Text API', () => {
       });
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/active`)
+        .get(`/${studyName}/active`)
         .set(probandHeader);
 
       // Assert
@@ -335,12 +320,12 @@ describe('Compliance Text API', () => {
       expect(res.body).to.be.true;
     });
 
-    it('should return 401 if an unauthorized researcher tires', async () => {
+    it('should return 403 if an unauthorized researcher tires', async () => {
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/active`)
+        .get(`/${studyName}/active`)
         .set(probandHeader2);
-      expect(res).to.have.status(401);
+      expect(res).to.have.status(403);
     });
   });
 });

@@ -24,6 +24,8 @@ import {
 import { Proband } from './entities/proband';
 import { Study } from './entities/study';
 import { PlannedProband } from './entities/plannedProband';
+import { Account } from './entities/account';
+import { StudyAccess } from './entities/studyAccess';
 
 const pgp = pgPromise({ capSQL: true });
 
@@ -53,7 +55,7 @@ const typeOrmOptions: ConnectionOptions = {
   password: config.database.password,
   database: config.database.database,
   ssl: config.database.ssl,
-  entities: [Proband, Study, PlannedProband],
+  entities: [Proband, Study, PlannedProband, Account, StudyAccess],
   namingStrategy: new SnakeNamingStrategyWithPlural(),
   synchronize: false,
   migrationsRun: false,

@@ -23,9 +23,9 @@ export class TranslatedUserFactory {
       ids: user.ids,
       study: user.study,
       is_test_proband: this.translate.instant(
-        user.is_test_proband ? 'GENERAL.YES' : 'GENERAL.NO'
+        user.isTestProband ? 'GENERAL.YES' : 'GENERAL.NO'
       ),
-      first_logged_in_at: user.first_logged_in_at,
+      first_logged_in_at: user.firstLoggedInAt,
       status: this.translate.instant(this.accountStatusPipe.transform(user)),
       userObject: user,
     };

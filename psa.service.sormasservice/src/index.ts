@@ -6,8 +6,5 @@
 
 import { Server } from './server';
 import { ServerRunner } from '@pia/lib-service-core';
-import { migrateToNewSormasIntegration } from './migrateToNewSormasIntegration';
 
-migrateToNewSormasIntegration()
-  .then(() => new ServerRunner(Server).start())
-  .catch(console.error);
+new ServerRunner(Server).start();

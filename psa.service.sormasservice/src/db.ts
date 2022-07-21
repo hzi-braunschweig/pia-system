@@ -21,6 +21,7 @@ import { SymptomTransmission } from './entities/symptomTransmission';
 import { CreateFollowUp1629292341193 } from './migrations/1629292341193-CreateFollowUp';
 import { CreateSormasOneTimeToken1629303381191 } from './migrations/1629303381191-CreateSormasOneTimeToken';
 import { CreateSymptomTransmission1629900984235 } from './migrations/1629900984235-CreateSymptomTransmission';
+import { ConvertPseudonymsToLowercase1643882418846 } from './migrations/1643882418846-ConvertPseudonymsToLowercase';
 
 export class SnakeNamingStrategyWithPlural extends SnakeNamingStrategy {
   public tableName(className: string, customName: string): string {
@@ -51,6 +52,7 @@ const typeOrmOptions: ConnectionOptions = {
     CreateFollowUp1629292341193,
     CreateSormasOneTimeToken1629303381191,
     CreateSymptomTransmission1629900984235,
+    ConvertPseudonymsToLowercase1643882418846,
   ],
   logging: false,
 };

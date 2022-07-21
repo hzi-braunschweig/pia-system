@@ -5,10 +5,7 @@
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
-    // Default angular as goal:
-    //    "strict": true,
-    //    "noImplicitOverride": true,
-    //    "noPropertyAccessFromIndexSignature": true,
+    "allowSyntheticDefaultImports": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
@@ -19,14 +16,15 @@
     "importHelpers": true,
     "target": "es2017",
     "module": "es2020",
-    "lib": ["es2020", "dom", "dom.iterable"]
+    "lib": ["es2020", "dom", "dom.iterable"],
+    "paths": {
+      "swiper_angular": ["node_modules/swiper/angular"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true
-    // Default angular as goal:
-    //    "strictTemplates": true
   },
   "exclude": ["cypress"]
 }

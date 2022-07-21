@@ -1,5 +1,5 @@
---- docker-entrypoint.sh	2021-10-27 11:08:25.658723705 +0200
-+++ docker-entrypoint.sh	2021-10-27 11:08:55.962912379 +0200
+--- docker-entrypoint.sh	2022-02-24 07:53:44.000000000 +0100
++++ docker-entrypoint.sh	2022-02-24 07:55:23.000000000 +0100
 @@ -181,6 +181,53 @@
  	done
  }
@@ -54,7 +54,7 @@
  # Execute sql script, passed via stdin (or -f flag of pqsl)
  # usage: docker_process_sql [psql-cli-args]
  #    ie: docker_process_sql --dbname=mydb <<<'INSERT ...'
-@@ -264,7 +311,7 @@
+@@ -260,7 +307,7 @@
  
  	# internal start of server in order to allow setup using psql client
  	# does not listen on external TCP/IP and waits until start finishes
@@ -63,7 +63,7 @@
  
  	PGUSER="${PGUSER:-$POSTGRES_USER}" \
  	pg_ctl -D "$PGDATA" \
-@@ -306,6 +353,11 @@
+@@ -302,6 +349,11 @@
  		# setup data directories and permissions (when run as root)
  		docker_create_db_directories
  		if [ "$(id -u)" = '0' ]; then
@@ -75,7 +75,7 @@
  			# then restart script as postgres user
  			exec gosu postgres "$BASH_SOURCE" "$@"
  		fi
-@@ -320,6 +372,7 @@
+@@ -316,6 +368,7 @@
  			docker_init_database_dir
  			pg_setup_hba_conf "$@"
  
@@ -83,7 +83,7 @@
  			# PGPASSWORD is required for psql when authentication is required for 'local' connections via pg_hba.conf and is otherwise harmless
  			# e.g. when '--auth=md5' or '--auth-local=md5' is used in POSTGRES_INITDB_ARGS
  			export PGPASSWORD="${PGPASSWORD:-$POSTGRES_PASSWORD}"
-@@ -328,9 +381,6 @@
+@@ -324,9 +377,6 @@
  			docker_setup_db
  			docker_process_init_files /docker-entrypoint-initdb.d/*
  
@@ -93,7 +93,7 @@
  			echo
  			echo 'PostgreSQL init process complete; ready for start up.'
  			echo
-@@ -338,7 +388,17 @@
+@@ -334,7 +384,17 @@
  			echo
  			echo 'PostgreSQL Database directory appears to contain a database; Skipping initialization'
  			echo

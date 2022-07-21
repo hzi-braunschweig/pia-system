@@ -14,55 +14,29 @@ const expect = chai.expect;
 
 const { sequelize, ComplianceText, Compliance } = require('../../src/db');
 
-const secretOrPrivateKey = require('../secretOrPrivateKey');
-const JWT = require('jsonwebtoken');
-
+const { config } = require('../../src/config');
 const server = require('../../src/server');
-const apiAddress = 'http://localhost:' + process.env.PORT;
+const {
+  AuthServerMock,
+  AuthTokenMockBuilder,
+} = require('@pia/lib-service-core');
+const apiAddress = `http://localhost:${config.public.port}`;
 
-const complianceManagerSession = {
-  id: 1,
-  role: 'EinwilligungsManager',
-  username: 'ewManager',
-  groups: ['test-study1'],
-};
-const complianceManagerSession2 = {
-  id: 2,
-  role: 'EinwilligungsManager',
-  username: 'ewManager2',
-  groups: ['test-study3'],
-};
-const probandSession = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestproband1',
-  groups: ['test-study1', 'test-study3'],
-};
-
-const complianceManagerToken = JWT.sign(
-  complianceManagerSession,
-  secretOrPrivateKey,
-  {
-    algorithm: 'RS512',
-    expiresIn: '24h',
-  }
-);
-const complianceManagerToken2 = JWT.sign(
-  complianceManagerSession2,
-  secretOrPrivateKey,
-  {
-    algorithm: 'RS512',
-    expiresIn: '24h',
-  }
-);
-const probandToken = JWT.sign(probandSession, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const complianceManagerHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['EinwilligungsManager'],
+  username: 'qtest-ewmanager',
+  studies: ['test-study1'],
 });
-
-const complianceManagerHeader = { authorization: complianceManagerToken };
-const complianceManagerHeader2 = { authorization: complianceManagerToken2 };
-const probandHeader = { authorization: probandToken };
+const complianceManagerHeader2 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['EinwilligungsManager'],
+  username: 'qtest-ewmanager2',
+  studies: ['test-study3'],
+});
+const probandHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband1',
+  studies: ['test-study1'],
+});
 
 describe('Compliance Agreements API', () => {
   before(async () => {
@@ -98,13 +72,17 @@ describe('Compliance Agreements API', () => {
       compliance_bloodsamples: false,
       compliance_labresults: false,
     });
+
+    AuthServerMock.adminRealm().returnValid();
   });
 
-  describe('GET /compliance/agree/all', () => {
+  afterEach(AuthServerMock.cleanAll);
+
+  describe('GET /admin/agree/all', () => {
     it('should return a list of the compliance agreements to which the professional user has access to without leaking sensitive data', async () => {
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/agree/all')
+        .get('/admin/agree/all')
         .set(complianceManagerHeader)
         .send();
       expect(res).to.have.status(200);
@@ -124,18 +102,18 @@ describe('Compliance Agreements API', () => {
     it('should return 403 if the wrong role tries', async () => {
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/agree/all')
+        .get('/admin/agree/all')
         .set(probandHeader)
         .send();
       expect(res).to.have.status(403);
     });
   });
 
-  describe('GET /compliance/agree/instance/{id}', () => {
+  describe('GET /admin/{studyName}/agree/instance/{id}', () => {
     it('should return the compliance agree based on its given database ID', async () => {
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/test-study1/agree/instance/1')
+        .get('/admin/test-study1/agree/instance/1')
         .set(complianceManagerHeader)
         .send();
       expect(res).to.have.status(200);
@@ -182,19 +160,19 @@ describe('Compliance Agreements API', () => {
       });
     });
 
-    it('should return 401 if the compliance manager does not have access to the compliance study', async () => {
+    it('should return 403 if the compliance manager does not have access to the compliance study', async () => {
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/test-study1/agree/instance/1')
+        .get('/admin/test-study1/agree/instance/1')
         .set(complianceManagerHeader2)
         .send();
-      expect(res).to.have.status(401);
+      expect(res).to.have.status(403);
     });
 
     it('should return 403 if the wrong role tries', async () => {
       const res = await chai
         .request(apiAddress)
-        .get('/compliance/test-study1/agree/instance/1')
+        .get('/admin/test-study1/agree/instance/1')
         .set(probandHeader)
         .send();
       expect(res).to.have.status(403);

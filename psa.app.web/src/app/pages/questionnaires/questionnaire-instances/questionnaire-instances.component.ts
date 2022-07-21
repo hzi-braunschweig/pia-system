@@ -29,7 +29,7 @@ import {
   QuestionnaireStatus,
 } from '../../../psa.app.core/models/questionnaireInstance';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AuthenticationManager } from '../../../_services/authentication-manager.service';
+import { CurrentUser } from '../../../_services/current-user.service';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
@@ -44,18 +44,16 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 })
 export class QuestionnaireInstancesComponent implements OnInit {
   username: string;
-  currentRole: string;
 
   constructor(
+    public user: CurrentUser,
     private questionnaireService: QuestionnaireService,
     private activatedRoute: ActivatedRoute,
     private alertService: AlertService,
     private _location: Location,
     private translate: TranslateService,
-    private router: Router,
-    auth: AuthenticationManager
+    private router: Router
   ) {
-    this.currentRole = auth.getCurrentRole();
     if ('username' in this.activatedRoute.snapshot.params) {
       this.username = this.activatedRoute.snapshot.paramMap.get('username');
     }
@@ -77,7 +75,7 @@ export class QuestionnaireInstancesComponent implements OnInit {
   isLoading: boolean = true;
   questionnaireInstances: QuestionnaireInstance[];
 
-  ngOnInit(): void {
+  public async ngOnInit(): Promise<void> {
     this.questionnaireDatabase = new QuestionnaireInsancesOneUserDatabase();
     this.dataSource = new QuestionnaireInstancesOneUserDataSource(
       this.questionnaireDatabase,

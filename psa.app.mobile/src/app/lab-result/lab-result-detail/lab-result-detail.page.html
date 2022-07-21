@@ -13,6 +13,10 @@
 
 <ion-content class="ion-padding">
   <div class="page" *ngIf="!isLoading && labResultHtml">
-    <div class="page-content" [innerHtml]="labResultHtml"></div>
+    <div
+      class="page-content"
+      data-unit="lab-result-html"
+      [innerHtml]="labResultHtml"
+    ></div>
   </div>
 </ion-content>

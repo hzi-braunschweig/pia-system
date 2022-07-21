@@ -8,36 +8,29 @@ import { Component, OnInit } from '@angular/core';
 import { SampleTrackingService } from '../../../psa.app.core/providers/sample-tracking-service/sample-tracking.service';
 import { LabResult } from '../../../psa.app.core/models/labresult';
 import { ActivatedRoute } from '@angular/router';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
-import { TranslateService } from '@ngx-translate/core';
-import { AuthenticationManager } from '../../../_services/authentication-manager.service';
 import { AlertService } from '../../../_services/alert.service';
+import { CurrentUser } from '../../../_services/current-user.service';
 
 @Component({
   templateUrl: './laboratory-results.component.html',
 })
 export class LaboratoryResultsComponent implements OnInit {
-  showEmptyResultTable = false;
-  showLaboratoryResultTable = false;
-  labResultsList: LabResult[];
-  isLoading = true;
-  user_id = null;
-  currentRole: string;
+  public showEmptyResultTable = false;
+  public showLaboratoryResultTable = false;
+  public labResultsList: LabResult[];
+  public isLoading = true;
+  public user_id = null;
 
   constructor(
-    private sampleTrackingService: SampleTrackingService,
-    private translate: TranslateService,
-    private questionnaireService: QuestionnaireService,
-    private auth: AuthenticationManager,
-    private route: ActivatedRoute,
-    private alertService: AlertService
+    public readonly user: CurrentUser,
+    private readonly sampleTrackingService: SampleTrackingService,
+    private readonly route: ActivatedRoute,
+    private readonly alertService: AlertService
   ) {}
 
-  ngOnInit(): void {
-    const currentUsername: string = this.auth.getCurrentUsername();
-    this.currentRole = this.auth.getCurrentRole();
+  public async ngOnInit(): Promise<void> {
     this.route.params.subscribe(async (params) => {
-      this.user_id = params['user_id'] ? params['user_id'] : currentUsername;
+      this.user_id = params['user_id'] ?? this.user.username;
       try {
         this.labResultsList =
           await this.sampleTrackingService.getAllLabResultsForUser(

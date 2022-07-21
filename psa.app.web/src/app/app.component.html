@@ -4,12 +4,8 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<mat-sidenav-container class="background-container">
-  <mat-sidenav
-    #sidenav
-    [mode]="navigationMode"
-    [opened]="navigationVisible && !isLtMd"
-  >
+<mat-sidenav-container class="background-container" *ngIf="!isLoading">
+  <mat-sidenav #sidenav [mode]="navigationMode" [opened]="!isLtMd">
     <div class="sidenav-action-buttons" *ngIf="navigationMode === 'over'">
       <button mat-icon-button (click)="sidenav.toggle()">
         <mat-icon *ngIf="sidenav.opened">clear</mat-icon>
@@ -25,10 +21,7 @@
   <mat-sidenav-content>
     <!-- Main App container -->
     <div class="container">
-      <div
-        class="sidenav-action-buttons"
-        *ngIf="navigationVisible && !sidenav.opened"
-      >
+      <div class="sidenav-action-buttons" *ngIf="!sidenav.opened">
         <button mat-icon-button (click)="sidenav.toggle()">
           <mat-icon *ngIf="!sidenav.opened">notes</mat-icon>
         </button>

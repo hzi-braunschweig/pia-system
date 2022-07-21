@@ -3,8 +3,8 @@
   "private": true,
   "license": "AGPL-3.0-or-later",
   "scripts": {
-    "update-packages": "ncu --packageFile 'psa.*/package.json' -i -x '/@types/node$|@types/node-fetch|node-fetch|ngx-.*|ng-.*|rxjs|jspdf.*|.*angular.*/'",
-    "update-packagelock": "lerna clean --yes && rm -f psa.*/package-lock.json && lerna exec \"npm install --ignore-scripts --package-lock-only --no-audit\""
+    "update-packages": "ncu --packageFile 'psa.*/package.json' -i -x '/@types/node$|@types/node-fetch|node-fetch|typeorm|parse5|chalk|ngx-.*|ng-.*|rxjs|jspdf.*|.*angular.*/'",
+    "update-packagelock": "rm -rf psa.*/node_modules psa.*/package-lock.json && lerna exec \"npm install --ignore-scripts --package-lock-only --no-audit\""
   },
   "devDependencies": {
     "lerna": "^4.0.0",

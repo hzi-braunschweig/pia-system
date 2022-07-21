@@ -3,8 +3,7 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-import * as Boom from '@hapi/boom';
-import { AccessToken } from '@pia/lib-service-core';
+import { AccessToken, getProbandStudy } from '@pia/lib-service-core';
 import postgresqlHelper from '../services/postgresqlHelper';
 
 /**
@@ -15,17 +14,10 @@ export class FcmTokenInteractor {
    * @description checks the token and creates a new fcm token for user
    */
   public static async createFCMToken(
-    accessToken: Partial<AccessToken>,
+    accessToken: AccessToken,
     fcmToken: string
   ): Promise<{ fcm_token: string }> {
-    if (accessToken.role !== 'Proband') {
-      throw Boom.forbidden('only probands are allowed to create a fcm token');
-    }
-    const studies = accessToken.groups;
-    if (!studies || studies.length !== 1) {
-      throw Boom.badRequest('authToken.groups must contain exactly one study');
-    }
-    const study = studies[0];
+    const study = getProbandStudy(accessToken);
     await postgresqlHelper.updateFCMToken(
       fcmToken,
       accessToken.username,
@@ -34,5 +26,3 @@ export class FcmTokenInteractor {
     return { fcm_token: fcmToken };
   }
 }
-
-export default FcmTokenInteractor;

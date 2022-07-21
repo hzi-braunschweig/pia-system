@@ -11,6 +11,7 @@ import {
   AlertController,
   IonicModule,
   LoadingController,
+  MenuController,
   Platform,
 } from '@ionic/angular';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -22,6 +23,9 @@ import { AuthService } from '../auth.service';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
 import { Market } from '@awesome-cordova-plugins/market/ngx';
+import { Router } from '@angular/router';
+import { KeycloakClientService } from '../keycloak-client.service';
+import { LocaleService } from '../../shared/services/locale/locale.service';
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
 
@@ -110,7 +114,12 @@ describe('LoginUsernameComponent', () => {
   let market: SpyObj<Market>;
   let endpoint: SpyObj<EndpointService>;
   let alertCtrl: SpyObj<AlertController>;
+  let alertElementSpy: SpyObj<HTMLIonAlertElement>;
   let loadingCtrl: SpyObj<LoadingController>;
+  let keycloakClient: SpyObj<KeycloakClientService>;
+  let localeService: SpyObj<LocaleService>;
+  let router: SpyObj<Router>;
+  let menuCtrl: SpyObj<MenuController>;
 
   beforeEach(() =>
     MockBuilder(LoginUsernameComponent, AuthModule)
@@ -119,6 +128,10 @@ describe('LoginUsernameComponent', () => {
       .mock(TranslatePipe, (x) => x)
       .mock(TranslateService, { instant: (x) => x })
       .mock(Platform)
+      .mock(Router)
+      .mock(KeycloakClientService)
+      .mock(LocaleService)
+      .mock(MenuController)
   );
 
   beforeEach(
@@ -132,16 +145,25 @@ describe('LoginUsernameComponent', () => {
       platform = TestBed.inject(Platform) as SpyObj<Platform>;
       appVersion = TestBed.inject(AppVersion) as SpyObj<AppVersion>;
       market = TestBed.inject(Market) as SpyObj<Market>;
+      router = TestBed.inject(Router) as SpyObj<Router>;
+      menuCtrl = TestBed.inject(MenuController) as SpyObj<MenuController>;
+      localeService = TestBed.inject(LocaleService) as SpyObj<LocaleService>;
+      keycloakClient = TestBed.inject(
+        KeycloakClientService
+      ) as SpyObj<KeycloakClientService>;
 
       endpoint = TestBed.inject(EndpointService) as SpyObj<EndpointService>;
       endpoint.isCustomEndpoint.and.returnValue(false);
       endpoint.setEndpointForUser.and.returnValue(true);
       endpoint.setCustomEndpoint.and.returnValue(true);
 
+      alertElementSpy = createSpyObj<HTMLIonAlertElement>([
+        'present',
+        'dismiss',
+      ]);
+
       alertCtrl = TestBed.inject(AlertController) as SpyObj<AlertController>;
-      alertCtrl.create.and.resolveTo(
-        createSpyObj<HTMLIonAlertElement>(['present', 'dismiss'])
-      );
+      alertCtrl.create.and.resolveTo(alertElementSpy);
 
       loadingCtrl = TestBed.inject(
         LoadingController
@@ -294,4 +316,66 @@ describe('LoginUsernameComponent', () => {
       expect(market.open).toHaveBeenCalled();
     })
   );
+
+  describe('keycloak login', () => {
+    const username = 'TEST-1234567890';
+
+    beforeEach(() => {
+      fixture = TestBed.createComponent(LoginUsernameComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges();
+
+      platform.is.and.returnValue(true);
+      appVersion.getVersionNumber.and.resolveTo('1.0.0');
+      endpoint.isEndpointCompatible.and.resolveTo(true);
+
+      localeService.currentLocale = 'de-DE';
+      component.form.get('username').setValue(username);
+    });
+
+    it('should use keycloak login if compatible', async () => {
+      keycloakClient.isCompatible.and.resolveTo(true);
+
+      await component.onSubmit();
+
+      expect(keycloakClient.login).toHaveBeenCalledOnceWith(username, 'de-DE');
+      expect(router.navigate).toHaveBeenCalledOnceWith(['home']);
+      expect(menuCtrl.enable).toHaveBeenCalledOnceWith(true);
+    });
+
+    it('should fallback to legacy login', async () => {
+      keycloakClient.isCompatible.and.resolveTo(false);
+
+      component.usernameChange.subscribe((u) => {
+        expect(u).toEqual(username);
+      });
+
+      await component.onSubmit();
+
+      expect(keycloakClient.initialize).not.toHaveBeenCalled();
+      expect(keycloakClient.login).not.toHaveBeenCalled();
+      expect(router.navigate).not.toHaveBeenCalled();
+      expect(menuCtrl.enable).not.toHaveBeenCalled();
+    });
+
+    it('should show an error when login failed', async () => {
+      keycloakClient.isCompatible.and.resolveTo(true);
+
+      keycloakClient.login.and.rejectWith(new Error('some error'));
+
+      await component.onSubmit();
+
+      expect(alertElementSpy.present).toHaveBeenCalled();
+    });
+
+    it('should not show an error when login failed due to user closing the in app browser', async () => {
+      keycloakClient.isCompatible.and.resolveTo(true);
+
+      keycloakClient.login.and.rejectWith({ reason: 'closed_by_user' });
+
+      await component.onSubmit();
+
+      expect(alertElementSpy.present).not.toHaveBeenCalled();
+    });
+  });
 });

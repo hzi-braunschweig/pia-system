@@ -21,7 +21,7 @@ describe('Map Laboratory Result', () => {
 
     expect(result).to.deep.equal({
       id: 'Test',
-      user_id: 'Testproband1',
+      user_id: 'testproband1',
       order_id: 1062743,
       date_of_sampling: null,
       dummy_sample_id: null,
@@ -66,7 +66,7 @@ describe('Map Laboratory Result', () => {
   function getEntity() {
     return {
       id: 'Test',
-      user_id: 'Testproband1',
+      user_id: 'testproband1',
       order_id: 1062743,
       date_of_sampling: null,
       dummy_sample_id: null,

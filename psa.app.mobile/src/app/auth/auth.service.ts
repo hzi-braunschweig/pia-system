@@ -8,8 +8,11 @@ import { Inject, Injectable } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
 import { BehaviorSubject, Observable } from 'rxjs';
 
-import { AccessToken, LoginResponse, User } from './auth.model';
+import { AccessToken, LoginResponse, Role, User } from './auth.model';
 import { DOCUMENT } from '@angular/common';
+import { KeycloakTokenParsed } from 'keycloak-js';
+import { HandlePasswordChangeNotAllowedError } from './errors/handle-password-change-not-allowed-error';
+import { InvalidTokenError } from './errors/invalid-token-error';
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +20,7 @@ import { DOCUMENT } from '@angular/common';
 export class AuthService {
   private readonly currentUserSubject: BehaviorSubject<User>;
   public readonly currentUser$: Observable<User>;
+  private _isLegacyLogin: boolean;
 
   constructor(@Inject(DOCUMENT) private document: Document) {
     this.currentUserSubject = new BehaviorSubject<User>(this.getCurrentUser());
@@ -25,31 +29,60 @@ export class AuthService {
 
   private jwtHelper: JwtHelperService = new JwtHelperService();
 
-  private readonly beforeLogout: (() => Promise<void>)[] = [];
+  private readonly beforeLogout = new Set<() => Promise<void>>();
 
   private getUserFromToken(token: string | null): User | null {
     if (!token) {
       return null;
     }
     const payload: AccessToken = this.jwtHelper.decodeToken(token);
+
     return payload
       ? {
           username: payload.username,
-          role: payload.role,
-          study: payload.groups[0],
+          role: this.getRoleFromAccessToken(payload),
+          study: this.getStudyFromAccessToken(payload),
         }
       : null;
+  }
+
+  private getRoleFromAccessToken(
+    accessToken: AccessToken | KeycloakTokenParsed
+  ): Role {
+    if ('role' in accessToken) {
+      return accessToken.role;
+    } else if ('realm_access' in accessToken) {
+      return accessToken.realm_access.roles[0] as Role;
+    }
+
+    throw new InvalidTokenError();
+  }
+
+  private getStudyFromAccessToken(
+    accessToken: AccessToken | KeycloakTokenParsed
+  ): string {
+    if ('groups' in accessToken) {
+      return accessToken.groups[0];
+    } else if ('studies' in accessToken) {
+      return accessToken.studies[0];
+    }
+
+    throw new InvalidTokenError();
   }
 
   /**
    * Register an async task which needs to be executed before logout
    */
   public onBeforeLogout(beforeLogout: () => Promise<void>) {
-    this.beforeLogout.push(beforeLogout);
+    this.beforeLogout.add(beforeLogout);
   }
 
   public getToken(): string | null {
     return localStorage.getItem('token');
+  }
+
+  public isLegacyLogin() {
+    return this._isLegacyLogin;
   }
 
   public isAuthenticated(): boolean {
@@ -62,6 +95,9 @@ export class AuthService {
   }
 
   public setPasswordChangeNeeded(isNeeded: boolean) {
+    if (!this._isLegacyLogin) {
+      throw new HandlePasswordChangeNotAllowedError();
+    }
     localStorage.setItem('pwChangeNeeded', JSON.stringify(isNeeded));
   }
 
@@ -109,13 +145,20 @@ export class AuthService {
     for (const beforeLogout of this.beforeLogout) {
       await beforeLogout();
     }
-    this.beforeLogout.length = 0;
+    this.beforeLogout.clear();
     this.resetCurrentUser();
     this.reloadApp();
     this.currentUserSubject.next(null);
   }
 
-  public handleLoginResponse(loginData: LoginResponse): void {
+  public handleKeycloakToken(token: string): void {
+    this._isLegacyLogin = false;
+    localStorage.setItem('token', token);
+    this.currentUserSubject.next(this.getUserFromToken(token));
+  }
+
+  public handleLegacyLoginResponse(loginData: LoginResponse): void {
+    this._isLegacyLogin = true;
     localStorage.setItem('token', loginData.token);
     if (typeof loginData.pw_change_needed === 'boolean') {
       localStorage.setItem(

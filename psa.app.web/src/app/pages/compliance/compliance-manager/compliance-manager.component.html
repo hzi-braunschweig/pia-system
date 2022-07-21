@@ -7,11 +7,11 @@
 <div class="jumbotron">
   <div class="filter-section">
     <mat-form-field>
+      <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
       <mat-select
         disableOptionCentering
         id="selectstudy"
         (selectionChange)="updateFilter()"
-        placeholder="{{ 'QUESTIONNAIRE_FORSCHER.STUDY' | translate }}"
         [(ngModel)]="activeFilter.studyName"
       >
         <mat-option

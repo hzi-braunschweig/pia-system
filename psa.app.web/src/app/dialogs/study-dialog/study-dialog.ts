@@ -7,10 +7,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 import { Study } from '../../psa.app.core/models/study';
 import { AlertService } from '../../_services/alert.service';
-import { AuthenticationManager } from '../../_services/authentication-manager.service';
+import { CurrentUser } from '../../_services/current-user.service';
 
 @Component({
   selector: 'app-study-dialog',
@@ -18,123 +18,111 @@ import { AuthenticationManager } from '../../_services/authentication-manager.se
   styleUrls: ['study-dialog.scss'],
 })
 export class DialogStudyComponent implements OnInit {
-  form: FormGroup;
-  study: Study;
-  currentRole: string;
+  public form: FormGroup;
 
-  accesses = [
-    { value: 'read', viewValue: 'DIALOG.READ' },
-    { value: 'write', viewValue: 'DIALOG.WRITE' },
-    { value: 'admin', viewValue: 'DIALOG.ADMIN' },
-  ];
+  public get isEditMode(): boolean {
+    return Boolean(this.existingStudy.name);
+  }
 
   constructor(
     public dialogRef: MatDialogRef<DialogStudyComponent>,
+    @Inject(MAT_DIALOG_DATA)
+    private existingStudy: { name?: string },
     private alertService: AlertService,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private questionnaireService: QuestionnaireService,
-    auth: AuthenticationManager
-  ) {
-    this.currentRole = auth.getCurrentRole();
+    private userService: UserService,
+    private user: CurrentUser
+  ) {}
+
+  private static createEmptyStudy(): Study {
+    return {
+      name: null,
+      description: null,
+      pm_email: null,
+      hub_email: null,
+      status: 'active',
+      has_rna_samples: false,
+      sample_prefix: '',
+      sample_suffix_length: null,
+      pseudonym_prefix: '',
+      pseudonym_suffix_length: null,
+      has_answers_notify_feature: false,
+      has_answers_notify_feature_by_mail: false,
+      has_four_eyes_opposition: false,
+      has_partial_opposition: false,
+      has_total_opposition: false,
+      has_compliance_opposition: false,
+      has_logging_opt_in: false,
+      pendingStudyChange: {},
+    };
   }
 
-  ngOnInit(): void {
-    if (this.data.name) {
-      this.questionnaireService.getStudy(this.data.name).then(
-        (result: any) => {
-          this.study = result;
-          this.initForm();
-        },
-        (err: any) => {
-          this.alertService.errorObject(err);
-        }
-      );
-    } else {
-      this.initForm();
+  public async ngOnInit(): Promise<void> {
+    try {
+      if (this.isEditMode) {
+        const study = await this.userService.getStudy(this.existingStudy.name);
+        this.initForm(study);
+      } else {
+        this.initForm(DialogStudyComponent.createEmptyStudy());
+      }
+    } catch (err) {
+      this.alertService.errorObject(err);
     }
   }
 
-  initForm(): void {
-    const name = this.study ? this.study.name : null;
-    const description = this.study ? this.study.description : null;
-    const pm_email = this.study ? this.study.pm_email : null;
-    const hub_email = this.study ? this.study.hub_email : null;
-    const has_rna_samples = this.study ? this.study.has_rna_samples : false;
-    const sample_prefix = this.study ? this.study.sample_prefix : '';
-    const sample_suffix_length = this.study
-      ? this.study.sample_suffix_length
-      : null;
-    const pseudonym_prefix = this.study ? this.study.pseudonym_prefix : '';
-    const pseudonym_suffix_length = this.study
-      ? this.study.pseudonym_suffix_length
-      : null;
+  public async submit(): Promise<void> {
+    this.form.get('name').enable();
+    const study = this.form.value;
+    study.pm_email = study.pm_email ?? null;
+    study.hub_email = study.hub_email ?? null;
+    study.has_rna_samples = study.has_rna_samples ?? false;
+    study.sample_prefix = study.sample_prefix ?? '';
+    study.sample_suffix_length = study.sample_suffix_length ?? null;
+    study.pseudonym_prefix = study.pseudonym_prefix ?? '';
+    study.pseudonym_suffix_length = study.pseudonym_suffix_length ?? null;
+
+    try {
+      let result: Study;
+      if (this.isEditMode) {
+        result = await this.userService.putStudy(study.name, study);
+      } else {
+        result = await this.userService.postStudy(study);
+        this.existingStudy.name = result.name;
+      }
+      this.initForm(result);
+      this.dialogRef.close(`${this.form.value}`);
+    } catch (err) {
+      this.alertService.errorObject(err);
+    }
+  }
+
+  private initForm(study: Study): void {
     this.form = new FormGroup({
-      name: new FormControl(name, Validators.required),
-      description: new FormControl(description, Validators.required),
-      pm_email: new FormControl(pm_email, Validators.email),
-      hub_email: new FormControl(hub_email, Validators.email),
-      has_rna_samples: new FormControl(has_rna_samples, Validators.required),
-      sample_prefix: new FormControl(sample_prefix),
-      sample_suffix_length: new FormControl(sample_suffix_length),
-      pseudonym_prefix: new FormControl(pseudonym_prefix),
-      pseudonym_suffix_length: new FormControl(pseudonym_suffix_length),
+      name: new FormControl(study.name, Validators.required),
+      description: new FormControl(study.description, Validators.required),
+      pm_email: new FormControl(study.pm_email, Validators.email),
+      hub_email: new FormControl(study.hub_email, Validators.email),
+      has_rna_samples: new FormControl(
+        study.has_rna_samples,
+        Validators.required
+      ),
+      sample_prefix: new FormControl(study.sample_prefix),
+      sample_suffix_length: new FormControl(study.sample_suffix_length),
+      pseudonym_prefix: new FormControl(study.pseudonym_prefix),
+      pseudonym_suffix_length: new FormControl(study.pseudonym_suffix_length),
     });
-    if (this.study) {
-      this.form.controls['name'].disable();
-    }
-    if (this.currentRole === 'Forscher') {
-      this.form.controls['pm_email'].disable();
-      this.form.controls['hub_email'].disable();
-    } else if (this.currentRole === 'SysAdmin') {
-      this.form.controls['has_rna_samples'].disable();
-      this.form.controls['sample_prefix'].disable();
-      this.form.controls['sample_suffix_length'].disable();
-      this.form.controls['pseudonym_prefix'].disable();
-      this.form.controls['pseudonym_suffix_length'].disable();
-    }
-  }
 
-  submit(form): void {
-    this.form.controls['name'].enable();
-    this.study = form.value;
-    this.study.pm_email = this.study.pm_email ? this.study.pm_email : null;
-    this.study.hub_email = this.study.hub_email ? this.study.hub_email : null;
-    this.study.has_rna_samples = this.study.has_rna_samples
-      ? this.study.has_rna_samples
-      : false;
-    this.study.sample_prefix = this.study.sample_prefix
-      ? this.study.sample_prefix
-      : '';
-    this.study.sample_suffix_length = this.study.sample_suffix_length
-      ? this.study.sample_suffix_length
-      : null;
-    this.study.pseudonym_prefix = this.study.pseudonym_prefix
-      ? this.study.pseudonym_prefix
-      : '';
-    this.study.pseudonym_suffix_length = this.study.pseudonym_suffix_length
-      ? this.study.pseudonym_suffix_length
-      : null;
-
-    if (this.data.name) {
-      this.questionnaireService.putStudy(this.study.name, this.study).then(
-        (result: any) => {
-          this.study = result;
-          this.dialogRef.close(`${form.value}`);
-        },
-        (err: any) => {
-          this.alertService.errorObject(err);
-        }
-      );
-    } else {
-      this.questionnaireService.postStudy(this.study).then(
-        (result: any) => {
-          this.study = result;
-          this.dialogRef.close(`${form.value}`);
-        },
-        (err: any) => {
-          this.alertService.errorObject(err);
-        }
-      );
+    if (this.isEditMode) {
+      this.form.get('name').disable();
+    }
+    if (this.user.hasRole('Forscher')) {
+      this.form.get('pm_email').disable();
+      this.form.get('hub_email').disable();
+    } else if (this.user.hasRole('SysAdmin')) {
+      this.form.get('has_rna_samples').disable();
+      this.form.get('sample_prefix').disable();
+      this.form.get('sample_suffix_length').disable();
+      this.form.get('pseudonym_prefix').disable();
+      this.form.get('pseudonym_suffix_length').disable();
     }
   }
 }

@@ -5,14 +5,17 @@
  */
 
 import * as util from 'util';
+import * as sinon from 'sinon';
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
+import sinonChai from 'sinon-chai';
+import { StatusCodes } from 'http-status-codes';
+import { Users } from '@keycloak/keycloak-admin-client/lib/resources/users';
 
+import { MailService } from '@pia/lib-service-core';
 import { db } from '../../src/db';
-
 import { Server } from '../../src/server';
 import { messageQueueService } from '../../src/services/messageQueueService';
-import { StatusCodes } from 'http-status-codes';
 import {
   cleanup,
   setup,
@@ -20,14 +23,19 @@ import {
 import { config } from '../../src/config';
 import { ProbandDeletionType } from '../../src/services/probandService';
 import { ProbandStatus } from '../../src/models/probandStatus';
+import { SinonStubbedInstance } from 'sinon';
+import { probandAuthClient } from '../../src/clients/authServerClient';
 
 chai.use(chaiHttp);
+chai.use(sinonChai);
 
 const internalApiAddress = `http://localhost:${config.internal.port}`;
 const externalApiAddress = `http://localhost:${config.public.port}`;
 
 const delay = util.promisify(setTimeout);
 const DELAY_TIME = 10;
+
+const testSandbox = sinon.createSandbox();
 
 describe('Internal: delete proband data', () => {
   before(async () => {
@@ -47,6 +55,24 @@ describe('Internal: delete proband data', () => {
   });
 
   describe('DELETE /user/users/{username}', () => {
+    let authClientUsersMock: SinonStubbedInstance<Users>;
+
+    beforeEach(() => {
+      authClientUsersMock = testSandbox.stub(probandAuthClient.users);
+      authClientUsersMock.find.resolves([
+        { username: 'qtest-proband1', id: '1234' },
+        { username: 'qtest-deleteme_fully', id: '4321' },
+        { username: 'qtest-deleteme', id: '9876' },
+      ]);
+      authClientUsersMock.del.resolves();
+
+      testSandbox.stub(MailService, 'sendMail').resolves(true);
+    });
+
+    afterEach(() => {
+      testSandbox.restore();
+    });
+
     it('should return 404 error if proband was not found', async () => {
       // Arrange
       const pseudoynm = 'DoesNotExist';
@@ -62,7 +88,7 @@ describe('Internal: delete proband data', () => {
 
     it('should delete the proband and its data', async function () {
       // Arrange
-      const pseudonym = 'QTestProband1';
+      const pseudonym = 'qtest-proband1';
 
       // Act
       const res = await chai
@@ -70,16 +96,17 @@ describe('Internal: delete proband data', () => {
         .delete('/user/users/' + pseudonym);
 
       const proband: { status: ProbandStatus } = await db.one(
-        "SELECT status FROM probands WHERE pseudonym = 'QTestProband1'"
+        "SELECT status FROM probands WHERE pseudonym = 'qtest-proband1'"
       );
-      const account = (await db.oneOrNone(
-        "SELECT * FROM accounts WHERE username = 'QTestProband1'"
-      )) as unknown;
 
       // Assert
       expect(res).to.have.status(StatusCodes.NO_CONTENT);
       expect(proband.status).to.equal('deleted');
-      expect(account).to.be.null;
+
+      expect(authClientUsersMock.del).to.be.calledOnceWith({
+        id: '1234',
+        realm: 'pia-proband-realm',
+      });
 
       expect(
         await db.manyOrNone(
@@ -88,14 +115,14 @@ describe('Internal: delete proband data', () => {
       ).to.be.empty;
       expect(
         await db.manyOrNone(
-          "SELECT * FROM questionnaire_instances WHERE user_id = 'QTestProband1'"
+          "SELECT * FROM questionnaire_instances WHERE user_id = 'qtest-proband1'"
         )
       ).to.be.empty;
     });
 
     it('should fully delete the proband from the database', async () => {
       // Arrange
-      const pseudonym = 'DeleteMeFully';
+      const pseudonym = 'qtest-deleteme_fully';
 
       // Act
       const result = await chai
@@ -103,17 +130,17 @@ describe('Internal: delete proband data', () => {
         .delete(`/user/users/${pseudonym}?full=true`);
 
       const proband = (await db.oneOrNone(
-        "SELECT * FROM probands WHERE pseudonym='DeleteMeFully'"
+        "SELECT * FROM probands WHERE pseudonym='qtest-deleteme_fully'"
       )) as unknown;
-
-      const account: null = await db.oneOrNone(
-        "SELECT * FROM accounts WHERE username='DeleteMeFully'"
-      );
 
       // Assert
       expect(result).to.have.status(StatusCodes.NO_CONTENT);
-      expect(account).to.be.null;
       expect(proband).to.be.null;
+
+      expect(authClientUsersMock.del).to.be.calledOnceWith({
+        id: '4321',
+        realm: 'pia-proband-realm',
+      });
     });
 
     it('should send the "proband.deleted" message', async () => {
@@ -135,26 +162,31 @@ describe('Internal: delete proband data', () => {
       // Act
       const result = await chai
         .request(internalApiAddress)
-        .delete('/user/users/DeleteMe');
+        .delete('/user/users/qtest-deleteme');
 
       // Assert
       expect(result).to.have.status(StatusCodes.NO_CONTENT);
 
-      while (pseudonym !== 'DeleteMe') {
+      while (pseudonym !== 'qtest-deleteme') {
         await delay(DELAY_TIME);
       }
-      expect(pseudonym).to.equal('DeleteMe');
+      expect(pseudonym).to.equal('qtest-deleteme');
       expect(deletionType).to.equal('default');
+
+      expect(authClientUsersMock.del).to.be.calledOnceWith({
+        id: '9876',
+        realm: 'pia-proband-realm',
+      });
     });
 
     it('should not delete proband and its data from the external interface', async function () {
       // Arrange
-      const pseudonym = 'QTestProband1';
+      const pseudonym = 'qtest-proband1';
 
       // Act
       const res = await chai
         .request(externalApiAddress)
-        .delete('/user/users/' + pseudonym);
+        .delete('/admin/users/' + pseudonym);
 
       // Assert
       expect(res).to.have.status(StatusCodes.UNAUTHORIZED);

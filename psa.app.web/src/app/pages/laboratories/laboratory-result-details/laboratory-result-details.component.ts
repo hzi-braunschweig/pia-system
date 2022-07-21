@@ -5,10 +5,11 @@
  */
 
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { TranslateService } from '@ngx-translate/core';
-import { SampleTrackingService } from '../../../psa.app.core/providers/sample-tracking-service/sample-tracking.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthenticationManager } from '../../../_services/authentication-manager.service';
+
+import { SampleTrackingService } from '../../../psa.app.core/providers/sample-tracking-service/sample-tracking.service';
+import { CurrentUser } from '../../../_services/current-user.service';
+import { AlertService } from '../../../_services/alert.service';
 
 @Component({
   selector: 'app-laboratory-result-details',
@@ -17,36 +18,36 @@ import { AuthenticationManager } from '../../../_services/authentication-manager
   encapsulation: ViewEncapsulation.None,
 })
 export class LaboratoryResultDetailsComponent implements OnInit {
-  user_id: string = this.activatedRoute.snapshot.queryParamMap.get('user_id');
-  isLoading = true;
-  labResultHtml: string;
+  public isLoading = true;
+  public labResultHtml: string;
+
+  private userId: string =
+    this.activatedRoute.snapshot.queryParamMap.get('user_id');
 
   constructor(
-    private activatedRoute: ActivatedRoute,
-    private translate: TranslateService,
-    private sampleTrackingService: SampleTrackingService,
-    private router: Router,
-    private auth: AuthenticationManager
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly sampleTrackingService: SampleTrackingService,
+    private readonly router: Router,
+    private readonly user: CurrentUser,
+    private readonly alertService: AlertService
   ) {}
 
-  ngOnInit(): void {
-    const currentUserName = this.auth.getCurrentUsername();
-    const resultID = this.activatedRoute.snapshot.paramMap.get('id');
-
-    this.sampleTrackingService
-      .getLabResultObservationForUser(
-        this.user_id ? this.user_id : currentUserName,
-        resultID
-      )
-      .then((res) => {
-        this.labResultHtml = res;
-        this.isLoading = false;
-      });
+  public async ngOnInit(): Promise<void> {
+    try {
+      this.labResultHtml =
+        await this.sampleTrackingService.getLabResultObservationForUser(
+          this.userId ?? this.user.username,
+          this.activatedRoute.snapshot.paramMap.get('id')
+        );
+    } catch (e) {
+      this.alertService.errorObject(e);
+    }
+    this.isLoading = false;
   }
 
-  onBackButtonClicked(): void {
-    if (this.user_id) {
-      this.router.navigate(['/laboratory-results/', { user_id: this.user_id }]);
+  public onBackButtonClicked(): void {
+    if (this.userId) {
+      this.router.navigate(['/laboratory-results/', { user_id: this.userId }]);
     } else {
       this.router.navigate(['/laboratory-results']);
     }

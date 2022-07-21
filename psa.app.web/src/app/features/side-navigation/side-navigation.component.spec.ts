@@ -18,12 +18,12 @@ import { AuthenticationManager } from '../../_services/authentication-manager.se
 import { Page, PageManager } from '../../_services/page-manager.service';
 import { SelectedProbandInfoService } from '../../_services/selected-proband-info.service';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { User } from '../../psa.app.core/models/user';
 import { SelectedProbandData } from '../../psa.app.core/models/selectedProbandData';
-import { createUser } from '../../psa.app.core/models/instance.helper.spec';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DialogOkCancelComponent } from '../../_helpers/dialog-ok-cancel';
+import { CurrentUser } from '../../_services/current-user.service';
+import { Role } from '../../psa.app.core/models/user';
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
 
@@ -32,31 +32,27 @@ describe('SideNavigationComponent', () => {
   let component: SideNavigationComponent;
   let eventsMock: BehaviorSubject<Event>;
   let router: SpyObj<Router>;
-  let currentUserObservableMock: BehaviorSubject<User>;
+  let user: SpyObj<CurrentUser>;
   let auth: SpyObj<AuthenticationManager>;
   let navPagesObservableMock: BehaviorSubject<Page[]>;
   let pageManager: SpyObj<PageManager>;
   let sideNavStateMock: BehaviorSubject<SelectedProbandData>;
   let selectedProbandInfoService: SpyObj<SelectedProbandInfoService>;
+  let matDialog: SpyObj<MatDialog>;
+  let afterClosedSubject: Subject<string>;
 
   beforeEach(async () => {
     // Provider and Services
-    currentUserObservableMock = new BehaviorSubject<User>(
-      createUser({ role: 'Untersuchungsteam' })
-    );
-    auth = createSpyObj<AuthenticationManager>(
-      'AuthenticationManager',
-      ['logout'],
-      {
-        currentUser$: currentUserObservableMock,
-      }
-    );
+    user = createSpyObj<CurrentUser>('CurrentUser', ['isProband']);
+    auth = createSpyObj<AuthenticationManager>('AuthenticationManager', [
+      'logout',
+    ]);
 
     navPagesObservableMock = new BehaviorSubject<Page[]>([
       { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
     ]);
     pageManager = createSpyObj<PageManager>('PageManager', undefined, {
-      navPagesObservable: navPagesObservableMock,
+      navPages$: navPagesObservableMock,
     });
 
     eventsMock = new BehaviorSubject<Event>(null);
@@ -74,15 +70,27 @@ describe('SideNavigationComponent', () => {
       }
     );
 
+    const dialogRef = createSpyObj<MatDialogRef<DialogOkCancelComponent>>(
+      'dialogRef',
+      ['afterClosed']
+    );
+    afterClosedSubject = new Subject();
+    dialogRef.afterClosed.and.returnValue(afterClosedSubject);
+    matDialog = createSpyObj<MatDialog>('MatDialog', ['open']);
+    matDialog.open.and.returnValue(dialogRef);
+
     // Build Base Module
     await MockBuilder(SideNavigationComponent, AppModule)
+      .mock(CurrentUser, user)
       .mock(AuthenticationManager, auth)
       .mock(Router, router)
       .mock(PageManager, pageManager)
-      .mock(SelectedProbandInfoService, selectedProbandInfoService);
+      .mock(SelectedProbandInfoService, selectedProbandInfoService)
+      .mock(MatDialog, matDialog);
   });
 
-  function createComponent(): void {
+  function createComponent(role: Role = 'Proband'): void {
+    user.isProband.and.returnValue(role === 'Proband');
     fixture = TestBed.createComponent(SideNavigationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges(); // run ngOnInit
@@ -104,38 +112,22 @@ describe('SideNavigationComponent', () => {
       expect(sidenav.close).toHaveBeenCalled();
     }));
 
-    it('should call logout and navigate to login page if it is not a proband', fakeAsync(() => {
-      createComponent();
+    it('should call logout if it is not a proband', fakeAsync(() => {
+      createComponent('Forscher');
       component.logout();
       tick();
       expect(auth.logout).toHaveBeenCalledTimes(1);
-      expect(auth.logout).toHaveBeenCalledTimes(1);
-      expect(router.navigate).toHaveBeenCalledOnceWith(['login']);
     }));
 
     it('should open a confirm dialog if it is a proband', fakeAsync(() => {
-      currentUserObservableMock.next(createUser({ role: 'Proband' }));
-      const matDialog = TestBed.inject(MatDialog) as SpyObj<MatDialog>;
-      const dialogRef = createSpyObj<MatDialogRef<DialogOkCancelComponent>>(
-        'dialogRef',
-        ['afterClosed']
-      );
-      const afterClosedSubject = new Subject();
-      dialogRef.afterClosed.and.returnValue(afterClosedSubject);
-      matDialog.open.and.returnValue(dialogRef);
-
       createComponent();
       component.logout();
       tick();
       expect(auth.logout).not.toHaveBeenCalled();
-      expect(auth.logout).not.toHaveBeenCalled();
-      expect(router.navigate).not.toHaveBeenCalled();
 
       afterClosedSubject.next('ok');
       tick();
       expect(auth.logout).toHaveBeenCalledTimes(1);
-      expect(auth.logout).toHaveBeenCalledTimes(1);
-      expect(router.navigate).toHaveBeenCalledOnceWith(['login']);
     }));
   });
 });

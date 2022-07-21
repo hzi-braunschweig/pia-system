@@ -4,9 +4,7 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<app-probands-forscher
-  *ngIf="auth.getCurrentRole() === 'Forscher'"
-></app-probands-forscher>
+<app-probands-forscher *ngIf="user.hasRole('Forscher')"></app-probands-forscher>
 <app-probands-untersuchungsteam
-  *ngIf="auth.getCurrentRole() === 'Untersuchungsteam'"
+  *ngIf="user.hasRole('Untersuchungsteam')"
 ></app-probands-untersuchungsteam>

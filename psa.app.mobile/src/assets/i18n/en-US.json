@@ -16,7 +16,10 @@
     "WARNING": "Warning",
     "SUBMISSION": "Submission",
     "CLOSE": "Close",
-    "OPEN": "Open"
+    "OPEN": "Open",
+    "GO_BACK": "Back",
+    "PLEASE_CLICK": "Please click here",
+    "SELECT_DATE": "Select date"
   },
   "APP": {
     "MENU": {
@@ -40,9 +43,9 @@
     "LOGIN": "Login",
     "USERNAME": "Username",
     "PASSWORD": "Password",
-    "REMEMBER_ME": "Benutzername merken",
+    "REMEMBER_ME": "Remember user name",
     "FORGOT_PASSWORD": "Forgot password",
-    "NEXT": "Weiter",
+    "NEXT": "Continue",
     "SWITCH_USER": "Switch user",
     "TOAST_MSG_ONLY_PROBANDS_ALLOWED": "PIA can only be used by participants!",
     "TOAST_MSG_LOGIN_USERNAME_EMPTY_ERROR": "Your registration without user name has expired.",
@@ -53,12 +56,13 @@
     "TOAST_MSG_LOGIN_GIVE_USERNAME": "Please enter your username first.",
     "TOAST_MSG_NEW_PASSWORD_CONFIRMATION": "Are you sure you want to request a new password via e-mail?",
     "TOAST_MSG_NEW_PASSWORD_RESULT": "In case you entered a valid user name and the user has a known mail address, an e-mail with a new password was successfully delivered.",
-    "CONNECTING_TO_SERVER": "Verbinde...",
+    "ALERT_TRY_AGAIN_LATER": "An error occurred. Please try again later.",
+    "CONNECTING_TO_SERVER": "Connecting...",
     "AUTHENTICATING": "Authenticating...",
     "ENTER_BACKEND_URL": "Enter URL",
     "GIVEN_BACKEND_URL_NOT_VALID": "The specified backend URL is invalid",
-    "ALERT_MSG_INCOMPATIBLE_APP_VERSION": "Sie verwenden eine veraltete App Version. Bitte stellen Sie sicher, dass Sie die aktuellste Version aus dem Store installieren und nutzen.",
-    "ALERT_BUTTON_LABEL_GO_TO_APP_STORE": "Aktualisieren"
+    "ALERT_MSG_INCOMPATIBLE_APP_VERSION": "You are using an old app version. Please make sure that you have installed the newest version from the store.",
+    "ALERT_BUTTON_LABEL_GO_TO_APP_STORE": "Reload"
   },
   "CHANGE_PASSWORD": {
     "TITLE": "Change password",
@@ -100,7 +104,6 @@
   "QUESTIONNAIRE_QUESTIONS": {
     "NUMERIC_INPUT_MSG_NUMBER_BETWEEN": "Please enter a value between {{restriction_min}} and {{restriction_max}}.",
     "NUMERIC_INPUT_MSG_MUST_FULL_NUMBER": "The value must be a whole number",
-    "PLEASE_CLICK": "Please click here",
     "DATE_INPUT_MSG1": "Please enter a date between {{restriction_min}} and {{restriction_max}}.",
     "SAMPLE_INPUT_MSG_PROBES_NO_MATCH": "Sample IDs do not match each other.",
     "SAMPLE_INPUT_MSG_PROBE_ALREADY_SCANNED": "A sample with this ID has unfortunately already been scanned.",
@@ -114,8 +117,8 @@
     "TIME_INPUT_TIMESTAMP": "Time stamp",
     "SAVE_LEAVE": "Save questionnaire and exit",
     "SUMMARY": "Summary",
-    "SUMMARY_SUBTITLE_IN_PROGRESS": "Bitte sehen Sie den Fragebogen nochmals durch und prüfen Sie, ob Sie alle Fragen vollständig und richtig beantwortet haben. Möchten Sie Änderungen an Ihren hier angezeigten Antworten vornehmen, navigieren Sie bitte mithilfe des Zurück-Buttons zur entsprechenden Frage.",
-    "SUMMARY_SUBTITLE_RELEASED": "Dieser Fragebogen wurde bereits abgeschlossen und kann nicht mehr geändert werden.",
+    "SUMMARY_SUBTITLE_IN_PROGRESS": "Please review the questionnaire and check if you answered all questions correctly and completely. If you want to make changes please navigate to the respective question by clicking the return button.",
+    "SUMMARY_SUBTITLE_RELEASED": "This questionnaire was already completed and cannot be changed.",
     "NOT_ANSWERED": "Not answered",
     "BACKTO_SUMMARY": "Back to the summary",
     "SHARE_CHANGES": "Notify changes (final)",
@@ -126,7 +129,8 @@
     "ALERT_SUBTITLE_ANSWERS_SENT": "Your answers have now been sent.",
     "ALERT_SUBTITLE_SENT_LAST_TIME": "Your answers have now been sent for the last time.",
     "NO_RESULTS": "No questionnaire found",
-    "UPLOADED_IMAGE_TOO_LARGE": "Only files up to 20MB in size can be uploaded. Please check your file size."
+    "UPLOADED_IMAGE_TOO_LARGE": "Only files up to 20MB in size can be uploaded. Please check your file size.",
+    "NO_IMAGE_UPLOAD": "No file uploaded yet."
   },
   "QUESTIONNAIRES": {
     "TITLE": "Overview",
@@ -137,9 +141,10 @@
   "SETTINGS": {
     "TITLE": "Settings",
     "MANAGE_PASSWORD": "Password management",
-    "LICENSES": "Software-Lizenzen",
+    "DELETE_ACCOUNT": "Account und persönliche Daten löschen",
+    "LICENSES": "Software Licenses",
     "GROUP_TITLE_ACCOUNT": "Account",
-    "GROUP_TITLE_ABOUT": "Über PIA"
+    "GROUP_TITLE_ABOUT": "About PIA"
   },
   "STUDY_CONTACT": {
     "TITLE": "Contact",
@@ -148,5 +153,18 @@
     "NO_ADDRESS_TEXT": "There is currently no contact information available for this study.",
     "CONFIRMATION_MSG1": "Are you sure you want to request new material?",
     "TOAST_MSG_NEW_SET_REQUESTED": "New nasal swab kit has been successfully requested!"
+  },
+  "DELETE_ACCOUNT": {
+    "TITLE": "Account und persönliche Daten löschen",
+    "TITLE_SHORT": "Account löschen",
+    "TEXT_KEEP_STUDY_ANSWERS": "Sie möchten Ihren PIA Account dauerhaft löschen. Wollen Sie der Studie ermöglichen, Ihre bereits eingegebenen Fragebogenantworten weiterhin auszuwerten?",
+    "TEXT_DELETE": "Hiermit löschen Sie Ihren PIA Account und Ihre in PIA gespeicherten Kontaktdaten dauerhaft und unwiderruflich. Ihre bereits eingegebenen Fragebogenantworten bleiben erhalten. Sind Sie sich sicher?",
+    "TEXT_DELETE_INCLUDING_ANSWERS": "Hiermit löschen Sie Ihren PIA Account, Ihre in PIA gespeicherten Kontaktdaten und Fragenbogenantworten dauerhaft und unwiderruflich. Sind Sie sich sicher?",
+    "TEXT_CONFIRM": "Ihr Account und Ihre Daten wurden wie gewünscht gelöscht.",
+    "TEXT_ERROR": "Fehler beim Löschen Ihres PIA Accounts. Bitte wenden Sie sich an das Studienzentrum.",
+    "BUTTON_DELETE_NOW": "Jetzt löschen",
+    "BUTTON_ALLOW": "Ja, ermöglichen",
+    "BUTTON_DENY": "Nein, alles löschen",
+    "BUTTON_LOGOUT": "Zur Anmeldung"
   }
 }

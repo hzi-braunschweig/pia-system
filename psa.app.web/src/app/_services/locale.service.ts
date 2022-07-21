@@ -7,6 +7,7 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { environment } from '../../environments/environment';
+import { CurrentUser } from './current-user.service';
 
 interface LanguageSettings {
   language: string;
@@ -41,18 +42,25 @@ export class LocaleService {
   };
   private readonly fallbackLanguage: string = 'en-US';
 
-  constructor(private translate: TranslateService) {
+  constructor(
+    private translate: TranslateService,
+    private currentUser: CurrentUser
+  ) {
     this.fallbackLanguage = this.findBestLocale(environment.defaultLanguage);
     this.translate.addLangs(this.supportedLocales);
     this.translate.setDefaultLang(this.fallbackLanguage);
-    let locale = localStorage.getItem('locale');
+
+    let locale = currentUser.locale;
+
     if (!locale) {
       locale = this.translate.getBrowserCultureLang();
+
       if (!this.isLocaleSupported(locale)) {
         const browserLang = this.translate.getBrowserLang();
         locale = this.iso639_1FallbackLanguages[browserLang];
       }
     }
+
     this.currentLocale = locale;
   }
 

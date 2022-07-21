@@ -9,7 +9,7 @@ import { SymptomDiaryHandler } from '../handlers/symptomDiaryHandler';
 import Joi from 'joi';
 
 const route: ServerRoute = {
-  path: '/sormas/symptomdiary/probands/data',
+  path: '/symptomdiary/probands/data',
   method: 'GET',
   handler: SymptomDiaryHandler.getProband,
   options: {

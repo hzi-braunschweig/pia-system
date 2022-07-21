@@ -17,15 +17,15 @@ import { Subject } from 'rxjs';
 import { AppModule } from '../../app.module';
 import { SettingsComponent } from './settings.component';
 import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
-import { AuthenticationManager } from '../../_services/authentication-manager.service';
 import { AlertService } from '../../_services/alert.service';
-import SpyObj = jasmine.SpyObj;
 import { By } from '@angular/platform-browser';
 import { DialogDeleteAccountHealthDataPermissionComponent } from '../../dialogs/dialog-delete-account-health-data-permission/dialog-delete-account-health-data-permission.component';
 import { DialogDeleteAccountConfirmationComponent } from '../../dialogs/dialog-delete-account-confirmation/dialog-delete-account-confirmation.component';
 import { DialogDeleteAccountSuccessComponent } from '../../dialogs/dialog-delete-account-success/dialog-delete-account-success.component';
-import { QuestionnaireService } from '../../psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { createStudy } from '../../psa.app.core/models/instance.helper.spec';
+import { CurrentUser } from '../../_services/current-user.service';
+import { QuestionnaireService } from '../../psa.app.core/providers/questionnaire-service/questionnaire-service';
+import SpyObj = jasmine.SpyObj;
 
 describe('SettingsComponent', () => {
   let component: SettingsComponent;
@@ -33,7 +33,7 @@ describe('SettingsComponent', () => {
 
   let dialog: SpyObj<MatDialog>;
   let authService: SpyObj<AuthService>;
-  let authManager: SpyObj<AuthenticationManager>;
+  let user: SpyObj<CurrentUser>;
   let alertService: SpyObj<AlertService>;
   let questionnaireService: SpyObj<QuestionnaireService>;
   let dialogAfterClosed: Subject<string>;
@@ -47,12 +47,10 @@ describe('SettingsComponent', () => {
 
     authService = jasmine.createSpyObj('AuthService', ['deleteProbandAccount']);
 
-    authManager = jasmine.createSpyObj('AuthenticationManager', [
-      'getCurrentUsername',
-      'getCurrentStudy',
-    ]);
-    authManager.getCurrentUsername.and.returnValue('TestProband');
-    authManager.getCurrentStudy.and.returnValue('TestStudy');
+    user = jasmine.createSpyObj('CurrentUser', [], {
+      username: 'TestProband',
+      study: 'TestStudy',
+    });
 
     alertService = jasmine.createSpyObj('AlertService', ['errorMessage']);
 
@@ -66,7 +64,7 @@ describe('SettingsComponent', () => {
     await MockBuilder(SettingsComponent, AppModule)
       .mock(MatDialog, dialog)
       .mock(AuthService, authService)
-      .mock(AuthenticationManager, authManager)
+      .mock(CurrentUser, user)
       .mock(AlertService, alertService)
       .mock(QuestionnaireService, questionnaireService);
   });

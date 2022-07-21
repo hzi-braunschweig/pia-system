@@ -6,6 +6,7 @@
 
 import { UserCredentials } from '../../support/user.commands';
 import Chainable = Cypress.Chainable;
+import { login } from '../../support/commands';
 
 describe('Startseite', () => {
   beforeEach(() => {
@@ -20,44 +21,36 @@ describe('Startseite', () => {
 
   it('should login a proband', () => {
     cy.visit('/');
-    cy.get('[data-e2e-login-title]');
+    cy.get('[data-e2e="login-form"]');
 
-    loginProband().then(() => cy.expectPathname('/home'));
+    loginProband();
+    cy.expectPathname('/home');
   });
 
   it('should not be possible to use PIA with a valid token but deactivated account', () => {
     cy.visit('/');
-    cy.contains('Anmelden');
+    cy.get('[data-e2e="login-form"]');
 
-    loginProband()
-      .then(() => cy.expectPathname('/home'))
-      .then(() => cy.get<string>('@studyId'))
-      .then((studyId) =>
-        cy
-          .get<UserCredentials>('@probandCredentials')
-          .then((probandCredentials) =>
-            cy.deleteProband(probandCredentials.username, studyId)
-          )
-          .then(() => cy.reload())
-          .then(() => cy.expectPathname('/login'))
-          .then(() => cy.get<UserCredentials>('@probandCredentials'))
-          .then(() => loginProband(true))
-          .then(() => cy.expectPathname('/login'))
+    loginProband();
+    cy.expectPathname('/home');
+
+    cy.get<string>('@studyId').then((studyId) => {
+      cy.get<UserCredentials>('@probandCredentials').then(
+        (probandCredentials) =>
+          cy.deleteProband(probandCredentials.username, studyId)
       );
+      cy.reload();
+
+      cy.get('[data-e2e="login-form"]').then(() => loginProband(true));
+      cy.get('[data-e2e="login-form"]');
+    });
   });
 
   function loginProband(skipUsername = false): Chainable<UserCredentials> {
     return cy
       .get<UserCredentials>('@probandCredentials')
-      .then((credentials) => {
-        if (!skipUsername) {
-          cy.get('[data-e2e-login-input-username]').type(credentials.username);
-        }
-        cy.get('[data-e2e-login-input-password]').type(credentials.password, {
-          parseSpecialCharSequences: false,
-        });
-        cy.get('[data-e2e-login-button]').click();
-        cy.wrap(credentials);
+      .then(({ username, password }) => {
+        login(username, password, skipUsername);
       });
   }
 });

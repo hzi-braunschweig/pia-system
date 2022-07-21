@@ -13,34 +13,34 @@
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {
-    "@hapi/accept": "^5.0.2",
-    "@hapi/hapi": "^20.2.1",
-    "@types/hapi__hapi": "^20.0.9",
-    "i18n": "^0.13.3"
+    "@hapi/accept": "^6.0.0",
+    "@hapi/hapi": "^20.2.2",
+    "@types/hapi__hapi": "^20.0.10",
+    "i18n": "^0.14.2"
   },
   "devDependencies": {
     "@pia/eslint-config": "file:../psa.eslint-config",
-    "@types/chai": "^4.3.0",
+    "@types/chai": "^4.3.1",
     "@types/hapi__accept": "^5.0.1",
-    "@types/i18n": "^0.13.1",
-    "@types/mocha": "^9.0.0",
+    "@types/i18n": "^0.13.2",
+    "@types/mocha": "^9.1.1",
     "@types/node": "^14.17.34",
-    "@typescript-eslint/eslint-plugin": "^5.7.0",
-    "@typescript-eslint/parser": "^5.7.0",
-    "chai": "^4.3.4",
-    "eslint": "^8.4.1",
-    "eslint-config-prettier": "^8.3.0",
+    "@typescript-eslint/eslint-plugin": "^5.24.0",
+    "@typescript-eslint/parser": "^5.24.0",
+    "chai": "^4.3.6",
+    "eslint": "^8.15.0",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-no-only-tests": "^2.6.0",
-    "eslint-plugin-security": "^1.4.0",
-    "mocha": "^9.1.3",
+    "eslint-plugin-security": "^1.5.0",
+    "mocha": "^10.0.0",
     "mocha-multi-reporters": "^1.5.1",
     "nyc": "^15.1.0",
-    "sinon": "^12.0.1",
+    "sinon": "^14.0.0",
     "source-map-support": "^0.5.21",
-    "ts-essentials": "^9.0.0",
+    "ts-essentials": "^9.1.2",
     "ts-mockito": "^2.6.1",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.4"
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.4"
   },
   "tsconfig": "tsconfig.global.json"
 }

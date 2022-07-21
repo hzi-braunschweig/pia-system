@@ -5,10 +5,11 @@
  */
 
 import { Injectable } from '@angular/core';
-import { AuthenticationManager } from './authentication-manager.service';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { from, merge, Observable } from 'rxjs';
 import { ComplianceManager } from './compliance-manager.service';
 import { ComplianceType } from '../psa.app.core/models/compliance';
+import { CurrentUser } from './current-user.service';
+import { mergeMap } from 'rxjs/operators';
 
 export interface Page {
   name: string;
@@ -20,35 +21,23 @@ export interface Page {
   providedIn: 'root',
 })
 export class PageManager {
-  private navPagesSubject: BehaviorSubject<Page[]>;
-  public readonly navPagesObservable: Observable<Page[]>;
+  public readonly navPages$: Observable<Page[]>;
 
   constructor(
-    private auth: AuthenticationManager,
+    private user: CurrentUser,
     private complianceManager: ComplianceManager
   ) {
-    this.navPagesSubject = new BehaviorSubject<Page[]>([]);
-    this.navPagesObservable = this.navPagesSubject.asObservable();
-    this.auth.currentUser$.subscribe(async () => {
-      this.navPagesSubject.next(await this.getNavigationPagesForCurrentUser());
-    });
-    this.complianceManager.complianceDataChangesObservable.subscribe(
-      async () => {
-        this.navPagesSubject.next(
-          await this.getNavigationPagesForCurrentUser()
-        );
-      }
+    this.navPages$ = merge(
+      from(this.getNavigationPagesForCurrentUser()),
+      this.complianceManager.complianceDataChangesObservable.pipe(
+        mergeMap(() => from(this.getNavigationPagesForCurrentUser()))
+      )
     );
   }
 
   private async getNavigationPagesForCurrentUser(): Promise<Page[]> {
     let pages = [];
-    const currentRole = this.auth.getCurrentRole();
-    if (!this.auth.getToken() || !currentRole) {
-      return pages;
-    }
-
-    if (currentRole === 'Forscher') {
+    if (this.user.hasRole('Forscher')) {
       pages = [
         { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
         {
@@ -84,7 +73,7 @@ export class PageManager {
           subpaths: ['welcome-text'],
         },
       ];
-    } else if (currentRole === 'Untersuchungsteam') {
+    } else if (this.user.hasRole('Untersuchungsteam')) {
       pages = [
         { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
         {
@@ -109,7 +98,7 @@ export class PageManager {
           subpaths: ['compliance/'],
         },
       ];
-    } else if (currentRole === 'SysAdmin') {
+    } else if (this.user.hasRole('SysAdmin')) {
       pages = [
         { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
         {
@@ -128,7 +117,7 @@ export class PageManager {
           subpaths: ['deletelogs'],
         },
       ];
-    } else if (currentRole === 'ProbandenManager') {
+    } else if (this.user.hasRole('ProbandenManager')) {
       pages = [
         { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
         {
@@ -156,7 +145,7 @@ export class PageManager {
           subpaths: ['probands-to-contact', 'probands-to-contact/'],
         },
       ];
-    } else if (currentRole === 'EinwilligungsManager') {
+    } else if (this.user.hasRole('EinwilligungsManager')) {
       pages = [
         { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
         {
@@ -165,7 +154,7 @@ export class PageManager {
           subpaths: ['compliance/'],
         },
       ];
-    } else if (currentRole === 'Proband') {
+    } else if (this.user.isProband()) {
       pages = [];
       pages.push({ name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] });
       pages.push({

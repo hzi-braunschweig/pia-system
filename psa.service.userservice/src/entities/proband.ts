@@ -12,14 +12,25 @@ import { ProbandStatus } from '../models/probandStatus';
 export class Proband {
   @PrimaryColumn()
   public pseudonym!: string;
-  @Column({ type: 'enum', enum: ProbandStatus })
-  public status!: ProbandStatus;
+
   @Column({ type: 'varchar', nullable: true })
   public ids!: string | null;
+
+  @Column({ type: 'enum', enum: ProbandStatus })
+  public status!: ProbandStatus;
+
   @Column({ type: 'varchar', nullable: true })
   public studyCenter!: string | null;
+
   @Column({ type: 'integer', nullable: true })
   public examinationWave!: number | null;
+
+  @Column({ type: 'boolean', nullable: true })
+  public needsMaterial!: boolean | null;
+
+  @Column({ type: 'date', nullable: true })
+  public firstLoggedInAt!: Date | null;
+
   @Column()
   public complianceContact!: boolean;
   @Column()
@@ -28,16 +39,28 @@ export class Proband {
   public complianceSamples!: boolean;
   @Column()
   public complianceBloodsamples!: boolean;
+
   @Column({ type: 'boolean', nullable: true })
   public loggingActive!: boolean | null;
+
   @Column()
   public isTestProband!: boolean;
-  @Column({ type: 'varchar', nullable: false })
+
+  /**
+   * ID which maps a proband to its compliance data
+   */
+  @Column({ type: 'varchar', nullable: false, select: false })
   public mappingId!: string;
   @Column({ type: 'timestamptz', nullable: true })
   public deactivatedAt!: Date;
   @Column({ type: 'timestamptz', nullable: true })
   public deletedAt!: Date;
+
+  /**
+   * ID or pseudonym which was provided by an external system (e.g. NatCoEdc)
+   */
+  @Column({ type: 'varchar', nullable: true, select: false })
+  public externalId!: string;
 
   @ManyToOne(() => Study)
   @JoinColumn({

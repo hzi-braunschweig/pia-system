@@ -5,7 +5,7 @@
  */
 
 import { HttpServer } from './httpServer';
-import { StatusCode } from './statusCode';
+import { StatusCodes } from 'http-status-codes';
 
 import * as http from 'http';
 
@@ -14,7 +14,7 @@ export class RedirectingHttpServer extends HttpServer<unknown> {
     req: http.IncomingMessage,
     res: http.ServerResponse
   ): void {
-    res.writeHead(StatusCode.MOVED_PERMANENTLY, {
+    res.writeHead(StatusCodes.MOVED_PERMANENTLY, {
       Location: `https://${req.headers.host ?? ''}${req.url ?? ''}`,
     });
     res.end();

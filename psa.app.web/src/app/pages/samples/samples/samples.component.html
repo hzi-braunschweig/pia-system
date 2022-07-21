@@ -20,7 +20,7 @@
 
   <div class="table-container">
     <h1 class="table-header" #title1>
-      {{ 'PROBANDEN.NASAL_SWABS' | translate }} {{ pseudonym }}
+      {{ 'PROBANDEN.NASAL_SWABS' | translate }} {{ proband?.pseudonym }}
     </h1>
     <!-- Filter nasal swabs -->
     <mat-form-field
@@ -31,13 +31,13 @@
         matInput
         #filterNasenabstrichen
         placeholder="{{ 'SAMPLES.FILTER_NASAL_SWABS' | translate }}"
-        (keyup)="applyFilterNasenabstrichten($event.target.value)"
+        (keyup)="applyFilterNasenabstriche($event.target.value)"
       />
     </mat-form-field>
     <mat-table
       class="mat-elevation-z8"
       #table
-      [dataSource]="dataSourceNasenabstrichten"
+      [dataSource]="dataSourceNasenabstriche"
       matSortActive="proben_id"
       matSortDirection="asc"
       matSort
@@ -65,7 +65,16 @@
           {{ 'SAMPLES.SCANNED_BY_PARTICIPANT' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let row">
-          {{ row.status | statusCheckout2 | translate }}
+          <ng-container
+            *ngIf="row.status === 'analyzed' || row.status === 'sampled'"
+          >
+            {{ 'SAMPLES.YES' | translate }}
+          </ng-container>
+          <ng-container
+            *ngIf="row.status !== 'analyzed' && row.status !== 'sampled'"
+          >
+            {{ 'SAMPLES.NO' | translate }}
+          </ng-container>
         </mat-cell>
       </ng-container>
 
@@ -75,13 +84,18 @@
           {{ 'SAMPLES.LABRESULTS_AVAILABLE' | translate }}
         </mat-header-cell>
         <mat-cell *matCellDef="let row">
-          {{ row.status | statusCheckout | translate }}
+          <ng-container *ngIf="row.status === 'analyzed'">
+            {{ 'SAMPLES.YES' | translate }}
+          </ng-container>
+          <ng-container *ngIf="row.status !== 'analyzed'">
+            {{ 'SAMPLES.NO' | translate }}
+          </ng-container>
         </mat-cell>
       </ng-container>
 
       <!-- Forwarding completed -->
       <ng-container
-        *ngIf="currentRole == 'ProbandenManager'"
+        *ngIf="user.hasRole('ProbandenManager')"
         matColumnDef="forwarding_completed"
         class="forwarding-completed-column"
       >
@@ -121,8 +135,7 @@
         flex
         class="remark-column"
         *ngIf="
-          currentRole == 'ProbandenManager' ||
-          currentRole == 'Untersuchungsteam'
+          user.hasRole('ProbandenManager') || user.hasRole('Untersuchungsteam')
         "
       >
         <mat-header-cell *matHeaderCellDef>
@@ -147,7 +160,7 @@
       <ng-container
         matColumnDef="action"
         flex
-        *ngIf="currentRole != 'Forscher'"
+        *ngIf="!user.hasRole('Forscher')"
       >
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
         <mat-cell *matCellDef="let row">
@@ -180,7 +193,7 @@
 
       <!-- Active/inactive -->
       <ng-container
-        *ngIf="currentRole == 'ProbandenManager'"
+        *ngIf="user.hasRole('ProbandenManager')"
         matColumnDef="deactivate"
       >
         <mat-header-cell *matHeaderCellDef></mat-header-cell>
@@ -192,16 +205,16 @@
               row.study_status === 'STUDIES.STATUS_DELETED' ||
               disableScanSampleButton
             "
-            (change)="onDeactivateRow(pseudonym, row)"
+            (change)="onDeactivateRow(row)"
           ></mat-slide-toggle>
         </mat-cell>
       </ng-container>
 
       <mat-header-row
         *matHeaderRowDef="
-          currentRole == 'ProbandenManager'
+          user.hasRole('ProbandenManager')
             ? displayedColumnsPM
-            : currentRole == 'Untersuchungsteam'
+            : user.hasRole('Untersuchungsteam')
             ? displayedColumnsUT
             : displayedColumnsForscher
         "
@@ -210,9 +223,9 @@
       <mat-row
         *matRowDef="
           let row;
-          columns: currentRole == 'ProbandenManager'
+          columns: user.hasRole('ProbandenManager')
             ? displayedColumnsPM
-            : currentRole == 'Untersuchungsteam'
+            : user.hasRole('Untersuchungsteam')
             ? displayedColumnsUT
             : displayedColumnsForscher
         "
@@ -242,7 +255,7 @@
     *ngIf="
       !loading &&
       showProbenTable &&
-      currentRole != 'Forscher' &&
+      !user.hasRole('Forscher') &&
       !disableScanSampleButton
     "
   >
@@ -255,7 +268,7 @@
 
   <div class="table-container">
     <h1 class="table-header" #title2>
-      {{ 'PROBANDEN.BLOOD_SAMPLES' | translate }} {{ pseudonym }}
+      {{ 'PROBANDEN.BLOOD_SAMPLES' | translate }} {{ proband?.pseudonym }}
     </h1>
     <!-- Filter blood samples -->
     <mat-form-field
@@ -266,13 +279,13 @@
         matInput
         #filterBluteproben
         placeholder="{{ 'SAMPLES.FILTER_BLOOD_SAMPLES' | translate }}"
-        (keyup)="applyFilterBluteproben($event.target.value)"
+        (keyup)="applyFilterBlutproben($event.target.value)"
       />
     </mat-form-field>
     <mat-table
       class="mat-elevation-z8"
       #table
-      [dataSource]="dataSourceBluteproben"
+      [dataSource]="dataSourceBlutproben"
       matSortActive="proben_id"
       matSortDirection="asc"
       matSort
@@ -298,17 +311,22 @@
             placeholder="{{
               'SAMPLES.BLOOD_SAMPLE_NOT_YET_DETERMINED' | translate
             }}"
-            *ngIf="currentRole === 'Untersuchungsteam'"
+            *ngIf="user.hasRole('Untersuchungsteam')"
           >
             <mat-option
-              *ngFor="let status of statuses"
-              [value]="status.value"
-              (click)="onEditSampleClicked(row, true, status.value)"
+              [value]="true"
+              (click)="onEditSampleStatusClicked(row, true)"
             >
-              {{ status.viewValue | translate }}
+              {{ 'SAMPLES.BLOOD_SAMPLE_CARRIED_OUT' | translate }}
+            </mat-option>
+            <mat-option
+              [value]="false"
+              (click)="onEditSampleStatusClicked(row, false)"
+            >
+              {{ 'SAMPLES.BLOOD_SAMPLE_NOT_CARRIED_OUT' | translate }}
             </mat-option>
           </mat-select>
-          <span *ngIf="currentRole !== 'Untersuchungsteam'">{{
+          <span *ngIf="!user.hasRole('Untersuchungsteam')">{{
             row.blood_sample_carried_out_value | translate
           }}</span>
         </mat-cell>
@@ -318,7 +336,7 @@
       <ng-container
         matColumnDef="remark"
         flex
-        *ngIf="currentRole != 'Forscher'"
+        *ngIf="!user.hasRole('Forscher')"
       >
         <mat-header-cell *matHeaderCellDef>
           {{ 'SAMPLES.REMARK' | translate }}
@@ -327,12 +345,12 @@
           {{ row.remark }}
           <button
             mat-icon-button
-            *ngIf="currentRole == 'Untersuchungsteam'"
+            *ngIf="user.hasRole('Untersuchungsteam')"
             [disabled]="
               row.study_status === 'STUDIES.STATUS_DELETED' ||
               disableScanSampleButton
             "
-            (click)="onEditSampleClicked(row, false, null)"
+            (click)="onEditSampleRemarkClicked(row)"
           >
             <mat-icon>edit</mat-icon>
           </button>
@@ -341,9 +359,9 @@
 
       <mat-header-row
         *matHeaderRowDef="
-          currentRole == 'ProbandenManager'
+          user.hasRole('ProbandenManager')
             ? displayedBlutprobenColumnsPM
-            : currentRole == 'Untersuchungsteam'
+            : user.hasRole('Untersuchungsteam')
             ? displayedBlutprobenColumnsUT
             : displayedBlutprobenColumnsForscher
         "
@@ -352,9 +370,9 @@
       <mat-row
         *matRowDef="
           let row;
-          columns: currentRole == 'ProbandenManager'
+          columns: user.hasRole('ProbandenManager')
             ? displayedBlutprobenColumnsPM
-            : currentRole == 'Untersuchungsteam'
+            : user.hasRole('Untersuchungsteam')
             ? displayedBlutprobenColumnsUT
             : displayedBlutprobenColumnsForscher
         "
@@ -383,7 +401,7 @@
     (click)="onScanButtonClicked(true)"
     *ngIf="
       !loading &&
-      currentRole == 'Untersuchungsteam' &&
+      user.hasRole('Untersuchungsteam') &&
       showBlutProbenTable &&
       !disableScanSampleButton
     "

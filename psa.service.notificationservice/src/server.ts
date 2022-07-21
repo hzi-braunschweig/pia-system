@@ -8,6 +8,7 @@ import * as Hapi from '@hapi/hapi';
 import { IClient } from 'pg-promise/typescript/pg-subset';
 import {
   DatabaseNotification,
+  defaultPublicRoutesPaths,
   ListeningDbClient,
   MailService,
   ParsedDatabasePayload,
@@ -59,15 +60,11 @@ export class Server {
       },
     });
 
-    await registerAuthStrategies(this.server, {
-      strategies: ['jwt'],
-      publicAuthKey: config.publicAuthKey,
-      db: db,
-    });
+    await registerAuthStrategies(this.server, config.servers.authserver);
     await registerPlugins(this.server, {
       name: packageJson.name,
       version: packageJson.version,
-      routes: 'src/routes/*',
+      routes: defaultPublicRoutesPaths,
     });
 
     await this.server.start();

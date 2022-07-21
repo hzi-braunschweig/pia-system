@@ -25,7 +25,7 @@ export interface DialogPopUpData {
           >check_circle</mat-icon
         >
         <mat-icon
-          style="font-size: 100px; color:#7dd4ff;"
+          style="font-size: 100px; color:#f44336;"
           *ngIf="!data.isSuccess"
           >cancel</mat-icon
         >

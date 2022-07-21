@@ -4,7 +4,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { fetchPasswordForUserFromMailHog } from '../../support/user.commands';
+import {
+  createProfessionalUser,
+  fetchPasswordForUserFromMailHog,
+  UserCredentials,
+} from '../../support/user.commands';
 import {
   changePassword,
   createPlannedProband,
@@ -14,7 +18,6 @@ import {
   generateRandomProbandForStudy,
   generateRandomStudy,
   getCredentialsForProbandByUsername,
-  getToken,
   login,
 } from '../../support/commands';
 import { CreateProbandRequest } from '../../../src/app/psa.app.core/models/proband';
@@ -37,7 +40,8 @@ const probandCredentials = { username: '', password: '' };
 const utCredentials = { username: '', password: '' };
 const newPassword = ',dYv3zg;r:CB';
 
-const appUrl = '/';
+const adminAppUrl = '/admin/';
+const probandAppUrl = '/';
 
 describe('Release Test, role: "Forscher", General', () => {
   beforeEach(() => {
@@ -51,7 +55,6 @@ describe('Release Test, role: "Forscher", General', () => {
       username: `e2e-f-${translator.new()}@testpia-app.de`,
       role: 'Forscher',
       study_accesses: [
-        { study_id: study.name, access_level: 'admin' },
         { study_id: study2.name, access_level: 'admin' },
         { study_id: study3.name, access_level: 'admin' },
         { study_id: study4.name, access_level: 'admin' },
@@ -63,26 +66,30 @@ describe('Release Test, role: "Forscher", General', () => {
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
       role: 'Untersuchungsteam',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
     };
 
     pm = {
       username: `e2e-pm-${translator.new()}@testpia-app.de`,
       role: 'ProbandenManager',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
     };
     createStudy(study);
     createStudy(study2);
     createStudy(study3);
     createStudy(study4);
     createStudy(someRandomAnotherStudy)
-      .then(() => createUser(ut))
-      .then(() => createUser(pm))
-      .then(() => getToken(ut.username))
+      .then(() => createProfessionalUser(ut, study.name))
+      .as('utCred')
+      .then(() => createProfessionalUser(pm, study.name))
+      .as('pmCred')
+
+      .then(() => cy.get<UserCredentials>('@utCred'))
+      .then((cred) => cy.loginProfessional(cred))
       .then((token) => createPlannedProband(proband.pseudonym, token))
-      .then(() => getToken(ut.username))
+      .then(() => cy.get<UserCredentials>('@utCred'))
+      .then((cred) => cy.loginProfessional(cred))
       .then((token) => createProband(proband, study.name, token))
-      .then(() => getToken(ut.username))
+      .then(() => cy.get<UserCredentials>('@utCred'))
+      .then((cred) => cy.loginProfessional(cred))
       .then((token) =>
         getCredentialsForProbandByUsername(proband.pseudonym, token)
       )
@@ -95,16 +102,14 @@ describe('Release Test, role: "Forscher", General', () => {
         utCredentials.username = cred.username;
         utCredentials.password = cred.password;
       })
-      .then(() => createUser(forscher))
-      .then(() => fetchPasswordForUserFromMailHog(forscher.username))
+      .then(() => createProfessionalUser(forscher, study.name))
       .then((cred) => {
         forscherCredentials.username = cred.username;
         forscherCredentials.password = cred.password;
       })
       .then(() => {
-        cy.visit(appUrl);
+        cy.visit(adminAppUrl);
         login(forscherCredentials.username, forscherCredentials.password);
-        changePassword(forscherCredentials.password, newPassword);
       });
   });
 
@@ -116,9 +121,7 @@ describe('Release Test, role: "Forscher", General', () => {
 
   it('should contain exact 4 studies', () => {
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
-    cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Einwilligungen')
-      .click();
+    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Einwilligung').click();
 
     cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
     cy.get('.mat-option-text')
@@ -131,7 +134,7 @@ describe('Release Test, role: "Forscher", General', () => {
     cy.fixture('consents.json').then((consents) => {
       cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
-        .contains('Einwilligungen')
+        .contains('Einwilligung')
         .click();
 
       // create consent for tn
@@ -169,12 +172,11 @@ describe('Release Test, role: "Forscher", General', () => {
       cy.get('#confirmbutton').click();
 
       cy.contains('Abmelden').click();
-      cy.contains('Anderes Konto verwenden').click();
 
-      login(forscherCredentials.username, newPassword);
+      login(forscherCredentials.username, forscherCredentials.password);
       cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
-        .contains('Einwilligungen')
+        .contains('Einwilligung')
         .click();
 
       // test consent for tn
@@ -210,9 +212,7 @@ describe('Release Test, role: "Forscher", General', () => {
   it('should add new text field', () => {
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
-    cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Einwilligungen')
-      .click();
+    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Einwilligung').click();
 
     cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
 
@@ -226,13 +226,10 @@ describe('Release Test, role: "Forscher", General', () => {
       .click();
 
     cy.contains('Abmelden').click();
-    cy.contains('Anderes Konto verwenden').click();
 
-    login(forscherCredentials.username, newPassword);
+    login(forscherCredentials.username, forscherCredentials.password);
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
-    cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Einwilligungen')
-      .click();
+    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Einwilligung').click();
 
     cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
     cy.get('.mat-option-text').contains(study.name).click();
@@ -240,12 +237,11 @@ describe('Release Test, role: "Forscher", General', () => {
       .contains('Foo (Bar)')
       .click();
   });
+
   it('should add "Einwilligungsfeld"', () => {
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
-    cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Einwilligungen')
-      .click();
+    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Einwilligung').click();
 
     cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
 
@@ -257,11 +253,12 @@ describe('Release Test, role: "Forscher", General', () => {
       .contains('FooBar')
       .should('be.visible');
   });
+
   it('create consent for tn, check that condition works and consent is correctly displayed to tn', () => {
     cy.fixture('consents.json').then((consents) => {
       cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
-        .contains('Einwilligungen')
+        .contains('Einwilligung')
         .click();
 
       // create consent for tn
@@ -283,8 +280,8 @@ describe('Release Test, role: "Forscher", General', () => {
       cy.get('#confirmbutton').click();
 
       cy.contains('Abmelden').click();
-      cy.contains('Anderes Konto verwenden').click();
 
+      cy.visit(probandAppUrl);
       login(probandCredentials.username, probandCredentials.password);
       changePassword(probandCredentials.password, newPassword);
       cy.get('[data-e2e="e2e-compliance-edit-component-header"]').contains(
@@ -346,17 +343,28 @@ describe('Release Test, role: "Forscher", General', () => {
 
   it('create consent for ut, check that condition works and consent is correctly displayed to tn', () => {
     cy.fixture('consents.json').then((consents) => {
+      cy.intercept({
+        method: 'GET',
+        url: `/admin/api/v1/compliance/${study.name}/text/edit`,
+      }).as('getTextEdit');
+
+      cy.intercept({
+        method: 'GET',
+        url: `/admin/api/v1/compliance/${study.name}/questionnaire-placeholder`,
+      }).as('getQuestionnairePlaceholder');
+
       cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
-        .contains('Einwilligungen')
+        .contains('Einwilligung')
         .click();
 
       // create consent for ut
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
       cy.get('.mat-option-text').contains(study.name).click();
 
-      // Wait to make sure the compliance texts are (hopefully) fetched from the backend
-      cy.wait(1000);
+      // Wait to make sure the compliance texts are fetched from the backend
+      cy.wait('@getTextEdit');
+      cy.wait('@getQuestionnairePlaceholder');
 
       cy.get('[data-e2e="e2e-compliance-researcher-ut-radio-button"]').click();
       cy.get('[data-e2e="e2e-compliance-researcher-compliance-text"]').click();
@@ -370,16 +378,11 @@ describe('Release Test, role: "Forscher", General', () => {
         .should('not.be.disabled')
         .click();
 
-      // Add timout for the confirmation window element
-      cy.wait(500);
-
       cy.get('#confirmbutton').click();
 
       cy.contains('Abmelden').click();
-      cy.contains('Anderes Konto verwenden').click();
 
       login(utCredentials.username, utCredentials.password);
-      changePassword(utCredentials.password, newPassword);
 
       cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
@@ -473,7 +476,7 @@ describe('Release Test, role: "Forscher", General', () => {
     cy.fixture('consents.json').then((consents) => {
       cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
-        .contains('Einwilligungen')
+        .contains('Einwilligung')
         .click();
 
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
@@ -522,11 +525,12 @@ describe('Release Test, role: "Forscher", General', () => {
       cy.get('[data-e2e="Wissenschaft"]').contains('Ja').click();
     });
   });
+
   it('should test changing functionality', () => {
     cy.fixture('consents.json').then((consents) => {
       cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
-        .contains('Einwilligungen')
+        .contains('Einwilligung')
         .click();
 
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
@@ -551,8 +555,8 @@ describe('Release Test, role: "Forscher", General', () => {
       cy.get('#confirmbutton').click();
 
       cy.contains('Abmelden').click();
-      cy.contains('Anderes Konto verwenden').click();
 
+      cy.visit(probandAppUrl);
       login(probandCredentials.username, probandCredentials.password);
       changePassword(probandCredentials.password, newPassword);
 
@@ -562,13 +566,13 @@ describe('Release Test, role: "Forscher", General', () => {
 
       cy.contains('Abmelden').click();
       cy.get('#confirmButton').click();
-      cy.contains('Anderes Konto verwenden').click();
 
-      login(forscherCredentials.username, newPassword);
+      cy.visit(adminAppUrl);
+      login(forscherCredentials.username, forscherCredentials.password);
 
       cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
-        .contains('Einwilligungen')
+        .contains('Einwilligung')
         .click();
 
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
@@ -595,9 +599,8 @@ describe('Release Test, role: "Forscher", General', () => {
       cy.get('#confirmbutton').click();
 
       cy.contains('Abmelden').click();
-      cy.contains('Anderes Konto verwenden').click();
 
-      login(probandCredentials.username, newPassword);
+      cy.visit(probandAppUrl);
 
       cy.get('[data-e2e="child"').should('exist');
       cy.get('[data-e2e="app"').should('exist');

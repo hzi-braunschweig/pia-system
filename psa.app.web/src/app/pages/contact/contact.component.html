@@ -11,13 +11,21 @@
       <div *ngFor="let address of addresses">
         <div class="contact-heading">{{ address.name }}</div>
         <mat-divider [inset]="true"></mat-divider>
-        <div [innerHTML]="address.address" class="contact-row"></div>
+        <div
+          [innerHTML]="address.address"
+          class="contact-row"
+          unit-address-text
+        ></div>
         <mat-divider [inset]="true"></mat-divider>
       </div>
-      <div *ngIf="noAddresses" [innerHTML]="noAddresses"></div>
+      <div
+        *ngIf="noAddresses"
+        [innerHTML]="noAddresses"
+        unit-no-addresses-hint
+      ></div>
       <div>
         <app-request-new-material
-          *ngIf="currentRole === 'Proband' && hasSampleCompliance"
+          *ngIf="this.user.isProband() && hasSampleCompliance"
         >
         </app-request-new-material>
       </div>

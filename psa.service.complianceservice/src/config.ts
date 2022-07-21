@@ -41,8 +41,13 @@ const conf = {
   },
   servers: {
     messageQueue: GlobalConfig.getMessageQueue('complianceservice'),
+    authserver: {
+      probandTokenIntrospectionClient:
+        GlobalConfig.authserver.probandTokenIntrospectionClient,
+      adminTokenIntrospectionClient:
+        GlobalConfig.authserver.adminTokenIntrospectionClient,
+    },
   },
-  publicAuthKey: GlobalConfig.publicAuthKey,
   defaultLanguage: ConfigUtils.getEnvVariable('DEFAULT_LANGUAGE', 'de-DE'),
 };
 

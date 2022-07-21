@@ -51,20 +51,14 @@
       </span>
 
       <mat-form-field fxFlex>
-        <mat-select
-          id="selectstudydialog"
-          placeholder="{{ 'QUESTIONNAIRE_FORSCHER.STUDY' | translate }}"
-          formControlName="study_name"
-        >
-          <mat-select-search
-            [formControl]="studyFilterCtrl"
-          ></mat-select-search>
+        <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
+        <mat-select id="selectstudy" formControlName="study_name">
           <mat-option
-            *ngFor="let study_id of studiesForSelection | async"
-            [value]="study_id"
+            *ngFor="let studyName of studiesForSelection"
+            [value]="studyName"
             unit-study-option
           >
-            {{ study_id }}
+            {{ studyName }}
           </mat-option>
         </mat-select>
         <mat-error

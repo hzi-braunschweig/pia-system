@@ -50,6 +50,7 @@ import { QuestionnaireEditOptions } from './questionnaire-edit-options';
 import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
 import { filter } from 'rxjs/operators';
 import { validateQuestionnaireInstanceCount } from './questionnaire-instance-count-validator';
+import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 
 @Component({
   templateUrl: 'questionnaire-researcher.component.html',
@@ -193,6 +194,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     private mediaObserver: MediaObserver,
     private alertService: AlertService,
     private questionnaireService: QuestionnaireService,
+    private userService: UserService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
     if ('id' in this.activatedRoute.snapshot.params) {
@@ -224,7 +226,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
         await this.questionnaireService.getQuestionnaires()
       ).questionnaires;
       this.questionnairesForConditionQuestionnaire = this.questionnaires;
-      this.studies = (await this.questionnaireService.getStudies()).studies;
+      this.studies = await this.userService.getStudies();
 
       if (this.isEditMode) {
         this.currentQuestionnaire =

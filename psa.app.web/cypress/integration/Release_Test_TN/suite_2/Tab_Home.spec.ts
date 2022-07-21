@@ -15,11 +15,15 @@ import {
   generateRandomProbandForStudy,
   generateRandomStudy,
   getCredentialsForProbandByUsername,
-  getToken,
   login,
   updateProbandData,
 } from '../../../support/commands';
 import { CreateProbandRequest } from '../../../../src/app/psa.app.core/models/proband';
+import {
+  createProfessionalUser,
+  loginProfessional,
+  UserCredentials,
+} from 'cypress/support/user.commands';
 
 const short = require('short-uuid');
 const translator = short();
@@ -41,31 +45,43 @@ describe('Release Test, role: "Proband", Tab: Home', () => {
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
       role: 'Untersuchungsteam',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
+      study_accesses: [],
     };
 
     pm = {
       username: `e2e-pm-${translator.new()}@testpia-app.de`,
       role: 'ProbandenManager',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
+      study_accesses: [],
     };
 
     forscher = {
       username: `e2e-f-${translator.new()}@testpia-app.de`,
       role: 'Forscher',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
+      study_accesses: [],
     };
 
-    createStudy(study)
-      .then(() => createUser(ut))
-      .then(() => createUser(pm))
-      .then(() => createUser(forscher))
-      .then(() => getToken(ut.username))
-      .then((token) => createPlannedProband(proband.pseudonym, token))
-      .then(() => getToken(ut.username))
-      .then((token) => createProband(proband, study.name, token))
-      .then(() => getToken(pm.username))
-      .then((token) =>
+    createStudy(study);
+
+    createProfessionalUser(ut, study.name).as('utCred');
+    createProfessionalUser(pm, study.name).as('pmCred');
+    createProfessionalUser(forscher, study.name).as('fCred');
+
+    cy.get<UserCredentials>('@utCred')
+      .then(loginProfessional)
+      .then((token) => {
+        createPlannedProband(proband.pseudonym, token);
+        createProband(proband, study.name, token);
+        getCredentialsForProbandByUsername(proband.pseudonym, token).then(
+          (cred) => {
+            probandCredentials.username = cred.username;
+            probandCredentials.password = cred.password;
+          }
+        );
+      });
+
+    cy.get<UserCredentials>('@pmCred')
+      .then(loginProfessional)
+      .then((token) => {
         updateProbandData(
           proband.pseudonym,
           {
@@ -74,15 +90,7 @@ describe('Release Test, role: "Proband", Tab: Home', () => {
             plz: '53117',
           },
           token
-        )
-      )
-      .then(() => getToken(ut.username))
-      .then((token) =>
-        getCredentialsForProbandByUsername(proband.pseudonym, token)
-      )
-      .then((cred) => {
-        probandCredentials.username = cred.username;
-        probandCredentials.password = cred.password;
+        );
       });
   });
 
@@ -94,9 +102,11 @@ describe('Release Test, role: "Proband", Tab: Home', () => {
     };
 
     beforeEach(() => {
-      getToken(forscher.username).then((token) =>
-        createConsentForStudy(testProbandConsent, study.name, token)
-      );
+      cy.get<UserCredentials>('@fCred')
+        .then(loginProfessional)
+        .then((token) =>
+          createConsentForStudy(testProbandConsent, study.name, token)
+        );
     });
 
     it('should be displayed', () => {
@@ -113,7 +123,7 @@ describe('Release Test, role: "Proband", Tab: Home', () => {
 
       // data-e2e="e2e-compliance-edit-component"
       cy.get('[data-e2e="e2e-compliance-probands-content"]')
-        .contains('Einwilligungen')
+        .contains('Einwilligung')
         .click();
 
       cy.get('[data-e2e="e2e-consent-name-lastname"]')
@@ -142,6 +152,11 @@ describe('Release Test, role: "Proband", Tab: Home', () => {
 
       cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').click();
       cy.get('#confirmbutton').click();
+      cy.expectPathname('/home');
+
+      cy.get('[data-e2e="e2e-sidenav-content"]')
+        .contains('Einwilligung')
+        .click();
       cy.get('[data-e2e="e2e-compliance-edit-component-header"]')
         .contains(study.name)
         .click();
@@ -155,9 +170,9 @@ describe('Release Test, role: "Proband", Tab: Home', () => {
     };
 
     beforeEach(() => {
-      getToken(forscher.username).then((token) =>
-        createWelcomeText(welcomeText, study.name, token)
-      );
+      cy.get<UserCredentials>('@fCred')
+        .then(loginProfessional)
+        .then((token) => createWelcomeText(welcomeText, study.name, token));
     });
 
     it('Welcome text should be available and part of the study', () => {

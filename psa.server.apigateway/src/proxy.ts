@@ -16,7 +16,7 @@ import {
   ResponseRoute,
   Route,
 } from './proxyRoute';
-import { StatusCode } from './statusCode';
+import { StatusCodes } from 'http-status-codes';
 
 import * as http from 'http';
 import net from 'net';
@@ -28,7 +28,9 @@ interface Context {
 
 export class Proxy extends HttpServer<Context> {
   private static readonly BASE = 'http://localhost';
-  private readonly proxy = httpProxy.createProxyServer();
+  private readonly proxy = httpProxy.createProxyServer({
+    xfwd: true,
+  });
 
   public constructor(
     private readonly routes: Route[],
@@ -55,11 +57,11 @@ export class Proxy extends HttpServer<Context> {
 
     const context = this.getContext(req);
     const elapsed = Date.now() - (context.received ?? 0);
-    const serviceName = context.route ? context.route.upstream.serviceName : '';
+    const host = context.route ? context.route.upstream.host : '';
     console.log(
       `${Logging.colorizeStatus(statusCode)}: ${req.method ?? 'MISSING'} ${
         req.url ?? 'MISSING'
-      } @ ${Color.serviceName(serviceName)} [${elapsed}] ${
+      } @ ${Color.serviceName(host)} [${elapsed}] ${
         err ? Color.error(err.message) : ''
       }`
     );
@@ -75,7 +77,7 @@ export class Proxy extends HttpServer<Context> {
     } else if (isResponseRoute(route) && req.url === route.path) {
       this.handleResponseRoute(route, req, res);
     } else {
-      res.statusCode = StatusCode.NOT_FOUND;
+      res.statusCode = StatusCodes.NOT_FOUND;
       res.end();
     }
   }
@@ -92,13 +94,16 @@ export class Proxy extends HttpServer<Context> {
       res.setHeader('Access-Control-Allow-Headers', 'Accept,Content-Type');
       res.setHeader('Access-Control-Max-Age', '86400');
       res.setHeader('Content-Length', '0');
-      res.statusCode = 204;
+      res.statusCode = StatusCodes.NO_CONTENT;
     } else {
       res.setHeader('Access-Control-Allow-Origin', '*');
-      Object.keys(route.response.headers).forEach((key) =>
-        res.setHeader(key, route.response.headers[key]!)
-      );
-      res.write(route.response.body);
+      for (const [key, value] of Object.entries(route.response.headers ?? {})) {
+        res.setHeader(key, value);
+      }
+      if (route.response.body) {
+        res.write(route.response.body);
+      }
+      res.statusCode = route.response.statusCode ?? StatusCodes.OK;
     }
     res.end();
     this.logStatus(req, res.statusCode);
@@ -148,11 +153,11 @@ export class Proxy extends HttpServer<Context> {
     res: http.ServerResponse | net.Socket
   ): void {
     if (res instanceof http.ServerResponse) {
-      res.statusCode = StatusCode.BAD_GATEWAY;
+      res.statusCode = StatusCodes.BAD_GATEWAY;
     }
     res.end();
 
-    this.logStatus(req, StatusCode.BAD_GATEWAY, err);
+    this.logStatus(req, StatusCodes.BAD_GATEWAY, err);
   }
 
   private handleEnd(

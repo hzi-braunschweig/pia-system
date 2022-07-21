@@ -19,6 +19,12 @@ class UserserviceClient extends serviceClient_1.ServiceClient {
         }
         return await this.httpClient.get(`/user/pseudonyms?${query.toString()}`);
     }
+    async getExternalIds(filter) {
+        const query = new URLSearchParams();
+        query.append('study', filter.study);
+        query.append('complianceContact', filter.complianceContact.toString());
+        return await this.httpClient.get(`/user/externalIds?${query.toString()}`);
+    }
     async lookupIds(pseudonym) {
         return await this.httpClient.get(`/user/users/${pseudonym}/ids`, {
             responseType: 'text',

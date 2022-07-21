@@ -19,23 +19,28 @@ export interface UserCredentials {
  *
  * @param user user to login
  * @param performPasswordChange performs an initial password change if true
+ * @param type specifies wether an admin or proband account should be logged in
  */
 export function login(
   user: UserCredentials,
-  performPasswordChange = false
-): Chainable<any> {
+  performPasswordChange: boolean,
+  type: 'admin' | 'proband'
+): Chainable<string> {
   return cy
     .request({
       method: 'POST',
-      url: '/api/v1/user/login',
+      url: `/api/v1/auth/realms/pia-${type}-realm/protocol/openid-connect/token`,
+      form: true,
       body: {
-        logged_in_with: 'web',
+        client_id: `pia-${type}-web-app-client`,
+        grant_type: 'password',
+        scope: 'openid',
         username: user.username,
         password: user.password,
       },
     })
     .then((res) => {
-      const token = res.body.token;
+      const token = `${res.body.token_type} ${res.body.access_token}`;
       if (!performPasswordChange || !res.body.pw_change_needed) {
         return cy.wrap(token);
       }
@@ -53,6 +58,20 @@ export function login(
         })
         .then(() => token);
     });
+}
+
+export function loginProband(user: UserCredentials): Chainable<string> {
+  return login(user, false, 'proband');
+}
+
+export function loginProfessional(user: UserCredentials): Chainable<string> {
+  return login(user, false, 'admin');
+}
+
+export function loginSysAdmin(): Chainable<string> {
+  return cy
+    .fixture('users')
+    .then((users) => cy.loginProfessional(users.existing.SysAdmin));
 }
 
 export type StudyAccessLevel = 'read' | 'write' | 'admin';
@@ -76,18 +95,22 @@ export function createProfessionalUser(
   user: ProfessionalUser,
   studyId: string
 ): Chainable<UserCredentials> {
+  const body = {
+    ...user,
+    study_accesses: [
+      { study_id: studyId, access_level: 'admin' },
+      ...(user.study_accesses ?? []),
+    ],
+    temporaryPassword: false,
+  };
   return cy
-    .fixture('users')
-    .then((users) => cy.login(users.existing.SysAdmin))
+    .loginSysAdmin()
     .then((token) =>
       cy.request({
         method: 'POST',
-        url: '/api/v1/user/users',
+        url: '/api/v1/user/admin/users',
         headers: { Authorization: token },
-        body: {
-          ...user,
-          study_accesses: [{ study_id: studyId, access_level: 'admin' }],
-        },
+        body,
       })
     )
     .then(() => fetchPasswordForUserFromMailHog(user.username));
@@ -123,13 +146,13 @@ export function createProband(
         cy.createProfessionalUser(users.new.Untersuchungsteam, studyName)
       )
       .as('untersuchungsTeamCredentials')
-      .then((untersuchungsTeam) => cy.login(untersuchungsTeam))
+      .then((untersuchungsTeam) => cy.loginProfessional(untersuchungsTeam))
       // 2. register pseudonym
       .then((token) =>
         cy
           .request({
             method: 'POST',
-            url: '/api/v1/user/plannedprobands',
+            url: '/api/v1/user/admin/plannedprobands',
             headers: { Authorization: token },
             body: { pseudonyms: [proband.pseudonym] },
           })
@@ -140,9 +163,9 @@ export function createProband(
         cy
           .request({
             method: 'POST',
-            url: `/api/v1/user/studies/${studyName}/probands`,
+            url: `/api/v1/user/admin/studies/${studyName}/probands`,
             headers: { Authorization: token },
-            body: proband,
+            body: { ...proband, temporaryPassword: false },
           })
           .then(() => cy.wrap(token))
       )
@@ -150,7 +173,7 @@ export function createProband(
       .then((token) =>
         cy.request({
           method: 'GET',
-          url: '/api/v1/user/plannedprobands/' + proband.pseudonym,
+          url: '/api/v1/user/admin/plannedprobands/' + proband.pseudonym,
           headers: { Authorization: token },
         })
       )
@@ -159,7 +182,7 @@ export function createProband(
         password: result.body.password,
       }))
       .as('credentials')
-      .then((credentials) => cy.login(credentials, true))
+      .then((credentials) => cy.login(credentials, true, 'proband'))
       // 5. delete UT
       .then(() => cy.get<UserCredentials>('@untersuchungsTeamCredentials'))
       .then((utCredentials) =>
@@ -192,16 +215,14 @@ export function createRandomProband(
 }
 
 export function deleteProfessionalUser(username): Chainable {
-  return cy
-    .fixture('users')
-    .then((users) => cy.login(users.existing.SysAdmin))
-    .then((token) =>
-      cy.request({
-        method: 'DELETE',
-        url: '/api/v1/user/users/' + username,
-        headers: { Authorization: token },
-      })
-    );
+  return cy.loginSysAdmin().then((token) =>
+    cy.request({
+      method: 'DELETE',
+      url: '/api/v1/user/admin/users/' + username,
+      headers: { Authorization: token },
+      failOnStatusCode: false,
+    })
+  );
 }
 
 export function deleteProband(username, studyId: string): Chainable {
@@ -209,11 +230,11 @@ export function deleteProband(username, studyId: string): Chainable {
     cy
       .createProfessionalUser(users.new.ProbandenManager, studyId)
       .as('probandenManagerCredentials')
-      .then((credentials) => cy.login(credentials))
+      .then((credentials) => cy.loginProfessional(credentials))
       .then((token) =>
         cy.request({
           method: 'POST',
-          url: '/api/v1/user/pendingdeletions',
+          url: '/api/v1/user/admin/pendingdeletions',
           headers: { Authorization: token },
           body: {
             requested_for: users.new.ProbandenManager.username, // this is not valid if 4 eyes opposition is active
@@ -227,6 +248,25 @@ export function deleteProband(username, studyId: string): Chainable {
         cy.deleteProfessionalUser(probandenManagerCredentials.username)
       )
   );
+}
+
+export function fetchPasswordResetLinkForUserFromMailHog(
+  username: string,
+  retryCount = 5
+): Chainable<string> {
+  return cy
+    .request({
+      method: 'GET',
+      url:
+        (Cypress.env('MAILSERVER_BASEURL') || 'http://localhost:8025') +
+        `/api/v2/search?kind=to&query=${username}&start=0&limit=1`,
+    })
+    .then((result) => {
+      if (!result.body.items.length && retryCount > 0) {
+        return fetchPasswordResetLinkForUserFromMailHog(username, --retryCount);
+      }
+      return cy.wrap(extractLinkUrl(result.body.items[0].Content.Body));
+    });
 }
 
 export function fetchPasswordForUserFromMailHog(
@@ -249,6 +289,12 @@ export function fetchPasswordForUserFromMailHog(
         password: extractPassword(result.body.items[0].Content.Body),
       });
     });
+}
+
+function extractLinkUrl(body: string): string {
+  return mimelib
+    .decodeQuotedPrintable(body)
+    .match(/<a href="(?<url>.*)" rel="nofollow">/).groups.url;
 }
 
 function extractPassword(body: string): string {

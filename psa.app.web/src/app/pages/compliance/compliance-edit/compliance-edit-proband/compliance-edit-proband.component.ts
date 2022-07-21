@@ -13,8 +13,10 @@ import {
   ComplianceDataRequest,
   ComplianceDataResponse,
 } from '../../../../psa.app.core/models/compliance';
-import { AuthenticationManager } from '../../../../_services/authentication-manager.service';
 import { ComplianceEditParentComponent } from '../compliance-edit-parent.component';
+import { CurrentUser } from '../../../../_services/current-user.service';
+import { Router } from '@angular/router';
+import { ComplianceForStudyWrapper } from '../complianceForStudyWrapper';
 
 @Component({
   selector: 'app-compliance-edit-proband',
@@ -25,20 +27,18 @@ export class ComplianceEditProbandComponent
   extends ComplianceEditParentComponent
   implements OnInit
 {
-  private username: string;
-  public study: string;
   public isLoading = false;
 
   constructor(
-    private auth: AuthenticationManager,
+    private user: CurrentUser,
     private complianceManager: ComplianceManager,
     protected complianceService: ComplianceService,
     protected alertService: AlertService,
-    protected dialog: MatDialog
+    protected dialog: MatDialog,
+    protected router: Router
   ) {
     super(complianceService, alertService, dialog);
-    this.username = this.auth.getCurrentUsername();
-    this.study = this.auth.getCurrentStudy();
+    this.study = this.user.study;
   }
 
   public async ngOnInit(): Promise<void> {
@@ -55,6 +55,17 @@ export class ComplianceEditProbandComponent
     this.isLoading = false;
   }
 
+  public override async onSubmit(
+    studyWrapper: ComplianceForStudyWrapper
+  ): Promise<void> {
+    try {
+      await super.onSubmit(studyWrapper);
+      await this.router.navigate(['home']);
+    } catch (e) {
+      console.log(e.message);
+    }
+  }
+
   protected async updateComplianceAgreement(
     complianceData: ComplianceDataRequest
   ): Promise<ComplianceDataResponse> {
@@ -63,10 +74,10 @@ export class ComplianceEditProbandComponent
     );
   }
 
-  public async downloadPdf(): Promise<void> {
-    await this.complianceService.getComplianceAgreementPdfForUser(
-      this.study,
-      this.username
+  public downloadPdf(): void {
+    this.complianceService.getComplianceAgreementPdfForProband(
+      this.user.study,
+      this.user.username
     );
   }
 }

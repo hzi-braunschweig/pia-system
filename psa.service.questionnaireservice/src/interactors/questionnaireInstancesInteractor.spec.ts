@@ -7,7 +7,7 @@
 import sinon from 'sinon';
 import { expect } from 'chai';
 
-import { SinonMethodStub, AccessToken } from '@pia/lib-service-core';
+import { AccessToken, SinonMethodStub } from '@pia/lib-service-core';
 import { QuestionnaireInstancesInteractor } from './questionnaireInstancesInteractor';
 import { QuestionnaireInstanceRepository } from '../repositories/questionnaireInstanceRepository';
 import { messageQueueService } from '../services/messageQueueService';
@@ -69,12 +69,11 @@ describe('questionnairesInstancesInteractor', () => {
     it('should not get the qi, if the user has unknown role', async () => {
       // Arrange
       getQuestionnaireInstanceWithQuestionnaireStub.resolves(undefined);
-      const session: AccessToken = {
-        id: 1,
-        role: 'NoValidRole',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:NoValidRole'],
         username: 'Testproband',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       await QuestionnaireInstancesInteractor.getQuestionnaireInstance(
         session,
@@ -97,12 +96,11 @@ describe('questionnairesInstancesInteractor', () => {
           questionnaire: createQuestionnaire({ questions: [createQuestion()] }),
         })
       );
-      const session: AccessToken = {
-        id: 1,
-        role: 'Proband',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Proband'],
         username: 'Testproband',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       await QuestionnaireInstancesInteractor.getQuestionnaireInstance(
         session,
@@ -133,12 +131,11 @@ describe('questionnairesInstancesInteractor', () => {
           questionnaire: createQuestionnaire({ questions: [createQuestion()] }),
         })
       );
-      const session: AccessToken = {
-        id: 1,
-        role: 'Proband',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Proband'],
         username: 'Testproband',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       await QuestionnaireInstancesInteractor.getQuestionnaireInstance(
         session,
@@ -165,12 +162,11 @@ describe('questionnairesInstancesInteractor', () => {
       getQuestionnaireInstanceWithQuestionnaireStub
         .withArgs(1)
         .resolves(createQuestionnaireInstance({ study_id: 'teststudy' }));
-      const session: AccessToken = {
-        id: 1,
-        role: 'Forscher',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['otherStudy'],
-      };
+        studies: ['otherStudy'],
+      });
 
       await QuestionnaireInstancesInteractor.getQuestionnaireInstance(
         session,
@@ -194,12 +190,11 @@ describe('questionnairesInstancesInteractor', () => {
           questionnaire: createQuestionnaire({ questions: [createQuestion()] }),
         })
       );
-      const session: AccessToken = {
-        id: 1,
-        role: 'Proband',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Proband'],
         username: 'Testproband',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       // Act
       const result =
@@ -224,12 +219,11 @@ describe('questionnairesInstancesInteractor', () => {
           questionnaire: createQuestionnaire({ questions: [createQuestion()] }),
         })
       );
-      const session: AccessToken = {
-        id: 1,
-        role: 'Forscher',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['teststudy'],
-      };
+        studies: ['teststudy'],
+      });
 
       // Act
       const result =
@@ -252,12 +246,11 @@ describe('questionnairesInstancesInteractor', () => {
       getQuestionnaireInstancesWithQuestionnaireAsResearcherStub.resolves([
         createQuestionnaireInstance(),
       ]);
-      const session: AccessToken = {
-        id: 1,
-        role: 'NoValidRole',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:NoValidRole'],
         username: 'Testforscher',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       await QuestionnaireInstancesInteractor.getQuestionnaireInstances(
         session,
@@ -280,12 +273,11 @@ describe('questionnairesInstancesInteractor', () => {
           createQuestionnaireInstance({ id: 1 }),
           createQuestionnaireInstance({ id: 2 }),
         ]);
-      const session: AccessToken = {
-        id: 1,
-        role: 'Forscher',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       await QuestionnaireInstancesInteractor.getQuestionnaireInstances(
         session,
@@ -307,12 +299,11 @@ describe('questionnairesInstancesInteractor', () => {
       getQuestionnaireInstancesWithQuestionnaireAsResearcherStub.resolves([
         createQuestionnaireInstance(),
       ]);
-      const session: AccessToken = {
-        id: 1,
-        role: 'NoValidRole',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:NoValidRole'],
         username: 'Testforscher',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       await QuestionnaireInstancesInteractor.getQuestionnaireInstancesForUser(
         session,
@@ -332,12 +323,11 @@ describe('questionnairesInstancesInteractor', () => {
       getQuestionnaireInstancesWithQuestionnaireAsResearcherStub.resolves([
         createQuestionnaireInstance(),
       ]);
-      const session: AccessToken = {
-        id: 1,
-        role: 'Proband',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Proband'],
         username: 'Testproband',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       await QuestionnaireInstancesInteractor.getQuestionnaireInstancesForUser(
         session,
@@ -357,12 +347,11 @@ describe('questionnairesInstancesInteractor', () => {
       getQuestionnaireInstancesWithQuestionnaireAsResearcherStub.resolves([
         createQuestionnaireInstance(),
       ]);
-      const session: AccessToken = {
-        id: 1,
-        role: 'Forscher',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['teststudy'],
-      };
+        studies: ['teststudy'],
+      });
 
       // Act
       const result =
@@ -383,12 +372,11 @@ describe('questionnairesInstancesInteractor', () => {
       getQuestionnaireInstancesWithQuestionnaireAsResearcherStub.resolves([
         createQuestionnaireInstance({ study_id: 'AStudyId' }),
       ]);
-      const session: AccessToken = {
-        id: 1,
-        role: 'Forscher',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['AStudyId'],
-      };
+        studies: ['AStudyId'],
+      });
 
       // Act
       const result =
@@ -419,12 +407,11 @@ describe('questionnairesInstancesInteractor', () => {
       updateQuestionnaireInstanceStub.resolves(
         createQuestionnaireInstance({ status: 'released_once' })
       );
-      const session: AccessToken = {
-        id: 1,
-        role: 'NoValidRole',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:NoValidRole'],
         username: 'Testproband',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       await QuestionnaireInstancesInteractor.updateQuestionnaireInstance(
         session,
@@ -447,12 +434,11 @@ describe('questionnairesInstancesInteractor', () => {
       updateQuestionnaireInstanceStub.resolves(
         createQuestionnaireInstance({ status: 'released_once' })
       );
-      const session: AccessToken = {
-        id: 1,
-        role: 'Proband',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Proband'],
         username: 'Testproband',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       await QuestionnaireInstancesInteractor.updateQuestionnaireInstance(
         session,
@@ -480,12 +466,11 @@ describe('questionnairesInstancesInteractor', () => {
       updateQuestionnaireInstanceStub.resolves(
         createQuestionnaireInstance({ status: 'released_once' })
       );
-      const session: AccessToken = {
-        id: 1,
-        role: 'Proband',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Proband'],
         username: 'Testproband',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       await QuestionnaireInstancesInteractor.updateQuestionnaireInstance(
         session,
@@ -513,12 +498,11 @@ describe('questionnairesInstancesInteractor', () => {
       updateQuestionnaireInstanceStub.resolves(
         createQuestionnaireInstance({ status: 'active' })
       );
-      const session: AccessToken = {
-        id: 1,
-        role: 'Proband',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Proband'],
         username: 'Testproband',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       await QuestionnaireInstancesInteractor.updateQuestionnaireInstance(
         session,
@@ -542,12 +526,11 @@ describe('questionnairesInstancesInteractor', () => {
           createQuestionnaireInstance({ study_id: '1', status: 'inactive' })
         );
       updateQuestionnaireInstanceStub.rejects();
-      const session: AccessToken = {
-        id: 1,
-        role: 'Forscher',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       await QuestionnaireInstancesInteractor.updateQuestionnaireInstance(
         session,
@@ -574,12 +557,11 @@ describe('questionnairesInstancesInteractor', () => {
       updateQuestionnaireInstanceStub.resolves(
         createQuestionnaireInstance({ status: 'released_once' })
       );
-      const session: AccessToken = {
-        id: 1,
-        role: 'Proband',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Proband'],
         username: 'Testproband',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       // Act
       const result =
@@ -608,12 +590,11 @@ describe('questionnairesInstancesInteractor', () => {
       updateQuestionnaireInstanceStub.resolves(
         createQuestionnaireInstance({ status: 'released_twice' })
       );
-      const session: AccessToken = {
-        id: 1,
-        role: 'Proband',
+      const session: AccessToken = createDecodedToken({
+        scope: ['realm:Proband'],
         username: 'Testproband',
-        groups: ['TestStudy'],
-      };
+        studies: ['TestStudy'],
+      });
 
       // Act
       const result =
@@ -652,6 +633,16 @@ describe('questionnairesInstancesInteractor', () => {
       questionnaire_name: 'Test Questionnaire',
       questionnaire: createQuestionnaire(),
       ...overwrite,
+    };
+  }
+
+  function createDecodedToken(overwrites: Partial<AccessToken>): AccessToken {
+    return {
+      username: '',
+      studies: [],
+      scope: [],
+      locale: 'de-De',
+      ...overwrites,
     };
   }
 

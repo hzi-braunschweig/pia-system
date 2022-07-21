@@ -100,36 +100,6 @@ describe('RESTPresenter', function () {
     });
   });
 
-  describe('#presentAnswertype', function () {
-    it('should return a links section', function () {
-      const answertypeObj = {
-        id: 999,
-        type: 'bool',
-      };
-
-      const actual = RESTPresenter.presentAnswertype(answertypeObj);
-
-      expect(actual).to.have.property('links');
-      expect(actual.links.self).to.deep.equal({ href: '/answertypes/999' });
-    });
-  });
-
-  describe('#presentAnswertypes', function () {
-    it('should return a links section', function () {
-      const answertypeArr = [
-        {
-          id: 999,
-          type: 'bool',
-        },
-      ];
-
-      const actual = RESTPresenter.presentAnswertypes(answertypeArr);
-
-      expect(actual).to.have.property('links');
-      expect(actual.links.self).to.deep.equal({ href: '/answertypes' });
-    });
-  });
-
   describe('#presentStudy', function () {
     it('should return a links section', function () {
       const studyObj = {
@@ -143,30 +113,6 @@ describe('RESTPresenter', function () {
 
       expect(actual).to.have.property('links');
       expect(actual.links.self).to.deep.equal({ href: '/studies/Teststudie' });
-    });
-  });
-
-  describe('#presentStudies', function () {
-    it('should return a links section', function () {
-      const studiesArr = [
-        {
-          name: 'Teststudie1',
-          start_date: '1111-01-01T00:00:00.000Z',
-          end_date: '2222-01-01T00:00:00.000Z',
-          running: false,
-        },
-        {
-          name: 'Teststudie2',
-          start_date: '1111-01-01T00:00:00.000Z',
-          end_date: '2222-01-01T00:00:00.000Z',
-          running: false,
-        },
-      ];
-
-      const actual = RESTPresenter.presentStudies(studiesArr);
-
-      expect(actual).to.have.property('links');
-      expect(actual.links.self).to.deep.equal({ href: '/studies' });
     });
   });
 

@@ -12,7 +12,7 @@ VALUES ('qtest-proband1', '', 'Proband'),
        ('researcher1@example.com', '', 'Forscher'),
        ('investigationteam1@example.com', '', 'Untersuchungsteam'),
        ('investigationteam2@example.com', '', 'Untersuchungsteam'),
-       ('QTestSystemAdmin1', '', 'SysAdmin'),
+       ('qtest-sysadmin1', '', 'SysAdmin'),
        ('pm1@example.com', '', 'ProbandenManager');
 
 INSERT INTO probands (pseudonym, ids, study)

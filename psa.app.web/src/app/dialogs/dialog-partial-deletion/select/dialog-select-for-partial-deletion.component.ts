@@ -15,7 +15,6 @@ import {
 } from '@angular/forms';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../../_services/alert.service';
-import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
 import {
   Questionnaire,
@@ -24,6 +23,7 @@ import {
 import { LabResult } from '../../../psa.app.core/models/labresult';
 import { HttpErrorResponse } from '@angular/common/http';
 import { endOfDay, startOfDay } from 'date-fns';
+import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 
 export interface DialogSelectForPartialDeletionData {
   probandId: string;
@@ -80,7 +80,7 @@ export class DialogSelectForPartialDeletionComponent implements OnInit {
       DialogSelectForPartialDeletionResult
     >,
     private sampleTrackingService: SampleTrackingService,
-    private authService: AuthService,
+    private userService: UserService,
     private alertService: AlertService,
     @Inject(MAT_DIALOG_DATA) public data: DialogSelectForPartialDeletionData,
     private questionnaireService: QuestionnaireService
@@ -147,16 +147,14 @@ export class DialogSelectForPartialDeletionComponent implements OnInit {
         this.alertService.errorObject(err);
       });
 
-    const getUsersWithSameRolePromise = this.authService
-      .getUsersWithSameRole()
-      .then((users) => {
-        this.researchers = users
-          .map((user) => user.username)
-          .filter((username) => {
-            // use validator to filter users without email address
-            const control = new FormControl(username, Validators.email);
-            return !control.errors || !control.errors.email;
-          });
+    const getUsersWithSameRolePromise = this.userService
+      .getProfessionalAccounts({
+        studyName: this.data.studyId,
+        onlyMailAddresses: true,
+        filterSelf: true,
+      })
+      .then((accounts) => {
+        this.researchers = accounts.map((user) => user.username);
         this.filteredResearchers = this.researchers;
       })
       .catch((err: HttpErrorResponse) => {

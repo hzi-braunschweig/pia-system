@@ -1,17 +1,52 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GlobalConfig = void 0;
+exports.GlobalConfig = exports.GlobalAuthSettings = void 0;
 const configUtils_1 = require("./configUtils");
 const configModel_1 = require("./configModel");
+class GlobalAuthSettings {
+    static get keycloakHttpConnection() {
+        return new configModel_1.HttpConnection(configUtils_1.ConfigUtils.getEnvVariable('AUTHSERVER_PROTOCOL', 'https'), configUtils_1.ConfigUtils.getEnvVariable('AUTHSERVER_HOST', 'authserver'), configUtils_1.ConfigUtils.getEnvVariableInt('AUTHSERVER_PORT'));
+    }
+    static get probandTokenIntrospectionClient() {
+        return {
+            connection: GlobalAuthSettings.keycloakHttpConnection,
+            realm: 'pia-proband-realm',
+            clientId: 'pia-proband-token-introspection-client',
+            secret: configUtils_1.ConfigUtils.getEnvVariable('AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET'),
+        };
+    }
+    static get probandManagementClient() {
+        return {
+            connection: GlobalAuthSettings.keycloakHttpConnection,
+            realm: 'pia-proband-realm',
+            clientId: 'pia-proband-management-client',
+            secret: configUtils_1.ConfigUtils.getEnvVariable('AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET'),
+        };
+    }
+    static get adminTokenIntrospectionClient() {
+        return {
+            connection: GlobalAuthSettings.keycloakHttpConnection,
+            realm: 'pia-admin-realm',
+            clientId: 'pia-admin-token-introspection-client',
+            secret: configUtils_1.ConfigUtils.getEnvVariable('AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET'),
+        };
+    }
+    static get adminManagementClient() {
+        return {
+            connection: GlobalAuthSettings.keycloakHttpConnection,
+            realm: 'pia-admin-realm',
+            clientId: 'pia-admin-management-client',
+            secret: configUtils_1.ConfigUtils.getEnvVariable('AUTHSERVER_ADMIN_MANAGEMENT_CLIENT_SECRET'),
+        };
+    }
+}
+exports.GlobalAuthSettings = GlobalAuthSettings;
 class GlobalConfig {
     static get internal() {
         return {
             host: '0.0.0.0',
             port: Number(configUtils_1.ConfigUtils.getEnvVariable('INTERNAL_PORT')),
         };
-    }
-    static get authservice() {
-        return GlobalConfig.getHttpConnection('AUTHSERVICE');
     }
     static get complianceservice() {
         return GlobalConfig.getHttpConnection('COMPLIANCESERVICE');
@@ -27,9 +62,6 @@ class GlobalConfig {
     }
     static get userservice() {
         return GlobalConfig.getHttpConnection('USERSERVICE');
-    }
-    static get sormasservice() {
-        return GlobalConfig.getHttpConnection('SORMASSERVICE');
     }
     static get timeZone() {
         return configUtils_1.ConfigUtils.getEnvVariable('APPLICATION_TIMEZONE', 'Europe/Berlin');
@@ -48,12 +80,6 @@ class GlobalConfig {
     }
     static get webappUrl() {
         return configUtils_1.ConfigUtils.getEnvVariable('WEBAPP_URL');
-    }
-    static get backendApiUrl() {
-        return configUtils_1.ConfigUtils.getEnvVariable('BACKEND_API_URL');
-    }
-    static get publicAuthKey() {
-        return configUtils_1.ConfigUtils.getFileContent('./authKey/public.pem');
     }
     static getPublic(sslCerts) {
         return {
@@ -91,9 +117,13 @@ class GlobalConfig {
             password: configUtils_1.ConfigUtils.getEnvVariable('MESSAGEQUEUE_APP_PASSWORD'),
         };
     }
+    static isDevelopmentSystem() {
+        return (configUtils_1.ConfigUtils.getEnvVariable('IS_DEVELOPMENT_SYSTEM', 'false').toLowerCase() === 'true');
+    }
     static getHttpConnection(servicePrefix) {
         return new configModel_1.HttpConnection(configUtils_1.ConfigUtils.getEnvVariable('INTERNAL_PROTOCOL', 'http'), configUtils_1.ConfigUtils.getEnvVariable(servicePrefix + '_HOST'), Number(configUtils_1.ConfigUtils.getEnvVariable(servicePrefix + '_INTERNAL_PORT')));
     }
 }
 exports.GlobalConfig = GlobalConfig;
+GlobalConfig.authserver = GlobalAuthSettings;
 //# sourceMappingURL=globalConfig.js.map

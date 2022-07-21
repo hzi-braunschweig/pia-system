@@ -28,16 +28,6 @@ INSERT INTO probands (pseudonym,
 VALUES ('test-1', FALSE, FALSE, FALSE, '.', 1, FALSE, FALSE, 'active', 'test-ids', TRUE, 'Teststudie - Export'),
        ('test-ids2', FALSE, FALSE, FALSE, '.', 1, FALSE, FALSE, 'active', 'test-ids2', TRUE, 'Teststudie - Export');
 
-INSERT INTO accounts (username,
-                      password,
-                      role,
-                      pw_change_needed,
-                      number_of_wrong_attempts,
-                      third_wrong_password_at,
-                      salt,
-                      initial_password_validity_date)
-VALUES ('test-1', '', 'Proband', TRUE, NULL, NULL, '', '2021-06-14 09:19:07.482');
-
 --
 -- Questionnaires
 --
@@ -66,12 +56,11 @@ VALUES (5987, 2620, 'Ist dies eine Einzelauswahl?', 1, '{f,f}', '{Ja,Nein}', '{1
 
 INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue,
                                      date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled,
-                                     progress, release_version, questionnaire_version, transmission_ts_v1,
-                                     transmission_ts_v2)
+                                     progress, release_version, questionnaire_version)
 VALUES (17712543, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'test-1', '2021-06-08 00:00:00', NULL, NULL,
-        1, 'released', FALSE, 20, 2, 1, NULL, NULL),
-       (17712544, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'test-ids2', '2021-06-08 00:00:00', NULL, NULL,
-        1, 'released', FALSE, 20, 2, 1, NULL, NULL);
+        1, 'released', FALSE, 20, 2, 1),
+       (17712544, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'test-ids2', '2021-06-08 00:00:00', NULL,
+        NULL, 1, 'released', FALSE, 20, 2, 1);
 
 INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release,
                      releasing_person)
@@ -93,14 +82,5 @@ VALUES (1, 'test-1', 'analyzed', 'TEST', 0, 'active', '2010-01-01'),
 INSERT INTO lab_observations (name, name_id, lab_result_id, result_value, comment)
 VALUES ('test1', 1, 1, 'test', 'test'),
        ('test2', 2, 2, 'test', 'test');
-
-
-
---
--- Add the researcher who requests the export
---
-
-INSERT INTO accounts(username, password, role)
-VALUES ('QExportTestForscher', '', 'Forscher');
 
 COMMIT;

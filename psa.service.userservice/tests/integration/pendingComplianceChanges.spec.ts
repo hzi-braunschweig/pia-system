@@ -8,19 +8,20 @@ import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import * as sinon from 'sinon';
 import fetchMocker from 'fetch-mock';
+import { StatusCodes } from 'http-status-codes';
 
-import * as JWT from 'jsonwebtoken';
-import secretOrPrivateKey from '../secretOrPrivateKey';
 import {
   HttpClient,
   SystemLogInternalDto,
 } from '@pia-system/lib-http-clients-internal';
+import {
+  AuthServerMock,
+  AuthTokenMockBuilder,
+  MailService,
+} from '@pia/lib-service-core';
 
 import { db } from '../../src/db';
-
 import { Server } from '../../src/server';
-import { StatusCodes } from 'http-status-codes';
-
 import {
   cleanup,
   setupDelete,
@@ -29,6 +30,11 @@ import {
   setupPut,
 } from './pendingComplianceChanges.spec.data/setup.helper';
 import { PendingComplianceChange } from '../../src/models/pendingComplianceChange';
+import { config } from '../../src/config';
+import {
+  mockGetProbandAccount,
+  mockGetProfessionalAccount,
+} from './accountServiceRequestMock.helper.spec';
 
 interface ProbandCompliance {
   username: string;
@@ -39,108 +45,56 @@ interface ProbandCompliance {
 
 chai.use(chaiHttp);
 
-const apiAddress = `http://localhost:${process.env['PORT'] ?? '80'}/user`;
+const apiAddress = `http://localhost:${config.public.port}`;
 
 const fetchMock = fetchMocker.sandbox();
 const serverSandbox = sinon.createSandbox();
 const testSandbox = sinon.createSandbox();
 
-const probandSession1 = {
-  id: 1,
-  role: 'Proband',
-  username: 'ApiTestProband1',
-  groups: ['ApiTestStudie1'],
-};
-const forscherSession1 = {
-  id: 1,
-  role: 'Forscher',
+const probandHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-api-proband1',
+  studies: ['ApiTestStudie1'],
+});
+const forscherHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
   username: 'forscher1@apitest.de',
-  groups: ['ApiTestStudie1'],
-};
-const utSession1 = {
-  id: 1,
-  role: 'Untersuchungsteam',
+  studies: ['ApiTestStudie1'],
+});
+const utHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Untersuchungsteam'],
   username: 'ut1@apitest.de',
-  groups: ['ApiTestStudie1'],
-};
-const sysadminSession1 = {
-  id: 1,
-  role: 'SysAdmin',
+  studies: ['ApiTestStudie1'],
+});
+const sysadminHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['SysAdmin'],
   username: 'sa1@apitest.de',
-};
-const pmSession1 = {
-  id: 1,
-  role: 'ProbandenManager',
+  studies: [],
+});
+const pmHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['ProbandenManager'],
   username: 'pm1@apitest.de',
-  groups: ['ApiTestStudie1'],
-};
-const pmSession2 = {
-  id: 1,
-  role: 'ProbandenManager',
+  studies: ['ApiTestStudie1'],
+});
+const pmHeader2 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['ProbandenManager'],
   username: 'pm2@apitest.de',
-  groups: ['ApiTestStudie1'],
-};
-const pmSession3 = {
-  id: 1,
-  role: 'ProbandenManager',
-  username: 'pmNoEmail',
-  groups: ['ApiTestStudie1'],
-};
-const pmSession4 = {
-  id: 1,
-  role: 'ProbandenManager',
+  studies: ['ApiTestStudie1'],
+});
+const pmHeader3 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['ProbandenManager'],
+  username: 'qtest-pm_no_email',
+  studies: ['ApiTestStudie1'],
+});
+const pmHeader4 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['ProbandenManager'],
   username: 'pm4@apitest.de',
-  groups: ['ApiTestStudie4'],
-};
-
-const invalidToken = JWT.sign(probandSession1, 'thisIsNotAValidPrivateKey', {
-  expiresIn: '24h',
-});
-const probandToken1 = JWT.sign(probandSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-const forscherToken1 = JWT.sign(forscherSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-const utToken1 = JWT.sign(utSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-const sysadminToken1 = JWT.sign(sysadminSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-const pmToken1 = JWT.sign(pmSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-const pmToken2 = JWT.sign(pmSession2, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-const pmToken3 = JWT.sign(pmSession3, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-const pmToken4 = JWT.sign(pmSession4, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+  studies: ['ApiTestStudie4'],
 });
 
-const invalidHeader = { authorization: invalidToken };
-const probandHeader1 = { authorization: probandToken1 };
-const forscherHeader1 = { authorization: forscherToken1 };
-const utHeader1 = { authorization: utToken1 };
-const sysadminHeader1 = { authorization: sysadminToken1 };
-const pmHeader1 = { authorization: pmToken1 };
-const pmHeader2 = { authorization: pmToken2 };
-const pmHeader3 = { authorization: pmToken3 };
-const pmHeader4 = { authorization: pmToken4 };
-
-describe('/pendingComplianceChanges', function () {
+describe('/admin/pendingComplianceChanges', function () {
   before(async function () {
+    serverSandbox.stub(MailService, 'sendMail').resolves(true);
     await Server.init();
   });
 
@@ -150,6 +104,7 @@ describe('/pendingComplianceChanges', function () {
   });
 
   beforeEach(() => {
+    AuthServerMock.adminRealm().returnValid();
     testSandbox
       .stub<typeof HttpClient, 'fetch'>(HttpClient, 'fetch')
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -168,11 +123,12 @@ describe('/pendingComplianceChanges', function () {
   });
 
   afterEach(() => {
+    AuthServerMock.cleanAll();
     testSandbox.restore();
     fetchMock.restore();
   });
 
-  describe('GET pendingcompliancechanges/id', function () {
+  describe('GET /admin/pendingcompliancechanges/{id}', function () {
     beforeEach(async () => {
       await setupGet();
     });
@@ -181,18 +137,10 @@ describe('/pendingComplianceChanges', function () {
       await cleanup();
     });
 
-    it('should return HTTP 401 when the token is wrong', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .get('/pendingcompliancechanges/1234560')
-        .set(invalidHeader);
-      expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
-    });
-
     it('should return HTTP 403 when a proband tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .get('/pendingcompliancechanges/1234560')
+        .get('/admin/pendingcompliancechanges/1234560')
         .set(probandHeader1);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -200,7 +148,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 when a forscher tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .get('/pendingcompliancechanges/1234560')
+        .get('/admin/pendingcompliancechanges/1234560')
         .set(forscherHeader1);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -208,7 +156,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 when a ut tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .get('/pendingcompliancechanges/1234560')
+        .get('/admin/pendingcompliancechanges/1234560')
         .set(utHeader1);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -216,7 +164,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 when a sysadmin tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .get('/pendingcompliancechanges/1234560')
+        .get('/admin/pendingcompliancechanges/1234560')
         .set(sysadminHeader1);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -224,7 +172,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 when a pm tries that is not involved in the deletion', async function () {
       const result = await chai
         .request(apiAddress)
-        .get('/pendingcompliancechanges/1234560')
+        .get('/admin/pendingcompliancechanges/1234560')
         .set(pmHeader3);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -232,7 +180,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 404 when the pending compliance change id does not exist', async function () {
       const result = await chai
         .request(apiAddress)
-        .get('/pendingcompliancechanges/999999')
+        .get('/admin/pendingcompliancechanges/999999')
         .set(pmHeader1);
       expect(result).to.have.status(StatusCodes.NOT_FOUND);
     });
@@ -241,14 +189,14 @@ describe('/pendingComplianceChanges', function () {
       const id = 1234560;
       const result = await chai
         .request(apiAddress)
-        .get(`/pendingcompliancechanges/${id}`)
+        .get(`/admin/pendingcompliancechanges/${id}`)
         .set(pmHeader1);
       const response = result.body as PendingComplianceChange;
       expect(result).to.have.status(StatusCodes.OK);
       expect(response.id).to.equal(id);
       expect(response.requested_by).to.equal('pm1@apitest.de');
       expect(response.requested_for).to.equal('pm2@apitest.de');
-      expect(response.proband_id).to.equal('ApiTestProband1');
+      expect(response.proband_id).to.equal('qtest-api-proband1');
       expect(response.compliance_labresults_from).to.equal(false);
       expect(response.compliance_labresults_to).to.equal(true);
       expect(response.compliance_samples_from).to.equal(false);
@@ -261,14 +209,14 @@ describe('/pendingComplianceChanges', function () {
       const id = 1234560;
       const result = await chai
         .request(apiAddress)
-        .get(`/pendingcompliancechanges/${id}`)
+        .get(`/admin/pendingcompliancechanges/${id}`)
         .set(pmHeader2);
       const response = result.body as PendingComplianceChange;
       expect(result).to.have.status(StatusCodes.OK);
       expect(response.id).to.equal(id);
       expect(response.requested_by).to.equal('pm1@apitest.de');
       expect(response.requested_for).to.equal('pm2@apitest.de');
-      expect(response.proband_id).to.equal('ApiTestProband1');
+      expect(response.proband_id).to.equal('qtest-api-proband1');
       expect(response.compliance_labresults_from).to.equal(false);
       expect(response.compliance_labresults_to).to.equal(true);
       expect(response.compliance_samples_from).to.equal(false);
@@ -281,14 +229,14 @@ describe('/pendingComplianceChanges', function () {
       const id = 1234561;
       const result = await chai
         .request(apiAddress)
-        .get(`/pendingcompliancechanges/${id}`)
+        .get(`/admin/pendingcompliancechanges/${id}`)
         .set(pmHeader3);
       const response = result.body as PendingComplianceChange;
       expect(result).to.have.status(StatusCodes.OK);
       expect(response.id).to.equal(id);
-      expect(response.requested_by).to.equal('pmNoEmail');
+      expect(response.requested_by).to.equal('qtest-pm_no_email');
       expect(response.requested_for).to.equal('pm2@apitest.de');
-      expect(response.proband_id).to.equal('ApiTestProband1');
+      expect(response.proband_id).to.equal('qtest-api-proband1');
       expect(response.compliance_labresults_from).to.equal(false);
       expect(response.compliance_labresults_to).to.equal(true);
       expect(response.compliance_samples_from).to.equal(false);
@@ -298,7 +246,7 @@ describe('/pendingComplianceChanges', function () {
     });
   });
 
-  describe('POST pendingcompliancechanges', function () {
+  describe('POST /admin/pendingcompliancechanges', function () {
     beforeEach(async () => {
       await setupPost();
     });
@@ -309,7 +257,7 @@ describe('/pendingComplianceChanges', function () {
 
     const pDValid1 = {
       requested_for: 'pm2@apitest.de',
-      proband_id: 'ApiTestProband1',
+      proband_id: 'qtest-api-proband1',
       compliance_labresults_to: true,
       compliance_samples_to: false,
       compliance_bloodsamples_to: true,
@@ -317,13 +265,13 @@ describe('/pendingComplianceChanges', function () {
 
     const pDValid2 = {
       requested_for: 'pm2@apitest.de',
-      proband_id: 'ApiTestProband1',
+      proband_id: 'qtest-api-proband1',
       compliance_labresults_to: false,
     };
 
     const pDwrongFor = {
       requested_for: 'nonexisting@pm.de',
-      proband_id: 'ApiTestProband1',
+      proband_id: 'qtest-api-proband1',
       compliance_labresults_to: true,
       compliance_samples_to: false,
       compliance_bloodsamples_to: true,
@@ -338,8 +286,8 @@ describe('/pendingComplianceChanges', function () {
     };
 
     const pDNoEmailFor = {
-      requested_for: 'pmNoEmail',
-      proband_id: 'ApiTestProband1',
+      requested_for: 'qtest-pm_no_email',
+      proband_id: 'qtest-api-proband1',
       compliance_labresults_to: true,
       compliance_samples_to: false,
       compliance_bloodsamples_to: true,
@@ -347,7 +295,7 @@ describe('/pendingComplianceChanges', function () {
 
     const pDWrongStudyPM = {
       requested_for: 'pm4@apitest.de',
-      proband_id: 'ApiTestProband1',
+      proband_id: 'qtest-api-proband1',
       compliance_labresults_to: true,
       compliance_samples_to: false,
       compliance_bloodsamples_to: true,
@@ -355,7 +303,7 @@ describe('/pendingComplianceChanges', function () {
 
     const pDWrongStudyProband = {
       requested_for: 'pm2@apitest.de',
-      proband_id: 'ApiTestProband2',
+      proband_id: 'qtest-api-proband2',
       compliance_labresults_to: true,
       compliance_samples_to: false,
       compliance_bloodsamples_to: true,
@@ -363,25 +311,16 @@ describe('/pendingComplianceChanges', function () {
 
     const pDConflictProband = {
       requested_for: 'pm2@apitest.de',
-      proband_id: 'ApiTestProband3',
+      proband_id: 'qtest-api-proband3',
       compliance_labresults_to: true,
       compliance_samples_to: false,
       compliance_bloodsamples_to: true,
     };
 
-    it('should return HTTP 401 when the token is wrong', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .post('/pendingcompliancechanges')
-        .set(invalidHeader)
-        .send(pDValid1);
-      expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
-    });
-
     it('should return HTTP 403 when a proband tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(probandHeader1)
         .send(pDValid1);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -390,7 +329,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 when a forscher tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(forscherHeader1)
         .send(pDValid1);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -399,7 +338,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 when a ut tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(utHeader1)
         .send(pDValid1);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -408,103 +347,218 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 when a sysadmin tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(sysadminHeader1)
         .send(pDValid1);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
     it('should return HTTP 422 when a pm tries for himself', async function () {
+      // Arrange
+      mockGetProfessionalAccount(testSandbox, {
+        username: 'pm2@apitest.de',
+        role: 'ProbandenManager',
+        studies: ['ApiTestStudie1'],
+      });
+
+      // Act
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(pmHeader2)
         .send(pDValid1);
+
+      // Assert
       expect(result).to.have.status(StatusCodes.UNPROCESSABLE_ENTITY);
     });
 
-    it('should return HTTP 422 when a pm from wrong study tries', async function () {
+    it('should return HTTP 404 when a pm from wrong study tries', async function () {
+      // Arrange
+      mockGetProfessionalAccount(testSandbox, {
+        username: 'pm2@apitest.de',
+        role: 'ProbandenManager',
+        studies: ['ApiTestStudie1'],
+      });
+      mockGetProbandAccount(
+        testSandbox,
+        'qtest-api-proband1',
+        'ApiTestStudie1'
+      );
+
+      // Act
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(pmHeader4)
         .send(pDValid1);
-      expect(result).to.have.status(StatusCodes.UNPROCESSABLE_ENTITY);
+
+      // Assert
+      expect(result).to.have.status(StatusCodes.NOT_FOUND);
     });
 
-    it('should return HTTP 422 when requested_for is no email address and not create pending compliance change object', async function () {
+    it('should return HTTP 422 when requested_for is an unknown user and not create pending compliance change object', async function () {
+      // Arrange
+      mockGetProfessionalAccount(testSandbox, {
+        username: 'pm2@apitest.de',
+        role: 'ProbandenManager',
+        studies: ['ApiTestStudie1'],
+      });
+      mockGetProbandAccount(
+        testSandbox,
+        'qtest-api-proband1',
+        'ApiTestStudie1'
+      );
+
+      // Act
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(pmHeader1)
         .send(pDNoEmailFor);
+
+      // Assert
       expect(result).to.have.status(StatusCodes.UNPROCESSABLE_ENTITY);
       await db
         .oneOrNone(
           'SELECT * FROM pending_compliance_changes WHERE proband_id=$1',
-          ['ApiTestProband1']
+          ['qtest-api-proband1']
         )
         .then((cc) => {
           expect(cc).to.equal(null);
         });
     });
 
-    it('should return HTTP 422 when requested_for is in wrong study', async function () {
+    it('should return HTTP 404 when requested_for is in wrong study', async function () {
+      // Arrange
+      mockGetProfessionalAccount(testSandbox, {
+        username: 'pm4@apitest.de',
+        role: 'ProbandenManager',
+        studies: ['ApiTestStudie4'],
+      });
+      mockGetProbandAccount(
+        testSandbox,
+        'qtest-api-proband1',
+        'ApiTestStudie1'
+      );
+
+      // Act
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(pmHeader1)
         .send(pDWrongStudyPM);
-      expect(result).to.have.status(StatusCodes.UNPROCESSABLE_ENTITY);
+
+      // Assert
+      expect(result).to.have.status(StatusCodes.NOT_FOUND);
     });
 
-    it('should return HTTP 422 when target proband is in wrong study', async function () {
+    it('should return HTTP 404 when target proband is in wrong study', async function () {
+      // Arrange
+      mockGetProfessionalAccount(testSandbox, {
+        username: 'pm2@apitest.de',
+        role: 'ProbandenManager',
+        studies: ['ApiTestStudie1'],
+      });
+      mockGetProbandAccount(
+        testSandbox,
+        'qtest-api-proband2',
+        'ApiTestStudie2'
+      );
+
+      // Act
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(pmHeader1)
         .send(pDWrongStudyProband);
-      expect(result).to.have.status(StatusCodes.UNPROCESSABLE_ENTITY);
+
+      // Assert
+      expect(result).to.have.status(StatusCodes.NOT_FOUND);
     });
 
-    it('should return HTTP 422 when target proband is nonexisting', async function () {
+    it('should return HTTP 404 when target proband is nonexisting', async function () {
+      // Arrange
+      mockGetProfessionalAccount(testSandbox, {
+        username: 'pm2@apitest.de',
+        role: 'ProbandenManager',
+        studies: ['ApiTestStudie1'],
+      });
+
+      // Act
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(pmHeader1)
         .send(pDwrongProband);
-      expect(result).to.have.status(StatusCodes.UNPROCESSABLE_ENTITY);
+
+      // Assert
+      expect(result).to.have.status(StatusCodes.NOT_FOUND);
     });
 
     it('should return HTTP 422 when target pm is nonexisting', async function () {
+      // Arrange
+      mockGetProfessionalAccount(testSandbox, {
+        username: 'pm2@apitest.de',
+        role: 'ProbandenManager',
+        studies: ['ApiTestStudie1'],
+      });
+      mockGetProbandAccount(
+        testSandbox,
+        'qtest-api-proband1',
+        'ApiTestStudie1'
+      );
+
+      // Act
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(pmHeader1)
         .send(pDwrongFor);
+
+      // Assert
       expect(result).to.have.status(StatusCodes.UNPROCESSABLE_ENTITY);
     });
 
     it('should return HTTP 403 when targeted proband has a change request already', async function () {
+      // Arrange
+      mockGetProfessionalAccount(testSandbox, {
+        username: 'pm2@apitest.de',
+        role: 'ProbandenManager',
+        studies: ['ApiTestStudie1'],
+      });
+
+      // Act
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(pmHeader1)
         .send(pDConflictProband);
+
+      // Assert
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
     it('should return HTTP 200 and create pending compliance change', async function () {
+      // Arrange
+      mockGetProfessionalAccount(testSandbox, {
+        username: 'pm2@apitest.de',
+        role: 'ProbandenManager',
+        studies: ['ApiTestStudie1'],
+      });
+
+      // Act
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(pmHeader1)
         .send(pDValid1);
+
+      // Assert
       const response = result.body as PendingComplianceChange;
       expect(result).to.have.status(StatusCodes.OK);
       expect(response.requested_by).to.equal('pm1@apitest.de');
       expect(response.requested_for).to.equal('pm2@apitest.de');
-      expect(response.proband_id).to.equal('ApiTestProband1');
+      expect(response.proband_id).to.equal('qtest-api-proband1');
 
       expect(response.compliance_labresults_to).to.equal(true);
       expect(response.compliance_samples_to).to.equal(false);
@@ -516,16 +570,26 @@ describe('/pendingComplianceChanges', function () {
     });
 
     it('should return HTTP 200 and create pending compliance change if no_email_pm requests', async function () {
+      // Arrange
+      mockGetProfessionalAccount(testSandbox, {
+        username: 'pm2@apitest.de',
+        role: 'ProbandenManager',
+        studies: ['ApiTestStudie1'],
+      });
+
+      // Act
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(pmHeader3)
         .send(pDValid1);
+
+      // Assert
       const response = result.body as PendingComplianceChange;
       expect(result).to.have.status(StatusCodes.OK);
-      expect(response.requested_by).to.equal('pmNoEmail');
+      expect(response.requested_by).to.equal('qtest-pm_no_email');
       expect(response.requested_for).to.equal('pm2@apitest.de');
-      expect(response.proband_id).to.equal('ApiTestProband1');
+      expect(response.proband_id).to.equal('qtest-api-proband1');
 
       expect(response.compliance_labresults_to).to.equal(true);
       expect(response.compliance_samples_to).to.equal(false);
@@ -537,16 +601,26 @@ describe('/pendingComplianceChanges', function () {
     });
 
     it('should return HTTP 200 and create pending compliance change with a view missing params', async function () {
+      // Arrange
+      mockGetProfessionalAccount(testSandbox, {
+        username: 'pm2@apitest.de',
+        role: 'ProbandenManager',
+        studies: ['ApiTestStudie1'],
+      });
+
+      // Act
       const result = await chai
         .request(apiAddress)
-        .post('/pendingcompliancechanges')
+        .post('/admin/pendingcompliancechanges')
         .set(pmHeader1)
         .send(pDValid2);
+
+      // Assert
       const response = result.body as PendingComplianceChange;
       expect(result).to.have.status(StatusCodes.OK);
       expect(response.requested_by).to.equal('pm1@apitest.de');
       expect(response.requested_for).to.equal('pm2@apitest.de');
-      expect(response.proband_id).to.equal('ApiTestProband1');
+      expect(response.proband_id).to.equal('qtest-api-proband1');
 
       expect(response.compliance_labresults_to).to.equal(false);
       expect(response.compliance_samples_to).to.equal(true);
@@ -558,7 +632,7 @@ describe('/pendingComplianceChanges', function () {
     });
   });
 
-  describe('PUT pendingcompliancechanges/id', function () {
+  describe('PUT /admin/pendingcompliancechanges/{id}', function () {
     beforeEach(async () => {
       await setupPut();
     });
@@ -567,19 +641,10 @@ describe('/pendingComplianceChanges', function () {
       await cleanup();
     });
 
-    it('should return HTTP 401 when the token is wrong', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .put('/pendingcompliancechanges/1234560')
-        .set(invalidHeader)
-        .send({});
-      expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
-    });
-
     it('should return HTTP 403 when a proband tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .put('/pendingcompliancechanges/1234560')
+        .put('/admin/pendingcompliancechanges/1234560')
         .set(probandHeader1)
         .send({});
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -588,7 +653,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 when a forscher tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .put('/pendingcompliancechanges/1234560')
+        .put('/admin/pendingcompliancechanges/1234560')
         .set(forscherHeader1)
         .send({});
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -597,7 +662,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 when a ut tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .put('/pendingcompliancechanges/1234560')
+        .put('/admin/pendingcompliancechanges/1234560')
         .set(utHeader1)
         .send({});
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -606,7 +671,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 sysadmin tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .put('/pendingcompliancechanges/1234560')
+        .put('/admin/pendingcompliancechanges/1234560')
         .set(sysadminHeader1)
         .send({});
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -615,7 +680,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 when requested_by pm tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .put('/pendingcompliancechanges/1234560')
+        .put('/admin/pendingcompliancechanges/1234560')
         .set(pmHeader1)
         .send({});
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -624,7 +689,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 wrong pm tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .put('/pendingcompliancechanges/1234560')
+        .put('/admin/pendingcompliancechanges/1234560')
         .set(pmHeader3)
         .send({});
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -633,7 +698,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 200 and change probands compliances, delete compliance needes fb instances and post deletion log', async function () {
       const result = await chai
         .request(apiAddress)
-        .put('/pendingcompliancechanges/1234560')
+        .put('/admin/pendingcompliancechanges/1234560')
         .set(pmHeader2)
         .send({});
       const response = result.body as PendingComplianceChange;
@@ -649,11 +714,11 @@ describe('/pendingComplianceChanges', function () {
 
       const proband: ProbandCompliance = await db.one(
         'SELECT * FROM probands WHERE pseudonym=$1',
-        ['ApiTestProband1']
+        ['qtest-api-proband1']
       );
       const instances = await db.manyOrNone(
         'SELECT * FROM questionnaire_instances WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['qtest-api-proband1']
       );
       expect(fetchMock.called()).to.be.true;
 
@@ -667,7 +732,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 200 and change probands compliances, not delete compliance needes fb instances and post deletion log', async function () {
       const result = await chai
         .request(apiAddress)
-        .put('/pendingcompliancechanges/1234561')
+        .put('/admin/pendingcompliancechanges/1234561')
         .set(pmHeader2)
         .send({});
       const response = result.body as PendingComplianceChange;
@@ -684,11 +749,11 @@ describe('/pendingComplianceChanges', function () {
 
       const proband: ProbandCompliance = await db.one(
         'SELECT * FROM probands WHERE pseudonym=$1',
-        ['ApiTestProband1']
+        ['qtest-api-proband1']
       );
       const instances = await db.manyOrNone(
         'SELECT * FROM questionnaire_instances WHERE user_id=$1',
-        ['ApiTestProband1']
+        ['qtest-api-proband1']
       );
       expect(fetchMock.called()).to.be.true;
 
@@ -700,7 +765,7 @@ describe('/pendingComplianceChanges', function () {
     });
   });
 
-  describe('DELETE pendingcompliancechanges/id', function () {
+  describe('DELETE /admin/pendingcompliancechanges/{id}', function () {
     beforeEach(async () => {
       await setupDelete();
     });
@@ -709,19 +774,10 @@ describe('/pendingComplianceChanges', function () {
       await cleanup();
     });
 
-    it('should return HTTP 401 when the token is wrong', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .delete('/pendingcompliancechanges/1234560')
-        .set(invalidHeader)
-        .send({});
-      expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
-    });
-
     it('should return HTTP 403 when a proband tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .delete('/pendingcompliancechanges/1234560')
+        .delete('/admin/pendingcompliancechanges/1234560')
         .set(probandHeader1)
         .send({});
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -730,7 +786,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 when a forscher tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .delete('/pendingcompliancechanges/1234560')
+        .delete('/admin/pendingcompliancechanges/1234560')
         .set(forscherHeader1)
         .send({});
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -739,7 +795,7 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 when a ut tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .delete('/pendingcompliancechanges/1234560')
+        .delete('/admin/pendingcompliancechanges/1234560')
         .set(utHeader1)
         .send({});
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -748,26 +804,26 @@ describe('/pendingComplianceChanges', function () {
     it('should return HTTP 403 when a sysadmin tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .delete('/pendingcompliancechanges/1234560')
+        .delete('/admin/pendingcompliancechanges/1234560')
         .set(sysadminHeader1)
         .send({});
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
-    it('should return HTTP 403 pm of another study tries', async function () {
+    it('should return HTTP 404 if pm of another study tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .delete('/pendingcompliancechanges/1234560')
+        .delete('/admin/pendingcompliancechanges/1234560')
         .set(pmHeader4)
         .send({});
-      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+      expect(result).to.have.status(StatusCodes.NOT_FOUND);
     });
 
     it('should return HTTP 200 and cancel changing of proband compliances for requested_by pm', async function () {
       const id = 1234560;
       const result = await chai
         .request(apiAddress)
-        .delete(`/pendingcompliancechanges/${id}`)
+        .delete(`/admin/pendingcompliancechanges/${id}`)
         .set(pmHeader1)
         .send({});
       const response = result.body as PendingComplianceChange;
@@ -775,7 +831,7 @@ describe('/pendingComplianceChanges', function () {
       expect(result).to.have.status(StatusCodes.OK);
       expect(response.requested_by).to.equal('pm1@apitest.de');
       expect(response.requested_for).to.equal('pm2@apitest.de');
-      expect(response.proband_id).to.equal('ApiTestProband1');
+      expect(response.proband_id).to.equal('qtest-api-proband1');
 
       expect(response.compliance_labresults_to).to.equal(false);
       expect(response.compliance_samples_to).to.equal(false);
@@ -787,7 +843,7 @@ describe('/pendingComplianceChanges', function () {
 
       const proband: ProbandCompliance = await db.one(
         'SELECT * FROM probands WHERE pseudonym=$1',
-        ['ApiTestProband1']
+        ['qtest-api-proband1']
       );
       const hasPendingComplianceChange =
         (await db.oneOrNone(
@@ -805,7 +861,7 @@ describe('/pendingComplianceChanges', function () {
       const id = 1234560;
       const result = await chai
         .request(apiAddress)
-        .delete(`/pendingcompliancechanges/${id}`)
+        .delete(`/admin/pendingcompliancechanges/${id}`)
         .set(pmHeader2)
         .send({});
       const response = result.body as PendingComplianceChange;
@@ -813,7 +869,7 @@ describe('/pendingComplianceChanges', function () {
       expect(result).to.have.status(StatusCodes.OK);
       expect(response.requested_by).to.equal('pm1@apitest.de');
       expect(response.requested_for).to.equal('pm2@apitest.de');
-      expect(response.proband_id).to.equal('ApiTestProband1');
+      expect(response.proband_id).to.equal('qtest-api-proband1');
 
       expect(response.compliance_labresults_to).to.equal(false);
       expect(response.compliance_samples_to).to.equal(false);
@@ -825,7 +881,7 @@ describe('/pendingComplianceChanges', function () {
 
       const proband: ProbandCompliance = await db.one(
         'SELECT * FROM probands WHERE pseudonym=$1',
-        ['ApiTestProband1']
+        ['qtest-api-proband1']
       );
       const hasPendingComplianceChange =
         (await db.oneOrNone(
@@ -843,7 +899,7 @@ describe('/pendingComplianceChanges', function () {
       const id = 1234560;
       const result = await chai
         .request(apiAddress)
-        .delete(`/pendingcompliancechanges/${id}`)
+        .delete(`/admin/pendingcompliancechanges/${id}`)
         .set(pmHeader3)
         .send({});
       const response = result.body as PendingComplianceChange;
@@ -851,7 +907,7 @@ describe('/pendingComplianceChanges', function () {
       expect(result).to.have.status(StatusCodes.OK);
       expect(response.requested_by).to.equal('pm1@apitest.de');
       expect(response.requested_for).to.equal('pm2@apitest.de');
-      expect(response.proband_id).to.equal('ApiTestProband1');
+      expect(response.proband_id).to.equal('qtest-api-proband1');
 
       expect(response.compliance_labresults_to).to.equal(false);
       expect(response.compliance_samples_to).to.equal(false);
@@ -863,7 +919,7 @@ describe('/pendingComplianceChanges', function () {
 
       const proband: ProbandCompliance = await db.one(
         'SELECT * FROM probands WHERE pseudonym=$1',
-        ['ApiTestProband1']
+        ['qtest-api-proband1']
       );
       const hasPendingComplianceChange =
         (await db.oneOrNone(

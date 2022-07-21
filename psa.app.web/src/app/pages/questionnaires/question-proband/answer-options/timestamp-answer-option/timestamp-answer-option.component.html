@@ -12,6 +12,7 @@
     placeholder="{{ 'GENERAL.TIMESTAMP' | translate }}"
     [ngModel]="timestamp | date: 'HH:mm dd.MM.yy'"
     (blur)="textInputBlurred(textInput.value)"
+    data-unit="timestamp-input"
   />
 </mat-form-field>
 <button
@@ -20,6 +21,7 @@
   mat-raised-button
   color="primary"
   (click)="setTimestamp()"
+  data-unit="set-timestamp-button"
 >
   {{ 'GENERAL.SET' | translate }}
 </button>

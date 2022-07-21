@@ -4,7 +4,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { AccessToken } from '@pia/lib-service-core';
+import {
+  AccessToken,
+  assertStudyAccess,
+  getPrimaryRealmRole,
+} from '@pia/lib-service-core';
 import {
   QuestionnaireInstance as QuestionnaireInstanceDeprecated,
   QuestionnaireInstanceForPM,
@@ -22,11 +26,7 @@ export class QuestionnaireInstancesInteractor {
     decodedToken: AccessToken,
     id: number
   ): Promise<QuestionnaireInstanceDeprecated> {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
-    const userStudies = decodedToken.groups;
-
-    switch (userRole) {
+    switch (getPrimaryRealmRole(decodedToken)) {
       case 'Proband': {
         const result =
           await QuestionnaireInstanceRepository.getQuestionnaireInstanceWithQuestionnaire(
@@ -47,7 +47,7 @@ export class QuestionnaireInstancesInteractor {
           );
         }
         if (
-          result.user_id === userName &&
+          result.user_id === decodedToken.username &&
           result.status !== 'inactive' &&
           result.status !== 'expired' &&
           result.status !== 'deleted'
@@ -78,11 +78,7 @@ export class QuestionnaireInstancesInteractor {
             'UT can only get instances with type for_research_team'
           );
         }
-        if (!userStudies.includes(qInstanceResult.study_id)) {
-          throw new Error(
-            'Could not get questionnaire instance, because user has no access to study'
-          );
-        }
+        assertStudyAccess(qInstanceResult.study_id, decodedToken);
         if (
           qInstanceResult.status !== 'inactive' &&
           qInstanceResult.status !== 'expired' &&
@@ -110,11 +106,7 @@ export class QuestionnaireInstancesInteractor {
           throw new Error(
             'Could not get questionnaire instance, because conditions are not fulfilled'
           );
-        if (!userStudies.includes(qInstanceResult.study_id)) {
-          throw new Error(
-            'Could not get questionnaire instance, because user has no access to study'
-          );
-        }
+        assertStudyAccess(qInstanceResult.study_id, decodedToken);
         return qInstanceResult;
       }
 
@@ -129,74 +121,53 @@ export class QuestionnaireInstancesInteractor {
     decodedToken: AccessToken,
     status: QuestionnaireInstanceStatus[]
   ): Promise<QuestionnaireInstanceDeprecated[]> {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
-
-    switch (userRole) {
-      case 'Proband':
-        return QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireAsProband(
-          userName,
-          status
-        ).catch((err) => {
-          console.log(err);
-          return [];
-        });
-      default:
-        throw new Error(
-          'Could not get questionnaire instances, because user role is not valid'
-        );
-    }
+    return QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireAsProband(
+      decodedToken.username,
+      status
+    ).catch((err) => {
+      console.log(err);
+      return [];
+    });
   }
 
   public static async getQuestionnaireInstancesForUser(
     decodedToken: AccessToken,
     user_id: string
   ): Promise<QuestionnaireInstanceDeprecated[] | QuestionnaireInstanceForPM[]> {
-    const userRole = decodedToken.role;
-    const userStudies = decodedToken.groups;
+    let probandQIs:
+      | QuestionnaireInstanceDeprecated[]
+      | QuestionnaireInstanceForPM[] = [];
 
-    switch (userRole) {
-      case 'Forscher': {
-        const probandQIs =
-          await QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireAsResearcher(
-            user_id
-          ).catch((err) => {
-            console.log(err);
-            return [];
-          });
-        return probandQIs.filter((probandQI) =>
-          userStudies.includes(probandQI.study_id)
-        );
+    try {
+      switch (getPrimaryRealmRole(decodedToken)) {
+        case 'Forscher': {
+          probandQIs =
+            await QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireAsResearcher(
+              user_id
+            );
+          break;
+        }
+        case 'ProbandenManager': {
+          probandQIs =
+            await QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireAsPM(
+              user_id
+            );
+          break;
+        }
+        case 'Untersuchungsteam': {
+          probandQIs =
+            await QuestionnaireInstanceRepository.getQuestionnaireInstancesAsInvestigator(
+              user_id
+            );
+          break;
+        }
       }
-      case 'ProbandenManager': {
-        const probandQIs =
-          await QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireAsPM(
-            user_id
-          ).catch((err) => {
-            console.log(err);
-            return [];
-          });
-        return probandQIs.filter((probandQI) =>
-          userStudies.includes(probandQI.study_id)
-        );
-      }
-      case 'Untersuchungsteam': {
-        const probandQIs =
-          await QuestionnaireInstanceRepository.getQuestionnaireInstancesAsInvestigator(
-            user_id
-          ).catch((err) => {
-            console.log(err);
-            return [];
-          });
-        return probandQIs.filter((probandQI) =>
-          userStudies.includes(probandQI.study_id)
-        );
-      }
-      default:
-        throw new Error(
-          'Could not get questionnaire instance: Unknown role or no role specified'
-        );
+    } catch (err) {
+      console.log(err);
     }
+    return probandQIs.filter((probandQI) =>
+      decodedToken.studies.includes(probandQI.study_id)
+    );
   }
 
   public static async updateQuestionnaireInstance(
@@ -206,11 +177,7 @@ export class QuestionnaireInstancesInteractor {
     progress: number,
     release_version: number
   ): Promise<QuestionnaireInstanceDeprecated> {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
-    const userStudies = decodedToken.groups;
-
-    switch (userRole) {
+    switch (getPrimaryRealmRole(decodedToken)) {
       case 'Proband': {
         const currentInstance =
           await QuestionnaireInstanceRepository.getQuestionnaireInstanceForProband(
@@ -221,44 +188,42 @@ export class QuestionnaireInstancesInteractor {
               'Could not update questionnaire instance, because it does not exist'
             );
           });
-        if (currentInstance.user_id === userName) {
-          if (
-            !status ||
-            this.isAllowedStatusTransitionForProband(
-              currentInstance.status,
-              status
-            )
-          ) {
-            const result =
-              await QuestionnaireInstanceRepository.updateQuestionnaireInstance(
-                id,
-                status,
-                progress,
-                release_version
-              ).catch((err) => {
-                console.log(err);
-                throw new Error(
-                  'Could not update questionnaire instance: internal DB error'
-                );
-              });
-
-            if (status === 'released_once' || status === 'released_twice') {
-              await messageQueueService.sendQuestionnaireInstanceReleased(
-                id,
-                release_version
-              );
-            }
-            return result;
-          } else {
-            throw new Error(
-              'Could not update questionnaire instance, wrong status transition'
-            );
-          }
-        } else {
+        if (currentInstance.user_id !== decodedToken.username) {
           throw new Error(
             'Could not update questionnaire instance, because user has no access'
           );
         }
+        if (
+          status &&
+          !this.isAllowedStatusTransitionForProband(
+            currentInstance.status,
+            status
+          )
+        ) {
+          throw new Error(
+            'Could not update questionnaire instance, wrong status transition'
+          );
+        }
+        const result =
+          await QuestionnaireInstanceRepository.updateQuestionnaireInstance(
+            id,
+            status,
+            progress,
+            release_version
+          ).catch((err) => {
+            console.log(err);
+            throw new Error(
+              'Could not update questionnaire instance: internal DB error'
+            );
+          });
+
+        if (status === 'released_once' || status === 'released_twice') {
+          await messageQueueService.sendQuestionnaireInstanceReleased(
+            id,
+            release_version
+          );
+        }
+        return result;
       }
       case 'Untersuchungsteam': {
         const currentInstance =
@@ -271,42 +236,37 @@ export class QuestionnaireInstancesInteractor {
             );
           });
         if (
-          !status ||
-          this.isAllowedStatusTransitionForInvestigator(
+          status &&
+          !this.isAllowedStatusTransitionForInvestigator(
             currentInstance.status,
             status
           )
         ) {
-          if (userStudies.includes(currentInstance.study_id)) {
-            const result =
-              await QuestionnaireInstanceRepository.updateQuestionnaireInstance(
-                id,
-                status,
-                progress,
-                release_version
-              ).catch((err) => {
-                console.log(err);
-                throw new Error(
-                  'Could not update questionnaire instance: internal DB error'
-                );
-              });
-            if (status === 'released') {
-              await messageQueueService.sendQuestionnaireInstanceReleased(
-                id,
-                release_version
-              );
-            }
-            return result;
-          } else {
-            throw new Error(
-              'Could not get questionnaire instances because UT has no access'
-            );
-          }
-        } else {
           throw new Error(
             'Could not update questionnaire instance, wrong status transition'
           );
         }
+        assertStudyAccess(currentInstance.study_id, decodedToken);
+
+        const result =
+          await QuestionnaireInstanceRepository.updateQuestionnaireInstance(
+            id,
+            status,
+            progress,
+            release_version
+          ).catch((err) => {
+            console.log(err);
+            throw new Error(
+              'Could not update questionnaire instance: internal DB error'
+            );
+          });
+        if (status === 'released') {
+          await messageQueueService.sendQuestionnaireInstanceReleased(
+            id,
+            release_version
+          );
+        }
+        return result;
       }
       default:
         throw new Error(

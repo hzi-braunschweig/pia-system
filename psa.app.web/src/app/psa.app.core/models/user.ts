@@ -4,34 +4,12 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { StudyAccessOfUser } from './study_access';
+import { StudyAccessOfUser } from './studyAccess';
 
-export interface AccessToken {
+export interface User {
   username: string;
   role: Role;
-  groups: string[];
-}
-
-export type User = Omit<AccessToken, 'groups'> & { studies: string[] };
-
-/**
- * The response for a login request. Currently it also gives
- * `username: string;` and `role: Role;` but it is not needed because it is also in the token.
- */
-export interface LoginResponse {
-  token: string;
-  token_login: string;
-  pw_change_needed: boolean;
-}
-
-export interface LoginToken {
-  username: string;
-}
-
-export interface PasswordChangeRequest {
-  oldPassword: string;
-  newPassword1: string;
-  newPassword2: string;
+  studies: string[];
 }
 
 export type ProfessionalRole =

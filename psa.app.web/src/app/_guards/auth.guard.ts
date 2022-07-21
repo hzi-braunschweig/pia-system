@@ -7,45 +7,44 @@
 import { Injectable } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
-  CanActivate,
   Router,
   RouterStateSnapshot,
-  UrlTree,
 } from '@angular/router';
-import { AuthenticationManager } from '../_services/authentication-manager.service';
-import { AlertService } from '../_services/alert.service';
+import { KeycloakAuthGuard, KeycloakService } from 'keycloak-angular';
+import { environment } from '../../environments/environment';
 
-/**
- * This Guard checks whether a user is authenticated. If not he will be redirected to login.
- * If he needs a new password, he will be redirected to the change password page.
- */
 @Injectable({
   providedIn: 'root',
 })
-export class AuthGuard implements CanActivate {
+export class AuthGuard extends KeycloakAuthGuard {
   constructor(
-    private router: Router,
-    private auth: AuthenticationManager,
-    private alertService: AlertService
-  ) {}
+    protected readonly router: Router,
+    protected readonly keycloak: KeycloakService
+  ) {
+    super(router, keycloak);
+  }
 
-  public canActivate(
-    next: ActivatedRouteSnapshot,
+  public async isAccessAllowed(
+    route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
-  ): boolean | UrlTree {
-    if (this.auth.isAuthenticated()) {
-      if (this.auth.isPasswordChangeNeeded()) {
-        return this.router.createUrlTree(['/changePassword']);
-      }
-      return true;
-    } else if (this.auth.getToken()) {
-      // only show this error, if the user was logged in
-      this.alertService.errorMessage('ERROR.ERROR_TOKEN_EXPIRED', {
-        keepAfterNavigation: true,
+  ): Promise<boolean> {
+    // Force the user to log in if currently unauthenticated.
+    if (!this.authenticated) {
+      await this.keycloak.login({
+        redirectUri: environment.baseUrl + state.url,
       });
+      return false;
     }
-    return this.router.createUrlTree(['/login'], {
-      queryParams: { returnUrl: state.url },
-    });
+
+    // Get the authorized roles from the route.
+    const authorizedRoles = route.data?.authorizedRoles;
+
+    // Allow the user to proceed if no additional roles are required to access the route.
+    if (!(authorizedRoles instanceof Array) || authorizedRoles.length === 0) {
+      return true;
+    }
+
+    // Allow the user to proceed if any of the required roles is present.
+    return authorizedRoles.some((role) => this.roles.includes(role));
   }
 }

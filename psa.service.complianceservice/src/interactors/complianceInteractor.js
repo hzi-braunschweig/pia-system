@@ -9,7 +9,7 @@ const complianceRepository = require('../repositories/complianceRepository');
 const complianceService = require('../services/complianceService');
 const templatePipelineService = require('../services/pdfGeneratorService');
 const { userserviceClient } = require('../clients/userserviceClient');
-const transactionWrapper = require('../lib/transactionWrapper');
+const transactionWrapper = require('../utils/transactionWrapper');
 const complianceMapper = require('../services/complianceMapper');
 const { messageQueueService } = require('../services/messageQueueService');
 
@@ -19,7 +19,7 @@ class ComplianceInteractor {
    * @param {import('@hapi/hapi').Request} request
    * @param {string} study the name of the study
    * @param {string} userId the name of the user
-   * @return {Promise<ComplianceRes>} the requested compliance of a specific study
+   * @return {Promise<import("../model/compliance").ComplianceRes> | Promise<undefined>} the requested compliance of a specific study
    */
   static async getComplianceAgree(request, study, userId) {
     return complianceService.getComplianceAgree(request, study, userId);
@@ -29,7 +29,7 @@ class ComplianceInteractor {
    * Gets the compliance of a user for a specific study
    * @param {serial} complianceId the id of the compliance record
    * @param {string} study the study the user has access to
-   * @return {Promise<ComplianceReq>} the requested compliance of a specific study
+   * @return {Promise<import("../model/compliance").ComplianceRes>} the requested compliance of a specific study
    */
   static async getComplianceAgreeByComplianceId(complianceId, study) {
     const complianceAgree = await complianceRepository.getComplianceById(

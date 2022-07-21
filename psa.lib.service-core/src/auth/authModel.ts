@@ -6,48 +6,19 @@
 
 import { AuthCredentials } from '@hapi/hapi';
 
-export interface TokenValidationFn<T extends AuthToken> {
-  (decoded: T): Promise<ValidationResult>;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  credentials?: {
-    name: string;
-  };
-}
-
-type AccessTokenId = 1;
-type LoginTokenId = 2;
-
 /**
  * Used to access the application APIs
  */
-export interface AccessToken extends AuthToken {
-  id: AccessTokenId;
-  role: string;
-  groups: string[];
-}
-
-/**
- * Only used to exchange for AccessToken
- */
-export interface LoginToken extends AuthToken {
-  id: LoginTokenId;
-}
-
-export interface AuthToken extends AuthCredentials {
-  id: AccessTokenId | LoginTokenId;
+export interface AccessToken extends AuthCredentials {
   username: string;
+  studies: string[];
+  locale: string;
 }
 
-export const ACCESS_TOKEN_ID = 1;
-export const LOGIN_TOKEN_ID = 2;
-
-export function isAccessToken(token: AuthToken): token is AccessToken {
-  return !!token.username && token.id === ACCESS_TOKEN_ID;
-}
-
-export function isLoginToken(token: AuthToken): token is LoginToken {
-  return !!token.username && token.id === LOGIN_TOKEN_ID;
+export function isAccessToken(
+  token: Record<string, unknown>
+): token is AccessToken {
+  return (
+    !!token['username'] && !!token['locale'] && Array.isArray(token['studies'])
+  );
 }

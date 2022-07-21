@@ -4,13 +4,20 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 import { LabResultDetailPage } from './lab-result-detail.page';
 import { SampleTrackingClientService } from '../sample-tracking-client.service';
 import { AuthService } from '../../auth/auth.service';
+import { User } from '../../auth/auth.model';
 import SpyObj = jasmine.SpyObj;
 
 describe('LabResultDetailPage', () => {
@@ -21,11 +28,15 @@ describe('LabResultDetailPage', () => {
   let auth: SpyObj<AuthService>;
   let activatedRoute;
 
+  const labResultHtml: string = 'this is a <b>lab result</b>';
+
   beforeEach(() => {
     sampleTrackingClient = jasmine.createSpyObj('SampleTrackingClientService', [
       'getLabResultForUser',
     ]);
+    sampleTrackingClient.getLabResultForUser.and.resolveTo(labResultHtml);
     auth = jasmine.createSpyObj('AuthService', ['getCurrentUser']);
+    auth.getCurrentUser.and.returnValue({ username: 'Test-1234' } as User);
     activatedRoute = {
       snapshot: { paramMap: convertToParamMap({ labResultId: '1234' }) },
     };
@@ -48,7 +59,14 @@ describe('LabResultDetailPage', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+  it("should show the proband's lab result as HTML", fakeAsync(() => {
+    component.ngOnInit();
+    tick();
+    fixture.detectChanges();
+    const content = fixture.debugElement.query(
+      By.css('[data-unit="lab-result-html"]')
+    );
+    expect(content).not.toBeNull();
+    expect(content.nativeElement.innerHTML).toEqual(labResultHtml);
+  }));
 });

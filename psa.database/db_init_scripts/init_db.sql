@@ -2126,22 +2126,6 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA sormasservice GRANT SELECT,INSERT,DELETE,UPDA
 -- PostgreSQL database dump complete
 --
 
---
--- Custom extension: Already included database migrations as of 2021-11-23
---
--- The following migrations still exist in order to be executed on production
--- systems, but are already included in this db dump.
---
-
-INSERT INTO public.db_migrations(name, date)
-VALUES ('/migrations/1634201157__remove_user_logs.sql', NOW()),
-       ('/migrations/1636553858__pia-53_study_in_users.sql', NOW()),
-       ('/migrations/1637225746__pia-2325_remove_obsolete_db_objects.sql', NOW()),
-       ('/migrations/1637225747__pia-2325_remove_wrongly_created_loggingservice_tables.sql', NOW()),
-       ('/migrations/1637225748__pia-2325_remove_sormas-client_user.sql', NOW()),
-       ('/migrations/1637225749__pia-2325_split_users_into_probands_and_accounts.sql', NOW()),
-       ('/migrations/1637595832__create_roles_for_schemas.sql', NOW());
-
 
 --
 -- Custom extension: Insert constant values into tables

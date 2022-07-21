@@ -23,7 +23,7 @@ export function createQuestionnaireInstance(
     id: 19100,
     studyId: 'QTestStudy',
     questionnaireName: 'ApiTestQuestionnaire',
-    pseudonym: 'QTestProband1',
+    pseudonym: 'qtest-proband1',
     dateOfIssue: new Date('2017-08-07T22:00:00.000Z'),
     dateOfReleaseV1: null,
     dateOfReleaseV2: null,
@@ -110,6 +110,7 @@ export function createProband(
   return {
     pseudonym: 'TEST-0123456789',
     role: 'Proband',
+    study: 'Teststudy',
     first_logged_in_at: null,
     complianceLabresults: false,
     complianceBloodsamples: false,

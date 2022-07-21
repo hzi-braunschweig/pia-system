@@ -5,10 +5,9 @@
  */
 
 import Boom from '@hapi/boom';
-import { MailService } from '@pia/lib-service-core';
+import { MailService, AccessToken } from '@pia/lib-service-core';
 import { userserviceClient } from '../clients/userserviceClient';
 import { personaldataserviceClient } from '../clients/personaldataserviceClient';
-import { AccessToken } from 'dist/src';
 import { EmailRequest } from '../models/emailRequest';
 
 export class EmailInteractor {
@@ -22,11 +21,6 @@ export class EmailInteractor {
     decodedToken: AccessToken,
     payload: EmailRequest
   ): Promise<string[]> {
-    if (decodedToken.role !== 'ProbandenManager') {
-      throw Boom.forbidden(
-        `${decodedToken.role} is not allowed to send E-Mails`
-      );
-    }
     if (
       !(await this.hasUserAccessToAllProbands(
         decodedToken.username,
@@ -103,5 +97,3 @@ export class EmailInteractor {
     }
   }
 }
-
-module.exports = EmailInteractor;

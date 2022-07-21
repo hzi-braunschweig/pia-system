@@ -6,28 +6,17 @@ VALUES ('ApiTestStudy1', 'ApiTestStudy1 Beschreibung', FALSE),
 
 -- Users
 INSERT INTO probands(pseudonym, compliance_labresults, compliance_samples, study)
-VALUES ('QTestProband1', TRUE, TRUE, 'ApiTestStudy1'),
-       ('QTestProband2', TRUE, TRUE, 'ApiTestStudy2'),
-       ('QTestProband3', FALSE, FALSE, 'ApiTestStudy1'),
-       ('QTestProband4', TRUE, TRUE, 'ApiTestStudy3');
-
-INSERT INTO accounts(username, password, role)
-VALUES ('QTestProband1', '', 'Proband'),
-       ('QTestProband2', '', 'Proband'),
-       ('QTestProband3', '', 'Proband'),
-       ('QTestProband4', '', 'Proband'),
-       ('QTestForscher1', '', 'Forscher'),
-       ('QTestForscher2', '', 'Forscher'),
-       ('QTestProbandenManager', '', 'ProbandenManager'),
-       ('QTestSysAdmin', '', 'SysAdmin'),
-       ('QTestUntersuchungsteam', '', 'Untersuchungsteam');
+VALUES ('qtest-proband1', TRUE, TRUE, 'ApiTestStudy1'),
+       ('qtest-proband2', TRUE, TRUE, 'ApiTestStudy2'),
+       ('qtest-proband3', FALSE, FALSE, 'ApiTestStudy1'),
+       ('qtest-proband4', TRUE, TRUE, 'ApiTestStudy3');
 
 INSERT INTO study_users (study_id, user_id, access_level)
-VALUES ('ApiTestStudy1', 'QTestForscher1', 'write'),
-       ('ApiTestStudy1', 'QTestProbandenManager', 'write'),
-       ('ApiTestStudy1', 'QTestUntersuchungsteam', 'write'),
-       ('ApiTestStudy2', 'QTestForscher2', 'admin'),
-       ('ApiTestStudy3', 'QTestForscher1', 'write');
+VALUES ('ApiTestStudy1', 'qtest-forscher1', 'write'),
+       ('ApiTestStudy1', 'qtest-probandenmanager', 'write'),
+       ('ApiTestStudy1', 'qtest-untersuchungsteam', 'write'),
+       ('ApiTestStudy2', 'qtest-forscher2', 'admin'),
+       ('ApiTestStudy3', 'qtest-forscher1', 'write');
 
 -- Questionnaires
 -- HINT: The number in this setup file has a design for easier usage: <study_number>00<questionnaire><question-position><answer_option-position>(<version>)
@@ -161,13 +150,12 @@ VALUES ('external', NULL, 1004201, NULL, '==', 'Ja', 1002112, 100200, 'OR'),
 
 INSERT INTO questionnaire_instances(id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue,
                                     date_of_release_v1, date_of_release_v2, cycle, status)
-VALUES (110300, 'ApiTestStudy1', 100300, 'ApiTestQuestionnaire', 'QTestProband1', '08.08.2017', NULL, NULL, 1, 'in_progress'),
-       (120300, 'ApiTestStudy1', 100300, 'ApiTestQuestionnaire', 'QTestProband1', '09.08.2017', NULL, NULL, 1, 'active'),
-       (130300, 'ApiTestStudy1', 100300, 'ApiTestQuestionnaire', 'QTestProband1', '10.08.2017', NULL, NULL, 1, 'inactive'),
-       (140300, 'ApiTestStudy1', 100300, 'ApiTestQuestionnaire', 'QTestProband1', '08.08.2017', '09.08.2017', NULL, 1, 'released');
-
+VALUES (110300, 'ApiTestStudy1', 100300, 'ApiTestQuestionnaire', 'qtest-proband1', '08.08.2017', NULL, NULL, 1, 'in_progress'),
+       (120300, 'ApiTestStudy1', 100300, 'ApiTestQuestionnaire', 'qtest-proband1', '09.08.2017', NULL, NULL, 1, 'active'),
+       (130300, 'ApiTestStudy1', 100300, 'ApiTestQuestionnaire', 'qtest-proband1', '10.08.2017', NULL, NULL, 1, 'inactive'),
+       (140300, 'ApiTestStudy1', 100300, 'ApiTestQuestionnaire', 'qtest-proband1', '08.08.2017', '09.08.2017', NULL, 1, 'released');
 INSERT INTO answers(questionnaire_instance_id, question_id, answer_option_id, versioning, value)
 VALUES (140300, 1003101, 1003111, 1, '999999');
 INSERT INTO user_files(id, user_id, questionnaire_instance_id, answer_option_id, file)
-VALUES (999999, 'QTestProband1', 140300, 1003111,
+VALUES (999999, 'qtest-proband1', 140300, 1003111,
         'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAJ5JREFUOI3d0sEJwlAQBNCnVag3CSLYRJCAFqJV6EEb0WAndiGCKDmoZegh/xAC+clVB/YwCzOzDMvfYooT3nghx6SreIYbUgwwxBz3YNyafKvwHfYV/kBSFfRrBhusIgFrbGMGC1xruzRcAhcsYwYf9Cr8jKK2iyJXFtaEDIeYwUTZdhMKjNuumCrbzjAKkwVx519IcMQzzKFL8o/iCw90Gk24qnziAAAAAElFTkSuQmCC');

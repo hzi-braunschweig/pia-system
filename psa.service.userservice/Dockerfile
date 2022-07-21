@@ -1,4 +1,4 @@
-FROM node:14.18.2-alpine@sha256:7bcf853eeb97a25465cb385b015606c22e926f548cbd117f85b7196df8aa0d29 AS base
+FROM node:14.19.0-alpine@sha256:9a2aa545388a135b496bd55cef2be920b96c4526c99c140170e05a8de3fce653 AS base
 RUN apk --update --no-cache add curl tzdata
 
 USER node
@@ -7,22 +7,38 @@ WORKDIR /usr/src/node-app/
 ARG DIR=.
 COPY $DIR/package*.json ./
 #copy dependencies' package.json
-COPY --chown=node:node psa.lib.service-core/package.json ../psa.lib.service-core/
-COPY --chown=node:node psa.lib.messagequeue/package.json ../psa.lib.messagequeue/
-COPY --chown=node:node psa.lib.http-clients-internal/package.json ../psa.lib.http-clients-internal/
+COPY --chown=node:node psa.lib.service-core/package*.json ../psa.lib.service-core/
+COPY --chown=node:node psa.lib.messagequeue/package*.json ../psa.lib.messagequeue/
+COPY --chown=node:node psa.lib.http-clients-internal/package*.json ../psa.lib.http-clients-internal/
+COPY --chown=node:node psa.lib.auth-server-client/package.json ../psa.lib.auth-server-client/
 
-RUN npm ci --production
+
 #copy dependencies' source
 COPY --chown=node:node psa.lib.service-core/dist ../psa.lib.service-core/dist
 COPY --chown=node:node psa.lib.messagequeue/dist ../psa.lib.messagequeue/dist
 COPY --chown=node:node psa.lib.http-clients-internal/dist ../psa.lib.http-clients-internal/dist
+COPY --chown=node:node psa.lib.auth-server-client/dist ../psa.lib.auth-server-client/dist
 
 ################################################################
 
-FROM base AS install
+FROM base AS install-npm-build-dependencies
+
+USER root
+RUN apk --update --no-cache add g++ make python3
+USER node
+
+################################################################
+
+FROM install-npm-build-dependencies AS install-production
+
+RUN npm ci --production
+
+################################################################
+
+FROM install-npm-build-dependencies AS install
 
 #copy dev dependencies' package.json
-COPY --chown=node:node psa.eslint-config/package.json ../psa.eslint-config/
+COPY --chown=node:node psa.eslint-config/package*.json ../psa.eslint-config/
 
 RUN npm ci
 
@@ -54,10 +70,8 @@ RUN npm run build
 FROM base AS final
 
 #COPY $DIR/resources ./resources <- other resources than .js or .ts files should be placed in this folder because tsc does not copy them into dist
+COPY --from=install-production /usr/src/ /usr/src/
 COPY --from=build /usr/src/node-app/dist/src ./src
-
-ARG ROUTE_PREFIX=/user
-ENV ROUTE_PREFIX=$ROUTE_PREFIX
 
 ARG VERSION_INFO_PIPELINE_ID=-
 ENV VERSION_INFO_PIPELINE_ID=$VERSION_INFO_PIPELINE_ID
@@ -73,6 +87,7 @@ ENV VERSION_INFO_GIT_REF=$VERSION_INFO_GIT_REF
 ARG METRICS_IP_WHITELIST=-
 ENV METRICS_IP_WHITELIST=$METRICS_IP_WHITELIST
 
+ENV NODE_EXTRA_CA_CERTS=./ssl/ca.cert
 ENV PROTOCOL=https
 ENV PORT=4000
 ENV INTERNAL_PORT=5000

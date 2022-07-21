@@ -1,11 +1,11 @@
-FROM node:14.18.2-alpine@sha256:7bcf853eeb97a25465cb385b015606c22e926f548cbd117f85b7196df8aa0d29 AS base
+FROM node:14.19.0-alpine@sha256:9a2aa545388a135b496bd55cef2be920b96c4526c99c140170e05a8de3fce653 AS base
 
 WORKDIR /usr/src/node-app/
 
 ARG DIR=.
 COPY $DIR/package*.json ./
 #copy dependencies' package.json
-COPY --chown=node:node psa.lib.service-core/package.json ../psa.lib.service-core/
+COPY --chown=node:node psa.lib.service-core/package*.json ../psa.lib.service-core/
 
 RUN npm ci --production
 #copy dependencies' source
@@ -16,7 +16,7 @@ COPY --chown=node:node psa.lib.service-core/dist ../psa.lib.service-core/dist
 FROM base AS install
 
 #copy dev dependencies' package.json
-COPY --chown=node:node psa.eslint-config/package.json ../psa.eslint-config/
+COPY --chown=node:node psa.eslint-config/package*.json ../psa.eslint-config/
 
 RUN npm ci
 

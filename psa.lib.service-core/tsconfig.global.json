@@ -20,6 +20,10 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "types": ["mocha", "node"],
+    "typeRoots": ["node_modules/@types", "src/@types"],
+    "paths": {
+      "hapi-auth-keycloak": ["./src/@types/hapi-auth-keycloak"]
+    },
     /* Experimental */
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,

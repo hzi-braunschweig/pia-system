@@ -7,6 +7,7 @@
 import {
   Component,
   HostListener,
+  Inject,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -48,8 +49,7 @@ import {
 } from '../../../_helpers/date-adapter';
 import { QuestionnaireInstanceQueue } from '../../../psa.app.core/models/questionnaireInstanceQueue';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
-import 'datejs';
-import { Location } from '@angular/common';
+import { DOCUMENT, Location } from '@angular/common';
 import { timeout } from 'rxjs/operators';
 import { Tools } from './tools';
 import {
@@ -64,10 +64,12 @@ import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-s
 import { AnswerType } from '../../../psa.app.core/models/answerType';
 import { QuestionnaireInstance } from '../../../psa.app.core/models/questionnaireInstance';
 import { Proband } from '../../../psa.app.core/models/proband';
-import { AuthenticationManager } from '../../../_services/authentication-manager.service';
+import { CurrentUser } from '../../../_services/current-user.service';
 import { MatRadioButton } from '@angular/material/radio';
+import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
+import { addDays, format, isAfter } from 'date-fns';
 
-enum DisplayStatus {
+export enum DisplayStatus {
   QUESTIONS,
   OVERVIEW,
   HISTORY,
@@ -135,7 +137,6 @@ export class QuestionProbandComponent
   public date_of_issue: Date;
   public isLoading: boolean = false;
   public answerIdsFromServer: number[] = [];
-  public currentRole: string;
   public user_id: string;
   public answerVersionFromServer: number;
   public release_version: number;
@@ -168,20 +169,21 @@ export class QuestionProbandComponent
   }
 
   constructor(
+    public readonly user: CurrentUser,
     private activatedRoute: ActivatedRoute,
     private alertService: AlertService,
     private router: Router,
     private translate: TranslateService,
-    private userService: AuthService,
+    private authService: AuthService,
+    private userService: UserService,
     private selectedProbandInfoService: SelectedProbandInfoService,
     private questionnaireService: QuestionnaireService,
     private sampleTrackingService: SampleTrackingService,
-    private auth: AuthenticationManager,
-    public dialog: MatDialog,
-    private _location: Location
+    private dialog: MatDialog,
+    private _location: Location,
+    @Inject(DOCUMENT) private document: Document
   ) {
-    this.currentRole = this.auth.getCurrentRole();
-    if ('instanceId' in this.activatedRoute.snapshot.params) {
+    if (this.activatedRoute.snapshot.paramMap.has('instanceId')) {
       this.questionnaireInstanceId = Number(
         this.activatedRoute.snapshot.paramMap.get('instanceId')
       );
@@ -203,13 +205,25 @@ export class QuestionProbandComponent
       this.release_version = result.release_version;
       this.questionnaire = result.questionnaire;
 
-      // get study for sample configuration
-      this.studyOfQuestionnaire = await this.questionnaireService.getStudy(
-        this.questionnaire.study_id
-      );
+      /**
+       * Get study for sample configuration
+       *
+       * Currently, the GET API for probands is still implemented in the
+       * QuestionnaireService for backwards compatability. Later probands
+       * and admins should use the UserService to get the study.
+       */
+      if (this.user.isProband()) {
+        this.studyOfQuestionnaire = await this.questionnaireService.getStudy(
+          this.questionnaire.study_id
+        );
+      } else {
+        this.studyOfQuestionnaire = await this.userService.getStudy(
+          this.questionnaire.study_id
+        );
+      }
 
-      if (this.currentRole === 'Untersuchungsteam') {
-        this.proband = await this.userService.getProband(this.user_id);
+      if (this.user.hasRole('Untersuchungsteam')) {
+        this.proband = await this.authService.getProband(this.user_id);
         this.selectedProbandInfoService.updateSideNavInfoSelectedProband({
           ids: this.proband.ids,
           pseudonym: this.proband.pseudonym,
@@ -217,13 +231,14 @@ export class QuestionProbandComponent
       }
       await this.initForm(this.questionnaire); // handles both the create and edit logic
     } catch (err) {
+      console.error(err);
       this.alertService.errorObject(err);
     }
     this.isLoading = false;
   }
 
   public ngOnDestroy(): void {
-    if (this.currentRole === 'Untersuchungsteam') {
+    if (this.user.hasRole('Untersuchungsteam')) {
       this.selectedProbandInfoService.updateSideNavInfoSelectedProband(null);
     }
   }
@@ -379,9 +394,8 @@ export class QuestionProbandComponent
         break;
       }
       const days = Number.parseInt(myArray[1], 10);
-      const date = new Date(this.date_of_issue);
-      const replacementDate = date.addDays(days);
-      str = str.replace(myArray[0], replacementDate.toString('dd.MM.yy'));
+      const replacementDate = addDays(new Date(this.date_of_issue), days);
+      str = str.replace(myArray[0], format(replacementDate, 'dd.MM.yyyy'));
     }
     return str;
   }
@@ -715,7 +729,7 @@ export class QuestionProbandComponent
         this.postAllAnswers(false);
       }
       this.displayStatus = DisplayStatus.OVERVIEW;
-      const x = document.getElementById('questionSwiper');
+      const x = this.document.getElementById('questionSwiper');
       x.style.display = 'none';
     }
   }
@@ -730,7 +744,7 @@ export class QuestionProbandComponent
       await this.postAllAnswers(false);
       await this.buildCurrentHistory();
       this.displayStatus = DisplayStatus.HISTORY;
-      const x = document.getElementById('questionSwiper');
+      const x = this.document.getElementById('questionSwiper');
       x.style.display = 'none';
     }
   }
@@ -826,9 +840,10 @@ export class QuestionProbandComponent
           value_new: this.presentAnswerValue(answer.value, subquestion),
         });
         if (
-          new Date(lastAnswer.date_of_release).compareTo(
+          isAfter(
+            new Date(lastAnswer.date_of_release),
             new Date(newHistoryItem.date_of_release_old)
-          ) > 0
+          )
         ) {
           newHistoryItem.date_of_release_old = lastAnswer.date_of_release;
         }
@@ -877,7 +892,7 @@ export class QuestionProbandComponent
         break;
       }
       case 5: {
-        result = new Date(value).toString('dd.MM.yyyy');
+        result = format(new Date(value), 'dd.MM.yyyy');
         break;
       }
       case 6: {
@@ -893,7 +908,7 @@ export class QuestionProbandComponent
         break;
       }
       case 9: {
-        result = new Date(Number(value)).toString('dd.MM.yyyy - HH:mm:ss');
+        result = format(new Date(Number(value)), 'dd.MM.yyyy - HH:mm:ss');
         break;
       }
       case 10: {
@@ -960,7 +975,7 @@ export class QuestionProbandComponent
     } else {
       this.postAllAnswers(false);
       this.displayStatus = DisplayStatus.QUESTIONS;
-      const x = document.getElementById('questionSwiper');
+      const x = this.document.getElementById('questionSwiper');
       x.style.display = 'block';
       this.questionSwiper.swiper.slideTo(questionIndex);
     }
@@ -1324,7 +1339,7 @@ export class QuestionProbandComponent
               isSuccess: true,
             },
           });
-          if (this.currentRole === 'Proband') {
+          if (this.user.isProband()) {
             this.router.navigate(['questionnaires/user']);
           } else {
             this.router.navigate(['/questionnaires/user/'], {
@@ -1353,7 +1368,7 @@ export class QuestionProbandComponent
   public async releaseAnswers(): Promise<void> {
     try {
       await this.postAllAnswers(true);
-      if (this.currentRole === 'Proband') {
+      if (this.user.isProband()) {
         if (
           this.questionnaire_instance_status === 'active' ||
           this.questionnaire_instance_status === 'in_progress'
@@ -1362,7 +1377,7 @@ export class QuestionProbandComponent
         } else if (this.questionnaire_instance_status === 'released_once') {
           this.questionnaire_instance_status = 'released_twice';
         }
-      } else if (this.currentRole === 'Untersuchungsteam') {
+      } else if (this.user.hasRole('Untersuchungsteam')) {
         this.questionnaire_instance_status = 'released';
       }
 
@@ -1383,7 +1398,7 @@ export class QuestionProbandComponent
           release_version: this.release_version + 1,
         }
       );
-      if (this.currentRole === 'Proband') {
+      if (this.user.isProband()) {
         this.findAndOpenNextInstance();
       } else {
         this.router.navigate([
@@ -1534,7 +1549,7 @@ export class QuestionProbandComponent
       date_of_release: new Date(),
     };
 
-    if (isRelease && this.currentRole === 'Untersuchungsteam') {
+    if (isRelease && this.user.hasRole('Untersuchungsteam')) {
       request.date_of_release = new Date();
     }
 
@@ -1573,6 +1588,7 @@ export class QuestionProbandComponent
         }
       }
     } catch (err) {
+      console.log(err);
       if (
         err.error.statusCode === 400 &&
         err.error.message.includes(
@@ -1590,12 +1606,14 @@ export class QuestionProbandComponent
 
   private findAndOpenNextInstance(): void {
     this.questionnaireService
-      .getQuestionnaireInstanceQueues()
+      .getQuestionnaireInstanceQueues(this.proband.pseudonym)
       .then(async (queuesResult: QuestionnaireInstanceQueue[]) => {
         if (queuesResult.length < 1) {
           timeout(300);
           queuesResult =
-            await this.questionnaireService.getQuestionnaireInstanceQueues();
+            await this.questionnaireService.getQuestionnaireInstanceQueues(
+              this.proband.pseudonym
+            );
         }
         if (queuesResult.length < 1) {
           this.router.navigate(['questionnaires/user']);
@@ -1614,7 +1632,8 @@ export class QuestionProbandComponent
               ) {
                 foundInstance = instance;
                 await this.questionnaireService.deleteQuestionnaireInstanceQueue(
-                  queuesResult[i].questionnaire_instance_id
+                  queuesResult[i].questionnaire_instance_id,
+                  this.proband.pseudonym
                 );
               } else if (
                 instance &&
@@ -1623,7 +1642,8 @@ export class QuestionProbandComponent
                   instance.status === 'expired')
               ) {
                 await this.questionnaireService.deleteQuestionnaireInstanceQueue(
-                  queuesResult[i].questionnaire_instance_id
+                  queuesResult[i].questionnaire_instance_id,
+                  this.proband.pseudonym
                 );
               }
             } catch (e) {
@@ -1723,7 +1743,11 @@ export class QuestionProbandComponent
         (!this.studyOfQuestionnaire.has_rna_samples || dummySampleId !== '')
       ) {
         this.sampleTrackingService
-          .updateSampleStatusAndSampleDateFor(sampleId, dummySampleId)
+          .updateSampleStatusAndSampleDateFor(
+            sampleId,
+            dummySampleId,
+            this.proband.pseudonym
+          )
           .then(() => {
             // Show success message
             this.dialog.open(DialogPopUpComponent, {

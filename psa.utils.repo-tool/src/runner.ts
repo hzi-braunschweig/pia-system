@@ -62,13 +62,8 @@ export class Runner {
     repoDir: string
   ): Promise<void> {
     // parallel runs of npm install can cause problems with local libraries :-/
-    await Runner.runJobs(
-      'install',
-      jobs.npmInstall,
-      ['install'],
-      repoDir,
-      false
-    );
+
+    await Runner.runJobs('install', jobs.npmInstall, ['ci'], repoDir, false);
 
     await this.executeUpdateJobUntilSuccessfully(jobs, repoDir, [
       'update',
@@ -83,6 +78,13 @@ export class Runner {
     repoDir: string
   ): Promise<void> {
     await Runner.runJobs('check', jobs.npmInstall, ['outdated'], repoDir, true);
+  }
+
+  public static async executeNpmAudit(
+    jobs: RepoMetaData,
+    repoDir: string
+  ): Promise<void> {
+    await Runner.runJobs('audit', jobs.npmInstall, ['audit'], repoDir, true);
   }
 
   private static printJobInfo(
@@ -223,7 +225,7 @@ export class Runner {
         toInstall,
         args,
         repoDir,
-        true
+        false
       );
       toInstall = toInstall.filter((value) => {
         const job = result.find((r) => {

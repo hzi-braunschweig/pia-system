@@ -3,9 +3,47 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-import { AccessToken, LoginResponse } from './auth.model';
+import { AccessToken, LoginResponse, User } from './auth.model';
+import { KeycloakTokenParsed } from 'keycloak-js';
 
-export function createToken(tokenPayload: Partial<AccessToken> = {}) {
+export function createKeycloakToken(
+  user?: Partial<User>,
+  removeProperties: string[] = []
+): {
+  token: string;
+  payload: KeycloakTokenParsed;
+} {
+  const header = { alg: 'RS512', typ: 'JWT' };
+  const payload: KeycloakTokenParsed = {
+    exp: Date.now() + 60000,
+    iat: Date.now(),
+    auth_time: Date.now(),
+    realm_access: {
+      roles: [user?.role ?? 'Proband'],
+    },
+    studies: [user?.study ?? 'Dummy Study'],
+    locale: 'de-DE',
+    username: user?.username ?? 'fake-username',
+  };
+
+  for (const property of removeProperties) {
+    delete payload[property];
+  }
+
+  const token: string =
+    btoa(JSON.stringify(header)) +
+    '.' +
+    btoa(JSON.stringify(payload)) +
+    '.' +
+    btoa('signature');
+
+  return {
+    token,
+    payload,
+  };
+}
+
+export function createLegacyToken(tokenPayload: Partial<AccessToken> = {}) {
   return (
     btoa(JSON.stringify({ alg: 'RS512', typ: 'JWT' })) +
     '.' +
@@ -26,7 +64,7 @@ export function createToken(tokenPayload: Partial<AccessToken> = {}) {
   );
 }
 
-export function createLoginResponse(
+export function createLegacyLoginResponse(
   tokenPayload: Partial<AccessToken> = {},
   overwrite: Partial<LoginResponse> = {}
 ): LoginResponse {
@@ -45,7 +83,7 @@ export function createLoginResponse(
       ) +
       '.' +
       btoa('signature'),
-    token: createToken(tokenPayload),
+    token: createLegacyToken(tokenPayload),
     ...overwrite,
   };
 }

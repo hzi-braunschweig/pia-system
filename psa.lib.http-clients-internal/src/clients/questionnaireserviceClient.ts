@@ -25,10 +25,6 @@ export class QuestionnaireserviceClient extends ServiceClient {
         qinstance.dateOfReleaseV1 && new Date(qinstance.dateOfReleaseV1),
       dateOfReleaseV2:
         qinstance.dateOfReleaseV2 && new Date(qinstance.dateOfReleaseV2),
-      transmissionTsV1:
-        qinstance.transmissionTsV1 && new Date(qinstance.transmissionTsV1),
-      transmissionTsV2:
-        qinstance.transmissionTsV2 && new Date(qinstance.transmissionTsV2),
     };
     if ('questionnaire' in qinstance) {
       return {

@@ -40,7 +40,7 @@ export class ProbandsForscherComponent {
   @ViewChild(ProbandsListComponent, { static: true })
   probandsListComponent: ProbandsListComponent;
 
-  isLoading = true;
+  isLoading = false;
 
   constructor(
     private authService: AuthService,

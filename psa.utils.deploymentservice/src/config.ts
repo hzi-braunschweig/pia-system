@@ -23,6 +23,15 @@ export default {
       user: getEnvVariable('QPIA_USER'),
       password: getEnvVariable('QPIA_PASSWORD'),
       database: getEnvVariable('QPIA_DB'),
+      restartServices: ['databaseservice'],
+    },
+    ipiaservice: {
+      host: getEnvVariable('IPIA_HOST'),
+      port: getEnvVariable('IPIA_PORT'),
+      user: getEnvVariable('IPIA_USER'),
+      password: getEnvVariable('IPIA_PASSWORD'),
+      database: getEnvVariable('IPIA_DB'),
+      restartServices: ['ipiaservice', 'authserver'],
     },
   },
   features: {

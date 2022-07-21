@@ -4,35 +4,32 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import {
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
-import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { PersonalDataService } from 'src/app/psa.app.core/providers/personaldata-service/personaldata-service';
 import { DataService } from '../../../_services/data.service';
 import { DialogOkCancelComponent } from '../../../_helpers/dialog-ok-cancel';
 import { fromEvent, Observable } from 'rxjs';
 import { MediaObserver } from '@angular/flex-layout';
 import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
-import { AbstractControl, FormControl } from '@angular/forms';
+import { AbstractControl, FormControl, Validators } from '@angular/forms';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
 import { AccountStatusPipe } from '../../../pipes/account-status.pipe';
 import {
   debounceTime,
   distinctUntilChanged,
+  filter,
   map,
   startWith,
 } from 'rxjs/operators';
+import { CurrentUser } from '../../../_services/current-user.service';
+import { ProbandService } from '../../../psa.app.core/providers/proband-service/proband.service';
+import { PersonalData } from '../../../psa.app.core/models/personalData';
 
 @Component({
   selector: 'app-sample-management',
@@ -46,32 +43,32 @@ import {
   ],
 })
 export class SampleManagementComponent implements OnInit {
+  isLoading = false;
+  studyName = new FormControl(null, [Validators.required]);
   dataSource: MatTableDataSource<any>;
-  probands: any;
   dataWithProbandsWhoNeedsMaterial = [];
   data = [];
   public cols: Observable<number>;
-  sample_id: FormControl;
+  sample_id = new FormControl('');
+  personalDataAllStudies: PersonalData[];
 
   constructor(
-    private authService: AuthService,
+    public currentUser: CurrentUser,
+    private probandService: ProbandService,
     private router: Router,
     private matDialog: MatDialog,
     private sampleTrackingService: SampleTrackingService,
     private mediaObserver: MediaObserver,
-    private cdr: ChangeDetectorRef,
     private dataService: DataService,
     private personalDataService: PersonalDataService,
     private accountStatusPipe: AccountStatusPipe
   ) {
-    this.sample_id = new FormControl('');
-
     const gridAns = new Map([
       ['xs', 1],
       ['sm', 2],
       ['md', 3],
-      ['lg', 4],
-      ['xl', 4],
+      ['lg', 5],
+      ['xl', 5],
     ]);
     let startCond2: number;
     gridAns.forEach((cols, mqAlias) => {
@@ -102,68 +99,60 @@ export class SampleManagementComponent implements OnInit {
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   needsMaterialFilterCheckbox: any;
 
-  ngOnInit(): void {
-    this.initTable();
-
-    fromEvent(this.filter.nativeElement, 'keyup')
-      .pipe(debounceTime(150))
-      .pipe(distinctUntilChanged())
-      .subscribe(() => {
-        if (!this.dataSource) {
-          return;
-        }
-        this.dataSource.filter = this.filter.nativeElement.value;
-      });
-
-    this.cdr.detectChanges();
-  }
-
-  async initTable(): Promise<void> {
-    const probandenPersonalData =
+  async ngOnInit(): Promise<void> {
+    this.personalDataAllStudies =
       await this.personalDataService.getPersonalDataAll();
 
-    const probands = await this.authService.getProbands();
+    this.studyName.valueChanges.subscribe(
+      async (studyName) => await this.initTable(studyName)
+    );
 
-    for (const proband of probands) {
-      const probandPersonalData = probandenPersonalData.find(
+    fromEvent(this.filter.nativeElement, 'keyup')
+      .pipe(filter(() => !!this.dataSource))
+      .pipe(debounceTime(150))
+      .pipe(distinctUntilChanged())
+      .subscribe(
+        () => (this.dataSource.filter = this.filter.nativeElement.value)
+      );
+  }
+
+  async initTable(studyName: string): Promise<void> {
+    this.isLoading = true;
+    this.data = [];
+    this.dataWithProbandsWhoNeedsMaterial = [];
+    const probands = await this.probandService.getProbands(studyName);
+
+    const data = probands.map((proband) => {
+      const probandPersonalData = this.personalDataAllStudies.find(
         (res) => res.pseudonym === proband.pseudonym
       );
-      const vorname = probandPersonalData ? probandPersonalData.vorname : '';
-      const name = probandPersonalData ? probandPersonalData.name : '';
-      const strasse = probandPersonalData ? probandPersonalData.strasse : '';
-      const haus_nr = probandPersonalData ? probandPersonalData.haus_nr : '';
-      const plz = probandPersonalData ? probandPersonalData.plz : '';
-      const ort = probandPersonalData ? probandPersonalData.ort : '';
-      const anrede = probandPersonalData ? probandPersonalData.anrede : '';
-      const titel = probandPersonalData ? probandPersonalData.titel : '';
 
-      const accountStatus = this.accountStatusPipe.transform(proband);
-
-      const objectToPush = {
+      return {
         username: proband.pseudonym === proband.ids ? '' : proband.pseudonym,
         ids: proband.ids,
-        vorname,
-        name,
-        needs_material: proband.needs_material,
-        strasse,
-        haus_nr,
-        plz,
-        ort,
-        anrede,
-        titel,
-        status: accountStatus,
+        vorname: probandPersonalData?.vorname ?? '',
+        name: probandPersonalData?.name ?? '',
+        needs_material: proband.needsMaterial,
+        strasse: probandPersonalData?.strasse ?? '',
+        haus_nr: probandPersonalData?.haus_nr ?? '',
+        plz: probandPersonalData?.plz ?? '',
+        ort: probandPersonalData?.ort ?? '',
+        anrede: probandPersonalData?.anrede ?? '',
+        titel: probandPersonalData?.titel ?? '',
+        status: this.accountStatusPipe.transform(proband),
       };
+    });
 
-      this.data.push(objectToPush);
-
-      if (objectToPush.needs_material) {
-        this.dataWithProbandsWhoNeedsMaterial.push(objectToPush);
-      }
-    }
+    this.data = data;
+    this.dataWithProbandsWhoNeedsMaterial = data.filter(
+      (proband) => proband.needs_material
+    );
 
     this.dataSource = new MatTableDataSource(this.data);
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+
+    this.isLoading = false;
   }
 
   validateSampleID(control: AbstractControl): any {

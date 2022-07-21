@@ -17,12 +17,11 @@ import {
   MatDialog,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
-import { createProfessionalUser } from '../../psa.app.core/models/instance.helper.spec';
+import { createProfessionalAccount } from '../../psa.app.core/models/instance.helper.spec';
 import { AlertService } from '../../_services/alert.service';
 import { first } from 'rxjs/operators';
 import { Subject } from 'rxjs';
-import { QuestionnaireService } from '../../psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 import SpyObj = jasmine.SpyObj;
 
 describe('DialogUserStudyAccessComponent', () => {
@@ -36,8 +35,7 @@ describe('DialogUserStudyAccessComponent', () => {
   >;
   let matDialog: SpyObj<MatDialog>;
   let alertService: SpyObj<AlertService>;
-  let authService: SpyObj<AuthService>;
-  let questionnaireService: SpyObj<QuestionnaireService>;
+  let userService: SpyObj<UserService>;
 
   beforeEach(async () => {
     // Provider and Services
@@ -48,9 +46,9 @@ describe('DialogUserStudyAccessComponent', () => {
     matDialog = jasmine.createSpyObj(MatDialog, ['open']);
     alertService = jasmine.createSpyObj(AlertService, ['errorObject']);
     alertService.errorObject.and.callFake(console.error);
-    authService = jasmine.createSpyObj(AuthService, ['getProfessionalUsers']);
-    questionnaireService = jasmine.createSpyObj(QuestionnaireService, [
+    userService = jasmine.createSpyObj(UserService, [
       'postStudyAccess',
+      'getProfessionalAccounts',
     ]);
 
     // Build Base Module
@@ -62,34 +60,30 @@ describe('DialogUserStudyAccessComponent', () => {
       })
       .mock(MatDialog, matDialog)
       .mock(AlertService, alertService)
-      .mock(QuestionnaireService, questionnaireService)
-      .mock(AuthService, authService);
+      .mock(UserService, userService);
   });
 
   beforeEach(fakeAsync(() => {
     // Setup mocks before creating component
-    authService.getProfessionalUsers.and.resolveTo([
-      createProfessionalUser({
+    userService.getProfessionalAccounts.and.resolveTo([
+      createProfessionalAccount({
         username: 'p1',
-        study_accesses: [
-          { study_id: 'test study 2', access_level: 'admin' },
-          { study_id: 'test study 3', access_level: 'admin' },
-        ],
+        studies: ['test study 1', 'test study 2', 'test study 3'],
       }),
-      createProfessionalUser({
+      createProfessionalAccount({
         username: 'p2',
-        study_accesses: [{ study_id: 'test study 2', access_level: 'admin' }],
+        studies: ['test study 2', 'test study 3'],
       }),
-      createProfessionalUser({
+      createProfessionalAccount({
         username: 'p3',
-        study_accesses: [{ study_id: 'test study 1', access_level: 'admin' }],
+        studies: ['test study 2', 'test study 3'],
       }),
-      createProfessionalUser({
+      createProfessionalAccount({
         username: 'p4',
-        study_accesses: [],
+        studies: [],
       }),
     ]);
-    questionnaireService.postStudyAccess.and.resolveTo();
+    userService.postStudyAccess.and.resolveTo();
 
     // Create component
     fixture = MockRender(DialogUserStudyAccessComponent);
@@ -98,12 +92,9 @@ describe('DialogUserStudyAccessComponent', () => {
     fixture.detectChanges();
   }));
 
-  it('should create the component', () => {
-    expect(component).toBeDefined();
-    expect(authService.getProfessionalUsers).toHaveBeenCalled();
-  });
-
   it('should filter by the username', fakeAsync(() => {
+    component.selectedRole.setValue('Forscher');
+    tick();
     const filterSpy1 = jasmine.createSpy();
     component.filteredUsers
       .pipe(first())
@@ -121,20 +112,22 @@ describe('DialogUserStudyAccessComponent', () => {
     expect(filterSpy2).toHaveBeenCalledWith(1);
   }));
 
-  it('should open a confirm dialog and post the access on submit', fakeAsync(() => {
+  it('should open a confirm dialog and post the access on submit', fakeAsync(async () => {
+    component.selectedRole.setValue('Forscher');
+    tick();
     const internalDialogRef = jasmine.createSpyObj(MatDialogRef, [
       'afterClosed',
     ]);
     matDialog.open.and.returnValue(internalDialogRef);
     const closedObs = new Subject<string>();
     internalDialogRef.afterClosed.and.returnValue(closedObs);
-    component.submit();
+    await component.submit();
     expect(matDialog.open).toHaveBeenCalled();
-    expect(questionnaireService.postStudyAccess).not.toHaveBeenCalled();
+    expect(userService.postStudyAccess).not.toHaveBeenCalled();
 
     closedObs.next('ok');
     tick();
-    expect(questionnaireService.postStudyAccess).toHaveBeenCalled();
+    expect(userService.postStudyAccess).toHaveBeenCalled();
     expect(alertService.errorObject).not.toHaveBeenCalled();
   }));
 });

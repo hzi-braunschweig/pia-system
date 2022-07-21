@@ -7,37 +7,23 @@
 import { Proxy } from './proxy';
 import { HttpServer, ISsl } from './httpServer';
 import config from './config';
-import { RouteMapper } from './routeMapper';
+import { RouteHelper } from './routeHelper';
 import { Color } from './color';
 import { RedirectingHttpServer } from './redirectingHttpServer';
 import * as fs from 'fs';
-import { isProxyRoute, ResponseRoute } from './proxyRoute';
+import { isProxyRoute } from './proxyRoute';
 
 const HTTP_PORT = 80;
 
 const isInternalSslEnabled = config.web.internal.protocol !== 'http';
 const isExternalSslEnabled = config.web.external.protocol !== 'http';
 
-const metaDataRoute: ResponseRoute = {
-  path: '/api/v1/',
-  response: {
-    headers: {
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify(config.publicMetaData),
-  },
-};
-
-const routes = RouteMapper.sortRoutes([
-  metaDataRoute,
-  ...RouteMapper.mapConfigRoutes(config.routes, {
-    isDevelopmentSystem: config.system.isDevelopment,
-    isSslEnabled: isInternalSslEnabled,
-    defaultPort: config.web.internal.port,
-  }),
+const routes = RouteHelper.sortRoutes([
+  ...config.responseRoutes,
+  ...config.routes,
 ]);
 
-RouteMapper.checkRoutes(routes);
+RouteHelper.checkRoutes(routes);
 
 const externalSsl: ISsl | undefined = isExternalSslEnabled
   ? {
@@ -46,14 +32,12 @@ const externalSsl: ISsl | undefined = isExternalSslEnabled
     }
   : undefined;
 
-const internalCa: Buffer | undefined = isInternalSslEnabled
-  ? fs.readFileSync(config.web.internal.ssl.ca)
-  : undefined;
+const internalCa = fs.readFileSync(config.web.internal.ssl.ca);
 
 console.log(
-  `ssl: external=${Color.bool(!!externalSsl)}, internal=${Color.bool(
-    !!internalCa
-  )}`
+  `ssl[external=${Color.bool(!!externalSsl)}, internal=${Color.bool(
+    isInternalSslEnabled
+  )}], system.isDevelopment=${Color.bool(config.system.isDevelopment)}`
 );
 
 for (const route of routes) {
@@ -61,10 +45,7 @@ for (const route of routes) {
   const target = [
     Color.protocol(route.upstream.protocol),
     '://',
-    Color.serviceName(route.upstream.serviceName),
-    route.upstream.serviceName !== route.upstream.host
-      ? `[@${Color.serviceName(route.upstream.host)}]`
-      : '',
+    Color.serviceName(route.upstream.host),
     ':',
     route.upstream.port,
     Color.route(route.upstream.path),

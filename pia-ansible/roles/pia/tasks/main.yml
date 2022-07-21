@@ -7,34 +7,39 @@
 # otherwise somehow the passwords are all the same
 # (even though thats not the case locally)
 
-- name: Generate postgres passwords
+- name: Generate postgres password
   set_fact:
     pia_ewpia_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
-- name: Generate postgres passwords
+- name: Generate postgres password
   set_fact:
     pia_ipia_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
-- name: Generate postgres passwords
+- name: Generate postgres password
   set_fact:
     pia_qpia_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
-- name: Generate postgres passwords
+- name: Generate postgres password
   set_fact:
     pia_db_log_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
-- name: Generate postgres passwords
+- name: Generate postgres password
   set_fact:
     pia_db_sormas_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
-- name: Generate postgres passwords
+- name: Generate postgres password
   set_fact:
     pia_db_personaldata_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate postgres password
+  set_fact:
+    pia_db_authserver_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
 - name: Generate messagequeue admin password
@@ -45,6 +50,31 @@
 - name: Generate messagequeue app password
   set_fact:
     pia_messagequeue_app_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate keycloak admin password
+  set_fact:
+    pia_authserver_admin_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate keycloak client secret
+  set_fact:
+    pia_authserver_proband_management_client_secret: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate keycloak client secret
+  set_fact:
+    pia_authserver_proband_token_introspection_client_secret: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate keycloak client secret
+  set_fact:
+    pia_authserver_admin_management_client_secret: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate keycloak client secret
+  set_fact:
+    pia_authserver_admin_token_introspection_client_secret: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
 ####################################################################################
@@ -231,16 +261,6 @@
   include_tasks: deploy-certificates.yml
 
 ####################################################################################
-# generate authkey
-####################################################################################
-
-- name: Generate authkey
-  include_tasks: generate-authkey.yml
-
-- name: Deploy authkey
-  include_tasks: deploy-authkey.yml
-
-####################################################################################
 # qpia
 ####################################################################################
 
@@ -414,8 +434,6 @@
 - name: Get all environments from .env file and register as variable
   shell: "cat /root/.env | grep '^{{ item }}' |  sed -r 's/^{{ item }}=//'"
   with_items:
-    - API_ADDRESS
-    - IS_DEVELOPMENT_SYSTEM
     - ENABLE_DB_EXPORT
     - ENABLE_DB_IMPORT
     - DEPLOYMENT_USER
@@ -429,6 +447,8 @@
     - MAIL_HOST
     - MAIL_PORT
     - MAIL_REQUIRE_TLS
+    - MAIL_FROM_NAME
+    - MAIL_FROM_ADDRESS
     - SORMAS_ON_PIA_USER
     - SORMAS_ON_PIA_PASSWORD
     - SORMAS_SERVER_URL

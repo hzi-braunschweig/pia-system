@@ -6,7 +6,7 @@
 
 import Boom from '@hapi/boom';
 
-import { AccessToken } from '@pia/lib-service-core';
+import { AccessToken, hasRealmRole } from '@pia/lib-service-core';
 import postgresqlHelper from '../services/postgresqlHelper';
 import { complianceserviceClient } from '../clients/complianceserviceClient';
 import { LabResult } from '../models/LabResult';
@@ -27,53 +27,48 @@ export class LaboratoryResultsInteractor {
     decodedToken: AccessToken,
     pseudonym: string
   ): Promise<LabResult[]> {
-    const requesterRole = decodedToken.role;
-    const requesterName = decodedToken.username;
-    const requesterStudies = decodedToken.groups;
-
-    switch (requesterRole) {
-      case 'SysAdmin':
-        throw Boom.forbidden('Wrong role for this command');
-
-      case 'Proband': {
-        if (requesterName !== pseudonym) {
-          throw Boom.forbidden('Probands can only get labresults for themself');
-        }
-        const studyOfProband = this.getStudyOfProbandOrThrow(requesterStudies);
-
-        const hasLabresultsCompliance =
-          await complianceserviceClient.hasAgreedToCompliance(
-            pseudonym,
-            studyOfProband,
-            SystemComplianceType.LABRESULTS
-          );
-        if (!hasLabresultsCompliance) {
-          throw Boom.forbidden('Proband has not complied to see lab results');
-        }
-        const labResults = (await postgresqlHelper.getAllLabResultsForProband(
-          pseudonym
-        )) as LabResult[];
-        if (studyOfProband === LaboratoryResultsInteractor.TESTSTUDY_NAME) {
-          labResults.unshift(this.createTestStudieFakeLabResult(pseudonym));
-        }
-        return labResults;
+    if (hasRealmRole('Proband', decodedToken)) {
+      if (decodedToken.username !== pseudonym) {
+        throw Boom.forbidden('Probands can only get labresults for themself');
       }
+      const studyOfProband = this.getStudyOfProbandOrThrow(
+        decodedToken.studies
+      );
 
-      case 'Forscher':
-      case 'Untersuchungsteam':
-      case 'ProbandenManager': {
-        await this.assertProfessionalHasAccessToProband(
+      const hasLabresultsCompliance =
+        await complianceserviceClient.hasAgreedToCompliance(
           pseudonym,
-          requesterStudies
+          studyOfProband,
+          SystemComplianceType.LABRESULTS
         );
-
-        return (await postgresqlHelper.getAllLabResultsByProband(
-          pseudonym
-        )) as LabResult[];
+      if (!hasLabresultsCompliance) {
+        throw Boom.forbidden('Proband has not complied to see lab results');
       }
-      default:
-        throw Boom.forbidden('unknown role for this command');
+      const labResults = (await postgresqlHelper.getAllLabResultsForProband(
+        pseudonym
+      )) as LabResult[];
+      if (studyOfProband === LaboratoryResultsInteractor.TESTSTUDY_NAME) {
+        labResults.unshift(this.createTestStudieFakeLabResult(pseudonym));
+      }
+      return labResults;
     }
+
+    if (
+      hasRealmRole('Forscher', decodedToken) ||
+      hasRealmRole('Untersuchungsteam', decodedToken) ||
+      hasRealmRole('ProbandenManager', decodedToken)
+    ) {
+      await this.assertProfessionalHasAccessToProband(
+        pseudonym,
+        decodedToken.studies
+      );
+
+      return (await postgresqlHelper.getAllLabResultsByProband(
+        pseudonym
+      )) as LabResult[];
+    }
+
+    throw Boom.forbidden('unknown role for this command');
   }
 
   /**
@@ -87,63 +82,54 @@ export class LaboratoryResultsInteractor {
     pseudonym: string,
     result_id: string
   ): Promise<LabResult> {
-    const requesterRole = decodedToken.role;
-    const requesterName = decodedToken.username;
-    const requesterStudies = decodedToken.groups;
+    if (hasRealmRole('Forscher', decodedToken)) {
+      await this.assertProfessionalHasAccessToProband(
+        pseudonym,
+        decodedToken.studies
+      );
 
-    switch (requesterRole) {
-      case 'SysAdmin':
-      case 'Untersuchungsteam':
-      case 'ProbandenManager':
-        throw Boom.forbidden('Wrong role for this command');
-
-      case 'Forscher': {
-        await this.assertProfessionalHasAccessToProband(
-          pseudonym,
-          requesterStudies
-        );
-
-        const labResult = (await postgresqlHelper.getLabResult(
-          pseudonym,
-          result_id
-        )) as LabResult | null;
-        if (labResult) {
-          return labResult;
-        } else {
-          throw Boom.notFound('Could not find labresults');
-        }
-      }
-
-      case 'Proband': {
-        if (requesterName !== pseudonym) {
-          throw Boom.forbidden('Probands can only get labresults for themself');
-        }
-        const studyOfProband = this.getStudyOfProbandOrThrow(requesterStudies);
-
-        const hasLabresultsCompliance =
-          await complianceserviceClient.hasAgreedToCompliance(
-            pseudonym,
-            studyOfProband,
-            SystemComplianceType.LABRESULTS
-          );
-        if (!hasLabresultsCompliance) {
-          throw Boom.forbidden('Proband has not complied to see lab results');
-        }
-        const labResult = (await postgresqlHelper.getLabResultForProband(
-          pseudonym,
-          result_id
-        )) as LabResult | null;
-        if (labResult) {
-          return labResult;
-        }
-        if (studyOfProband === LaboratoryResultsInteractor.TESTSTUDY_NAME) {
-          return this.createTestStudieFakeLabResult(pseudonym);
-        }
+      const labResult = (await postgresqlHelper.getLabResult(
+        pseudonym,
+        result_id
+      )) as LabResult | null;
+      if (labResult) {
+        return labResult;
+      } else {
         throw Boom.notFound('Could not find labresults');
       }
-      default:
-        throw Boom.forbidden('unknown role for this command');
     }
+
+    if (hasRealmRole('Proband', decodedToken)) {
+      if (decodedToken.username !== pseudonym) {
+        throw Boom.forbidden('Probands can only get labresults for themself');
+      }
+      const studyOfProband = this.getStudyOfProbandOrThrow(
+        decodedToken.studies
+      );
+
+      const hasLabresultsCompliance =
+        await complianceserviceClient.hasAgreedToCompliance(
+          pseudonym,
+          studyOfProband,
+          SystemComplianceType.LABRESULTS
+        );
+      if (!hasLabresultsCompliance) {
+        throw Boom.forbidden('Proband has not complied to see lab results');
+      }
+      const labResult = (await postgresqlHelper.getLabResultForProband(
+        pseudonym,
+        result_id
+      )) as LabResult | null;
+      if (labResult) {
+        return labResult;
+      }
+      if (studyOfProband === LaboratoryResultsInteractor.TESTSTUDY_NAME) {
+        return this.createTestStudieFakeLabResult(pseudonym);
+      }
+      throw Boom.notFound('Could not find labresults');
+    }
+
+    throw Boom.forbidden('unknown role for this command');
   }
 
   /**
@@ -155,63 +141,30 @@ export class LaboratoryResultsInteractor {
     decodedToken: AccessToken,
     sample_id: string
   ): Promise<LabResult> {
-    const requesterRole = decodedToken.role;
-    const requesterStudies = decodedToken.groups;
-
-    switch (requesterRole) {
-      case 'SysAdmin':
-      case 'Proband':
-      case 'Forscher':
-      case 'Untersuchungsteam':
-        throw Boom.forbidden('Wrong role for this command');
-
-      case 'ProbandenManager': {
-        const labResult = (await postgresqlHelper.getLabResultById(
-          sample_id
-        )) as LabResult | null;
-        if (!labResult) {
-          throw Boom.forbidden("Laboratory sample doesn't exist");
-        }
-        if (!labResult.user_id) {
-          throw Boom.forbidden(
-            'Laboratory sample is not assigned to a proband'
-          );
-        }
-        await this.assertProfessionalHasAccessToProband(
-          labResult.user_id,
-          requesterStudies
-        );
-        return labResult;
-      }
-      default:
-        throw Boom.forbidden('unknown role for this command');
+    const labResult = (await postgresqlHelper.getLabResultById(
+      sample_id
+    )) as LabResult | null;
+    if (!labResult) {
+      throw Boom.forbidden("Laboratory sample doesn't exist");
     }
+    if (!labResult.user_id) {
+      throw Boom.forbidden('Laboratory sample is not assigned to a proband');
+    }
+    await this.assertProfessionalHasAccessToProband(
+      labResult.user_id,
+      decodedToken.studies
+    );
+    return labResult;
   }
 
-  public static async postLabResultsImport(
-    decodedToken: AccessToken
-  ): Promise<'success' | 'error'> {
-    const requesterRole = decodedToken.role;
-
-    switch (requesterRole) {
-      case 'SysAdmin':
-      case 'Untersuchungsteam':
-      case 'Proband':
-      case 'Forscher':
-        throw Boom.forbidden('Wrong role for this command');
-
-      case 'ProbandenManager': {
-        const results = await Promise.all([
-          LabResultImportHelper.importHl7FromMhhSftp(),
-          LabResultImportHelper.importCsvFromHziSftp(),
-        ]);
-        return results.every((result) => result === 'success')
-          ? 'success'
-          : 'error';
-      }
-      default:
-        throw Boom.forbidden('unknown role for this command');
-    }
+  public static async postLabResultsImport(): Promise<'success' | 'error'> {
+    const results = await Promise.all([
+      LabResultImportHelper.importHl7FromMhhSftp(),
+      LabResultImportHelper.importCsvFromHziSftp(),
+    ]);
+    return results.every((result) => result === 'success')
+      ? 'success'
+      : 'error';
   }
   /**
    * creates one laboratory result
@@ -224,41 +177,26 @@ export class LaboratoryResultsInteractor {
     pseudonym: string,
     labResult: LabResult
   ): Promise<LabResult> {
-    const requesterRole = decodedToken.role;
-    const requesterStudies = decodedToken.groups;
+    await this.assertProfessionalHasAccessToProband(
+      pseudonym,
+      decodedToken.studies
+    );
 
-    switch (requesterRole) {
-      case 'SysAdmin':
-      case 'Proband':
-      case 'Forscher':
-        throw Boom.forbidden('Wrong role for this command');
+    const proband = (await postgresqlHelper.getUser(pseudonym)) as User;
+    if (proband.status !== 'active') {
+      throw Boom.forbidden(
+        'Cannot create a lab result if proband is not active'
+      );
+    }
 
-      case 'Untersuchungsteam':
-      case 'ProbandenManager': {
-        await this.assertProfessionalHasAccessToProband(
-          pseudonym,
-          requesterStudies
-        );
-
-        const proband = (await postgresqlHelper.getUser(pseudonym)) as User;
-        if (proband.status !== 'active') {
-          throw Boom.forbidden(
-            'Cannot create a lab result if proband is not active'
-          );
-        }
-
-        try {
-          return (await postgresqlHelper.createLabResult(
-            pseudonym,
-            labResult
-          )) as LabResult;
-        } catch (err) {
-          console.log(err);
-          throw Boom.conflict('sample with this id exists already');
-        }
-      }
-      default:
-        throw Boom.forbidden('unknown role for this command');
+    try {
+      return (await postgresqlHelper.createLabResult(
+        pseudonym,
+        labResult
+      )) as LabResult;
+    } catch (err) {
+      console.log(err);
+      throw Boom.conflict('sample with this id exists already');
     }
   }
 
@@ -275,104 +213,96 @@ export class LaboratoryResultsInteractor {
     result_id: string,
     labResult: LabResult
   ): Promise<LabResult> {
-    const requesterRole = decodedToken.role;
-    const requesterName = decodedToken.username;
-    const requesterStudies = decodedToken.groups;
+    if (
+      hasRealmRole('Untersuchungsteam', decodedToken) ||
+      hasRealmRole('ProbandenManager', decodedToken)
+    ) {
+      await this.assertProfessionalHasAccessToProband(
+        pseudonym,
+        decodedToken.studies
+      );
 
-    switch (requesterRole) {
-      case 'SysAdmin':
-      case 'Forscher':
-        throw Boom.forbidden('Wrong role for this command');
-
-      case 'Untersuchungsteam':
-      case 'ProbandenManager': {
-        await this.assertProfessionalHasAccessToProband(
-          pseudonym,
-          requesterStudies
+      const proband = (await postgresqlHelper.getUser(pseudonym)) as User;
+      if (proband.status !== 'active') {
+        throw Boom.forbidden(
+          'Cannot update a lab result if proband is not active'
         );
-
-        const proband = (await postgresqlHelper.getUser(pseudonym)) as User;
-        if (proband.status !== 'active') {
-          throw Boom.forbidden(
-            'Cannot update a lab result if proband is not active'
-          );
-        }
-
-        const oldLabResult = (await postgresqlHelper.getLabResult(
-          pseudonym,
-          result_id
-        )) as LabResult | null;
-        if (!oldLabResult || oldLabResult.study_status === 'deleted') {
-          throw Boom.forbidden('Labresult does not exist');
-        }
-        if (labResult.remark && labResult.new_samples_sent !== undefined) {
-          return (await postgresqlHelper.updateLabResultAsPM(
-            pseudonym,
-            result_id,
-            labResult
-          )) as LabResult;
-        } else if (labResult.status !== undefined) {
-          return (await postgresqlHelper.updateStatusAsPM(
-            pseudonym,
-            result_id,
-            labResult.status
-          )) as LabResult;
-        } else {
-          throw Boom.forbidden('nothing to do');
-        }
       }
-      case 'Proband': {
-        const oldLabResult = (await postgresqlHelper.getLabResult(
-          pseudonym,
-          result_id
-        )) as LabResult | null;
-        if (
-          !oldLabResult ||
-          oldLabResult.study_status === 'deleted' ||
-          oldLabResult.study_status === 'deactivated'
-        ) {
-          throw Boom.forbidden('Labresult does not exist');
-        }
-        if (
-          oldLabResult.dummy_sample_id &&
-          oldLabResult.dummy_sample_id !==
-            labResult.dummy_sample_id?.toUpperCase()
-        ) {
-          throw Boom.forbidden(
-            'Dummy_sample_id does not match the one in the database'
-          );
-        }
-        if (requesterName !== pseudonym) {
-          throw Boom.forbidden('Sample_id does not belong to Proband');
-        }
-        if (!labResult.date_of_sampling) {
-          throw Boom.forbidden('update params are missing');
-        }
-        if (
-          oldLabResult.status !== 'new' &&
-          oldLabResult.status !== 'inactive'
-        ) {
-          throw Boom.forbidden('swab was already sampled');
-        }
-        const hasSamplesCompliance =
-          await complianceserviceClient.hasAgreedToCompliance(
-            pseudonym,
-            this.getStudyOfProbandOrThrow(requesterStudies),
-            SystemComplianceType.SAMPLES
-          );
-        if (hasSamplesCompliance) {
-          return (await postgresqlHelper.updateLabResultAsProband(
-            pseudonym,
-            result_id,
-            labResult
-          )) as LabResult;
-        } else {
-          throw Boom.forbidden('Proband has not complied to take samples');
-        }
+
+      const oldLabResult = (await postgresqlHelper.getLabResult(
+        pseudonym,
+        result_id
+      )) as LabResult | null;
+      if (!oldLabResult || oldLabResult.study_status === 'deleted') {
+        throw Boom.forbidden('Labresult does not exist');
       }
-      default:
-        throw Boom.forbidden('unknown role for this command');
+      if (labResult.remark && labResult.new_samples_sent !== undefined) {
+        return (await postgresqlHelper.updateLabResultAsPM(
+          pseudonym,
+          result_id,
+          labResult
+        )) as LabResult;
+      } else if (labResult.status !== undefined) {
+        return (await postgresqlHelper.updateStatusAsPM(
+          pseudonym,
+          result_id,
+          labResult.status
+        )) as LabResult;
+      } else {
+        throw Boom.forbidden('nothing to do');
+      }
     }
+
+    if (hasRealmRole('Proband', decodedToken)) {
+      if (decodedToken.username !== pseudonym) {
+        throw Boom.forbidden(
+          'Probands can only update labresults for themself'
+        );
+      }
+      const oldLabResult = (await postgresqlHelper.getLabResult(
+        pseudonym,
+        result_id
+      )) as LabResult | null;
+      if (
+        !oldLabResult ||
+        oldLabResult.study_status === 'deleted' ||
+        oldLabResult.study_status === 'deactivated'
+      ) {
+        throw Boom.forbidden('Labresult does not exist');
+      }
+      if (
+        oldLabResult.dummy_sample_id &&
+        oldLabResult.dummy_sample_id !==
+          labResult.dummy_sample_id?.toUpperCase()
+      ) {
+        throw Boom.forbidden(
+          'Dummy_sample_id does not match the one in the database'
+        );
+      }
+      if (!labResult.date_of_sampling) {
+        throw Boom.forbidden('update params are missing');
+      }
+      if (oldLabResult.status !== 'new' && oldLabResult.status !== 'inactive') {
+        throw Boom.forbidden('swab was already sampled');
+      }
+      const hasSamplesCompliance =
+        await complianceserviceClient.hasAgreedToCompliance(
+          pseudonym,
+          this.getStudyOfProbandOrThrow(decodedToken.studies),
+          SystemComplianceType.SAMPLES
+        );
+      if (hasSamplesCompliance) {
+        return (await postgresqlHelper.updateLabResultAsProband(
+          pseudonym,
+          result_id,
+          labResult
+        )) as LabResult;
+      } else {
+        throw Boom.forbidden('Proband has not complied to take samples');
+      }
+    }
+
+    throw Boom.forbidden('unknown role for this command');
   }
 
   private static getStudyOfProbandOrThrow(

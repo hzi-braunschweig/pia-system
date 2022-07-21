@@ -10,6 +10,7 @@
     "generate": "npm start -- generate",
     "update": "npm start -- update",
     "outdated": "npm start -- outdated",
+    "audit": "npm start -- audit",
     "scan-routes": "npm start -- scan-routes",
     "test": "npm start -- test"
   },
@@ -19,8 +20,8 @@
     "commander": "^8.3.0",
     "csv-stringify": "^6.0.4",
     "license-checker": "^25.0.1",
-    "node-fetch": "^2.6.1",
-    "openapi3-ts": "^2.0.1",
+    "node-fetch": "^2.6.7",
+    "openapi3-ts": "^2.0.2",
     "yaml": "^1.10.2"
   },
   "devDependencies": {
@@ -28,14 +29,14 @@
     "@types/cli-progress": "^3.9.2",
     "@types/csv-stringify": "^3.1.0",
     "@types/license-checker": "^25.0.3",
-    "@types/node": "^14.17.34",
-    "@types/node-fetch": "^2.5.12",
-    "@typescript-eslint/eslint-plugin": "^5.7.0",
-    "@typescript-eslint/parser": "^5.7.0",
-    "eslint": "^8.4.1",
-    "eslint-config-prettier": "^8.3.0",
+    "@types/node": "^14.18.12",
+    "@types/node-fetch": "^2.6.1",
+    "@typescript-eslint/eslint-plugin": "^5.12.1",
+    "@typescript-eslint/parser": "^5.12.1",
+    "eslint": "^8.10.0",
+    "eslint-config-prettier": "^8.4.0",
     "eslint-plugin-no-only-tests": "^2.6.0",
     "eslint-plugin-security": "^1.4.0",
-    "typescript": "^4.5.4"
+    "typescript": "^4.6.2"
   }
 }

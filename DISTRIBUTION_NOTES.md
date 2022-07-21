@@ -2,6 +2,52 @@
 
 This file contains notes about changes that are important to the operations team.
 
+## 1.30 (Keycloak)
+
+This release introduces a Keycloak server for authentication and authorization management. It replaces
+the former authservice, which was deleted.
+
+To move accounts from **qPIA** to the new Keycloak DB in **iPIA**, two different migration steps will take place:
+
+1. All pseudonyms and usernames in the qPIA, iPIA and ewPIA DBs will be migrated to lowercase characters
+2. The userservice will migrate existing accounts from the `accounts` table to Keycloak on startup
+
+Please check the logs of the databases and the userservice while starting up.
+
+We do expect this process to take place without any need for intervention. However, the following checks
+should be executed **prior to the update** to get sure we have no unique constraint issues while running
+migration step 1:
+
+- check, that no username exists in both upper and lower case in **qPIA**:
+
+```sql
+SELECT count FROM (SELECT UPPER(username) as up_username, count(*) as count FROM accounts GROUP BY up_username HAVING count(*) > 1) as up_usernames;
+```
+
+- check, that no pseudonym exists in both upper and lower case in **qPIA**:
+
+```sql
+SELECT count FROM (SELECT UPPER(pseudonym) as up_pseudonym, count(*) as count FROM probands GROUP BY up_pseudonym HAVING count(*) > 1) as up_pseudonyms;
+```
+
+In case the second step of the migration fails, you can retry it or roll back:
+
+- to retry the migration for users that were not migrated successfully, apply the following sql on **qPIA** before restarting the `userservice`:
+
+```sql
+UPDATE accounts SET is_migrated=NULL WHERE is_migrated=false;
+```
+
+- to rollback the migration delete everything in the `authserver` schema on **iPIA** and use the following sql on **qPIA**:
+
+```sql
+DELETE FROM db_migrations WHERE NAME ='/migrations/1639043781__pia-392_add_accounts_migrated.sql';
+ALTER TABLE accounts DROP column IF EXISTS is_migrated;
+```
+
+- ansible variable `pia_is_direct_access_grant_enabled` has been added and should be set to `false` on PIA-Prod
+- the `pia_ip_check_enabled` and `pia_cert_check_enabled` ansible variables are not used anymore and should be removed
+
 ## 1.29.7
 
 - this release adds the possibility to set the MODYS configuration within the IPIA host vars
@@ -19,7 +65,7 @@ This file contains notes about changes that are important to the operations team
 - new SORMAS integration:
   - The complete flow between SORMAS and PIA was refactored in order to comply to an existing standard API
   - The following properties need to be configured in SORMAS to work properly with PIA:
-    - interface.patientdiary.probandsurl = <BACKEND_API_URL>/api/v1/sormas/symptomdiary
+    - interface.patientdiary.probandsurl = <WEBAPP_URL>/api/v1/sormas/symptomdiary
   - The following variables for the integration need to be set in PIA
     - SORMAS_SERVER_URL (OLD: SORMAS_SERVER)
     - SORMAS_ON_PIA_USER (OLD)

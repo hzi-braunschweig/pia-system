@@ -6,11 +6,11 @@
 
 import { expect } from 'chai';
 import { Logging } from './logging';
-import { StatusCode } from './statusCode';
 
 describe('Logging', () => {
   it('colorizeStatus should keep status', () => {
-    for (let i = 0; i < StatusCode.MAX; i++) {
+    const statusCodeMax = 999;
+    for (let i = 0; i < statusCodeMax; i++) {
       expect(Logging.colorizeStatus(i)).to.contain(i.toString());
     }
   });

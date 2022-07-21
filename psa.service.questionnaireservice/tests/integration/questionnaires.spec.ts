@@ -7,12 +7,13 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
-import { sign } from 'jsonwebtoken';
+import sinon from 'sinon';
 import startOfToday from 'date-fns/startOfToday';
 import { StatusCodes } from 'http-status-codes';
 import fetchMocker from 'fetch-mock';
 
-import secretOrPrivateKey from '../secretOrPrivateKey';
+import { HttpClient } from '@pia-system/lib-http-clients-internal';
+import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 import { cleanup, setup } from './questionnaires.spec.data/setup.helper';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
@@ -27,87 +28,26 @@ import {
   AnswerOptionRequest,
 } from '../../src/models/answerOption';
 import { db } from '../../src/db';
-import sinon from 'sinon';
-import { HttpClient } from '@pia-system/lib-http-clients-internal';
 
 chai.use(chaiHttp);
 
-const apiAddress =
-  'http://localhost:' + config.public.port.toString() + '/questionnaire';
+const apiAddress = `http://localhost:${config.public.port}`;
 
-const probandSession1 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestProband1',
-  groups: ['ApiTestStudy1'],
-};
-const probandSession2 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestProband2',
-  groups: ['ApiTestStudy2'],
-};
-const probandSession3 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestProband3',
-  groups: ['ApiTestStudy1'],
-};
-const probandSession4 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestProband4',
-  groups: ['ApiTestStudy3'],
-};
-const forscherSession1 = {
-  id: 1,
-  role: 'Forscher',
-  username: 'QTestForscher1',
-  groups: ['ApiTestStudy1', 'ApiTestStudy3'],
-};
-const forscherSession2 = {
-  id: 1,
-  role: 'Forscher',
-  username: 'QTestForscher2',
-  groups: ['ApiTestStudy2'],
-};
-
-const invalidToken = sign(probandSession1, 'thisIsNotAValidPrivateKey', {
-  algorithm: 'HS256',
-  expiresIn: '24h',
+const probandHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband1',
+  studies: ['ApiTestStudy1'],
 });
-const probandToken1 = sign(probandSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const forscherHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
+  username: 'qtest-forscher1',
+  studies: ['ApiTestStudy1', 'ApiTestStudy3'],
 });
-const probandToken2 = sign(probandSession2, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const forscherHeader2 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
+  username: 'qtest-forscher2',
+  studies: ['ApiTestStudy2'],
 });
-const probandToken3 = sign(probandSession3, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-const probandToken4 = sign(probandSession4, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-const forscherToken1 = sign(forscherSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-const forscherToken2 = sign(forscherSession2, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-
-const invalidHeader = { authorization: invalidToken };
-const probandHeader1 = { authorization: probandToken1 };
-const probandHeader2 = { authorization: probandToken2 };
-const probandHeader3 = { authorization: probandToken3 };
-const probandHeader4 = { authorization: probandToken4 };
-const forscherHeader1 = { authorization: forscherToken1 };
-const forscherHeader2 = { authorization: forscherToken2 };
 
 const existingQuestionnaire2v1 = {
   id: 100200,
@@ -165,6 +105,9 @@ describe('/questionnaires', function () {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     sandbox.stub(HttpClient, 'fetch').callsFake(fetchMock);
+
+    AuthServerMock.adminRealm().returnValid();
+    AuthServerMock.probandRealm().returnInvalid();
   });
 
   afterEach(async () => {
@@ -172,31 +115,15 @@ describe('/questionnaires', function () {
 
     sandbox.restore();
     fetchMock.restore();
+
+    AuthServerMock.cleanAll();
   });
 
-  describe('POST /questionnaire/questionnaires', function () {
-    it('should return HTTP 401 if the token is wrong', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .post('/questionnaires')
-        .set(invalidHeader)
-        .send(getValidQuestionnaire1());
-      expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
-    });
-
-    it('should return HTTP 403 if a Proband tries', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .post('/questionnaires')
-        .set(probandHeader1)
-        .send(getValidQuestionnaire1());
-      expect(result).to.have.status(StatusCodes.FORBIDDEN);
-    });
-
+  describe('POST /admin/questionnaires', function () {
     it('should return HTTP 400 if the questionnaire is invalid', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/questionnaires')
+        .post('/admin/questionnaires')
         .set(forscherHeader1)
         .send(getMissingFieldQuestionnaire());
       expect(result).to.have.status(StatusCodes.BAD_REQUEST);
@@ -205,7 +132,7 @@ describe('/questionnaires', function () {
     it('should return HTTP 400 if the questionnaire has wrong value in field', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/questionnaires')
+        .post('/admin/questionnaires')
         .set(forscherHeader1)
         .send(getWrongNotificationQuestionnaire());
       expect(result).to.have.status(StatusCodes.BAD_REQUEST);
@@ -216,7 +143,7 @@ describe('/questionnaires', function () {
       wrongStudyQuestionnaire.study_id = 'noValidStudy';
       const result = await chai
         .request(apiAddress)
-        .post('/questionnaires')
+        .post('/admin/questionnaires')
         .set(forscherHeader1)
         .send(wrongStudyQuestionnaire);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -225,7 +152,7 @@ describe('/questionnaires', function () {
     it('should return HTTP 403 if the user has no write access to study', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/questionnaires')
+        .post('/admin/questionnaires')
         .set(forscherHeader2)
         .send(getValidQuestionnaire1());
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -235,7 +162,7 @@ describe('/questionnaires', function () {
       const questionnaireRequest = getValidQuestionnaire1();
       const result = await chai
         .request(apiAddress)
-        .post('/questionnaires')
+        .post('/admin/questionnaires')
         .set(forscherHeader1)
         .send(questionnaireRequest);
       expect(result).to.have.status(StatusCodes.OK);
@@ -289,7 +216,7 @@ describe('/questionnaires', function () {
 
       const result = await chai
         .request(apiAddress)
-        .post('/questionnaires')
+        .post('/admin/questionnaires')
         .set(forscherHeader1)
         .send(questionnaireRequest);
       expect(result, result.text).to.have.status(StatusCodes.OK);
@@ -405,7 +332,7 @@ describe('/questionnaires', function () {
 
       const result = await chai
         .request(apiAddress)
-        .post('/questionnaires')
+        .post('/admin/questionnaires')
         .set(forscherHeader1)
         .send(questionnaireImported);
       expect(result).to.have.status(StatusCodes.OK);
@@ -482,7 +409,7 @@ describe('/questionnaires', function () {
       const questionnaireRequest = getValidQuestionnaireEmptyQuestion();
       const result = await chai
         .request(apiAddress)
-        .post('/questionnaires')
+        .post('/admin/questionnaires')
         .set(forscherHeader1)
         .send(questionnaireRequest);
       expect(result).to.have.status(StatusCodes.OK);
@@ -510,7 +437,7 @@ describe('/questionnaires', function () {
       const questionnaireRequest = getValidQuestionnaireSpontan();
       const result = await chai
         .request(apiAddress)
-        .post('/questionnaires')
+        .post('/admin/questionnaires')
         .set(forscherHeader1)
         .send(questionnaireRequest);
       checkIfResponseMatchesRequestQuestionnaire(
@@ -549,30 +476,22 @@ describe('/questionnaires', function () {
         '/questionnaires/' + String(result.body.id) + '/1'
       );
     });
+
     it('should return HTTP 200 with the posted questionnaire if the questionnaire answer options answer_type_id = 9(date_time)', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/questionnaires')
+        .post('/admin/questionnaires')
         .set(forscherHeader1)
         .send(getValidQuestionnaireEmptyQuestion());
       expect(result).to.have.status(StatusCodes.OK);
     });
   });
 
-  describe('POST /questionnaire/revisequestionnaire/{id}', function () {
-    it('should return HTTP 401 if the token is wrong', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .post('/revisequestionnaire/100100')
-        .set(invalidHeader)
-        .send(getValidQuestionnaire1());
-      expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
-    });
-
+  describe('POST /admin/revisequestionnaire/{id}', function () {
     it('should return HTTP 403 if a Proband tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/revisequestionnaire/100100')
+        .post('/admin/revisequestionnaire/100100')
         .set(probandHeader1)
         .send(getValidQuestionnaire1());
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -581,7 +500,7 @@ describe('/questionnaires', function () {
     it('should return HTTP 400 if the questionnaire is invalid', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/revisequestionnaire/100100')
+        .post('/admin/revisequestionnaire/100100')
         .set(forscherHeader1)
         .send(getMissingFieldQuestionnaire());
       expect(result).to.have.status(StatusCodes.BAD_REQUEST);
@@ -592,7 +511,7 @@ describe('/questionnaires', function () {
       wrongStudyQuestionnaire.study_id = 'noValidStudy';
       const result = await chai
         .request(apiAddress)
-        .post('/revisequestionnaire/100100')
+        .post('/admin/revisequestionnaire/100100')
         .set(forscherHeader1)
         .send(wrongStudyQuestionnaire);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -601,7 +520,7 @@ describe('/questionnaires', function () {
     it('should return HTTP 403 if the user has no write access to old study', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/revisequestionnaire/100100')
+        .post('/admin/revisequestionnaire/100100')
         .set(forscherHeader2)
         .send(getValidQuestionnaire1());
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
@@ -610,7 +529,7 @@ describe('/questionnaires', function () {
     it('should return HTTP 404 if the questionnaire id is wrong and it cannot be found', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/revisequestionnaire/99999999')
+        .post('/admin/revisequestionnaire/99999999')
         .set(forscherHeader1)
         .send(getValidQuestionnaire1());
       expect(result).to.have.status(StatusCodes.NOT_FOUND);
@@ -630,7 +549,9 @@ describe('/questionnaires', function () {
 
       const result = await chai
         .request(apiAddress)
-        .post('/revisequestionnaire/' + existingQuestionnaire4.id.toString())
+        .post(
+          '/admin/revisequestionnaire/' + existingQuestionnaire4.id.toString()
+        )
         .set(forscherHeader1)
         .send(questionnaireRequest);
       expect(result).to.have.status(StatusCodes.OK);
@@ -660,15 +581,17 @@ describe('/questionnaires', function () {
           String(result.body.version)
       );
 
+      AuthServerMock.adminRealm().returnValid();
+
       const result2 = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
         )
-        .set(probandHeader1);
+        .set(forscherHeader1);
 
       const existingQuestionnaireRequest = getExistingQuestionnaire4();
 
@@ -688,40 +611,12 @@ describe('/questionnaires', function () {
     });
   });
 
-  describe('PUT /questionnaire/questionnaires/{id}/{version}', () => {
-    it('should return HTTP 401 if the token is wrong', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .put(
-          '/questionnaires/' +
-            existingQuestionnaire4.id.toString() +
-            '/' +
-            existingQuestionnaire4.version.toString()
-        )
-        .set(invalidHeader)
-        .send(getValidQuestionnaire1());
-      expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
-    });
-
-    it('should return HTTP 403 if a Proband tries', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .put(
-          '/questionnaires/' +
-            existingQuestionnaire4.id.toString() +
-            '/' +
-            existingQuestionnaire4.version.toString()
-        )
-        .set(probandHeader1)
-        .send(getValidQuestionnaire1());
-      expect(result).to.have.status(StatusCodes.FORBIDDEN);
-    });
-
+  describe('PUT /admin/questionnaires/{id}/{version}', () => {
     it('should return HTTP 400 if the questionnaire is invalid', async function () {
       const result = await chai
         .request(apiAddress)
         .put(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
@@ -737,7 +632,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .put(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
@@ -751,7 +646,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .put(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
@@ -764,7 +659,7 @@ describe('/questionnaires', function () {
     it('should return HTTP 404 if the questionnaire id is wrong and it cannot be found', async function () {
       const result = await chai
         .request(apiAddress)
-        .put('/questionnaires/99999999/1')
+        .put('/admin/questionnaires/99999999/1')
         .set(forscherHeader1)
         .send(getValidQuestionnaire1());
       expect(result).to.have.status(StatusCodes.NOT_FOUND);
@@ -782,7 +677,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .put(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
@@ -826,7 +721,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .put(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
@@ -867,17 +762,19 @@ describe('/questionnaires', function () {
           existingQuestionnaire4.version.toString()
       );
 
-      mockHasAgreedToCompliance('QTestProband1', 'ApiTestStudy1');
+      mockHasAgreedToCompliance('qtest-proband1', 'ApiTestStudy1');
+
+      AuthServerMock.adminRealm().returnValid();
 
       const result2 = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
         )
-        .set(probandHeader1);
+        .set(forscherHeader1);
       expect(result2).to.have.status(StatusCodes.OK);
 
       checkIfResponseMatchesRequestQuestionnaire(
@@ -895,16 +792,18 @@ describe('/questionnaires', function () {
       const result0 = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire5.id.toString() +
             '/' +
             existingQuestionnaire5.version.toString()
         )
-        .set(probandHeader1);
+        .set(forscherHeader1);
       expect(result0).to.have.status(StatusCodes.OK);
       expect((result0.body as QuestionnaireResponse).condition).to.not.equal(
         null
       );
+
+      AuthServerMock.adminRealm().returnValid();
 
       const questionnaireRequest = getExistingQuestionnaire4();
       questionnaireRequest.questions.pop();
@@ -912,7 +811,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .put(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
@@ -926,10 +825,12 @@ describe('/questionnaires', function () {
         result.body
       );
 
+      AuthServerMock.adminRealm().returnValid();
+
       const result2 = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
@@ -944,15 +845,17 @@ describe('/questionnaires', function () {
 
       expect(result2.body.version).to.equal(1);
 
+      AuthServerMock.adminRealm().returnValid();
+
       const result3 = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire5.id.toString() +
             '/' +
             existingQuestionnaire5.version.toString()
         )
-        .set(probandHeader1);
+        .set(forscherHeader1);
       expect(result3).to.have.status(StatusCodes.OK);
       expect((result3.body as QuestionnaireResponse).condition).to.equal(null);
     });
@@ -963,7 +866,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .put(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
@@ -1008,7 +911,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .put(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire2v2.id.toString() +
             '/' +
             existingQuestionnaire2v2.version.toString()
@@ -1032,10 +935,12 @@ describe('/questionnaires', function () {
         existingQuestionnaire2v1.answerOptionId1_1
       );
 
+      AuthServerMock.adminRealm().returnValid();
+
       const result2 = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire2v1.id.toString() +
             '/' +
             existingQuestionnaire2v1.version.toString()
@@ -1058,7 +963,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .put(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             conditionSourceQuestionnaire.id.toString() +
             '/' +
             conditionSourceQuestionnaire.version.toString()
@@ -1084,27 +989,11 @@ describe('/questionnaires', function () {
     });
   });
 
-  describe('GET /questionnaire/questionnaires', function () {
-    it('should return HTTP 401 if the token is wrong', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .get('/questionnaires')
-        .set(invalidHeader);
-      expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
-    });
-
-    it('should return HTTP 403 if a proband tries', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .get('/questionnaires')
-        .set(probandHeader2);
-      expect(result).to.have.status(StatusCodes.FORBIDDEN);
-    });
-
+  describe('GET /admin/questionnaires', function () {
     it('should return HTTP 200 with the correct questionnaires for Forscher', async function () {
       const result = await chai
         .request(apiAddress)
-        .get('/questionnaires')
+        .get('/admin/questionnaires')
         .set(forscherHeader1);
 
       expect(result).to.have.status(StatusCodes.OK);
@@ -1126,33 +1015,37 @@ describe('/questionnaires', function () {
     });
   });
 
-  describe('GET /questionnaire/questionnaires/{id}/{version}', function () {
-    it('should return HTTP 401 if the token is wrong', async function () {
+  describe('GET /admin/questionnaires/{id}/{version}', function () {
+    it('should return HTTP 403 if a Proband tries', async function () {
       const result = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
-            existingQuestionnaire4.id.toString() +
+          '/admin/questionnaires/' +
+            existingQuestionnaire2v2.id.toString() +
             '/' +
-            existingQuestionnaire4.version.toString()
+            existingQuestionnaire2v2.version.toString()
         )
-        .set(invalidHeader);
-      expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
+        .set(probandHeader1);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
     it('should return HTTP 404 if the questionnaire id is wrong', async function () {
       const result = await chai
         .request(apiAddress)
-        .get('/questionnaires/999999/1')
-        .set(probandHeader1);
+        .get('/admin/questionnaires/999999/1')
+        .set(forscherHeader1);
       expect(result).to.have.status(StatusCodes.NOT_FOUND);
     });
 
     it('should return HTTP 404 if the version of questionnaire does not exist', async function () {
       const result = await chai
         .request(apiAddress)
-        .get('/questionnaires/' + existingQuestionnaire4.id.toString() + '/99')
-        .set(probandHeader1);
+        .get(
+          '/admin/questionnaires/' +
+            existingQuestionnaire4.id.toString() +
+            '/99'
+        )
+        .set(forscherHeader1);
       expect(result).to.have.status(StatusCodes.NOT_FOUND);
     });
 
@@ -1160,42 +1053,27 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
         )
-        .set(probandHeader4);
-      expect(result).to.have.status(StatusCodes.FORBIDDEN);
-    });
-
-    it('should return HTTP 403 if proband tries to get questionnaire he did not comply to get', async function () {
-      mockHasAgreedToCompliance('QTestProband3', 'ApiTestStudy1', false);
-
-      const result = await chai
-        .request(apiAddress)
-        .get(
-          '/questionnaires/' +
-            existingQuestionnaire2v2.id.toString() +
-            '/' +
-            existingQuestionnaire2v2.version.toString()
-        )
-        .set(probandHeader3);
+        .set(forscherHeader2);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
     it('should return HTTP 200 with the correct questionnaire and version 1', async function () {
-      mockHasAgreedToCompliance('QTestProband1', 'ApiTestStudy1');
+      mockHasAgreedToCompliance('qtest-proband1', 'ApiTestStudy1');
 
       const result = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire2v1.id.toString() +
             '/' +
             existingQuestionnaire2v1.version.toString()
         )
-        .set(probandHeader1);
+        .set(forscherHeader1);
       expect(result, result.text).to.have.status(StatusCodes.OK);
 
       checkIfResponseMatchesRequestQuestionnaire(
@@ -1214,17 +1092,17 @@ describe('/questionnaires', function () {
     });
 
     it('should return HTTP 200 with the correct questionnaire and version 2', async function () {
-      mockHasAgreedToCompliance('QTestProband1', 'ApiTestStudy1');
+      mockHasAgreedToCompliance('qtest-proband1', 'ApiTestStudy1');
 
       const result = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire2v2.id.toString() +
             '/' +
             existingQuestionnaire2v2.version.toString()
         )
-        .set(probandHeader1);
+        .set(forscherHeader1);
       expect(result, result.text).to.have.status(StatusCodes.OK);
 
       checkIfResponseMatchesRequestQuestionnaire(
@@ -1246,12 +1124,12 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             conditionSourceQuestionnaire.id.toString() +
             '/' +
             conditionSourceQuestionnaire.version.toString()
         )
-        .set(probandHeader2);
+        .set(forscherHeader2);
       expect(result).to.have.status(StatusCodes.OK);
       console.log(JSON.stringify(result.body, null, 2));
       checkIfResponseMatchesRequestQuestionnaire(
@@ -1274,12 +1152,12 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire5.id.toString() +
             '/' +
             existingQuestionnaire5.version.toString()
         )
-        .set(probandHeader1);
+        .set(forscherHeader1);
       expect(result).to.have.status(StatusCodes.OK);
       const questionnaireResponse = result.body as QuestionnaireResponse;
       expect(questionnaireResponse.name).to.equal('ApiTestQuestionnaire5');
@@ -1296,46 +1174,20 @@ describe('/questionnaires', function () {
     });
   });
 
-  describe('DELETE /questionnaire/questionnaires/{id}/{version}', function () {
-    it('should return HTTP 401 if the token is wrong', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .delete(
-          '/questionnaires/' +
-            existingQuestionnaire4.id.toString() +
-            '/' +
-            existingQuestionnaire4.version.toString()
-        )
-        .set(invalidHeader);
-      expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
-    });
-
+  describe('DELETE /admin/questionnaires/{id}/{version}', function () {
     it('should return HTTP 404 if the questionnaire id is wrong', async function () {
       const result = await chai
         .request(apiAddress)
-        .delete('/questionnaires/999999/1')
+        .delete('/admin/questionnaires/999999/1')
         .set(forscherHeader1);
       expect(result).to.have.status(StatusCodes.NOT_FOUND);
-    });
-
-    it('should return HTTP 403 if a Proband tries', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .delete(
-          '/questionnaires/' +
-            existingQuestionnaire4.id.toString() +
-            '/' +
-            existingQuestionnaire4.version.toString()
-        )
-        .set(probandHeader1);
-      expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
     it('should return HTTP 403 if the user has no write access to study', async function () {
       const result = await chai
         .request(apiAddress)
         .delete(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
@@ -1349,7 +1201,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .delete(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
@@ -1357,10 +1209,12 @@ describe('/questionnaires', function () {
         .set(forscherHeader1);
       expect(result, result.text).to.have.status(StatusCodes.NO_CONTENT);
 
+      AuthServerMock.adminRealm().returnValid();
+
       const result2 = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
@@ -1373,7 +1227,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .delete(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire5.id.toString() +
             '/' +
             existingQuestionnaire5.version.toString()
@@ -1386,7 +1240,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .delete(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             existingQuestionnaire2v2.id.toString() +
             '/' +
             existingQuestionnaire2v2.version.toString()
@@ -1399,7 +1253,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .get(
-          '/questionnaires/' +
+          '/admin/questionnaires/' +
             conditionSourceQuestionnaire.id.toString() +
             '/' +
             conditionSourceQuestionnaire.version.toString()
@@ -1411,7 +1265,7 @@ describe('/questionnaires', function () {
     it('should delete a questionnaire and return HTTP 200', async function () {
       const result = await chai
         .request(apiAddress)
-        .delete('/questionnaires/100300/1')
+        .delete('/admin/questionnaires/100300/1')
         .set(forscherHeader1);
       const resultFromDatabse = await db.manyOrNone(
         'SELECT id FROM user_files WHERE id=999999'
@@ -1421,28 +1275,12 @@ describe('/questionnaires', function () {
     });
   });
 
-  describe('PATCH /questionnaire/{study}/questionnaires/{id}/{version}', function () {
-    it('should return HTTP 401 if the token is wrong', async function () {
-      const result = await chai
-        .request(apiAddress)
-        .patch(
-          '/' +
-            existingQuestionnaire4.study +
-            '/questionnaires/' +
-            existingQuestionnaire4.id.toString() +
-            '/' +
-            existingQuestionnaire4.version.toString()
-        )
-        .set(invalidHeader)
-        .send({ active: false });
-      expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
-    });
-
+  describe('PATCH /admin/{study}/questionnaires/{id}/{version}', function () {
     it('should return HTTP 403 if a Proband tries', async function () {
       const result = await chai
         .request(apiAddress)
         .patch(
-          '/' +
+          '/admin/' +
             existingQuestionnaire4.study +
             '/questionnaires/' +
             existingQuestionnaire4.id.toString() +
@@ -1458,7 +1296,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .patch(
-          '/' +
+          '/admin/' +
             existingQuestionnaire4.study +
             '/questionnaires/' +
             existingQuestionnaire4.id.toString() +
@@ -1481,7 +1319,7 @@ describe('/questionnaires', function () {
       const result = await chai
         .request(apiAddress)
         .patch(
-          '/' +
+          '/admin/' +
             existingQuestionnaire4.study +
             '/questionnaires/' +
             existingQuestionnaire4.id.toString() +
@@ -1493,17 +1331,19 @@ describe('/questionnaires', function () {
 
       expect(result).to.have.status(StatusCodes.OK);
 
+      AuthServerMock.adminRealm().returnValid();
+
       const result2 = await chai
         .request(apiAddress)
         .patch(
-          '/' +
+          '/admin/' +
             existingQuestionnaire4.study +
             '/questionnaires/' +
             existingQuestionnaire4.id.toString() +
             '/' +
             existingQuestionnaire4.version.toString()
         )
-        .set(probandHeader1)
+        .set(forscherHeader1)
         .send({ active: true });
       expect(result2).to.have.status(StatusCodes.BAD_REQUEST);
     });
@@ -1511,7 +1351,7 @@ describe('/questionnaires', function () {
     it('should deactivate a questionnaire, return HTTP 200 delete all active, inactive or in_progress questionnaire instances but keep answered', async function () {
       const result = await chai
         .request(apiAddress)
-        .patch('/ApiTestStudy1/questionnaires/100300/1')
+        .patch('/admin/ApiTestStudy1/questionnaires/100300/1')
         .set(forscherHeader1)
         .send({ active: false });
 

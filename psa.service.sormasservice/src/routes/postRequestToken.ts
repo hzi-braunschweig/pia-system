@@ -8,7 +8,7 @@ import { TokenHandler } from '../handlers/tokenHandler';
 import Joi from 'joi';
 
 export default {
-  path: '/sormas/requestToken',
+  path: '/requestToken',
   method: 'POST',
   handler: TokenHandler.requestToken,
   config: {

@@ -5,11 +5,11 @@
   -->
 
 <div *ngIf="form">
-  <form [formGroup]="form" (ngSubmit)="submit(form)">
-    <h1 mat-dialog-title *ngIf="!data.name">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <h1 mat-dialog-title *ngIf="!this.isEditMode">
       {{ 'STUDIES.NEW_STUDY' | translate }}
     </h1>
-    <h1 mat-dialog-title *ngIf="data.name">
+    <h1 mat-dialog-title *ngIf="this.isEditMode">
       {{ 'STUDIES.CHANGE_STUDY' | translate }}
     </h1>
     <mat-dialog-content align="start">
@@ -88,7 +88,7 @@
         {{ 'DIALOG.CANCEL' | translate }}
       </button>
       <button
-        *ngIf="!data.name"
+        *ngIf="!this.isEditMode"
         id="confirmbutton"
         mat-button
         type="submit"
@@ -97,7 +97,7 @@
         {{ 'DIALOG.CREATE' | translate }}
       </button>
       <button
-        *ngIf="data.name"
+        *ngIf="this.isEditMode"
         id="confirmbutton"
         mat-button
         type="submit"

@@ -79,7 +79,7 @@ describe('QuestionnaireAnswersTransmissionService integration', function () {
   describe('onQuestionnaireInstanceReleased', () => {
     let producer: Producer<MessagePayloadQuestionnaireInstanceReleased>;
     const user = {
-      pseudonym: 'QTest-1234567890',
+      pseudonym: 'qtest-1234567890',
       ids: 'test-uuid',
     };
     let processedQuestionnaireInstanceReleased: Promise<void>;

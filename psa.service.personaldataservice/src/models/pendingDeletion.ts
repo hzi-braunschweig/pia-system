@@ -15,6 +15,4 @@ export interface PendingDeletionDb extends PendingDeletionReq {
   study: string;
 }
 
-export interface PendingDeletionRes extends PendingDeletionDb {
-  id: number;
-}
+export type PendingDeletionRes = PendingDeletionDb;

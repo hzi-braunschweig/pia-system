@@ -42,15 +42,11 @@
         {{ 'PROBAND.IDS' | translate }}: {{ selectedIDSUI }}
       </div>
     </div>
-    <div class="info-item-label" *ngIf="currentUser && currentUser.username">
+    <div class="info-item-label" *ngIf="user.username">
       {{ 'SIDENAV.USER' | translate }}
     </div>
-    <div
-      data-e2e="e2e-username"
-      class="info-item-value"
-      *ngIf="currentUser && currentUser.username"
-    >
-      {{ currentUser.username }}
+    <div data-e2e="e2e-username" class="info-item-value" *ngIf="user.username">
+      {{ user.username }}
     </div>
     <div class="info-item-label" *ngIf="currentRoleUI">
       {{ 'SIDENAV.ROLE' | translate }}

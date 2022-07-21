@@ -11,80 +11,79 @@ import { loggingserviceClient } from '../clients/loggingserviceClient';
 import { hasExistingPseudonymPrefix } from '../helpers/studyHelper';
 import { config } from '../config';
 import pgHelper from '../services/postgresqlHelper';
-import { ProfessionalUser } from '../models/user';
 import {
   PendingStudyChange,
   PendingStudyChangeRequest,
 } from '../models/pendingStudyChange';
 import {
+  AccountNotFound,
   FourEyeOppositionPartnerLacksPermissionError,
   FourEyeOppositionPartnerNotFoundError,
   FourEyeOppositionPendingChangeAlreadyExistsError,
   FourEyeOppositionSelfNotAllowedAsPartnerError,
   MissingPermissionError,
-  RequesterNotFound,
   StudyInvalidPsyeudonymPrefixError,
-  WrongRoleError,
 } from '../errors';
+import { getRepository } from 'typeorm';
+import { StudyAccess } from '../entities/studyAccess';
+import { ProfessionalAccountService } from '../services/professionalAccountService';
+import { AccessLevel } from '@pia-system/lib-http-clients-internal';
+import { ProfessionalAccount } from '../models/account';
 
 export class PendingStudyChangesInteractor {
   /**
-   * creates the pending study change in DB if it does not exist and the requester is allowed to
-   * @param decodedToken the decoded jwt of the request
-   * @param data the study change object to create
+   * Creates the pending study change in DB if it does not exist and the requester is allowed to
    */
   public static async createPendingStudyChange(
     decodedToken: AccessToken,
     data: PendingStudyChangeRequest
   ): Promise<PendingStudyChange> {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
+    const requestedByUsername = decodedToken.username;
 
-    if (userRole !== 'Forscher') {
-      throw new WrongRoleError(
-        'Could not create the pending deletion: Unknown or wrong role'
-      );
-    }
-
-    // Check Requested By
-    const requested_by = (await pgHelper.getProfessionalUser(
-      userName,
-      userRole
-    )) as ProfessionalUser | null;
-    if (!requested_by) {
-      throw new RequesterNotFound('Your user does not exist as a "Forscher"');
-    }
     if (
-      !requested_by.study_accesses.some(
-        (access) =>
-          access.study_id === data.study_id && access.access_level === 'admin'
-      )
+      !(await this.hasStudyAccessLevel(
+        requestedByUsername,
+        data.study_id,
+        'admin'
+      ))
     ) {
       throw new MissingPermissionError(
         'You do not have permission to change this study.'
       );
     }
 
-    // Check Requested For
-    const requested_for = (await pgHelper.getProfessionalUser(
-      data.requested_for,
-      userRole
-    )) as ProfessionalUser | null;
-    if (!requested_for) {
+    let requestedFor: ProfessionalAccount;
+    try {
+      requestedFor = await ProfessionalAccountService.getProfessionalAccount(
+        data.requested_for
+      );
+    } catch (err) {
+      if (err instanceof AccountNotFound) {
+        throw new FourEyeOppositionPartnerNotFoundError(
+          'The person to confirm does not exist as a "Forscher"'
+        );
+      }
+      throw err;
+    }
+
+    if (requestedFor.role !== 'Forscher') {
       throw new FourEyeOppositionPartnerNotFoundError(
         'The person to confirm does not exist as a "Forscher"'
       );
     }
-    if (requested_for.username === requested_by.username) {
+
+    if (requestedFor.username === requestedByUsername) {
       throw new FourEyeOppositionSelfNotAllowedAsPartnerError(
         'You cannot request for yourself'
       );
     }
+
     if (
-      !requested_for.study_accesses.some(
-        (access) =>
-          access.study_id === data.study_id && access.access_level === 'admin'
-      )
+      !(await this.hasStudyAccessLevel(
+        requestedFor.username,
+        data.study_id,
+        'admin'
+      ))
     ) {
       throw new FourEyeOppositionPartnerLacksPermissionError(
         'The person to confirm does not have permission to change a study.'
@@ -113,7 +112,7 @@ export class PendingStudyChangesInteractor {
 
     const pendingStudyChange = (await pgHelper.createPendingStudyChange({
       ...data,
-      requested_by: userName,
+      requested_by: decodedToken.username,
     })) as PendingStudyChange;
 
     const result = await MailService.sendMail(
@@ -135,26 +134,16 @@ export class PendingStudyChangesInteractor {
   }
 
   /**
-   * updates a pending study change in DB, confirms changes and changes all data
-   * @param decodedToken the decoded jwt of the request
-   * @param id the id of the pending study change to update
+   * Updates a pending study change in DB, confirms changes and changes all data
    */
   public static async updatePendingStudyChange(
     decodedToken: AccessToken,
     id: number
   ): Promise<PendingStudyChange> {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
-
-    if (userRole !== 'Forscher') {
-      throw Boom.forbidden(
-        'Could not update the pending compliance change: Unknown or wrong role'
-      );
-    }
     const pendingStudyChange = (await pgHelper.getPendingStudyChange(
       id
     )) as PendingStudyChange;
-    if (pendingStudyChange.requested_for !== userName) {
+    if (pendingStudyChange.requested_for !== decodedToken.username) {
       throw Boom.forbidden(
         'The requester is not allowed to update this pending study change'
       );
@@ -174,29 +163,19 @@ export class PendingStudyChangesInteractor {
   }
 
   /**
-   * deletes a pending study change and cancels the change request
-   * @param decodedToken the decoded jwt of the request
-   * @param id the id of the study to change vaiables for
+   * Deletes a pending study change and cancels the change request
    */
   public static async deletePendingStudyChange(
     decodedToken: AccessToken,
     id: number
   ): Promise<PendingStudyChange> {
-    const userRole = decodedToken.role;
-    const userStudies = decodedToken.groups;
-
-    if (userRole !== 'Forscher') {
-      throw Boom.forbidden(
-        'Could not delete the pending compliance change: Unknown or wrong role'
-      );
-    }
     const pendingStudyChange = (await pgHelper
       .getPendingStudyChange(id)
       .catch((err) => {
         console.log(err);
         throw Boom.notFound('The pending compliance change could not be found');
       })) as PendingStudyChange;
-    if (!userStudies.includes(pendingStudyChange.study_id)) {
+    if (!decodedToken.studies.includes(pendingStudyChange.study_id)) {
       throw Boom.forbidden(
         'The requester is not allowed to delete this pending study change'
       );
@@ -209,7 +188,7 @@ export class PendingStudyChangesInteractor {
     id: number
   ): MailContent {
     const confirmationURL =
-      config.webappUrl + `/studies?pendingStudyChangeId=${id}&type=study`;
+      config.webappUrl + `/admin/studies?pendingStudyChangeId=${id}&type=study`;
     return {
       subject: 'PIA - Sie wurden gebeten eine Studienänderung zu bestätigen',
       text:
@@ -245,5 +224,21 @@ export class PendingStudyChangesInteractor {
         '".<br>' +
         '- Klicken Sie auf den Bestätigungsknopf rechts und bestätigen Sie die Änderung.<br>',
     };
+  }
+
+  private static async hasStudyAccessLevel(
+    username: string,
+    studyName: string,
+    accessLevel: AccessLevel
+  ): Promise<boolean> {
+    const requestedByStudyAccess = await getRepository(StudyAccess).find({
+      username,
+      studyName,
+    });
+
+    return requestedByStudyAccess.some(
+      (access) =>
+        access.studyName === studyName && access.accessLevel === accessLevel
+    );
   }
 }

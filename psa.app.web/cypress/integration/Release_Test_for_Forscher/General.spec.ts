@@ -21,7 +21,7 @@ let forscher;
 const forscherCredentials = { username: '', password: '' };
 const newPassword = ',dYv3zg;r:CB';
 
-const appUrl = '/';
+const appUrl = '/admin/';
 
 describe('Release Test, role: "Forscher", General', () => {
   beforeEach(() => {
@@ -46,7 +46,7 @@ describe('Release Test, role: "Forscher", General', () => {
     cy.visit(appUrl);
     login(forscherCredentials.username, forscherCredentials.password);
     changePassword(forscherCredentials.password, newPassword);
-    cy.expectPathname('/home');
+    cy.expectPathname('/admin/home');
   });
   it('should include proper Menu items', () => {
     cy.visit(appUrl);
@@ -67,7 +67,7 @@ describe('Release Test, role: "Forscher", General', () => {
       .contains('Studien')
       .should('be.visible');
     cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Einwilligungen')
+      .contains('Einwilligung')
       .should('be.visible');
     cy.get('[data-e2e="e2e-sidenav-content"]')
       .contains('Begrüßungstext')
@@ -80,6 +80,6 @@ describe('Release Test, role: "Forscher", General', () => {
 
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Abmelden').click();
-    cy.expectPathname('/login');
+    cy.get('[data-e2e="login-form"]');
   });
 });

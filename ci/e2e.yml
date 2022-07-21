@@ -5,7 +5,6 @@ e2e:
     entrypoint: ['/bin/bash', '-c']
   script:
     - cd psa.app.web
-    - curl --fail -u deployer:deployer -X POST --data-binary @cypress/db-init.sql http://deploymentservice:$PORT/deployment/db/qpia?restartDb=false
     - ln -s $NODE_PATH ./node_modules
     - npm run e2e.ci.$FOLDER
     - cd ..
@@ -49,6 +48,12 @@ e2e:
     DB_PERSONALDATA_HOST: ipiaservice
     DB_PERSONALDATA_PORT: '5432'
 
+    DB_AUTHSERVER_USER: authserver
+    DB_AUTHSERVER_PASSWORD: authserver
+    DB_AUTHSERVER_DB: pia_database
+    DB_AUTHSERVER_HOST: ipiaservice
+    DB_AUTHSERVER_PORT: '5432'
+
     QPIA_USER: superuser
     QPIA_PASSWORD: superpassword
     QPIA_DB: pia_database
@@ -76,7 +81,6 @@ e2e:
 
     # also used inside the test.api script!
     DB_HOST: databaseservice
-    API_ADDRESS: http://application:$PORT
     API_HOST: application
 
     MAIL_USER: test@test.mail
@@ -107,19 +111,30 @@ e2e:
     SORMAS_SERVER_URL: localhost
     SORMASSERVICE_HOST: sormasservice
     SORMASSERVICE_INTERNAL_PORT: 5000
+    SORMASSERVICE_PORT: 4000
+    DEPLOYMENTSERVICE_PORT: 4000
 
-    AUTHSERVICE_HOST: authservice
-    AUTHSERVICE_INTERNAL_PORT: 5000
     USERSERVICE_HOST: userservice
     USERSERVICE_INTERNAL_PORT: 5000
+    USERSERVICE_PORT: 4000
     PERSONALDATASERVICE_HOST: personaldataservice
     PERSONALDATASERVICE_INTERNAL_PORT: 5000
+    PERSONALDATASERVICE_PORT: 4000
     LOGGINGSERVICE_HOST: loggingservice
     LOGGINGSERVICE_INTERNAL_PORT: 5000
+    LOGGINGSERVICE_PORT: 4000
     COMPLIANCESERVICE_HOST: complianceservice
     COMPLIANCESERVICE_INTERNAL_PORT: 5000
+    COMPLIANCESERVICE_PORT: 4000
     QUESTIONNAIRESERVICE_HOST: questionnaireservice
     QUESTIONNAIRESERVICE_INTERNAL_PORT: 5000
+    QUESTIONNAIRESERVICE_PORT: 4000
+    NOTIFICATIONSERVICE_HOST: notificationservice
+    NOTIFICATIONSERVICE_INTERNAL_PORT: 5000
+    NOTIFICATIONSERVICE_PORT: 4000
+    SAMPLETRACKINGSERVICE_HOST: sampletrackingservice
+    SAMPLETRACKINGSERVICE_INTERNAL_PORT: 5000
+    SAMPLETRACKINGSERVICE_PORT: 4000
 
     PIA_ON_SORMAS_USER: user
     PIA_ON_SORMAS_PASSWORD: password
@@ -131,24 +146,37 @@ e2e:
     MESSAGEQUEUE_APP_USER: app
     MESSAGEQUEUE_APP_PASSWORD: app
 
+    AUTHSERVER_PORT: 4000
+    AUTHSERVER_ADMIN_PASSWORD: admin
+
+    AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET: secret
+    AUTHSERVER_ADMIN_MANAGEMENT_CLIENT_SECRET: secret
+    AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET: secret
+    AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET: secret
+
+    SYSADMIN_PASSWORD: e2e-admin@example.com
+    SYSADMIN_EMAIL: e2e-admin@example.com
+
+    KEYCLOAK_ADMIN: admin
+    KEYCLOAK_ADMIN_PASSWORD: admin
+
     #e2e
     MAILSERVER_BASEURL: http://mailserver:8025
-    CYPRESS_BASE_URL: http://apigateway
-    WEBAPP_URL: http://apigateway
+    CYPRESS_BASE_URL: https://apigateway
+    WEBAPP_URL: https://apigateway
+    EXTERNAL_HOST: apigateway
 
     ENABLE_DB_IMPORT: 'true'
     ENABLE_DB_EXPORT: 'true'
 
-    DEPLOYMENT_USER: 'deployer'
-    DEPLOYMENT_PASSWORD: 'deployer'
-
     IS_DEVELOPMENT_SYSTEM: 'true'
+    IS_DIRECT_ACCESS_GRANT_ENABLED: 'true'
 
-    EXTERNAL_PROTOCOL: 'http'
-    EXTERNAL_PORT: '80'
+    EXTERNAL_PROTOCOL: 'https'
+    EXTERNAL_PORT: '443'
 
-    BACKEND_API_URL: 'http://apigateway'
-    USE_SPECIAL_API_PORTS: 'false'
+    # skip migration in userservice - can be removed when migration is not used anymore
+    NODE_ENV: test
 
     # required for the services to communicate with each other
     FF_NETWORK_PER_BUILD: '1'
@@ -176,12 +204,6 @@ e2e:
     - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.service.userservice:$IMAGE_ID-with-faked-secrets
       alias: userservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.service.authservice:$IMAGE_ID-with-faked-secrets
-      alias: authservice
-
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.deploymentservice:$IMAGE_ID-with-faked-secrets
-      alias: deploymentservice
-
     - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.service.questionnaireservice:$IMAGE_ID-with-faked-secrets
       alias: questionnaireservice
 
@@ -208,6 +230,9 @@ e2e:
 
     - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.messagequeue:$IMAGE_ID-with-faked-secrets
       alias: messagequeue
+
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.auth:$IMAGE_ID-with-faked-secrets
+      alias: authserver
 
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"

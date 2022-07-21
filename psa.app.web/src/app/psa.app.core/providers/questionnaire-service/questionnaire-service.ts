@@ -17,11 +17,11 @@ import {
 import { QuestionnaireInstanceQueue } from '../../models/questionnaireInstanceQueue';
 import { Answer } from '../../models/answer';
 import { Study } from '../../models/study';
-import { AuthenticationManager } from '../../../_services/authentication-manager.service';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpEvent } from '@angular/common/http';
 import { map, pluck } from 'rxjs/operators';
 import { StudyWelcomeText } from 'src/app/psa.app.core/models/studyWelcomeText';
+import { StudyAddress } from '../../models/studyAddress';
 
 @Injectable()
 export class QuestionnaireService {
@@ -44,7 +44,7 @@ export class QuestionnaireService {
 
   private readonly apiUrl = 'api/v1/questionnaire/';
 
-  constructor(private http: HttpClient, private auth: AuthenticationManager) {}
+  constructor(private http: HttpClient) {}
 
   getQuestionnaire(
     questionnaireId: number,
@@ -223,56 +223,21 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  getStudies(): Promise<{ studies: Study[] }> {
-    return this.http
-      .get<{ studies: Study[] }>(this.apiUrl + 'studies')
-      .toPromise();
-  }
-
-  deleteStudy(name: string): Promise<void> {
-    return this.http.delete<void>(this.apiUrl + 'studies/' + name).toPromise();
-  }
-
-  postStudy(postData: object): Promise<any> {
-    return this.http.post(this.apiUrl + 'studies', postData).toPromise();
-  }
-
-  putStudy(name: string, putData: object): Promise<any> {
-    return this.http.put(this.apiUrl + 'studies/' + name, putData).toPromise();
-  }
-
+  /**
+   * @deprecated remaining study API routes will be moved to the userservice in the future
+   * @see https://confluence.sormas-tools.de/pages/viewpage.action?pageId=12978804
+   */
   getStudy(name: string): Promise<Study> {
     return this.http.get<Study>(this.apiUrl + 'studies/' + name).toPromise();
   }
 
-  getStudyAddresses(): Promise<any> {
-    return this.http.get(this.apiUrl + 'studies/addresses').toPromise();
-  }
-
-  deleteUserFromStudy(username: string, study_name: string): Promise<void> {
+  /**
+   * @deprecated remaining study API routes will be moved to the userservice in the future
+   * @see https://confluence.sormas-tools.de/pages/viewpage.action?pageId=12978804
+   */
+  getStudyAddresses(): Promise<StudyAddress[]> {
     return this.http
-      .delete<void>(
-        this.apiUrl + 'studies/' + study_name + '/accesses/' + username
-      )
-      .toPromise();
-  }
-
-  async postStudyAccess(username: string, postData: object): Promise<void> {
-    await this.http
-      .post(this.apiUrl + 'studies/' + username + '/accesses', postData)
-      .toPromise();
-  }
-
-  putStudyAccess(
-    username: string,
-    putData: object,
-    study_name: string
-  ): Promise<any> {
-    return this.http
-      .put(
-        this.apiUrl + 'studies/' + study_name + '/accesses/' + username,
-        putData
-      )
+      .get<StudyAddress[]>(this.apiUrl + 'studies/addresses')
       .toPromise();
   }
 
@@ -291,23 +256,24 @@ export class QuestionnaireService {
     });
   }
 
-  getQuestionnaireInstanceQueues(): Promise<QuestionnaireInstanceQueue[]> {
+  getQuestionnaireInstanceQueues(
+    pseudonym: string
+  ): Promise<QuestionnaireInstanceQueue[]> {
     return this.http
       .get<{ queues: QuestionnaireInstanceQueue[] }>(
-        this.apiUrl + 'probands/' + this.auth.getCurrentUsername() + '/queues'
+        this.apiUrl + 'probands/' + pseudonym + '/queues'
       )
       .pipe(pluck('queues'))
       .toPromise();
   }
 
-  deleteQuestionnaireInstanceQueue(instance_id: number): Promise<void> {
+  deleteQuestionnaireInstanceQueue(
+    instance_id: number,
+    pseudonym: string
+  ): Promise<void> {
     return this.http
       .delete<void>(
-        this.apiUrl +
-          'probands/' +
-          this.auth.getCurrentUsername() +
-          '/queues/' +
-          instance_id
+        this.apiUrl + 'probands/' + pseudonym + '/queues/' + instance_id
       )
       .toPromise();
   }
@@ -320,19 +286,15 @@ export class QuestionnaireService {
     return this.http.get(this.apiUrl + 'files/' + id).toPromise();
   }
 
+  /**
+   * @deprecated remaining study API routes will be moved to the userservice in the future
+   * @see https://confluence.sormas-tools.de/pages/viewpage.action?pageId=12978804
+   */
   getStudyWelcomeText(studyName: string): Promise<StudyWelcomeText> {
     return this.http
       .get<StudyWelcomeText>(
         this.apiUrl + 'studies/' + studyName + '/welcome-text'
       )
-      .toPromise();
-  }
-
-  putStudyWelcomeText(studyName: string, welcomeText: string): Promise<any> {
-    return this.http
-      .put(this.apiUrl + 'studies/' + studyName + '/welcome-text', {
-        welcome_text: welcomeText,
-      })
       .toPromise();
   }
 }

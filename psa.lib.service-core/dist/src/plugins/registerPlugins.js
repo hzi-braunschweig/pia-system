@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerPlugins = void 0;
+exports.registerPlugins = exports.defaultInternalRoutesPaths = exports.defaultPublicRoutesPaths = void 0;
 const inert_1 = __importDefault(require("@hapi/inert"));
 const vision_1 = __importDefault(require("@hapi/vision"));
 const hapi_swagger_1 = __importDefault(require("hapi-swagger"));
@@ -15,6 +15,7 @@ const hapi_router_1 = __importDefault(require("hapi-router"));
 const version_1 = require("./version");
 const metrics_1 = require("./metrics");
 const errorHandler_1 = require("./errorHandler");
+const assertStudyAccess_1 = require("./assertStudyAccess");
 const logSqueezeArgs = [
     {
         log: '*',
@@ -23,6 +24,8 @@ const logSqueezeArgs = [
         'request-internal': '*',
     },
 ];
+exports.defaultPublicRoutesPaths = 'src/routes/{admin,proband}/*';
+exports.defaultInternalRoutesPaths = 'src/routes/internal/*';
 const registerPlugins = async (server, options) => {
     await server.register([
         inert_1.default,
@@ -30,6 +33,7 @@ const registerPlugins = async (server, options) => {
         version_1.Version,
         metrics_1.Metrics,
         errorHandler_1.ErrorHandler,
+        assertStudyAccess_1.AssertStudyAccess,
     ]);
     if (options.routes) {
         await server.register({

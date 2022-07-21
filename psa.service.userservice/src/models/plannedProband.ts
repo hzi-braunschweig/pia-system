@@ -4,9 +4,20 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-export interface PlannedProband {
-  pseudonym: string;
-  study: string;
+/**
+ * @deprecated Use {@link PlannedProband} entity instead
+ */
+export interface PlannedProbandDeprecated {
+  user_id: string;
   password: string;
-  activatedAt: Date;
+  activated_at: Date;
+  study_accesses: PlannedProbandStudyAccessDeprecated;
+}
+
+/**
+ * @deprecated Use {@link PlannedProband} entity instead
+ */
+export interface PlannedProbandStudyAccessDeprecated {
+  study_id: string;
+  user_id: string;
 }

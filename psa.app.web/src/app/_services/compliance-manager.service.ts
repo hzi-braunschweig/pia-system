@@ -5,7 +5,6 @@
  */
 
 import { Injectable } from '@angular/core';
-import { AuthenticationManager } from './authentication-manager.service';
 import {
   ComplianceDataRequest,
   ComplianceDataResponse,
@@ -13,6 +12,7 @@ import {
 } from '../psa.app.core/models/compliance';
 import { ComplianceService } from 'src/app/psa.app.core/providers/compliance-service/compliance-service';
 import { Subject } from 'rxjs';
+import { CurrentUser } from './current-user.service';
 
 @Injectable({
   providedIn: 'root',
@@ -29,20 +29,14 @@ export class ComplianceManager {
   private cachedIsInternalComplianceActive: boolean = undefined;
 
   public constructor(
-    private auth: AuthenticationManager,
+    private user: CurrentUser,
     private complianceService: ComplianceService
-  ) {
-    this.auth.currentUser$.subscribe(() => {
-      // on user change clear cache
-      this.complianceDataCache = null;
-      this.cachedIsInternalComplianceActive = undefined;
-    });
-  }
+  ) {}
 
   public async isInternalComplianceActive(): Promise<boolean> {
     if (this.cachedIsInternalComplianceActive === undefined) {
       this.cachedIsInternalComplianceActive = await this.complianceService
-        .getInternalComplianceActive(this.auth.getCurrentStudy())
+        .getInternalComplianceActive(this.user.study)
         .catch((err) => {
           console.error(err);
           return false;
@@ -114,10 +108,7 @@ export class ComplianceManager {
   public async getComplianceAgreementForCurrentUser(): Promise<ComplianceDataResponse> {
     if (!this.complianceDataCache) {
       this.complianceDataCache = await this.complianceService
-        .getComplianceAgreementForUser(
-          this.auth.getCurrentStudy(),
-          this.auth.getCurrentUsername()
-        )
+        .getComplianceAgreementForProband(this.user.study, this.user.username)
         .catch((err) => {
           console.error(err);
           return null;
@@ -130,9 +121,9 @@ export class ComplianceManager {
     complianceData: ComplianceDataRequest
   ): Promise<ComplianceDataResponse> {
     const newComplianceData =
-      await this.complianceService.createComplianceAgreementForUser(
-        this.auth.getCurrentStudy(),
-        this.auth.getCurrentUsername(),
+      await this.complianceService.createComplianceAgreementForProband(
+        this.user.study,
+        this.user.username,
         complianceData
       );
     this.complianceDataCache = newComplianceData;

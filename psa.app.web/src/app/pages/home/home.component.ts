@@ -6,75 +6,52 @@
 
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
+import { filter } from 'rxjs/operators';
+
 import { NotificationService } from 'src/app/psa.app.core/providers/notification-service/notification-service';
-import { NotificationComponent } from '../../_helpers/notification';
-import { AuthenticationManager } from '../../_services/authentication-manager.service';
+import { NotificationPresenter } from '../../_services/notification-presenter.service';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { CurrentUser } from '../../_services/current-user.service';
 
 @Component({
   templateUrl: 'home.component.html',
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit {
-  currentRole: string;
-  androidLink = 'https://play.google.com/store/apps/details?id=de.pia.app';
-  iOSLink = 'https://apps.apple.com/de/app/pia-epidemiologie/id1510929221';
-  welcomeText: string;
+  public androidLink =
+    'https://play.google.com/store/apps/details?id=de.pia.app';
+  public iOSLink =
+    'https://apps.apple.com/de/app/pia-epidemiologie/id1510929221';
+  public welcomeText: string;
 
   constructor(
-    private activatedRoute: ActivatedRoute,
-    private notificationService: NotificationService,
-    private authService: AuthService,
-    private auth: AuthenticationManager,
-    private questionnaireService: QuestionnaireService,
-    private notification: NotificationComponent
-  ) {
-    this.currentRole = this.auth.getCurrentRole();
-    this.activatedRoute.queryParams.subscribe((params) => {
-      if (params.notification_id) {
-        this.getNotificationData(params.notification_id);
-      }
-    });
-  }
+    public readonly user: CurrentUser,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly notificationService: NotificationService,
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly notification: NotificationPresenter
+  ) {}
 
-  async ngOnInit(): Promise<void> {
-    if (this.currentRole === 'Proband') {
-      const welcomeTextObj =
-        await this.questionnaireService.getStudyWelcomeText(
-          this.auth.getCurrentStudy()
-        );
-      if (welcomeTextObj) {
-        this.welcomeText = welcomeTextObj.welcome_text;
-      }
+  public async ngOnInit(): Promise<void> {
+    this.activatedRoute.queryParams
+      .pipe(filter((params) => params.notification_id))
+      .subscribe((params) => this.presentNotification(params.notification_id));
+
+    if (this.user.isProband()) {
+      this.welcomeText = (
+        await this.questionnaireService.getStudyWelcomeText(this.user.study)
+      )?.welcome_text;
     }
   }
 
-  getNotificationData(notification_id): void {
-    this.notificationService
-      .getNotificationById(notification_id)
-      .then((notificationResponse) => {
-        switch (notificationResponse.notification_type) {
-          case 'qReminder': {
-            this.notification.presentQreminder(notificationResponse);
-            break;
-          }
-          case 'sample': {
-            this.notification.presentLabReport(notificationResponse);
-            break;
-          }
-          case 'custom': {
-            this.notification.presentCustom(notificationResponse);
-            break;
-          }
-          default: {
-            console.log("Invalid choice of notification's type");
-            break;
-          }
-        }
-      })
-      .catch((err) => {
-        console.log(JSON.stringify(err));
-      });
+  public async presentNotification(notificationId: string): Promise<void> {
+    try {
+      const notification = await this.notificationService.getNotificationById(
+        notificationId
+      );
+      this.notification.present(notification);
+    } catch (err) {
+      console.log('Could load notification with id:', notificationId, err);
+    }
   }
 }

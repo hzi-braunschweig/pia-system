@@ -7,7 +7,7 @@
 import http from 'http';
 import config from './config';
 import * as postgres from './postgres';
-import { Docker } from './docker';
+import { Docker, IResult } from './docker';
 import url from 'url';
 import querystring from 'querystring';
 
@@ -49,13 +49,25 @@ function handleResult(
   }
 }
 
+function getConfigByPath(path: string): postgres.IDbInfo {
+  switch (path) {
+    case '/deployment/db/qpia':
+      return config.services.databaseservice;
+    case '/deployment/db/ipia':
+      return config.services.ipiaservice;
+    default: {
+      throw new Error(`unknown path "${path}"`);
+    }
+  }
+}
+
 async function requestListener(
   req: http.IncomingMessage,
   res: http.ServerResponse
 ): Promise<void> {
   try {
     const uri = url.parse(req.url ?? '');
-    const path = uri.pathname;
+    const path = uri.pathname ?? '';
 
     if (!req.headers.authorization || !checkAuth(req.headers.authorization)) {
       console.log(`${String(req.method)} ${String(path)}: unauthorized`);
@@ -64,30 +76,27 @@ async function requestListener(
       return;
     }
 
+    const pathConfig = getConfigByPath(path);
+
     if (
       config.features.export &&
       req.method === 'GET' &&
-      path === '/deployment/db/qpia'
+      path.startsWith('/deployment/db/')
     ) {
       res.setHeader('content-disposition', 'attachment; filename="export.sql"');
       res.setHeader('content-type', 'application/sql');
 
-      const result = await postgres.exportDb(
-        config.services.databaseservice,
-        res
-      );
+      const result = await postgres.exportDb(pathConfig, res);
       handleResult(req.method, path, res, result);
       return;
     }
+
     if (
       config.features.import &&
       req.method === 'POST' &&
-      path === '/deployment/db/qpia'
+      path.startsWith('/deployment/db/')
     ) {
-      const importResult = await postgres.importDb(
-        config.services.databaseservice,
-        req
-      );
+      const importResult = await postgres.importDb(pathConfig, req);
 
       const query = uri.query ? querystring.parse(uri.query) : {};
 
@@ -96,8 +105,18 @@ async function requestListener(
         return;
       }
 
-      const restartResult = await Docker.restart('databaseservice');
-      handleResult(req.method, path, res, restartResult);
+      const restarts = new Map<string, Promise<IResult>>();
+
+      for (const serviceName of pathConfig.restartServices) {
+        restarts.set(serviceName, Docker.restart(serviceName));
+      }
+
+      const results = await Promise.all(Array.from(restarts.values()));
+
+      for (const result of results) {
+        handleResult(req.method, path, res, result);
+      }
+
       return;
     }
 

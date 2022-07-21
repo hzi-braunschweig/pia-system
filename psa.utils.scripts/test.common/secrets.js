@@ -35,5 +35,4 @@ if (!process.env.CI) {
   console.log('generating secrets');
   docker.build('../psa.utils.scripts/generate-secrets', '.', options);
   docker.build('../psa.utils.scripts/generate-secrets', '../secrets/', options);
-  fs.copyFileSync('authKey/private.key', 'tests/private.key');
 }

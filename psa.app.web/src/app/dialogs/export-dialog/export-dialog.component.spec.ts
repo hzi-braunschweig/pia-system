@@ -28,10 +28,9 @@ import {
 import { MatError, MatFormField } from '@angular/material/form-field';
 import { MatGridList, MatGridTile } from '@angular/material/grid-list';
 import { MatSelect } from '@angular/material/select';
-import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../_services/alert.service';
-import { MockComponent, MockModule, MockPipe } from 'ng-mocks';
+import { MockComponent, MockDirective, MockModule, MockPipe } from 'ng-mocks';
 import { ReactiveFormsModule } from '@angular/forms';
 import { LoadingSpinnerComponent } from '../../features/loading-spinner/loading-spinner.component';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -46,15 +45,19 @@ import { of } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
 import { createProband } from '../../psa.app.core/models/instance.helper.spec';
 import SpyObj = jasmine.SpyObj;
+import { ProbandService } from '../../psa.app.core/providers/proband-service/proband.service';
+import { CurrentUser } from '../../_services/current-user.service';
 
 describe('DialogExportDataComponent', () => {
   let component: DialogExportDataComponent;
   let fixture: ComponentFixture<DialogExportDataComponent>;
 
   let dialogRef: SpyObj<MatDialogRef<DialogExportDataComponent>>;
-  let authService: SpyObj<AuthService>;
+  let probandService: SpyObj<ProbandService>;
   let alertService: SpyObj<AlertService>;
   let questionnaireService: SpyObj<QuestionnaireService>;
+  let currentUser: SpyObj<CurrentUser>;
+
   const proband1 = createProband({
     pseudonym: 'Testproband1',
     study: 'Teststudie1',
@@ -67,27 +70,21 @@ describe('DialogExportDataComponent', () => {
     pseudonym: 'Testproband3',
     study: 'Teststudie2',
   });
-  const proband4 = createProband({
-    pseudonym: 'Testproband4',
-    study: 'Teststudie3',
-  });
 
   beforeEach(async () => {
-    dialogRef = jasmine.createSpyObj(MatDialogRef, ['close']);
-    authService = jasmine.createSpyObj(AuthService, ['getProbands']);
-    alertService = jasmine.createSpyObj(AlertService, ['error']);
-    questionnaireService = jasmine.createSpyObj(QuestionnaireService, [
+    dialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
+    probandService = jasmine.createSpyObj('ProbandService', ['getProbands']);
+    alertService = jasmine.createSpyObj('AlertService', ['error']);
+    questionnaireService = jasmine.createSpyObj('QuestionnaireService', [
       'getExportData',
       'getQuestionnaires',
       'getImageBy',
     ]);
+    currentUser = jasmine.createSpyObj('CurrentUser', [], {
+      studies: ['Teststudie1', 'Teststudie2', 'Teststudie3'],
+    });
 
-    authService.getProbands.and.resolveTo([
-      proband1,
-      proband2,
-      proband3,
-      proband4,
-    ]);
+    probandService.getProbands.and.resolveTo([]);
     questionnaireService.getQuestionnaires.and.resolveTo(
       getQuestionnaireListResponse()
     );
@@ -100,28 +97,29 @@ describe('DialogExportDataComponent', () => {
         DialogExportDataComponent,
         MockPipe(TranslatePipe),
         MockComponent(LoadingSpinnerComponent),
-        MockComponent(MatDialogTitle),
-        MockComponent(MatDialogContent),
+        MockDirective(MatDialogTitle),
+        MockDirective(MatDialogContent),
         MockComponent(MatGridList),
         MockComponent(MatGridTile),
         MockComponent(MatFormField),
         MockComponent(MatDatepicker),
-        MockComponent(MatDatepickerInput),
+        MockDirective(MatDatepickerInput),
         MockComponent(MatDatepickerToggle),
         MockComponent(MatSelect),
         MockComponent(MatSelectSearchComponent),
         MockComponent(MatOption),
-        MockComponent(MatError),
+        MockDirective(MatError),
         MockComponent(MatOptionSelectAllComponent),
         MockComponent(MatCheckbox),
-        MockComponent(MatDialogActions),
+        MockDirective(MatDialogActions),
         MockComponent(MatButton),
       ],
       providers: [
         { provide: MatDialogRef, useValue: dialogRef },
-        { provide: AuthService, useValue: authService },
+        { provide: ProbandService, useValue: probandService },
         { provide: AlertService, useValue: alertService },
         { provide: QuestionnaireService, useValue: questionnaireService },
+        { provide: CurrentUser, useValue: currentUser },
       ],
       imports: [MockModule(ReactiveFormsModule)],
     });
@@ -152,7 +150,10 @@ describe('DialogExportDataComponent', () => {
 
   describe('questionnaire selection', () => {
     it('should show all questionnaires within selected study', fakeAsync(() => {
+      probandService.getProbands.and.resolveTo([proband1]);
       expect(component.form.get('questionnaires').enabled).toBeFalsy();
+      tick();
+      fixture.detectChanges();
       component.form.get('study_name').setValue('Teststudie1');
       tick();
       fixture.detectChanges();
@@ -188,6 +189,7 @@ describe('DialogExportDataComponent', () => {
 
   describe('proband selection', () => {
     it('should show all probands within selected study', fakeAsync(() => {
+      probandService.getProbands.and.resolveTo([proband2, proband3]);
       expect(component.form.get('probands').enabled).toBeFalsy();
       const probandsSpy = jasmine.createSpy();
       component.probandsForSelection.subscribe(probandsSpy);
@@ -218,10 +220,12 @@ describe('DialogExportDataComponent', () => {
       });
     });
 
-    it('should call questionnaire service to get export data with all probands of study', () => {
+    it('should call questionnaire service to get export data with all probands of study', fakeAsync(() => {
+      probandService.getProbands.and.resolveTo([proband2, proband3]);
       component.form.get('study_name').setValue('Teststudie2');
       component.form.get('questionnaires').setValue(['Testfragebogen4']);
       component.form.get('probands').setValue('allProbandsCheckbox');
+      tick();
       component.submit();
       expect(questionnaireService.getExportData).toHaveBeenCalledWith({
         start_date: null,
@@ -234,7 +238,7 @@ describe('DialogExportDataComponent', () => {
         exportSamples: true,
         exportSettings: true,
       });
-    });
+    }));
 
     it('should do nothing if form is invalid', () => {
       expect(component.form.errors).not.toBeNull();

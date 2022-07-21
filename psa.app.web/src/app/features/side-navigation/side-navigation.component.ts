@@ -9,12 +9,13 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Event, NavigationEnd, Router } from '@angular/router';
 import { RequestNewMaterialComponent } from '../../pages/laboratories/request-new-material/request-new-material.component';
-import { User } from '../../psa.app.core/models/user';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { DialogOkCancelComponent } from '../../_helpers/dialog-ok-cancel';
 import { AuthenticationManager } from '../../_services/authentication-manager.service';
 import { Page, PageManager } from '../../_services/page-manager.service';
 import { SelectedProbandInfoService } from '../../_services/selected-proband-info.service';
+import { filter } from 'rxjs/operators';
+import { CurrentUser } from '../../_services/current-user.service';
 
 @Component({
   selector: 'app-side-navigation',
@@ -23,15 +24,7 @@ import { SelectedProbandInfoService } from '../../_services/selected-proband-inf
   styleUrls: ['side-navigation.component.scss'],
 })
 export class SideNavigationComponent {
-  @Input() public sidenav?: MatSidenav;
-
-  public currentUser: User;
-  public currentRoleUI: string = null;
-  public selectedPage: Page;
-  public pages: Page[];
-  public selectedPseudonymUI: string = null;
-  public selectedIDSUI: string = null;
-  private readonly roles = {
+  private static readonly roles = {
     Proband: 'ROLES.PROBAND',
     Forscher: 'ROLES.RESEARCHER',
     Untersuchungsteam: 'ROLES.RESEARCH_TEAM',
@@ -39,7 +32,17 @@ export class SideNavigationComponent {
     EinwilligungsManager: 'ROLES.COMPLIANCE_MANAGER',
     SysAdmin: 'ROLES.SYSTEM_ADMINISTRATOR',
   };
+
+  @Input() public sidenav?: MatSidenav;
+
+  public currentRoleUI: string = SideNavigationComponent.roles[this.user.role];
+  public selectedPage: Page;
+  public pages: Page[];
+  public selectedPseudonymUI: string = null;
+  public selectedIDSUI: string = null;
+
   constructor(
+    public user: CurrentUser,
     private router: Router,
     private matDialog: MatDialog,
     private authenticationService: AuthService,
@@ -47,16 +50,11 @@ export class SideNavigationComponent {
     private pageManager: PageManager,
     private selectedProbandInfoService: SelectedProbandInfoService
   ) {
-    this.auth.currentUser$.subscribe((user) => {
-      this.currentUser = user;
-      this.currentRoleUI = this.roles[user?.role];
-    });
-
     this.selectedProbandInfoService.sideNavState$.subscribe((resultList) =>
       this.updateSelectedProbandInfo(resultList)
     );
 
-    this.pageManager.navPagesObservable.subscribe((pages) => {
+    this.pageManager.navPages$.subscribe((pages) => {
       this.pages = pages;
       this.updateSelectedPage();
     });
@@ -82,6 +80,7 @@ export class SideNavigationComponent {
     const url = this.router.url;
     if (!this.pages || this.pages.length === 0) {
       this.selectedPage = undefined;
+      return;
     }
     const foundPage = this.pages.find((page) => {
       return page.subpaths.some((subpath) => url.includes(subpath));
@@ -90,7 +89,7 @@ export class SideNavigationComponent {
       const firstPartOfUrl = url.substring(1, url.length).split('/')[0] + '/';
       if (
         firstPartOfUrl === 'questionnaire/' &&
-        this.currentUser?.role === 'Forscher'
+        this.user.role === 'Forscher'
       ) {
         const lastPartOfUrl = url.substring(1, url.length).split('/')[3];
         return page.subpaths.some((subpath) => lastPartOfUrl === subpath);
@@ -106,11 +105,10 @@ export class SideNavigationComponent {
       this.sidenav.close();
     }
 
-    if (this.currentUser.role === 'Proband') {
+    if (this.user.isProband()) {
       this.openDialog();
     } else {
-      this.auth.logout();
-      this.router.navigate(['login']);
+      await this.auth.logout();
     }
   }
 
@@ -135,11 +133,9 @@ export class SideNavigationComponent {
       },
     });
 
-    dialogRef.afterClosed().subscribe(async (result) => {
-      if (result === 'ok') {
-        this.auth.logout();
-        this.router.navigate(['login']);
-      }
-    });
+    dialogRef
+      .afterClosed()
+      .pipe(filter((result) => result === 'ok'))
+      .subscribe(async () => await this.auth.logout());
   }
 }

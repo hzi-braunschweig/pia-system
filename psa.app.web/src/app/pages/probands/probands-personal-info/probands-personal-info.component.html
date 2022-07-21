@@ -9,11 +9,11 @@
 <div class="jumbotron">
   <div class="grid-container">
     <mat-form-field>
+      <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
       <mat-select
         disableOptionCentering
         id="selectstudy"
         (selectionChange)="initTable()"
-        placeholder="{{ 'QUESTIONNAIRE_FORSCHER.STUDY' | translate }}"
         [(ngModel)]="currentStudy"
       >
         <mat-option *ngFor="let studie of studies" [value]="studie">
@@ -158,11 +158,9 @@
           <button
             mat-icon-button
             (click)="
-              openDialogDeletePartner(
-                row.pendingProbandDeletion.for_id,
-                'general',
-                row.pendingProbandDeletion.requested_by,
-                row.pendingProbandDeletion.id
+              confirmProbandDeletion(
+                row.pendingProbandDeletion,
+                row.proband?.study
               )
             "
             matTooltip="{{ 'PROBANDEN.CONFIRM_TOTAL_OPPOSITION' | translate }}"
@@ -208,11 +206,9 @@
           <button
             mat-icon-button
             (click)="
-              openDialogDeletePartner(
-                row.pendingPersonalDataDeletion.proband_id,
-                'personal',
-                row.pendingPersonalDataDeletion.requested_by,
-                row.pendingPersonalDataDeletion.id
+              confirmCommunicationBan(
+                row.pendingPersonalDataDeletion,
+                row.proband?.study
               )
             "
             matTooltip="{{ 'PROBANDEN.CONFIRM_COMMUNICATION_BAN' | translate }}"

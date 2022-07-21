@@ -22,6 +22,7 @@ export class ProbandSaveError extends ErrorWithCausedBy {}
 export class PseudonymAlreadyExistsError extends ErrorWithCausedBy {}
 export class IdsAlreadyExistsError extends ErrorWithCausedBy {}
 export class ProbandNotFoundError extends ErrorWithCausedBy {}
+export class UnknownRole extends ErrorWithCausedBy {}
 
 export class RequesterNotFound extends SpecificError {
   public readonly statusCode = StatusCodes.NOT_FOUND;
@@ -33,7 +34,7 @@ export class MissingPermissionError extends SpecificError {
 }
 
 export class FourEyeOppositionPartnerNotFoundError extends SpecificError {
-  public readonly statusCode = StatusCodes.NOT_FOUND;
+  public readonly statusCode = StatusCodes.UNPROCESSABLE_ENTITY;
   public readonly errorCode = '4_EYE_OPPOSITION.REQUESTED_FOR_NOT_FOUND';
 }
 export class FourEyeOppositionSelfNotAllowedAsPartnerError extends SpecificError {
@@ -56,4 +57,13 @@ export class FourEyeOppositionPartnerNotReachableError extends SpecificError {
 export class StudyInvalidPsyeudonymPrefixError extends SpecificError {
   public readonly statusCode = StatusCodes.UNPROCESSABLE_ENTITY;
   public readonly errorCode = 'STUDY.INVALID_PSEUDONYM_PREFIX';
+}
+
+export class AccountNotFound extends SpecificError {
+  public readonly statusCode = StatusCodes.NOT_FOUND;
+  public readonly errorCode = 'ACCOUNT.NOT_FOUND';
+}
+export class AccountAlreadyExistsError extends SpecificError {
+  public readonly statusCode = StatusCodes.CONFLICT;
+  public readonly errorCode = 'ACCOUNT.ALREADY_EXISTS';
 }

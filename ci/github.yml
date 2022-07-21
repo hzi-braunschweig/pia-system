@@ -20,6 +20,7 @@ mirror-github:
     - git commit -m "PIA Release $CI_COMMIT_TAG" --allow-empty
     - git tag -a "$CI_COMMIT_TAG" -m "PIA Release $CI_COMMIT_TAG"
     - echo GITHUB_COMMIT=`git rev-parse HEAD` > github.env
+    - git push
     - git push --tags
     # https://docs.github.com/en/rest/reference/releases#create-a-release--code-samples
     # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token

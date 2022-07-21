@@ -6,7 +6,6 @@
 
 import { Lifecycle } from '@hapi/hapi';
 import { ProbandsInteractor } from '../interactors/probandsInteractor';
-import { AccessToken } from '@pia/lib-service-core';
 import {
   CreateIDSProbandRequest,
   CreateProbandRequest,
@@ -14,6 +13,7 @@ import {
 import { config } from '../config';
 import Boom from '@hapi/boom';
 import { ProbandAccountDeletionType } from '../services/probandService';
+import { AccessToken } from '@pia/lib-service-core';
 
 interface AuthRequestFromExternal {
   apiKey: string;
@@ -22,69 +22,55 @@ interface AuthRequestFromExternal {
 
 export class ProbandsHandler {
   public static getAll: Lifecycle.Method = async (request) => {
-    const studyName = request.params['studyName'] as string;
-    const token = request.auth.credentials as AccessToken;
-
-    return await ProbandsInteractor.getAllProbandsOfStudy(studyName, token);
-  };
-
-  /**
-   * creates the proband if it does not exist
-   * @param request
-   */
-  public static createProband: Lifecycle.Method = async (request) => {
-    const token = request.auth.credentials as AccessToken;
-    const studyName = request.params['studyName'] as string;
-    const probandRequest = request.payload as CreateProbandRequest;
-
-    return await ProbandsInteractor.createProband(
-      studyName,
-      probandRequest,
-      token
+    return await ProbandsInteractor.getAllProbandsOfStudy(
+      request.params['studyName'] as string
     );
   };
 
   /**
-   * creates the proband if it does not exist from an external system using apiKey
-   * @param request
+   * Creates the proband if it does not exist
+   */
+  public static createProband: Lifecycle.Method = async (request) => {
+    return await ProbandsInteractor.createProband(
+      request.params['studyName'] as string,
+      request.payload as CreateProbandRequest
+    );
+  };
+
+  /**
+   * Creates the proband if it does not exist from an external system using apiKey
    */
   public static createProbandFromExternal: Lifecycle.Method = (request) => {
     const requester = request.payload as AuthRequestFromExternal;
-    const probandRequest = request.payload as CreateProbandRequest;
     if (requester.apiKey !== config.apiKey) {
       return Boom.unauthorized('invalid authentication');
     }
+
     return ProbandsInteractor.createProbandFromExternal(
       config.studyForExternalSystem,
-      probandRequest,
+      request.payload as CreateProbandRequest,
       requester.ut_email
     );
   };
 
   /**
-   * creates the ids proband if it does not exist
-   * @param request
+   * Creates the ids proband if it does not exist
    */
   public static createIDSProband: Lifecycle.Method = async (request) => {
-    const token = request.auth.credentials as AccessToken;
-    const studyName = request.params['studyName'] as string;
-    const payload = request.payload as CreateIDSProbandRequest;
+    const { ids } = request.payload as CreateIDSProbandRequest;
 
-    await ProbandsInteractor.createIDSProband(studyName, payload.ids, token);
+    await ProbandsInteractor.createIDSProband(
+      request.params['studyName'] as string,
+      ids
+    );
     return null;
   };
 
   public static deleteAccount: Lifecycle.Method = async (request) => {
-    const pseudonym = request.params['pseudonym'] as string;
-    const deletionType = request.query[
-      'deletionType'
-    ] as ProbandAccountDeletionType;
-    const token = request.auth.credentials as AccessToken;
-
     return await ProbandsInteractor.deleteAccount(
-      pseudonym,
-      deletionType,
-      token
+      request.auth.credentials as AccessToken,
+      request.params['pseudonym'] as string,
+      request.query['deletionType'] as ProbandAccountDeletionType
     );
   };
 }

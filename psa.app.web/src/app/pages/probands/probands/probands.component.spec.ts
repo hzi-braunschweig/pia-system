@@ -11,29 +11,23 @@ import {
   tick,
 } from '@angular/core/testing';
 import { ProbandsComponent } from './probands.component';
-import { AuthenticationManager } from '../../../_services/authentication-manager.service';
 import { By } from '@angular/platform-browser';
 import { MockBuilder } from 'ng-mocks';
 import { AppModule } from '../../../app.module';
 import SpyObj = jasmine.SpyObj;
+import { CurrentUser } from '../../../_services/current-user.service';
 
 describe('ProbandsComponent', () => {
   let component: ProbandsComponent;
   let fixture: ComponentFixture<ProbandsComponent>;
-  let auth: SpyObj<AuthenticationManager>;
+  let user: SpyObj<CurrentUser>;
 
   beforeEach(async () => {
     // Provider and Services
-    auth = jasmine.createSpyObj<AuthenticationManager>(
-      'AuthenticationManager',
-      ['getCurrentRole']
-    );
+    user = jasmine.createSpyObj<CurrentUser>(['hasRole']);
 
     // Build Base Module
-    await MockBuilder(ProbandsComponent, AppModule).mock(
-      AuthenticationManager,
-      auth
-    );
+    await MockBuilder(ProbandsComponent, AppModule).mock(CurrentUser, user);
   });
 
   it('should load the forscher sub component based on the users role', fakeAsync(() => {
@@ -56,9 +50,9 @@ describe('ProbandsComponent', () => {
     ).not.toBeNull();
   }));
 
-  function createComponentWithRole(role): void {
+  function createComponentWithRole(userRole: string): void {
     // Setup mocks before creating component
-    auth.getCurrentRole.and.returnValue(role);
+    user.hasRole.and.callFake((role) => role === userRole);
 
     // Create component
     fixture = TestBed.createComponent(ProbandsComponent);
