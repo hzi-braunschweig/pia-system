@@ -2,31 +2,22 @@ INSERT INTO studies (name)
 VALUES ('QTestStudy');
 
 INSERT INTO probands (pseudonym, study, compliance_labresults, compliance_samples)
-VALUES ('QTestProband1', 'QTestStudy', TRUE, TRUE),
-       ('QTestProband2', 'QTestStudy', FALSE, TRUE),
-       ('QTestProband3', 'QTestStudy', TRUE, TRUE);
-
-INSERT INTO accounts (username, password, role)
-VALUES ('QTestProband1', '', 'Proband'),
-       ('QTestProband2', '', 'Proband'),
-       ('QTestProband3', '', 'Proband'),
-       ('QTestForscher1', '', 'Forscher'),
-       ('QTestProbandenManager', '', 'ProbandenManager'),
-       ('QTestUntersuchungsteam', '', 'Untersuchungsteam'),
-       ('QTestSystemAdmin', '', 'SysAdmin');
+VALUES ('qtest-proband1', 'QTestStudy', TRUE, TRUE),
+       ('qtest-proband2', 'QTestStudy', FALSE, TRUE),
+       ('qtest-proband3', 'QTestStudy', TRUE, TRUE);
 
 INSERT INTO lab_results (id, user_id, order_id, date_of_sampling, status, remark, new_samples_sent, performing_doctor,
                          dummy_sample_id, study_status)
-VALUES ('TEST-12345', 'QTestProband1', 12345, '2021-01-07T16:00+01:00', 'analyzed', NULL, TRUE, '',
+VALUES ('TEST-12345', 'qtest-proband1', 12345, '2021-01-07T16:00+01:00', 'analyzed', NULL, TRUE, '',
         'TEST-10345', 'active'),
-       ('TEST-12346', 'QTestProband1', 12346, '2021-01-07T16:00+01:00', 'analyzed', NULL, TRUE, 'Dr Who', NULL,
+       ('TEST-12346', 'qtest-proband1', 12346, '2021-01-07T16:00+01:00', 'analyzed', NULL, TRUE, 'Dr Who', NULL,
         'active'),
-       ('TEST-12347', 'QTestProband2', 12346, '2021-01-07T16:00+01:00', 'analyzed', NULL, TRUE, 'Dr Who', NULL,
+       ('TEST-12347', 'qtest-proband2', 12346, '2021-01-07T16:00+01:00', 'analyzed', NULL, TRUE, 'Dr Who', NULL,
         'active'),
-       ('TEST-12348', 'QTestProband1', NULL, '2021-01-07T16:00+01:00', NULL, NULL, TRUE, '', NULL, 'deleted'),
-       ('TEST-12349', 'QTestProband1', 12345, '2021-01-07T16:00+01:00', 'analyzed', NULL, TRUE, '', NULL,
+       ('TEST-12348', 'qtest-proband1', NULL, '2021-01-07T16:00+01:00', NULL, NULL, TRUE, '', NULL, 'deleted'),
+       ('TEST-12349', 'qtest-proband1', 12345, '2021-01-07T16:00+01:00', 'analyzed', NULL, TRUE, '', NULL,
         'pending_for_deletion'),
-       ('TEST-1134567890', 'QTestProband1', NULL, NULL, 'new', NULL, FALSE, 'Dr WHo', 'TEST-1034567890', 'active');
+       ('TEST-1134567890', 'qtest-proband1', NULL, NULL, 'new', NULL, FALSE, 'Dr WHo', 'TEST-1034567890', 'active');
 
 INSERT INTO lab_observations (id, lab_result_id, name_id, name, result_value, comment, date_of_analysis,
                               date_of_delivery, date_of_announcement, lab_name, material, result_string, unit,

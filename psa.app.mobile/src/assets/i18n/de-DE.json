@@ -17,6 +17,7 @@
     "SUBMISSION": "Einreichung",
     "CLOSE": "Schließen",
     "OPEN": "Öffnen",
+    "GO_BACK": "Zurück",
     "PLEASE_CLICK": "Bitte klicken",
     "SELECT_DATE": "Datum auswählen"
   },
@@ -55,6 +56,7 @@
     "TOAST_MSG_LOGIN_GIVE_USERNAME": "Bitte geben Sie zunächst Ihren Nutzernamen an.",
     "TOAST_MSG_NEW_PASSWORD_CONFIRMATION": "Sind Sie sicher, dass Sie ein neues Passwort per E-Mail anfordern möchten?",
     "TOAST_MSG_NEW_PASSWORD_RESULT": "Falls Sie ein:e PIA-Nutzer:in mit registrierter E-Mail-Adresse sind, wurde an Sie eine E-Mail mit einem neuen Passwort versendet.",
+    "ALERT_TRY_AGAIN_LATER": "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später noch einmal.",
     "CONNECTING_TO_SERVER": "Verbinde...",
     "AUTHENTICATING": "Authentifiziere...",
     "ENTER_BACKEND_URL": "URL eingeben",
@@ -127,7 +129,8 @@
     "ALERT_SUBTITLE_ANSWERS_SENT": "Ihre Antworten wurden jetzt abgeschickt.",
     "ALERT_SUBTITLE_SENT_LAST_TIME": "Ihre Antworten wurden jetzt zum letzten Mal abgeschickt.",
     "NO_RESULTS": "Keine Fragebögen gefunden",
-    "UPLOADED_IMAGE_TOO_LARGE": "Es können nur Dateien mit einer Größe von bis zu 20MB hochgeladen werden. Bitte prüfen Sie Ihre Dateigröße."
+    "UPLOADED_IMAGE_TOO_LARGE": "Es können nur Dateien mit einer Größe von bis zu 20MB hochgeladen werden. Bitte prüfen Sie Ihre Dateigröße.",
+    "NO_IMAGE_UPLOAD": "Noch kein Foto hochgeladen."
   },
   "QUESTIONNAIRES": {
     "TITLE": "Übersicht",
@@ -137,7 +140,7 @@
   },
   "SETTINGS": {
     "TITLE": "Einstellungen",
-    "MANAGE_PASSWORD": "Passwort verwalten",
+    "MANAGE_PASSWORD": "Passwort und Kontozugriff verwalten",
     "DELETE_ACCOUNT": "Account und persönliche Daten löschen",
     "LICENSES": "Software-Lizenzen",
     "GROUP_TITLE_ACCOUNT": "Account",

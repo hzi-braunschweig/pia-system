@@ -1,4 +1,4 @@
-FROM node:14.18.2-alpine@sha256:7bcf853eeb97a25465cb385b015606c22e926f548cbd117f85b7196df8aa0d29 AS base
+FROM node:14.19.0-alpine@sha256:9a2aa545388a135b496bd55cef2be920b96c4526c99c140170e05a8de3fce653 AS base
 
 RUN apk --update --no-cache add curl tzdata
 RUN apk --update --no-cache add postgresql-client
@@ -15,8 +15,8 @@ RUN npm ci --production
 FROM base AS install
 
 #copy dev dependencies' package.json
-COPY psa.lib.service-core/package.json ../psa.lib.service-core/
-COPY psa.eslint-config/package.json ../psa.eslint-config/
+COPY psa.lib.service-core/package*.json ../psa.lib.service-core/
+COPY psa.eslint-config/package*.json ../psa.eslint-config/
 
 RUN npm ci
 
@@ -48,7 +48,7 @@ RUN npm run build
 
 FROM base AS final
 
-COPY --from=docker:20.10.11@sha256:ff4fcc30e7c20f33c021e82683aedd1fe66654363eb1ff61065e0628f5bbf107 /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=docker:20.10.12@sha256:a729cce205a05b0b86dc8dca87823efaffc3f74979fe7dc86a707c2fbf631b61 /usr/local/bin/docker /usr/local/bin/docker
 
 ENV TZ=UTC
 

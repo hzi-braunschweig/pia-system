@@ -7,8 +7,8 @@
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import {
-  setup,
   cleanup,
+  setup,
 } from './internalQuestionnaireInstances.spec.data/setup.helper';
 
 import { Server } from '../../src/server';
@@ -17,7 +17,7 @@ import { StatusCodes } from 'http-status-codes';
 
 chai.use(chaiHttp);
 
-const apiAddress = 'http://localhost:' + config.internal.port.toString();
+const apiAddress = `http://localhost:${config.internal.port}`;
 
 describe('Internal: QuestionnaireInstance answers', function () {
   before(async function () {

@@ -62,7 +62,6 @@ all:
       pia_deployment_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
       pia_sormas_on_pia_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
       pia_pia_on_sormas_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
-      pia_api_key: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
       pia_mhh_ftpservice_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
       pia_hzi_ftpservice_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
       pia_modys_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"

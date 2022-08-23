@@ -58,7 +58,7 @@ export class QuestionnaireInstancesHandler {
       const result =
         await QuestionnaireInstancesInteractor.getQuestionnaireInstancesForUser(
           request.auth.credentials as AccessToken,
-          request.params['user_id'] as string
+          request.params['pseudonym'] as string
         );
       return RESTPresenter.presentQuestionnaireInstances(result);
     } catch (err) {

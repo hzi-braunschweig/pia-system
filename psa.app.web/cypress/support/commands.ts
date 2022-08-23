@@ -4,66 +4,31 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { fetchPasswordForUserFromMailHog } from './user.commands';
+import {
+  fetchPasswordForUserFromMailHog,
+  loginSysAdmin,
+} from './user.commands';
 import { CreateProbandRequest } from '../../src/app/psa.app.core/models/proband';
 import Chainable = Cypress.Chainable;
 
 const short = require('short-uuid');
 const translator = short();
 
-export function getToken(username, password?): Chainable {
-  if (password) {
-    return cy
-      .request({
-        method: 'POST',
-        url: '/api/v1/user/login',
-        body: {
-          username,
-          password,
-          logged_in_with: 'web',
-          locale: 'de',
-        },
-      })
-      .then((res) => res.body.token);
-  } else {
-    return fetchPasswordForUserFromMailHog(username)
-      .then((res) =>
-        cy.request({
-          method: 'POST',
-          url: '/api/v1/user/login',
-          body: {
-            username,
-            password: res.password,
-            logged_in_with: 'web',
-            locale: 'de',
-          },
-        })
-      )
-      .then((res) => res.body.token);
-  }
-}
-
-export function getSysAdminToken(): Chainable {
-  return cy
-    .fixture('users')
-    .then((res) =>
-      getToken(res.existing.SysAdmin.username, res.existing.SysAdmin.password)
-    );
-}
-
 export function getForscherToken(): Chainable {
   return cy
     .fixture('users')
     .then((res) => res.new.Forscher.username)
     .then((username) => fetchPasswordForUserFromMailHog(username.toString()))
-    .then((res) => getToken(res.username, res.password));
+    .then((res) =>
+      cy.loginProfessional({ username: res.username, password: res.password })
+    );
 }
 
 export function createStudy(body): Chainable {
-  return getSysAdminToken().then((sysAdminToken) =>
+  return loginSysAdmin().then((sysAdminToken) =>
     cy.request({
       method: 'POST',
-      url: '/api/v1/questionnaire/studies',
+      url: '/api/v1/user/admin/studies',
       headers: { Authorization: sysAdminToken },
       body,
     })
@@ -71,11 +36,11 @@ export function createStudy(body): Chainable {
 }
 
 export function createUser(body): Chainable {
-  return getSysAdminToken().then((sysAdminToken) =>
+  return loginSysAdmin().then((sysAdminToken) =>
     cy.request({
       headers: { Authorization: sysAdminToken },
       method: 'POST',
-      url: '/api/v1/user/users',
+      url: '/api/v1/user/admin/users',
       body,
     })
   );
@@ -86,7 +51,7 @@ export function createPlannedProband(probandPseudonym, UTToken): Chainable {
   return cy.request({
     headers: { Authorization: UTToken },
     method: 'POST',
-    url: '/api/v1/user/plannedprobands',
+    url: '/api/v1/user/admin/plannedprobands',
     body: { pseudonyms: pseudonym },
   });
 }
@@ -99,7 +64,7 @@ export function createProband(
   return cy.request({
     headers: { Authorization: UTToken },
     method: 'POST',
-    url: `/api/v1/user/studies/${studyName}/probands`,
+    url: `/api/v1/user/admin/studies/${studyName}/probands`,
     body,
   });
 }
@@ -108,45 +73,56 @@ export function updateProbandData(pseudonym, data, token): Chainable {
   return cy.request({
     headers: { Authorization: token },
     method: 'PUT',
-    url: `/api/v1/personal/personalData/proband/${pseudonym}`,
+    url: `/api/v1/personal/admin/personalData/proband/${pseudonym}`,
     body: data,
   });
 }
 
-export function login(name, password): void {
-  cy.expectPathname('/login');
-  cy.get('#username').type(name);
-  cy.get('#password').type(password, {
+export function logout(confirm: boolean = true): void {
+  cy.get('[data-e2e="e2e-logout"]').click();
+  if (confirm) {
+    cy.get('#confirmButton').click();
+  }
+
+  // make sure that the user is really logged out by waiting for the sign in
+  cy.get('[data-e2e="login-form"]');
+}
+
+export function login(
+  username: string,
+  password: string,
+  skipUsername = false
+): Chainable<JQuery<HTMLElement>> {
+  cy.get('[data-e2e="login-form"]');
+
+  if (!skipUsername) {
+    cy.get('[data-e2e="login-input-username"]').type(username);
+  }
+
+  cy.get('[data-e2e="login-input-password"]').type(password, {
     parseSpecialCharSequences: false,
   });
-
-  cy.get('[data-2e2="select-language-dropdown"]').click();
-
-  cy.get('[data-e2e="language-dropdown-item"]').contains('Deutsch').click();
-  cy.contains('Anmelden');
-  cy.get('[data-e2e-login-button]').click();
+  return cy.get('[data-e2e="login-button"]').click();
 }
 
 export function changePassword(oldPass, newPass): void {
-  cy.expectPathname('/changePassword');
-  cy.get('#oldPassword').type(oldPass, {
+  cy.get('[data-e2e="login-update-form"]');
+
+  cy.get('[data-e2e="login-password-new"]').type(newPass, {
     parseSpecialCharSequences: false,
   });
-  cy.get('#newPassword1').type(newPass, {
-    parseSpecialCharSequences: false,
-  });
-  cy.get('#newPassword2').type(newPass, {
+  cy.get('[data-e2e="login-password-confirm"]').type(newPass, {
     parseSpecialCharSequences: false,
   });
 
-  cy.get('#changePasswordButton').click({ force: true });
+  cy.get('[data-e2e="login-submit-button"]').click();
 }
 
 export function createConsentForStudy(consent, studyId, token?): Chainable {
   if (token) {
     return cy.request({
       method: 'PUT',
-      url: `/api/v1/compliance/${studyId}/text`,
+      url: `/api/v1/compliance/admin/${studyId}/text`,
       headers: { Authorization: token },
       body: consent,
     });
@@ -164,7 +140,7 @@ export function createConsentForStudy(consent, studyId, token?): Chainable {
 
 export function generateRandomProbandForStudy(): CreateProbandRequest {
   return {
-    pseudonym: `e2e-tn-${translator.new()}`,
+    pseudonym: `e2e-tn-${translator.new().toLowerCase()}`,
     complianceLabresults: false,
     complianceSamples: false,
     complianceBloodsamples: false,
@@ -184,6 +160,7 @@ export function generateRandomStudy(): any {
     sample_suffix_length: null,
     pseudonym_prefix: '',
     pseudonym_suffix_length: null,
+    has_required_totp: false,
   };
 }
 
@@ -194,7 +171,7 @@ export function getCredentialsForProbandByUsername(
   return cy
     .request({
       method: 'GET',
-      url: `/api/v1/user/plannedprobands/${username}`,
+      url: `/api/v1/user/admin/plannedprobands/${username}`,
       headers: { Authorization: UTToken },
     })
     .then((res) => ({ username, password: res.body.password }));
@@ -203,21 +180,19 @@ export function getCredentialsForProbandByUsername(
 export function createWelcomeText(body, studyId, token): Chainable {
   return cy.request({
     method: 'PUT',
-    url: `/api/v1/questionnaire/studies/${studyId}/welcome-text`,
+    url: `/api/v1/user/admin/studies/${studyId}/welcome-text`,
     headers: { Authorization: token },
     body,
   });
 }
 
-export function createQuestionnaire(questionnaire, forscherName): Chainable {
-  return getToken(forscherName).then((token) =>
-    cy.request({
-      headers: { Authorization: token },
-      method: 'POST',
-      url: '/api/v1/questionnaire/questionnaires',
-      body: questionnaire,
-    })
-  );
+export function createQuestionnaire(questionnaire, token: string): Chainable {
+  return cy.request({
+    headers: { Authorization: token },
+    method: 'POST',
+    url: '/api/v1/questionnaire/admin/questionnaires',
+    body: questionnaire,
+  });
 }
 
 export function fetchEMailsByUsername(username): Chainable {

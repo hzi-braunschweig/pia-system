@@ -8,9 +8,9 @@ import Boom from '@hapi/boom';
 import * as pgHelper from '../services/postgresqlHelper';
 import { Readable } from 'stream';
 import * as csv from 'csv-stringify';
-import archiver from 'archiver';
-import { File } from '../models/file';
-import { AccessToken } from '@pia/lib-service-core';
+import archiver, { Archiver } from 'archiver';
+import { UserFile } from '../models/userFile';
+import { AccessToken, assertStudyAccess } from '@pia/lib-service-core';
 import { AnswersTransform } from '../services/csvTransformStreams/answersTransform';
 import { LabResultTransform } from '../services/csvTransformStreams/labResultTransform';
 import { SampleTransform } from '../services/csvTransformStreams/sampleTransform';
@@ -33,28 +33,13 @@ export interface SearchCriteria {
 export class SearchesInteractor {
   /**
    * Creates a data search and returns the search result as a stream
-   * @param {string} decodedToken the jwt of the request
-   * @param {object} searchCriteria the criteria for searching
-   * @returns a readable stream that fetches the data from the DB and converts them into a zip
-   * @throws {Boom}
    */
   public static async createSearch(
     decodedToken: AccessToken,
     searchCriteria: SearchCriteria
-  ): Promise<Readable> {
-    const userRole = decodedToken.role;
-    const userStudies = decodedToken.groups;
+  ): Promise<Archiver> {
+    assertStudyAccess(searchCriteria.study_name, decodedToken);
 
-    if (userRole !== 'Forscher') {
-      throw Boom.forbidden(
-        'Could not create the search: Unknown or wrong role'
-      );
-    }
-    if (!userStudies.includes(searchCriteria.study_name)) {
-      throw Boom.forbidden(
-        'Could not create the search, because user has no access to study'
-      );
-    }
     return await SearchesInteractor.search(searchCriteria);
   }
 
@@ -65,7 +50,7 @@ export class SearchesInteractor {
    */
   private static async search(
     searchCriteria: SearchCriteria
-  ): Promise<Readable> {
+  ): Promise<Archiver> {
     const start_date = searchCriteria.start_date
       ? new Date(searchCriteria.start_date)
       : new Date(0);
@@ -132,7 +117,7 @@ export class SearchesInteractor {
           if (fileIDs.length > 0) {
             const filesStream = pgHelper.streamFiles(
               fileIDs
-            ) as AsyncIterable<File>;
+            ) as AsyncIterable<UserFile>;
             for await (const file of filesStream) {
               const base64EncodingMark = ';base64,';
               const base64EncodingMarkIndex =
@@ -145,7 +130,7 @@ export class SearchesInteractor {
                   'base64'
                 );
                 archive.append(fileData, {
-                  name: 'files/' + file.id.toString() + '-' + file.file_name,
+                  name: `files/${file.id.toString()}-${file.file_name ?? ''}`,
                 });
               }
             }

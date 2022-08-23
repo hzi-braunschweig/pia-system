@@ -1,8 +1,3 @@
-location /auth/metrics {
-    resolver 127.0.0.11 valid=1m;
-    set $service_authservice authservice;
-    proxy_pass ${PROTOCOL}://${service_authservice}:$AUTHSERVICE_PORT/metrics;
-}
 location /questionnaire/metrics {
     resolver 127.0.0.11 valid=1m;
     set $service_questionnaireservice questionnaireservice;
@@ -42,4 +37,9 @@ location /messagequeue/metrics {
     resolver 127.0.0.11 valid=1m;
     set $service_messagequeue messagequeue;
     proxy_pass http://$service_messagequeue:15692/metrics;
+}
+location /autheventproxy/metrics {
+    resolver 127.0.0.11 valid=1m;
+    set $service_autheventproxy autheventproxy;
+    proxy_pass ${PROTOCOL}://${service_autheventproxy}:$AUTHEVENTPROXY_PORT/metrics;
 }

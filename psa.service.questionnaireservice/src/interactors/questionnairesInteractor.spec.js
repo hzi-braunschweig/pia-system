@@ -50,42 +50,6 @@ describe('questionnairesInteractor', function () {
   });
 
   describe('#deleteQuestionnaire', function () {
-    it('should not delete the questionnaire, if the user has unknown role', async function () {
-      questionnaireRepoMock.getQuestionnaire
-        .withArgs(1)
-        .resolves({ study_id: 'Study1' });
-      pgHelperMock.getStudyAccessForUser
-        .withArgs('Study1', 'Testproband')
-        .resolves({ access_level: 'write' });
-      pgHelperMock.deleteQuestionnaire.withArgs(1).resolves(null);
-
-      const session = { id: 1, role: 'NoValidRole', username: 'Testproband' };
-      await QuestionnairesInteractor.deleteQuestionnaire(session, 1).catch(
-        console.log
-      );
-      expect(questionnaireRepoMock.getQuestionnaire).to.have.not.been.called;
-      expect(pgHelperMock.getStudyAccessForUser).to.have.not.been.called;
-      expect(pgHelperMock.deleteQuestionnaire).to.have.not.been.called;
-    });
-
-    it('should not delete the questionnaire, if the user has role "Proband"', async function () {
-      questionnaireRepoMock.getQuestionnaire
-        .withArgs(1)
-        .resolves({ study_id: 'Study1' });
-      pgHelperMock.getStudyAccessForUser
-        .withArgs('Study1', 'Testproband')
-        .resolves({ access_level: 'write' });
-      pgHelperMock.deleteQuestionnaire.withArgs(1).resolves(null);
-
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
-      await QuestionnairesInteractor.deleteQuestionnaire(session, 1).catch(
-        console.log
-      );
-      expect(questionnaireRepoMock.getQuestionnaire).to.have.not.been.called;
-      expect(pgHelperMock.getStudyAccessForUser).to.have.not.been.called;
-      expect(pgHelperMock.deleteQuestionnaire).to.have.not.been.called;
-    });
-
     it('should not delete the questionnaire, if the user has role "Forscher" but is not assigned to the right study', async function () {
       questionnaireRepoMock.getQuestionnaire
         .withArgs(1)
@@ -94,12 +58,11 @@ describe('questionnairesInteractor', function () {
         .withArgs('Study1', 'Testforscher')
         .rejects();
       pgHelperMock.deleteQuestionnaire.withArgs(1).resolves(null);
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['Study2'],
-      };
+        studies: ['Study2'],
+      });
       await QuestionnairesInteractor.deleteQuestionnaire(session, 1).catch(
         console.log
       );
@@ -116,12 +79,11 @@ describe('questionnairesInteractor', function () {
         .withArgs('Study1', 'Testforscher')
         .resolves({ access_level: 'read' });
       pgHelperMock.deleteQuestionnaire.withArgs(1).resolves(null);
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['Study1'],
-      };
+        studies: ['Study1'],
+      });
       await QuestionnairesInteractor.deleteQuestionnaire(session, 1).catch(
         console.log
       );
@@ -138,12 +100,11 @@ describe('questionnairesInteractor', function () {
         .withArgs('Study1', 'Testforscher')
         .resolves({ access_level: 'write' });
       pgHelperMock.deleteQuestionnaire.withArgs(1).resolves(null);
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['Study1'],
-      };
+        studies: ['Study1'],
+      });
       await QuestionnairesInteractor.deleteQuestionnaire(session, 1);
       expect(questionnaireRepoMock.getQuestionnaire).to.have.been.calledOnce;
       expect(pgHelperMock.getStudyAccessForUser).to.have.been.calledOnce;
@@ -152,23 +113,14 @@ describe('questionnairesInteractor', function () {
   });
 
   describe('#createQuestionnaire', function () {
-    it('should not create the questionnaire, if the user has unknown role', async function () {
-      pgHelperMock.getStudyAccessForUser.resolves({ access_level: 'write' });
-      pgHelperMock.insertQuestionnaire.resolves(null);
-
-      const session = { id: 1, role: 'NoValidRole', username: 'Testproband' };
-      await QuestionnairesInteractor.createQuestionnaire(session, {}).catch(
-        console.log
-      );
-      expect(pgHelperMock.getStudyAccessForUser).to.have.not.been.called;
-      expect(pgHelperMock.insertQuestionnaire).to.have.not.been.called;
-    });
-
     it('should not create the questionnaire, if the user has role "Proband"', async function () {
       pgHelperMock.getStudyAccessForUser.resolves({ access_level: 'write' });
       pgHelperMock.insertQuestionnaire.resolves(null);
 
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
+      const session = createDecodedToken({
+        scope: ['realm:Proband'],
+        username: 'Testproband',
+      });
       await QuestionnairesInteractor.createQuestionnaire(session, {}).catch(
         console.log
       );
@@ -178,12 +130,11 @@ describe('questionnairesInteractor', function () {
 
     it('should not create the questionnaire, if the user has role "Forscher" but is not assigned to the right study', async function () {
       pgHelperMock.insertQuestionnaire.resolves(null);
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['Study1'],
-      };
+        studies: ['Study1'],
+      });
       await QuestionnairesInteractor.createQuestionnaire(session, {
         study_id: 'Study2',
       }).catch(console.log);
@@ -196,12 +147,11 @@ describe('questionnairesInteractor', function () {
         .withArgs('Study1', 'Testforscher')
         .resolves({ access_level: 'read' });
       pgHelperMock.insertQuestionnaire.resolves(null);
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['Study1'],
-      };
+        studies: ['Study1'],
+      });
       await QuestionnairesInteractor.createQuestionnaire(session, {
         study_id: 'Study1',
       }).catch(console.log);
@@ -216,12 +166,11 @@ describe('questionnairesInteractor', function () {
       pgHelperMock.insertQuestionnaire
         .withArgs({ study_id: 'Study1' })
         .resolves({ study_id: 'Study1', id: 1 });
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['Study1'],
-      };
+        studies: ['Study1'],
+      });
       const newQuestionnaire =
         await QuestionnairesInteractor.createQuestionnaire(session, {
           study_id: 'Study1',
@@ -233,50 +182,6 @@ describe('questionnairesInteractor', function () {
   });
 
   describe('#updateQuestionnaire', function () {
-    it('should not update the questionnaire, if the user has unknown role', async function () {
-      pgHelperMock.getStudyAccessForUser
-        .onCall(0)
-        .resolves({ access_level: 'write' })
-        .onCall(1)
-        .resolves({ access_level: 'write' });
-
-      questionnaireRepoMock.getQuestionnaire.resolves({ study_id: 'Study1' });
-      pgHelperMock.updateQuestionnaire.resolves(null);
-
-      const session = { id: 1, role: 'NoValidRole', username: 'Testproband' };
-      await QuestionnairesInteractor.updateQuestionnaire(
-        session,
-        1,
-        1,
-        {}
-      ).catch(console.log);
-      expect(questionnaireRepoMock.getQuestionnaire).to.have.not.been.called;
-      expect(pgHelperMock.getStudyAccessForUser).to.have.not.been.called;
-      expect(pgHelperMock.updateQuestionnaire).to.have.not.been.called;
-    });
-
-    it('should not update the questionnaire, if the user has role "Proband"', async function () {
-      pgHelperMock.getStudyAccessForUser
-        .onCall(0)
-        .resolves({ access_level: 'write' })
-        .onCall(1)
-        .resolves({ access_level: 'write' });
-
-      questionnaireRepoMock.getQuestionnaire.resolves({ study_id: 'Study1' });
-      pgHelperMock.updateQuestionnaire.resolves(null);
-
-      const session = { id: 1, role: 'Proband', username: 'Testproband' };
-      await QuestionnairesInteractor.updateQuestionnaire(
-        session,
-        1,
-        1,
-        {}
-      ).catch(console.log);
-      expect(questionnaireRepoMock.getQuestionnaire).to.have.not.been.called;
-      expect(pgHelperMock.getStudyAccessForUser).to.have.not.been.called;
-      expect(pgHelperMock.updateQuestionnaire).to.have.not.been.called;
-    });
-
     it('should not update the questionnaire, if the user has role "Forscher" but is not assigned to the old study', async function () {
       pgHelperMock.getStudyAccessForUser
         .withArgs('Study1')
@@ -289,12 +194,11 @@ describe('questionnairesInteractor', function () {
         .resolves({ study_id: 'Study1' });
       pgHelperMock.updateQuestionnaire.resolves(null);
 
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['Study2'],
-      };
+        studies: ['Study2'],
+      });
       await QuestionnairesInteractor.updateQuestionnaire(session, 1, 1, {
         study_id: 'Study2',
       }).catch(console.log);
@@ -315,12 +219,11 @@ describe('questionnairesInteractor', function () {
         .resolves({ study_id: 'Study1', active: true });
       pgHelperMock.updateQuestionnaire.resolves(null);
 
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['Study1'],
-      };
+        studies: ['Study1'],
+      });
       await QuestionnairesInteractor.updateQuestionnaire(session, 1, 1, {
         study_id: 'Study2',
       }).catch(console.log);
@@ -341,12 +244,11 @@ describe('questionnairesInteractor', function () {
         .resolves({ study_id: 'Study1', active: true });
       pgHelperMock.updateQuestionnaire.resolves(null);
 
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['Study1', 'Study2'],
-      };
+        studies: ['Study1', 'Study2'],
+      });
       await QuestionnairesInteractor.updateQuestionnaire(session, 1, 1, {
         study_id: 'Study2',
       }).catch(console.log);
@@ -367,12 +269,11 @@ describe('questionnairesInteractor', function () {
         .resolves({ study_id: 'Study1', active: true });
       pgHelperMock.updateQuestionnaire.resolves(null);
 
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['Study1', 'Study2'],
-      };
+        studies: ['Study1', 'Study2'],
+      });
       await QuestionnairesInteractor.updateQuestionnaire(session, 1, 1, {
         study_id: 'Study2',
       }).catch(console.log);
@@ -395,12 +296,11 @@ describe('questionnairesInteractor', function () {
         .withArgs({ study_id: 'Study2', active: true }, 1)
         .resolves({ study_id: 'Study2' });
 
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['Study1', 'Study2'],
-      };
+        studies: ['Study1', 'Study2'],
+      });
       const questionnaire = await QuestionnairesInteractor.updateQuestionnaire(
         session,
         1,
@@ -415,29 +315,16 @@ describe('questionnairesInteractor', function () {
   });
 
   describe('#getQuestionnaire', function () {
-    it('should not get the questionnaire, if the user has unknown role', async function () {
-      questionnaireRepoMock.getQuestionnaire.resolves(null);
-
-      const session = { id: 1, role: 'NoValidRole', username: 'Testproband' };
-      const questionnaire = await QuestionnairesInteractor.getQuestionnaire(
-        session,
-        1
-      ).catch(console.log);
-      expect(questionnaireRepoMock.getQuestionnaire).to.have.not.been.called;
-      expect(questionnaire).to.be.undefined;
-    });
-
     it('should not get the questionnaire, if the user has role "Proband" but is not assigned to the right study', async function () {
       questionnaireRepoMock.getQuestionnaire
         .withArgs(1)
         .resolves({ study_id: 'Study1' });
 
-      const session = {
-        id: 1,
-        role: 'Proband',
+      const session = createDecodedToken({
+        scope: ['realm:Proband'],
         username: 'Testproband',
-        groups: ['Study2'],
-      };
+        studies: ['Study2'],
+      });
       const questionnaire = await QuestionnairesInteractor.getQuestionnaire(
         session,
         1
@@ -452,12 +339,11 @@ describe('questionnairesInteractor', function () {
         .resolves({ study_id: 'Study1' });
       pgHelperMock.getStudyAccessForUser.withArgs(1, 'Testforscher').rejects();
 
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: [],
-      };
+        studies: [],
+      });
       const questionnaire = await QuestionnairesInteractor.getQuestionnaire(
         session,
         1
@@ -472,12 +358,11 @@ describe('questionnairesInteractor', function () {
         .resolves({ compliance_needed: true, study_id: 'Study1' });
       hasAgreedToComplianceMock.resolves(true);
 
-      const session = {
-        id: 1,
-        role: 'Proband',
+      const session = createDecodedToken({
+        scope: ['realm:Proband'],
         username: 'Testproband',
-        groups: ['Study1'],
-      };
+        studies: ['Study1'],
+      });
       const questionnaire = await QuestionnairesInteractor.getQuestionnaire(
         session,
         1
@@ -491,12 +376,11 @@ describe('questionnairesInteractor', function () {
         .withArgs(1)
         .resolves({ study_id: 'Study1' });
 
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['Study1'],
-      };
+        studies: ['Study1'],
+      });
       const questionnaire = await QuestionnairesInteractor.getQuestionnaire(
         session,
         1
@@ -507,29 +391,17 @@ describe('questionnairesInteractor', function () {
   });
 
   describe('#getQuestionnaires', function () {
-    it('should not get questionnaires, if the user has unknown role', async function () {
-      questionnaireRepoMock.getQuestionnairesByStudyIds.resolves(null);
-
-      const session = { id: 1, role: 'NoValidRole', username: 'Testproband' };
-      await QuestionnairesInteractor.getQuestionnaires(session).catch(
-        console.log
-      );
-      expect(questionnaireRepoMock.getQuestionnairesByStudyIds).to.have.not.been
-        .called;
-    });
-
     it('should only get questionnaires that are assigned to the users studies', async function () {
       questionnaireRepoMock.getQuestionnairesByStudyIds
         .withArgs(['AStudyId'])
         .resolves([{ study_id: 'AStudyId' }])
         .withArgs(['AStudyId1', 'AStudyId2'])
         .resolves([{ study_id: 'AStudyId1' }, { study_id: 'AStudyId2' }]);
-      const session = {
-        id: 1,
-        role: 'Forscher',
+      const session = createDecodedToken({
+        scope: ['realm:Forscher'],
         username: 'Testforscher',
-        groups: ['AStudyId1', 'AStudyId2'],
-      };
+        studies: ['AStudyId1', 'AStudyId2'],
+      });
       const result = await QuestionnairesInteractor.getQuestionnaires(session);
       expect(questionnaireRepoMock.getQuestionnairesByStudyIds).to.have.been
         .calledOnce;
@@ -538,4 +410,14 @@ describe('questionnairesInteractor', function () {
       expect(result[1].study_id).to.equal('AStudyId2');
     });
   });
+
+  function createDecodedToken(overwrites) {
+    return {
+      username: '',
+      studies: [],
+      scope: [],
+      locale: 'de-De',
+      ...overwrites,
+    };
+  }
 });

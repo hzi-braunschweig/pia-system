@@ -1,5 +1,11 @@
 location /modysservice/metrics {
     resolver 127.0.0.11 valid=1m;
     set $service_modysservice modysservice;
-    proxy_pass ${PROTOCOL}://$service_modysservice:MODYSSERVICE_PORT/metrics;
+    proxy_pass ${PROTOCOL}://${service_modysservice}:$MODYSSERVICE_PORT/metrics;
+}
+
+location /authserver/metrics {
+    resolver 127.0.0.11 valid=1m;
+    set $service_authserver authserver;
+    proxy_pass ${PROTOCOL}://${service_authserver}:$AUTHSERVER_PORT/realms/master/metrics;
 }

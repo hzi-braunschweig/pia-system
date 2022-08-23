@@ -1,0 +1,1 @@
+ALTER TABLE public.accounts ADD COLUMN IF NOT EXISTS is_migrated BOOL;

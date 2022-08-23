@@ -13,15 +13,18 @@ import { addMinutes, startOfToday } from 'date-fns';
 import { CronJob, CronTime } from 'cron';
 import fetchMocker from 'fetch-mock';
 import { StatusCodes } from 'http-status-codes';
-import JWT from 'jsonwebtoken';
-import { DeepPartial, MailService } from '@pia/lib-service-core';
+import {
+  AuthServerMock,
+  AuthTokenMockBuilder,
+  DeepPartial,
+  MailService,
+} from '@pia/lib-service-core';
 
 import { FcmHelper } from '../../src/services/fcmHelper';
 import { NotificationHelper as notificationHelperTemp } from '../../src/services/notificationHelper';
 import { dbWait } from './helper';
 import { db } from '../../src/db';
 import { cleanup, setup } from './notification.spec.data/setup.helper';
-import secretOrPrivateKey from '../secretOrPrivateKey';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
 import { DbUsersToContact } from '../../src/models/usersToContact';
@@ -37,87 +40,42 @@ const notificationHelper = notificationHelperTemp as {
 chai.use(chaiHttp);
 chai.use(sinonChai);
 
-const apiAddress =
-  'http://localhost:' + config.public.port.toString() + '/notification';
+const apiAddress = `http://localhost:${config.public.port}`;
 
 const fetchMock = fetchMocker.sandbox();
 const suiteSandbox = sinon.createSandbox();
 const testSandbox = sinon.createSandbox();
 
-const probandSession1 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestProband1',
-  groups: ['ApiTestStudie'],
-};
-const probandSession2 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestProband2',
-  groups: ['ApiTestStudie'],
-};
-
-const forscherSession1 = {
-  id: 1,
-  role: 'Forscher',
-  username: 'QTestForscher1',
-  groups: ['ApiTestStudie'],
-};
-const utSession = {
-  id: 1,
-  role: 'Untersuchungsteam',
-  username: 'QTestUntersuchungsteam',
-  groups: ['ApiTestStudie'],
-};
-const pmSession = {
-  id: 1,
-  role: 'ProbandenManager',
-  username: 'QTestProbandenManager',
-  groups: ['ApiTestStudie'],
-};
-const sysadminSession = {
-  id: 1,
-  role: 'SysAdmin',
-  username: 'QTestSystemAdmin',
-  groups: ['ApiTestStudie'],
-};
-
-const invalidToken = JWT.sign(probandSession1, 'thisIsNotAValidPrivateKey', {
-  algorithm: 'HS256',
-  expiresIn: '24h',
+const probandHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband1',
+  studies: ['ApiTestStudie'],
 });
-const probandToken1 = JWT.sign(probandSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const probandHeader2 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband2',
+  studies: ['ApiTestStudie'],
 });
-const probandToken2 = JWT.sign(probandSession2, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const forscherHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
+  username: 'qtest-forscher1',
+  studies: ['ApiTestStudie'],
 });
-const forscherToken1 = JWT.sign(forscherSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const utHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Untersuchungsteam'],
+  username: 'qtest-untersuchungsteam',
+  studies: ['ApiTestStudie'],
 });
-const utToken = JWT.sign(utSession, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const pmHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['ProbandenManager'],
+  username: 'qtest-probandenmanager',
+  studies: ['ApiTestStudie'],
 });
-const pmToken = JWT.sign(pmSession, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const sysadminHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['SysAdmin'],
+  username: 'qtest-sysadmin',
+  studies: ['ApiTestStudie'],
 });
-const sysadminToken = JWT.sign(sysadminSession, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-
-const invalidHeader = { authorization: invalidToken };
-const probandHeader1 = { authorization: probandToken1 };
-const probandHeader2 = { authorization: probandToken2 };
-const forscherHeader1 = { authorization: forscherToken1 };
-const utHeader = { authorization: utToken };
-const pmHeader = { authorization: pmToken };
-const sysadminHeader = { authorization: sysadminToken };
 
 const FcmHelperMock = {
   sendDefaultNotification: sinon.stub().resolves({
@@ -143,6 +101,9 @@ describe('/notification', function () {
   });
 
   beforeEach(async function () {
+    AuthServerMock.probandRealm().returnValid();
+    AuthServerMock.adminRealm().returnValid();
+
     await setup();
     testSandbox
       .stub<typeof HttpClient, 'fetch'>(HttpClient, 'fetch')
@@ -155,47 +116,55 @@ describe('/notification', function () {
     await cleanup();
     testSandbox.restore();
     fetchMock.restore();
+
+    AuthServerMock.cleanAll();
   });
 
   describe('POST notification', function () {
     const validNotification = {
       title: 'A valid Notification',
       body: 'A valid body',
-      recipients: ['QTestProband1'],
+      recipients: ['qtest-proband1'],
       date: addMinutes(new Date(), 10).getTime(),
     };
 
     const validNotificationWithTwoProbands = {
       title: 'A valid Notification',
       body: 'A valid body',
-      recipients: ['QTestProband1', 'QTestProband4'],
+      recipients: ['qtest-proband1', 'qtest-proband4'],
       date: addMinutes(new Date(), 10).getTime(),
     };
 
     const validForscherNotification = {
       title: 'A valid Notification',
       body: 'A valid body',
-      recipients: ['QTestForscher1'],
+      recipients: ['qtest-forscher1'],
       date: addMinutes(new Date(), 10).getTime(),
     };
 
     const validNotificationWithoutDate = {
       title: 'A valid Notification',
       body: 'A valid body',
-      recipients: ['QTestProband1'],
+      recipients: ['qtest-proband1'],
+    };
+
+    const validNotificationWithUppercaseRecipients = {
+      title: 'A valid Notification',
+      body: 'A valid body',
+      recipients: ['QTest-Proband1'],
     };
 
     const noTokenNotification = {
       title: 'A valid Notification',
       body: 'A valid body',
-      recipients: ['QTestProband2'],
+      recipients: ['qtest-proband2'],
       date: addMinutes(new Date(), 10).getTime(),
     };
 
     const noStudyNotification = {
       title: 'A valid Notification',
       body: 'A valid body',
-      recipients: ['QTestProband3'],
+      recipients: ['qtest-proband3'],
       date: addMinutes(new Date(), 10).getTime(),
     };
 
@@ -207,10 +176,13 @@ describe('/notification', function () {
     };
 
     it('should return HTTP 401 if the token is invalid', async function () {
+      AuthServerMock.cleanAll();
+      AuthServerMock.probandRealm().returnInvalid();
+
       const result = await chai
         .request(apiAddress)
-        .post('/notification')
-        .set(invalidHeader)
+        .post('/admin/notification')
+        .set(probandHeader1)
         .send(validNotification);
       expect(result).to.have.status(401);
     });
@@ -218,7 +190,7 @@ describe('/notification', function () {
     it('should return HTTP 403 if a Proband tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/notification')
+        .post('/admin/notification')
         .set(probandHeader1)
         .send(validNotification);
       expect(result).to.have.status(403);
@@ -232,7 +204,7 @@ describe('/notification', function () {
 
       const result = await chai
         .request(apiAddress)
-        .post('/notification')
+        .post('/admin/notification')
         .set(pmHeader)
         .send(wrongUserNotification);
       expect(result).to.have.status(200);
@@ -242,7 +214,7 @@ describe('/notification', function () {
     it('should return HTTP 200 with "success" === false', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/notification')
+        .post('/admin/notification')
         .set(pmHeader)
         .send(noStudyNotification);
       expect(result).to.have.status(200);
@@ -252,18 +224,18 @@ describe('/notification', function () {
     it('should return HTTP 403 if a SysAdmin tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/notification')
+        .post('/admin/notification')
         .set(sysadminHeader)
         .send(validNotification);
       expect(result).to.have.status(403);
     });
 
     it('should return HTTP 200 with "success" === false', async function () {
-      fetchMock.get('express:/user/users/QTestProband2', {});
+      fetchMock.get('express:/user/users/qtest-proband2', {});
 
       const result = await chai
         .request(apiAddress)
-        .post('/notification')
+        .post('/admin/notification')
         .set(pmHeader)
         .send(noTokenNotification);
       expect(result).to.have.status(200);
@@ -273,7 +245,7 @@ describe('/notification', function () {
     it('should return HTTP 403 if a Forscher tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/notification')
+        .post('/admin/notification')
         .set(forscherHeader1)
         .send(validNotification);
       expect(result).to.have.status(403);
@@ -282,7 +254,7 @@ describe('/notification', function () {
     it('should return HTTP 403 if a UntersuchungsTeam tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/notification')
+        .post('/admin/notification')
         .set(utHeader)
         .send(validNotification);
       expect(result).to.have.status(403);
@@ -291,7 +263,7 @@ describe('/notification', function () {
     it('should return HTTP 200 if a ProbandenManager tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/notification')
+        .post('/admin/notification')
         .set(pmHeader)
         .send(validNotification);
       expect(result).to.have.status(200);
@@ -301,7 +273,7 @@ describe('/notification', function () {
     it('should return HTTP 200 when sending notification to multiple users', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/notification')
+        .post('/admin/notification')
         .set(pmHeader)
         .send(validNotificationWithTwoProbands);
       expect(result).to.have.status(200);
@@ -311,7 +283,7 @@ describe('/notification', function () {
     it('should return HTTP 403 if a SysAdmin tries', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/notification')
+        .post('/admin/notification')
         .set(sysadminHeader)
         .send(validForscherNotification);
       expect(result).to.have.status(403);
@@ -320,9 +292,19 @@ describe('/notification', function () {
     it('should return HTTP 200 for a notification without a date', async function () {
       const result = await chai
         .request(apiAddress)
-        .post('/notification')
+        .post('/admin/notification')
         .set(pmHeader)
         .send(validNotificationWithoutDate);
+      expect(result).to.have.status(200);
+      expect(result.body).to.eql({ success: true });
+    });
+
+    it('should also accept pseudonyms in uppercase and return HTTP 200', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/notification')
+        .set(pmHeader)
+        .send(validNotificationWithUppercaseRecipients);
       expect(result).to.have.status(200);
       expect(result.body).to.eql({ success: true });
     });
@@ -330,19 +312,22 @@ describe('/notification', function () {
 
   describe('GET notification', function () {
     it('should return HTTP 401 if the token is invalid', async function () {
+      AuthServerMock.cleanAll();
+      AuthServerMock.probandRealm().returnInvalid();
+
       const result = await chai
         .request(apiAddress)
         .get('/notification/99997')
-        .set(invalidHeader);
+        .set(probandHeader1);
       expect(result).to.have.status(401);
     });
 
-    it('should return HTTP 404 if a forscher tries', async function () {
+    it('should return HTTP 403 if a forscher tries', async function () {
       const result = await chai
         .request(apiAddress)
         .get('/notification/99997')
         .set(forscherHeader1);
-      expect(result).to.have.status(404);
+      expect(result).to.have.status(403);
     });
 
     it('should return  HTTP 404 if another proband tries', async function () {
@@ -449,25 +434,25 @@ describe('/notification', function () {
       await notificationHelper.sendAllOpenNotifications();
 
       expect(logSpy).to.have.been.calledWith(
-        'Successfully sent scheduled custom notification to: QTestProband1 (1/1 token notified successfull)'
+        'Successfully sent scheduled custom notification to: qtest-proband1 (1/1 token notified successfull)'
       );
 
       expect(logSpy).to.have.been.calledWith(
-        'Successfully sent sample id (LAB_RESULT-9999999999) notification to: QTestProband1 (1/1 token notified successfull)'
+        'Successfully sent sample id (LAB_RESULT-9999999999) notification to: qtest-proband1 (1/1 token notified successfull)'
       );
 
       expect(logSpy).to.have.been.calledWith(
-        'Successfully sent instance id (9999996) notification to: QTestProband1 (1/1 token notified successfull)'
+        'Successfully sent instance id (9999996) notification to: qtest-proband1 (1/1 token notified successfull)'
       );
     });
 
     it('should send sample report mails', async function () {
       fetchMock.get('express:/user/pseudonyms', {
         status: StatusCodes.OK,
-        body: JSON.stringify(['QTestProband1']),
+        body: JSON.stringify(['qtest-proband1']),
       });
       await db.none(
-        "INSERT INTO lab_results VALUES ('LAB_RESULT-88888', 'QTestProband1', NULL, $1,'new','Das PM merkt an: bitte mit Vorsicht genießen!',FALSE,'Dr. House',NULL)",
+        "INSERT INTO lab_results VALUES ('LAB_RESULT-88888', 'qtest-proband1', NULL, $1,'new','Das PM merkt an: bitte mit Vorsicht genießen!',FALSE,'Dr. House',NULL)",
         [startOfToday()]
       );
 
@@ -543,7 +528,7 @@ function getQuestionnaireInstance9999996(): DeepPartial<QuestionnaireInstance> {
     id: 9999996,
     studyId: 'ApiTestStudie',
     questionnaireName: 'ApiTestQuestionnaire',
-    pseudonym: 'QTestProband1',
+    pseudonym: 'qtest-proband1',
     dateOfIssue: new Date('2017-08-08T00:00:00.000Z'),
     dateOfReleaseV1: null,
     dateOfReleaseV2: null,

@@ -1,0 +1,103 @@
+/*!
+ * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+.form-group {
+  position: relative;
+
+  label {
+    display: block;
+    font-size: 14px;
+    color: $color-label;
+  }
+
+  &:focus-within {
+    label {
+      color: $primary-color-dark;
+    }
+  }
+
+  input {
+  }
+
+  input[type='text'],
+  input[type='password'] {
+    appearance: none;
+    border: 0;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+    margin-bottom: 1px;
+    line-height: 2.25rem;
+    width: 100%;
+    padding: 0;
+    font-size: 17px;
+
+    &:focus-visible {
+      outline-color: transparent;
+      border-bottom: 2px solid $primary-color-dark;
+      margin-bottom: 0;
+    }
+
+    &[aria-invalid='true'] {
+      border-bottom-color: $form-error-color;
+      border-bottom-width: 2px;
+      margin-bottom: 0;
+    }
+  }
+
+  input[type='checkbox'] {
+    border-radius: 0;
+  }
+
+  + .form-group {
+    margin-top: 1.75rem;
+  }
+
+  .input-icon-button-suffix {
+    // remove default button style
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font: inherit;
+    outline: inherit;
+
+    position: absolute;
+    cursor: pointer;
+    top: 20px;
+    right: -3px;
+    height: 34px;
+    width: 34px;
+    border-radius: 50%;
+
+    &:hover {
+      background-color: rgba($primary-color-dark, 0.1);
+    }
+    &:active {
+      background-color: rgba($primary-color-dark, 0.2);
+    }
+
+    .icon-eye {
+      // apply primary color to svg image
+      filter: invert(42%) sepia(77%) saturate(378%) hue-rotate(52deg)
+        brightness(95%) contrast(88%);
+      height: 22px;
+      width: 22px;
+    }
+  }
+
+  > div {
+    position: relative;
+
+    .input-icon-button-suffix {
+      top: 0;
+    }
+  }
+}
+
+.pf-m-error {
+  font-size: 14px;
+  color: red;
+}

@@ -10,7 +10,7 @@ INSERT INTO studies(name, description, has_logging_opt_in) VALUES ('ExportTestSt
 
 -- Users
 INSERT INTO probands(pseudonym, compliance_labresults, compliance_samples, study)
-VALUES ('QExportTestProband2', TRUE, TRUE, 'ExportTestStudie');
+VALUES ('qtest-exportproband2', TRUE, TRUE, 'ExportTestStudie');
 
 -- Questionnaires
 INSERT INTO questionnaires VALUES (666666, 'ExportTestStudie', 'ExportTestQuestionnaire1', 2, 1, 'day', 5, 2, 3, 'PIA Fragebogen', 'NeuNachricht', 'AltNachricht');
@@ -30,7 +30,7 @@ VALUES (666669, 666667, 'Q1Frage2Sub2', 4, 2);
 
 -- Questionnaire Instances
 INSERT INTO questionnaire_instances(id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue, date_of_release_v1, date_of_release_v2, cycle, status)
-VALUES (666671, 'ExportTestStudie', 666666, 'ExportTestQuestionnaire1', 'QExportTestProband2', '2017-08-08', '2017-08-10 04:30:00', NULL, 1, 'released_once');
+VALUES (666671, 'ExportTestStudie', 666666, 'ExportTestQuestionnaire1', 'qtest-exportproband2', '2017-08-08', '2017-08-10 04:30:00', NULL, 1, 'released_once');
 
 -- Answers
 INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value)

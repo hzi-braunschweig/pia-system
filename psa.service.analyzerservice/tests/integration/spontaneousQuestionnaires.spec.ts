@@ -87,7 +87,7 @@ describe('Spontaneous questionnaire instance creation', function () {
 
       // Act
       await dbWait(
-        "UPDATE questionnaire_instances SET status='released_once', date_of_release_v1=NOW() WHERE questionnaire_id=99999 AND user_id='QTestProband1'"
+        "UPDATE questionnaire_instances SET status='released_once', date_of_release_v1=NOW() WHERE questionnaire_id=99999 AND user_id='qtest-proband1'"
       );
 
       // Assert
@@ -123,7 +123,7 @@ describe('Spontaneous questionnaire instance creation', function () {
 
       // Act
       await dbWait(
-        "UPDATE questionnaire_instances SET status='released_once', date_of_release_v1=NOW() WHERE questionnaire_id=99999 AND user_id='QTestProband1'"
+        "UPDATE questionnaire_instances SET status='released_once', date_of_release_v1=NOW() WHERE questionnaire_id=99999 AND user_id='qtest-proband1'"
       );
 
       // Assert
@@ -135,20 +135,20 @@ describe('Spontaneous questionnaire instance creation', function () {
       );
       const q1_1 = withNewQI.find(
         (qi) =>
-          qi.user_id === 'QTestProband1' &&
+          qi.user_id === 'qtest-proband1' &&
           qi.questionnaire_version === QUESTIONNAIRE_VERSION_2 &&
           qi.cycle === 1
       );
       const q1_2 = withNewQI.find(
         (qi) =>
-          qi.user_id === 'QTestProband1' &&
+          qi.user_id === 'qtest-proband1' &&
           qi.questionnaire_version === QUESTIONNAIRE_VERSION_2 &&
           // eslint-disable-next-line @typescript-eslint/no-magic-numbers
           qi.cycle === 2
       );
       const q2_1 = withNewQI.find(
         (qi) =>
-          qi.user_id === 'QTestProband2' &&
+          qi.user_id === 'qtest-proband2' &&
           qi.questionnaire_version === QUESTIONNAIRE_VERSION_2 &&
           qi.cycle === 1
       );
@@ -172,7 +172,7 @@ describe('Spontaneous questionnaire instance creation', function () {
       );
 
       await dbWait(
-        "UPDATE questionnaire_instances SET status='released_once', date_of_release_v1=NOW() WHERE questionnaire_id=99999 AND user_id='QTestProband1'"
+        "UPDATE questionnaire_instances SET status='released_once', date_of_release_v1=NOW() WHERE questionnaire_id=99999 AND user_id='qtest-proband1'"
       );
       const withNewQI = await db.many(
         'SELECT * FROM questionnaire_instances WHERE questionnaire_id = 99999'
@@ -191,17 +191,17 @@ describe('Spontaneous questionnaire instance creation', function () {
       );
       const q1_1 = replacedQIs.find(
         (qi) =>
-          qi.user_id === 'QTestProband1' &&
+          qi.user_id === 'qtest-proband1' &&
           qi.questionnaire_version === QUESTIONNAIRE_VERSION_1
       );
       const q1_2 = replacedQIs.find(
         (qi) =>
-          qi.user_id === 'QTestProband1' &&
+          qi.user_id === 'qtest-proband1' &&
           qi.questionnaire_version === QUESTIONNAIRE_VERSION_2
       );
       const q2_1 = replacedQIs.find(
         (qi) =>
-          qi.user_id === 'QTestProband2' &&
+          qi.user_id === 'qtest-proband2' &&
           qi.questionnaire_version === QUESTIONNAIRE_VERSION_2
       );
       expect(q1_1?.status).to.equal('released_once');

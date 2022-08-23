@@ -30,10 +30,10 @@
       <mat-card class="questionnaire-card">
         <div class="grid-container">
           <mat-form-field>
+            <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
             <mat-select
               disableOptionCentering
               id="selectstudy"
-              placeholder="{{ 'QUESTIONNAIRE_FORSCHER.STUDY' | translate }}"
               formControlName="study_id"
               (selectionChange)="selectStudy($event.value)"
               data-e2e="e2e-select-study-dropdown"

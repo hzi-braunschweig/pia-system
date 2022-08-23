@@ -5,14 +5,14 @@
  */
 
 import { db } from '../db';
-import { DbStudy, Study } from '../models/study';
+import { DbStudy } from '../models/study';
 import { EntityNotFoundError } from '../errors';
 import pgPromise from 'pg-promise';
 import QueryResultError = pgPromise.errors.QueryResultError;
 import queryResultErrorCode = pgPromise.errors.queryResultErrorCode;
 
 export class StudyRepository {
-  public static async getStudy(studyName: string): Promise<Study> {
+  public static async getStudy(studyName: string): Promise<DbStudy> {
     try {
       return await db.one<DbStudy>(
         'SELECT * FROM studies WHERE name = $(name)',

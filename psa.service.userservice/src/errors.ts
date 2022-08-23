@@ -9,12 +9,6 @@ import { StatusCodes } from 'http-status-codes';
 
 export class EntityNotFoundError extends Error {}
 
-export class WrongRoleError extends SpecificError {
-  public readonly statusCode = StatusCodes.FORBIDDEN;
-  public readonly errorCode = 'WRONG_ROLE';
-}
-export class NoAccessToStudyError extends ErrorWithCausedBy {}
-
 export class PlannedProbandNotFoundError extends ErrorWithCausedBy {}
 export class StudyNotFoundError extends ErrorWithCausedBy {}
 export class AccountCreateError extends ErrorWithCausedBy {}
@@ -22,18 +16,15 @@ export class ProbandSaveError extends ErrorWithCausedBy {}
 export class PseudonymAlreadyExistsError extends ErrorWithCausedBy {}
 export class IdsAlreadyExistsError extends ErrorWithCausedBy {}
 export class ProbandNotFoundError extends ErrorWithCausedBy {}
+export class UnknownRole extends ErrorWithCausedBy {}
 
-export class RequesterNotFound extends SpecificError {
-  public readonly statusCode = StatusCodes.NOT_FOUND;
-  public readonly errorCode = 'REQUESTER_NOT_FOUND';
-}
 export class MissingPermissionError extends SpecificError {
   public readonly statusCode = StatusCodes.FORBIDDEN;
   public readonly errorCode = 'MISSING_PERMISSION';
 }
 
 export class FourEyeOppositionPartnerNotFoundError extends SpecificError {
-  public readonly statusCode = StatusCodes.NOT_FOUND;
+  public readonly statusCode = StatusCodes.UNPROCESSABLE_ENTITY;
   public readonly errorCode = '4_EYE_OPPOSITION.REQUESTED_FOR_NOT_FOUND';
 }
 export class FourEyeOppositionSelfNotAllowedAsPartnerError extends SpecificError {
@@ -48,12 +39,17 @@ export class FourEyeOppositionPendingChangeAlreadyExistsError extends SpecificEr
   public readonly statusCode = StatusCodes.CONFLICT;
   public readonly errorCode = '4_EYE_OPPOSITION.PENDING_CHANGE_ALREADY_EXISTS';
 }
-export class FourEyeOppositionPartnerNotReachableError extends SpecificError {
-  public readonly statusCode = StatusCodes.CONFLICT;
-  public readonly errorCode = '4_EYE_OPPOSITION.REQUESTED_FOR_NOT_REACHED';
-}
 
 export class StudyInvalidPsyeudonymPrefixError extends SpecificError {
   public readonly statusCode = StatusCodes.UNPROCESSABLE_ENTITY;
   public readonly errorCode = 'STUDY.INVALID_PSEUDONYM_PREFIX';
+}
+
+export class AccountNotFound extends SpecificError {
+  public readonly statusCode = StatusCodes.NOT_FOUND;
+  public readonly errorCode = 'ACCOUNT.NOT_FOUND';
+}
+export class AccountAlreadyExistsError extends SpecificError {
+  public readonly statusCode = StatusCodes.CONFLICT;
+  public readonly errorCode = 'ACCOUNT.ALREADY_EXISTS';
 }

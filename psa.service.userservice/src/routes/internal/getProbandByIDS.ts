@@ -14,7 +14,7 @@ const route: ServerRoute = {
   method: 'GET',
   handler: InternalUsersHandler.getProbandByIDS,
   options: {
-    description: 'get a user by ids',
+    description: 'get a proband by ids',
     tags: ['api'],
     validate: {
       params: Joi.object({

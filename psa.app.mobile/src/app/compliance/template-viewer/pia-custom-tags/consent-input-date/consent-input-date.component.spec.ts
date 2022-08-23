@@ -11,11 +11,11 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { MockModule } from 'ng-mocks';
 import { By } from '@angular/platform-browser';
-import { IonicModule } from '@ionic/angular';
+import { IonInput } from '@ionic/angular';
 
 import { ConsentInputDateComponent } from './consent-input-date.component';
 import { Component, ViewChild } from '@angular/core';
@@ -30,8 +30,9 @@ describe('ConsentInputDateComponent', () => {
         ConsentInputDateComponent,
         HostComponent,
         HostWithInitialDateValueComponent,
+        IonInput,
       ],
-      imports: [IonicModule.forRoot(), MockModule(TranslateModule)],
+      imports: [MockModule(TranslateModule), MockModule(ReactiveFormsModule)],
     }).compileComponents();
   });
 

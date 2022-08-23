@@ -23,6 +23,7 @@ export interface CreateProbandRequest {
   complianceBloodsamples: boolean;
   studyCenter?: string;
   examinationWave?: number;
+  temporaryPassword?: boolean;
 }
 
 export interface CreateProbandResponse {
@@ -30,49 +31,24 @@ export interface CreateProbandResponse {
   password: string;
 }
 
-export interface CreateProbandExternalResponse {
+export interface ProbandDto extends ExternalCompliance {
   pseudonym: string;
-  resultURL: URL;
-}
-
-export enum CreateProbandError {
-  USER_NOT_FOUND = 'USER_NOT_FOUND',
-  NO_ACCESS_TO_STUDY = 'NO_ACCESS_TO_STUDY',
-  NO_PLANNED_PROBAND_FOUND = 'NO_PLANNED_PROBAND_FOUND',
-  PROBAND_ALREADY_EXISTS = 'PROBAND_ALREADY_EXISTS',
-  CREATING_ACCOUNG_FAILED = 'CREATING_ACCOUNG_FAILED',
-  SAVING_PROBAND_FAILED = 'SAVING_PROBAND_FAILED',
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
-}
-
-// Get Proband
-
-export interface ProbandResponse extends ExternalCompliance {
-  pseudonym: string;
-  first_logged_in_at: Date | null;
-  study: string;
-  accountStatus: AccountStatus;
-  status: ProbandStatus;
   ids: string | null;
-  needs_material: boolean;
-  study_center: string | null;
-  examination_wave: number | null;
-  is_test_proband: boolean;
-}
-
-export interface ProbandResponseNew extends ExternalCompliance {
-  pseudonym: string;
-  firstLggedInAt: Date | null;
   study: string;
-  accountStatus: AccountStatus;
   status: ProbandStatus;
-  ids: string | null;
-  needsMaterial: boolean;
+  accountStatus: AccountStatus;
+  needsMaterial: boolean | null;
   studyCenter: string | null;
   examinationWave: number | null;
+  firstLoggedInAt: Date | null;
   isTestProband: boolean;
   deactivatedAt: Date;
   deletedAt: Date;
+}
+
+export interface ProbandExternalIdResponse {
+  pseudonym: string;
+  externalId: string;
 }
 
 // Patch Proband

@@ -5,7 +5,7 @@
   -->
 
 <div class="jumbotron" data-e2e="e2e-home-content">
-  <div *ngIf="currentRole == 'Proband'" class="align-center">
+  <div *ngIf="user.isProband()" class="align-center">
     <markdown *ngIf="welcomeText">{{ welcomeText }}</markdown>
     <div class="store-link-container">
       <a

@@ -107,7 +107,8 @@ export class AnswersTransform extends CsvTransform<FullAnswer, CsvAnswerRow> {
           ? answer.answer_option_label
           : answer.aposition.toString()) +
         (answer.versioning ? '_a' + answer.versioning.toString() : ''),
-      Proband: answer.ids === answer.user_id ? '' : answer.user_id,
+      Proband:
+        answer.ids?.toLowerCase() === answer.user_id ? '' : answer.user_id,
       IDS: answer.ids ?? '',
       FB_Datum: this.formatDate(answer.date_of_issue),
       Antwort_Datum: antwort_datum,

@@ -10,7 +10,6 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { AlertService } from '../../_services/alert.service';
-import 'datejs';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
@@ -171,7 +170,7 @@ export class ProbandsToContactComponent implements OnInit {
         data.push({
           id: probandToContact.id,
           username:
-            probandToContact.user_id === probandToContact.ids
+            probandToContact.user_id === probandToContact.ids?.toLowerCase()
               ? ''
               : probandToContact.user_id,
           ids: probandToContact.ids,

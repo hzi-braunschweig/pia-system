@@ -24,6 +24,15 @@ export interface Answer {
   releasing_person?: string;
 }
 
+/**
+ * @deprecated
+ */
+export interface PostAnswersRequest {
+  answers: Pick<Answer, 'question_id' | 'answer_option_id' | 'value'>[];
+  date_of_release?: string;
+  version: number;
+}
+
 export interface AnswerDto {
   questionnaireInstance?: QuestionnaireInstanceDto;
   question?: QuestionDto;

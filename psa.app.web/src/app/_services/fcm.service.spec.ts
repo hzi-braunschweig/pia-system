@@ -5,28 +5,28 @@
  */
 
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { AngularFireMessaging } from '@angular/fire/compat/messaging';
+import { DOCUMENT } from '@angular/common';
 import { MockBuilder } from 'ng-mocks';
-import { BehaviorSubject, of, Subject } from 'rxjs';
+import { BehaviorSubject, NEVER, of, Subject, throwError } from 'rxjs';
+import firebase from 'firebase/compat';
 
 import { FCMService } from './fcm.service';
-import { User } from '../psa.app.core/models/user';
-import firebase from 'firebase/compat';
 import { AppModule } from '../app.module';
-import { AuthenticationManager } from './authentication-manager.service';
-import { AngularFireMessaging } from '@angular/fire/compat/messaging';
-import { createUser } from '../psa.app.core/models/instance.helper.spec';
-import { DOCUMENT } from '@angular/common';
 import { NotificationService } from '../psa.app.core/providers/notification-service/notification-service';
-import { Router } from '@angular/router';
+import { CurrentUser } from './current-user.service';
+import { AuthenticationManager } from './authentication-manager.service';
 import Spy = jasmine.Spy;
 import MessagePayload = firebase.messaging.MessagePayload;
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
 
 describe('FcmService', () => {
-  let currentUserObservableMock: BehaviorSubject<User>;
-  let auth: SpyObj<AuthenticationManager>;
+  let service: FCMService;
 
+  let auth: SpyObj<AuthenticationManager>;
+  let user: SpyObj<CurrentUser>;
   let messageSubject: Subject<MessagePayload>;
   let getTokenSubject: BehaviorSubject<string>;
   let afMessagingMock: SpyObj<AngularFireMessaging>;
@@ -45,19 +45,16 @@ describe('FcmService', () => {
         'AngularFireMessaging',
         ['deleteToken'],
         {
-          messages: messageSubject,
-          requestToken: new BehaviorSubject('sometoken'),
-          getToken: getTokenSubject,
+          messages: messageSubject.asObservable(),
+          requestToken: of('sometoken'),
+          getToken: getTokenSubject.asObservable(),
         }
       ));
-    currentUserObservableMock = new BehaviorSubject<User>(null);
-    auth = createSpyObj<AuthenticationManager>(
-      'AuthenticationManager',
-      ['getCurrentRole'],
-      {
-        currentUser$: currentUserObservableMock,
-      }
-    );
+    auth = createSpyObj('AuthenticationService', [], {
+      onActiveUserLogout$: NEVER,
+    });
+    user = createSpyObj<CurrentUser>('CurrentUser', ['isProband']);
+    user.isProband.and.returnValue(true);
     notificationService = createSpyObj<NotificationService>(
       'NotificationService',
       ['postFCMToken']
@@ -67,78 +64,97 @@ describe('FcmService', () => {
     // Build Base Module
     await MockBuilder(FCMService, AppModule)
       .mock(AuthenticationManager, auth)
+      .mock(CurrentUser, user)
       .mock(AngularFireMessaging, afMessagingMock)
       .mock(NotificationService, notificationService)
       .mock(Router, router);
   });
 
-  beforeEach(() => {
-    const document = TestBed.inject(DOCUMENT);
-    notificationMock = createSpyObj<Notification>('Notification', undefined, [
-      'onclick',
-    ]);
-    notificationConstructor = spyOn(
-      document.defaultView,
-      'Notification'
-    ).and.returnValue(notificationMock);
+  describe('for Probands', () => {
+    beforeEach(() => {
+      const document = TestBed.inject(DOCUMENT);
+      notificationMock = createSpyObj<Notification>('Notification', undefined, [
+        'onclick',
+      ]);
+      notificationConstructor = spyOn(
+        document.defaultView,
+        'Notification'
+      ).and.returnValue(notificationMock);
 
-    afMessagingMock.deleteToken.and.returnValue(of<boolean>(true));
+      afMessagingMock.deleteToken.and.returnValue(of<boolean>(true));
 
-    // Create component
-    return TestBed.inject(FCMService);
+      // Create component
+      service = TestBed.inject(FCMService);
+    });
+
+    it('should post the fcm token', fakeAsync(() => {
+      expect(notificationService.postFCMToken).toHaveBeenCalledOnceWith(
+        'sometoken'
+      );
+    }));
+
+    it('should create a notification', fakeAsync(() => {
+      messageSubject.next(createMessage());
+      tick();
+      expect(notificationConstructor).toHaveBeenCalled();
+    }));
+
+    it('should navigate to home on click', fakeAsync(() => {
+      const onclickSetter = Object.getOwnPropertyDescriptor(
+        notificationMock,
+        'onclick'
+      ).set as Spy;
+
+      messageSubject.next(createMessage());
+      tick();
+      expect(onclickSetter).toHaveBeenCalled();
+      const onClick = onclickSetter.calls.mostRecent().args[0];
+      onClick();
+      expect(router.navigate).toHaveBeenCalledOnceWith(['/home'], {
+        queryParams: { notification_id: '1234' },
+      });
+    }));
+
+    it('should delete the token onLogout()', async () => {
+      await service.onLogout();
+      expect(afMessagingMock.deleteToken).toHaveBeenCalledOnceWith('oldToken');
+    });
+
+    it('should handle errors onLogout()', async () => {
+      // Arrange
+      afMessagingMock.deleteToken.and.returnValue(throwError('error'));
+      const result = await service.onLogout();
+      expect(afMessagingMock.deleteToken).toHaveBeenCalled();
+    });
   });
 
-  it('should post the fcm token for probands', fakeAsync(() => {
-    currentUserObservableMock.next(createUser({ role: 'Proband' }));
-    tick();
-    expect(notificationService.postFCMToken).toHaveBeenCalledOnceWith(
-      'sometoken'
-    );
-  }));
+  describe('for Professionals', () => {
+    beforeEach(() => {
+      const document = TestBed.inject(DOCUMENT);
+      notificationMock = createSpyObj<Notification>('Notification', undefined, [
+        'onclick',
+      ]);
+      notificationConstructor = spyOn(
+        document.defaultView,
+        'Notification'
+      ).and.returnValue(notificationMock);
 
-  it('should NOT post the fcm token for forscher', fakeAsync(() => {
-    currentUserObservableMock.next(createUser({ role: 'Forscher' }));
-    tick();
-    expect(notificationService.postFCMToken).not.toHaveBeenCalled();
-  }));
+      afMessagingMock.deleteToken.and.returnValue(of<boolean>(true));
+      user.isProband.and.returnValue(false);
 
-  it('should create a notification', fakeAsync(() => {
-    currentUserObservableMock.next(createUser({ role: 'Proband' }));
-    tick();
-    messageSubject.next(createMessage());
-    tick();
-    expect(notificationConstructor).toHaveBeenCalled();
-  }));
-
-  it('should navigate to home on click', fakeAsync(() => {
-    const onclickSetter = Object.getOwnPropertyDescriptor(
-      notificationMock,
-      'onclick'
-    ).set as Spy;
-
-    currentUserObservableMock.next(createUser());
-    tick();
-    messageSubject.next(createMessage());
-    tick();
-    expect(onclickSetter).toHaveBeenCalled();
-    const onClick = onclickSetter.calls.mostRecent().args[0];
-    onClick();
-    expect(router.navigate).toHaveBeenCalledOnceWith(['/home'], {
-      queryParams: { notification_id: '1234' },
+      // Create component
+      service = TestBed.inject(FCMService);
     });
-  }));
 
-  it('should invalidate the fcm token if no user is logged in', fakeAsync(() => {
-    afMessagingMock.deleteToken.calls.reset();
-    getTokenSubject.next('currentToken');
-    currentUserObservableMock.next(createUser());
-    tick();
-    currentUserObservableMock.next(null);
-    tick();
-    expect(afMessagingMock.deleteToken).toHaveBeenCalledOnceWith(
-      'currentToken'
-    );
-  }));
+    it('should NOT post the fcm token for professionals', fakeAsync(() => {
+      expect(notificationService.postFCMToken).not.toHaveBeenCalled();
+    }));
+
+    it('should do nothing onLogout()', async () => {
+      await service.onLogout();
+      expect(afMessagingMock.deleteToken).not.toHaveBeenCalled();
+    });
+  });
 
   function createMessage(): MessagePayload {
     return {

@@ -17,10 +17,10 @@ import {
   Questionnaire,
   QuestionnaireListResponse,
 } from '../../../psa.app.core/models/questionnaire';
-import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
 import { LabResult } from '../../../psa.app.core/models/labresult';
 import { SampleTrackingService } from '../../../psa.app.core/providers/sample-tracking-service/sample-tracking.service';
-import { ProfessionalUser } from '../../../psa.app.core/models/user';
+import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
+import { ProfessionalAccount } from '../../../psa.app.core/models/professionalAccount';
 import createSpyObj = jasmine.createSpyObj;
 import SpyObj = jasmine.SpyObj;
 import Spy = jasmine.Spy;
@@ -29,7 +29,7 @@ describe('DialogSelectForPartialDeletionComponent', () => {
   let fixture: MockedComponentFixture;
   let component: DialogSelectForPartialDeletionComponent;
   let dialogRef: SpyObj<MatDialogRef<DialogSelectForPartialDeletionComponent>>;
-  let authService: SpyObj<AuthService>;
+  let userService: SpyObj<UserService>;
   let questionnaireService: SpyObj<QuestionnaireService>;
   let sampleTrackingService: SpyObj<SampleTrackingService>;
   let data: DialogSelectForPartialDeletionData;
@@ -49,7 +49,7 @@ describe('DialogSelectForPartialDeletionComponent', () => {
     sampleTrackingService = createSpyObj<SampleTrackingService>([
       'getAllLabResultsForUser',
     ]);
-    authService = createSpyObj<AuthService>(['getUsersWithSameRole']);
+    userService = createSpyObj<UserService>(['getProfessionalAccounts']);
 
     // Build Module
     await MockBuilder(DialogSelectForPartialDeletionComponent, AppModule)
@@ -60,7 +60,7 @@ describe('DialogSelectForPartialDeletionComponent', () => {
       })
       .mock(SampleTrackingService, sampleTrackingService)
       .mock(QuestionnaireService, questionnaireService)
-      .mock(AuthService, authService);
+      .mock(UserService, userService);
 
     // Setup mocks before creating component
     const q1 = mock<Questionnaire>();
@@ -77,12 +77,12 @@ describe('DialogSelectForPartialDeletionComponent', () => {
     labResult.status = 'analyzed';
     sampleTrackingService.getAllLabResultsForUser.and.resolveTo([labResult]);
 
-    const u1 = mock<ProfessionalUser>();
-    const u2 = mock<ProfessionalUser>();
+    const u1 = mock<ProfessionalAccount>();
+    const u2 = mock<ProfessionalAccount>();
     u1.username = 'researcher@example.com';
     u2.username = 'researcherWithoutMail';
     const resU = [u1, u2];
-    authService.getUsersWithSameRole.and.resolveTo(resU);
+    userService.getProfessionalAccounts.and.resolveTo(resU);
 
     // Create component
     onInitSpy = spyOn(
@@ -99,7 +99,7 @@ describe('DialogSelectForPartialDeletionComponent', () => {
     expect(sampleTrackingService.getAllLabResultsForUser).toHaveBeenCalledTimes(
       1
     );
-    expect(authService.getUsersWithSameRole).toHaveBeenCalledTimes(1);
+    expect(userService.getProfessionalAccounts).toHaveBeenCalledTimes(1);
     expect(questionnaireService.getQuestionnaires).toHaveBeenCalledTimes(1);
     expect(component.isLoading).toBeFalse();
   });

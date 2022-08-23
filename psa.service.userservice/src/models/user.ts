@@ -27,10 +27,5 @@ export interface CreateProfessionalUser {
   username: string; // email
   role: ProfessionalRole;
   study_accesses: StudyAccessOfUser[];
-}
-
-export interface ProfessionalUser {
-  username: string;
-  role: ProfessionalRole;
-  study_accesses: StudyAccessOfUser[];
+  temporaryPassword?: boolean;
 }

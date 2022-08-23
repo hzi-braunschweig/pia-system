@@ -15,7 +15,7 @@ const route: ServerRoute = {
   method: 'GET',
   handler: InternalUsersHandler.getPseudonyms,
   options: {
-    description: 'looks up mappingId of user',
+    description: 'looks up pseudonyms based on filters',
     tags: ['api'],
     validate: {
       query: Joi.object({

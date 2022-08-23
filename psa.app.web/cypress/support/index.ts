@@ -37,6 +37,9 @@
 
 import {
   login,
+  loginProband,
+  loginProfessional,
+  loginSysAdmin,
   createProfessionalUser,
   createProband,
   createRandomProband,
@@ -55,6 +58,9 @@ declare global {
     interface Chainable {
       // user commands
       login: typeof login;
+      loginProband: typeof loginProband;
+      loginProfessional: typeof loginProfessional;
+      loginSysAdmin: typeof loginSysAdmin;
       createProfessionalUser: typeof createProfessionalUser;
       createProband: typeof createProband;
       createRandomProband: typeof createRandomProband;
@@ -73,6 +79,9 @@ declare global {
 // user commands
 Cypress.Commands.add('createProfessionalUser', createProfessionalUser);
 Cypress.Commands.add('login', login);
+Cypress.Commands.add('loginProband', loginProband);
+Cypress.Commands.add('loginProfessional', loginProfessional);
+Cypress.Commands.add('loginSysAdmin', loginSysAdmin);
 Cypress.Commands.add('createProband', createProband);
 Cypress.Commands.add('createRandomProband', createRandomProband);
 Cypress.Commands.add('deleteProfessionalUser', deleteProfessionalUser);

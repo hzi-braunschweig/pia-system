@@ -15,7 +15,7 @@ import { StudyWelcomeTextComponent } from './study-welcome-text.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MarkdownModule } from 'ngx-markdown';
 import { TranslateModule } from '@ngx-translate/core';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { UserService } from 'src/app/psa.app.core/providers/user-service/user.service';
 import { AlertService } from '../../_services/alert.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Study } from '../../psa.app.core/models/study';
@@ -33,7 +33,7 @@ describe('StudyWelcomeTextComponent', () => {
   let component: StudyWelcomeTextComponent;
   let fixture: ComponentFixture<StudyWelcomeTextComponent>;
   let alertService: jasmine.SpyObj<AlertService>;
-  let questionnaireService: jasmine.SpyObj<QuestionnaireService>;
+  let userService: jasmine.SpyObj<UserService>;
 
   const studyWelcomeTextObj = {
     study_id: 'Teststudie1',
@@ -44,21 +44,19 @@ describe('StudyWelcomeTextComponent', () => {
   beforeEach(
     waitForAsync(() => {
       alertService = jasmine.createSpyObj('AlertService', ['errorObject']);
-      questionnaireService = jasmine.createSpyObj('QuestionnaireService', [
+      userService = jasmine.createSpyObj('UserService', [
         'getStudies',
         'getStudyWelcomeText',
       ]);
 
-      questionnaireService.getStudies.and.returnValue(
-        Promise.resolve({ studies: getStudies() })
-      );
-      questionnaireService.getStudyWelcomeText.and.returnValue(
+      userService.getStudies.and.returnValue(Promise.resolve(getStudies()));
+      userService.getStudyWelcomeText.and.returnValue(
         Promise.resolve(studyWelcomeTextObj)
       );
 
       TestBed.configureTestingModule({
         providers: [
-          { provide: QuestionnaireService, useValue: questionnaireService },
+          { provide: UserService, useValue: userService },
           { provide: AlertService, useValue: alertService },
         ],
         declarations: [StudyWelcomeTextComponent],

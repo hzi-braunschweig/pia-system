@@ -5,15 +5,17 @@
  */
 
 import { Study } from './study';
-import { Proband, ProbandNew } from './proband';
-import { AccessToken, LoginResponse, ProfessionalUser, User } from './user';
+import { Proband } from './proband';
+import { User } from './user';
 import { ProbandToContact } from './probandToContact';
 import { PersonalData } from './personalData';
 import { PendingPersonalDataDeletion } from './pendingPersonalDataDeletion';
 import { PendingComplianceChange } from './pendingComplianceChange';
-import { PendingProbandDeletion } from './pendingDeletion';
+import { PendingDeletion, PendingProbandDeletion } from './pendingDeletion';
 import { ComplianceDataResponse, ComplianceText } from './compliance';
 import { SegmentType } from './Segments';
+import { BloodSample, LabResult } from './labresult';
+import { ProfessionalAccount } from './professionalAccount';
 
 export function createStudy(overwrite: Partial<Study> = {}): Study {
   return {
@@ -24,6 +26,8 @@ export function createStudy(overwrite: Partial<Study> = {}): Study {
     has_four_eyes_opposition: false,
     has_partial_opposition: false,
     has_total_opposition: false,
+    has_logging_opt_in: false,
+    has_required_totp: false,
     hub_email: '',
     name: '',
     pendingStudyChange: undefined,
@@ -38,29 +42,7 @@ export function createProband(overwrite: Partial<Proband> = {}): Proband {
     pseudonym: 'Testproband',
     ids: undefined,
     study: 'NAKO Test',
-    first_logged_in_at: new Date('2020-04-20T00:00:00.000Z'),
-    is_test_proband: false,
-    accountStatus: 'account',
-    status: 'active',
-    needs_material: false,
-    complianceBloodsamples: false,
-    complianceLabresults: false,
-    complianceSamples: false,
-    complianceContact: false,
-    examination_wave: 0,
-    study_center: '',
-    ...overwrite,
-  };
-}
-
-export function createProbandNew(
-  overwrite: Partial<ProbandNew> = {}
-): ProbandNew {
-  return {
-    pseudonym: 'Testproband',
-    ids: undefined,
-    study: 'Test study',
-    firstLggedInAt: new Date('2020-04-20T00:00:00.000Z'),
+    firstLoggedInAt: new Date('2020-04-20T00:00:00.000Z'),
     isTestProband: false,
     accountStatus: 'account',
     status: 'active',
@@ -90,13 +72,39 @@ export function createPendingProbandDeletion(
   };
 }
 
-export function createProfessionalUser(
-  overwrite: Partial<ProfessionalUser> = {}
-): ProfessionalUser {
+export function createPendingPersonalDataDeletion(
+  overwrite: Partial<PendingPersonalDataDeletion> = {}
+): PendingPersonalDataDeletion {
+  return {
+    id: 1,
+    requested_by: '',
+    requested_for: '',
+    study: '',
+    proband_id: 'TEST-0000000000',
+    ...overwrite,
+  };
+}
+
+export function createPendingDeletion(
+  overwrite: Partial<PendingDeletion> = {}
+): PendingDeletion {
+  return {
+    id: 1,
+    requested_by: '',
+    requested_for: '',
+    type: 'proband',
+    for_id: 'TEST-0000000000',
+    ...overwrite,
+  };
+}
+
+export function createProfessionalAccount(
+  overwrite: Partial<ProfessionalAccount> = {}
+): ProfessionalAccount {
   return {
     username: 'Prof',
     role: 'Forscher',
-    study_accesses: [],
+    studies: [],
     ...overwrite,
   };
 }
@@ -129,19 +137,6 @@ export function createPersonalData(
     telefon_privat: '',
     titel: '',
     vorname: '',
-    ...overwrite,
-  };
-}
-
-export function createPendingPersonalDataDeletion(
-  overwrite: Partial<PendingPersonalDataDeletion> = {}
-): PendingPersonalDataDeletion {
-  return {
-    id: 1,
-    requested_by: '',
-    requested_for: '',
-    study: '',
-    proband_id: 'TEST-0000000000',
     ...overwrite,
   };
 }
@@ -182,46 +177,6 @@ export function createProbandToContact(
     notable_answer_questionnaire_instances: [],
     processed: undefined,
     processed_at: undefined,
-    ...overwrite,
-  };
-}
-
-export function createLoginResponse(
-  tokenPayload: Partial<AccessToken> = {},
-  overwrite: Partial<LoginResponse> = {}
-): LoginResponse {
-  return {
-    pw_change_needed: false,
-    token_login:
-      btoa(JSON.stringify({ alg: 'RS512', typ: 'JWT' })) +
-      '.' +
-      btoa(
-        JSON.stringify({
-          id: 2,
-          username: tokenPayload.username ?? '',
-          iat: Date.now(),
-          exp: Date.now() + 60000,
-        })
-      ) +
-      '.' +
-      btoa('signature'),
-    token:
-      btoa(JSON.stringify({ alg: 'RS512', typ: 'JWT' })) +
-      '.' +
-      btoa(
-        JSON.stringify({
-          id: 1,
-          role: tokenPayload.role ?? 'Proband',
-          username: tokenPayload.username ?? '',
-          groups: tokenPayload.groups ?? ['test study'],
-          locale: 'de-DE',
-          app: 'web',
-          iat: Date.now(),
-          exp: Date.now() + 60000,
-        })
-      ) +
-      '.' +
-      btoa('signature'),
     ...overwrite,
   };
 }
@@ -269,5 +224,34 @@ export function createComplianceText(): ComplianceText {
     ],
     compliance_text:
       'Lorem ipsum ... \n <pia-consent-input-app></pia-consent-input-app>',
+  };
+}
+
+export function createBloodSample(
+  overwrite: Partial<BloodSample> = {}
+): BloodSample {
+  return {
+    id: 1,
+    user_id: 'Testproband',
+    sample_id: 'TEST-111111',
+    blood_sample_carried_out: true,
+    remark: 'no remark',
+    ...overwrite,
+  };
+}
+
+export function createLabResult(overwrite: Partial<LabResult> = {}): LabResult {
+  return {
+    id: '1',
+    user_id: 'Testproband',
+    order_id: 2,
+    dummy_sample_id: 'TEST-111111',
+    performing_doctor: '',
+    date_of_sampling: '2018-02-06',
+    status: '',
+    study_status: 'active',
+    new_samples_sent: true,
+    remark: 'no remark',
+    ...overwrite,
   };
 }

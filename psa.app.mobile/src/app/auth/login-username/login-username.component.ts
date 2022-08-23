@@ -9,12 +9,19 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../auth.service';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
-import { AlertController, LoadingController, Platform } from '@ionic/angular';
+import {
+  AlertController,
+  LoadingController,
+  MenuController,
+  Platform,
+} from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { Market } from '@awesome-cordova-plugins/market/ngx';
 import { environment } from '../../../environments/environment';
 import { LocaleService } from '../../shared/services/locale/locale.service';
 import { ToastPresenterService } from '../../shared/services/toast-presenter/toast-presenter.service';
+import { KeycloakClientService } from '../keycloak-client.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login-username',
@@ -46,7 +53,10 @@ export class LoginUsernameComponent implements OnInit {
     private auth: AuthService,
     private toastPresenter: ToastPresenterService,
     private alertCtrl: AlertController,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private keycloakClient: KeycloakClientService,
+    private router: Router,
+    private menuCtrl: MenuController
   ) {
     if (!this.endpoint.isCustomEndpoint()) {
       this.form.get('customEndpointUrl').disable();
@@ -94,8 +104,41 @@ export class LoginUsernameComponent implements OnInit {
         return;
       }
     }
+
+    if (await this.keycloakClient.isCompatible()) {
+      await this.authenticateWithKeycloak(username);
+    } else {
+      this.usernameChange.next(username);
+    }
+
     await this.dismissLoader();
-    this.usernameChange.next(username);
+  }
+
+  private async authenticateWithKeycloak(username: string): Promise<void> {
+    try {
+      await this.keycloakClient.login(
+        username,
+        this.localeService.currentLocale
+      );
+
+      await this.router.navigate(['home']);
+      await this.menuCtrl.enable(true);
+    } catch (e) {
+      if (e.reason !== 'closed_by_user') {
+        console.error('Authentication failed with: ', e);
+
+        const alert = await this.alertCtrl.create({
+          header: this.translate.instant('LOGIN.ALERT_TRY_AGAIN_LATER'),
+          buttons: [
+            {
+              text: this.translate.instant('GENERAL.OK'),
+            },
+          ],
+        });
+
+        await alert.present();
+      }
+    }
   }
 
   private async showAppIncompatibleAlert(): Promise<void> {

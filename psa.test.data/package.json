@@ -1,0 +1,33 @@
+{
+  "name": "pia.test.data",
+  "version": "0.0.0",
+  "description": "CLI tool to generation of test data",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "ts-node ./src/index.ts",
+    "help": "npm start -- --help",
+    "lint": "eslint ./src/ --ext .ts"
+  },
+  "devDependencies": {
+    "@pia/eslint-config": "file:../psa.eslint-config",
+    "@types/node": "^14.10.1",
+    "@types/node-fetch": "^2.6.2",
+    "@typescript-eslint/eslint-plugin": "^5.24.0",
+    "@typescript-eslint/parser": "^5.24.0",
+    "@types/jsonwebtoken": "^8.5.8",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-no-only-tests": "^2.6.0",
+    "eslint-plugin-security": "^1.5.0",
+    "eslint": "^7.9.0",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.4"
+  },
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "commander": "^9.4.0",
+    "@faker-js/faker": "^7.3.0",
+    "mimelib": "^0.3.1",
+    "node-fetch": "^2.6.7",
+    "jsonwebtoken": "^8.5.1"
+  }
+}

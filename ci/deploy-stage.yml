@@ -1,4 +1,12 @@
+include: ci/rules.yml
+
+.rule-if-branch-manual: &rule-if-branch-manual
+  - if: $CI_COMMIT_REF_SLUG =~ /^(feature|renovate|bugfix|hotfix)-pia-\d+/ && $CI_MERGE_REQUEST_IID
+    when: manual
+    allow_failure: true
+
 deploy-pia-develop:
+  extends: .job-exclude-scheduled-pipelines
   image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
@@ -7,14 +15,13 @@ deploy-pia-develop:
   script:
     - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD job_templates launch --monitor --wait --inventory 33 --extra_vars "{\"pia_url\":\"pia-develop.netzlink.com\",\"pia_docker_tag\":\"$CI_COMMIT_REF_SLUG\"}" --scm_branch "$CI_COMMIT_SHA" "PIA Ansible Role@PIASystem"
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
     - if: $CI_COMMIT_BRANCH =~ /^develop/
   environment:
     name: pia-develop
     url: https://pia-develop.netzlink.com/
 
 deploy-pia-release:
+  extends: .job-exclude-scheduled-pipelines
   image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
@@ -23,15 +30,34 @@ deploy-pia-release:
   script:
     - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD job_templates launch --monitor --wait --inventory 34 --extra_vars "{\"pia_url\":\"pia-release.netzlink.com\",\"pia_docker_tag\":\"$CI_COMMIT_REF_SLUG\"}" --scm_branch "$CI_COMMIT_SHA" "PIA Ansible Role@PIASystem"
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
     - if: $CI_COMMIT_BRANCH =~ /^release/
       allow_failure: true
   environment:
     name: pia-release
     url: https://pia-release.netzlink.com/
 
+deploy-pia-load:
+  extends: .job-exclude-scheduled-pipelines
+  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
+  stage: deploy
+  variables:
+    GIT_STRATEGY: none
+  dependencies: []
+  needs:
+    - job: push-branch-images
+  script:
+    - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD job_templates launch --monitor --wait --inventory 79 --extra_vars "{\"pia_url\":\"pia-load.netzlink.com\",\"pia_docker_tag\":\"$CI_COMMIT_REF_SLUG\"}" --scm_branch "$CI_COMMIT_SHA" "PIA Ansible Role@PIASystem"
+  rules:
+    - *rule-if-branch-manual
+    - if: $CI_COMMIT_BRANCH =~ /^(develop|release)/
+      when: manual
+      allow_failure: true
+  environment:
+    name: pia-load
+    url: https://pia-load.netzlink.com/
+
 deploy-sb-pia:
+  extends: .job-exclude-scheduled-pipelines
   image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
@@ -40,32 +66,13 @@ deploy-sb-pia:
   script:
     - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD job_templates launch --monitor --wait --inventory 45 --extra_vars "{\"pia_url\":"sb-pia.sormas.netzlink.com",\"pia_docker_tag\":"$CI_COMMIT_REF_SLUG"}" --scm_branch "$CI_COMMIT_SHA" "PIA Ansible Role@PIASystem"
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
     - if: $CI_COMMIT_BRANCH =~ /^develop/
   environment:
     name: sormas-pia
     url: https://sb-pia.sormas.netzlink.com/
 
-deploy-sb-pia-de-release:
-  image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
-  stage: deploy
-  variables:
-    GIT_STRATEGY: none
-  dependencies: []
-  script:
-    - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD job_templates launch --monitor --wait --extra_vars "{\"is_development_system\":false,\"use_loki\":false}" "dev-PIA Update Sormas-PIA-DE-release"
-  rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_COMMIT_BRANCH =~ /^release/
-      allow_failure: true
-      when: manual
-  environment:
-    name: sormas-pia-de-release
-    url: https://release-pia-de.sormas.netzlink.com
-
 deploy-sb-pia-niedersachsen-release:
+  extends: .job-exclude-scheduled-pipelines
   image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
@@ -74,8 +81,6 @@ deploy-sb-pia-niedersachsen-release:
   script:
     - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD job_templates launch --monitor --wait --inventory 45 --extra_vars "{\"pia_url\":\"release-niedersachsen-sb.ovh.netzlink.com\",\"pia_docker_tag\":\"$CI_COMMIT_REF_SLUG\"}" --scm_branch "$CI_COMMIT_SHA" "PIA Ansible Role@PIASystem"
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
     - if: $CI_COMMIT_BRANCH =~ /^release/
       allow_failure: true
   environment:
@@ -83,6 +88,7 @@ deploy-sb-pia-niedersachsen-release:
     url: https://release-niedersachsen-sb.ovh.netzlink.com
 
 deploy-stable:
+  extends: .job-exclude-scheduled-pipelines
   image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
@@ -92,23 +98,19 @@ deploy-stable:
   script:
     - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD job_templates launch --monitor --wait --inventory 45 --extra_vars "{\"pia_url\":\"$TARGET_NAME\",\"pia_docker_tag\":\"$CI_COMMIT_TAG\"}" --scm_branch "$CI_COMMIT_SHA" "PIA Ansible Role@PIASystem"
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
     - if: $CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+/
       allow_failure: true
   parallel:
     matrix:
       - TARGET_NAME:
           - test-de2-sb.sormas.netzlink.com
-          - stable-release-ch-sb.sormas.netzlink.com
           - release-pia-de.sormas.netzlink.com
-          - demo-sb-pia.sormas.netzlink.com
-          - schulung-sb-de.sormas.netzlink.com
   environment:
     name: $TARGET_NAME
     url: https://$TARGET_NAME
 
 deploy-feature-stage:
+  extends: .job-exclude-scheduled-pipelines
   image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
@@ -124,18 +126,16 @@ deploy-feature-stage:
     - echo "DYNAMIC_ENVIRONMENT_HOST=$DYNAMIC_ENVIRONMENT_HOST" >> deploy.env
     - echo "DYNAMIC_ENVIRONMENT_URL=$DYNAMIC_ENVIRONMENT_URL" >> deploy.env
     - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD workflow_job_templates launch --monitor --wait --inventory 40 --extra_vars "{\"survey_host_name\":\"$DYNAMIC_ENVIRONMENT_HOST\",\"pia_url\":\"$DYNAMIC_ENVIRONMENT_HOST\",\"pia_docker_tag\":\"$CI_PIPELINE_ID\", \"pia_fluentd_feature\":\"$DYNAMIC_ENVIRONMENT_HOST\"}" --scm_branch "$CI_COMMIT_SHA" "PIA Feature Host@OVH"
-    - curl --fail -u $DEPLOYMENT_USER:$DEPLOYMENT_PASSWORD -o export.sql https://pia-develop.netzlink.com/deployment/db/qpia
-    # TODO:
-    - sed -i "s/RETURN (SELECT EXISTS(SELECT 1 FROM users WHERE UPPER(username) = UPPER(check_username)));/RETURN (SELECT EXISTS(SELECT 1 FROM public.users WHERE UPPER(username) = UPPER(check_username)));/g" export.sql
-    - sed -i "s/' LOCALE = '/' LC_COLLATE = '/g" export.sql
-    - curl --fail -u $DEPLOYMENT_USER:$DEPLOYMENT_PASSWORD -X POST --data-binary @export.sql $DYNAMIC_ENVIRONMENT_URL/deployment/db/qpia
+    - curl --fail -u $DEPLOYMENT_USER:$DEPLOYMENT_PASSWORD -o qpia_export.sql https://pia-develop.netzlink.com/deployment/db/qpia
+    - curl --fail -u $DEPLOYMENT_USER:$DEPLOYMENT_PASSWORD -o ipia_export.sql https://pia-develop.netzlink.com/deployment/db/ipia
+    # replace appearances of " LOCALE = " by " LC_COLLATE = " to fix an import issue
+    - sed -i "s/' LOCALE = '/' LC_COLLATE = '/g" qpia_export.sql
+    - sed -i "s/' LOCALE = '/' LC_COLLATE = '/g" ipia_export.sql
+    - curl --fail -u $DEPLOYMENT_USER:$DEPLOYMENT_PASSWORD -X POST --data-binary @qpia_export.sql $DYNAMIC_ENVIRONMENT_URL/deployment/db/qpia
+    - curl --fail -u $DEPLOYMENT_USER:$DEPLOYMENT_PASSWORD -X POST --data-binary @ipia_export.sql $DYNAMIC_ENVIRONMENT_URL/deployment/db/ipia
     - cat deploy.env
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_COMMIT_REF_SLUG =~ /^(feature|renovate|bugfix|hotfix)-pia-\d+/ && $CI_MERGE_REQUEST_IID
-      when: manual
-      allow_failure: true
+    - *rule-if-branch-manual
   artifacts:
     reports:
       dotenv: deploy.env
@@ -146,35 +146,32 @@ deploy-feature-stage:
     auto_stop_in: 1 week
 
 deploy-sb-feature-stage:
+  extends: .job-exclude-scheduled-pipelines
   image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: deploy
   variables:
     GIT_STRATEGY: none
-    # https://github.com/hzi-braunschweig/SORMAS-Docker/tags
-    SORMAS_DOCKER_VERSION: v2.20.0-rc2
+    # SORMAS_DOCKER_VERSION can be specified to be one of https://github.com/hzi-braunschweig/SORMAS-Docker/tags
+    # otherwise the latest version is used
   dependencies: []
   needs:
     - job: push-branch-images
   script:
+    - ( env | grep -q ^SORMAS_DOCKER_VERSION= ) || export SORMAS_DOCKER_VERSION=`curl --silent "https://api.github.com/repos/hzi-braunschweig/SORMAS-Docker/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`
     - export DYNAMIC_ENVIRONMENT_NAME=`echo $CI_COMMIT_REF_SLUG | grep -oE "^(feature|renovate|bugfix|hotfix)-pia-[0-9]*"`
     - export DYNAMIC_ENVIRONMENT_HOST=$DYNAMIC_ENVIRONMENT_NAME.ovh.netzlink.com
     - export DYNAMIC_ENVIRONMENT_URL=https://sb-$DYNAMIC_ENVIRONMENT_HOST
+    - echo "SORMAS_DOCKER_VERSION=$SORMAS_DOCKER_VERSION" >> deploy.env
     - echo "DYNAMIC_ENVIRONMENT_NAME=$DYNAMIC_ENVIRONMENT_NAME" >> deploy.env
     - echo "DYNAMIC_ENVIRONMENT_HOST=$DYNAMIC_ENVIRONMENT_HOST" >> deploy.env
     - echo "DYNAMIC_ENVIRONMENT_URL=$DYNAMIC_ENVIRONMENT_URL" >> deploy.env
+    - cat deploy.env
     - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD workflow_job_templates launch --monitor --wait --inventory 40 --extra_vars "{\"survey_host_name\":\"sormas-$DYNAMIC_ENVIRONMENT_HOST\",\"sormas_url\":\"sormas-$DYNAMIC_ENVIRONMENT_HOST\",\"create_default_entities\":true,\"pia_url\":\"sb-$DYNAMIC_ENVIRONMENT_HOST\",\"pia_certificate_master\":\"sb-$DYNAMIC_ENVIRONMENT_HOST\",\"pia_docker_tag\":\"$CI_PIPELINE_ID\",\"SORMAS_DOCKER_VERSION\":\"$SORMAS_DOCKER_VERSION\"}" --scm_branch "$CI_COMMIT_SHA" "Feature-SB@sormas.netzlink.com"
     - curl --fail -u $DEPLOYMENT_USER:$DEPLOYMENT_PASSWORD -o export.sql https://sb-pia.sormas.netzlink.com/deployment/db/qpia
-    # TODO:
-    - sed -i "s/RETURN (SELECT EXISTS(SELECT 1 FROM users WHERE UPPER(username) = UPPER(check_username)));/RETURN (SELECT EXISTS(SELECT 1 FROM public.users WHERE UPPER(username) = UPPER(check_username)));/g" export.sql
     - sed -i "s/' LOCALE = '/' LC_COLLATE = '/g" export.sql
     - curl --fail -u $DEPLOYMENT_USER:$DEPLOYMENT_PASSWORD -X POST --data-binary @export.sql $DYNAMIC_ENVIRONMENT_URL/deployment/db/qpia
-    - cat deploy.env
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_COMMIT_REF_SLUG =~ /^(feature|renovate|bugfix|hotfix)-pia-\d+/ && $CI_MERGE_REQUEST_IID
-      when: manual
-      allow_failure: true
+    - *rule-if-branch-manual
   artifacts:
     reports:
       dotenv: deploy.env
@@ -185,6 +182,7 @@ deploy-sb-feature-stage:
     auto_stop_in: 1 week
 
 stop-feature-stage:
+  extends: .job-exclude-scheduled-pipelines
   image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: undeploy
   variables:
@@ -196,16 +194,13 @@ stop-feature-stage:
     - export DYNAMIC_ENVIRONMENT_URL=https://$DYNAMIC_ENVIRONMENT_HOST
     - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD job_templates launch --monitor --wait --inventory 40 --extra_vars "{\"survey_inventory\":\"pia-feature-hosts\",\"survey_host_name\":\"$DYNAMIC_ENVIRONMENT_HOST\"}" "Delete Feature Host"
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_COMMIT_REF_SLUG =~ /^(feature|renovate|bugfix|hotfix)-pia-\d+/ && $CI_MERGE_REQUEST_IID
-      when: manual
-      allow_failure: true
+    - *rule-if-branch-manual
   environment:
     name: $CI_COMMIT_REF_SLUG
     action: stop
 
 stop-sb-feature-stage:
+  extends: .job-exclude-scheduled-pipelines
   image: $CI_REGISTRY/pia/cicd-images/awx-cli-image@sha256:fb1962d0f5c3c98120530b2318cca193605ad9fccb51e4a108b305b3ec2faeb2
   stage: undeploy
   variables:
@@ -217,11 +212,7 @@ stop-sb-feature-stage:
     - export DYNAMIC_ENVIRONMENT_URL=https://sb-$DYNAMIC_ENVIRONMENT_HOST
     - awx --conf.host $AWX_HOST --conf.username $AWX_USERNAME --conf.password $AWX_PASSWORD job_templates launch --monitor --wait --inventory 40 --extra_vars "{\"survey_inventory\":\"pia-feature-hosts\",\"pia_url\":\"sb-$DYNAMIC_ENVIRONMENT_HOST\",\"sormas_url\":\"sormas-$DYNAMIC_ENVIRONMENT_HOST\"}" "Delete SB-Feature Host"
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_COMMIT_REF_SLUG =~ /^(feature|renovate|bugfix|hotfix)-pia-\d+/ && $CI_MERGE_REQUEST_IID
-      when: manual
-      allow_failure: true
+    - *rule-if-branch-manual
   environment:
     name: sb-$CI_COMMIT_REF_SLUG
     action: stop

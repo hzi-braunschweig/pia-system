@@ -5,7 +5,7 @@
  */
 
 export interface PendingDeletionRequest {
-  requested_by: string;
+  requested_by?: string;
   requested_for: string; // email
   type: PendingDeletionType;
   for_id: string;

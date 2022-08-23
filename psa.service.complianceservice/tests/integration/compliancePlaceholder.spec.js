@@ -11,57 +11,34 @@ chai.use(chaiHttp);
 chai.use(chaiExclude);
 const expect = chai.expect;
 
-const secretOrPrivateKey = require('../secretOrPrivateKey');
-const JWT = require('jsonwebtoken');
-
+const { config } = require('../../src/config');
 const server = require('../../src/server');
-const apiAddress = 'http://localhost:' + process.env.PORT;
+const apiAddress = `http://localhost:${config.public.port}`;
 
 const {
   sequelize,
   ComplianceQuestionnairePlaceholder,
 } = require('../../src/db');
+const {
+  AuthTokenMockBuilder,
+  AuthServerMock,
+} = require('@pia/lib-service-core');
 
-const researcherSession = {
-  id: 1,
-  role: 'Forscher',
-  username: 'QTestforscher1',
-  groups: ['QTeststudy', 'QTeststudie2'],
-};
-
-const researcherSession2 = {
-  id: 1,
-  role: 'Forscher',
-  username: 'QTestforscher2',
-  groups: ['QTeststudy44', 'QTeststudie55'],
-};
-
-const researcherToken = JWT.sign(researcherSession, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const researcherHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
+  username: 'qtest-forscher1',
+  studies: ['QTeststudy', 'QTeststudie2'],
 });
-
-const researcherToken2 = JWT.sign(researcherSession2, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const researcherHeader2 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
+  username: 'qtest-forscher2',
+  studies: ['QTeststudy44', 'QTeststudie55'],
 });
-
-const researcherHeader = { authorization: researcherToken };
-const researcherHeader2 = { authorization: researcherToken2 };
-
-const probandSession = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestProband1',
-  groups: ['QTeststudy', 'QTeststudie2'],
-};
-
-const probandToken = JWT.sign(probandSession, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const probandHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband1',
+  groups: ['QTeststudy'],
 });
-
-const probandHeader = { authorization: probandToken };
 
 describe('Compliance Placeholder API', () => {
   const studyName = 'QTeststudy';
@@ -103,13 +80,16 @@ describe('Compliance Placeholder API', () => {
       cascade: true,
     });
     await ComplianceQuestionnairePlaceholder.bulkCreate(placeholder);
+    AuthServerMock.adminRealm().returnValid();
   });
 
-  describe('GET /compliance/{study}/questionnaire-placeholder', () => {
+  afterEach(AuthServerMock.cleanAll);
+
+  describe('GET /admin/{studyName}/questionnaire-placeholder', () => {
     it('should return 200 and all questionnaire-placeholder of the given study', async () => {
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/questionnaire-placeholder`)
+        .get(`/admin/${studyName}/questionnaire-placeholder`)
         .set(researcherHeader);
 
       // Assert
@@ -125,18 +105,18 @@ describe('Compliance Placeholder API', () => {
       });
     });
 
-    it('should return 401 if an unauthorized researcher tires', async () => {
+    it('should return 403 if an unauthorized researcher tires', async () => {
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/questionnaire-placeholder`)
+        .get(`/admin/${studyName}/questionnaire-placeholder`)
         .set(researcherHeader2);
-      expect(res).to.have.status(401);
+      expect(res).to.have.status(403);
     });
 
-    it('should return 403 if proband tires', async () => {
+    it('should return 403 if proband tries', async () => {
       const res = await chai
         .request(apiAddress)
-        .get(`/compliance/${studyName}/questionnaire-placeholder`)
+        .get(`/admin/${studyName}/questionnaire-placeholder`)
         .set(probandHeader);
 
       // Assert
@@ -144,11 +124,11 @@ describe('Compliance Placeholder API', () => {
     });
   });
 
-  describe('POST /compliance/{study}/questionnaire-placeholder', () => {
+  describe('POST /admin/{studyName}/questionnaire-placeholder', () => {
     it('should return 200 with all questionnaire-placeholder of the given study and create a new RADIO', async () => {
       const res = await chai
         .request(apiAddress)
-        .post(`/compliance/${studyName}/questionnaire-placeholder`)
+        .post(`/admin/${studyName}/questionnaire-placeholder`)
         .set(researcherHeader)
         .send({ type: 'RADIO', placeholder: 'placeholder100' });
       // Assert
@@ -167,7 +147,7 @@ describe('Compliance Placeholder API', () => {
     it('should return 200 with all questionnaire-placeholder of the given study and create a new TEXT', async () => {
       const res = await chai
         .request(apiAddress)
-        .post(`/compliance/${studyName}/questionnaire-placeholder`)
+        .post(`/admin/${studyName}/questionnaire-placeholder`)
         .set(researcherHeader)
         .send({
           type: 'TEXT',
@@ -188,19 +168,19 @@ describe('Compliance Placeholder API', () => {
       expect(dbPlaceholder).to.not.be.null;
     });
 
-    it('should return 401 if an unauthorized researcher tires', async () => {
+    it('should return 403 if an unauthorized researcher tires', async () => {
       const res = await chai
         .request(apiAddress)
-        .post(`/compliance/${studyName}/questionnaire-placeholder`)
+        .post(`/admin/${studyName}/questionnaire-placeholder`)
         .set(researcherHeader2)
         .send({ type: 'RADIO', placeholder: 'placeholder100' });
-      expect(res).to.have.status(401);
+      expect(res).to.have.status(403);
     });
 
-    it('should return 403 if proband tires', async () => {
+    it('should return 403 if proband tries', async () => {
       const res = await chai
         .request(apiAddress)
-        .post(`/compliance/${studyName}/questionnaire-placeholder`)
+        .post(`/admin/${studyName}/questionnaire-placeholder`)
         .set(probandHeader)
         .send({
           type: 'TEXT',

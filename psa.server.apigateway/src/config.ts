@@ -4,257 +4,259 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { ConfigRoute } from './configRoute';
+import { ProxyRoute, ResponseRoute } from './proxyRoute';
+import { ConfigUtils } from '@pia/lib-service-core';
+import { nonExposedKeycloakPaths } from './nonExposedKeycloakPaths';
 
-const adminPath = '/admin';
-const apiPath = '/api/v1';
-const adminApiPath = '/admin/api/v1';
+const publicApiPath = '/api/v1/';
+const adminApiPath = '/admin/api/v1/';
 
-function getNumberIfDefined(value: string | undefined): number | undefined {
-  if (typeof value === 'undefined') {
-    return undefined;
-  }
-  const result = Number.parseInt(value);
-  if (Number.isNaN(result)) {
-    return undefined;
-  }
-  return result;
+const publicUpstreamPath = '/';
+const adminUpstreamPath = '/admin/';
+
+const isDevelopment =
+  ConfigUtils.getEnvVariable('IS_DEVELOPMENT_SYSTEM', 'false').toLowerCase() ===
+  'true';
+const isInternalSslEnabled =
+  ConfigUtils.getEnvVariable('PROTOCOL', 'https') !== 'http';
+
+function getProtocol(): 'https' | 'http' {
+  return isInternalSslEnabled ? 'https' : 'http';
 }
 
-function getEnvVariable(key: string, fallback?: string): string {
-  const result = process.env[key];
-  if (result === undefined) {
-    if (fallback || fallback === '') {
-      return fallback;
-    }
-    throw new Error(`missing config variable '${key}'`);
-  }
-  return result;
-}
+const publicMetaData = {
+  minimalAppVersion: '1.29.19',
+};
 
-const routes: ConfigRoute[] = [
-  // temporary redirects for backward compatibility
+const responseRoutes: ResponseRoute[] = [
+  ...(isDevelopment ? [] : nonExposedKeycloakPaths),
   {
-    serviceName: 'userservice',
-    path: '/user/probands',
-    additionalPaths: [],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['USERSERVICE_PORT']),
-    // we need to keep that until NatCoEdc has changed it
-    skipBasePath: false,
+    path: '/api/v1/',
+    response: {
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify(publicMetaData),
+    },
+  },
+];
+
+const routes: ProxyRoute[] = [
+  {
+    path: publicApiPath + 'questionnaire/',
+    upstream: {
+      host: 'questionnaireservice',
+      path: publicUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('QUESTIONNAIRESERVICE_PORT'),
+    },
   },
   {
-    serviceName: 'authservice',
-    path: '/user/connectSormas',
-    additionalPaths: [],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['AUTHSERVICE_PORT']),
-    // we need to keep that until SORMAS has changed it
-    skipBasePath: false,
-  },
-  {
-    serviceName: 'authservice',
-    path: '/user/requestToken',
-    additionalPaths: [],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['AUTHSERVICE_PORT']),
-    // we need to keep that until SORMAS has changed it
-    skipBasePath: false,
+    path: adminApiPath + 'questionnaire/',
+    upstream: {
+      host: 'questionnaireservice',
+      path: adminUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('QUESTIONNAIRESERVICE_PORT'),
+    },
   },
 
   {
-    serviceName: 'authservice',
-    path: '/user/changePassword',
-    additionalPaths: [apiPath, adminApiPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['AUTHSERVICE_PORT']),
-    skipBasePath: true,
+    path: publicApiPath + 'user/',
+    upstream: {
+      host: 'userservice',
+      path: publicUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('USERSERVICE_PORT'),
+    },
   },
   {
-    serviceName: 'authservice',
-    path: '/user/login',
-    additionalPaths: [apiPath, adminApiPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['AUTHSERVICE_PORT']),
-    skipBasePath: true,
-  },
-  {
-    serviceName: 'authservice',
-    path: '/user/loginWithKey',
-    additionalPaths: [apiPath, adminApiPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['AUTHSERVICE_PORT']),
-    skipBasePath: true,
-  },
-  {
-    serviceName: 'authservice',
-    path: '/user/logout',
-    additionalPaths: [apiPath, adminApiPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['AUTHSERVICE_PORT']),
-    skipBasePath: true,
-  },
-  {
-    serviceName: 'authservice',
-    path: '/user/newPassword',
-    additionalPaths: [apiPath, adminApiPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['AUTHSERVICE_PORT']),
-    skipBasePath: true,
+    path: adminApiPath + 'user/',
+    upstream: {
+      host: 'userservice',
+      path: adminUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('USERSERVICE_PORT'),
+    },
   },
 
   {
-    serviceName: 'authservice',
-    path: '/auth/',
-    additionalPaths: [apiPath, adminApiPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['AUTHSERVICE_PORT']),
-    skipBasePath: true,
+    path: publicApiPath + 'notification/',
+    upstream: {
+      host: 'notificationservice',
+      path: publicUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('NOTIFICATIONSERVICE_PORT'),
+    },
   },
   {
-    serviceName: 'questionnaireservice',
-    path: '/questionnaire/',
-    additionalPaths: [apiPath, adminApiPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['QUESTIONNAIRESERVICE_PORT']),
-    skipBasePath: true,
+    path: adminApiPath + 'notification/',
+    upstream: {
+      host: 'notificationservice',
+      path: adminUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('NOTIFICATIONSERVICE_PORT'),
+    },
+  },
+
+  {
+    path: publicApiPath + 'sample/',
+    upstream: {
+      host: 'sampletrackingservice',
+      path: publicUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('SAMPLETRACKINGSERVICE_PORT'),
+    },
   },
   {
-    serviceName: 'userservice',
-    path: '/user/',
-    additionalPaths: [apiPath, adminApiPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['USERSERVICE_PORT']),
-    skipBasePath: true,
+    path: adminApiPath + 'sample/',
+    upstream: {
+      host: 'sampletrackingservice',
+      path: adminUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('SAMPLETRACKINGSERVICE_PORT'),
+    },
+  },
+
+  {
+    path: publicApiPath + 'sormas/',
+    upstream: {
+      host: 'sormasservice',
+      path: publicUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('SORMASSERVICE_PORT'),
+    },
+  },
+
+  {
+    path: publicApiPath + 'personal/',
+    upstream: {
+      host: 'personaldataservice',
+      path: publicUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('PERSONALDATASERVICE_PORT'),
+    },
   },
   {
-    serviceName: 'notificationservice',
-    path: '/notification/',
-    isHttpOnly: false,
-    additionalPaths: [apiPath, adminApiPath],
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['NOTIFICATIONSERVICE_PORT']),
-    skipBasePath: true,
+    path: adminApiPath + 'personal/',
+    upstream: {
+      host: 'personaldataservice',
+      path: adminUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('PERSONALDATASERVICE_PORT'),
+    },
+  },
+
+  {
+    path: publicApiPath + 'compliance/',
+    upstream: {
+      host: 'complianceservice',
+      path: publicUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('COMPLIANCESERVICE_PORT'),
+    },
   },
   {
-    serviceName: 'sampletrackingservice',
-    path: '/sample/',
-    additionalPaths: [apiPath, adminApiPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['SAMPLETRACKINGSERVICE_PORT']),
-    skipBasePath: true,
+    path: adminApiPath + 'compliance/',
+    upstream: {
+      host: 'complianceservice',
+      path: adminUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('COMPLIANCESERVICE_PORT'),
+    },
+  },
+
+  {
+    path: publicApiPath + 'log/',
+    upstream: {
+      host: 'loggingservice',
+      path: publicUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('LOGGINGSERVICE_PORT'),
+    },
   },
   {
-    serviceName: 'sormasservice',
-    path: '/sormas/',
-    additionalPaths: [apiPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['SORMASSERVICE_PORT']),
-    skipBasePath: true,
+    path: adminApiPath + 'log/',
+    upstream: {
+      host: 'loggingservice',
+      path: adminUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('LOGGINGSERVICE_PORT'),
+    },
   },
+
   {
-    serviceName: 'personaldataservice',
-    path: '/personal/',
-    additionalPaths: [apiPath, adminApiPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['PERSONALDATASERVICE_PORT']),
-    skipBasePath: true,
-  },
-  {
-    serviceName: 'complianceservice',
-    path: '/compliance/',
-    additionalPaths: [apiPath, adminApiPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['COMPLIANCESERVICE_PORT']),
-    skipBasePath: true,
-  },
-  {
-    serviceName: 'loggingservice',
-    path: '/log/',
-    additionalPaths: [apiPath, adminApiPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port: getNumberIfDefined(process.env['LOGGINGSERVICE_PORT']),
-    skipBasePath: true,
-  },
-  {
-    serviceName: 'webappserver',
-    path: '/web/',
-    additionalPaths: [adminPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port:
-      getEnvVariable('PROTOCOL', 'https') === 'http'
-        ? getNumberIfDefined(process.env['WEBAPPSERVER_HTTP_PORT'])
-        : getNumberIfDefined(process.env['WEBAPPSERVER_HTTPS_PORT']),
-  },
-  {
-    serviceName: 'deploymentservice',
-    path: '/deployment/',
-    additionalPaths: [apiPath],
-    isHttpOnly: true,
-    isOnlyOnDevelopmentSystems: true,
-    port: getNumberIfDefined(process.env['DEPLOYMENTSERVICE_PORT']),
+    path: publicApiPath + 'auth/',
+    upstream: {
+      host: 'authserver',
+      protocol: 'https',
+      path: '/',
+      port: ConfigUtils.getEnvVariableInt('AUTHSERVER_PORT'),
+    },
   },
 
   // catch all
   {
-    serviceName: 'webappserver',
     path: '/',
-    additionalPaths: [adminPath],
-    isHttpOnly: false,
-    isOnlyOnDevelopmentSystems: false,
-    port:
-      getEnvVariable('PROTOCOL', 'https') === 'http'
-        ? getNumberIfDefined(process.env['WEBAPPSERVER_HTTP_PORT'])
-        : getNumberIfDefined(process.env['WEBAPPSERVER_HTTPS_PORT']),
+    upstream: {
+      host: 'webappserver',
+      path: '/',
+      protocol: getProtocol(),
+      port:
+        ConfigUtils.getEnvVariable('PROTOCOL', 'https') === 'http'
+          ? ConfigUtils.getEnvVariableInt('WEBAPPSERVER_HTTP_PORT')
+          : ConfigUtils.getEnvVariableInt('WEBAPPSERVER_HTTPS_PORT'),
+    },
   },
 ];
+
+if (isDevelopment) {
+  routes.push({
+    path: '/deployment/',
+    upstream: {
+      host: 'deploymentservice',
+      path: '/deployment/',
+      protocol: 'http',
+      port: ConfigUtils.getEnvVariableInt('DEPLOYMENTSERVICE_PORT'),
+    },
+  });
+}
 
 export default {
   web: {
     internal: {
-      protocol: getEnvVariable('PROTOCOL', 'https'),
-      port: parseInt(getEnvVariable('PORT', '443'), 10),
+      protocol: ConfigUtils.getEnvVariable('PROTOCOL', 'https'),
+      port: parseInt(ConfigUtils.getEnvVariable('PORT', '443'), 10),
       ssl: {
-        ca: getEnvVariable('SSL_CA', '/etc/ssl/ca.cert'),
+        ca: ConfigUtils.getEnvVariable('SSL_CA', '/etc/ssl/ca.cert'),
       },
     },
     external: {
-      protocol: getEnvVariable('EXTERNAL_PROTOCOL', 'https'),
-      port: parseInt(getEnvVariable('EXTERNAL_PORT', '443'), 10),
-      hostName: getEnvVariable('EXTERNAL_HOST_NAME', '_'),
+      protocol: ConfigUtils.getEnvVariable('EXTERNAL_PROTOCOL', 'https'),
+      port: parseInt(ConfigUtils.getEnvVariable('EXTERNAL_PORT', '443'), 10),
+      hostName: ConfigUtils.getEnvVariable('EXTERNAL_HOST_NAME', '_'),
       ssl: {
-        certificate: getEnvVariable('SSL_CERTIFICATE', '/etc/ssl/api.cert'),
-        key: getEnvVariable('SSL_CERTIFICATE_KEY', '/etc/ssl/api.key'),
+        certificate: ConfigUtils.getEnvVariable(
+          'SSL_CERTIFICATE',
+          '/etc/ssl/api.cert'
+        ),
+        key: ConfigUtils.getEnvVariable(
+          'SSL_CERTIFICATE_KEY',
+          '/etc/ssl/api.key'
+        ),
       },
     },
     headers: {
-      xFrameOptions: getEnvVariable('X_FRAME_OPTIONS', ''),
-      contentSecurityPolicy: getEnvVariable('CONTENT_SECURITY_POLICY', ''),
+      xFrameOptions: ConfigUtils.getEnvVariable('X_FRAME_OPTIONS', ''),
+      contentSecurityPolicy: ConfigUtils.getEnvVariable(
+        'CONTENT_SECURITY_POLICY',
+        ''
+      ),
     },
   },
   system: {
-    isDevelopment:
-      getEnvVariable('IS_DEVELOPMENT_SYSTEM', 'false').toLowerCase() === 'true',
-  },
-  publicMetaData: {
-    minimalAppVersion: '1.29.0',
+    isDevelopment,
   },
   routes,
+  responseRoutes,
 };

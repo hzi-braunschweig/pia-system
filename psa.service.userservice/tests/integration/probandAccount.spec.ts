@@ -5,100 +5,61 @@
  */
 
 import { config } from '../../src/config';
-import sinon, { createSandbox } from 'sinon';
-import fetchMocker from 'fetch-mock';
+import sinon, { createSandbox, SinonStubbedInstance } from 'sinon';
 import {
   MessageQueueClient,
   MessageQueueTestUtils,
 } from '@pia/lib-messagequeue';
-import { HttpClient } from '@pia-system/lib-http-clients-internal';
 import { Server } from '../../src/server';
 import { cleanup, setup } from './probandAccount.spec.data/setup.helper';
 import chai, { expect } from 'chai';
 import { StatusCodes } from 'http-status-codes';
 import chaiHttp from 'chai-http';
-import JWT from 'jsonwebtoken';
-import secretOrPrivateKey from '../secretOrPrivateKey';
 import { db } from '../../src/db';
 import { getRepository } from 'typeorm';
 import { Proband } from '../../src/entities/proband';
+import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
+import { mockDeleteProbandAccount } from './accountServiceRequestMock.helper.spec';
+import { Users } from '@keycloak/keycloak-admin-client/lib/resources/users';
+import { probandAuthClient } from '../../src/clients/authServerClient';
 
 chai.use(chaiHttp);
 
-const probandSession = {
-  id: 1,
-  role: 'Proband',
+const probandHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
   username: 'qtest-proband1',
-  groups: ['QTestStudy1'],
-};
-const researcherSession = {
-  id: 1,
-  role: 'Forscher',
+  studies: ['QTestStudy1'],
+});
+const researcherHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
   username: 'researcher1@example.com',
-  groups: ['QTestStudy1'],
-};
-const investigatorSession = {
-  id: 1,
-  role: 'Untersuchungsteam',
+  studies: ['QTestStudy1'],
+});
+const investigatorHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Untersuchungsteam'],
   username: 'investigationteam1@example.com',
-  groups: ['QTestStudy1', 'QTestStudy3'],
-};
-const sysadminSession = {
-  id: 1,
-  role: 'SysAdmin',
-  username: 'QTestSystemAdmin1',
-};
-const pmSession = {
-  id: 1,
-  role: 'ProbandenManager',
+  studies: ['QTestStudy1', 'QTestStudy3'],
+});
+const sysadminHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['SysAdmin'],
+  username: 'qtest-sysadmin1',
+  studies: [],
+});
+const pmHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['ProbandenManager'],
   username: 'pm1@example.com',
-  groups: ['QTestStudy1'],
-};
-
-const probandHeader = {
-  authorization: JWT.sign(probandSession, secretOrPrivateKey, {
-    algorithm: 'RS512',
-    expiresIn: '24h',
-  }),
-};
-const researcherHeader = {
-  authorization: JWT.sign(researcherSession, secretOrPrivateKey, {
-    algorithm: 'RS512',
-    expiresIn: '24h',
-  }),
-};
-const investigatorHeader = {
-  authorization: JWT.sign(investigatorSession, secretOrPrivateKey, {
-    algorithm: 'RS512',
-    expiresIn: '24h',
-  }),
-};
-const sysadminHeader = {
-  authorization: JWT.sign(sysadminSession, secretOrPrivateKey, {
-    algorithm: 'RS512',
-    expiresIn: '24h',
-  }),
-};
-const pmHeader = {
-  authorization: JWT.sign(pmSession, secretOrPrivateKey, {
-    algorithm: 'RS512',
-    expiresIn: '24h',
-  }),
-};
+  studies: ['QTestStudy1'],
+});
 
 const apiAddress = `http://localhost:${config.public.port}`;
 
-describe('/user/probands/{pseudonym}/account', () => {
+describe('/probands/{pseudonym}/account', () => {
   const testSandbox = createSandbox();
   const suiteSandbox = sinon.createSandbox();
-  const fetchMock = fetchMocker.sandbox();
 
   const mqc = new MessageQueueClient(config.servers.messageQueue);
 
   before(async function () {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    suiteSandbox.stub(HttpClient, 'fetch').callsFake(fetchMock);
     await Server.init();
     await mqc.connect(true);
   });
@@ -110,16 +71,25 @@ describe('/user/probands/{pseudonym}/account', () => {
   });
 
   beforeEach(async function () {
+    AuthServerMock.probandRealm().returnValid();
     await setup();
   });
 
   afterEach(async function () {
+    AuthServerMock.cleanAll();
     await cleanup();
     testSandbox.restore();
-    fetchMock.restore();
   });
 
-  describe('DELETE /user/probands/{pseudonym}/account', () => {
+  describe('DELETE /probands/{pseudonym}/account', () => {
+    let authClientUsersStub: SinonStubbedInstance<Users>;
+
+    beforeEach(() => {
+      authClientUsersStub = mockDeleteProbandAccount(testSandbox, [
+        'qtest-proband1',
+      ]);
+    });
+
     it('should return 401 if no token is applied', async () => {
       // Arrange
       const pseudonym = 'qtest-proband1';
@@ -127,7 +97,7 @@ describe('/user/probands/{pseudonym}/account', () => {
       // Act
       const response = await chai
         .request(apiAddress)
-        .delete(`/user/probands/${pseudonym}/account`);
+        .delete(`/probands/${pseudonym}/account`);
 
       // Assert
       expect(response).to.have.status(StatusCodes.UNAUTHORIZED);
@@ -141,22 +111,28 @@ describe('/user/probands/{pseudonym}/account', () => {
       // Act & Assert
       response = await chai
         .request(apiAddress)
-        .delete(`/user/probands/${pseudonym}/account`)
+        .delete(`/probands/${pseudonym}/account`)
         .set(researcherHeader);
       expect(response).to.have.status(StatusCodes.FORBIDDEN);
+      AuthServerMock.probandRealm().returnValid();
+
       response = await chai
         .request(apiAddress)
-        .delete(`/user/probands/${pseudonym}/account`)
+        .delete(`/probands/${pseudonym}/account`)
         .set(pmHeader);
       expect(response).to.have.status(StatusCodes.FORBIDDEN);
+      AuthServerMock.probandRealm().returnValid();
+
       response = await chai
         .request(apiAddress)
-        .delete(`/user/probands/${pseudonym}/account`)
+        .delete(`/probands/${pseudonym}/account`)
         .set(investigatorHeader);
       expect(response).to.have.status(StatusCodes.FORBIDDEN);
+      AuthServerMock.probandRealm().returnValid();
+
       response = await chai
         .request(apiAddress)
-        .delete(`/user/probands/${pseudonym}/account`)
+        .delete(`/probands/${pseudonym}/account`)
         .set(sysadminHeader);
       expect(response).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -168,7 +144,7 @@ describe('/user/probands/{pseudonym}/account', () => {
       // Act
       const response = await chai
         .request(apiAddress)
-        .delete(`/user/probands/${pseudonym}/account`)
+        .delete(`/probands/${pseudonym}/account`)
         .set(probandHeader);
 
       // Assert
@@ -189,7 +165,7 @@ describe('/user/probands/{pseudonym}/account', () => {
         // Act
         const response = await chai
           .request(apiAddress)
-          .delete(`/user/probands/${pseudonym}/account?deletionType=full`)
+          .delete(`/probands/${pseudonym}/account?deletionType=full`)
           .set(probandHeader);
 
         // Assert
@@ -204,7 +180,7 @@ describe('/user/probands/{pseudonym}/account', () => {
         // Act
         await chai
           .request(apiAddress)
-          .delete(`/user/probands/${pseudonym}/account?deletionType=full`)
+          .delete(`/probands/${pseudonym}/account?deletionType=full`)
           .set(probandHeader);
         const timeAfterRequest = new Date();
         const proband = await getRepository(Proband).findOne({ pseudonym });
@@ -222,13 +198,14 @@ describe('/user/probands/{pseudonym}/account', () => {
         // Act
         await chai
           .request(apiAddress)
-          .delete(`/user/probands/${pseudonym}/account?deletionType=full`)
+          .delete(`/probands/${pseudonym}/account?deletionType=full`)
           .set(probandHeader);
 
         // Assert
-        await db.none(
-          "SELECT * FROM accounts WHERE username = 'qtest-proband1'"
-        );
+        authClientUsersStub.del.calledOnceWith({
+          id: '1',
+          realm: probandAuthClient.realm,
+        });
       });
 
       it('should send a "proband.deleted" message', async () => {
@@ -243,7 +220,7 @@ describe('/user/probands/{pseudonym}/account', () => {
         // Act
         const response = await chai
           .request(apiAddress)
-          .delete(`/user/probands/qtest-proband1/account?deletionType=full`)
+          .delete(`/probands/qtest-proband1/account?deletionType=full`)
           .set(probandHeader);
 
         // Assert
@@ -258,7 +235,7 @@ describe('/user/probands/{pseudonym}/account', () => {
         // Act
         await chai
           .request(apiAddress)
-          .delete(`/user/probands/${pseudonym}/account?deletionType=full`)
+          .delete(`/probands/${pseudonym}/account?deletionType=full`)
           .set(probandHeader);
 
         // Assert
@@ -289,10 +266,6 @@ describe('/user/probands/{pseudonym}/account', () => {
         await mqc.createConsumer('proband.deactivated', async () => {
           return Promise.resolve();
         });
-
-        fetchMock.delete('express:/auth/user/:pseudonym', () => ({
-          body: null,
-        }));
       });
 
       it('should return 204 if proband tries with its own pseudonym', async () => {
@@ -302,7 +275,7 @@ describe('/user/probands/{pseudonym}/account', () => {
         // Act
         const response = await chai
           .request(apiAddress)
-          .delete(`/user/probands/${pseudonym}/account?deletionType=contact`)
+          .delete(`/probands/${pseudonym}/account?deletionType=contact`)
           .set(probandHeader);
 
         // Assert
@@ -317,7 +290,7 @@ describe('/user/probands/{pseudonym}/account', () => {
         // Act
         await chai
           .request(apiAddress)
-          .delete(`/user/probands/${pseudonym}/account?deletionType=contact`)
+          .delete(`/probands/${pseudonym}/account?deletionType=contact`)
           .set(probandHeader);
         const timeAfterRequest = new Date();
         const proband = await getRepository(Proband).findOne({ pseudonym });
@@ -335,11 +308,14 @@ describe('/user/probands/{pseudonym}/account', () => {
         // Act
         await chai
           .request(apiAddress)
-          .delete(`/user/probands/${pseudonym}/account?deletionType=contact`)
+          .delete(`/probands/${pseudonym}/account?deletionType=contact`)
           .set(probandHeader);
 
         // Assert
-        expect(fetchMock.called()).to.be.true;
+        authClientUsersStub.del.calledOnceWith({
+          id: '1',
+          realm: probandAuthClient.realm,
+        });
       });
 
       it('should send a "proband.deactivated" message', async () => {
@@ -354,7 +330,7 @@ describe('/user/probands/{pseudonym}/account', () => {
         // Act
         const response = await chai
           .request(apiAddress)
-          .delete(`/user/probands/qtest-proband1/account?deletionType=full`)
+          .delete(`/probands/qtest-proband1/account?deletionType=full`)
           .set(probandHeader);
 
         // Assert
@@ -371,7 +347,7 @@ describe('/user/probands/{pseudonym}/account', () => {
         // Act
         await chai
           .request(apiAddress)
-          .delete(`/user/probands/${pseudonym}/account?deletionType=contact`)
+          .delete(`/probands/${pseudonym}/account?deletionType=contact`)
           .set(probandHeader);
 
         // Assert

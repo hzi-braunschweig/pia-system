@@ -1,0 +1,71 @@
+/*!
+ * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+.account-info {
+  height: 50px;
+  width: calc(100% - 20px);
+  margin: 10px;
+
+  background-color: #e0e0e0;
+  border-radius: 25px;
+  position: relative;
+
+  .account-info-icon {
+    display: inline-block;
+    position: relative;
+    width: 50px;
+    height: 50px;
+
+    mat-icon {
+      color: #bfbfbf;
+      font-size: 48px;
+      height: 48px;
+      width: 48px;
+    }
+  }
+
+  .account-info-content {
+    display: inline-block;
+    height: 38px;
+    width: calc(100% - 100px);
+    overflow: hidden;
+    padding: 4px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    .account-info-content-username {
+      font-weight: bold;
+      text-overflow: inherit;
+      overflow: hidden;
+    }
+
+    .account-info-content-role {
+      color: #808080;
+      font-size: 14px;
+      text-overflow: inherit;
+      overflow: hidden;
+    }
+  }
+
+  .account-info-actions {
+    display: inline-block;
+    position: absolute;
+    right: 25px;
+    height: 50px;
+
+    mat-icon {
+      color: #808080;
+      line-height: 22px;
+    }
+  }
+
+  .center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+}

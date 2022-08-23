@@ -9,32 +9,19 @@ VALUES ('ApiTestStudi2', 'ApiTestStudi2 Beschreibung', FALSE),
        ('ApiTestStudi4', 'ApiTestStudi4 Beschreibung', FALSE);
 
 INSERT INTO probands(pseudonym, compliance_labresults, compliance_samples, study)
-VALUES ('QTestProband1', TRUE, TRUE, 'ApiTestStudie'),
-       ('QTestProband2', TRUE, TRUE, 'ApiTestStudi2'),
-       ('QTestProband3', FALSE, FALSE, 'ApiTestStudie'),
-       ('QTestProband4', TRUE, TRUE, 'ApiTestStudi4'),
-       ('QTestProband5', TRUE, TRUE, 'ApiTestStudi4');
-
-INSERT INTO accounts(username, password, role)
-VALUES ('QTestProband1', '', 'Proband'),
-       ('QTestProband2', '', 'Proband'),
-       ('QTestProband3', '', 'Proband'),
-       ('QTestProband4', '', 'Proband'),
-       ('QTestProband5', '', 'Proband'),
-       ('QTestForscher1', '', 'Forscher'),
-       ('QTestForscher2', '', 'Forscher'),
-       ('QTestUntersuchungsteam', '', 'Untersuchungsteam'),
-       ('QTestUntersuchungsteam2', '', 'Untersuchungsteam'),
-       ('QTestProbandenManager', '', 'ProbandenManager'),
-       ('QTestSysAdmin', '', 'SysAdmin');
+VALUES ('qtest-proband1', TRUE, TRUE, 'ApiTestStudie'),
+       ('qtest-proband2', TRUE, TRUE, 'ApiTestStudi2'),
+       ('qtest-proband3', FALSE, FALSE, 'ApiTestStudie'),
+       ('qtest-proband4', TRUE, TRUE, 'ApiTestStudi4'),
+       ('qtest-proband5', TRUE, TRUE, 'ApiTestStudi4');
 
 INSERT INTO study_users (study_id, user_id, access_level)
-VALUES ('ApiTestStudie', 'QTestForscher1', 'write'),
-       ('ApiTestStudi2', 'QTestForscher2', 'admin'),
-       ('ApiTestStudi4', 'QTestForscher2', 'write'),
-       ('ApiTestStudie', 'QTestUntersuchungsteam', 'write'),
-       ('ApiTestStudi2', 'QTestUntersuchungsteam2', 'write'),
-       ('ApiTestStudie', 'QTestProbandenManager', 'write');
+VALUES ('ApiTestStudie', 'qtest-forscher1', 'write'),
+       ('ApiTestStudi2', 'qtest-forscher2', 'admin'),
+       ('ApiTestStudi4', 'qtest-forscher2', 'write'),
+       ('ApiTestStudie', 'qtest-untersuchungsteam', 'write'),
+       ('ApiTestStudi2', 'qtest-untersuchungsteam2', 'write'),
+       ('ApiTestStudie', 'qtest-probandenmanager', 'write');
 
 INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
@@ -84,15 +71,15 @@ VALUES (999942, 999922, 'Sample id einscannen', 6, 3),
        (999822, 999922, 'Bitte laden sie das das vierte Bild hoch', 8, 7);
 
 INSERT INTO lab_results (id, user_id, status, remark, new_samples_sent)
-VALUES ('ANSWERTEST-1234570', 'QTestProband1', 'new', 'Das PM merkt an: bitte mit Vorsicht genießen!', FALSE);
+VALUES ('ANSWERTEST-1234570', 'qtest-proband1', 'new', 'Das PM merkt an: bitte mit Vorsicht genießen!', FALSE);
 
 INSERT INTO questionnaire_instances(id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue,
                                     date_of_release_v1, date_of_release_v2, cycle, status)
-VALUES (99996, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'QTestProband1', '08.08.2017', NULL, NULL, 1, 'active'),
-       (99997, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'QTestProband1', '08.09.2017', NULL, NULL, 2,
+VALUES (99996, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'qtest-proband1', '08.08.2017', NULL, NULL, 1, 'active'),
+       (99997, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'qtest-proband1', '08.09.2017', NULL, NULL, 2,
         'inactive'),
-       (99998, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'QTestProband1', '08.10.2017', NULL, NULL, 3, 'active'),
-       (99999, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'QTestProband1', '08.24.2017', NULL, NULL, 4, 'active');
+       (99998, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'qtest-proband1', '08.10.2017', NULL, NULL, 3, 'active'),
+       (99999, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'qtest-proband1', '08.24.2017', NULL, NULL, 4, 'active');
 
 INSERT INTO answers(questionnaire_instance_id, question_id, answer_option_id, versioning, value)
 VALUES (99996, 99991, 99991, 1, 'testvalue'),
@@ -105,9 +92,9 @@ VALUES (55555, 'ApiTestStudie', 'ApiImageTestQuestionnaire', 2, 1, 'week', 1, 36
         'AltNachricht', NULL, NULL, NULL, NULL, TRUE);
 INSERT INTO questionnaire_instances(id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue,
                                     date_of_release_v1, date_of_release_v2, cycle, status)
-VALUES (55555, 'ApiTestStudie', 55555, 'ApiImageTestQuestionnaire', 'QTestProband1', '08.08.2017', NULL, NULL, 1,
+VALUES (55555, 'ApiTestStudie', 55555, 'ApiImageTestQuestionnaire', 'qtest-proband1', '08.08.2017', NULL, NULL, 1,
         'released_once'),
-       (55556, 'ApiTestStudie', 55555, 'ApiImageTestQuestionnaire', 'QTestProband1', '08.08.2017', NULL, NULL, 1,
+       (55556, 'ApiTestStudie', 55555, 'ApiImageTestQuestionnaire', 'qtest-proband1', '08.08.2017', NULL, NULL, 1,
         'released_once');
 
 INSERT INTO questions
@@ -116,19 +103,19 @@ INSERT INTO answer_options(id, question_id, text, answer_type_id, values, values
 VALUES (55555, 55555, '', 8, NULL, NULL, 1);
 
 INSERT INTO user_files(id, user_id, questionnaire_instance_id, answer_option_id, file, file_name)
-VALUES (99995, 'QTestProband1', 55555, 55555,
+VALUES (99995, 'qtest-proband1', 55555, 55555,
         '/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAJ5JREFUOI3d0sEJwlAQBNCnVag3CSLYRJCAFqJV6EEb0WAndiGCKDmoZegh/xAC+clVB/YwCzOzDMvfYooT3nghx6SreIYbUgwwxBz3YNyafKvwHfYV/kBSFfRrBhusIgFrbGMGC1xruzRcAhcsYwYf9Cr8jKK2iyJXFtaEDIeYwUTZdhMKjNuumCrbzjAKkwVx519IcMQzzKFL8o/iCw90Gk24qnziAAAAAElFTkSuQmCC',
         'clock.svg'),
-       (99996, 'QTestProband1', 55555, 55555,
+       (99996, 'qtest-proband1', 55555, 55555,
         'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAJ5JREFUOI3d0sEJwlAQBNCnVag3CSLYRJCAFqJV6EEb0WAndiGCKDmoZegh/xAC+clVB/YwCzOzDMvfYooT3nghx6SreIYbUgwwxBz3YNyafKvwHfYV/kBSFfRrBhusIgFrbGMGC1xruzRcAhcsYwYf9Cr8jKK2iyJXFtaEDIeYwUTZdhMKjNuumCrbzjAKkwVx519IcMQzzKFL8o/iCw90Gk24qnziAAAAAElFTkSuQmCC',
         'clock.svg'),
-       (99997, 'QTestProband1', 55556, 55555,
+       (99997, 'qtest-proband1', 55556, 55555,
         'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAJ5JREFUOI3d0sEJwlAQBNCnVag3CSLYRJCAFqJV6EEb0WAndiGCKDmoZegh/xAC+clVB/YwCzOzDMvfYooT3nghx6SreIYbUgwwxBz3YNyafKvwHfYV/kBSFfRrBhusIgFrbGMGC1xruzRcAhcsYwYf9Cr8jKK2iyJXFtaEDIeYwUTZdhMKjNuumCrbzjAKkwVx519IcMQzzKFL8o/iCw90Gk24qnziAAAAAElFTkSuQmCC',
         'clock.svg'),
-       (99998, 'QTestProband1', 55555, 55555,
+       (99998, 'qtest-proband1', 55555, 55555,
         'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAJ5JREFUOI3d0sEJwlAQBNCnVag3CSLYRJCAFqJV6EEb0WAndiGCKDmoZegh/xAC+clVB/YwCzOzDMvfYooT3nghx6SreIYbUgwwxBz3YNyafKvwHfYV/kBSFfRrBhusIgFrbGMGC1xruzRcAhcsYwYf9Cr8jKK2iyJXFtaEDIeYwUTZdhMKjNuumCrbzjAKkwVx519IcMQzzKFL8o/iCw90Gk24qnziAAAAAElFTkSuQmCC',
         'clock.svg'),
-       (99999, 'QTestProband1', 55555, 55555,
+       (99999, 'qtest-proband1', 55555, 55555,
         'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAJ5JREFUOI3d0sEJwlAQBNCnVag3CSLYRJCAFqJV6EEb0WAndiGCKDmoZegh/xAC+clVB/YwCzOzDMvfYooT3nghx6SreIYbUgwwxBz3YNyafKvwHfYV/kBSFfRrBhusIgFrbGMGC1xruzRcAhcsYwYf9Cr8jKK2iyJXFtaEDIeYwUTZdhMKjNuumCrbzjAKkwVx519IcMQzzKFL8o/iCw90Gk24qnziAAAAAElFTkSuQmCC',
         'clock.svg');
 
@@ -139,25 +126,22 @@ VALUES (7777771, 'ApiTestStudie', 'ApiImageTestQuestionnaire2', 2, 1, 'week', 1,
         'NeuNachricht', 'AltNachricht', NULL, NULL, NULL, NULL, TRUE, 5, 2, CURRENT_DATE, 'for_research_team');
 INSERT INTO questionnaire_instances(id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue,
                                     date_of_release_v1, date_of_release_v2, cycle, status)
-VALUES (7777771, 'ApiTestStudie', 7777771, 'ApiImageTestQuestionnaire2', 'QTestProband1', '08.08.2017', NULL, NULL, 1,
+VALUES (7777771, 'ApiTestStudie', 7777771, 'ApiImageTestQuestionnaire2', 'qtest-proband1', '08.08.2017', NULL, NULL, 1,
         'active');
 
 INSERT INTO questions
 VALUES (7777771, 7777771, 'Mach mal n Bild', 1, TRUE);
 INSERT INTO answer_options(id, question_id, text, answer_type_id, values, values_code, position)
 VALUES (7777771, 7777771, '', 10, NULL, NULL, 1);
-INSERT INTO user_files
-VALUES (7777771, 'QTestProband1', 7777771, 7777771,
-        'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAJ5JREFUOI3d0sEJwlAQBNCnVag3CSLYRJCAFqJV6EEb0WAndiGCKDmoZegh/xAC+clVB/YwCzOzDMvfYooT3nghx6SreIYbUgwwxBz3YNyafKvwHfYV/kBSFfRrBhusIgFrbGMGC1xruzRcAhcsYwYf9Cr8jKK2iyJXFtaEDIeYwUTZdhMKjNuumCrbzjAKkwVx519IcMQzzKFL8o/iCw90Gk24qnziAAAAAElFTkSuQmCC',
-        'file.dat');
+
 
 
 
 INSERT INTO questionnaire_instances_queued(user_id, questionnaire_instance_id, date_of_queue)
-VALUES ('QTestProband1', 99996, '2018-10-10 11:11:11.200'),
-       ('QTestProband1', 99997, '2018-10-10 11:11:11.400'),
-       ('QTestProband1', 99998, '2018-10-10 11:11:11.300'),
-       ('QTestProband1', 99999, '2018-10-10 11:11:11.100');
+VALUES ('qtest-proband1', 99996, '2018-10-10 11:11:11.200'),
+       ('qtest-proband1', 99997, '2018-10-10 11:11:11.400'),
+       ('qtest-proband1', 99998, '2018-10-10 11:11:11.300'),
+       ('qtest-proband1', 99999, '2018-10-10 11:11:11.100');
 
 INSERT INTO questionnaires
 VALUES (888888, 'ApiTestStudi4', 'ApiTestConditionTargetQuestionnaire', 1, 1, 'week', 1, 365, 3, 'PIA Fragebogen',
@@ -194,21 +178,21 @@ VALUES ('internal_last', 888891, NULL, NULL, '==', 'Ja', 888889, 888889);
 INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue,
                                      date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled,
                                      progress, release_version, questionnaire_version)
-VALUES (100888888, 'ApiTestStudi4', 888888, 'ApiTestConditionTargetQuestionnaire', 'QTestProband4', '08.08.2017',
+VALUES (100888888, 'ApiTestStudi4', 888888, 'ApiTestConditionTargetQuestionnaire', 'qtest-proband4', '08.08.2017',
         '08.08.2017', NULL, 1, 'released_once', NULL, 0, 0, 1),
-       (100888889, 'ApiTestStudi4', 888888, 'ApiTestConditionTargetQuestionnaire', 'QTestProband4', '08.15.2017',
+       (100888889, 'ApiTestStudi4', 888888, 'ApiTestConditionTargetQuestionnaire', 'qtest-proband4', '08.15.2017',
         '08.15.2017', '08.15.2017', 2, 'released_twice', NULL, 0, 0, 1),
-       (100888890, 'ApiTestStudi4', 888888, 'ApiTestConditionTargetQuestionnaire', 'QTestProband4', '08.22.2017', NULL,
+       (100888890, 'ApiTestStudi4', 888888, 'ApiTestConditionTargetQuestionnaire', 'qtest-proband4', '08.22.2017', NULL,
         NULL, 3, 'active', NULL, 0, 0, 1),
 
-       (100888891, 'ApiTestStudi4', 888889, 'ApiTestConditionSourceQuestionnaire', 'QTestProband4', '08.09.2017',
+       (100888891, 'ApiTestStudi4', 888889, 'ApiTestConditionSourceQuestionnaire', 'qtest-proband4', '08.09.2017',
         '08.09.2017', '08.09.2017', 1, 'released_twice', NULL, 0, 0, 1),
-       (100888892, 'ApiTestStudi4', 888889, 'ApiTestConditionSourceQuestionnaire', 'QTestProband4', '08.16.2017', NULL,
+       (100888892, 'ApiTestStudi4', 888889, 'ApiTestConditionSourceQuestionnaire', 'qtest-proband4', '08.16.2017', NULL,
         NULL, 2, 'active', NULL, 0, 0, 1),
-       (100888893, 'ApiTestStudi4', 888889, 'ApiTestConditionSourceQuestionnaire', 'QTestProband4', '08.23.2017', NULL,
+       (100888893, 'ApiTestStudi4', 888889, 'ApiTestConditionSourceQuestionnaire', 'qtest-proband4', '08.23.2017', NULL,
         NULL, 3, 'active', NULL, 0, 0, 1),
 
-       (100888894, 'ApiTestStudi4', 888889, 'ApiTestEmptyQuestionQuestionnaire', 'QTestProband4', '08.23.2017', NULL,
+       (100888894, 'ApiTestStudi4', 888889, 'ApiTestEmptyQuestionQuestionnaire', 'qtest-proband4', '08.23.2017', NULL,
         NULL, 3, 'active', NULL, 0, 0, 1);
 
 INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value)
@@ -231,9 +215,9 @@ VALUES (777778, 777778, '', 1, '{"Ja", "Nein", "Keine Angabe"}', 1),
        (777779, 777778, '', 1, '{"Ja", "Nein", "Keine Angabe"}', 2);
 INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue,
                                      date_of_release_v1, date_of_release_v2, cycle, status)
-VALUES (100777777, 'ApiTestStudi4', 777777, 'ApiTestNoDataQuestionnaire', 'QTestProband4', '08.08.2017', '08.08.2017',
+VALUES (100777777, 'ApiTestStudi4', 777777, 'ApiTestNoDataQuestionnaire', 'qtest-proband4', '08.08.2017', '08.08.2017',
         NULL, 1, 'released_once'),
-       (100777778, 'ApiTestStudi4', 777777, 'ApiTestNoDataQuestionnaire', 'QTestProband4', '08.10.2017', NULL, NULL, 2,
+       (100777778, 'ApiTestStudi4', 777777, 'ApiTestNoDataQuestionnaire', 'qtest-proband4', '08.10.2017', NULL, NULL, 2,
         'active');
 INSERT INTO conditions
 VALUES ('internal_last', NULL, 777777, NULL, '==', 'Ja', 777777, 777777);

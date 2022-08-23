@@ -3,16 +3,19 @@ pia_is_qpia: true
 pia_is_ipia: true
 
 pia_expose_postgres_ports: true
+pia_is_direct_access_grant_enabled: true
 
-pia_url: localhost
+pia_url: pia-app
 pia_messagequeue_admin_password: password
 pia_messagequeue_app_password: password
 pia_ewpia_password: password
 pia_ipia_password: password
 pia_db_personaldata_password: password
+pia_db_authserver_password: password
 pia_qpia_password: password
 pia_db_log_password: password
 pia_db_sormas_password: password
+pia_authserver_admin_password: admin
 
 pia_qpia_ip: 172.17.0.1
 pia_ewpia_ip: 172.17.0.1
@@ -28,11 +31,10 @@ pia_local_development: true
 
 pia_ssl_directory: ./secrets/ssl
 pia_ssh_key_directory: ./secrets/ssh
-pia_auth_key_directory: ./secrets/authKey
 pia_firebase_directory: ./secrets/firebase
 
-pia_external_protocol: http
-pia_external_port: 80
+pia_external_protocol: https
+pia_external_port: 443
 
 pia_docker_tag: latest
 pia_is_development_system: true

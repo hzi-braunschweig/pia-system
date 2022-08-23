@@ -38,16 +38,19 @@ const conf = {
     },
   },
   services: {
-    authservice: GlobalConfig.authservice,
     loggingservice: GlobalConfig.loggingservice,
     userservice: GlobalConfig.userservice,
   },
   servers: {
     mailserver: GlobalConfig.mailserver,
     messageQueue: GlobalConfig.getMessageQueue('personaldataservice'),
+    authserver: {
+      adminTokenIntrospectionClient:
+        GlobalConfig.authserver.adminTokenIntrospectionClient,
+      probandManagementClient: GlobalConfig.authserver.probandManagementClient,
+    },
   },
-  publicAuthKey: GlobalConfig.publicAuthKey,
-  webappUrl: GlobalConfig.webappUrl,
+  adminAppUrl: GlobalConfig.adminAppUrl,
 };
 
 export const config: SupersetOfServiceConfig<typeof conf> = conf;

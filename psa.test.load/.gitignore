@@ -13,6 +13,7 @@ tests/reports
 coverage
 .nyc_output
 test-results_scenario-*.csv
+load-performance.json
 
 # IDEs and editors
 .idea

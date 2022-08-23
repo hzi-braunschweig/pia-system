@@ -139,6 +139,10 @@ export class LicenseTextCompleter {
       ['@angular/router', LicenseTextCompleter.MIT_ANGULAR],
       ['@angular/compiler-cli', LicenseTextCompleter.MIT_ANGULAR],
       [
+        '@awesome-cordova-plugins/in-app-browser',
+        LicenseTextCompleter.APACHE_LICENSE_2_0,
+      ],
+      [
         '@babel/generator',
         'MIT License\n' +
           '\n' +

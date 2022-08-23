@@ -11,7 +11,8 @@ import { InternalProbandsInteractor } from '../../interactors/internal/internalP
 import {
   CreateProbandRequest,
   CreateProbandResponse,
-  ProbandResponse,
+  ProbandDto,
+  ProbandExternalIdResponse,
 } from '../../models/proband';
 import { ExternalCompliance } from '../../models/externalCompliance';
 import { Proband } from '../../entities/proband';
@@ -50,10 +51,19 @@ export class InternalUsersHandler {
     });
   }
 
+  public static async getProband(
+    this: void,
+    request: Request
+  ): Promise<ProbandDto> {
+    return await InternalProbandsInteractor.getProband(
+      request.params['pseudonym'] as string
+    );
+  }
+
   public static async getProbandByIDS(
     this: void,
     request: Request
-  ): Promise<ProbandResponse> {
+  ): Promise<ProbandDto> {
     return InternalProbandsInteractor.getProbandByIDS(
       request.params['ids'] as string
     );
@@ -114,21 +124,12 @@ export class InternalUsersHandler {
     }
   }
 
-  public static async getProbandsWithAcessToFromProfessional(
+  public static async getProbandsWithAccessToFromProfessional(
     this: void,
     request: Request
   ): Promise<string[]> {
-    return await InternalProbandsInteractor.getProbandsWithAcessToFromProfessional(
+    return await InternalProbandsInteractor.getProbandsWithAccessToFromProfessional(
       request.params['username'] as string
-    );
-  }
-
-  public static async getProband(
-    this: void,
-    request: Request
-  ): Promise<ProbandResponse> {
-    return await InternalProbandsInteractor.getProband(
-      request.params['pseudonym'] as string
     );
   }
 
@@ -155,6 +156,19 @@ export class InternalUsersHandler {
       request.query['complianceContact'] as boolean
     ).catch((err: Error) => {
       console.warn('getPseudonyms', err);
+      return Boom.boomify(err);
+    });
+  }
+
+  public static async getExternalIds(
+    this: void,
+    request: Request
+  ): Promise<ProbandExternalIdResponse[]> {
+    return InternalProbandsInteractor.getExternalIds(
+      request.query['study'] as string,
+      request.query['complianceContact'] as boolean
+    ).catch((err: Error) => {
+      console.warn('getExternalIds', err);
       return Boom.boomify(err);
     });
   }

@@ -5,7 +5,7 @@
  */
 
 import { Pipe, PipeTransform } from '@angular/core';
-import { AccessLevel } from '../psa.app.core/models/study_access';
+import { AccessLevel } from '../psa.app.core/models/studyAccess';
 
 /**
  * Returns Translation for access level

@@ -1,13 +1,6 @@
 FROM alpine:3.15.0@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 AS openssl
 RUN apk add openssl
 
-FROM openssl AS authkey
-WORKDIR /data/
-ARG AUTH_KEY_SIZE=4096
-ENV AUTH_KEY_SIZE=$AUTH_KEY_SIZE
-RUN openssl genrsa -out private.key $AUTH_KEY_SIZE
-RUN openssl rsa -in private.key -outform PEM -pubout -out public.pem
-
 FROM openssl AS certs
 WORKDIR /data/
 ARG CA_KEY_SIZE=4096
@@ -23,7 +16,7 @@ RUN openssl genrsa -out ca-key.pem $CA_KEY_SIZE
 RUN openssl req -x509 -new -nodes -extensions v3_ca -key ca-key.pem -days $CA_VALIDITY_DAYS -out ca.cert -sha512 -subj "/CN=pia-root"
 
 RUN echo '#!/bin/sh' > create_cert.sh
-RUN echo 'echo "subjectAltName=DNS:$CN,DNS:localhost" > /etc/ssl/san.cnf' >> create_cert.sh
+RUN echo 'echo "subjectAltName=DNS:$CN,DNS:localhost,DNS:pia-app" > /etc/ssl/san.cnf' >> create_cert.sh
 RUN echo 'openssl genrsa -out $FILE_NAME.key $SERVICE_KEY_SIZE' >> create_cert.sh
 RUN echo 'openssl req -new -key $FILE_NAME.key -out $FILE_NAME.csr -sha512 -subj "/CN=$CN"' >> create_cert.sh
 RUN echo 'openssl x509 -req -in $FILE_NAME.csr -CA ca.cert -CAkey ca-key.pem -CAcreateserial -out $FILE_NAME.cert -days $SERVICE_VALIDITY_DAYS -sha512 -extfile /etc/ssl/san.cnf' >> create_cert.sh
@@ -46,9 +39,10 @@ RUN FILE_NAME=sa CN=sampletrackingservice ./create_cert.sh
 RUN FILE_NAME=modys CN=modysservice ./create_cert.sh
 RUN FILE_NAME=lh CN=localhost ./create_cert.sh
 RUN FILE_NAME=no CN=notificationservice ./create_cert.sh
-RUN FILE_NAME=auth CN=authservice ./create_cert.sh
 RUN FILE_NAME=metrics CN=metricsproxy ./create_cert.sh
 RUN FILE_NAME=api CN=apigateway ./create_cert.sh
+RUN FILE_NAME=authserver CN=authserver ./create_cert.sh
+RUN FILE_NAME=aep CN=autheventproxy ./create_cert.sh
 
 # create chain certificate for web
 RUN cat web.cert ca.cert > chain.cert
@@ -67,6 +61,5 @@ RUN rm dummy.key
 
 FROM scratch AS final
 WORKDIR /
-COPY --from=authkey /data/ authKey/
 COPY --from=certs /data/ ssl/
 COPY --from=firebase /data/ firebase/

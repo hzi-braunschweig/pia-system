@@ -12,10 +12,9 @@ collect-licenses:
     - npm ci
     - PUPPETEER_SKIP_DOWNLOAD=1 CYPRESS_INSTALL_BINARY=0 lerna bootstrap --ci -- --cache $(pwd)/.npm --prefer-offline
     - licensecollector -d -f text -t ./THIRD_PARTY_LICENSES .
-    - git add THIRD_PARTY_LICENSES
-    - CHANGED_FILES=$(git diff-index --name-only HEAD)
     - >
-      if [ -n "$CHANGED_FILES" ]; then
+      if ! git diff --quiet THIRD_PARTY_LICENSES; then
+        git add THIRD_PARTY_LICENSES
         git commit -m "chore: update THIRD_PARTY_LICENSES"
         git push -f ${CI_SERVER_PROTOCOL}://${CI_PROJECT_USER}:${CI_PROJECT_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/${CI_PROJECT_PATH}.git feature/THIRD_PARTY_LICENSES-update
         # create the merge request to develop
@@ -40,3 +39,5 @@ collect-licenses:
       artifacts: false
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
+      when: never

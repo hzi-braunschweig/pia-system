@@ -12,6 +12,7 @@ import {
 } from '@angular/material/dialog';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
 import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
+import { CurrentUser } from '../../../_services/current-user.service';
 
 @Component({
   selector: 'app-request-new-material',
@@ -20,8 +21,9 @@ import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tra
 })
 export class RequestNewMaterialComponent {
   constructor(
-    public dialog: MatDialog,
-    private sampleTrackingService: SampleTrackingService
+    public readonly dialog: MatDialog,
+    private readonly sampleTrackingService: SampleTrackingService,
+    private readonly user: CurrentUser
   ) {}
 
   onRequestMaterial(): void {
@@ -36,7 +38,7 @@ export class RequestNewMaterialComponent {
     dialogRef.afterClosed().subscribe((result) => {
       if (result && result.shouldRequestNewMaterial) {
         this.sampleTrackingService
-          .requestMaterialForCurrentUser()
+          .requestMaterialForProband(this.user.username)
           .then((res) => {
             this.showRequestWasSuccessDialog();
           })

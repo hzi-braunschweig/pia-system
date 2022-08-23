@@ -51,7 +51,7 @@ const conf = {
     mailserver: GlobalConfig.mailserver,
     messageQueue: GlobalConfig.getMessageQueue('sormasservice'),
   },
-  webappUrl: GlobalConfig.webappUrl,
+  probandAppUrl: GlobalConfig.probandAppUrl,
   sormas: {
     url: fixedSormasServer,
     username: ConfigUtils.getEnvVariable('PIA_ON_SORMAS_USER'),

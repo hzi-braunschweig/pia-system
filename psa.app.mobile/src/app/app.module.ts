@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { LOCALE_ID, NgModule } from '@angular/core';
+import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { registerLocaleData } from '@angular/common';
@@ -18,12 +18,13 @@ import {
   HttpClient,
   HttpClientModule,
 } from '@angular/common/http';
-import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+import { IonicModule, IonicRouteStrategy, Platform } from '@ionic/angular';
 import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
 import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
+import { InAppBrowser } from '@awesome-cordova-plugins/in-app-browser/ngx';
 import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { Keyboard } from '@awesome-cordova-plugins/keyboard/ngx';
@@ -41,6 +42,11 @@ import { AuthInterceptor } from './shared/interceptors/auth-interceptor';
 import { ContentTypeInterceptor } from './shared/interceptors/content-type-interceptor';
 import { UnauthorizedInterceptor } from './shared/interceptors/unauthorized-interceptor';
 import { HttpErrorInterceptor } from './shared/interceptors/http-error-interceptor.service';
+import { KeycloakAngularModule } from 'keycloak-angular';
+import { AuthService } from './auth/auth.service';
+import { KeycloakClientService } from './auth/keycloak-client.service';
+import { initializeActiveSession } from './initialize-active-session';
+import { EndpointService } from './shared/services/endpoint/endpoint.service';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/');
@@ -65,11 +71,24 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     MarkdownModule.forRoot(),
     AppRoutingModule,
     ReactiveFormsModule,
+    KeycloakAngularModule,
   ],
   providers: [
     {
       provide: RouteReuseStrategy,
       useClass: IonicRouteStrategy,
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeActiveSession,
+      deps: [
+        Platform,
+        AuthService,
+        KeycloakClientService,
+        EndpointService,
+        LocaleService,
+      ],
+      multi: true,
     },
     {
       provide: LOCALE_ID,
@@ -109,6 +128,7 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     Chooser,
     FirebaseX,
     Network,
+    InAppBrowser,
   ],
   bootstrap: [AppComponent],
 })

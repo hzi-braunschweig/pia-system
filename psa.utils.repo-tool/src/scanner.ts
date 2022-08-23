@@ -18,6 +18,7 @@ export class Scanner {
     const testUnit: string[] = [];
     const testInt: string[] = [];
     const testE2e: string[] = [];
+    const npmInstall: string[] = [];
 
     // Scan the repo dir for information
     for (const name of await Fs.readdir(repoDir)) {
@@ -30,6 +31,7 @@ export class Scanner {
       const packageFileName = path.join(fullName, 'package.json');
       if (await Fs.exists(packageFileName)) {
         const pack = await Fs.readJson<PackageJson>(packageFileName);
+        npmInstall.push(name);
         if (!pack.scripts) {
           continue;
         }
@@ -57,9 +59,7 @@ export class Scanner {
       testUnit,
       testInt,
       testE2e,
-      npmInstall: Array.from(
-        new Set<string>([...lint, ...testUnit, ...testInt])
-      ),
+      npmInstall,
     };
   }
 }

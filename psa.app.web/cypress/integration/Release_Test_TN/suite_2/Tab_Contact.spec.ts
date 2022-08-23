@@ -4,18 +4,20 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { fetchPasswordForUserFromMailHog } from '../../../support/user.commands';
+import {
+  createProfessionalUser,
+  loginProfessional,
+  UserCredentials,
+} from '../../../support/user.commands';
 import {
   changePassword,
   createConsentForStudy,
   createPlannedProband,
   createProband,
   createStudy,
-  createUser,
   generateRandomProbandForStudy,
   generateRandomStudy,
   getCredentialsForProbandByUsername,
-  getToken,
   login,
 } from '../../../support/commands';
 import { CreateProbandRequest } from '../../../../src/app/psa.app.core/models/proband';
@@ -32,7 +34,8 @@ let forscher;
 const probandCredentials = { username: '', password: '' };
 const newPassword = ',dYv3zg;r:CB';
 
-const appUrl = '/';
+const probandAppUrl = '/';
+const adminAppUrl = '/admin/';
 
 describe('Release Test, role: "Proband", Tab: Contact', () => {
   beforeEach(() => {
@@ -42,45 +45,46 @@ describe('Release Test, role: "Proband", Tab: Contact', () => {
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
       role: 'Untersuchungsteam',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
+      study_accesses: [],
     };
 
     pm = {
       username: `e2e-pm-${translator.new()}@testpia-app.de`,
       role: 'ProbandenManager',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
+      study_accesses: [],
     };
 
     forscher = {
       username: `e2e-f-${translator.new()}@testpia-app.de`,
       role: 'Forscher',
       study_accesses: [
-        { study_id: study.name, access_level: 'admin' },
         { study_id: anotherTestStudy.name, access_level: 'admin' },
       ],
     };
 
-    createStudy(study)
-      .then(() => createStudy(anotherTestStudy))
-      .then(() => createUser(ut))
-      .then(() => createUser(pm))
-      .then(() => createUser(forscher))
-      .then(() => getToken(ut.username))
-      .then((token) => createPlannedProband(proband.pseudonym, token))
-      .then(() => getToken(ut.username))
-      .then((token) => createProband(proband, study.name, token))
-      .then(() => getToken(ut.username))
-      .then((token) =>
-        getCredentialsForProbandByUsername(proband.pseudonym, token)
-      )
-      .then((cred) => {
-        probandCredentials.username = cred.username;
-        probandCredentials.password = cred.password;
+    createStudy(study);
+    createStudy(anotherTestStudy);
+
+    createProfessionalUser(ut, study.name).as('utCred');
+    createProfessionalUser(pm, study.name).as('pmCred');
+    createProfessionalUser(forscher, study.name).as('fCred');
+
+    cy.get<UserCredentials>('@utCred')
+      .then(loginProfessional)
+      .then((token) => {
+        createPlannedProband(proband.pseudonym, token);
+        createProband(proband, study.name, token);
+        getCredentialsForProbandByUsername(proband.pseudonym, token).then(
+          (cred) => {
+            probandCredentials.username = cred.username;
+            probandCredentials.password = cred.password;
+          }
+        );
       });
   });
 
   it('it should display message "Derzeit sind keine Kontaktinformationen für diese Studie verfügbar."', () => {
-    cy.visit(appUrl);
+    cy.visit(probandAppUrl);
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
@@ -100,15 +104,26 @@ describe('Release Test, role: "Proband", Tab: Contact', () => {
     };
 
     beforeEach(() => {
-      getToken(forscher.username).then((token) =>
-        createConsentForStudy(testProbandConsent, study.name, token)
-      );
+      cy.get<UserCredentials>('@fCred')
+        .then(loginProfessional)
+        .then((token) =>
+          createConsentForStudy(testProbandConsent, study.name, token)
+        );
     });
 
     it('should test button "Neues Nasenabstrich-Set zuschicken!"', () => {
-      cy.visit(appUrl);
+      cy.visit(probandAppUrl);
+
+      cy.intercept({
+        method: 'GET',
+        url: `/api/v1/compliance/${study.name}/text`,
+      }).as('getText');
+
       login(probandCredentials.username, probandCredentials.password);
       changePassword(probandCredentials.password, newPassword);
+
+      cy.wait('@getText');
+
       cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
       cy.get('[data-e2e="e2e-consent-name-lastname"]')
@@ -147,16 +162,19 @@ describe('Release Test, role: "Proband", Tab: Contact', () => {
       cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]').contains('Abmelden').click();
       cy.get('#confirmButton').click();
-      cy.get('#changeaccount').click();
 
-      fetchPasswordForUserFromMailHog(pm.username).then((userCredentials) => {
-        login(pm.username, userCredentials.password);
-        changePassword(userCredentials.password, newPassword);
+      cy.get<UserCredentials>('@pmCred').then((cred) => {
+        cy.visit(adminAppUrl);
+        login(cred.username, cred.password);
+
         cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
         cy.get('[data-e2e="e2e-sidenav-content"]')
           .contains('Probenverwaltung')
           .click();
+
+        cy.get('[data-e2e="e2e-sample-management-study-select"]').click();
+        cy.get('.mat-option-text').contains(study.name).click();
 
         cy.get('[data-e2e="e2e-sample-management-component"]').click();
 

@@ -13,6 +13,7 @@ export interface Study {
   description: string;
   pm_email: string | null;
   hub_email: string | null;
+  has_required_totp: boolean;
 }
 
 /**
@@ -21,20 +22,20 @@ export interface Study {
  * @param study study to create
  */
 export function createStudy(study: Study): Chainable<string> {
-  return cy.fixture('users').then((users) => {
-    return cy
-      .login(users.existing.SysAdmin)
-      .then((token) =>
-        cy.request({
-          method: 'POST',
-          url: '/api/v1/questionnaire/studies',
-          headers: { Authorization: token },
-          body: study,
-          failOnStatusCode: false, // ignore existing study error
-        })
-      )
-      .then((response) => cy.wrap(response.body.name as string));
-  });
+  return cy
+    .loginSysAdmin()
+    .then((token) =>
+      cy.request({
+        method: 'POST',
+        url: '/api/v1/user/admin/studies',
+        headers: { Authorization: token },
+        body: study,
+        failOnStatusCode: false, // ignore existing study error
+      })
+    )
+    .then((response) => {
+      return cy.wrap(response.body.name as string);
+    });
 }
 
 /**
@@ -47,6 +48,7 @@ export function createRandomStudy(): Chainable<string> {
     description: 'Studie zur Nutzung innerhalb der E2E-Tests',
     pm_email: null,
     hub_email: null,
+    has_required_totp: false,
   });
 }
 
@@ -60,52 +62,49 @@ export function createRandomStudy(): Chainable<string> {
  */
 export function disableFourEyesOpposition(studyId: string): Chainable {
   return cy.fixture('users').then((users) => {
-    return (
-      cy
-        // .deleteProfessionalUser(users.new.ConfirmingForscher.username)
-        .createProfessionalUser(users.new.ConfirmingForscher, studyId)
-        .as('confirmingForscherCredentials')
-        .then(() => cy.createProfessionalUser(users.new.Forscher, studyId))
-        .as('forscherCredentials')
-        .then((forscherCredentials) => cy.login(forscherCredentials))
-        .then((token) =>
-          cy
-            .request({
-              method: 'POST',
-              url: '/api/v1/user/pendingstudychanges',
+    return cy
+      .createProfessionalUser(users.new.ConfirmingForscher, studyId)
+      .as('confirmingForscherCredentials')
+      .then(() => cy.createProfessionalUser(users.new.Forscher, studyId))
+      .as('forscherCredentials')
+      .then((forscherCredentials) => cy.loginProfessional(forscherCredentials))
+      .then((token) =>
+        cy
+          .request({
+            method: 'POST',
+            url: '/api/v1/user/admin/pendingstudychanges',
+            headers: { Authorization: token },
+            body: {
+              requested_for: users.new.ConfirmingForscher.username,
+              study_id: studyId,
+              has_four_eyes_opposition_to: false,
+            },
+          })
+          .then((result) => cy.wrap(result.body.id))
+      )
+      .then((pendingstudychangeId) => {
+        return cy
+          .get<UserCredentials>('@confirmingForscherCredentials')
+          .then((confirmingForscherCredentials) =>
+            cy.loginProfessional(confirmingForscherCredentials)
+          )
+          .then((token) =>
+            cy.request({
+              method: 'PUT',
+              url:
+                '/api/v1/user/admin/pendingstudychanges/' +
+                pendingstudychangeId,
               headers: { Authorization: token },
-              body: {
-                requested_for: users.new.ConfirmingForscher.username,
-                study_id: studyId,
-                has_four_eyes_opposition_to: false,
-              },
             })
-            .then((result) => cy.wrap(result.body.id))
-        )
-        .then((pendingstudychangeId) => {
-          return cy
-            .get<UserCredentials>('@confirmingForscherCredentials')
-            .then((confirmingForscherCredentials) =>
-              cy.login(confirmingForscherCredentials)
-            )
-            .then((token) =>
-              cy.request({
-                method: 'PUT',
-                url: '/api/v1/user/pendingstudychanges/' + pendingstudychangeId,
-                headers: { Authorization: token },
-              })
-            )
-            .then(() =>
-              cy.get<UserCredentials>('@confirmingForscherCredentials')
-            )
-            .then((confirmingForscherCredentials) =>
-              cy.deleteProfessionalUser(confirmingForscherCredentials.username)
-            )
-            .then(() => cy.get<UserCredentials>('@forscherCredentials'))
-            .then((forscherCredentials) =>
-              cy.deleteProfessionalUser(forscherCredentials.username)
-            );
-        })
-    );
+          )
+          .then(() => cy.get<UserCredentials>('@confirmingForscherCredentials'))
+          .then((confirmingForscherCredentials) =>
+            cy.deleteProfessionalUser(confirmingForscherCredentials.username)
+          )
+          .then(() => cy.get<UserCredentials>('@forscherCredentials'))
+          .then((forscherCredentials) =>
+            cy.deleteProfessionalUser(forscherCredentials.username)
+          );
+      });
   });
 }

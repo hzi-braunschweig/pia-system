@@ -1,0 +1,46 @@
+{
+  "name": "autheventproxy",
+  "version": "0.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node src/index.js",
+    "lint": "eslint . --ext .ts",
+    "test.int": "DOTENV_CONFIG_PATH=tests/test.env nyc mocha -r '../psa.utils.scripts/test.int/setup.hook' 'tests/integration/**/*.spec.ts' --timeout 30000"
+  },
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "@hapi/hapi": "^20.2.2",
+    "@pia/lib-messagequeue": "file:../psa.lib.messagequeue",
+    "@pia/lib-service-core": "file:../psa.lib.service-core"
+  },
+  "devDependencies": {
+    "@pia/eslint-config": "file:../psa.eslint-config",
+    "@types/chai": "^4.3.1",
+    "@types/chai-http": "^4.2.0",
+    "@types/hapi__hapi": "^20.0.10",
+    "@types/http-proxy": "^1.17.9",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^14.18.12",
+    "@typescript-eslint/eslint-plugin": "^5.24.0",
+    "@typescript-eslint/parser": "^5.24.0",
+    "@types/amqplib": "^0.8.2",
+    "@types/sinon": "^10.0.12",
+    "amqplib": "^0.10.0",
+    "chai": "^4.3.6",
+    "chai-http": "^4.3.0",
+    "dotenv": "^16.0.1",
+    "eslint": "^8.15.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-no-only-tests": "^2.6.0",
+    "eslint-plugin-security": "^1.5.0",
+    "mocha": "^10.0.0",
+    "mocha-multi-reporters": "^1.5.1",
+    "nyc": "^15.1.0",
+    "sinon": "^14.0.0",
+    "sinon-chai": "^3.7.0",
+    "source-map-support": "^0.5.21",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.4"
+  }
+}

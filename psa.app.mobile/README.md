@@ -28,6 +28,13 @@ After installing additional dependencies (see below) you can start the app by ru
 - You can choose a device if you add ` -- --target <ID>`
 - You can get a list of supported devices by adding ` -- --list`
 
+#### Keycloak login and hot reload
+
+Make sure to add the external IP and port to the allowed redirects and origins of your local `pia-proband-mobile-app-client`,
+or you will not be able to log in, due to CORS and redirect restrictions.
+
+The external IP and port is shown, when you start the app.
+
 #### iOS
 
 For building the iOS app you will need a Mac with Xcode installed. To install XCode execute:

@@ -3,7 +3,7 @@ export interface Producer<M> {
     publish: (message: M) => Promise<boolean>;
 }
 export declare class MessageQueueClient extends MessageQueueClientConnection {
-    private readonly serviceName;
+    protected readonly serviceName: string;
     constructor({ serviceName, host, port, username, password, }: {
         serviceName: string;
         host: string;

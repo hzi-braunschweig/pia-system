@@ -2,24 +2,16 @@ INSERT INTO studies (name, description, status, has_answers_notify_feature, has_
                      pm_email, hub_email)
 VALUES ('ApiTestStudie', 'ApiTestStudie Beschreibung', 'active', true, true, 'pm@pia.test', 'hub@pia.test');
 
-INSERT INTO accounts (username, password, role)
-VALUES ('QTestProband1', '', 'Proband'),
-       ('QTestProband2', '', 'Proband'),
-       ('QTestForscher1', '', 'Forscher'),
-       ('QTestProbandenManager', '', 'ProbandenManager'),
-       ('QTestUntersuchungsteam', '', 'Untersuchungsteam'),
-       ('QTestSystemAdmin', '', 'SysAdmin');
-
 INSERT INTO probands (pseudonym, study, compliance_labresults)
-VALUES ('QTestProband1', 'ApiTesStudie', TRUE),
-       ('QTestProband2', 'ApiTesStudie', TRUE),
-       ('QTestProband3', 'ApiTesStudie', TRUE),
-       ('QTestProband4', 'ApiTesStudie', TRUE);
+VALUES ('qtest-proband1', 'ApiTesStudie', TRUE),
+       ('qtest-proband2', 'ApiTesStudie', TRUE),
+       ('qtest-proband3', 'ApiTesStudie', TRUE),
+       ('qtest-proband4', 'ApiTesStudie', TRUE);
 
 INSERT INTO fcm_tokens (pseudonym, token, study)
-VALUES ('QTestProband1', 'testtoken-1', 'ApiTestStudie'),
-       ('QTestProband3', 'testtoken-3', 'a-different-study'),
-       ('QTestProband4', 'testtoken-4', 'ApiTestStudie');
+VALUES ('qtest-proband1', 'testtoken-1', 'ApiTestStudie'),
+       ('qtest-proband3', 'testtoken-3', 'a-different-study'),
+       ('qtest-proband4', 'testtoken-4', 'ApiTestStudie');
 
 INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
@@ -86,7 +78,7 @@ VALUES (9999996,
         'ApiTestStudie',
         99999,
         'ApiTestQuestionnaire',
-        'QTestProband1',
+        'qtest-proband1',
         '08.08.2017',
         null,
         null,
@@ -96,7 +88,7 @@ VALUES (9999996,
         'ApiTestStudie',
         99999,
         'ApiTestQuestionnaire',
-        'QTestProband1',
+        'qtest-proband1',
         '08.08.2017',
         null,
         null,
@@ -106,7 +98,7 @@ VALUES (9999996,
         'ApiTestStudie',
         99998,
         'ApiTestQuestionnaire',
-        'QTestProband1',
+        'qtest-proband1',
         '01.08.2017',
         '06.08.2017',
         null,
@@ -136,16 +128,16 @@ VALUES (9999996, 99991, 99991, 1, 'Ja'),
 
 
 INSERT INTO notification_schedules
-VALUES (99996, 'QTestProband1', '2019-07-09 09:56:00', 'qReminder', 99995, null, null),
-       (99997, 'QTestProband1', '2019-07-09 09:56:00', 'qReminder', 9999996, null, null),
-       (99998, 'QTestProband1', '2019-07-09 09:56:00', 'sample', 'LAB_RESULT-9999999999', null, null),
-       (99999, 'QTestProband1', '2019-07-09 09:56:00', 'custom', '', 'I am custom title', 'Here is custom body'),
-       (99991, 'QTestProband1', '2019-07-09 09:56:00', 'questionnaires_stats_aggregator', '', 'I am custom title', 'Here is custom body');
+VALUES (99996, 'qtest-proband1', '2019-07-09 09:56:00', 'qReminder', 99995, null, null),
+       (99997, 'qtest-proband1', '2019-07-09 09:56:00', 'qReminder', 9999996, null, null),
+       (99998, 'qtest-proband1', '2019-07-09 09:56:00', 'sample', 'LAB_RESULT-9999999999', null, null),
+       (99999, 'qtest-proband1', '2019-07-09 09:56:00', 'custom', '', 'I am custom title', 'Here is custom body'),
+       (99991, 'qtest-proband1', '2019-07-09 09:56:00', 'questionnaires_stats_aggregator', '', 'I am custom title', 'Here is custom body');
 
 INSERT INTO lab_results (id, user_id, order_id, date_of_sampling, status, remark, new_samples_sent, performing_doctor,
                          dummy_sample_id)
 VALUES ('LAB_RESULT-9999999999',
-        'QTestProband1',
+        'qtest-proband1',
         null,
         null,
         'new',

@@ -8,24 +8,9 @@ INSERT INTO studies (name)
 VALUES ('ApiTestStudie1'),
        ('ApiTestStudie2');
 
-INSERT INTO accounts (username, password, role)
-VALUES ('ApiTestProband1', '', 'Proband'),
-       ('ApiTestProband2', '', 'Proband'),
-
-       ('forscher1@apitest.de', '', 'Forscher'),
-       ('forscher2@apitest.de', '', 'Forscher'),
-       ('ut1@apitest.de', '', 'Untersuchungsteam'),
-       ('ut2@apitest.de', '', 'Untersuchungsteam'),
-       ('pm1@apitest.de', '', 'ProbandenManager'),
-       ('pm2@apitest.de', '', 'ProbandenManager'),
-       ('pmNoEmail', '', 'ProbandenManager'),
-       ('pm4@apitest.de', '', 'ProbandenManager'),
-       ('sa1@apitest.de', '', 'SysAdmin'),
-       ('sa2@apitest.de', '', 'SysAdmin');
-
 INSERT INTO probands (pseudonym, compliance_labresults, compliance_samples, compliance_bloodsamples, study)
-VALUES ('ApiTestProband1', TRUE, TRUE, TRUE, 'ApiTestStudie1'),
-       ('ApiTestProband2', TRUE, TRUE, TRUE, 'ApiTestStudie2');
+VALUES ('qtest-api-proband1', TRUE, TRUE, TRUE, 'ApiTestStudie1'),
+       ('qtest-api-proband2', TRUE, TRUE, TRUE, 'ApiTestStudie2');
 
 INSERT INTO study_users (study_id, user_id, access_level)
 VALUES ('ApiTestStudie1', 'forscher1@apitest.de', 'write'),
@@ -34,7 +19,7 @@ VALUES ('ApiTestStudie1', 'forscher1@apitest.de', 'write'),
        ('ApiTestStudie1', 'ut2@apitest.de', 'write'),
        ('ApiTestStudie1', 'pm1@apitest.de', 'write'),
        ('ApiTestStudie1', 'pm2@apitest.de', 'write'),
-       ('ApiTestStudie1', 'pmNoEmail', 'write'),
+       ('ApiTestStudie1', 'qtest-pm_no_email', 'write'),
        ('ApiTestStudie2', 'pm4@apitest.de', 'write');
 
 INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
@@ -47,18 +32,18 @@ VALUES (123456, 'ApiTestStudie1', 'ApiQuestionnaireName1', 1, 0, 'once', 0, 0, 3
         NULL, NULL, NULL, NULL, FALSE);
 INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue,
                                      date_of_release_v1, date_of_release_v2, cycle, status)
-VALUES (123456, 'ApiTestStudie1', 123456, 'ApiQuestionnaireName1', 'ApiTestProband1', '2021-10-13T08:43:23.067+02:00',
+VALUES (123456, 'ApiTestStudie1', 123456, 'ApiQuestionnaireName1', 'qtest-api-proband1', '2021-10-13T08:43:23.067+02:00',
         NULL, NULL, 0, 'active'),
-       (123457, 'ApiTestStudie1', 123456, 'ApiQuestionnaireName1', 'ApiTestProband1', '2021-10-13T08:43:23.068+02:00',
+       (123457, 'ApiTestStudie1', 123456, 'ApiQuestionnaireName1', 'qtest-api-proband1', '2021-10-13T08:43:23.068+02:00',
         NULL, NULL, 1, 'inactive'),
-       (123458, 'ApiTestStudie1', 123456, 'ApiQuestionnaireName1', 'ApiTestProband1', '2021-10-13T08:43:23.068+02:00',
+       (123458, 'ApiTestStudie1', 123456, 'ApiQuestionnaireName1', 'qtest-api-proband1', '2021-10-13T08:43:23.068+02:00',
         NULL, NULL, 1, 'expired'),
-       (123459, 'ApiTestStudie1', 123456, 'ApiQuestionnaireName1', 'ApiTestProband1', '2021-10-13T08:43:23.068+02:00',
+       (123459, 'ApiTestStudie1', 123456, 'ApiQuestionnaireName1', 'qtest-api-proband1', '2021-10-13T08:43:23.068+02:00',
         NULL, NULL, 1, 'released_once'),
-       (123460, 'ApiTestStudie1', 123457, 'ApiQuestionnaireName2', 'ApiTestProband1', '2021-10-13T08:43:23.068+02:00',
+       (123460, 'ApiTestStudie1', 123457, 'ApiQuestionnaireName2', 'qtest-api-proband1', '2021-10-13T08:43:23.068+02:00',
         NULL, NULL, 1, 'active');
 INSERT INTO pending_compliance_changes (id, requested_by, requested_for, proband_id, compliance_labresults_from,
                                         compliance_labresults_to, compliance_samples_from, compliance_samples_to,
                                         compliance_bloodsamples_from, compliance_bloodsamples_to)
-VALUES (1234560, 'pm1@apitest.de', 'pm2@apitest.de', 'ApiTestProband1', TRUE, FALSE, TRUE, FALSE, TRUE, TRUE),
-       (1234561, 'pm1@apitest.de', 'pm2@apitest.de', 'ApiTestProband1', TRUE, FALSE, TRUE, TRUE, TRUE, TRUE);
+VALUES (1234560, 'pm1@apitest.de', 'pm2@apitest.de', 'qtest-api-proband1', TRUE, FALSE, TRUE, FALSE, TRUE, TRUE),
+       (1234561, 'pm1@apitest.de', 'pm2@apitest.de', 'qtest-api-proband1', TRUE, FALSE, TRUE, TRUE, TRUE, TRUE);

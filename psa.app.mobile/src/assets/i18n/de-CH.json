@@ -16,7 +16,10 @@
     "WARNING": "Warnung",
     "SUBMISSION": "Einreichung",
     "CLOSE": "Schliessen",
-    "OPEN": "Öffnen"
+    "OPEN": "Öffnen",
+    "GO_BACK": "Zurück",
+    "PLEASE_CLICK": "Bitte klicken",
+    "SELECT_DATE": "Datum auswählen"
   },
   "APP": {
     "MENU": {
@@ -53,6 +56,7 @@
     "TOAST_MSG_LOGIN_GIVE_USERNAME": "Bitte geben Sie zunächst Ihren Nutzernamen an.",
     "TOAST_MSG_NEW_PASSWORD_CONFIRMATION": "Sind Sie sicher, dass Sie ein neues Passwort per E-Mail anfordern möchten?",
     "TOAST_MSG_NEW_PASSWORD_RESULT": "Falls es sich um eine:n gültigen Benutzer:in mit bekannter E-Mail-Adresse handelt, wurde eine E-Mail mit einem neuem Passwort versandt.",
+    "ALERT_TRY_AGAIN_LATER": "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es später noch einmal.",
     "CONNECTING_TO_SERVER": "Verbinde...",
     "AUTHENTICATING": "Authentifiziere...",
     "ENTER_BACKEND_URL": "URL eingeben",
@@ -100,7 +104,6 @@
   "QUESTIONNAIRE_QUESTIONS": {
     "NUMERIC_INPUT_MSG_NUMBER_BETWEEN": "Bitte geben Sie einen Wert zwischen {{restriction_min}} und {{restriction_max}} an.",
     "NUMERIC_INPUT_MSG_MUST_FULL_NUMBER": "Der Wert muss eine ganze Zahl sein.",
-    "PLEASE_CLICK": "Bitte klicken",
     "DATE_INPUT_MSG1": "Bitte geben Sie ein Datum zwischen dem {{restriction_min}} und dem {{restriction_max}} an.",
     "SAMPLE_INPUT_MSG_PROBES_NO_MATCH": "Proben-IDs passen nicht zueinander.",
     "SAMPLE_INPUT_MSG_PROBE_ALREADY_SCANNED": "Eine Probe mit dieser ID ist leider schon eingescannt.",
@@ -126,7 +129,8 @@
     "ALERT_SUBTITLE_ANSWERS_SENT": "Ihre Antworten wurden jetzt abgeschickt.",
     "ALERT_SUBTITLE_SENT_LAST_TIME": "Ihre Antworten wurden jetzt zum letzten Mal abgeschickt.",
     "NO_RESULTS": "Keine Fragebögen gefunden",
-    "UPLOADED_IMAGE_TOO_LARGE": "Es können nur Dateien mit einer Grösse von bis zu 20MB hochgeladen werden. Bitte prüfen Sie Ihre Dateigrösse."
+    "UPLOADED_IMAGE_TOO_LARGE": "Es können nur Dateien mit einer Grösse von bis zu 20MB hochgeladen werden. Bitte prüfen Sie Ihre Dateigrösse.",
+    "NO_IMAGE_UPLOAD": "Noch kein Foto hochgeladen."
   },
   "QUESTIONNAIRES": {
     "TITLE": "Übersicht",
@@ -136,7 +140,8 @@
   },
   "SETTINGS": {
     "TITLE": "Einstellungen",
-    "MANAGE_PASSWORD": "Passwort verwalten",
+    "MANAGE_PASSWORD": "Passwort und Kontozugriff verwalten",
+    "DELETE_ACCOUNT": "Account und persönliche Daten löschen",
     "LICENSES": "Software-Lizenzen",
     "GROUP_TITLE_ACCOUNT": "Account",
     "GROUP_TITLE_ABOUT": "Über PIA"
@@ -148,5 +153,18 @@
     "NO_ADDRESS_TEXT": "Derzeit sind keine Kontaktinformationen für diese Studie verfügbar.",
     "CONFIRMATION_MSG1": "Sind Sie sicher, dass Sie neues Material anfordern möchten?",
     "TOAST_MSG_NEW_SET_REQUESTED": "Neues Nasenabstrich-Set ist erfolgreich angefragt worden!"
+  },
+  "DELETE_ACCOUNT": {
+    "TITLE": "Account und persönliche Daten löschen",
+    "TITLE_SHORT": "Account löschen",
+    "TEXT_KEEP_STUDY_ANSWERS": "Sie möchten Ihren PIA Account dauerhaft löschen. Wollen Sie der Studie ermöglichen, Ihre bereits eingegebenen Fragebogenantworten weiterhin auszuwerten?",
+    "TEXT_DELETE": "Hiermit löschen Sie Ihren PIA Account und Ihre in PIA gespeicherten Kontaktdaten dauerhaft und unwiderruflich. Ihre bereits eingegebenen Fragebogenantworten bleiben erhalten. Sind Sie sich sicher?",
+    "TEXT_DELETE_INCLUDING_ANSWERS": "Hiermit löschen Sie Ihren PIA Account, Ihre in PIA gespeicherten Kontaktdaten und Fragenbogenantworten dauerhaft und unwiderruflich. Sind Sie sich sicher?",
+    "TEXT_CONFIRM": "Ihr Account und Ihre Daten wurden wie gewünscht gelöscht.",
+    "TEXT_ERROR": "Fehler beim Löschen Ihres PIA Accounts. Bitte wenden Sie sich an das Studienzentrum.",
+    "BUTTON_DELETE_NOW": "Jetzt löschen",
+    "BUTTON_ALLOW": "Ja, ermöglichen",
+    "BUTTON_DENY": "Nein, alles löschen",
+    "BUTTON_LOGOUT": "Zur Anmeldung"
   }
 }

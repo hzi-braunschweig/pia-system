@@ -13,12 +13,6 @@ export const Version: Plugin<unknown> = {
   name: 'version-info',
   version: '1.0.0',
   register: function (server: Server) {
-    if (process.env['ROUTE_PREFIX'] === undefined) {
-      throw new Error(
-        'env variable "ROUTE_PREFIX" must be configured for version route'
-      );
-    }
-
     const prefix = 'VERSION_INFO_';
     const response = Object.fromEntries(
       Object.entries(process.env)
@@ -33,7 +27,7 @@ export const Version: Plugin<unknown> = {
 
     server.route({
       method: 'GET',
-      path: process.env['ROUTE_PREFIX'] + '/version',
+      path: '/version',
       handler: () => {
         return response;
       },

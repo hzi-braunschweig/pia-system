@@ -5,55 +5,34 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
-import {
-  DateAdapter,
-  MAT_DATE_FORMATS,
-  MAT_DATE_LOCALE,
-} from '@angular/material/core';
-import { AlertService } from '../../_services/alert.service';
-import 'datejs';
-import {
-  APP_DATE_FORMATS,
-  AppDateAdapter,
-} from 'src/app/_helpers/date-adapter';
 import { TranslateService } from '@ngx-translate/core';
-import { AuthenticationManager } from '../../_services/authentication-manager.service';
+
+import { AlertService } from '../../_services/alert.service';
 import { ComplianceManager } from '../../_services/compliance-manager.service';
+import { CurrentUser } from '../../_services/current-user.service';
 import { ComplianceType } from '../../psa.app.core/models/compliance';
+import { StudyAddress } from '../../psa.app.core/models/studyAddress';
+import { QuestionnaireService } from '../../psa.app.core/providers/questionnaire-service/questionnaire-service';
 
 @Component({
   templateUrl: 'contact.component.html',
   styleUrls: ['./contact.component.scss'],
-  providers: [
-    { provide: MAT_DATE_LOCALE, useValue: 'de' },
-    {
-      provide: DateAdapter,
-      useClass: AppDateAdapter,
-    },
-    {
-      provide: MAT_DATE_FORMATS,
-      useValue: APP_DATE_FORMATS,
-    },
-  ],
 })
 export class ContactComponent implements OnInit {
-  currentRole: string;
-  addresses: any[];
-  noAddresses: string = null;
-  hasSampleCompliance: boolean;
+  public addresses: StudyAddress[];
+  public noAddresses: string = null;
+  public hasSampleCompliance: boolean;
 
   constructor(
-    public translate: TranslateService,
-    private alertService: AlertService,
-    private questionnaireService: QuestionnaireService,
-    private auth: AuthenticationManager,
-    private complianceManager: ComplianceManager
+    public readonly user: CurrentUser,
+    private readonly translate: TranslateService,
+    private readonly alertService: AlertService,
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly complianceManager: ComplianceManager
   ) {}
 
-  async ngOnInit(): Promise<void> {
+  public async ngOnInit(): Promise<void> {
     try {
-      this.currentRole = this.auth.getCurrentRole();
       this.hasSampleCompliance =
         await this.complianceManager.userHasCompliances([
           ComplianceType.SAMPLES,

@@ -20,26 +20,28 @@ import {
 } from '../../../../psa.app.core/models/compliance';
 import { MockBuilder } from 'ng-mocks';
 import { AppModule } from '../../../../app.module';
-import { AuthenticationManager } from '../../../../_services/authentication-manager.service';
 import {
   createComplianceDataResponse,
   createComplianceText,
 } from '../../../../psa.app.core/models/instance.helper.spec';
+import { CurrentUser } from '../../../../_services/current-user.service';
 import SpyObj = jasmine.SpyObj;
+import { Router } from '@angular/router';
 
 describe('ComplianceEditProbandComponent', () => {
   let component: ComplianceEditProbandComponent;
   let fixture: ComponentFixture<ComplianceEditProbandComponent>;
   let complianceService: SpyObj<ComplianceService>;
   let complianceManager: SpyObj<ComplianceManager>;
-  let auth: SpyObj<AuthenticationManager>;
+  let user: SpyObj<CurrentUser>;
   let alertService: SpyObj<AlertService>;
+  let router: SpyObj<Router>;
 
   beforeEach(async () => {
     // Provider and Services
     complianceService = jasmine.createSpyObj<ComplianceService>(
       'ComplianceService',
-      ['getComplianceText', 'getComplianceAgreementPdfForUser']
+      ['getComplianceText', 'getComplianceAgreementPdfForProband']
     );
     complianceManager = jasmine.createSpyObj<ComplianceManager>(
       'ComplianceManager',
@@ -48,29 +50,28 @@ describe('ComplianceEditProbandComponent', () => {
         'updateComplianceAgreementForCurrentUser',
       ]
     );
-    auth = jasmine.createSpyObj<AuthenticationManager>(
-      'AuthenticationManager',
-      ['getCurrentStudy', 'getCurrentUsername']
-    );
+    user = jasmine.createSpyObj<CurrentUser>([], {
+      study: 'Teststudy',
+      username: 'Testproband1',
+    });
     alertService = jasmine.createSpyObj('AlertService', ['errorObject']);
+    router = jasmine.createSpyObj('Router', ['navigate']);
 
     // Build Base Module
     await MockBuilder(ComplianceEditProbandComponent, AppModule)
       .mock(ComplianceService, complianceService)
       .mock(ComplianceManager, complianceManager)
       .mock(AlertService, alertService)
-      .mock(AuthenticationManager, auth);
+      .mock(CurrentUser, user)
+      .mock(Router, router);
   });
 
   function createComponent(
-    username: string,
     complianceOfCurrent: ComplianceDataResponse,
     complianceOfOther: ComplianceDataResponse,
     complianceText: ComplianceText
   ): void {
     // Setup mocks before creating component
-    auth.getCurrentUsername.and.returnValue(username);
-    auth.getCurrentStudy.and.returnValue('Teststudy');
     complianceManager.getComplianceAgreementForCurrentUser.and.resolveTo(
       complianceOfCurrent
     );
@@ -85,18 +86,17 @@ describe('ComplianceEditProbandComponent', () => {
   }
 
   function createComponentForEditMode(): void {
-    createComponent('Testproband1', null, null, createComplianceText());
+    createComponent(null, null, createComplianceText());
   }
 
   function createComponentForReadOnlyMode(): void {
-    createComponent('Testproband1', createComplianceDataResponse(), null, null);
+    createComponent(createComplianceDataResponse(), null, null);
   }
 
   describe('Initialization', () => {
     it('should open in edit mode if no compliance exists', fakeAsync(() => {
       createComponentForEditMode();
       // check result
-      expect(component.study).toEqual('Teststudy');
       expect(component.studyWrapper.editMode).toBeTrue();
       expect(component.studyWrapper.complianceText).toEqual(
         createComplianceText().compliance_text
@@ -112,7 +112,6 @@ describe('ComplianceEditProbandComponent', () => {
     it('should open in read only mode if compliance exists', fakeAsync(() => {
       createComponentForReadOnlyMode();
       // check result
-      expect(component.study).toEqual('Teststudy');
       expect(component.studyWrapper.editMode).toBeFalse();
       expect(component.studyWrapper.complianceText).toEqual(null);
       expect(component.studyWrapper.complianceTextObject).toEqual(
@@ -150,9 +149,8 @@ describe('ComplianceEditProbandComponent', () => {
       createComponentForReadOnlyMode();
       expect(component).toBeTruthy();
       component.downloadPdf();
-      tick();
       expect(
-        complianceService.getComplianceAgreementPdfForUser
+        complianceService.getComplianceAgreementPdfForProband
       ).toHaveBeenCalledWith('Teststudy', 'Testproband1');
     }));
   });
@@ -178,6 +176,29 @@ describe('ComplianceEditProbandComponent', () => {
         compliance_system: {},
         compliance_questionnaire: [],
       });
+    }));
+
+    it('should navigate to home after it has been submitted', fakeAsync(() => {
+      createComponentForEditMode();
+      component.studyWrapper.usedFormControls = new Map();
+
+      component.onSubmit(component.studyWrapper);
+      tick();
+
+      expect(router.navigate).toHaveBeenCalledWith(['home']);
+    }));
+
+    it('should not navigate to home after when submit fails', fakeAsync(() => {
+      complianceManager.updateComplianceAgreementForCurrentUser.and.rejectWith(
+        'Error'
+      );
+      createComponentForEditMode();
+      component.studyWrapper.usedFormControls = new Map();
+
+      component.onSubmit(component.studyWrapper);
+      tick();
+
+      expect(router.navigate).not.toHaveBeenCalled();
     }));
   });
 });

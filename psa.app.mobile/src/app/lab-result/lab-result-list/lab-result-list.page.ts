@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import { AuthService } from '../../auth/auth.service';
 import { SampleTrackingClientService } from '../sample-tracking-client.service';
@@ -14,14 +14,16 @@ import { LabResult } from '../lab-result.model';
   selector: 'app-lab-result-list',
   templateUrl: './lab-result-list.page.html',
 })
-export class LabResultListPage {
+export class LabResultListPage implements OnInit {
   labResults: LabResult[] = null;
 
   constructor(
     private auth: AuthService,
     private sampleTrackingClient: SampleTrackingClientService
-  ) {
-    this.fetchLabResults();
+  ) {}
+
+  public async ngOnInit() {
+    await this.fetchLabResults();
   }
 
   isEmpty() {

@@ -9,7 +9,7 @@ const {
   QuestionnaireCompliance,
   QuestionnaireTextCompliance,
 } = require('../db');
-const transactionWrapper = require('../lib/transactionWrapper');
+const transactionWrapper = require('../utils/transactionWrapper');
 
 class ComplianceRepository {
   /**

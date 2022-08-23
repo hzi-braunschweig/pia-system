@@ -4,30 +4,25 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import {
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  OnInit,
-  ViewChild,
-} from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
+import { FormControl } from '@angular/forms';
+import { SelectionModel } from '@angular/cdk/collections';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { TranslateService } from '@ngx-translate/core';
-import { Router } from '@angular/router';
-import { SelectionModel } from '@angular/cdk/collections';
+import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
+
 import { PlannedProband } from '../../psa.app.core/models/plannedProband';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { DataService } from '../../_services/data.service';
-import { fromEvent } from 'rxjs';
 import { DialogDeleteComponent } from '../../_helpers/dialog-delete';
-import 'datejs';
 import { DialogNewPlannedProbandsComponent } from 'src/app/dialogs/new-planned-probands-dialog/new-planned-probands-dialog.component';
 import { MatPaginatorIntlGerman } from '../../_helpers/mat-paginator-intl';
-import { StudyAccess } from 'src/app/psa.app.core/models/study_access';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { PlannedProbandStudyAccess } from '../../psa.app.core/models/studyAccess';
+import { format } from 'date-fns';
 
 @Component({
   selector: 'app-planned-probands',
@@ -41,80 +36,64 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
   ],
 })
 export class PlannedProbandsComponent implements OnInit {
-  dataSource: MatTableDataSource<PlannedProband>;
-  plannedProbands: PlannedProband[] = [];
+  @ViewChild(MatPaginator, { static: true }) public paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true }) public sort: MatSort;
 
-  displayedColumns = [
+  public dataSource: MatTableDataSource<PlannedProband>;
+  public displayedColumns = [
     'select',
     'user_id',
     'study_id',
     'activated_at',
     'delete',
   ];
-  selection = new SelectionModel<any>(true, []);
-  @ViewChild('filter', { static: true }) filter: ElementRef;
-  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
-  needsMaterialFilterCheckbox: any;
-  isLoading: boolean = true;
+  public filterFormControl = new FormControl('');
+  public selection = new SelectionModel(true, []);
+  public isLoading: boolean = true;
 
   constructor(
     private authService: AuthService,
     private translate: TranslateService,
     private router: Router,
-    private cdr: ChangeDetectorRef,
     private dataService: DataService,
     public dialog: MatDialog
-  ) {}
-
-  ngOnInit(): void {
-    this.loadData();
+  ) {
+    this.filterFormControl.valueChanges
+      .pipe(debounceTime(150))
+      .pipe(distinctUntilChanged())
+      .pipe(filter(() => !!this.dataSource))
+      .subscribe((value) => (this.dataSource.filter = value));
   }
 
-  loadData(): void {
-    this.authService.getPlannedProbands().then((results: PlannedProband[]) => {
-      this.plannedProbands = results;
-      this.setPlannedProbandsStatus();
-      this.setPlannedProbandsStudies();
-      this.dataSource = new MatTableDataSource(this.plannedProbands);
-      this.isLoading = false;
-      this.dataSource.paginator = this.paginator;
-      this.dataSource.sort = this.sort;
-
-      fromEvent(this.filter.nativeElement, 'keyup')
-        .pipe(debounceTime(150))
-        .pipe(distinctUntilChanged())
-        .subscribe(() => {
-          if (!this.dataSource) {
-            return;
-          }
-          this.dataSource.filter = this.filter.nativeElement.value;
-        });
-      this.cdr.detectChanges();
-    });
+  public async ngOnInit(): Promise<void> {
+    await this.loadData();
   }
 
-  setPlannedProbandsStatus(): void {
-    this.plannedProbands.forEach((plannedProband: PlannedProband) => {
+  private async loadData(): Promise<void> {
+    const plannedProbands = await this.authService.getPlannedProbands();
+    this.setPlannedProbandsStatus(plannedProbands);
+    this.setPlannedProbandsStudies(plannedProbands);
+    this.dataSource = new MatTableDataSource(plannedProbands);
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+    this.isLoading = false;
+  }
+
+  private setPlannedProbandsStatus(plannedProbands: PlannedProband[]): void {
+    plannedProbands.forEach((plannedProband: PlannedProband) => {
       plannedProband.activated_at = plannedProband.activated_at
         ? this.translate.instant('PLANNED_PROBANDS.ACTIVATED_AT') +
-          new Date(plannedProband.activated_at).toString('dd.MM.yy HH:mm')
+          format(new Date(plannedProband.activated_at), 'dd.MM.yy HH:mm')
         : this.translate.instant('PLANNED_PROBANDS.IN_PLANNING');
     });
   }
 
-  setPlannedProbandsStudies(): void {
-    this.plannedProbands.forEach((plannedProband: PlannedProband) => {
+  private setPlannedProbandsStudies(plannedProbands: PlannedProband[]): void {
+    plannedProbands.forEach((plannedProband: PlannedProband) => {
       plannedProband.studies = plannedProband.study_accesses
-        .map((access: StudyAccess) => access.study_id)
+        .map((access: PlannedProbandStudyAccess) => access.study_id)
         .toString();
     });
-  }
-
-  filterSelectMethod(): void {
-    if (!this.dataSource) {
-      return;
-    }
   }
 
   resetFilter(): void {

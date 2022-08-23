@@ -7,7 +7,7 @@
 import Boom from '@hapi/boom';
 import { StudyRepository } from '../../repositories/studyRepository';
 import { EntityNotFoundError } from '../../errors';
-import { Study } from '../../models/study';
+import { DbStudy } from '../../models/study';
 
 /**
  * @description internal interactor that handles user requests
@@ -16,7 +16,7 @@ export class InternalStudyInteractor {
   /**
    * Gets the user's primary study from the DB
    */
-  public static async getStudy(studyName: string): Promise<Study> {
+  public static async getStudy(studyName: string): Promise<DbStudy> {
     try {
       return await StudyRepository.getStudy(studyName);
     } catch (err) {

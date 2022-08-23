@@ -49,7 +49,7 @@ describe('ProbandsUntersuchungsteamComponent', () => {
       expect(dialog.open).toHaveBeenCalledTimes(1);
       afterClosedSubject.next('testuser');
       tick();
-      expect(component.probandsList.fetchUsers).toHaveBeenCalledTimes(1);
+      expect(component.probandsList.fetchProbands).toHaveBeenCalledTimes(1);
     }));
 
     it('should present a button to navigate to proband creation', fakeAsync(() => {

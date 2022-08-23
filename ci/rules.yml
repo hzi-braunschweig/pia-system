@@ -1,0 +1,6 @@
+.job-exclude-scheduled-pipelines:
+  rules:
+    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+      when: never
+    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
+      when: never

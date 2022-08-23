@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import mapping from './backend-mapping';
+import { backendMapping } from './backend-mapping';
 import { config } from '../config';
 
 /**
@@ -14,9 +14,13 @@ import { config } from '../config';
  */
 export function hasExistingPseudonymPrefix(prefix: string): boolean {
   prefix = prefix.replace(/-+$/, '');
-  const backendUrl = config.backendApiUrl.replace(/\/+$/, '');
+  const backendUrl = config.probandAppUrl.replace(/\/+$/, '');
 
-  return mapping.some((item) => {
+  if (config.isDevelopmentSystem && prefix === 'DEV') {
+    return true;
+  }
+
+  return backendMapping.some((item) => {
     const mappingUrl = item.url.replace(/\/+$/, '');
     return item.prefix === prefix && backendUrl === mappingUrl;
   });

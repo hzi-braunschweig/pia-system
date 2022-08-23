@@ -7,6 +7,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
+  EmailRecipient,
   EmailRequest,
   NotificationCreationRequest,
   NotificationCreationResponse,
@@ -29,8 +30,10 @@ export class NotificationService {
    * Sends a mail to multiple probands. Returns a list of mail addresses to which
    * the mail was successfully sent.
    */
-  sendEmail(email: EmailRequest): Promise<string[]> {
-    return this.http.post<string[]>(this.apiUrl + 'email', email).toPromise();
+  sendEmail(email: EmailRequest): Promise<EmailRecipient[]> {
+    return this.http
+      .post<EmailRecipient[]>(this.apiUrl + 'email', email)
+      .toPromise();
   }
 
   sendNotification(

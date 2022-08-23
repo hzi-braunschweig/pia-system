@@ -9,16 +9,15 @@ import chaiHttp from 'chai-http';
 import chaiExclude from 'chai-exclude';
 import { StatusCodes } from 'http-status-codes';
 import sinon, { createSandbox, SinonSandbox } from 'sinon';
-import JWT from 'jsonwebtoken';
 import * as util from 'util';
 import fetchMocker from 'fetch-mock';
 
 import { HttpClient } from '@pia-system/lib-http-clients-internal';
-import secretOrPrivateKey from '../secretOrPrivateKey';
 import * as server from '../../src/server';
 import { Compliance, ComplianceText, sequelize } from '../../src/db';
 import { messageQueueService } from '../../src/services/messageQueueService';
 import { config } from '../../src/config';
+import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -31,33 +30,19 @@ const apiAddress = `http://localhost:${config.public.port}`;
 const delay = util.promisify(setTimeout);
 const DELAY_TIME = 10;
 
-const probandSession = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestproband1',
-  groups: ['QTeststudie1', 'QTeststudie2'],
-};
-const probandSession2 = {
-  id: 2,
-  role: 'Proband',
-  username: 'QTestproband2',
-  groups: ['QTeststudie44', 'QTeststudie55'],
-};
-
-const probandToken = JWT.sign(probandSession, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const probandHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband1',
+  studies: ['QTeststudie1'],
 });
-const probandToken2 = JWT.sign(probandSession2, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const probandHeader2 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband2',
+  studies: ['QTeststudie44'],
 });
-
-const probandHeader = { authorization: probandToken };
-const probandHeader2 = { authorization: probandToken2 };
 
 const compl = {
-  username: 'QTestproband1',
+  username: 'qtest-proband1',
   study: 'QTeststudie1',
   timestamp: '2020-05-29 10:17:02',
   complianceText: 'newest',
@@ -133,20 +118,22 @@ describe('Compliance API with MessageQueue', () => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       .callsFake(fetchMock);
+    AuthServerMock.probandRealm().returnValid();
   });
 
   afterEach(() => {
+    AuthServerMock.cleanAll();
     sandbox.restore();
     fetchMock.restore();
   });
 
-  describe('POST /compliance/{study}/agree/{userId}', () => {
+  describe('POST /{studyName}/agree/{userId}', () => {
     beforeEach(() => {
       fetchMock
-        .get('express:/user/users/QTestproband1/ids', {
+        .get('express:/user/users/qtest-proband1/ids', {
           body: 'fff70d12-847e-4d73-97ba-24d1571e37ab',
         })
-        .get('express:/user/users/QTestproband1/mappingId', {
+        .get('express:/user/users/qtest-proband1/mappingId', {
           body: 'e959c22a-ab73-4b70-8871-48c23080b87b',
         })
         .catch(StatusCodes.SERVICE_UNAVAILABLE);
@@ -175,7 +162,7 @@ describe('Compliance API with MessageQueue', () => {
       });
       const res = await chai
         .request(apiAddress)
-        .post('/compliance/QTeststudie1/agree/QTestproband1')
+        .post('/QTeststudie1/agree/qtest-proband1')
         .set(probandHeader)
         .send(compl_req);
 
@@ -193,18 +180,18 @@ describe('Compliance API with MessageQueue', () => {
       );
       expect(complDb.complianceText).to.equal(compl.complianceText);
 
-      while (pseudonym !== 'QTestproband1') {
+      while (pseudonym !== 'qtest-proband1') {
         await delay(DELAY_TIME);
       }
     });
 
-    it('should return 401 if an unauthorized proband tries', async () => {
+    it('should return 403 if an unauthorized proband tries', async () => {
       const res = await chai
         .request(apiAddress)
-        .post('/compliance/QTeststudie1/agree/QTestproband2')
+        .post('/QTeststudie1/agree/qtest-proband2')
         .set(probandHeader2)
         .send(compl_req);
-      expect(res).to.have.status(StatusCodes.UNAUTHORIZED);
+      expect(res).to.have.status(StatusCodes.FORBIDDEN);
     });
   });
 });

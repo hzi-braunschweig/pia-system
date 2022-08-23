@@ -15,7 +15,7 @@ import localeDe from '@angular/common/locales/de';
 import localeEn from '@angular/common/locales/en';
 import localeDeExtra from '@angular/common/locales/extra/de';
 import localeEnExtra from '@angular/common/locales/extra/en';
-import { LOCALE_ID, NgModule } from '@angular/core';
+import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule, Title } from '@angular/platform-browser';
@@ -24,7 +24,6 @@ import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { MarkdownModule } from 'ngx-markdown';
 import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
-import { MatomoModule } from 'ngx-matomo-v9';
 import { NgxUsefulSwiperModule } from 'ngx-useful-swiper';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -40,7 +39,6 @@ import { DialogNewUserComponent } from './dialogs/new-user-dialog/new-user-dialo
 import { DialogStudyComponent } from './dialogs/study-dialog/study-dialog';
 import { DialogUserEditComponent } from './dialogs/user-edit-dialog/user-edit-dialog';
 import { DialogUserStudyAccessComponent } from './dialogs/user-study-dialog/user-study-dialog';
-import { ChangePasswordComponent } from './features/changePassword/changePassword.component';
 import { CollectiveLoginLettersComponent } from './features/collective-login-letters/collective-login-letters.component';
 import { CollectiveSampleLettersComponent } from './features/collective-sample-letters/collective-sample-letters.component';
 import { SideNavigationComponent } from './features/side-navigation/side-navigation.component';
@@ -56,7 +54,6 @@ import {
   ConfirmNewMaterialRequestComponent,
   RequestNewMaterialComponent,
 } from './pages/laboratories/request-new-material/request-new-material.component';
-import { LoginComponent } from './pages/login/login.component';
 import { LogsDeleteSysAdminComponent } from './pages/logsDelete-sysAdmin/logsDelete-sysAdmin.component';
 import { PlannedProbandsComponent } from './pages/planned-probands/planned-probands.component';
 import { ContactProbandComponent } from './pages/probands/contact-proband/contact-proband.component';
@@ -75,17 +72,10 @@ import {
 import { QuestionnaireResearcherComponent } from './pages/questionnaires/questionnaire-researcher/questionnaire-researcher.component';
 import { QuestionnairesResearcherComponent } from './pages/questionnaires/questionnaires-researcher/questionnaires-researcher.component';
 import { SampleManagementComponent } from './pages/samples/sample-management/sample-management.component';
-import {
-  ImplementStatusPipe,
-  ImplementStatusPipe2,
-  RemarkDialogComponent,
-  SamplesComponent,
-  ScanDialogComponent,
-} from './pages/samples/samples/samples.component';
+import { SamplesComponent } from './pages/samples/samples/samples.component';
 import { SettingsComponent } from './pages/settings/settings.component';
 import { StudiesComponent } from './pages/studies/studies/studies.component';
 import { StudyAccessesComponent } from './pages/studies/study-accesses/study-accesses.component';
-import { GetActivityTypePipe } from './pipes/acitivity-type.pipe';
 import { StripMarkdown } from './pipes/strip-markdown.pipe';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
@@ -106,10 +96,7 @@ import { DialogQuestionnaireSuccessComponent } from './_helpers/dialog-questionn
 import { ScanSampleComponent } from './_helpers/dialog-scan-sample';
 import { DialogUserDataComponent } from './_helpers/dialog-user-data';
 import { DialogYesNoComponent } from './_helpers/dialog-yes-no';
-import {
-  DialogNotificationComponent,
-  NotificationComponent,
-} from './_helpers/notification';
+import { NotificationPresenter } from './_services/notification-presenter.service';
 import { AlertService } from './_services/alert.service';
 import { AuthenticationManager } from './_services/authentication-manager.service';
 import { DataService } from './_services/data.service';
@@ -133,7 +120,6 @@ import { ProbandsUntersuchungsteamComponent } from './pages/probands/probands-un
 import { ProbandsForscherComponent } from './pages/probands/probands-forscher/probands-forscher.component';
 import { MatOptionSelectAllModule } from './features/mat-option-select-all/mat-option-select-all.module';
 import { LocaleService } from './_services/locale.service';
-import { AuthInterceptor } from './_interceptors/auth-interceptor';
 import { ContentTypeInterceptor } from './_interceptors/content-type-interceptor';
 import { UnauthorizedInterceptor } from './_interceptors/unauthorized-interceptor';
 import { SelectedProbandInfoService } from './_services/selected-proband-info.service';
@@ -156,9 +142,18 @@ import {
   VAPID_KEY,
 } from '@angular/fire/compat/messaging';
 import { environment } from '../environments/environment';
+import { KeycloakAngularModule, KeycloakService } from 'keycloak-angular';
+import { initializeAuthentication } from './auth.factory';
+import { CurrentUser } from './_services/current-user.service';
+import { DialogNotificationComponent } from './dialogs/dialog-notification/dialog-notification.component';
+import { RemarkDialogComponent } from './pages/samples/sample-remark-dialog/remark-dialog.component';
+import { ScanDialogComponent } from './pages/samples/sample-scan-dialog/scan-dialog.component';
+import { UserService } from './psa.app.core/providers/user-service/user.service';
 import { DialogDeleteAccountHealthDataPermissionComponent } from './dialogs/dialog-delete-account-health-data-permission/dialog-delete-account-health-data-permission.component';
 import { DialogDeleteAccountConfirmationComponent } from './dialogs/dialog-delete-account-confirmation/dialog-delete-account-confirmation.component';
 import { DialogDeleteAccountSuccessComponent } from './dialogs/dialog-delete-account-success/dialog-delete-account-success.component';
+import { ChipAutocompleteComponent } from './pages/probands/chip-autocomplete/chip-autocomplete.component';
+import { AccountInfoComponent } from './features/account-info/account-info.component';
 
 // === LOCALE ===
 // Setup ngx-translate
@@ -192,7 +187,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
         deps: [HttpClient],
       },
     }),
-    MatomoModule,
     ProbandsListModule,
     LoadingSpinnerModule,
     MatOptionSelectAllModule,
@@ -200,9 +194,9 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     DragDropModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireMessagingModule,
+    KeycloakAngularModule,
   ],
   declarations: [
-    GetActivityTypePipe,
     AccessLevelPipe,
     AccountStatusPipe,
     StudyStatusPipe,
@@ -210,7 +204,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     AppComponent,
     AlertComponent,
     HomeComponent,
-    LoginComponent,
     SideNavigationComponent,
     DialogPopUpComponent,
     DialogDeleteComponent,
@@ -238,7 +231,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     DialogDeleteAccountHealthDataPermissionComponent,
     DialogDeleteAccountConfirmationComponent,
     DialogDeleteAccountSuccessComponent,
-    ChangePasswordComponent,
     QuestionnairesResearcherComponent,
     QuestionnaireResearcherComponent,
     QuestionProbandComponent,
@@ -268,14 +260,11 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     LaboratoryResultsComponent,
     LaboratoryResultsListComponent,
     LaboratoryResultDetailsComponent,
-    ImplementStatusPipe,
-    ImplementStatusPipe2,
     RequestNewMaterialComponent,
     ConfirmNewMaterialRequestComponent,
     ProbandsToContactComponent,
     LogsDeleteSysAdminComponent,
     ScanSampleComponent,
-    NotificationComponent,
     DialogNotificationComponent,
     ContactComponent,
     ComplianceResearcherComponent,
@@ -295,50 +284,22 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     QuestionnaireInstancesListForInvestigatorComponent,
     QuestionnaireInstancesListForProbandComponent,
     LicenseListComponent,
-  ],
-  entryComponents: [
-    DialogDeleteComponent,
-    DialogDeletePartnerComponent,
-    DialogChangeComplianceComponent,
-    DialogChangeStudyComponent,
-    DialogNewProbandComponent,
-    DialogNewIdsComponent,
-    DialogStudyComponent,
-    DialogPopUpComponent,
-    DialogUserStudyAccessComponent,
-    DialogUserEditComponent,
-    DialogUserDataComponent,
-    DialogExportDataComponent,
-    DialogSelectForPartialDeletionComponent,
-    DialogNewUserComponent,
-    DialogNewPlannedProbandsComponent,
-    DialogQuestionnaireSuccessComponent,
-    DialogQuestionnaireFailComponent,
-    RemarkDialogComponent,
-    ScanDialogComponent,
-    DialogYesNoComponent,
-    DialogInfoComponent,
-    ConfirmNewMaterialRequestComponent,
-    DialogOkCancelComponent,
-    DialogNotificationComponent,
-    DialogViewComplianceComponent,
-    DialogEditComplianceComponent,
-    DialogDeleteAccountHealthDataPermissionComponent,
-    DialogDeleteAccountConfirmationComponent,
-    DialogDeleteAccountSuccessComponent,
+    ChipAutocompleteComponent,
+    AccountInfoComponent,
   ],
   providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeAuthentication,
+      multi: true,
+      deps: [KeycloakService, CurrentUser],
+    },
     {
       provide: LOCALE_ID,
       useFactory: (localeService: LocaleService) => {
         return localeService.currentLocale;
       },
       deps: [LocaleService],
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
-      multi: true,
     },
     {
       provide: HTTP_INTERCEPTORS,
@@ -362,16 +323,18 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     AuthenticationManager,
     NotificationService,
     QuestionnaireService,
+    UserService,
     Title,
     SampleTrackingService,
     PersonalDataService,
     SelectedProbandInfoService,
     LoggingService,
-    NotificationComponent,
     AccessLevelPipe,
     AccountStatusPipe,
     StudyStatusPipe,
     DatePipe,
+    CurrentUser,
+    NotificationPresenter,
   ],
   bootstrap: [AppComponent],
 })

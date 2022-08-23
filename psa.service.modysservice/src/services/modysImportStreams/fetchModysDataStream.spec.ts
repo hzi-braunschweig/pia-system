@@ -140,7 +140,7 @@ describe('FetchModysDataStream', () => {
     ]);
     const fetchModysDataStream = new FetchModysDataStream(testModysConfig);
     const results: Promise<PersonSummary | null>[] = [];
-    const pseudonyms = ['TEST-1234'];
+    const pseudonyms = [{ pseudonym: 'test-1234', externalId: 'TEST-1234' }];
 
     // Act
     await pipeline(
@@ -173,7 +173,7 @@ describe('FetchModysDataStream', () => {
         firstname: 'Test',
         name: 'Person',
       },
-      pseudonym: 'TEST-1234',
+      pseudonym: 'test-1234',
     };
     void expect(results[0]).to.eventually.deep.equal(expected);
   });
@@ -201,7 +201,20 @@ describe('FetchModysDataStream', () => {
     ]);
     const fetchModysDataStream = new FetchModysDataStream(testModysConfig);
     const results: Promise<PersonSummary | null>[] = [];
-    const pseudonyms = ['TEST-0001', 'TEST-0002', 'TEST-0003'];
+    const pseudonyms = [
+      {
+        pseudonym: 'test-0001',
+        externalId: 'TEST-0001',
+      },
+      {
+        pseudonym: 'test-0002',
+        externalId: 'TEST-0002',
+      },
+      {
+        pseudonym: 'test-0003',
+        externalId: 'TEST-0003',
+      },
+    ];
 
     // Act
     await pipeline(

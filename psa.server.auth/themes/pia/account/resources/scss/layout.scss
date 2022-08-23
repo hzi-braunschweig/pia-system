@@ -1,0 +1,87 @@
+/*!
+ * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+@import '../../../scss/framework';
+
+#pia-logo {
+  display: block;
+  width: 4rem;
+  height: 4rem;
+  margin: 1rem 0;
+}
+
+// We don't want users to see those, see PIA-2142.
+#landing-resources,
+#landing-personal-info,
+#landing-applications,
+#nav-link-personal-info,
+#nav-link-applications,
+#nav-link-resources {
+  display: none;
+}
+
+// We only display #landing-security, so we remove the grid and center everything to make it look neat
+#welcomeScreen {
+  .pf-c-page__main {
+    text-align: center;
+  }
+
+  .pf-l-gallery {
+    display: block;
+    margin: 0 auto;
+    width: 20rem;
+  }
+}
+
+#spinner_screen {
+  .brand {
+    display: none;
+  }
+
+  svg {
+    background: transparent !important;
+
+    path {
+      fill: $primary-color-dark;
+    }
+  }
+}
+
+// Optimize header buttons for usage in mobile app in app browser
+#loggedInUser,
+#landingLoggedInUser {
+  display: none;
+}
+#landingMobileKebab {
+  display: none;
+}
+
+.pf-c-page__header-tools .pf-m-icons {
+  display: block;
+  visibility: visible;
+}
+
+// Fix button in page-heading being pushed out of frame
+#refresh-page {
+  float: right;
+}
+
+@media screen and (max-width: 460px) {
+  .pf-l-toolbar__group {
+    margin-right: 0 !important;
+  }
+
+  .pf-c-page__header-tools {
+    display: blocK;
+  }
+
+  #mobileKebab,
+  #nav-toggle,
+  #signOutButton,
+  #landingSignOutButton {
+    display: none !important;
+  }
+}

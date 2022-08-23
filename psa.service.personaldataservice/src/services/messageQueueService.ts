@@ -7,7 +7,7 @@
 import { MessageQueueClient } from '@pia/lib-messagequeue';
 import { config } from '../config';
 import { runTransaction } from '../db';
-import pendingDeletionRepository from '../repositories/pendingDeletionRepository';
+import { PendingDeletionRepository } from '../repositories/pendingDeletionRepository';
 import { PersonalDataRepository } from '../repositories/personalDataRepository';
 
 interface ProbandDeletedMessage {
@@ -21,7 +21,7 @@ interface ProbandDeletedMessage {
 export class MessageQueueService extends MessageQueueClient {
   private static async onProbandDeleted(pseudonym: string): Promise<void> {
     return runTransaction(async (transaction) => {
-      await pendingDeletionRepository.deletePendingDeletion(pseudonym, {
+      await PendingDeletionRepository.deletePendingDeletion(pseudonym, {
         transaction,
       });
       await PersonalDataRepository.deletePersonalData(pseudonym, {

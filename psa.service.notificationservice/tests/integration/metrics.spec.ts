@@ -7,15 +7,16 @@
 import sinon from 'sinon';
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
-chai.use(chaiHttp);
-
 import { ListeningDbClient } from '@pia/lib-service-core';
 import { FcmHelper } from '../../src/services/fcmHelper';
 import { Server } from '../../src/server';
 import StatusCodes from 'http-status-codes';
+import { config } from '../../src/config';
+
+chai.use(chaiHttp);
 
 describe('/metrics', () => {
-  const apiAddress = `http://localhost:${process.env['PORT'] ?? '80'}`;
+  const apiAddress = `http://localhost:${config.public.port}`;
 
   const suiteSandbox = sinon.createSandbox();
 

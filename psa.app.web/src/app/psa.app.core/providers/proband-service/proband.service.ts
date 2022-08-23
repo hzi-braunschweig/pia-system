@@ -6,7 +6,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ProbandNew } from '../../models/proband';
+import { Proband } from '../../models/proband';
 import { PendingComplianceChange } from '../../models/pendingComplianceChange';
 import { PendingProbandDeletion } from '../../models/pendingDeletion';
 import { ProbandToContact } from '../../models/probandToContact';
@@ -50,9 +50,9 @@ export class ProbandService {
   /**
    * Get a list of all probands of a study
    */
-  public getProbands(studyName: string): Promise<ProbandNew[]> {
+  public getProbands(studyName: string): Promise<Proband[]> {
     return this.http
-      .get<ProbandNew[]>(`${this.apiUrl}studies/${studyName}/probands`)
+      .get<Proband[]>(`${this.apiUrl}studies/${studyName}/probands`)
       .toPromise();
   }
 

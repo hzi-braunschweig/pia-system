@@ -27,12 +27,4 @@ export interface QuestionnaireInstance {
   notificationsScheduled: boolean | null;
   progress: number | null;
   releaseVersion: number | null;
-  /**
-   * @deprecated will be deleted after migration
-   */
-  transmissionTsV1?: Date | null;
-  /**
-   * @deprecated will be deleted after migration
-   */
-  transmissionTsV2?: Date | null;
 }

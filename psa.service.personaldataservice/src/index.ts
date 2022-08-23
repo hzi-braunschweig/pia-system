@@ -4,7 +4,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import * as server from './server';
+import { Server } from './server';
 import { ServerRunner } from '@pia/lib-service-core';
+import { probandAuthClient } from './clients/authServerClient';
 
-new ServerRunner(server).start();
+probandAuthClient
+  .waitForServer()
+  .then(() => new ServerRunner(Server).start())
+  .catch(console.error);

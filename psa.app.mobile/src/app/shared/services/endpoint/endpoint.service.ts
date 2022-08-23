@@ -48,7 +48,10 @@ export class EndpointService {
     this.removeCustomEndpoint();
 
     const mapping: BackendMappingEntry = backendMapping.find(
-      (entry) => entry.prefix && username && username.startsWith(entry.prefix)
+      (entry) =>
+        entry.prefix &&
+        username &&
+        username.toLowerCase().startsWith(entry.prefix.toLowerCase())
     );
     if (!mapping) {
       return false;

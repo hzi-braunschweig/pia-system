@@ -40,10 +40,6 @@ export class NotificationInteractor {
         ? new Date(notification.date)
         : addHours(new Date(), 1);
 
-    if (decodedToken.role !== 'ProbandenManager') {
-      throw Boom.forbidden('Unknown or wrong role');
-    }
-
     // Create notification for each recipient
     for (const recipient of notification.recipients) {
       await NotificationInteractor.processNotificationForRecipient(
@@ -52,7 +48,7 @@ export class NotificationInteractor {
         failedSendTo,
         notLoggedIn,
         notificationDate,
-        decodedToken.groups ?? []
+        decodedToken.studies ?? []
       );
     }
 
@@ -80,12 +76,6 @@ export class NotificationInteractor {
     questionnaire_id?: number;
     questionnaire_version?: number;
   }> {
-    if (decodedToken.role !== 'Proband') {
-      throw Boom.notFound(
-        'Could not get notification, because user role is not valid'
-      );
-    }
-
     let resultNotificationByID: DbNotificationSchedules;
     try {
       resultNotificationByID = (await postgresqlHelper.getNotificationById(

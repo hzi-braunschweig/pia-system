@@ -28,6 +28,39 @@ describe('EndpointService', () => {
     httpMock.verify();
   });
 
+  describe('setEndpointForUser()', () => {
+    it('should remove the former endpoint url', () => {
+      spyOn(localStorage, 'removeItem');
+
+      service.setEndpointForUser('some-username');
+
+      expect(localStorage.removeItem).toHaveBeenCalledOnceWith(
+        'customBackendUrl'
+      );
+    });
+
+    it('should not set a new endpoint if no backend mapping entry matches', () => {
+      const result = service.setEndpointForUser('has-no-mapping');
+
+      expect(result).toBeFalse();
+      expect(service.getUrl()).toBeNull();
+    });
+
+    it('should set a new endpoint if a backend mapping entry matches', () => {
+      const result = service.setEndpointForUser('Dtest-exists');
+
+      expect(result).toBeTrue();
+      expect(service.getUrl()).toEqual('https://pia-develop.netzlink.com');
+    });
+
+    it('should match backend mapping entries case-insensitive', () => {
+      const result = service.setEndpointForUser('DTEST-also-exists');
+
+      expect(result).toBeTrue();
+      expect(service.getUrl()).toEqual('https://pia-develop.netzlink.com');
+    });
+  });
+
   describe('isEndpointCompatible()', () => {
     it('should return true if mobile app and expected app versions are compatible', (done) => {
       service.setCustomEndpoint('localhost');

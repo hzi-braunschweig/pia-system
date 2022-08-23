@@ -62,9 +62,13 @@ const conf = {
   servers: {
     mhhftpserver: mhhftpserver,
     hziftpserver: hziftpserver,
+    authserver: {
+      probandTokenIntrospectionClient:
+        GlobalConfig.authserver.probandTokenIntrospectionClient,
+      adminTokenIntrospectionClient:
+        GlobalConfig.authserver.adminTokenIntrospectionClient,
+    },
   },
-  publicAuthKey: GlobalConfig.publicAuthKey,
-  webappUrl: GlobalConfig.webappUrl,
 };
 
 // Use outdated KEX - just temporary because of connection issues to server

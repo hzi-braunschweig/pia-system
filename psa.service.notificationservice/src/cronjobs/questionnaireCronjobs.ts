@@ -65,7 +65,7 @@ export class QuestionnaireCronjobs {
             }
             notificationBody +=
               '\nÖffnen Sie PIA über ' +
-              config.webappUrl +
+              config.adminAppUrl +
               ' und melden sich an. Unter „Zu kontaktieren“ können Sie sich Teilnehmende anzeigen lassen, die auffällige Symptome oder nichts gemeldet haben.\n\n' +
               'Bitte treten Sie mit den entsprechenden Personen in Kontakt.';
             await NotificationHelper.createNotableAnswerNotification(

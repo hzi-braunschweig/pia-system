@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+export type StudyStatus = 'active' | 'deletion_pending' | 'deleted';
+
 export interface DbStudy {
   name: string;
   description: string | null;
@@ -25,6 +27,14 @@ export interface DbStudy {
   has_logging_opt_in: boolean | null;
 }
 
-export type StudyStatus = 'active' | 'deletion_pending' | 'deleted';
+/**
+ * The totp require status is not persisted in the DB.
+ * Instead it will be resolved by the authserver.
+ * totp is required, if the group representing the study
+ * has a mapping to the realm role "feature:RequireTotp"
+ */
+interface StudyTotpRequiredField {
+  has_required_totp: boolean | null;
+}
 
-export type Study = DbStudy;
+export type Study = DbStudy & StudyTotpRequiredField;

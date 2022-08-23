@@ -10,67 +10,10 @@ const { db, getDbTransactionFromOptionsOrDbConnection } = require('../db');
  * @description helper methods to access db
  */
 const postgresqlHelper = (function () {
-  async function getProfessionalUser(username, role) {
-    return await db.oneOrNone(
-      `SELECT a.username,
-                a.role,
-                COALESCE(su.study_accesses, JSON_BUILD_ARRAY()) AS study_accesses
-         FROM accounts AS a
-                  LEFT OUTER JOIN (SELECT user_id,
-                                          JSON_AGG(JSON_BUILD_OBJECT('study_id', study_id, 'access_level', access_level)) AS study_accesses
-                                   FROM study_users
-                                   GROUP BY user_id) AS su ON a.username = su.user_id
-         WHERE LOWER(username) = LOWER($(username))
-           AND role = $(role)`,
-      { username, role }
-    );
-  }
-
-  async function getStudy(study_id) {
-    return await db.one('SELECT * FROM studies WHERE name=$1', [study_id]);
-  }
-
-  async function getUsersWithSameRole(username, role) {
-    if (role === 'SysAdmin') {
-      return db.manyOrNone(
-        `SELECT username, role,
-                JSON_BUILD_ARRAY() AS study_accesses
-           FROM accounts
-           WHERE role = 'SysAdmin'
-             AND username != $(username)`,
-        { username }
-      );
-    } else {
-      return db.manyOrNone(
-        `SELECT a1.username, a1.role,
-                  COALESCE(su.study_accesses, JSON_BUILD_ARRAY()) AS study_accesses
-           FROM accounts AS a1
-                    JOIN study_users AS su1 ON a1.username = su1.user_id
-                    JOIN study_users AS su2 ON su1.study_id = su2.study_id
-                    JOIN accounts AS a2 ON su2.user_id = a2.username
-                    LEFT OUTER JOIN (SELECT user_id,
-                                            JSON_AGG(JSON_BUILD_OBJECT('study_id', study_id, 'access_level', access_level)) AS study_accesses
-                                     FROM study_users
-                                     GROUP BY user_id) AS su ON a1.username = su.user_id
-           WHERE a1.role = $(role)
-             AND a1.username != $(username)
-             AND a2.username = $(username)`,
-        { role, username }
-      );
-    }
-  }
-
-  async function getUsersForSysAdmin() {
-    return db.manyOrNone(
-      `SELECT a.username, a.role,
-                COALESCE(su.study_accesses, JSON_BUILD_ARRAY()) AS study_accesses
-         FROM accounts AS a
-                  LEFT OUTER JOIN (SELECT user_id,
-                                          JSON_AGG(JSON_BUILD_OBJECT('study_id', study_id, 'access_level', access_level)) AS study_accesses
-                                   FROM study_users
-                                   GROUP BY user_id) AS su ON a.username = su.user_id
-         WHERE role IN ('Forscher', 'Untersuchungsteam', 'ProbandenManager', 'EinwilligungsManager')`
-    );
+  async function getStudy(studyName) {
+    return db.one('SELECT * FROM studies WHERE name=${studyName}', {
+      studyName,
+    });
   }
 
   async function insertStudyAccessesWithAccessLevel(study_accesses, user_id) {
@@ -167,9 +110,6 @@ const postgresqlHelper = (function () {
         { pseudonym }
       );
     }
-    await myDb.none(`DELETE FROM accounts WHERE username = $(pseudonym)`, {
-      pseudonym,
-    });
   }
 
   async function deleteStudyData(study_id, options) {
@@ -179,32 +119,15 @@ const postgresqlHelper = (function () {
     // Get all professional users from study
     const users = (
       await myDb.manyOrNone(
-        "SELECT username FROM study_users as su JOIN accounts as a on su.user_id = a.username WHERE a.role!='Proband' AND su.study_id=$(study_id)",
+        'SELECT user_id FROM study_users WHERE study_id=$(study_id)',
         { study_id }
       )
     ).map((user) => user.username);
-
-    // Get all usernames of probands
-    const probands = (
-      await myDb.manyOrNone(
-        'SELECT pseudonym FROM probands WHERE study = $(study_id)',
-        {
-          study_id,
-        }
-      )
-    ).map((proband) => proband.pseudonym);
 
     // Delete probands
     await myDb.none('DELETE FROM probands WHERE study = $(study_id)', {
       study_id,
     });
-    // Delete proband accounts
-    await myDb.none(
-      'DELETE FROM accounts WHERE username IN ($(probands:csv))',
-      {
-        probands,
-      }
-    );
 
     // Delete planned probands
     await myDb.none(
@@ -418,7 +341,7 @@ const postgresqlHelper = (function () {
     );
   }
 
-  async function updatePendingComplianceChange(id, options, newCC = null) {
+  async function updatePendingComplianceChange(id, options, newCC) {
     const myDb = getDbTransactionFromOptionsOrDbConnection(options);
     const cc = newCC
       ? newCC
@@ -654,13 +577,6 @@ const postgresqlHelper = (function () {
     );
   }
 
-  async function deleteUser(username) {
-    return db.one(
-      "DELETE FROM accounts WHERE username=$(username) AND role IN ('Forscher', 'Untersuchungsteam', 'ProbandenManager', 'EinwilligungsManager') RETURNING username,role",
-      { username }
-    );
-  }
-
   async function getPlannedProbandAsUser(user_id, requester_id) {
     const plannedProband = await db.one(
       'SELECT * FROM planned_probands WHERE user_id=$1 AND user_id IN(SELECT user_id FROM study_planned_probands WHERE study_id IN(SELECT study_id FROM study_users WHERE user_id=$2))',
@@ -772,18 +688,9 @@ const postgresqlHelper = (function () {
 
   async function getProbandsToContact(requesterStudies) {
     const probandsToContact = await db.manyOrNone(
-      `SELECT uc.*,
-
-      (CASE
-        WHEN a.username IS NULL THEN 'no_account'
-        ELSE 'account'        
-       END
-      ) AS "accountStatus",
-
-      p.status, p.ids
+      `SELECT uc.*, p.status, p.ids, p.study
          FROM users_to_contact AS uc
-                LEFT JOIN probands AS p ON p.pseudonym = uc.user_id
-                LEFT OUTER JOIN accounts as a ON a.username = pseudonym AND a.role = 'Proband'
+           LEFT JOIN probands AS p ON p.pseudonym = uc.user_id
          WHERE p.study IN ($(requesterStudies:csv))
            AND p.status = 'active'
          ORDER BY created_at DESC`,
@@ -841,15 +748,73 @@ const postgresqlHelper = (function () {
       .then((rows) => rows.map((row) => row.study_id));
   }
 
-  return {
-    /**
-     * gets a single professional user by username and role
-     * @param pseudonym
-     * @param role
-     * @return {Promise<ProfessionalUser>}
-     */
-    getProfessionalUser: getProfessionalUser,
+  async function updateStudyWelcomeText(study_id, welcomeText) {
+    return db.one(
+      'INSERT INTO study_welcome_text (study_id, welcome_text)' +
+        ' VALUES ($1, $2) ON CONFLICT (study_id, language) DO UPDATE' +
+        ' SET welcome_text=excluded.welcome_text RETURNING *',
+      [study_id, welcomeText]
+    );
+  }
 
+  async function getStudyWelcomeText(study_id, language = 'de_DE') {
+    return db.oneOrNone(
+      'SELECT * FROM study_welcome_text WHERE study_id = $1 AND language=$2',
+      [study_id, language]
+    );
+  }
+
+  async function createStudy(study) {
+    return db.one(
+      'INSERT INTO studies(name, description, pm_email, hub_email) VALUES(${name}, ${description}, ${pm_email}, ${hub_email}) RETURNING *',
+      {
+        name: study.name,
+        description: study.description,
+        pm_email: study.pm_email,
+        hub_email: study.hub_email,
+      }
+    );
+  }
+
+  async function updateStudyAsAdmin(id, study) {
+    return db.one(
+      'UPDATE studies SET name=${name}, description=${description}, pm_email=${pm_email}, hub_email=${hub_email} WHERE name=${id} RETURNING *',
+      {
+        name: study.name,
+        description: study.description,
+        pm_email: study.pm_email,
+        hub_email: study.hub_email,
+        id: id,
+      }
+    );
+  }
+
+  async function getStudiesByStudyIds(ids) {
+    const studies = await db.many(
+      'SELECT * FROM studies WHERE name = ANY(${sIds})',
+      { sIds: ids }
+    );
+
+    if (studies.length > 0) {
+      const pendingStudyChanges = await db.manyOrNone(
+        'SELECT * FROM pending_study_changes WHERE study_id IN($1:csv)',
+        [studies.map((study) => study.name)]
+      );
+
+      studies.forEach((study) => {
+        study.pendingStudyChange = pendingStudyChanges.find((sc) => {
+          return sc.study_id === study.name;
+        });
+      });
+    }
+    return studies;
+  }
+
+  async function getStudies() {
+    return db.manyOrNone('SELECT * FROM studies');
+  }
+
+  return {
     /**
      * @function
      * @description gets the study with the specified name
@@ -858,22 +823,6 @@ const postgresqlHelper = (function () {
      * @returns {Promise} a resolved promise with the found study or a rejected promise with the error
      */
     getStudy: getStudy,
-
-    /**
-     * @function
-     * @description get all users with the same role as a requester
-     * @memberof module:postgresqlHelper
-     * @returns {Promise<ProfessionalUser[]>} a resolved promise with the found users or a rejected promise with the error
-     */
-    getUsersWithSameRole: getUsersWithSameRole,
-
-    /**
-     * @function
-     * @description gets the non-proband users for the sysadmin
-     * @memberof module:postgresqlHelper
-     * @returns {Promise<ProfessionalUser[]>} a resolved promise with the found users or a rejected promise with the error
-     */
-    getUsersForSysAdmin: getUsersForSysAdmin,
 
     /**
      * @function
@@ -945,6 +894,8 @@ const postgresqlHelper = (function () {
      * @description updates the pending compliance change and performs all update actions associated with it
      * @memberof module:postgresqlHelper
      * @param {number} id the id of the pending compliance change to update
+     * @param {object} options
+     * @param {PendingComplianceChange} newCC
      * @returns {Promise} a resolved promise with the updated pending compliance change or a rejected promise with the error
      */
     updatePendingComplianceChange: updatePendingComplianceChange,
@@ -962,7 +913,7 @@ const postgresqlHelper = (function () {
      * @function
      * @description gets the pending compliance change
      * @memberof module:postgresqlHelper
-     * @param {number} id the id of the pending compliance change to get
+     * @param {string} id the id of the pending compliance change to get
      * @returns {Promise} a resolved promise with the pending decompliance changeletion or a rejected promise with the error
      */
     getPendingComplianceChange: getPendingComplianceChange,
@@ -1036,20 +987,11 @@ const postgresqlHelper = (function () {
 
     /**
      * @function
-     * @description deletes the user  and all its data with the specified username
-     * @memberof module:postgresqlHelper
-     * @param {number} username the username of the user to delete
-     * @returns {Promise} a resolved promise with the deleted user and counts for deletes other data or a rejected promise with the error
-     */
-    deleteUser: deleteUser,
-
-    /**
-     * @function
      * @description gets the planned proband
      * @memberof module:postgresqlHelper
      * @param {String} user_id the pseudonym of the planned proband to get
      * @param {String} requester_id the user_id of the user who requests
-     * @returns {Promise} a resolved promise with the planned proband or a rejected promise with the error
+     * @returns {Promise<PlannedProbandDeprecated>} a resolved promise with the planned proband or a rejected promise with the error
      */
     getPlannedProbandAsUser: getPlannedProbandAsUser,
 
@@ -1058,7 +1000,7 @@ const postgresqlHelper = (function () {
      * @description gets the planned probands
      * @memberof module:postgresqlHelper
      * @param {String} requester_id the user_id of the user who requests
-     * @returns {Promise} a resolved promise with the planned probands or a rejected promise with the error
+     * @returns {Promise<PlannedProbandDeprecated[]>} a resolved promise with the planned probands or a rejected promise with the error
      */
     getPlannedProbandsAsUser: getPlannedProbandsAsUser,
 
@@ -1067,7 +1009,7 @@ const postgresqlHelper = (function () {
      * @description gets the planned proband
      * @memberof module:postgresqlHelper
      * @param {array} probands the array of planned probands to create
-     * @returns {Promise} a resolved promise with the planned proband or a rejected promise with the error
+     * @returns {Promise<PlannedProbandDeprecated[]>} a resolved promise with the planned proband or a rejected promise with the error
      */
     createPlannedProbands: createPlannedProbands,
 
@@ -1077,7 +1019,7 @@ const postgresqlHelper = (function () {
      * @memberof module:postgresqlHelper
      * @param {String} user_id the pseudonym of the planned proband to delete
      * @param {String} requester_id the user_id of the user who requests
-     * @returns {Promise} a resolved promise with the deleted planned proband or a rejected promise with the error
+     * @returns {Promise<PlannedProbandDeprecated>} a resolved promise with the deleted planned proband or a rejected promise with the error
      */
     deletePlannedProbandAsUser: deletePlannedProbandAsUser,
 
@@ -1114,7 +1056,7 @@ const postgresqlHelper = (function () {
      * @function
      * @description gets the probands to contact from db
      * @memberof module:postgresqlHelper
-     * @returns {Promise} a resolved promise with the found probands or a rejected promise with the error
+     * @returns {Promise<ProbandToContact[]>} a resolved promise with the found probands or a rejected promise with the error
      */
     getProbandsToContact: getProbandsToContact,
 
@@ -1122,7 +1064,7 @@ const postgresqlHelper = (function () {
      * @function
      * @description updates the probands to contact in db
      * @memberof module:postgresqlHelper
-     * @returns {Promise} a resolved promise with the updated probands to contact or a rejected promise with the error
+     * @returns {Promise<null>} a resolved promise with the updated probands to contact or a rejected promise with the error
      */
     updateProbandToContact: updateProbandToContact,
 
@@ -1162,6 +1104,60 @@ const postgresqlHelper = (function () {
      * @return {Promise<string[]>} the names of all common studies
      */
     getCommonStudiesOfAllUsers: getCommonStudiesOfAllUsers,
+
+    /**
+     * @function
+     * @description updates the study Access with the specified id
+     * @memberof module:postgresqlHelper
+     * @param {string} study_name the study_name of the access to update
+     * @param {string} welcomeText the welcome text of study to update
+     * @returns {Promise} a resolved promise with the updated study access or a rejected promise with the error
+     */
+    updateStudyWelcomeText: updateStudyWelcomeText,
+
+    /**
+     * @function
+     * @description updates the study Access with the specified id
+     * @memberof module:postgresqlHelper
+     * @param {string} study_id the study_id of the access to update
+     * @returns {Promise} a resolved promise with the updated study access or a rejected promise with the error
+     */
+    getStudyWelcomeText: getStudyWelcomeText,
+
+    /**
+     * @function
+     * @description creates a study
+     * @memberof module:postgresqlHelper
+     * @param {object} study the study to create
+     * @returns {Promise} a resolved promise with the created study or a rejected promise with the error
+     */
+    createStudy: createStudy,
+
+    /**
+     * @function
+     * @description updates the study with the specified id
+     * @memberof module:postgresqlHelper
+     * @param {string} id the id of the study to update
+     * @param {object} study the updated study
+     * @returns {Promise} a resolved promise with the updated study or a rejected promise with the error
+     */
+    updateStudyAsAdmin: updateStudyAsAdmin,
+
+    /**
+     * @function
+     * @description gets the studies with the specified ids
+     * @memberof module:postgresqlHelper
+     * @returns {Promise} a resolved promise with the found studies or a rejected promise with the error
+     */
+    getStudiesByStudyIds: getStudiesByStudyIds,
+
+    /**
+     * @function
+     * @description gets all studies
+     * @memberof module:postgresqlHelper
+     * @returns {Promise} a resolved promise with the found studies or a rejected promise with the error
+     */
+    getStudies: getStudies,
   };
 })();
 

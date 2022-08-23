@@ -7,34 +7,39 @@
 # otherwise somehow the passwords are all the same
 # (even though thats not the case locally)
 
-- name: Generate postgres passwords
+- name: Generate postgres password
   set_fact:
     pia_ewpia_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
-- name: Generate postgres passwords
+- name: Generate postgres password
   set_fact:
     pia_ipia_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
-- name: Generate postgres passwords
+- name: Generate postgres password
   set_fact:
     pia_qpia_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
-- name: Generate postgres passwords
+- name: Generate postgres password
   set_fact:
     pia_db_log_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
-- name: Generate postgres passwords
+- name: Generate postgres password
   set_fact:
     pia_db_sormas_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
-- name: Generate postgres passwords
+- name: Generate postgres password
   set_fact:
     pia_db_personaldata_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate postgres password
+  set_fact:
+    pia_db_authserver_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
 - name: Generate messagequeue admin password
@@ -45,6 +50,31 @@
 - name: Generate messagequeue app password
   set_fact:
     pia_messagequeue_app_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate keycloak admin password
+  set_fact:
+    pia_authserver_admin_password: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate keycloak client secret
+  set_fact:
+    pia_authserver_proband_management_client_secret: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate keycloak client secret
+  set_fact:
+    pia_authserver_proband_token_introspection_client_secret: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate keycloak client secret
+  set_fact:
+    pia_authserver_admin_management_client_secret: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
+  run_once: true
+
+- name: Generate keycloak client secret
+  set_fact:
+    pia_authserver_admin_token_introspection_client_secret: "{{ lookup('password', '/dev/null chars=ascii_letters,digits length=32') }}"
   run_once: true
 
 ####################################################################################
@@ -62,7 +92,6 @@
       - pia_deployment_password != defaults.pia_deployment_password
       - pia_sormas_on_pia_password != defaults.pia_sormas_on_pia_password
       - pia_pia_on_sormas_password != defaults.pia_pia_on_sormas_password
-      - pia_api_key != defaults.pia_api_key
       - pia_mhh_ftpservice_password != defaults.pia_mhh_ftpservice_password
       - pia_hzi_ftpservice_password != defaults.pia_hzi_ftpservice_password
       - pia_modys_password != defaults.pia_modys_password
@@ -84,7 +113,6 @@
       - pia_mhh_ftpservice_password is complex_enough(minimal_length=1, contains_upper_case=False, contains_digit=False)
       - pia_hzi_ftpservice_password is complex_enough(minimal_length=1, contains_upper_case=False, contains_digit=False)
       - pia_modys_password is complex_enough(minimal_length=1, contains_upper_case=False, contains_digit=False)
-      - pia_api_key is complex_enough(minimal_length=1, contains_upper_case=False, contains_digit=False)
     fail_msg: 'One of passwords are not complex enough'
     success_msg: 'Passwords are good to go!'
   run_once: True
@@ -231,16 +259,6 @@
   include_tasks: deploy-certificates.yml
 
 ####################################################################################
-# generate authkey
-####################################################################################
-
-- name: Generate authkey
-  include_tasks: generate-authkey.yml
-
-- name: Deploy authkey
-  include_tasks: deploy-authkey.yml
-
-####################################################################################
 # qpia
 ####################################################################################
 
@@ -338,16 +356,6 @@
     dest: /root/.env
   when: docker_host
 
-- name: Generate random UUID API_KEY
-  lineinfile:
-    path: /root/.env
-    regexp: '^API_KEY='
-    line: "API_KEY={{ (999999999999999999999 | random | string + (lookup('pipe', 'date +%s%N'))) | to_uuid() }}"
-  when:
-    - docker_host
-    - generate_random_key
-    - hostvars[inventory_hostname]['PIA_API_KEY'] is not defined
-
 # only on qpia
 - name: Template user.conf.j2
   template:
@@ -414,21 +422,20 @@
 - name: Get all environments from .env file and register as variable
   shell: "cat /root/.env | grep '^{{ item }}' |  sed -r 's/^{{ item }}=//'"
   with_items:
-    - API_ADDRESS
-    - IS_DEVELOPMENT_SYSTEM
     - ENABLE_DB_EXPORT
     - ENABLE_DB_IMPORT
     - DEPLOYMENT_USER
     - DEPLOYMENT_PASSWORD
     - EWPIA_PASSWORD
     - IPIA_PASSWORD
-    - API_KEY
     - QPIA_PASSWORD
     - MAIL_USER
     - MAIL_PASSWORD
     - MAIL_HOST
     - MAIL_PORT
     - MAIL_REQUIRE_TLS
+    - MAIL_FROM_NAME
+    - MAIL_FROM_ADDRESS
     - SORMAS_ON_PIA_USER
     - SORMAS_ON_PIA_PASSWORD
     - SORMAS_SERVER_URL

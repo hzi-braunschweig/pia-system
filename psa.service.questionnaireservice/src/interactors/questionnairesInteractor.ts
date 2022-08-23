@@ -4,16 +4,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { AccessToken } from '@pia/lib-service-core';
+import { AccessToken, assertStudyAccess } from '@pia/lib-service-core';
 import { Questionnaire, QuestionnaireRequest } from '../models/questionnaire';
 import pgHelper from '../services/postgresqlHelper';
-import { StudyAccess } from '../models/study_access';
+import { StudyAccess } from '../models/studyAccess';
 import Boom from '@hapi/boom';
 import { QuestionnaireRepository } from '../repositories/questionnaireRepository';
 import { DatabaseError } from 'pg-protocol';
 import { QuestionnaireService } from '../services/questionnaireService';
-import { complianceserviceClient } from '../clients/complianceserviceClient';
-import { SystemComplianceType } from '@pia-system/lib-http-clients-internal';
 
 export class QuestionnairesInteractor {
   /**
@@ -28,18 +26,8 @@ export class QuestionnairesInteractor {
     id: number,
     version: number
   ): Promise<void> {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
-    const userStudies = decodedToken.groups;
-
-    if (userRole !== 'Forscher') {
-      throw Boom.forbidden(
-        'Could not delete questionnaire: Unknown or forbidden role'
-      );
-    }
     await this.checkIfUserHasWriteAccessOnRequestedQuestionnaire(
-      userName,
-      userStudies,
+      decodedToken,
       id,
       version
     );
@@ -59,19 +47,9 @@ export class QuestionnairesInteractor {
     decodedToken: AccessToken,
     questionnaire: QuestionnaireRequest
   ): Promise<Questionnaire> {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
-    const userStudies = decodedToken.groups;
-
-    if (userRole !== 'Forscher') {
-      throw Boom.forbidden(
-        'Could not create questionnaire: Unknown or forbidden role'
-      );
-    }
     await this.checkIfUserHasWriteAccessForStudy(
-      questionnaire.study_id,
-      userName,
-      userStudies
+      decodedToken,
+      questionnaire.study_id
     );
     return (await pgHelper.insertQuestionnaire(questionnaire).catch((err) => {
       console.log(err);
@@ -93,25 +71,14 @@ export class QuestionnairesInteractor {
     version: number,
     updatedQuestionnaire: QuestionnaireRequest
   ): Promise<Questionnaire> {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
-    const userStudies = decodedToken.groups;
-
-    if (userRole !== 'Forscher') {
-      throw Boom.forbidden(
-        'Could not update questionnaire: Unknown or forbidden role'
-      );
-    }
     await this.checkIfUserHasWriteAccessOnRequestedQuestionnaire(
-      userName,
-      userStudies,
+      decodedToken,
       id,
       version
     );
     await this.checkIfUserHasWriteAccessForStudy(
-      updatedQuestionnaire.study_id,
-      userName,
-      userStudies
+      decodedToken,
+      updatedQuestionnaire.study_id
     );
     return (await pgHelper
       .updateQuestionnaire(updatedQuestionnaire, id, version)
@@ -138,18 +105,8 @@ export class QuestionnairesInteractor {
     version: number,
     changedAttributes: Partial<QuestionnaireRequest>
   ): Promise<Questionnaire> {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
-    const userStudies = decodedToken.groups;
-
-    if (userRole !== 'Forscher') {
-      throw Boom.forbidden(
-        'Could not patch questionnaire: Unknown or forbidden role'
-      );
-    }
     await this.checkIfUserHasWriteAccessOnRequestedQuestionnaire(
-      userName,
-      userStudies,
+      decodedToken,
       id,
       version
     );
@@ -180,24 +137,13 @@ export class QuestionnairesInteractor {
     id: number,
     revisedQuestionnaire: QuestionnaireRequest
   ): Promise<Questionnaire> {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
-    const userStudies = decodedToken.groups;
-
-    if (userRole !== 'Forscher') {
-      throw Boom.forbidden(
-        'Could not revise questionnaire: Unknown or forbidden role'
-      );
-    }
     await this.checkIfUserHasWriteAccessOnRequestedQuestionnaire(
-      userName,
-      userStudies,
+      decodedToken,
       id
     );
     await this.checkIfUserHasWriteAccessForStudy(
-      revisedQuestionnaire.study_id,
-      userName,
-      userStudies
+      decodedToken,
+      revisedQuestionnaire.study_id
     );
     return (await pgHelper
       .reviseQuestionnaire(revisedQuestionnaire, id)
@@ -219,15 +165,6 @@ export class QuestionnairesInteractor {
     id: number,
     version: number
   ): Promise<Questionnaire> {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
-    const userStudies = decodedToken.groups;
-
-    if (userRole !== 'Forscher' && userRole !== 'Proband') {
-      throw Boom.forbidden(
-        'Could not get questionnaire: Unknown or forbidden role'
-      );
-    }
     const questionnaire = await QuestionnaireRepository.getQuestionnaire(
       id,
       version
@@ -235,23 +172,7 @@ export class QuestionnairesInteractor {
       console.log(err);
       throw Boom.notFound('Questionnaire does not exist');
     });
-    if (
-      userRole === 'Proband' &&
-      questionnaire.compliance_needed &&
-      !(await complianceserviceClient.hasAgreedToCompliance(
-        userName,
-        questionnaire.study_id,
-        SystemComplianceType.SAMPLES
-      ))
-    ) {
-      throw Boom.forbidden(
-        'Could not get questionnaire: User has not complied to see this questionnaire'
-      );
-    }
-    this.checkIfUserHasAccessByTokenStudies(
-      questionnaire.study_id,
-      userStudies
-    );
+    assertStudyAccess(questionnaire.study_id, decodedToken);
     return questionnaire;
   }
 
@@ -263,41 +184,23 @@ export class QuestionnairesInteractor {
   public static async getQuestionnaires(
     decodedToken: AccessToken
   ): Promise<Questionnaire[]> {
-    const userRole = decodedToken.role;
-    const userStudies = decodedToken.groups;
-
-    if (userRole !== 'Forscher') {
-      throw Boom.forbidden(
-        'Could not get questionnaires: Unknown or forbidden role'
-      );
-    }
     return await QuestionnaireRepository.getQuestionnairesByStudyIds(
-      userStudies
+      decodedToken.studies
     ).catch((err) => {
       console.log(err);
       return [];
     });
   }
 
-  private static checkIfUserHasAccessByTokenStudies(
-    study_id: string,
-    userStudies: string[]
-  ): void {
-    if (!userStudies.includes(study_id)) {
-      throw Boom.forbidden('User has no access to study');
-    }
-  }
-
   private static async checkIfUserHasWriteAccessForStudy(
-    study_id: string,
-    userName: string,
-    userStudies: string[]
+    decodedToken: AccessToken,
+    study_id: string
   ): Promise<void> {
-    this.checkIfUserHasAccessByTokenStudies(study_id, userStudies);
+    assertStudyAccess(study_id, decodedToken);
 
     // soon in the future we will get the studyAccess level from the token too!
     const studyAccess = (await pgHelper
-      .getStudyAccessForUser(study_id, userName)
+      .getStudyAccessForUser(study_id, decodedToken.username)
       .catch((err) => {
         console.log(err);
         throw Boom.forbidden('User has no access to study');
@@ -313,8 +216,7 @@ export class QuestionnairesInteractor {
   }
 
   private static async checkIfUserHasWriteAccessOnRequestedQuestionnaire(
-    userName: string,
-    userStudies: string[],
+    decodedToken: AccessToken,
     id: number,
     version?: number
   ): Promise<void> {
@@ -331,9 +233,8 @@ export class QuestionnairesInteractor {
       );
     }
     await this.checkIfUserHasWriteAccessForStudy(
-      questionnaire.study_id,
-      userName,
-      userStudies
+      decodedToken,
+      questionnaire.study_id
     );
   }
 }

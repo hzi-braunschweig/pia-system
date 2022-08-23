@@ -43,7 +43,7 @@ const publishOptions: amqp.Options.Publish = {
 const HTTP_NOT_FOUND = 404;
 
 export class MessageQueueClient extends MessageQueueClientConnection {
-  private readonly serviceName: string;
+  protected readonly serviceName: string;
 
   public constructor({
     serviceName,

@@ -137,4 +137,5 @@ export const backendMapping = [
   { prefix: 'RYEY', url: 'https://pia.ship-med.uni-greifswald.de' },
   { prefix: 'ITPH', url: 'https://pia.ship-med.uni-greifswald.de' },
   { prefix: 'JTHB', url: 'https://pia.ship-med.uni-greifswald.de' },
+  { prefix: 'LOCAL', url: 'https://pia-app' },
 ];

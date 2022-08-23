@@ -5,7 +5,7 @@
  */
 
 const { ComplianceQuestionnairePlaceholder } = require('../db');
-const transactionWrapper = require('../lib/transactionWrapper');
+const transactionWrapper = require('../utils/transactionWrapper');
 
 class CompliancePlaceholderRepository {
   /**
@@ -24,7 +24,7 @@ class CompliancePlaceholderRepository {
   /**
    * Creates a placeholder for a specific study
    * @param {string} study the name of the study
-   * @param {string} genericFieldDescription the placeholder
+   * @param {GenericFieldDescription} genericFieldDescription the placeholder
    * @param {IOptions} options
    * @returns {Promise} a resolved <null>promise
    */

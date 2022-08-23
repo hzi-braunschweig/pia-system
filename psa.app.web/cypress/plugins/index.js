@@ -5,7 +5,7 @@
  */
 
 const cypressLogToOutput = require('cypress-log-to-output');
-const { rm } = require('fs');
+const { rm, existsSync, readFileSync } = require('fs');
 
 module.exports = (on) => {
   cypressLogToOutput.install(on);
@@ -27,6 +27,12 @@ module.exports = (on) => {
           }
         );
       });
+    },
+    readFileMaybe(filename) {
+      if (existsSync(filename)) {
+        return readFileSync(filename, 'utf8');
+      }
+      return null;
     },
   });
 };

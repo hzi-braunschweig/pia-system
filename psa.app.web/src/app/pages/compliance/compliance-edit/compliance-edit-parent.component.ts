@@ -55,7 +55,10 @@ export abstract class ComplianceEditParentComponent implements DoCheck {
         } else {
           this.alertService.errorObject(err);
         }
+        throw new Error('Could not update compliance.');
       }
+    } else {
+      throw new Error('Invalid FormData. Could not update compliance.');
     }
   }
 

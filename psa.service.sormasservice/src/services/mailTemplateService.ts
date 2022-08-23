@@ -7,7 +7,7 @@
 import { config } from '../config';
 import { MailContent } from '@pia/lib-service-core';
 
-const webAppLink = config.webappUrl;
+const webAppLink = config.probandAppUrl;
 const appStoreLink =
   'https://apps.apple.com/de/app/pia-epidemiologie/id1510929221';
 const playStoreLink =

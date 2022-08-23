@@ -6,6 +6,7 @@
 
 import { Readable } from 'stream';
 import { userserviceClient } from '../../clients/userserviceClient';
+import { ProbandExternalId } from '../../models/probandExternalId';
 
 export function getStudysPseudonymsReadable(study: string): Readable {
   return Readable.from(getPseudonyms(study));
@@ -13,10 +14,10 @@ export function getStudysPseudonymsReadable(study: string): Readable {
 
 async function* getPseudonyms(
   study: string
-): AsyncGenerator<string, void, undefined> {
+): AsyncGenerator<ProbandExternalId, void, undefined> {
   console.log('MODYS Import: fetching pseudonyms from userservice...');
-  const pseudonyms: string[] = await userserviceClient
-    .getPseudonyms({ study, complianceContact: true })
+  const pseudonyms: ProbandExternalId[] = await userserviceClient
+    .getExternalIds({ study, complianceContact: true })
     .catch((e) => {
       console.log(`MODYS Import: had problems to connect to userservice`, e);
       return [];

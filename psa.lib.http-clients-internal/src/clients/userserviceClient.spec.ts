@@ -114,6 +114,43 @@ describe('UserserviceClient', () => {
     });
   });
 
+  describe('getExternalIds', () => {
+    it('should call userservice with multiple filter query params', async () => {
+      // Arrange
+      fetchMock.get(
+        { url: 'express:/user/externalIds' },
+        {
+          status: StatusCodes.OK,
+          body: JSON.stringify([
+            { pseudonym: 'test-1', externalId: 'TEST-1' },
+            { pseudonym: 'test-2', externalId: 'TEST-2' },
+          ]),
+        }
+      );
+
+      // Act
+      const result = await userserviceClient.getExternalIds({
+        study: 'Teststudy',
+        complianceContact: true,
+      });
+
+      // Assert
+      expect(
+        fetchMock.called('express:/user/externalIds', {
+          method: 'GET',
+          query: {
+            study: 'Teststudy',
+            complianceContact: 'true',
+          },
+        })
+      ).to.be.true;
+      expect(result).to.deep.equal([
+        { pseudonym: 'test-1', externalId: 'TEST-1' },
+        { pseudonym: 'test-2', externalId: 'TEST-2' },
+      ]);
+    });
+  });
+
   describe('lookupIds', () => {
     it('should call userservice to lookup an ids', async () => {
       // Arrange
@@ -574,9 +611,8 @@ describe('UserserviceClient', () => {
   function createProband(): ProbandInternalDto {
     return {
       pseudonym: 'TEST-1234',
-      role: 'Proband',
       study: 'Teststudy',
-      first_logged_in_at: 'somedate',
+      firstLoggedInAt: 'somedate',
       complianceLabresults: true,
       complianceSamples: true,
       complianceBloodsamples: true,
@@ -584,12 +620,6 @@ describe('UserserviceClient', () => {
       accountStatus: AccountStatus.ACCOUNT,
       status: ProbandStatus.DEACTIVATED,
       ids: 'SOME_IDS',
-      study_accesses: [
-        {
-          study_id: 'Teststudy',
-          access_level: 'read',
-        },
-      ],
     };
   }
 

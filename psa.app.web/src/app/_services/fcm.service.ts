@@ -10,10 +10,9 @@ import { DOCUMENT } from '@angular/common';
 import { AngularFireMessaging } from '@angular/fire/compat/messaging';
 
 import { NotificationService } from '../psa.app.core/providers/notification-service/notification-service';
-import { AuthenticationManager } from './authentication-manager.service';
-import { User } from '../psa.app.core/models/user';
-import { Subscription } from 'rxjs';
-import { first, mergeMap } from 'rxjs/operators';
+import { Observable, of, Subscription } from 'rxjs';
+import { catchError, first, mergeMap, tap } from 'rxjs/operators';
+import { CurrentUser } from './current-user.service';
 
 @Injectable()
 export class FCMService {
@@ -22,54 +21,44 @@ export class FCMService {
 
   constructor(
     private afMessaging: AngularFireMessaging,
-    private auth: AuthenticationManager,
+    private user: CurrentUser,
     private notificationService: NotificationService,
     private router: Router,
     private ngZone: NgZone,
     @Inject(DOCUMENT) private document: Document
   ) {
-    auth.currentUser$.subscribe((user) => this.onUserChange(user));
-  }
-
-  private onUserChange(user: User): void {
-    if (user) {
-      if (user.role !== 'Proband') {
-        return;
-      }
-      try {
-        this.fcmTokenSubscription = this.afMessaging.requestToken.subscribe(
-          (token) => {
-            if (token) {
-              console.log('[FCM] got new token');
-              this.notificationService.postFCMToken(token);
-            } else {
-              console.log('[FCM] not active');
-            }
-          },
-          (error) => console.error(error)
-        );
-        this.fcmMessageSubscription = this.afMessaging.messages.subscribe(
-          (message) => this.handleFCMMessage(message)
-        );
-      } catch (e) {
-        console.error('[FCM] could not be initialized', e);
-      }
-    } else {
-      if (this.fcmTokenSubscription) {
-        this.fcmTokenSubscription.unsubscribe();
-      }
-      if (this.fcmMessageSubscription) {
-        this.fcmMessageSubscription.unsubscribe();
-      }
-      this.deleteToken();
+    if (this.user.isProband()) {
+      this.subscribeToPushNotifications();
     }
   }
 
-  private deleteToken(): void {
-    this.afMessaging.getToken
-      .pipe(first())
-      .pipe(mergeMap((token) => this.afMessaging.deleteToken(token)))
-      .subscribe(() => console.log('[FCM] token deleted'));
+  public onLogout(): Promise<boolean> {
+    if (this.user.isProband()) {
+      return this.deleteToken().toPromise();
+    } else {
+      return Promise.resolve(false);
+    }
+  }
+
+  private subscribeToPushNotifications(): void {
+    try {
+      this.fcmTokenSubscription = this.afMessaging.requestToken.subscribe(
+        (token) => {
+          if (token) {
+            console.log('[FCM] got new token');
+            this.notificationService.postFCMToken(token);
+          } else {
+            console.log('[FCM] not active');
+          }
+        },
+        (error) => console.error(error)
+      );
+      this.fcmMessageSubscription = this.afMessaging.messages.subscribe(
+        (message) => this.handleFCMMessage(message)
+      );
+    } catch (e) {
+      console.error('[FCM] could not be initialized', e);
+    }
   }
 
   private handleFCMMessage(payload): void {
@@ -89,5 +78,17 @@ export class FCMService {
           queryParams: { notification_id: payload.data.id },
         })
       );
+  }
+
+  private deleteToken(): Observable<boolean> {
+    return this.afMessaging.getToken.pipe(
+      first(),
+      mergeMap((token) => this.afMessaging.deleteToken(token)),
+      tap(() => console.log('[FCM] token deleted')),
+      catchError((err) => {
+        console.error('Could not delete FCM token on logout', err);
+        return of(false);
+      })
+    );
   }
 }

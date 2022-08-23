@@ -5,11 +5,10 @@
  */
 
 import Boom from '@hapi/boom';
-import { MailService } from '@pia/lib-service-core';
+import { MailService, AccessToken, asyncMap } from '@pia/lib-service-core';
 import { userserviceClient } from '../clients/userserviceClient';
 import { personaldataserviceClient } from '../clients/personaldataserviceClient';
-import { AccessToken } from 'dist/src';
-import { EmailRequest } from '../models/emailRequest';
+import { EmailRecipient, EmailRequest } from '../models/email';
 
 export class EmailInteractor {
   /**
@@ -21,12 +20,7 @@ export class EmailInteractor {
   public static async sendEmailToProbands(
     decodedToken: AccessToken,
     payload: EmailRequest
-  ): Promise<string[]> {
-    if (decodedToken.role !== 'ProbandenManager') {
-      throw Boom.forbidden(
-        `${decodedToken.role} is not allowed to send E-Mails`
-      );
-    }
+  ): Promise<EmailRecipient[]> {
     if (
       !(await this.hasUserAccessToAllProbands(
         decodedToken.username,
@@ -36,23 +30,13 @@ export class EmailInteractor {
       throw Boom.forbidden(`Access to proband's personal data not allowed`);
     }
 
-    const successfullySendTo = [];
-
-    for (const pseudonym of payload.recipients) {
-      const sentTo = await this.sendMailToProband(
-        pseudonym,
-        payload.title,
-        payload.body
-      );
-      if (sentTo) {
-        successfullySendTo.push(sentTo);
-      }
-    }
-    if (!successfullySendTo.length) {
-      throw Boom.notFound('No mails were sent');
-    }
-
-    return successfullySendTo;
+    return (
+      await asyncMap(
+        payload.recipients,
+        async (pseudonym) =>
+          await this.sendMailToProband(pseudonym, payload.title, payload.body)
+      )
+    ).filter((sentTo) => sentTo !== null) as EmailRecipient[];
   }
 
   /**
@@ -85,23 +69,22 @@ export class EmailInteractor {
     pseudonym: string,
     subject: string,
     text: string
-  ): Promise<string | null> {
+  ): Promise<EmailRecipient | null> {
     try {
-      const recipientMail =
-        await personaldataserviceClient.getPersonalDataEmail(pseudonym);
-      if (!recipientMail) {
+      const email = await personaldataserviceClient.getPersonalDataEmail(
+        pseudonym
+      );
+      if (!email) {
         return null;
       }
-      const success = await MailService.sendMail(recipientMail, {
+      const success = await MailService.sendMail(email, {
         subject,
         text,
       });
-      return success ? recipientMail : null;
+      return success ? { pseudonym, email } : null;
     } catch (err) {
       console.error(err);
       return null;
     }
   }
 }
-
-module.exports = EmailInteractor;

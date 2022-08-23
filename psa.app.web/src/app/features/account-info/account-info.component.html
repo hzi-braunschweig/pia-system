@@ -1,0 +1,40 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<div class="account-info">
+  <span class="account-info-icon">
+    <mat-icon class="center">account_circle</mat-icon>
+  </span>
+  <span class="account-info-content">
+    <div
+      class="account-info-content-username"
+      data-e2e="e2e-username"
+      data-unit="username"
+      [matTooltip]="username"
+    >
+      {{ username }}
+    </div>
+    <div
+      class="account-info-content-role"
+      data-e2e="e2e-current-role"
+      data-unit="role"
+      [matTooltip]="roleTranslationKey | translate"
+    >
+      {{ roleTranslationKey | translate }}
+    </div>
+  </span>
+  <span class="account-info-actions">
+    <button
+      mat-icon-button
+      class="center"
+      data-unit="manage-account"
+      [matTooltip]="'SETTINGS.MANAGE_PASSWORD' | translate"
+      (click)="manageAccount()"
+    >
+      <mat-icon>settings</mat-icon>
+    </button>
+  </span>
+</div>

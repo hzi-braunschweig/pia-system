@@ -7,7 +7,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 import { Study } from '../../psa.app.core/models/study';
 import { AlertService } from '../../_services/alert.service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
@@ -45,11 +45,11 @@ export class DialogNewUserComponent implements OnInit {
     public dialogRef: MatDialogRef<DialogNewUserComponent>,
     private authService: AuthService,
     private alertService: AlertService,
-    private questionnaireService: QuestionnaireService
+    private userService: UserService
   ) {
-    this.questionnaireService.getStudies().then(
+    this.userService.getStudies().then(
       (result) => {
-        result.studies.forEach((study) => {
+        result.forEach((study) => {
           if (study.status !== 'deleted') {
             this.studies.push(study);
           }

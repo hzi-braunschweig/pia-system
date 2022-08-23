@@ -75,7 +75,7 @@ Currently in use:
 // instantiate the client in the service initialisation
 const mq = new MessageQueueClient({
   serviceName: 'testservice',
-  hostname: 'localhost',
+  host: 'localhost',
 });
 
 // and connect it in the service initialisation

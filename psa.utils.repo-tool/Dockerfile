@@ -1,11 +1,11 @@
-FROM node:14.18.2-alpine@sha256:7bcf853eeb97a25465cb385b015606c22e926f548cbd117f85b7196df8aa0d29 AS npm-install
+FROM node:14.19.0-alpine@sha256:9a2aa545388a135b496bd55cef2be920b96c4526c99c140170e05a8de3fce653 AS npm-install
 
 ARG DIR=.
 WORKDIR /usr/src/node-app/
 COPY $DIR/package*.json ./
 
-COPY psa.eslint-config/package.json psa.eslint-config/*.js ../psa.eslint-config/
-COPY psa.lib.licensecollector/package.json ../psa.lib.licensecollector/
+COPY psa.eslint-config/package*.json psa.eslint-config/*.js ../psa.eslint-config/
+COPY psa.lib.licensecollector/package*.json ../psa.lib.licensecollector/
 COPY psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
 
 RUN npm ci

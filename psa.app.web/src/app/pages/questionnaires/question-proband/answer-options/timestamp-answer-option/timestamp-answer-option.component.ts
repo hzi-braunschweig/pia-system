@@ -5,7 +5,7 @@
  */
 
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import 'datejs';
+import { parse } from 'date-fns';
 
 @Component({
   selector: 'app-timestamp-answer-option',
@@ -13,11 +13,14 @@ import 'datejs';
   styleUrls: ['timestamp-answer-option.component.scss'],
 })
 export class TimestampAnswerOptionComponent {
-  constructor() {}
+  @Input()
+  timestamp: any;
 
-  @Input() timestamp: any;
-  @Output() timestampChanged = new EventEmitter();
-  @Input() hideButton = false;
+  @Output()
+  timestampChanged = new EventEmitter();
+
+  @Input()
+  hideButton = false;
 
   setTimestamp(): void {
     this.timestamp = Date.now();
@@ -25,7 +28,7 @@ export class TimestampAnswerOptionComponent {
   }
 
   textInputBlurred(value): void {
-    this.timestamp = Date.parseExact(value, 'H:m dd.MM.yy');
+    this.timestamp = parse(value, 'HH:mm dd.MM.yy', new Date());
     this.timestampChanged.emit(this.timestamp);
   }
 }

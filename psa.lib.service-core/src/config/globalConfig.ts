@@ -6,15 +6,71 @@
 
 import { ConfigUtils } from './configUtils';
 import {
+  AuthClientSettings,
+  AuthSettings,
   Connection,
   DatabaseConnection,
   HttpConnection,
   HttpProtocol,
   MailserverConnection,
+  MessageQueueConnection,
   SecureConnection,
   SslCerts,
-  MessageQueueConnection,
 } from './configModel';
+
+export class GlobalAuthSettings implements AuthSettings {
+  public static get keycloakHttpConnection(): HttpConnection {
+    return new HttpConnection(
+      ConfigUtils.getEnvVariable(
+        'AUTHSERVER_PROTOCOL',
+        'https'
+      ) as HttpProtocol,
+      ConfigUtils.getEnvVariable('AUTHSERVER_HOST', 'authserver'),
+      ConfigUtils.getEnvVariableInt('AUTHSERVER_PORT')
+    );
+  }
+
+  public static get probandTokenIntrospectionClient(): AuthClientSettings {
+    return {
+      connection: GlobalAuthSettings.keycloakHttpConnection,
+      realm: 'pia-proband-realm',
+      clientId: 'pia-proband-token-introspection-client',
+      secret: ConfigUtils.getEnvVariable(
+        'AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET'
+      ),
+    };
+  }
+  public static get probandManagementClient(): AuthClientSettings {
+    return {
+      connection: GlobalAuthSettings.keycloakHttpConnection,
+      realm: 'pia-proband-realm',
+      clientId: 'pia-proband-management-client',
+      secret: ConfigUtils.getEnvVariable(
+        'AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET'
+      ),
+    };
+  }
+  public static get adminTokenIntrospectionClient(): AuthClientSettings {
+    return {
+      connection: GlobalAuthSettings.keycloakHttpConnection,
+      realm: 'pia-admin-realm',
+      clientId: 'pia-admin-token-introspection-client',
+      secret: ConfigUtils.getEnvVariable(
+        'AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET'
+      ),
+    };
+  }
+  public static get adminManagementClient(): AuthClientSettings {
+    return {
+      connection: GlobalAuthSettings.keycloakHttpConnection,
+      realm: 'pia-admin-realm',
+      clientId: 'pia-admin-management-client',
+      secret: ConfigUtils.getEnvVariable(
+        'AUTHSERVER_ADMIN_MANAGEMENT_CLIENT_SECRET'
+      ),
+    };
+  }
+}
 
 /**
  * Defines configuration which is identical across all services
@@ -30,11 +86,17 @@ import {
  * export const config: ServiceConfig = {
  *     public: GlobalConfig.getPublic(SSL_CERTS),
  *     internal: GlobalConfig.internal,
- *     database: GlobalConfig.getQPia(SSL_CERTS),
- *     publicAuthKey: GlobalConfig.publicAuthKey,
+ *     database: GlobalConfig.getQPia(SSL_CERTS)
  * };
  */
 export class GlobalConfig {
+  /**
+   * Client configuration for the different backend clients
+   *
+   * Only use the configuration needed by the specific service!
+   */
+  public static authserver = GlobalAuthSettings;
+
   /**
    * Configuration of the internal API server of a microservice
    */
@@ -43,14 +105,6 @@ export class GlobalConfig {
       host: '0.0.0.0',
       port: Number(ConfigUtils.getEnvVariable('INTERNAL_PORT')),
     };
-  }
-
-  /**
-   * authservice http connection
-   * @see {@link GlobalConfig#getHttpConnection}
-   */
-  public static get authservice(): HttpConnection {
-    return GlobalConfig.getHttpConnection('AUTHSERVICE');
   }
 
   /**
@@ -94,14 +148,6 @@ export class GlobalConfig {
   }
 
   /**
-   * sormasservice http connection
-   * @see {@link GlobalConfig#getHttpConnection}
-   */
-  public static get sormasservice(): HttpConnection {
-    return GlobalConfig.getHttpConnection('SORMASSERVICE');
-  }
-
-  /**
    * gets the application timeZone
    */
   public static get timeZone(): string {
@@ -129,24 +175,20 @@ export class GlobalConfig {
   }
 
   /**
-   * The URL of the web frontend. Will only be available, if WEBAPP_URL is passed to the service.
+   * The URL of the proband web frontend. Will only be available, if WEBAPP_URL is passed to the service.
    */
-  public static get webappUrl(): string {
+  public static get probandAppUrl(): string {
     return ConfigUtils.getEnvVariable('WEBAPP_URL');
   }
 
   /**
-   * The URL of the api backend. Will only be available, if BACKEND_API_URL is passed to the service.
+   * The URL of the admin web frontend. Will only be available, if WEBAPP_URL is passed to the service.
    */
-  public static get backendApiUrl(): string {
-    return ConfigUtils.getEnvVariable('BACKEND_API_URL');
-  }
-
-  /**
-   * Public key for the RS512 JWT token validation
-   */
-  public static get publicAuthKey(): Buffer {
-    return ConfigUtils.getFileContent('./authKey/public.pem');
+  public static get adminAppUrl(): string {
+    return (
+      this.probandAppUrl +
+      (this.probandAppUrl.endsWith('/') ? 'admin' : '/admin')
+    );
   }
 
   /**
@@ -201,6 +243,19 @@ export class GlobalConfig {
       username: ConfigUtils.getEnvVariable('MESSAGEQUEUE_APP_USER'),
       password: ConfigUtils.getEnvVariable('MESSAGEQUEUE_APP_PASSWORD'),
     };
+  }
+
+  public static isDevelopmentSystem(): boolean {
+    return (
+      ConfigUtils.getEnvVariable(
+        'IS_DEVELOPMENT_SYSTEM',
+        'false'
+      ).toLowerCase() === 'true'
+    );
+  }
+
+  public static isTest(): boolean {
+    return ConfigUtils.getEnvVariable('NODE_ENV', '').toLowerCase() === 'test';
   }
 
   /**

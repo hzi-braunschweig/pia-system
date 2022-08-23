@@ -5,20 +5,21 @@
  */
 
 import {
-  changePassword,
   createPlannedProband,
   createProband,
   createStudy,
-  createUser,
   fetchEMailsByUsername,
   generateRandomProbandForStudy,
   generateRandomStudy,
   getCredentialsForProbandByUsername,
-  getToken,
   login,
   updateProbandData,
 } from '../../../support/commands';
-import { fetchPasswordForUserFromMailHog } from '../../../support/user.commands';
+import {
+  createProfessionalUser,
+  loginProfessional,
+  UserCredentials,
+} from '../../../support/user.commands';
 import { CreateProbandRequest } from '../../../../src/app/psa.app.core/models/proband';
 
 const short = require('short-uuid');
@@ -32,7 +33,7 @@ let forscher;
 const probandCredentials = { username: '', password: '' };
 const newPassword = ',dYv3zg;r:CB';
 let message;
-const appUrl = '/';
+const adminAppUrl = '/admin/';
 
 describe('Release Test, role: "Proband", Additional, PM', () => {
   beforeEach(() => {
@@ -41,18 +42,18 @@ describe('Release Test, role: "Proband", Additional, PM', () => {
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
       role: 'Untersuchungsteam',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
+      study_accesses: [],
     };
     pm = {
       username: `e2e-pm-${translator.new()}@testpia-app.de`,
       role: 'ProbandenManager',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
+      study_accesses: [],
     };
 
     forscher = {
       username: `e2e-f-${translator.new()}@testpia-app.de`,
       role: 'Forscher',
-      study_accesses: [{ study_id: study.name, access_level: 'admin' }],
+      study_accesses: [],
     };
     message = {
       receivers: [`${proband.pseudonym}@testpia-app.de`],
@@ -60,16 +61,28 @@ describe('Release Test, role: "Proband", Additional, PM', () => {
       content: 'Herzlich Wilkommen',
     };
 
-    createStudy(study)
-      .then(() => createUser(ut))
-      .then(() => createUser(pm))
-      .then(() => createUser(forscher))
-      .then(() => getToken(ut.username))
-      .then((token) => createPlannedProband(proband.pseudonym, token))
-      .then(() => getToken(ut.username))
-      .then((token) => createProband(proband, study.name, token))
-      .then(() => getToken(pm.username))
-      .then((token) =>
+    createStudy(study);
+
+    createProfessionalUser(ut, study.name).as('utCred');
+    createProfessionalUser(pm, study.name).as('pmCred');
+    createProfessionalUser(forscher, study.name).as('fCred');
+
+    cy.get<UserCredentials>('@utCred')
+      .then(loginProfessional)
+      .then((token) => {
+        createPlannedProband(proband.pseudonym, token);
+        createProband(proband, study.name, token);
+        getCredentialsForProbandByUsername(proband.pseudonym, token).then(
+          (cred) => {
+            probandCredentials.username = cred.username;
+            probandCredentials.password = cred.password;
+          }
+        );
+      });
+
+    cy.get<UserCredentials>('@pmCred')
+      .then(loginProfessional)
+      .then((token) => {
         updateProbandData(
           proband.pseudonym,
           {
@@ -78,30 +91,25 @@ describe('Release Test, role: "Proband", Additional, PM', () => {
             plz: '53117',
           },
           token
-        )
-      )
-      .then(() => getToken(ut.username))
-      .then((token) =>
-        getCredentialsForProbandByUsername(proband.pseudonym, token)
-      )
-      .then((cred) => {
-        probandCredentials.username = cred.username;
-        probandCredentials.password = cred.password;
+        );
       });
   });
 
-  it('proband should receive e-mail if pm send mail notification', () => {
-    fetchPasswordForUserFromMailHog(pm.username).then((cred) => {
-      cy.visit(appUrl);
+  it('proband should receive e-mail if pm sends mail notification', () => {
+    cy.get<UserCredentials>('@pmCred').then((cred) => {
+      cy.visit(adminAppUrl);
       login(cred.username, cred.password);
-      changePassword(cred.password, newPassword);
+
       cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
       cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Kontaktieren')
         .click();
 
-      cy.get('[data-e2e="e2e-contact-proband-receiver-input"]').click();
+      cy.get('[data-e2e="e2e-contact-proband-study-select"]').click();
+      cy.get('.mat-option-text').contains(study.name).click();
+
+      cy.get('[data-e2e="e2e-chip-autocomplete-input"]').click();
       cy.get('.mat-option-text').contains(proband.pseudonym).click();
       cy.get('[data-e2e="e2e-contact-proband-subject-input"').type(
         message.subject

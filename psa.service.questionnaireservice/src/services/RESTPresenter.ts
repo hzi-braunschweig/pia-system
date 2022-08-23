@@ -5,9 +5,7 @@
  */
 
 import { sanitizeHtml } from '@pia/lib-service-core';
-import { StudyAccess } from '../models/study_access';
 import { Questionnaire } from '../models/questionnaire';
-import { AnswerType } from '../models/answerType';
 import { Study } from '../models/study';
 import { StudyWelcomeText } from '../models/studyWelcomeText';
 import {
@@ -71,40 +69,10 @@ export class RESTPresenter {
   }
 
   /**
-   * Presents a answertype object as a REST compliant json object
-   * @param answertypeObj the answertype object to present
-   * @returns a answertype object as a REST compliant json object
-   */
-  public static presentAnswertype(
-    answertypeObj: AnswerType | null
-  ): (RESTResponse & AnswerType) | null {
-    if (answertypeObj) {
-      return {
-        ...answertypeObj,
-        links: RESTPresenter.constructAnswertypeLinks(answertypeObj.id),
-      };
-    }
-    return null;
-  }
-
-  /**
-   * Presents an array of answertypes as a REST compliant json object
-   * @param answertypesArr the answertype array to present
-   * @returns a answertypes object as a REST compliant json object
-   */
-  public static presentAnswertypes(
-    answertypesArr: AnswerType[]
-  ): RESTResponse & { answertypes: AnswerType[] } {
-    return {
-      answertypes: answertypesArr,
-      links: RESTPresenter.constructAnswertypesLinks(),
-    };
-  }
-
-  /**
    * Presents a study object as a REST compliant json object
    * @param studyObj the study to present
    * @returns a study object as a REST compliant json object
+   * @deprecated should be removed without replacement
    */
   public static presentStudy(
     studyObj: (Partial<Study> & { name: string }) | null
@@ -122,6 +90,7 @@ export class RESTPresenter {
    * Presents a study welcome text object as a REST compliant json object
    * @param studyWelcomeTextObj the study welcome text object to present
    * @returns a study welcome text object as a REST compliant json object
+   * @deprecated should be removed without replacement
    */
   public static presentStudyWelcomeText(
     studyWelcomeTextObj: StudyWelcomeText | null
@@ -133,53 +102,6 @@ export class RESTPresenter {
       return studyWelcomeTextObj;
     }
     return null;
-  }
-
-  /**
-   * Presents an array of studies as a REST compliant json object
-   * @param studiesArr the studies array to present
-   * @returns a studies object as a REST compliant json object
-   */
-  public static presentStudies(
-    studiesArr: Partial<Study>[]
-  ): RESTResponse & { studies: Partial<Study>[] } {
-    return {
-      studies: studiesArr,
-      links: RESTPresenter.constructStudiesLinks(),
-    };
-  }
-
-  /**
-   * Presents a study access object as a REST compliant json object
-   * @param accessObj the study access object to present
-   * @returns a study access object as a REST compliant json object
-   */
-  public static presentStudyAccess(
-    accessObj: StudyAccess | null
-  ): (RESTResponse & StudyAccess) | null {
-    if (accessObj) {
-      return {
-        ...accessObj,
-        links: RESTPresenter.constructStudyAccessLinks(accessObj),
-      };
-    }
-    return null;
-  }
-
-  /**
-   * Presents an array of study accesses as a REST compliant json object
-   * @param accessesArr the study accesses array to present
-   * @param studyId the study id of the accesses array
-   * @returns a study accesses object as a REST compliant json object
-   */
-  public static presentStudyAccesses(
-    accessesArr: StudyAccess[],
-    studyId: string
-  ): (RESTResponse & { study_accesses: StudyAccess[] }) | null {
-    return {
-      study_accesses: accessesArr,
-      links: RESTPresenter.constructStudyAccessesLinks(studyId),
-    };
   }
 
   /**
@@ -274,26 +196,6 @@ export class RESTPresenter {
     };
   }
 
-  /**
-   * presents a study queue object as a REST compliant json object
-   * @param queueObj the queue object to present
-   * @returns a queue object as a REST compliant json object
-   */
-  public static presentQueue(
-    queueObj: QuestionnaireInstanceQueue | null
-  ): (RESTResponse & QuestionnaireInstanceQueue) | null {
-    if (queueObj) {
-      return {
-        ...queueObj,
-        links: RESTPresenter.constructQueueLinks(
-          queueObj.user_id,
-          queueObj.questionnaire_instance_id
-        ),
-      };
-    }
-    return null;
-  }
-
   private static constructQuestionnaireLinks(
     id: number,
     version: number
@@ -311,41 +213,9 @@ export class RESTPresenter {
     };
   }
 
-  private static constructAnswertypeLinks(id: number): LinkBlock {
-    return {
-      self: { href: '/answertypes/' + id.toString() },
-    };
-  }
-
-  private static constructAnswertypesLinks(): LinkBlock {
-    return {
-      self: { href: '/answertypes' },
-    };
-  }
-
   private static constructStudyLinks(studyId: string): LinkBlock {
     return {
       self: { href: '/studies/' + studyId },
-    };
-  }
-
-  private static constructStudiesLinks(): LinkBlock {
-    return {
-      self: { href: '/studies' },
-    };
-  }
-
-  private static constructStudyAccessLinks(access: StudyAccess): LinkBlock {
-    return {
-      self: {
-        href: '/studies/' + access.study_id + '/accesses/' + access.user_id,
-      },
-    };
-  }
-
-  private static constructStudyAccessesLinks(studyId: string): LinkBlock {
-    return {
-      self: { href: '/studies/' + studyId + '/accesses' },
     };
   }
 
@@ -375,17 +245,6 @@ export class RESTPresenter {
   private static constructAllQueuesLinks(username: string): LinkBlock {
     return {
       self: { href: '/probands/' + username + '/queues' },
-    };
-  }
-
-  private static constructQueueLinks(
-    user_id: string,
-    instance_id: number
-  ): LinkBlock {
-    return {
-      self: {
-        href: '/probands/' + user_id + '/queues/' + instance_id.toString(),
-      },
     };
   }
 

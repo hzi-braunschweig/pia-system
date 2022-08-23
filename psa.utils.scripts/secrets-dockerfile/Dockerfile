@@ -13,5 +13,8 @@ COPY --chown=1000:1000 $SRC_PATH /usr/src/node-app/
 # postgres
 COPY --chown=999:999 $SRC_PATH /tmp_config/
 
-# webappserver
+# keycloak
+COPY --chown=1000 $SRC_PATH/ssl/ /certs/
+
+# webappserver + apigateway
 COPY $SRC_PATH /etc/

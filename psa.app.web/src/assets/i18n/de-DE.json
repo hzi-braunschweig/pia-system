@@ -32,7 +32,8 @@
     "FILTER": "Filter",
     "SEARCH": "Suche",
     "NO_OPTION_FOUND": "Keine Optionen gefunden",
-    "LICENSES": "Software-Lizenzen"
+    "LICENSES": "Software-Lizenzen",
+    "SELECT_STUDY": "Studie"
   },
   "ERROR": {
     "ERROR": "Fehler",
@@ -64,9 +65,6 @@
     "COMMENT_FIELD": "Tippen Sie Ihre Bemerkung ein.",
     "SAVE_CHANGES": "Änderung speichern"
   },
-  "HOME": {
-    "SELECT": "Sprache ändern"
-  },
   "SIDENAV": {
     "LOGOUT": "Abmelden",
     "HOME": "Startseite",
@@ -76,19 +74,16 @@
     "PLANNED_PROBANDS": "Geplante Teilnehmende",
     "STUDIES": "Studien",
     "USER_ADMINISTRATION": "Nutzerverwaltung",
-    "COMPLIANCE": "Einwilligungen",
+    "COMPLIANCE": "Einwilligung",
     "COMPLIANCE_MANAGEMENT": "Einwilligungsmanagement",
     "SETTINGS": "Einstellungen",
     "REQUEST_NASAL_SWAB": "Nasenabstrich anfordern",
     "SAMPLE_MANAGEMENT": "Probenverwaltung",
     "LABORATORY_RESULTS": "Laborergebnisse",
     "CONTACT_PROBAND": "Kontaktieren",
-    "CONTACT_ALL_PROBANDS": "Alle Teilnehmenden benachrichtigen",
     "LOGS": "Logs",
     "CONTACT": "Kontakt",
     "PROBANDS_TO_CONTACT": "Zu kontaktieren",
-    "USER": "Nutzer:in:",
-    "ROLE": "Rolle:",
     "NO_CONTACT_INFO": "Derzeit sind keine Kontaktinformationen für diese Studie verfügbar.",
     "LOGOUT_DIALOG": {
       "QUESTION": "Wollen Sie sich wirklich abmelden?",
@@ -114,33 +109,10 @@
     "PRINT": "Drucken",
     "POST": "Abschicken"
   },
-  "CHANGE_PASSWORD": {
-    "CHANGE_PASSWORD": "Passwort ändern",
-    "OLD_PASSWORD": "Altes Passwort",
-    "OLD_PASSWORD_REQUIRED": "Altes Passwort ist erforderlich.",
-    "NEW_PASSWORD": "Neues Passwort",
-    "NEW_PASSWORD_REQUIRED": "Neues Passwort ist erforderlich.",
-    "PASSWORD_NO_MATCH": "Passwörter stimmen nicht überein.",
-    "PASSWORD_LENGTH": "Passwort muss mindestens {{len}} Zeichen lang sein.",
-    "SHOW_PASSWORD": "Passwort anzeigen",
-    "PATTERN_ERROR": "Passwort muss mind. einen Groß- und Kleinbuchstaben, eine Ziffer und eins der folgenden Sonderzeichen enthalten: (#, $, @, !, %, &, +, *, ?, :, ;, <, =, >, _, |, /, ~, (, ), -, {, }).",
-    "DROP_PASSWORD": "Passwort abwählen",
-    "ONE_OF_THIS_SPECIAL_CHAR": "mindestens eins der folgenden Sonderzeichen enthalten: #, $, @, !, %, &, +, *, ?, :, ;, <, =, >, _, |, /, ~, (, ), -, {, }",
-    "PASSWORD_MUST_HAVE": "Passwort muss:",
-    "ONE_UPPERCASE_CHAR": "mindestens einen Großbuchstaben enthalten",
-    "ONE_LOWERCASE_CHAR": "mindestens einen Kleinbuchstaben enthalten",
-    "ONE_DIGIT": "mindestens eine Ziffer enthalten",
-    "AT_LEAST_X_CHAR_LONG": "mindestens {{len}} Zeichen lang sein",
-    "WRONG_OLD_PASSWORD": "Das angegebene alte Passwort ist falsch.",
-    "CHANGING_NO_OLD_PASSWORD": " Zum Ändern des Passwortes müssen Sie Ihr altes Passwort angeben.",
-    "DROPPING_NO_OLD_PASSWORD": "Zum Abwählen des Passwortes müssen Sie Ihr altes Passwort angeben.",
-    "NO_PW_HEADING": "Hinweis:",
-    "NO_PW_TEXT": "Mit dem Abwählen des Passwortes haben Personen, die Ihren Nutzernamen kennen, von jedem Gerät Zugriff auf Ihre PIA-Daten."
-  },
   "COMPLIANCE": {
     "DOWNLOAD_PDF": "Als PDF herunterladen",
     "COMPLIANCE": "Einwilligung",
-    "COMPLIANCES": "Einwilligungen",
+    "COMPLIANCES": "Einwilligung",
     "TO_BE_FILLED_OUT_BY": "Auszufüllen durch",
     "TO_BE_FILLED_OUT_BY_IS_REQUIRED": "Bitte wählen Sie aus, durch welche Rolle die Einwilligung auszufüllen ist.",
     "APP_USAGE": "App-Nutzung",
@@ -163,7 +135,6 @@
     "PREVIEW": "Vorschau",
     "EDIT": "Bearbeiten",
     "PUBLISH": "Veröffentlichen",
-    "STUDY": "Studie",
     "TO_ALL": "In alles einwilligen",
     "SAVED_SUCCESSFULLY": "Ihre Einwilligung wurde erfolgreich gespeichert.",
     "PUBLISHED_SUCCESSFULLY": "Der Einwilligungstext wurde erfolgreich bereitgestellt.",
@@ -190,7 +161,6 @@
     "PROBANDS": "Teilnehmende",
     "SELECT_ALL": "Alle auswählen",
     "ALL_PROBANDS": "Alle Teilnehmenden",
-    "STUDIES": "Studien",
     "DATE_EMPTY": "Leer bedeutet keine Grenze",
     "FROM": "von",
     "TO": "bis",
@@ -219,25 +189,10 @@
     "DATE_OF_BIRTH": "Geburtsdatum"
   },
   "LOGIN": {
-    "LOGIN": "Anmelden",
-    "LANGUAGE": "Sprache",
     "USERNAME": "Anmeldename",
-    "PASSWORD": "Passwort",
-    "USERNAME_REQUIRED": "Anmeldename ist erforderlich.",
-    "PASSWORD_REQUIRED": "Passwort ist erforderlich.",
-    "WRONG_DATA": "Falsche Eingabe. Bitte überprüfen Sie Ihre Zugangsdaten.",
-    "BACKEND_CONNECTION_ERROR": "Die Verbindung zum Backend-Server konnte nicht hergestellt werden. Mögliche Gründe: 1. Der Backend-Server ist noch nicht verfügbar. 2. Ihre Internetverbindung ist unterbrochen. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
-    "ANOTHER_ACCOUNT": "Anderes Konto verwenden",
-    "FORGOTTEN_PW": "Passwort vergessen",
-    "TOKEN_EXPIRED": "Token ist abgelaufen, geben Sie Ihren Anmeldenamen ein.",
-    "3WRONGATTEMPTS": "Sie haben Ihr Passwort 3 Mal falsch eingegeben und wurden daher kurzzeitig gesperrt. Verbleibend: ",
-    "NEW_PASSWORD_SENT": "Falls es sich um eine:n gültigen Benutzer:in mit bekannter E-Mail-Adresse handelt, wurde eine E-Mail mit einem neuem Passwort versandt.",
-    "NO_NEW_PASSWORD_SENT": "Aufgrund von technischen Problemen ist ein Zurücksetzen des Passworts aktuell leider nicht möglich.",
-    "NEW_PASSWORD_ASK": "Sind Sie sicher, dass Sie ein neues Passwort per E-Mail anfordern möchten?",
-    "GIVE_USERNAME": "Bitte geben Sie zunächst Ihren Nutzernamen an."
+    "USERNAME_REQUIRED": "Anmeldename ist erforderlich."
   },
   "QUESTIONNAIRE_FORSCHER": {
-    "STUDY": "Studien",
     "QUESTIONNAIRE_NAME": "Fragebogenname",
     "QUESTIONNAIRE_TYPE": "Fragebogentyp",
     "QUESTIONNAIRE_DATE": "Herausgabe/Abnahme:",
@@ -380,8 +335,8 @@
     "MIN_VALUE": " Minimalwert",
     "MAX_VALUE": " Maximalwert",
     "VALUES_VALIDATE": "Der Maximalwert soll größer als der Minimalwert sein.",
-    "VALUES_NOT_DECIMAL": "Bitte geben sie eine einzelne Dezimalzahl ein.",
-    "VALUES_NOT_INTEGER": "Bitte geben sie eine einzelne ganze Zahl ein.",
+    "VALUES_NOT_DECIMAL": "Bitte geben Sie eine einzelne Dezimalzahl ein.",
+    "VALUES_NOT_INTEGER": "Bitte geben Sie eine einzelne ganze Zahl ein.",
     "CONDITION_ERROR_REF_NOT_FOUND": "Die Referenz für diese Bedingung konnte nicht gefunden werden: ",
     "FIRST_SAVE_QUESTIONNAIRE": "Bitte speichern Sie den importierten Fragebogen einmalig, bevor Sie Änderungen an Fragen vornehmen.",
     "FORM_INVALID": "Folgendes Feld ist ungültig: ",
@@ -435,7 +390,7 @@
     "OVERVIEW_HINT_IN_PROGRESS": "Bitte sehen Sie den Fragebogen nochmals durch und prüfen Sie, ob Sie alle Fragen vollständig und richtig beantwortet haben. Möchten Sie Änderungen an Ihren hier angezeigten Antworten vornehmen, klicken Sie bitte in der Darstellung links auf die entsprechende Frage und beantworten Sie diese erneut.",
     "OVERVIEW_HINT_RELEASED": "Dieser Fragebogen wurde bereits abgeschlossen und kann nicht mehr geändert werden.",
     "HISTORY": "Versionsgeschichte",
-    "ANSWER_VALUE_REQUIRED": "Ihre Antwort ist erforderlich (Pflichtangabe)",
+    "ANSWER_VALUE_REQUIRED": "Ihre Antwort ist erforderlich (Pflichtangabe).",
     "ANSWER_VALUE_MIN": "Antwortwert muss größer als 0 sein",
     "ANSWER_VALUE_MAX": "Antwortwert muss kleiner als 45 sein",
     "ENTER_SAMPLE_ID": "Tragen Sie beide Proben IDs ein:",
@@ -445,7 +400,7 @@
     "SELECT_FILE": "Datei auswählen",
     "SELECT_ONLY_IMAGE": "Falsches Dateiformat. Bitte nur ein Bild im jpeg- oder png-Format auswählen.",
     "SELECT_ONLY_FILE": "Falsches Dateiformat. Bitte nur ein PDF oder CSV Format auswählen.",
-    "CURRENT_QUESTION": "Bitte beantworten Sie zunächst die aktuelle Frage.",
+    "CURRENT_QUESTION": "Bitte prüfen Sie Ihre Eingaben. Zu prüfende Eingaben sind durch einen roten Hinweistext markiert.",
     "CURRENT_SAMPLE_IDs": "Bitte bestätigen Sie zunächst die Proben-IDs.",
     "UPLOADED_FILE_TOO_LARGE": "Es können nur Dateien mit einer Größe von bis zu 20MB hochgeladen werden. Bitte prüfen Sie Ihre Dateigröße."
   },
@@ -562,7 +517,7 @@
     "ACCEPT_CHANGE_COMPLIANCE": "Bitte bestätigen Sie die Einwilligungsänderung der teilnehmenden Person {{usernameProband}}, angefordert von {{usernamePM}}.",
     "ACCEPT_CHANGE_STUDY": "Bitte bestätigen Sie die Änderung der Studie {{study_id}}, angefordert von {{user_id}}.",
     "PM_REQUIRED": "Bitte wählen Sie eine:n Probandenmanager:in",
-    "ADMIN_REQUIRED": "Bitte wählen Sie eine:n Systemadministrator:in",
+    "CONFIRMATION_PARTNER_REQUIRED": "Bitte wählen Sie eine:n Bestätigungspartner:in",
     "FORSCHER_REQUIRED": "Bitte wählen Sie eine:n Forscher:in",
     "VALID_EMAIL": "Bitte nur Nutzer:innen mit gültiger E-Mail-Adresse auswählen.",
     "YES": "Ja",
@@ -615,7 +570,7 @@
     "SUCCESS_DELETED_PROBAND": "Teilnehmer:in {{for_id}} wurde erfolgreich gelöscht.",
     "SUCCESS_DELETED_STUDY": "Die Studie {{for_id}} wurde erfolgreich gelöscht.",
     "SUCCESS_DELETED_SAMPLE": "Die Probe {{for_id}} wurde erfolgreich gelöscht.",
-    "DELETION_REJECTED_PROBAND": "Löschung der Person{{for_id}} wurde abgelehnt.",
+    "DELETION_REJECTED_PROBAND": "Löschung der Person {{for_id}} wurde abgelehnt.",
     "DELECTION_REJECTED_STUDY": "Löschung der Studie {{for_id}} wurde abgelehnt.",
     "DELECTION_REJECTED_SAMPLE": "Löschung der Probe {{for_id}} wurde abgelehnt.",
     "SUCCESS_REQUESTED_PROBAND": "Die Anforderung zum Löschen der Person {{for_id}} wurde an {{requested_for}} gesendet",
@@ -682,6 +637,7 @@
     "PENDING_CHANGE_ALREADY_EXISTS": "Es existiert bereits eine angefragte Änderung zu dieser Studie, die zuerst bearbeitet werden muss.",
     "REQUESTED_FOR_NOT_REACHED": "Der Benutzer, der die Anfrage bestätigen soll, konnte nicht per Mail erreicht werden.",
     "HAS_RNA_SAMPLES": "Eine zusätzliche RNAlater Probe soll eingescannt werden.",
+    "HAS_REQUIRED_TOTP": "Zwei-Faktor-Authentifizierung ist für professionelle Nutzer:innen verpflichtend",
     "HAS_ANSWERS_NOTIFY_FEATURE": "Auffällige Antworten",
     "HAS_ANSWERS_NOTIFY_FEATURE_BY_MAIL": "E-Mail bei auffälligen Antworten",
     "REQUEST_CHANGES": "Studie ändern",
@@ -709,14 +665,10 @@
     "NEW_USER": "Nutzer:in erstellen"
   },
   "SETTINGS": {
-    "CONFIRM": "Speichern",
-    "INFO_SAVED": "Ihre Einstellungen wurden erfolgreich gespeichert.",
-    "MANAGE_PASSWORD": "Passwort verwalten",
-    "CHANGE_PASSWORD": "Passwort ändern",
+    "MANAGE_PASSWORD": "Passwort und Kontozugriff verwalten",
     "TIME_PLACEHOLDER": "Uhrzeit",
     "CANCEL": "Abbrechen",
     "TIME_UNIT": " Uhr",
-    "LOGGING": "Erfassung von Logdaten: ",
     "DELETE_ACCOUNT_AND_PERSONAL_DATA": "Account und persönliche Daten löschen",
     "DELETE_ACCOUNT_BUT_KEEP_HEALTH_DATA_QUESTION": "Sie möchten Ihren PIA Account dauerhaft löschen. Wollen Sie der Studie ermöglichen, Ihre bereits eingegebenen Fragebogenantworten weiterhin auszuwerten?",
     "AGREE_KEEP_HEALTH_DATA": "Ja, ermöglichen",
@@ -813,23 +765,15 @@
     "RECIPIENT_IS_REQUIRED": "Empfänger:in darf nicht leer sein",
     "EMAIL": "E-Mail",
     "PUSH_NOTIFICATION": "Push Nachricht",
-    "NOTIFICATIONS_SENT": "Benachrichtigungen sind an folgende Teilnehmende versandt worden: {{probanden}}",
-    "EMAILS_SENT": "E-Mails sind an folgende Teilnehmende versandt worden: {{probanden}}"
+    "NOTIFICATIONS_SENT": "Benachrichtigungen sind an folgende Teilnehmende versandt worden:\n{{probanden}}",
+    "EMAILS_SENT": "E-Mails sind an folgende Teilnehmende versandt worden:\n{{probanden}}",
+    "NO_EMAILS_SENT": "Es konnten keine E-Mails versendet werden. Bitte prüfen Sie die E-Mail-Adressen der Empfänger:innen."
   },
   "LOGS": {
-    "LOGIN": "Anmeldung",
-    "LOGOUT": "Abmeldung",
     "Q_RELEASED_ONCE": "Fragebogen freigegeben",
     "Q_RELEASED_TWICE": "Fragebogen endgültig freigegeben",
-    "PROBAND": "Teilnehmer:in",
-    "ACTIVITY": "Aktivität",
-    "APP": "App",
     "TIMESTAMP": "Zeitstempel",
-    "ATTACHMENT": "Anhang",
-    "REQUEST": "Anfordern",
-    "COULD_NOT_LOAD": "Logs konnten nicht geladen werden.",
-    "LOADED_SUCCESSFULLY": "Daten erfolgreich geladen.",
-    "SELECT_ALL": "Alle auswählen"
+    "REQUEST": "Anfordern"
   },
   "LOGS_DELETE": {
     "DELETE_TYPE": "Typen",
@@ -843,7 +787,6 @@
     "DELETION_TYPE": "Typ",
     "REQUESTED_BY_USER": "Angefordert von Nutzer:in",
     "REQUESTED_FOR_USER": "Bestätigt durch Nutzer:in",
-    "ERROR_PERSONAL": "Die Löschlogs von persönlichen Daten konnten leider nicht angefragt werden",
     "ERROR_STUDY": "Die Löschlogs von Studiendaten konnten leider nicht angefragt werden"
   },
   "QUESTION_PROBAND": {
@@ -863,14 +806,7 @@
     "FILTER_BY_NOT_FILLEDOUT": "Nur nicht ausgefüllte FB",
     "PROCESSED_STATUS_CHANGED": "Der Bearbeitungsstatus wurde geändert"
   },
-  "SORMAS": {
-    "NEW_PROBAND_SUCCESS_MESSAGE": "Teilnehmer:in wurde erfolgreich registriert:\n\n Anmeldename: {{pseudonym}}\n\nDas Passwort wurde per E-Mail an Teilnehmer:in versendet\n",
-    "NEW_PROBAND_SUCCESS_WITH_EMAIL_ERROR_MESSAGE": "Teilnehmer:in wurde erfolgreich registriert:\n\n Anmeldename: {{pseudonym}} \n Passwort: {{password}}\n\n⚠️ Das Passwort konnte nicht per E-Mail an Teilnehmer:in versendet werden",
-    "PROBAND_PARSING_ERROR": "Sormas Proband konnte nicht aus dem lokalen Speicher geparst werden.",
-    "PROBAND_EMAIL_NOT_VALID_ERROR": "Die E-Mail Adresse fehlt oder ist nicht gültig. Bitte gehen Sie folgende Schritte durch:\n1. Bitte schließen Sie die Registrierung für das Symptomtagebuch.\n2. Stellen Sie sicher, dass eine gültige E-Mail-Adresse angegeben ist und als primär markiert ist.\n3. Öffnen Sie PIA durch Klick auf den Button „Symptomtagebuch“ erneut."
-  },
   "WELCOME_TEXT": {
-    "STUDY": "Studie",
     "WELCOME_TEXT_INPUT": "Begrüßungstext eingeben",
     "PREVIEW": "Vorschau",
     "EDIT": "Bearbeiten",

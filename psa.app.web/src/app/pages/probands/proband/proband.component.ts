@@ -73,7 +73,7 @@ export class ProbandComponent implements OnInit, OnDestroy {
   public async changeTestprobandState(checked: boolean): Promise<void> {
     this.isLoading = true;
     try {
-      await this.userService.patchUser(this.pseudonym, {
+      await this.userService.patchProband(this.pseudonym, {
         is_test_proband: checked,
       });
       await this.loadProband();

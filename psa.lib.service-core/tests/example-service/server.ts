@@ -30,10 +30,7 @@ export class Server {
       },
     });
 
-    await registerAuthStrategies(Server.instance, {
-      strategies: ['jwt'],
-      publicAuthKey: config.publicAuthKey,
-    });
+    await registerAuthStrategies(Server.instance, config.servers.authserver);
     await registerPlugins(Server.instance, {
       name: 'exampleservice',
       version: '1.0.0',

@@ -8,6 +8,8 @@ const Hapi = require('@hapi/hapi');
 const {
   registerPlugins,
   registerAuthStrategies,
+  defaultPublicRoutesPaths,
+  defaultInternalRoutesPaths,
 } = require('@pia/lib-service-core');
 const I18n = require('@pia/lib-hapi-i18n-plugin');
 
@@ -52,19 +54,16 @@ exports.init = async () => {
     },
   });
 
-  await registerAuthStrategies(server, {
-    strategies: ['jwt'],
-    publicAuthKey: config.publicAuthKey,
-  });
+  await registerAuthStrategies(server, config.servers.authserver);
   await registerPlugins(server, {
     name: packageJson.name,
     version: packageJson.version,
-    routes: 'src/routes/*',
+    routes: defaultPublicRoutesPaths,
   });
   await registerPlugins(serverInternal, {
     name: packageJson.name,
     version: packageJson.version,
-    routes: 'src/routes/internal/*',
+    routes: defaultInternalRoutesPaths,
     isInternal: true,
   });
 

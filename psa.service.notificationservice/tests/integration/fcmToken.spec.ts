@@ -8,93 +8,63 @@ import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import sinon from 'sinon';
 
-import { ListeningDbClient } from '@pia/lib-service-core';
 import { FcmHelper } from '../../src/services/fcmHelper';
 
-import { cleanup, setup } from './fcmToken.spec.data/setup.helper';
-
-import secretOrPrivateKey from '../secretOrPrivateKey';
 import { Server } from '../../src/server';
 
-import JWT from 'jsonwebtoken';
 import StatusCodes from 'http-status-codes';
+
+import {
+  AuthServerMock,
+  AuthTokenMockBuilder,
+  ListeningDbClient,
+} from '@pia/lib-service-core';
+import { config } from '../../src/config';
 
 chai.use(chaiHttp);
 
-const apiAddress = `http://localhost:${
-  process.env['PORT'] ?? '80'
-}/notification`;
+const apiAddress = `http://localhost:${config.public.port}`;
 
 const suiteSandbox = sinon.createSandbox();
 
-const probandSession1 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestProband1',
-  groups: ['QTestStudy'],
-};
-const probandSession2 = {
-  id: 1,
-  role: 'Proband',
-  username: 'QTestProband2',
-  groups: ['QTestStudy'],
-};
-const forscherSession1 = {
-  id: 1,
-  role: 'Forscher',
-  username: 'QTestForscher1',
-  groups: ['QTestStudy'],
-};
-const utSession = {
-  id: 1,
-  role: 'Untersuchungsteam',
-  username: 'QTestUntersuchungsteam',
-  groups: ['QTestStudy'],
-};
-
-const invalidToken = JWT.sign(probandSession1, 'thisIsNotAValidPrivateKey', {
-  algorithm: 'HS256',
-  expiresIn: '24h',
+const probandHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband1',
+  studies: ['QTestStudy'],
 });
-const probandToken1 = JWT.sign(probandSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const probandHeader2 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Proband'],
+  username: 'qtest-proband2',
+  studies: ['QTestStudy'],
 });
-const probandToken2 = JWT.sign(probandSession2, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const forscherHeader1 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
+  username: 'qtest-forscher1',
+  studies: ['QTestStudy'],
 });
-const forscherToken1 = JWT.sign(forscherSession1, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
+const utHeader = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Untersuchungsteam'],
+  username: 'qtest-untersuchungsteam',
+  studies: ['QTestStudy'],
 });
-const utToken = JWT.sign(utSession, secretOrPrivateKey, {
-  algorithm: 'RS512',
-  expiresIn: '24h',
-});
-
-const invalidHeader = { authorization: invalidToken };
-const probandHeader1 = { authorization: probandToken1 };
-const probandHeader2 = { authorization: probandToken2 };
-const forscherHeader1 = { authorization: forscherToken1 };
-const utHeader = { authorization: utToken };
 
 interface FcmToken {
   fcm_token: string;
 }
 
 describe('/fcmToken', () => {
+  beforeEach(() => AuthServerMock.probandRealm().returnValid());
+  afterEach(AuthServerMock.cleanAll);
+
   before(async function () {
     suiteSandbox.stub(ListeningDbClient.prototype);
     suiteSandbox.stub(FcmHelper, 'sendDefaultNotification');
     suiteSandbox.stub(FcmHelper, 'initFBAdmin');
-    await setup();
     await Server.init();
   });
 
   after(async function () {
     await Server.stop();
-    await cleanup();
     suiteSandbox.restore();
   });
 
@@ -116,15 +86,21 @@ describe('/fcmToken', () => {
     };
 
     it('should return HTTP 401 if the token is invalid', async function () {
+      AuthServerMock.cleanAll();
+      AuthServerMock.probandRealm().returnInvalid();
+
       const result = await chai
         .request(apiAddress)
         .post('/fcmToken')
-        .set(invalidHeader)
+        .set(probandHeader1)
         .send(payload);
       expect(result).to.have.status(StatusCodes.UNAUTHORIZED);
     });
 
     it('should return HTTP 401 if the user is not in db', async function () {
+      AuthServerMock.cleanAll();
+      AuthServerMock.probandRealm().returnError();
+
       const result = await chai
         .request(apiAddress)
         .post('/fcmToken')

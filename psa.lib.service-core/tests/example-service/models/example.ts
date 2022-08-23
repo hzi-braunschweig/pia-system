@@ -5,6 +5,7 @@
  */
 
 export interface Example {
+  study?: string;
   name: string;
   age: number;
 }

@@ -4,26 +4,23 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-// This file can be replaced during build by using the `fileReplacements` array.
-// `ng build` replaces `environment.ts` with `environment.prod.ts`.
+// This file will be replaced during build.
 // The list of file replacements can be found in `angular.json`.
 
-export const environment = {
+import { baseEnvironment, Environment } from './environment.base';
+
+export const environment: Environment = {
+  ...baseEnvironment,
   production: false,
+  baseUrl: window.location.origin,
   defaultLanguage: 'en-US',
-  matomoUrl: '', // https://testpia-app.de/matomo/ | https://pia-app.de/matomo/
   isSormasEnabled: true, // String, as will be imported from env variable in production
   isDevelopmentSystem: true,
-  firebase: {
-    apiKey: 'AIzaSyDf4H-r-iDYG1lVtlDQXs2xJTmvDT4lzV0',
-    authDomain: 'pia-app-c50e8.firebaseapp.com',
-    projectId: 'pia-app-c50e8',
-    storageBucket: 'pia-app-c50e8.appspot.com',
-    messagingSenderId: '1012552142126',
-    appId: '1:1012552142126:web:1cdd40ece476ebfea83ebf',
+  authserver: {
+    url: `${window.location.protocol}//${window.location.hostname}/api/v1/auth`,
+    realm: 'pia-proband-realm',
+    clientId: 'pia-proband-web-app-client',
   },
-  vapidKey:
-    'BIYVU_3SGxao99eC0FwrtDKe-JV51ENGAf_W2oaoeYMDuLX0av2IMCzSVHELHSs42wfac3swmGclhSp6R9IGfIo',
 };
 
 /*
@@ -33,4 +30,4 @@ export const environment = {
  * This import should be commented out in production mode because it will have a negative impact
  * on performance if an error is thrown.
  */
-// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.
+import 'zone.js/plugins/zone-error'; // Included with Angular CLI.

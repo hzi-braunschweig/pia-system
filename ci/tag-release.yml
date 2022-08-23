@@ -30,6 +30,8 @@ tag-release:
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^release/
       when: manual
+    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
+      when: never
   environment:
     name: release-images
     url: https://$CI_REGISTRY/

@@ -6,5 +6,15 @@
 
 import { Server } from './server';
 import { ServerRunner } from '@pia/lib-service-core';
+import { KeycloakMigrationService } from './services/keycloakMigrationService';
+import { connectDatabase } from './db';
+import { adminAuthClient, probandAuthClient } from './clients/authServerClient';
 
-new ServerRunner(Server).start();
+connectDatabase()
+  .then(async () => {
+    await probandAuthClient.waitForServer();
+    await adminAuthClient.waitForServer();
+    await new KeycloakMigrationService().migrate();
+  })
+  .then(() => new ServerRunner(Server).start())
+  .catch(console.error);

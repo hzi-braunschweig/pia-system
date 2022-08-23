@@ -17,25 +17,27 @@ import { Subject } from 'rxjs';
 import { AppModule } from '../../app.module';
 import { SettingsComponent } from './settings.component';
 import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
-import { AuthenticationManager } from '../../_services/authentication-manager.service';
 import { AlertService } from '../../_services/alert.service';
-import SpyObj = jasmine.SpyObj;
 import { By } from '@angular/platform-browser';
 import { DialogDeleteAccountHealthDataPermissionComponent } from '../../dialogs/dialog-delete-account-health-data-permission/dialog-delete-account-health-data-permission.component';
 import { DialogDeleteAccountConfirmationComponent } from '../../dialogs/dialog-delete-account-confirmation/dialog-delete-account-confirmation.component';
 import { DialogDeleteAccountSuccessComponent } from '../../dialogs/dialog-delete-account-success/dialog-delete-account-success.component';
-import { QuestionnaireService } from '../../psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { createStudy } from '../../psa.app.core/models/instance.helper.spec';
+import { CurrentUser } from '../../_services/current-user.service';
+import { QuestionnaireService } from '../../psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { KeycloakService } from 'keycloak-angular';
+import SpyObj = jasmine.SpyObj;
 
-describe('SettingsComponent', () => {
+fdescribe('SettingsComponent', () => {
   let component: SettingsComponent;
   let fixture: ComponentFixture<SettingsComponent>;
 
   let dialog: SpyObj<MatDialog>;
   let authService: SpyObj<AuthService>;
-  let authManager: SpyObj<AuthenticationManager>;
+  let user: SpyObj<CurrentUser>;
   let alertService: SpyObj<AlertService>;
   let questionnaireService: SpyObj<QuestionnaireService>;
+  let keycloakService: SpyObj<KeycloakService>;
   let dialogAfterClosed: Subject<string>;
 
   beforeEach(async () => {
@@ -47,12 +49,12 @@ describe('SettingsComponent', () => {
 
     authService = jasmine.createSpyObj('AuthService', ['deleteProbandAccount']);
 
-    authManager = jasmine.createSpyObj('AuthenticationManager', [
-      'getCurrentUsername',
-      'getCurrentStudy',
-    ]);
-    authManager.getCurrentUsername.and.returnValue('TestProband');
-    authManager.getCurrentStudy.and.returnValue('TestStudy');
+    keycloakService = jasmine.createSpyObj('KeycloakService', ['clearToken']);
+
+    user = jasmine.createSpyObj('CurrentUser', [], {
+      username: 'TestProband',
+      study: 'TestStudy',
+    });
 
     alertService = jasmine.createSpyObj('AlertService', ['errorMessage']);
 
@@ -66,8 +68,9 @@ describe('SettingsComponent', () => {
     await MockBuilder(SettingsComponent, AppModule)
       .mock(MatDialog, dialog)
       .mock(AuthService, authService)
-      .mock(AuthenticationManager, authManager)
+      .mock(CurrentUser, user)
       .mock(AlertService, alertService)
+      .mock(KeycloakService, keycloakService)
       .mock(QuestionnaireService, questionnaireService);
   });
 
@@ -78,7 +81,7 @@ describe('SettingsComponent', () => {
   });
 
   describe('account deletion', () => {
-    it('should initiate accout deletion with request for health data permission', fakeAsync(() => {
+    it('should initiate account deletion with request for health data permission', fakeAsync(() => {
       clickDeleteAccountButton();
       expect(dialog.open).toHaveBeenCalledWith(
         DialogDeleteAccountHealthDataPermissionComponent,
@@ -141,6 +144,7 @@ describe('SettingsComponent', () => {
         'TestProband',
         'contact'
       );
+      expect(keycloakService.clearToken).toHaveBeenCalledTimes(1);
     }));
 
     it('should show a success dialog if deletion was successful', fakeAsync(() => {

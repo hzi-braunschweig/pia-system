@@ -5,7 +5,10 @@
  */
 
 import { Lifecycle } from '@hapi/hapi';
-import { UsersInteractor } from '../interactors/usersInteractor';
+import {
+  GetProfessionalAccountsFilters,
+  UsersInteractor,
+} from '../interactors/usersInteractor';
 import { AccessToken } from '@pia/lib-service-core';
 import { CreateProfessionalUser } from '../models/user';
 import { handleError } from './handleError';
@@ -15,84 +18,60 @@ import { handleError } from './handleError';
  */
 export class UsersHandler {
   /**
-   * get all users the Forscher has access to
-   * @param request
+   * Gets professional accounts filltered by given properties
    */
-  public static getAll: Lifecycle.Method = async (request) => {
-    return UsersInteractor.getUsers(
-      request.auth.credentials as AccessToken
-    ).catch(handleError);
-  };
-
-  /**
-   * gets all users with the same role as a requester
-   * @param request
-   */
-  public static getAllWithSameRole: Lifecycle.Method = async (request) => {
-    return UsersInteractor.getUsersWithSameRole(
-      request.auth.credentials as AccessToken
-    ).catch(handleError);
-  };
-
-  /**
-   * gets the user if the Forscher has access
-   * @param request
-   */
-  public static getOne: Lifecycle.Method = async (request) => {
-    const pseudonym = request.params['pseudonym'] as string;
-
-    return UsersInteractor.getProband(
+  public static getProfessionalAccounts: Lifecycle.Method = async (request) => {
+    return UsersInteractor.getProfessionalAccounts(
       request.auth.credentials as AccessToken,
-      pseudonym
+      request.query as GetProfessionalAccountsFilters
+    ).catch(handleError);
+  };
+
+  public static getProbandAsProfessional: Lifecycle.Method = async (
+    request
+  ) => {
+    return UsersInteractor.getProbandAsProfessional(
+      request.auth.credentials as AccessToken,
+      request.params['pseudonym'] as string
     ).catch(handleError);
   };
 
   public static getProbandByIDS: Lifecycle.Method = async (request) => {
-    const token = request.auth.credentials as AccessToken;
-    const ids = request.params['ids'] as string;
-
-    return UsersInteractor.getProbandByIDS(token, ids).catch(handleError);
+    return UsersInteractor.getProbandByIDS(
+      request.auth.credentials as AccessToken,
+      request.params['ids'] as string
+    ).catch(handleError);
   };
 
   /**
-   * creates the user if it does not exist
-   * @param request
+   * Creates the user if it does not exist
    */
   public static createOne: Lifecycle.Method = async (request) => {
-    await UsersInteractor.createUser(
-      request.auth.credentials as AccessToken,
+    await UsersInteractor.createProfessionalUser(
       request.payload as CreateProfessionalUser
-    ).catch(handleError);
+    );
     return null;
   };
 
   /**
-   * changes attributes of a proband
-   * @param request
+   * Changes attributes of a proband
    */
   public static updateOne: Lifecycle.Method = async (request) => {
-    const pseudonym = request.params['username'] as string;
-    const userValues = request.payload as { is_test_proband: boolean };
-
-    await UsersInteractor.updateUser(
+    await UsersInteractor.updateProband(
       request.auth.credentials as AccessToken,
-      pseudonym,
-      userValues
+      request.params['pseudonym'] as string,
+      request.payload as { is_test_proband: boolean }
     ).catch(handleError);
     return null;
   };
 
   /**
-   * deletes the user and all its data if the user is allowed to
-   * @param request
+   * Deletes the user and all its data if the user is allowed to
    */
   public static deleteOne: Lifecycle.Method = async (request) => {
-    const pseudonym = request.params['username'] as string;
-
-    await UsersInteractor.deleteUser(
-      request.auth.credentials as AccessToken,
-      pseudonym
-    ).catch(handleError);
+    await UsersInteractor.deleteProfessionalUser(
+      request.params['username'] as string
+    );
     return null;
   };
 }

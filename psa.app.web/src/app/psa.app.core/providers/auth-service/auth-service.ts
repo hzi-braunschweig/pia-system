@@ -5,14 +5,9 @@
  */
 
 import { Injectable } from '@angular/core';
-import {
-  LoginResponse,
-  PasswordChangeRequest,
-  ProfessionalUser,
-} from '../../models/user';
+import { ProfessionalUser } from '../../models/user';
 import { PlannedProband } from '../../models/plannedProband';
-import { UserSettings } from '../../models/user_settings';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, pluck } from 'rxjs/operators';
 import {
   PendingPartialDeletionRequest,
@@ -42,6 +37,13 @@ export class AuthService {
 
   private readonly apiUrl = 'api/v1/user/';
 
+  private static mapProbandResponseDates = map((proband: Proband): Proband => {
+    if (typeof proband.firstLoggedInAt === 'string') {
+      proband.firstLoggedInAt = new Date(proband.firstLoggedInAt);
+    }
+    return proband;
+  });
+
   private pendingPartialDeletionDateConverter = map(
     (deletion: PendingPartialDeletionResponse) => {
       deletion.fromDate = deletion.fromDate
@@ -52,106 +54,24 @@ export class AuthService {
     }
   );
 
-  private mapProbandResponseDates = map((proband: Proband): Proband => {
-    return this.formatProbandResponseDates(proband);
-  });
-
-  private mapProbandsResponseDates = map((probands: Proband[]): Proband[] => {
-    return probands.map((proband) => this.formatProbandResponseDates(proband));
-  });
-
-  public login(credentials: object): Promise<LoginResponse> {
-    return this.http
-      .post<LoginResponse>(this.apiUrl + 'login', credentials)
-      .toPromise();
-  }
-
-  public loginWithToken(
-    credentials: object,
-    token: string
-  ): Promise<LoginResponse> {
-    const headers = new HttpHeaders().append('Authorization', token);
-    return this.http
-      .post<LoginResponse>(this.apiUrl + 'login', credentials, { headers })
-      .toPromise();
-  }
-
-  public requestNewPassword(user_id: string, token: string): Promise<string> {
-    let headers = new HttpHeaders();
-    if (token) {
-      headers = headers.append('Authorization', token);
-    }
-    return this.http
-      .put(
-        this.apiUrl + 'newPassword',
-        { user_id },
-        { headers, responseType: 'text' }
-      )
-      .toPromise();
-  }
-
-  public async changePassword(
-    credentials: PasswordChangeRequest
-  ): Promise<void> {
-    await this.http
-      .post(this.apiUrl + 'changePassword', credentials)
-      .toPromise();
-  }
-
-  private getUsers(): Promise<(Proband | ProfessionalUser)[]> {
-    return this.http
-      .get<(Proband | ProfessionalUser)[]>(this.apiUrl + 'users')
-      .pipe(this.mapProbandsResponseDates)
-      .toPromise();
-  }
-
-  /**
-   * only use as Sysadmin
-   */
-  public getProfessionalUsers(): Promise<ProfessionalUser[]> {
-    return this.getUsers() as Promise<ProfessionalUser[]>;
-  }
-
-  /**
-   * do not use as Sysadmin
-   * @deprecated use probandService.getProbands to get Probands per study
-   */
-  public getProbands(): Promise<Proband[]> {
-    return this.getUsers() as Promise<Proband[]>;
-  }
-
-  public getUsersWithSameRole(): Promise<ProfessionalUser[]> {
-    return this.http
-      .get<ProfessionalUser[]>(this.apiUrl + 'usersWithSameRole')
-      .toPromise();
-  }
-
   public getProband(pseudonym: string): Promise<Proband> {
     return this.http
       .get<Proband>(this.apiUrl + 'users/' + pseudonym)
-      .pipe(this.mapProbandResponseDates)
+      .pipe(AuthService.mapProbandResponseDates)
       .toPromise();
   }
 
-  public getUserByIDS(ids: string): Promise<Proband> {
+  public getProbandByIDS(ids: string): Promise<Proband> {
     return this.http
       .get<Proband>(this.apiUrl + 'users/ids/' + ids)
-      .pipe(this.mapProbandResponseDates)
+      .pipe(AuthService.mapProbandResponseDates)
       .toPromise();
   }
 
-  public deleteUser(
-    probandUsername: string,
-    requested_for?: string
-  ): Promise<void> {
-    const requestUrl = requested_for
-      ? this.apiUrl +
-        'users/' +
-        probandUsername +
-        '?requested_for=' +
-        requested_for
-      : this.apiUrl + 'users/' + probandUsername;
-    return this.http.delete<void>(requestUrl).toPromise();
+  public deleteUser(username: string): Promise<void> {
+    return this.http
+      .delete<void>(this.apiUrl + 'users/' + username)
+      .toPromise();
   }
 
   public async postUser(postData: ProfessionalUser): Promise<void> {
@@ -179,30 +99,12 @@ export class AuthService {
       .toPromise();
   }
 
-  public async patchUser(
+  public async patchProband(
     username: string,
-    changedData: Pick<Proband, 'is_test_proband'>
+    changedData: { is_test_proband: boolean }
   ): Promise<void> {
     await this.http
       .patch(this.apiUrl + 'users/' + username, changedData)
-      .toPromise();
-  }
-
-  putUserSettings(
-    username: string,
-    putData: UserSettings
-  ): Promise<UserSettings> {
-    return this.http
-      .put<UserSettings>(
-        this.apiUrl + 'userSettings/' + username,
-        JSON.stringify(putData)
-      )
-      .toPromise();
-  }
-
-  getUserSettings(username: string): Promise<UserSettings> {
-    return this.http
-      .get<UserSettings>(this.apiUrl + 'userSettings/' + username)
       .toPromise();
   }
 
@@ -398,12 +300,5 @@ export class AuthService {
         params,
       })
       .toPromise();
-  }
-
-  private formatProbandResponseDates(data: Proband): Proband {
-    if (typeof data.first_logged_in_at === 'string') {
-      data.first_logged_in_at = new Date(data.first_logged_in_at);
-    }
-    return data;
   }
 }

@@ -5,16 +5,16 @@
  */
 
 import Boom from '@hapi/boom';
-import { runTransaction } from '../db';
-import { config } from '../config';
 import emailValidator from 'email-validator';
 import { MailContent, MailService } from '@pia/lib-service-core';
+
+import { runTransaction } from '../db';
+import { config } from '../config';
 import { userserviceClient } from '../clients/userserviceClient';
 import { loggingserviceClient } from '../clients/loggingserviceClient';
-import pendingDeletionRepository from '../repositories/pendingDeletionRepository';
+import { PendingDeletionRepository } from '../repositories/pendingDeletionRepository';
 import { PersonalDataRepository } from '../repositories/personalDataRepository';
 import {
-  PendingDeletionDb,
   PendingDeletionReq,
   PendingDeletionRes,
 } from '../models/pendingDeletion';
@@ -22,7 +22,6 @@ import {
 export class PendingDeletionService {
   /**
    * Executes a deletion no matter if it is a new one or one from the db
-   * @param deletion the deletion that should be executed
    */
   public static async executeDeletion(
     deletion: PendingDeletionReq
@@ -32,7 +31,7 @@ export class PendingDeletionService {
         transaction,
       });
       if (deletion.id) {
-        await pendingDeletionRepository.deletePendingDeletion(
+        await PendingDeletionRepository.deletePendingDeletion(
           deletion.proband_id,
           { transaction }
         );
@@ -50,7 +49,7 @@ export class PendingDeletionService {
 
   public static async deletePendingDeletion(pseudonym: string): Promise<void> {
     return runTransaction(async (transaction) => {
-      await pendingDeletionRepository.deletePendingDeletion(pseudonym, {
+      await PendingDeletionRepository.deletePendingDeletion(pseudonym, {
         transaction,
       });
     });
@@ -58,7 +57,6 @@ export class PendingDeletionService {
 
   /**
    * Creates a new pending deletion and informs the user to confirm this
-   * @param deletion the pending deletion that should be created
    */
   public static async createPendingDeletion(
     deletion: PendingDeletionReq
@@ -66,19 +64,24 @@ export class PendingDeletionService {
     if (!emailValidator.validate(deletion.requested_for)) {
       throw Boom.badData('The username to confirm needs to be an email.');
     }
-    const study = await userserviceClient.getStudyOfProband(
+    const studyName = await userserviceClient.getStudyOfProband(
       deletion.proband_id
     );
+    if (!studyName) {
+      throw Boom.notFound('Could not find study of proband');
+    }
 
     return runTransaction(async (transaction) => {
-      const pendingDeletion = (await pendingDeletionRepository
-        .createPendingDeletion({ ...deletion, study }, { transaction })
-        .catch((err) => {
+      const pendingDeletion =
+        await PendingDeletionRepository.createPendingDeletion(
+          { ...deletion, study: studyName },
+          { transaction }
+        ).catch((err) => {
           console.error(err);
           throw Boom.preconditionFailed(
             'There is already one pending deletion for this user.'
           );
-        })) as PendingDeletionDb;
+        });
       await MailService.sendMail(
         deletion.requested_for,
         PendingDeletionService._createProbandDeletionEmailContent(
@@ -96,7 +99,7 @@ export class PendingDeletionService {
     pseudonym: string
   ): MailContent {
     const confirmationURL =
-      config.webappUrl +
+      config.adminAppUrl +
       `/probands-personal-info?probandIdToDelete=${pseudonym}&type=personal`;
     return {
       subject: 'PIA - Sie wurden gebeten eine Kontaktsperre zu bestätigen',

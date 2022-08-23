@@ -21,6 +21,8 @@ export interface Study {
   has_partial_opposition: boolean;
   has_total_opposition: boolean;
   has_compliance_opposition: boolean;
+  has_logging_opt_in: boolean;
+  has_required_totp: boolean;
   pendingStudyChange: any;
 }
 

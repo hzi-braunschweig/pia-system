@@ -14,7 +14,7 @@ class ComplianceTextInteractor {
    * @param {import('@hapi/hapi').Request} request the request
    * @param {string} study the name of the study
    * @param role {string} the role of the requester
-   * @returns {Object} the compliance text of a specific study
+   * @returns {Promise<Object>} the compliance text of a specific study
    */
   static async getComplianceTextForAgree(request, study, role) {
     try {
@@ -44,7 +44,7 @@ class ComplianceTextInteractor {
    * Reads the compliance text of a specific study so a user can edit it
    * @param {import('@hapi/hapi').Request} request the request
    * @param {string} study the name of the study
-   * @returns {Object} the compliance text of a specific study
+   * @returns {Promise<Object>} the compliance text of a specific study
    */
   static async getComplianceTextForEdit(request, study) {
     try {
@@ -68,8 +68,8 @@ class ComplianceTextInteractor {
    * Updates the compliance text of a specific study
    * @param {import('@hapi/hapi').Request} request the request
    * @param {string} study the name of the study
-   * @param {{compliance_text:string,to_be_filled_by:string}} complianceTextObject the text to update
-   * @returns {Object} the updated compliance text
+   * @param {ComplianceText} complianceTextObject the text to update
+   * @returns {Promise<Object>} the updated compliance text
    */
   static async updateComplianceText(request, study, complianceTextObject) {
     try {

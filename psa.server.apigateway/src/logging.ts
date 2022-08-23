@@ -5,19 +5,26 @@
  */
 
 import { Color } from './color';
-import { StatusCode } from './statusCode';
+
+class StatusCodeGroup {
+  public static readonly DIVIDER = 100;
+  public static readonly SUCCESS = 2;
+  public static readonly REDIRECTION = 3;
+  public static readonly CLIENT_ERROR = 4;
+  public static readonly SERVER_ERROR = 5;
+}
 
 export class Logging {
   public static colorizeStatus(statusCode: number): string {
-    const group = Math.floor(statusCode / StatusCode.GROUP_DIVIDER);
+    const group = Math.floor(statusCode / StatusCodeGroup.DIVIDER);
     switch (group) {
-      case StatusCode.GROUP_SUCCESS:
+      case StatusCodeGroup.SUCCESS:
         return Color.success(statusCode.toString());
-      case StatusCode.GROUP_REDIRECTION:
+      case StatusCodeGroup.REDIRECTION:
         return Color.info(statusCode.toString());
-      case StatusCode.GROUP_CLIENT_ERROR:
+      case StatusCodeGroup.CLIENT_ERROR:
         return Color.warn(statusCode.toString());
-      case StatusCode.GROUP_SERVER_ERROR:
+      case StatusCodeGroup.SERVER_ERROR:
         return Color.error(statusCode.toString());
       default:
         return statusCode.toString();

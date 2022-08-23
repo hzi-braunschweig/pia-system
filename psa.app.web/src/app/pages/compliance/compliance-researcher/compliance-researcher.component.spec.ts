@@ -12,7 +12,7 @@ import {
 } from '@angular/core/testing';
 import { ComplianceResearcherComponent } from './compliance-researcher.component';
 import { ComplianceService } from '../../../psa.app.core/providers/compliance-service/compliance-service';
-import { QuestionnaireService } from '../../../psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { AlertService } from '../../../_services/alert.service';
 import { Study } from '../../../psa.app.core/models/study';
 import { ComplianceTextInEditMode } from '../../../psa.app.core/models/compliance';
@@ -40,7 +40,7 @@ describe('ComplianceResearcherComponent', () => {
 
   let alertService: jasmine.SpyObj<AlertService>;
   let complianceService: jasmine.SpyObj<ComplianceService>;
-  let questionnaireService: jasmine.SpyObj<QuestionnaireService>;
+  let userService: jasmine.SpyObj<UserService>;
   let dialog: jasmine.SpyObj<MatDialog>;
 
   beforeEach(fakeAsync(() => {
@@ -55,10 +55,8 @@ describe('ComplianceResearcherComponent', () => {
     complianceService.updateComplianceText.and.resolveTo(
       getComplianceTextObject()
     );
-    questionnaireService = jasmine.createSpyObj('QuestionnaireService', [
-      'getStudies',
-    ]);
-    questionnaireService.getStudies.and.resolveTo({ studies: getStudies() });
+    userService = jasmine.createSpyObj('UserService', ['getStudies']);
+    userService.getStudies.and.resolveTo(getStudies());
     const dialogRef: SpyObj<MatDialogRef<any>> = jasmine.createSpyObj([
       'afterClosed',
     ]);
@@ -68,7 +66,7 @@ describe('ComplianceResearcherComponent', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        MockProvider(QuestionnaireService, questionnaireService),
+        MockProvider(UserService, userService),
         MockProvider(AlertService, alertService),
         MockProvider(ComplianceService, complianceService),
         MockProvider(MatDialog, dialog),

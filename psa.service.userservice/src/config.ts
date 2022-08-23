@@ -24,21 +24,26 @@ const conf = {
   services: {
     loggingservice: GlobalConfig.loggingservice,
     personaldataservice: GlobalConfig.personaldataservice,
-    authservice: GlobalConfig.authservice,
   },
   servers: {
     mailserver: GlobalConfig.mailserver,
     messageQueue: GlobalConfig.getMessageQueue('userservice'),
+    authserver: {
+      probandTokenIntrospectionClient:
+        GlobalConfig.authserver.probandTokenIntrospectionClient,
+      probandManagementClient: GlobalConfig.authserver.probandManagementClient,
+      adminTokenIntrospectionClient:
+        GlobalConfig.authserver.adminTokenIntrospectionClient,
+      adminManagementClient: GlobalConfig.authserver.adminManagementClient,
+    },
   },
-  publicAuthKey: GlobalConfig.publicAuthKey,
-  webappUrl: GlobalConfig.webappUrl,
-  backendApiUrl: GlobalConfig.backendApiUrl,
-  apiKey: ConfigUtils.getEnvVariable('API_KEY'),
-  studyForExternalSystem: 'ZIFCO-Studie',
+  probandAppUrl: GlobalConfig.probandAppUrl,
+  adminAppUrl: GlobalConfig.adminAppUrl,
   userPasswordLength: parseInt(
     ConfigUtils.getEnvVariable('USER_PASSWORD_LENGTH'),
     10
   ),
+  isDevelopmentSystem: GlobalConfig.isDevelopmentSystem(),
 };
 
 export const config: SupersetOfServiceConfig<typeof conf> = conf;

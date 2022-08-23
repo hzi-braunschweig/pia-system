@@ -1,17 +1,13 @@
 DELETE
 FROM notification_schedules
-WHERE user_id LIKE 'QTest%';
+WHERE user_id LIKE 'qtest%';
 
 DELETE
 FROM fcm_tokens WHERE study LIKE 'QTest%';;
 
 DELETE
-FROM accounts
-WHERE username LIKE 'QTest%';
-
-DELETE
 FROM probands
-WHERE pseudonym LIKE 'QTest%';
+WHERE pseudonym LIKE 'qtest%';
 
 DELETE
 FROM studies

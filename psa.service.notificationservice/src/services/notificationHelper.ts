@@ -122,6 +122,9 @@ export class NotificationHelper {
     const probandsOfStudy = await userserviceClient.getPseudonyms({
       study: study.name,
     });
+    if (probandsOfStudy.length <= 0) {
+      return;
+    }
     const labResults = await postgresqlHelper.getNewSampledSamplesForProbands(
       probandsOfStudy
     );
@@ -527,7 +530,7 @@ export class NotificationHelper {
               });
 
             if (email) {
-              const url = `${config.webappUrl}/extlink/questionnaire/${qInstance.questionnaire.id}/${qInstance.id}`;
+              const url = `${config.probandAppUrl}/extlink/questionnaire/${qInstance.questionnaire.id}/${qInstance.id}`;
               const InstanceReminderMail = {
                 subject: notification_title,
                 text: `Liebe:r Nutzer:in,\n\n${notification_body}\nKlicken Sie auf folgenden Link, um direkt zum Fragebogen zu gelangen:\n<a href="${url}">PIA Webapp</a>`,
@@ -621,7 +624,7 @@ export class NotificationHelper {
               'Liebe:r Nutzer:in,\n\n' +
               'eine Ihrer Proben wurde analysiert. Klicken Sie auf folgenden Link, um direkt zum Laborbericht zu gelangen:\n' +
               '<a href="' +
-              config.webappUrl +
+              config.probandAppUrl +
               '/laboratory-results/' +
               labResult.id +
               '">PIA Webapp</a>',
@@ -629,7 +632,7 @@ export class NotificationHelper {
               'Liebe:r Nutzer:in,<br><br>' +
               'eine Ihrer Proben wurde analysiert. Klicken Sie auf folgenden Link, um direkt zum Laborbericht zu gelangen:<br>' +
               '<a href="' +
-              config.webappUrl +
+              config.probandAppUrl +
               '/laboratory-results/' +
               labResult.id +
               '">PIA Webapp</a>',

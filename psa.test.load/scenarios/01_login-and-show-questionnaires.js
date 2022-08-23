@@ -5,126 +5,160 @@
  */
 
 import http from 'k6/http';
-import { sleep, check, group } from 'k6';
+import { scenario } from 'k6/execution';
+import { check, group, sleep } from 'k6';
+import dev from '../stages/dev.js';
+import peak from '../stages/peak.js';
+import { getUser } from '../util/load-users.js';
+
+// See the respective configuration file to learn more about their usage
+const stagesConfiguration = { dev, peak };
 
 export let options = {
-  stages: [
-    { duration: '2s', target: 1 },
-    // { duration: '60s', target: 200 }, // simulate ramp-up of traffic from 1 to 100 users over 5 seconds.
-    // { duration: '120s', target: 200 }, // stay at 100 users for 10 seconds
-    // { duration: '30s', target: 0 }, // ramp-down to 0 users
-  ],
+  stages: __ENV.STAGES
+    ? stagesConfiguration[__ENV.STAGES]
+    : stagesConfiguration.dev,
   thresholds: {
     http_req_duration: ['p(95)<1500'], // 95% of requests must complete below 1.5s
-    'loaded webapp index.html': ['p(95)<1500'],
-    'loaded webapp asset': ['p(95)<1500'],
-    'logged in successfully': ['p(95)<1500'],
-    'received studies list': ['p(95)<1500'],
-    'received user settings': ['p(95)<1500'],
-    'received compliance agreement': ['p(95)<1500'],
-    'received compliance needed': ['p(95)<1500'],
-    'received welcome text': ['p(95)<1500'],
-    'received study active': ['p(95)<1500'],
-    'received list of quesstionnaires': ['p(95)<1500'],
+    'http_req_duration{group:::webapp before login}': ['p(95)<1500'],
+    'http_req_duration{group:::keycloak login page}': ['p(95)<1500'],
+    'http_req_duration{group:::login}': ['p(95)<1500'],
+    'http_req_duration{group:::show questionnaires}': ['p(95)<1500'],
+    'http_req_duration{type:asset}': ['p(95)<1500'],
+    'http_req_duration{type:page}': ['p(95)<1500'],
+    'http_req_duration{type:api}': ['p(95)<1500'],
+    'http_req_duration{name:asset from index.html}': ['p(95)<1500'],
+    'http_req_duration{name:asset from webapp}': ['p(95)<1500'],
+    'http_req_duration{name:asset from css}': ['p(95)<1500'],
+    'http_req_duration{name:keycloak}': ['p(95)<1500'],
+    'http_req_duration{name:keycloak login}': ['p(95)<1500'],
+    'http_req_duration{name:keycloak asset}': ['p(95)<1500'],
+    'http_req_duration{name:received compliance agreement}': ['p(95)<1500'],
+    'http_req_duration{name:received compliance needed}': ['p(95)<1500'],
+    'http_req_duration{name:received welcome text}': ['p(95)<1500'],
+    'http_req_duration{name:received study active}': ['p(95)<1500'],
+    'http_req_duration{name:received list of questionnaires}': ['p(95)<1500'],
   },
 };
 
-const PROTOCOL = 'http://';
-const HOST = 'localhost';
-const BASE_URL = PROTOCOL + HOST;
-const USERNAME = 'Dtest-9999999999';
-const PASSWORD = '';
+const BASE_URL = __ENV.URL;
+const HOST = BASE_URL.split('://')[1];
 
-export default function main() {
+export default () => {
   let apiGet;
+  let user;
 
-  group('open webapp', function () {
-    const response = getAsset('/', 'loaded webapp index.html');
+  group('webapp before login', function () {
+    const response = getPage('/', 'webapp index.html');
 
     // load css and js assets based on index.html content
     const assetPaths = [
       response.html('link[rel="stylesheet"]').attr('href'),
       ...response.html('script[src]').map((idx, el) => el.attr('src')),
     ];
-    assetPaths.forEach((path) => getAsset('/' + path));
+    assetPaths.forEach((path) => getAsset('/' + path), 'asset from index.html');
 
-    getAsset('/background_hor_transp.da2ab9d9f23015482989.jpg');
-    getAsset('/assets/i18n/en-US.json');
-    getAsset('/assets/i18n/de-DE.json');
-    getAsset('/assets/images/logo-hzi.jpeg');
-    getAsset('/favicon.png');
-    getAsset('/de.7e82f4c71df5fc78abbb.svg');
-    getAsset('/MaterialIcons-Regular.fa3334fe030aed8470dd.woff2');
+    getAsset('/favicon.png', 'asset from index.html');
+
+    getAsset('/assets/i18n/en-US.json', 'asset from webapp');
+    getAsset('/assets/images/logo-hzi.jpeg', 'asset from webapp');
+
+    // todo: make this request dynamic and independent from angular build
+    getAsset(
+      '/MaterialIcons-Regular.fa3334fe030aed8470dd.woff2',
+      'asset from css'
+    );
+
+    // precursor requests for keycloak redirect
+    getPage(
+      '/api/v1/auth/realms/pia-proband-realm/protocol/openid-connect/3p-cookies/step1.html',
+      'keycloak'
+    );
+    getPage(
+      '/api/v1/auth/realms/pia-proband-realm/protocol/openid-connect/3p-cookies/step2.html',
+
+      'keycloak'
+    );
+    getPage(
+      '/api/v1/auth/realms/pia-proband-realm/protocol/openid-connect/login-status-iframe.html',
+      'keycloak'
+    );
+  });
+
+  group('keycloak login page', () => {
+    getPage(
+      `/api/v1/auth/realms/pia-proband-realm/protocol/openid-connect/auth?client_id=account-console&redirect_uri=https%3A%2F%2F${HOST}%2Fapi%2Fv1%2Fauth%2Frealms%2Fpia-proband-realm%2Faccount%2F%23%2F&state=30f1a91d-cfed-49b5-97d6-637c1905c004&response_mode=fragment&response_type=code&scope=openid&nonce=ced9bc0c-ea43-45e7-8f61-8840aa1cb537&code_challenge=NINIQ3CqgBKl-Q1t32PYA1opyhtbbg6pZRvwRD4zJDo&code_challenge_method=S256`,
+      'keycloak'
+    );
+    getAsset(
+      '/api/v1/auth/resources/iauof/login/pia/css/styles.css',
+      'keycloak asset'
+    );
+    getAsset(
+      '/api/v1/auth/resources/iauof/login/pia/img/pia_logo.png',
+      'keycloak asset'
+    );
+    getAsset(
+      '/api/v1/auth/resources/iauof/login/pia/img/favicon.png',
+      'keycloak asset'
+    );
   });
 
   group('login', function () {
-    const response = http.post(
-      BASE_URL + '/user/login',
-      '{"username":"' +
-        USERNAME +
-        '","password":"' +
-        PASSWORD +
-        '","locale":"de-DE","logged_in_with":"web"}',
+    user = getUser(scenario.iterationInTest);
+
+    const res = http.post(
+      `${BASE_URL}/api/v1/auth/realms/pia-proband-realm/protocol/openid-connect/token`,
       {
-        headers: {
-          Host: HOST,
-          Accept: 'application/json, text/plain, */*',
-          'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
-          'Accept-Encoding': 'gzip, deflate',
-          'Content-Type':
-            'application/json;type=content-type;mimeType=application/json',
-          Origin: 'http://localhost',
-          Connection: 'keep-alive',
-        },
-      }
+        client_id: `pia-proband-web-app-client`,
+        grant_type: 'password',
+        scope: 'openid',
+        username: user.username,
+        password: user.password,
+      },
+      { tags: { name: 'keycloak login', type: 'api' } }
     );
 
-    check(response, {
-      'logged in successfully': (res) =>
+    check(res, {
+      'keycloak:logged in successfully': (res) =>
         res.status === 200 && res.json('token') !== '',
     });
 
-    apiGet = createAuthorizedGet(response.json('token'));
+    apiGet = createAuthorizedGet(res.json('access_token'));
 
-    apiGet('/questionnaire/studies', 'received studies list');
-    apiGet('/user/userSettings/' + USERNAME, 'received user settings');
-    apiGet('/questionnaire/studies', 'received studies list');
-    apiGet('/questionnaire/studies', 'received studies list');
     apiGet(
-      '/compliance/Teststudie-%20Development/agree/' + USERNAME,
+      '/compliance/' + user.study + '/agree/' + user.username,
       'received compliance agreement'
     );
     apiGet(
-      '/compliance/Teststudie-%20Development/agree/' + USERNAME + '/needed',
+      '/compliance/' + user.study + '/agree/' + user.username + '/needed',
       'received compliance needed'
     );
-    apiGet('/questionnaire/studies', 'received studies list');
 
+    getPage('/home', 'startpage');
     getAsset('/assets/images/download-play-store.png');
     getAsset('/assets/images/download-apple-store.png');
 
     apiGet(
-      '/questionnaire/studies/Teststudie-%20Development/welcome-text',
+      '/questionnaire/studies/' + user.study + '/welcome-text',
       'received welcome text'
     );
-    apiGet(
-      '/compliance/Teststudie-%20Development/active',
-      'received study active'
-    );
+    apiGet('/compliance/' + user.study + '/active', 'received study active');
   });
 
   group('show questionnaires', function () {
-    apiGet('/questionnaire/studies', 'received studies list');
-
     apiGet(
-      '/compliance/Teststudie-%20Development/agree/' + USERNAME + '/needed',
+      '/compliance/' + user.study + '/agree/' + user.username + '/needed',
       'received compliance needed'
     );
 
-    const response = apiGet('/questionnaire/questionnaireInstances');
+    const response = apiGet(
+      '/questionnaire/questionnaireInstances?status=active&status=in_progress',
+      'received list of questionnaires'
+    );
 
     check(response, {
-      'received list of quesstionnaires': (res) =>
+      'api:received list of questionnaires had content': (res) =>
         res.json('questionnaireInstances') &&
         res.json('questionnaireInstances').length >= 0,
     });
@@ -132,9 +166,17 @@ export default function main() {
 
   // Automatically added sleep
   sleep(1);
+};
+
+function getPage(path, name) {
+  return httpGet(path, { name, type: 'page' });
 }
 
-function getAsset(path, checkName = 'loaded webapp asset') {
+function getAsset(path, name = 'asset') {
+  return httpGet(path, { name, type: 'asset' });
+}
+
+function httpGet(path, tags) {
   const response = http.get(BASE_URL + path, {
     headers: {
       Host: HOST,
@@ -143,33 +185,38 @@ function getAsset(path, checkName = 'loaded webapp asset') {
       'Accept-Encoding': 'gzip, deflate',
       Connection: 'keep-alive',
     },
+    tags,
   });
 
   check(response, {
-    [checkName]: (res) => res.status === 200,
+    [`${tags.type}:${tags.name}`]: (res) => res.status === 200,
   });
 
   return response;
 }
 
-function createAuthorizedGet(authToken) {
-  return (path, checkName) => {
-    const response = http.get(BASE_URL + path, {
+function createAuthorizedGet(accessToken) {
+  return (path, name) => {
+    const response = http.get(BASE_URL + '/api/v1' + path, {
       headers: {
         Host: HOST,
         Accept: '*/*',
         'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
         'Accept-Encoding': 'gzip, deflate',
-        Authorization: authToken,
+        Authorization: `Bearer ${accessToken}`,
         'Content-Type':
           'application/json;type=content-type;mimeType=application/json',
         Connection: 'keep-alive',
       },
+      tags: {
+        name,
+        type: 'api',
+      },
     });
 
-    if (checkName) {
+    if (name) {
       check(response, {
-        [checkName]: (res) => res.status === 200 || res.status === 204,
+        [`api:${name}`]: (res) => res.status === 200 || res.status === 204,
       });
     }
 

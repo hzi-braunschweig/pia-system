@@ -23,8 +23,25 @@ describe('LabResultListPage', () => {
 
   beforeEach(() => {
     auth = jasmine.createSpyObj('AuthService', ['getCurrentUser']);
+    auth.getCurrentUser.and.returnValue({
+      username: 'Test-1234',
+      role: 'Proband',
+      study: 'Teststudy',
+    });
     sampleTrackingClient = jasmine.createSpyObj('SampleTrackingClientService', [
       'getUserLabResults',
+    ]);
+    sampleTrackingClient.getUserLabResults.and.resolveTo([
+      {
+        id: '1234',
+        user_id: 'Test-1234',
+        date_of_sampling: '',
+        status: '',
+        remark: '',
+        new_samples_sent: true,
+        performing_doctor: '',
+        dummy_sample_id: '',
+      },
     ]);
 
     TestBed.configureTestingModule({
@@ -44,7 +61,11 @@ describe('LabResultListPage', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('should load labResults list', async () => {
+    await fixture.whenStable();
+    expect(sampleTrackingClient.getUserLabResults).toHaveBeenCalledOnceWith(
+      'Test-1234'
+    );
+    expect(component.labResults).toHaveSize(1);
   });
 });

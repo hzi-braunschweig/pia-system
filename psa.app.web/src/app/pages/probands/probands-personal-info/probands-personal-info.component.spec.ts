@@ -11,8 +11,8 @@ import { ProbandsPersonalInfoComponent } from './probands-personal-info.componen
 import { ActivatedRoute } from '@angular/router';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
-import { QuestionnaireService } from '../../../psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
+import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { PersonalDataService } from '../../../psa.app.core/providers/personaldata-service/personaldata-service';
 import { ProbandService } from '../../../psa.app.core/providers/proband-service/proband.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -22,13 +22,17 @@ import {
   createPendingPersonalDataDeletion,
   createPendingProbandDeletion,
   createPersonalData,
-  createProbandNew,
+  createProband,
   createStudy,
 } from '../../../psa.app.core/models/instance.helper.spec';
 import { AlertService } from '../../../_services/alert.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
+import { DialogDeletePartnerComponent } from '../../../_helpers/dialog-delete-partner';
+import { Proband } from '../../../psa.app.core/models/proband';
+import { DialogChangeComplianceComponent } from '../../../_helpers/dialog-change-compliance';
+import { CurrentUser } from '../../../_services/current-user.service';
 import { DatePipe } from '@angular/common';
 import { TranslateService } from '@ngx-translate/core';
 import SpyObj = jasmine.SpyObj;
@@ -38,12 +42,13 @@ describe('ProbandsPersonalInfoComponent', () => {
   let component: ProbandsPersonalInfoComponent;
   let queryParamMap: Map<string, string>;
   let matDialog: SpyObj<MatDialog>;
-  let questionnaireService: SpyObj<QuestionnaireService>;
+  let userService: SpyObj<UserService>;
   let authService: SpyObj<AuthService>;
   let alertService: SpyObj<AlertService>;
   let personalDataService: SpyObj<PersonalDataService>;
   let probandService: SpyObj<ProbandService>;
   let afterClosedSubject: Subject<string>;
+  let currentUser: SpyObj<CurrentUser>;
   let datePipe: SpyObj<DatePipe>;
   let translate: SpyObj<TranslateService>;
 
@@ -55,12 +60,11 @@ describe('ProbandsPersonalInfoComponent', () => {
     matDialog.open.and.returnValue({
       afterClosed: () => afterClosedSubject.asObservable(),
     } as MatDialogRef<unknown>);
-    questionnaireService = jasmine.createSpyObj('QuestionnaireService', [
-      'getStudies',
-    ]);
-    authService = jasmine.createSpyObj('AuthService', [
+    userService = jasmine.createSpyObj(UserService, ['getStudies']);
+    authService = jasmine.createSpyObj(AuthService, [
       'getPendingDeletionForProbandId',
       'getPendingComplianceChange',
+      'getProband',
       'deletePendingDeletion',
       'deletePendingComplianceChange',
     ]);
@@ -77,12 +81,12 @@ describe('ProbandsPersonalInfoComponent', () => {
     ]);
     alertService = jasmine.createSpyObj('AlertService', ['errorObject']);
     alertService.errorObject.and.callFake(console.error);
-
-    questionnaireService.getStudies.and.resolveTo({
-      studies: [
-        createStudy({ name: 'study1' }),
-        createStudy({ name: 'study2' }),
-      ],
+    userService.getStudies.and.resolveTo([
+      createStudy({ name: 'study1' }),
+      createStudy({ name: 'study2' }),
+    ]);
+    currentUser = jasmine.createSpyObj<CurrentUser>('CurrentUser', [], {
+      username: 'SomeProfessional',
     });
 
     datePipe = jasmine.createSpyObj('DatePipe', ['transform']);
@@ -101,9 +105,10 @@ describe('ProbandsPersonalInfoComponent', () => {
       .keep(MatInputModule)
       .keep(MatPaginatorModule)
       .keep(MatSortModule)
+      .mock(CurrentUser, currentUser)
       .mock(MatDialog, matDialog)
       .mock(ProbandService, probandService)
-      .mock(QuestionnaireService, questionnaireService)
+      .mock(UserService, userService)
       .mock(AuthService, authService)
       .mock(AlertService, alertService)
       .mock(PersonalDataService, personalDataService)
@@ -114,12 +119,10 @@ describe('ProbandsPersonalInfoComponent', () => {
     const pseudonym = 'TEST-0001';
     beforeEach(fakeAsync(() => {
       // Setup mocks before creating component
-      questionnaireService.getStudies.and.resolveTo({
-        studies: [createStudy({ name: 'study1' })],
-      });
+      userService.getStudies.and.resolveTo([createStudy({ name: 'study1' })]);
       probandService.getProbands.and.resolveTo([
-        createProbandNew({ pseudonym }),
-        createProbandNew({ pseudonym: 'TEST-0002' }),
+        createProband({ pseudonym }),
+        createProband({ pseudonym: 'test-0002', ids: 'TEST-0002' }),
       ]);
       personalDataService.getPersonalDataAll.and.resolveTo([
         createPersonalData({ pseudonym }),
@@ -143,7 +146,7 @@ describe('ProbandsPersonalInfoComponent', () => {
 
     it('should create the component and load the probands of the one study', () => {
       expect(component).toBeDefined();
-      expect(questionnaireService.getStudies).toHaveBeenCalled();
+      expect(userService.getStudies).toHaveBeenCalled();
       expect(alertService.errorObject).not.toHaveBeenCalled();
     });
   });
@@ -152,10 +155,15 @@ describe('ProbandsPersonalInfoComponent', () => {
     const pseudonym = 'TEST-0001';
     beforeEach(fakeAsync(() => {
       // Setup mocks before creating component
-      queryParamMap.set('probandIdToDelete', pseudonym);
+      queryParamMap.set('probandIdToDelete', '1234');
       queryParamMap.set('type', 'personal');
       personalDataService.getPendingDeletionForProbandId.and.resolveTo(
-        createPendingPersonalDataDeletion({ proband_id: pseudonym })
+        createPendingPersonalDataDeletion({
+          requested_for: 'Test-PM2',
+          requested_by: 'Test-PM1',
+          proband_id: pseudonym,
+          study: 'Teststudy',
+        })
       );
 
       // Create component
@@ -165,9 +173,22 @@ describe('ProbandsPersonalInfoComponent', () => {
       fixture.detectChanges();
     }));
 
-    it('should create the component', () => {
-      expect(component).toBeDefined();
-      expect(alertService.errorObject).not.toHaveBeenCalled();
+    it('should open the personal data deletion dialog', () => {
+      expect(matDialog.open).toHaveBeenCalledOnceWith(
+        DialogDeletePartnerComponent,
+        {
+          width: '400px',
+          data: {
+            usernames: {
+              usernameProband: pseudonym,
+              usernamePM: 'Test-PM1',
+            },
+            type: 'personal',
+            pendingdeletionId: 1,
+            affectedStudy: 'Teststudy',
+          },
+        }
+      );
     });
   });
 
@@ -178,8 +199,15 @@ describe('ProbandsPersonalInfoComponent', () => {
       queryParamMap.set('probandIdToDelete', pseudonym);
       queryParamMap.set('type', 'general');
       authService.getPendingDeletionForProbandId.and.resolveTo(
-        createPendingProbandDeletion({ for_id: pseudonym })
+        createPendingProbandDeletion({
+          requested_for: 'Test-PM2',
+          requested_by: 'Test-PM1',
+          for_id: pseudonym,
+        })
       );
+      authService.getProband.and.resolveTo({
+        study: 'Teststudy',
+      } as Proband);
 
       // Create component
       fixture = MockRender(ProbandsPersonalInfoComponent);
@@ -188,9 +216,22 @@ describe('ProbandsPersonalInfoComponent', () => {
       fixture.detectChanges();
     }));
 
-    it('should create the component', () => {
-      expect(component).toBeDefined();
-      expect(alertService.errorObject).not.toHaveBeenCalled();
+    it('should open the proband deletion dialog', () => {
+      expect(matDialog.open).toHaveBeenCalledOnceWith(
+        DialogDeletePartnerComponent,
+        {
+          width: '400px',
+          data: {
+            usernames: {
+              usernameProband: pseudonym,
+              usernamePM: 'Test-PM1',
+            },
+            type: 'general',
+            pendingdeletionId: 1,
+            affectedStudy: 'Teststudy',
+          },
+        }
+      );
     });
   });
 
@@ -203,7 +244,12 @@ describe('ProbandsPersonalInfoComponent', () => {
         complianceChangeId.toString()
       );
       authService.getPendingComplianceChange.and.resolveTo(
-        createPendingComplianceChange({ id: complianceChangeId })
+        createPendingComplianceChange({
+          requested_for: 'Test-UT2',
+          requested_by: 'Test-UT1',
+          proband_id: 'Test-1234',
+          id: complianceChangeId,
+        })
       );
 
       // Create component
@@ -213,9 +259,23 @@ describe('ProbandsPersonalInfoComponent', () => {
       fixture.detectChanges();
     }));
 
-    it('should create the component', () => {
-      expect(component).toBeDefined();
-      expect(alertService.errorObject).not.toHaveBeenCalled();
+    it('should open the compliance change dialog', () => {
+      expect(matDialog.open).toHaveBeenCalledOnceWith(
+        DialogChangeComplianceComponent,
+        {
+          width: '400px',
+          data: {
+            has_four_eyes_opposition: true,
+            usernameProband: 'Test-1234',
+            compliance_labresults: false,
+            compliance_samples: false,
+            compliance_bloodsamples: false,
+            requested_by: 'Test-UT1',
+            requested_for: 'SomeProfessional',
+            deletePendingComplianceChangeId: complianceChangeId,
+          },
+        }
+      );
     });
   });
 
@@ -362,7 +422,7 @@ describe('ProbandsPersonalInfoComponent', () => {
 
     it('should return a translated tooltip text for deactivated probands', () => {
       // Arrange
-      const proband = createProbandNew({
+      const proband = createProband({
         pseudonym: 'TEST-0001',
         status: 'deactivated',
         deactivatedAt: '2020-07-28T00:00:00.000Z',
@@ -383,7 +443,7 @@ describe('ProbandsPersonalInfoComponent', () => {
 
     it('should return a translated tooltip text for deleted probands', () => {
       // Arrange
-      const proband = createProbandNew({
+      const proband = createProband({
         pseudonym: 'TEST-0001',
         status: 'deleted',
         deletedAt: '2020-07-28T00:00:00.000Z',

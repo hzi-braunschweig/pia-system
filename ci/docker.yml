@@ -1,6 +1,6 @@
 build-docker:
   stage: prepare
-  image: docker:20.10.11@sha256:ff4fcc30e7c20f33c021e82683aedd1fe66654363eb1ff61065e0628f5bbf107
+  image: docker:20.10.12@sha256:a729cce205a05b0b86dc8dca87823efaffc3f74979fe7dc86a707c2fbf631b61
   # downloads may fail
   retry: 2
   script:
@@ -27,6 +27,8 @@ build-docker:
     - docker
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
+      when: never
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH =~ /^develop/
@@ -37,7 +39,7 @@ build-docker:
 
 push-branch-images:
   stage: push
-  image: docker:20.10.11@sha256:ff4fcc30e7c20f33c021e82683aedd1fe66654363eb1ff61065e0628f5bbf107
+  image: docker:20.10.12@sha256:a729cce205a05b0b86dc8dca87823efaffc3f74979fe7dc86a707c2fbf631b61
   variables:
     GIT_STRATEGY: none
   dependencies: []
@@ -61,6 +63,8 @@ push-branch-images:
     - docker
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
+      when: never
+    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
       when: never
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG

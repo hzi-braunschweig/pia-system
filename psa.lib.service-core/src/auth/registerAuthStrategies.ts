@@ -5,53 +5,62 @@
  */
 
 import { Server } from '@hapi/hapi';
-import HapiAuthJwt2 from 'hapi-auth-jwt2';
-import { IDatabase } from 'pg-promise';
+import { AuthSettings } from '../config/configModel';
+import authKeycloak from 'hapi-auth-keycloak';
+import { GlobalConfig } from '../config/globalConfig';
 
-import { validateAccessToken } from './strategies/validateAccessToken';
-import { validateLoginToken } from './strategies/validateLoginToken';
-
-export type AuthStrategy = 'jwt' | 'jwt_login';
-
-export interface AuthStrategyOptions {
-  strategies: AuthStrategy[];
-  publicAuthKey?: Buffer;
-  db?: IDatabase<unknown>;
-}
-
-export const registerAuthStrategies = async (
+/**
+ * Registers AuthStrategies for proband and/or admin realm
+ *
+ * Uses hapi-auth-keycloak's 'keycloak-jwt' auth scheme.
+ *
+ * IMPORTANT:
+ * hapi-auth-keycloak needs `NODE_ENV=test` to be set for test
+ * execution. Otherwise, tests will fail as soon as they start
+ * multiple servers within one NodeJS process (which is
+ * usually the case).
+ *
+ * @param server
+ * @param authSettings
+ */
+export async function registerAuthStrategies(
   server: Server,
-  options: AuthStrategyOptions
-): Promise<void> => {
-  if (!options.strategies.length) {
-    throw new Error('registerAuthStrategies: No auth strategies defined!');
-  }
-  if (!options.publicAuthKey) {
-    throw new Error('registerAuthStrategies: No public auth key defined!');
-  }
+  authSettings: AuthSettings
+): Promise<void> {
   if (
-    options.strategies.includes('jwt') ||
-    options.strategies.includes('jwt_login')
+    !authSettings.probandTokenIntrospectionClient &&
+    !authSettings.adminTokenIntrospectionClient
   ) {
-    await server.register(HapiAuthJwt2);
+    console.warn(
+      'registerAuthStrategies() was called without valid realm configuration!'
+    );
+    console.warn('Did not register any auth strategy');
+    return;
   }
 
-  if (options.strategies.includes('jwt')) {
-    server.auth.strategy('jwt', 'jwt', {
-      key: options.publicAuthKey,
-      verifyOptions: {
-        algorithms: ['RS512'],
-      },
-      validate: validateAccessToken(options.db),
+  const userInfo = ['username', 'studies'];
+  await server.register({ plugin: authKeycloak });
+
+  if (authSettings.probandTokenIntrospectionClient) {
+    server.auth.strategy('jwt-proband', 'keycloak-jwt', {
+      name: 'jwt-proband',
+      userInfo,
+      realmUrl: `${authSettings.probandTokenIntrospectionClient.connection.url}/realms/${authSettings.probandTokenIntrospectionClient.realm}`,
+      clientId: authSettings.probandTokenIntrospectionClient.clientId,
+      secret: authSettings.probandTokenIntrospectionClient.secret,
+      cache: !GlobalConfig.isTest() ? { segment: 'keycloakJwtProband' } : false,
     });
+    console.info('Registered "jwt-proband" auth strategy');
   }
-  if (options.strategies.includes('jwt_login')) {
-    server.auth.strategy('jwt_login', 'jwt', {
-      key: options.publicAuthKey,
-      verifyOptions: {
-        algorithms: ['RS512'],
-      },
-      validate: validateLoginToken(options.db),
+  if (authSettings.adminTokenIntrospectionClient) {
+    server.auth.strategy('jwt-admin', 'keycloak-jwt', {
+      name: 'jwt-admin',
+      userInfo,
+      realmUrl: `${authSettings.adminTokenIntrospectionClient.connection.url}/realms/${authSettings.adminTokenIntrospectionClient.realm}`,
+      clientId: authSettings.adminTokenIntrospectionClient.clientId,
+      secret: authSettings.adminTokenIntrospectionClient.secret,
+      cache: !GlobalConfig.isTest() ? { segment: 'keycloakJwtAdmin' } : false,
     });
+    console.info('Registered "jwt-admin" auth strategy');
   }
-};
+}

@@ -1,4 +1,3 @@
-export * from './clients/authserviceClient';
 export * from './clients/complianceserviceClient';
 export * from './clients/loggingserviceClient';
 export * from './clients/personaldataserviceClient';

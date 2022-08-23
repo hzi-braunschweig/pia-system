@@ -6,7 +6,7 @@
 
 DELETE
 FROM probands
-WHERE pseudonym IN ('QExportTestProband2');
+WHERE pseudonym IN ('qtest-exportproband2');
 
 DELETE
 FROM studies

@@ -13,8 +13,6 @@ export interface QuestionnaireInstanceInternalDto {
     notificationsScheduled: boolean | null;
     progress: number | null;
     releaseVersion: number | null;
-    transmissionTsV1?: Date | null;
-    transmissionTsV2?: Date | null;
 }
 export interface QuestionnaireInstanceWithQuestionnaireInternalDto extends QuestionnaireInstanceInternalDto {
     questionnaire: QuestionnaireInternalDto;

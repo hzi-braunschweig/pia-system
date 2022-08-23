@@ -45,3 +45,8 @@ export interface EmailRequest {
   title: string;
   body: string;
 }
+
+export interface EmailRecipient {
+  pseudonym: string;
+  email: string;
+}

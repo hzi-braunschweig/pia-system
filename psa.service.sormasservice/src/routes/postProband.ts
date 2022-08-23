@@ -9,7 +9,7 @@ import { SymptomDiaryHandler } from '../handlers/symptomDiaryHandler';
 import Joi from 'joi';
 
 const route: ServerRoute = {
-  path: '/sormas/symptomdiary/external-data/{personUuid}',
+  path: '/symptomdiary/external-data/{personUuid}',
   method: 'POST',
   handler: SymptomDiaryHandler.postProband,
   options: {

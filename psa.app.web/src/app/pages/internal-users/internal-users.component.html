@@ -11,10 +11,8 @@
     <mat-form-field>
       <mat-select
         disableOptionCentering
-        id="selectstudy"
-        (selectionChange)="initTable()"
         placeholder="{{ 'ROLES.ROLES' | translate }}"
-        [(ngModel)]="currentRole"
+        [formControl]="selectedRole"
       >
         <mat-option *ngFor="let role of roles" [value]="role.value">
           {{ role.viewValue | translate }}

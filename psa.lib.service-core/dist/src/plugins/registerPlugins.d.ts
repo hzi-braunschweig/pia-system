@@ -5,4 +5,6 @@ export interface ServicePluginOptions {
     routes?: string;
     isInternal?: boolean;
 }
+export declare const defaultPublicRoutesPaths = "src/routes/{admin,proband}/*";
+export declare const defaultInternalRoutesPaths = "src/routes/internal/*";
 export declare const registerPlugins: (server: Server, options: ServicePluginOptions) => Promise<void>;

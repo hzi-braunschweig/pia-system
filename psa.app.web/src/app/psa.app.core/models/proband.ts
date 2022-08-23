@@ -10,17 +10,17 @@ import { ExternalCompliance } from './externalCompliance';
  * This will be the new interface when multiple studies per user are removed
  * or the probands are queried by study
  */
-export interface ProbandNew extends ExternalCompliance {
+export interface Proband extends ExternalCompliance {
   pseudonym: string;
-  firstLggedInAt: Date | null;
   study: string;
   accountStatus: AccountStatus;
   status: ProbandStatus;
   ids: string | null;
-  needsMaterial: boolean;
   studyCenter: string | null;
+  needsMaterial: boolean | null;
   examinationWave: number | null;
   isTestProband: boolean;
+  firstLoggedInAt: Date | null;
   deactivatedAt: string;
   deletedAt: string;
 }
@@ -50,17 +50,4 @@ export enum CreateProbandError {
   CREATING_ACCOUNG_FAILED = 'CREATING_ACCOUNG_FAILED',
   SAVING_PROBAND_FAILED = 'SAVING_PROBAND_FAILED',
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
-}
-
-export interface Proband extends ExternalCompliance {
-  pseudonym: string;
-  first_logged_in_at: Date | null;
-  study: string;
-  accountStatus: AccountStatus;
-  status: ProbandStatus;
-  ids: string | null;
-  needs_material: boolean;
-  study_center: string | null;
-  examination_wave: number | null;
-  is_test_proband: boolean;
 }

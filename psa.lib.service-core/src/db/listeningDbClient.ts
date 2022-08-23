@@ -52,7 +52,7 @@ export class ListeningDbClient<
     while (!this.sco && !this.disconnected) {
       try {
         this.sco = await this.db.connect({
-          onLost: async (err) => this.onConnectionLost(err),
+          onLost: (err) => void this.onConnectionLost(err),
         });
       } catch (err) {
         console.error(

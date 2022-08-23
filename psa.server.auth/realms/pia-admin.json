@@ -1,0 +1,387 @@
+{
+  "realm": "pia-admin-realm",
+  "enabled": true,
+  "displayName": "PIA Admin App",
+  "defaultSignatureAlgorithm": "ES512",
+  "revokeRefreshToken": true,
+  "refreshTokenMaxReuse": 3,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "ssoSessionIdleTimeoutRememberMe": 7200,
+  "ssoSessionMaxLifespanRememberMe": 86400,
+  "accessTokenLifespan": 300,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 600,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 600,
+  "sslRequired": "all",
+  "rememberMe": true,
+  "loginWithEmailAllowed": true,
+  "verifyEmail": true,
+  "resetPasswordAllowed": true,
+  "bruteForceProtected": true,
+  "failureFactor": 5,
+  "passwordPolicy": "hashIterations(100000) and hashAlgorithm(pbkdf2-sha512) and length([[env:USER_PASSWORD_LENGTH]]) and maxLength(80) and digits(1) and specialChars(1) and lowerCase(1) and upperCase(1) and notUsername(undefined) and notEmail(undefined) and passwordHistory(1)",
+  "smtpServer": {
+    "password": "[[env:MAIL_PASSWORD]]",
+    "starttls": "[[env:MAIL_REQUIRE_TLS]]",
+    "auth": "true",
+    "port": "[[env:MAIL_PORT]]",
+    "host": "[[env:MAIL_HOST]]",
+    "from": "[[env:MAIL_FROM_ADDRESS]]",
+    "fromDisplayName": "[[env:MAIL_FROM_NAME]]",
+    "ssl": "[[env:MAIL_REQUIRE_TLS]]",
+    "user": "[[env:MAIL_USER]]"
+  },
+  "loginTheme": "pia",
+  "accountTheme": "pia",
+  "emailTheme": "pia",
+  "eventsEnabled": false,
+  "eventsListeners": [
+    "jboss-logging",
+    "metrics-listener"
+  ],
+  "adminEventsEnabled": false,
+  "adminEventsDetailsEnabled": false,
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "de-DE",
+    "de-CH",
+    "en-US"
+  ],
+  "defaultLocale": "de-DE",
+  "authenticationFlows": [
+    {
+      "alias": "Browser with conditional OTP",
+      "description": "browser based authentication",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-cookie",
+          "authenticatorFlow": false,
+          "requirement": "ALTERNATIVE",
+          "priority": 100,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "ALTERNATIVE",
+          "priority": 200,
+          "flowAlias": "Browser with conditional OTP forms",
+          "userSetupAllowed": false,
+          "autheticatorFlow": true
+        }
+      ]
+    },
+    {
+      "alias": "Browser with conditional OTP forms",
+      "description": "Username, password, otp and other auth forms.",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "auth-username-password-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 210,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "REQUIRED",
+          "priority": 220,
+          "flowAlias": "Role based conditional OTP",
+          "userSetupAllowed": false,
+          "autheticatorFlow": true
+        },
+        {
+          "authenticatorFlow": true,
+          "requirement": "CONDITIONAL",
+          "priority": 230,
+          "flowAlias": "Optional OTP",
+          "userSetupAllowed": false,
+          "autheticatorFlow": true
+        }
+      ]
+    },
+    {
+      "alias": "Role based conditional OTP",
+      "description": "Flow to determine if the OTP is required based on role",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticatorConfig": "Force OTP for role",
+          "authenticator": "auth-conditional-otp-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 221,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        }
+      ]
+    },
+    {
+      "alias": "Optional OTP",
+      "description": "Flow to determine if OTP is configured and should be used",
+      "providerId": "basic-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticatorConfig": "Exclude role based OTP",
+          "authenticator": "conditional-user-role",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 231,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticator": "conditional-user-configured",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 232,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        },
+        {
+          "authenticator": "auth-otp-form",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 233,
+          "userSetupAllowed": false,
+          "autheticatorFlow": false
+        }
+      ]
+    }
+  ],
+  "authenticatorConfig": [
+    {
+      "alias": "Exclude role based OTP",
+      "config": {
+        "negate": "true",
+        "condUserRole": "feature:RequireTotp"
+      }
+    },
+    {
+      "alias": "Force OTP for role",
+      "config": {
+        "forceOtpRole": "feature:RequireTotp",
+        "defaultOtpOutcome": "skip"
+      }
+    },
+    {
+      "alias": "create unique user config",
+      "config": {
+        "require.password.update.after.registration": "false"
+      }
+    },
+    {
+      "alias": "review profile config",
+      "config": {
+        "update.profile.on.first.login": "missing"
+      }
+    }
+  ],
+  "userManagedAccessAllowed": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "feature:RequireTotp",
+        "description": "Requires users with this role to setup and use totp"
+      },
+      {
+        "name": "Untersuchungsteam",
+        "description": "Untersuchungsteam"
+      },
+      {
+        "name": "Forscher",
+        "description": "Forscher:in"
+      },
+      {
+        "name": "SysAdmin",
+        "description": "Systemadministrator:in",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "feature:RequireTotp"
+          ]
+        }
+      },
+      {
+        "name": "EinwilligungsManager",
+        "description": "EinwilligungsManager:in"
+      },
+      {
+        "name": "ProbandenManager",
+        "description": "ProbandenManager:in"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "service-account-pia-admin-management-client",
+      "serviceAccountClientId": "pia-admin-management-client",
+      "clientRoles": {
+        "realm-management": ["view-users", "view-realm", "manage-users"]
+      }
+    },
+    {
+      "username": "service-account-pia-admin-token-introspection-client",
+      "serviceAccountClientId": "pia-admin-token-introspection-client"
+    }
+  ],
+  "scopeMappings": [
+    {
+      "client": "pia-admin-web-app-client",
+      "roles": [
+        "Untersuchungsteam",
+        "Forscher",
+        "SysAdmin",
+        "EinwilligungsManager",
+        "ProbandenManager"
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "account-console",
+      "redirectUris": ["[[env:WEBAPP_URL]]/*", "https://localhost:4200/*"],
+      "webOrigins": ["[[env:WEBAPP_URL]]", "https://localhost:4200"]
+    },
+    {
+      "clientId": "pia-admin-management-client",
+      "name": "PIA Admin Realm Management Client",
+      "description": "Used by backend services to manage users and roles of the admin realm",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "[[env:AUTHSERVER_ADMIN_MANAGEMENT_CLIENT_SECRET]]",
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "pia-admin-token-introspection-client",
+      "name": "PIA Admin Realm Token Introspection Client",
+      "description": "Used by backend services to validate access tokens of proffessional users",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "[[env:AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET]]",
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "publicClient": false,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": false
+    },
+    {
+      "clientId": "pia-admin-web-app-client",
+      "name": "PIA Admin App",
+      "rootUrl": "[[env:WEBAPP_URL]]/admin",
+      "adminUrl": "",
+      "baseUrl": "[[env:WEBAPP_URL]]/",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "redirectUris": [
+        "[[env:WEBAPP_URL]]/admin/*",
+        "https://localhost:4200/*"
+      ],
+      "webOrigins": ["[[env:WEBAPP_URL]]", "https://localhost:4200"],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": [[env:IS_DIRECT_ACCESS_GRANT_ENABLED]],
+      "serviceAccountsEnabled": false,
+      "publicClient": true,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "username",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "username",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "username",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "studies",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "studies",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ],
+      "fullScopeAllowed": false
+    }
+  ],
+  "requiredActions": [
+    {
+      "alias": "UPDATE_PASSWORD",
+      "name": "Update Password",
+      "providerId": "UPDATE_PASSWORD",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 30,
+      "config": {}
+    },
+    {
+      "alias": "VERIFY_EMAIL",
+      "name": "Verify Email",
+      "providerId": "VERIFY_EMAIL",
+      "enabled": [[env:IS_NOT_DEVELOPMENT_SYSTEM]],
+      "defaultAction": false,
+      "priority": 50,
+      "config": {}
+    },
+    {
+      "alias": "CONFIGURE_TOTP",
+      "name": "Configure OTP",
+      "providerId": "CONFIGURE_TOTP",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 51,
+      "config": {}
+    }
+  ],
+  "browserFlow": "Browser with conditional OTP"
+}

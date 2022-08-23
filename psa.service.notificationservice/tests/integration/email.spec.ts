@@ -8,18 +8,16 @@ import chai from 'chai';
 import chaiHttp from 'chai-http';
 import sinon from 'sinon';
 import fetchMocker from 'fetch-mock';
-import JWT from 'jsonwebtoken';
 
 import {
+  AuthServerMock,
+  AuthTokenMockBuilder,
   ListeningDbClient,
   MailService,
-  AccessToken,
 } from '@pia/lib-service-core';
 import { HttpClient } from '@pia-system/lib-http-clients-internal';
 import { FcmHelper } from '../../src/services/fcmHelper';
 import { Server } from '../../src/server';
-import secretOrPrivateKey from '../secretOrPrivateKey';
-import { setup, cleanup } from './email.spec.data/setup.helper';
 import { StatusCodes } from 'http-status-codes';
 import { config } from '../../src/config';
 import { Notification } from '../../src/models/notification';
@@ -28,33 +26,26 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 const fetchMock = fetchMocker.sandbox();
 
-const apiAddress =
-  'http://localhost:' + config.public.port.toString() + '/notification';
+const apiAddress = `http://localhost:${config.public.port}`;
 
 const testSandbox = sinon.createSandbox();
 const suiteSandbox = sinon.createSandbox();
 
-const pmSession: AccessToken = {
-  id: 1,
-  role: 'ProbandenManager',
-  username: 'QTestProbandenManager',
-  groups: ['QTestStudy1'],
-};
+describe('/admin/email', () => {
+  beforeEach(() => AuthServerMock.adminRealm().returnValid());
+  afterEach(AuthServerMock.cleanAll);
 
-describe('/notification/email', () => {
   before(async () => {
     suiteSandbox.stub(ListeningDbClient.prototype);
     suiteSandbox.stub(FcmHelper, 'sendDefaultNotification');
     suiteSandbox.stub(FcmHelper, 'initFBAdmin');
     suiteSandbox.stub(MailService, 'initService');
     suiteSandbox.stub(MailService, 'sendMail').resolves(true);
-    await setup();
     await Server.init();
   });
 
   after(async () => {
     await Server.stop();
-    await cleanup();
     suiteSandbox.restore();
   });
 
@@ -70,20 +61,22 @@ describe('/notification/email', () => {
     fetchMock.restore();
   });
 
-  describe('POST /notification/email', () => {
+  describe('POST /admin/email', () => {
     it('should return HTTP 401 when the token is wrong', async () => {
       // Arrange
-      const invalidHeader = {
-        authorization: JWT.sign(pmSession, 'thisIsNotAValidPrivateKey', {
-          expiresIn: '24h',
-        }),
-      };
+      const probandHeader = AuthTokenMockBuilder.createAuthHeader({
+        roles: ['Proband'],
+        username: 'qtest-proband1',
+        studies: ['QTestStudy1'],
+      });
+      AuthServerMock.cleanAll();
+      AuthServerMock.probandRealm().returnInvalid();
 
       // Act
       const result = await chai
         .request(apiAddress)
-        .post('/email')
-        .set(invalidHeader);
+        .post('/admin/email')
+        .set(probandHeader);
 
       // Assert
       expect(result, result.text).to.have.status(StatusCodes.UNAUTHORIZED);
@@ -93,7 +86,7 @@ describe('/notification/email', () => {
       // Arrange
 
       // Act
-      const result = await chai.request(apiAddress).post('/email');
+      const result = await chai.request(apiAddress).post('/admin/email');
 
       // Assert
       expect(result, result.text).to.have.status(StatusCodes.UNAUTHORIZED);
@@ -101,19 +94,16 @@ describe('/notification/email', () => {
 
     it('should return HTTP 403 when a Proband tries', async () => {
       // Arrange
-      const probandHeader = {
-        authorization: sign({
-          id: 1,
-          role: 'Proband',
-          username: 'QTestProband1',
-          groups: ['QTestStudy1'],
-        }),
-      };
+      const probandHeader = AuthTokenMockBuilder.createAuthHeader({
+        roles: ['Proband'],
+        username: 'qtest-proband1',
+        studies: ['QTestStudy1'],
+      });
 
       // Act
       const result = await chai
         .request(apiAddress)
-        .post('/email')
+        .post('/admin/email')
         .set(probandHeader)
         .send(createEmailRequest());
 
@@ -123,19 +113,16 @@ describe('/notification/email', () => {
 
     it('should return HTTP 403 when a Forscher tries', async () => {
       // Arrange
-      const forscherHeader = {
-        authorization: sign({
-          id: 1,
-          role: 'Forscher',
-          username: 'QTestForscher1',
-          groups: ['QTestStudy1'],
-        }),
-      };
+      const forscherHeader = AuthTokenMockBuilder.createAuthHeader({
+        roles: ['Forscher'],
+        username: 'qtest-forscher1',
+        studies: ['QTestStudy1'],
+      });
 
       // Act
       const result = await chai
         .request(apiAddress)
-        .post('/email')
+        .post('/admin/email')
         .set(forscherHeader)
         .send(createEmailRequest());
 
@@ -145,19 +132,16 @@ describe('/notification/email', () => {
 
     it('should return HTTP 403 when a UT tries', async () => {
       // Arrange
-      const utHeader = {
-        authorization: sign({
-          id: 1,
-          role: 'Untersuchungsteam',
-          username: 'QTestUntersuchungsteam1',
-          groups: ['QTestStudy1'],
-        }),
-      };
+      const utHeader = AuthTokenMockBuilder.createAuthHeader({
+        roles: ['Untersuchungsteam'],
+        username: 'qtest-untersuchungsteam1',
+        studies: ['QTestStudy1'],
+      });
 
       // Act
       const result = await chai
         .request(apiAddress)
-        .post('/email')
+        .post('/admin/email')
         .set(utHeader)
         .send(createEmailRequest());
 
@@ -167,19 +151,16 @@ describe('/notification/email', () => {
 
     it('should return HTTP 403 when a SysAdmin tries', async () => {
       // Arrange
-      const utHeader = {
-        authorization: sign({
-          id: 1,
-          role: 'SysAdmin',
-          username: 'QTestSysAdmin1',
-          groups: ['QTestStudy1'],
-        }),
-      };
+      const utHeader = AuthTokenMockBuilder.createAuthHeader({
+        roles: ['SysAdmin'],
+        username: 'qtest-sysadmin1',
+        studies: ['QTestStudy1'],
+      });
 
       // Act
       const result = await chai
         .request(apiAddress)
-        .post('/email')
+        .post('/admin/email')
         .set(utHeader)
         .send(createEmailRequest());
 
@@ -189,30 +170,38 @@ describe('/notification/email', () => {
 
     it('should return HTTP 403 when a PM tries for pseudonym of study without access', async () => {
       // Arrange
-      const pmHeader = { authorization: sign(pmSession) };
+      const pmHeader = AuthTokenMockBuilder.createAuthHeader({
+        roles: ['ProbandenManager'],
+        username: 'qtest-probandenmanager',
+        studies: ['QTestStudy1'],
+      });
       fetchMock.get('express:/user/professional/:username/allProbands', [
-        'QTestProband1',
-        'QTestProband2',
+        'qtest-proband1',
+        'qtest-proband2',
       ]);
 
       // Act
       const result = await chai
         .request(apiAddress)
-        .post('/email')
+        .post('/admin/email')
         .set(pmHeader)
-        .send(createEmailRequest(['QTestProband1', 'QTestProband99']));
+        .send(createEmailRequest(['qtest-proband1', 'qtest-proband99']));
 
       // Assert
       expect(result, result.text).to.have.status(StatusCodes.FORBIDDEN);
     });
 
-    it('should return HTTP 404 if no receipient has an email entry', async () => {
+    it('should return HTTP 200 if no receipient has an email entry', async () => {
       // Arrange
-      const pmHeader = { authorization: sign(pmSession) };
+      const pmHeader = AuthTokenMockBuilder.createAuthHeader({
+        roles: ['ProbandenManager'],
+        username: 'qtest-probandenmanager',
+        studies: ['QTestStudy1'],
+      });
       fetchMock
         .get('express:/user/professional/:username/allProbands', [
-          'QTestProband1',
-          'QTestProband2',
+          'qtest-proband1',
+          'qtest-proband2',
         ])
         .get(
           'express:/personal/personalData/proband/:username/email',
@@ -222,56 +211,94 @@ describe('/notification/email', () => {
       // Act
       const result = await chai
         .request(apiAddress)
-        .post('/email')
+        .post('/admin/email')
         .set(pmHeader)
-        .send(createEmailRequest(['QTestProband1', 'QTestProband2']));
+        .send(createEmailRequest(['qtest-proband1', 'qtest-proband2']));
 
       // Assert
-      expect(result, result.text).to.have.status(StatusCodes.NOT_FOUND);
+      expect(result, result.text).to.have.status(StatusCodes.OK);
+      expect(result.body).to.be.an('array');
+      expect(result.body).to.have.lengthOf(0);
     });
 
     it('should return HTTP 200 and mail addresses of mails which were sent', async () => {
       // Arrange
-      const pmHeader = { authorization: sign(pmSession) };
+      const pmHeader = AuthTokenMockBuilder.createAuthHeader({
+        roles: ['ProbandenManager'],
+        username: 'qtest-probandenmanager',
+        studies: ['QTestStudy1'],
+      });
       fetchMock
         .get('express:/user/professional/:username/allProbands', {
-          body: JSON.stringify(['QTestProband1', 'QTestProband2']),
+          body: JSON.stringify(['qtest-proband1', 'qtest-proband2']),
         })
-        .get('express:/personal/personalData/proband/QTestProband1/email', {
-          body: 'qtestproband1@example.com',
+        .get('express:/personal/personalData/proband/qtest-proband1/email', {
+          body: 'qtest-proband1@example.com',
         })
         .get(
-          'express:/personal/personalData/proband/QTestProband2/email',
+          'express:/personal/personalData/proband/qtest-proband2/email',
           StatusCodes.NOT_FOUND
         );
 
       // Act
       const result = await chai
         .request(apiAddress)
-        .post('/email')
+        .post('/admin/email')
         .set(pmHeader)
-        .send(createEmailRequest(['QTestProband1', 'QTestProband2']));
+        .send(createEmailRequest(['qtest-proband1', 'qtest-proband2']));
 
       // Assert
       expect(result, result.text).to.have.status(StatusCodes.OK);
       expect(result.body).to.be.an('array');
       expect(result.body).to.have.lengthOf(1);
-      expect(result.body).to.include('qtestproband1@example.com');
+      expect(result.body).to.deep.include({
+        pseudonym: 'qtest-proband1',
+        email: 'qtest-proband1@example.com',
+      });
+    });
+
+    it('should also accept a list of pseudonyms in uppercase and return HTTP 200', async () => {
+      // Arrange
+      const pmHeader = AuthTokenMockBuilder.createAuthHeader({
+        roles: ['ProbandenManager'],
+        username: 'qtest-probandenmanager',
+        studies: ['QTestStudy1'],
+      });
+      fetchMock
+        .get('express:/user/professional/:username/allProbands', {
+          body: JSON.stringify(['qtest-proband1', 'qtest-proband2']),
+        })
+        .get('express:/personal/personalData/proband/qtest-proband1/email', {
+          body: 'qtest-proband1@example.com',
+        })
+        .get(
+          'express:/personal/personalData/proband/qtest-proband2/email',
+          StatusCodes.NOT_FOUND
+        );
+
+      // Act
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/email')
+        .set(pmHeader)
+        .send(createEmailRequest(['QTest-Proband1', 'QTest-Proband2']));
+
+      // Assert
+      expect(result, result.text).to.have.status(StatusCodes.OK);
+      expect(result.body).to.be.an('array');
+      expect(result.body).to.have.lengthOf(1);
+      expect(result.body).to.deep.include({
+        pseudonym: 'qtest-proband1',
+        email: 'qtest-proband1@example.com',
+      });
     });
   });
 
-  function createEmailRequest(recipients = ['QTestProband1']): Notification {
+  function createEmailRequest(recipients = ['qtest-proband1']): Notification {
     return {
       recipients,
       title: 'test subject',
       body: 'test content',
     };
-  }
-
-  function sign(session: AccessToken): string {
-    return JWT.sign(session, secretOrPrivateKey, {
-      algorithm: 'RS512',
-      expiresIn: '24h',
-    });
   }
 });

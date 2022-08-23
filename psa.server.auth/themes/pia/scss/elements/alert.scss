@@ -1,0 +1,60 @@
+/*!
+ * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/*!
+ * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+/**
+ * Custom alert component with CSS only show more button
+ */
+.pia-alert {
+  background-color: $color-grey;
+  margin-top: 30px;
+  margin-bottom: 30px;
+  margin-left: -10px;
+  margin-right: -10px;
+  padding: 10px;
+  border-radius: 4px;
+  color: #666;
+
+  .pia-alert-content {
+    margin-bottom: 10px;
+  }
+
+  .pia-alert-button {
+    display: inline-block;
+    cursor: pointer;
+    padding: 0 0.5em;
+    font-size: 0.9em;
+    line-height: 2;
+    border-radius: 0.25em;
+    background-color: #dcdcdc;
+  }
+
+  .pia-alert-show-more-status {
+    display: none;
+
+    &:checked {
+      ~ .pia-alert-content .pia-alert-summary {
+        display: none;
+      }
+      ~ .pia-alert-show-more-button {
+        display: none;
+      }
+    }
+    &:not(:checked) {
+      ~ .pia-alert-content .pia-alert-message {
+        display: none;
+      }
+      ~ .pia-alert-show-less-button {
+        display: none;
+      }
+    }
+  }
+}

@@ -8,19 +8,19 @@ import { TestBed } from '@angular/core/testing';
 import { ComplianceGuard } from './compliance.guard';
 import { MockBuilder } from 'ng-mocks';
 import { AppModule } from '../app.module';
-import { AuthenticationManager } from '../_services/authentication-manager.service';
 import { ComplianceService } from '../psa.app.core/providers/compliance-service/compliance-service';
 import {
   ActivatedRouteSnapshot,
   Router,
   RouterStateSnapshot,
 } from '@angular/router';
+import { CurrentUser } from '../_services/current-user.service';
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
 
 describe('ComplianceGuard', () => {
   let guard: ComplianceGuard;
-  let auth: SpyObj<AuthenticationManager>;
+  let user: SpyObj<CurrentUser>;
   let complianceService: SpyObj<ComplianceService>;
   let router: SpyObj<Router>;
   let next: SpyObj<ActivatedRouteSnapshot>;
@@ -30,9 +30,7 @@ describe('ComplianceGuard', () => {
 
   beforeEach(() => {
     guard = TestBed.inject(ComplianceGuard);
-    auth = TestBed.inject(
-      AuthenticationManager
-    ) as SpyObj<AuthenticationManager>;
+    user = TestBed.inject(CurrentUser) as SpyObj<CurrentUser>;
     complianceService = TestBed.inject(
       ComplianceService
     ) as SpyObj<ComplianceService>;
@@ -46,20 +44,14 @@ describe('ComplianceGuard', () => {
   });
 
   describe('canActivate()', () => {
-    it('should return false if no user is logged in', async () => {
-      auth.isAuthenticated.and.returnValue(false);
-      expect(await guard.canActivate(next, state)).toBeFalse();
-    });
     it('should return true if it is not a proband', async () => {
-      auth.isAuthenticated.and.returnValue(true);
-      auth.getCurrentRole.and.returnValue('Forscher');
+      user.isProfessional.and.returnValue(true);
       expect(await guard.canActivate(next, state)).toBeTrue();
     });
     it('should navigate to the compliance if compliance is needed', async () => {
-      auth.isAuthenticated.and.returnValue(true);
-      auth.getCurrentRole.and.returnValue('Proband');
-      auth.getCurrentStudy.and.returnValue('TestStudy');
-      complianceService.getComplianceNeeded.and.resolveTo(true);
+      user.isProfessional.and.returnValue(false);
+      (user as any).study = 'TestStudy';
+      complianceService.isComplianceNeededForProband.and.resolveTo(true);
       expect(await guard.canActivate(next, state)).not.toBeTrue();
       expect(router.createUrlTree).toHaveBeenCalledOnceWith([
         '/compliance/agree',

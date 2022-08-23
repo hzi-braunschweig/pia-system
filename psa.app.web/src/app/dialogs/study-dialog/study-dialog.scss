@@ -11,3 +11,15 @@
 .mat-form-field {
   width: 100%;
 }
+
+::ng-deep mat-checkbox.text-wrap {
+  margin-top: 10px;
+
+  label.mat-checkbox-layout {
+    white-space: normal;
+
+    .mat-checkbox-inner-container {
+      margin-top: 4px;
+    }
+  }
+}

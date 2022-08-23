@@ -6,7 +6,7 @@
 
 import { Component, OnInit } from '@angular/core';
 import { Study } from 'src/app/psa.app.core/models/study';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 import { AlertService } from 'src/app/_services/alert.service';
 import { DialogPopUpComponent } from '../../_helpers/dialog-pop-up';
 import { MatDialog } from '@angular/material/dialog';
@@ -25,21 +25,22 @@ export class StudyWelcomeTextComponent implements OnInit {
   preview = false;
 
   constructor(
-    private questionnaireService: QuestionnaireService,
+    private userService: UserService,
     private alertService: AlertService,
     private dialog: MatDialog
   ) {}
 
   async ngOnInit(): Promise<void> {
-    this.studies = await this.questionnaireService
-      .getStudies()
-      .then((result: any) => result.studies)
-      .catch((err) => this.alertService.errorObject(err));
+    try {
+      this.studies = await this.userService.getStudies();
+    } catch (err) {
+      this.alertService.errorObject(err);
+    }
   }
 
   async onSelectStudy(selectedStudy: Study): Promise<void> {
     this.selectedStudy = selectedStudy;
-    this.questionnaireService
+    this.userService
       .getStudyWelcomeText(this.selectedStudy.name)
       .then(
         (res: StudyWelcomeText) =>
@@ -53,7 +54,7 @@ export class StudyWelcomeTextComponent implements OnInit {
 
   private async doPublish(): Promise<void> {
     try {
-      await this.questionnaireService.putStudyWelcomeText(
+      await this.userService.putStudyWelcomeText(
         this.selectedStudy.name,
         this.selectedStudyWelcomeText
       );

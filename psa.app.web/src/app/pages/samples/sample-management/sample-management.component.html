@@ -4,10 +4,35 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
+<app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
 <div class="jumbotron" data-e2e="e2e-sample-management-component">
   <!-- Fragoboegen filtern -->
   <div class="questionnaire-header" align="left">
     <mat-grid-list [cols]="cols | async" rowHeight="85px">
+      <mat-grid-tile>
+        <mat-form-field>
+          <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
+          <mat-select
+            id="selectstudy"
+            [formControl]="studyName"
+            data-e2e="e2e-sample-management-study-select"
+          >
+            <mat-option
+              *ngFor="let studyName of currentUser.studies"
+              [value]="studyName"
+              unit-study-option
+            >
+              {{ studyName }}
+            </mat-option>
+          </mat-select>
+          <mat-error
+            *ngIf="studyName.touched && studyName.hasError('required')"
+            unit-study-select-error
+          >
+            {{ 'DIALOG.STUDY_REQUIRED' | translate }}
+          </mat-error>
+        </mat-form-field>
+      </mat-grid-tile>
       <mat-grid-tile>
         <mat-form-field>
           <input

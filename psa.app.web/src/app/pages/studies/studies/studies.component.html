@@ -11,13 +11,14 @@
     <div
       fxFlex="50"
       fxLayoutAlign="start center"
-      *ngIf="currentRole === 'SysAdmin'"
+      *ngIf="user.hasRole('SysAdmin')"
     >
       <button
         id="createStudy"
         mat-raised-button
         color="primary"
         (click)="addOrEditStudy()"
+        data-e2e="create-study-button"
       >
         {{ 'STUDIES.NEW_STUDY' | translate }}
       </button>
@@ -33,7 +34,7 @@
     </div>
   </div>
 
-  <div class="probands-container mat-elevation-z8">
+  <div class="probands-container mat-elevation-z8" data-e2e="study-list">
     <mat-table
       [dataSource]="dataSource"
       matSortActive="name"
@@ -92,7 +93,7 @@
           <button
             mat-icon-button
             (click)="viewAllUsersInStudy(row.name)"
-            *ngIf="currentRole === 'SysAdmin'"
+            *ngIf="user.hasRole('SysAdmin')"
             [disabled]="row.status === 'deleted'"
           >
             <mat-icon>visibility</mat-icon>
@@ -100,7 +101,7 @@
           <button
             mat-icon-button
             (click)="openDialog(row.name, 'study')"
-            *ngIf="currentRole === 'SysAdmin'"
+            *ngIf="user.hasRole('SysAdmin')"
             [disabled]="row.status !== 'active'"
           >
             <mat-icon>delete</mat-icon>
@@ -108,7 +109,7 @@
           <button
             mat-icon-button
             (click)="addOrEditStudy(row.name)"
-            *ngIf="currentRole === 'SysAdmin'"
+            *ngIf="user.hasRole('SysAdmin')"
             [disabled]="row.status === 'deleted'"
           >
             <mat-icon>edit</mat-icon>
@@ -118,7 +119,8 @@
             (click)="openDialogChangeStudy(row)"
             [disabled]="row.status === 'deleted'"
             matTooltip="{{ 'STUDIES.REQUEST_CHANGES' | translate }}"
-            *ngIf="!row.pendingStudyChange && currentRole === 'Forscher'"
+            [matTooltipDisabled]="row.pendingStudyChange"
+            *ngIf="!row.pendingStudyChange && user.hasRole('Forscher')"
           >
             <mat-icon>edit</mat-icon>
           </button>
@@ -129,8 +131,8 @@
             matTooltip="{{ 'STUDIES.CONFIRM_CHANGES' | translate }}"
             *ngIf="
               row.pendingStudyChange &&
-              currentRole === 'Forscher' &&
-              row.pendingStudyChange.requested_for === currentUsername
+              user.hasRole('Forscher') &&
+              row.pendingStudyChange.requested_for === user.username
             "
           >
             <mat-icon>check_circle_outline</mat-icon>
@@ -142,8 +144,8 @@
             matTooltip="{{ 'STUDIES.CANCEL_STUDY_CHANGES' | translate }}"
             *ngIf="
               row.pendingStudyChange &&
-              currentRole === 'Forscher' &&
-              row.pendingStudyChange.requested_for !== currentUsername
+              user.hasRole('Forscher') &&
+              row.pendingStudyChange.requested_for !== user.username
             "
           >
             <mat-icon>highlight_off_outlined</mat-icon>

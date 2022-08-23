@@ -62,7 +62,7 @@ describe('ProbandsToContactComponent', () => {
     probandService.getProbandsToContact.and.resolveTo([
       createProbandToContact({
         id: 1,
-        user_id: 'TEST-000',
+        user_id: 'test-000',
         notable_answer_questionnaire_instances: [
           { questionnaire_name: 'Test questionnaire 1' },
           { questionnaire_name: 'Test questionnaire 2' },
@@ -74,7 +74,7 @@ describe('ProbandsToContactComponent', () => {
       }),
       createProbandToContact({
         id: 2,
-        user_id: 'TEST-001',
+        user_id: 'test-001',
         ids: 'TEST-001',
         not_filledout_questionnaire_instances: [
           { questionnaire_name: 'Test questionnaire 1' },
@@ -87,7 +87,7 @@ describe('ProbandsToContactComponent', () => {
     ]);
     personalDataService.getPersonalDataAll.and.resolveTo([
       createPersonalData({
-        pseudonym: 'TEST-000',
+        pseudonym: 'test-000',
         vorname: 'John',
         name: 'Doe',
       }),
@@ -113,7 +113,7 @@ describe('ProbandsToContactComponent', () => {
     expect(row1).toBeDefined();
     const expectedRow1: TableRow = {
       id: 1,
-      username: 'TEST-000',
+      username: 'test-000',
       ids: null,
       notable: true,
       notableAnswerQIs: [
@@ -158,18 +158,18 @@ describe('ProbandsToContactComponent', () => {
   });
 
   it('should navigate to contact page when clicking on contact-button', () => {
-    component.contactProband('TEST-000');
+    component.contactProband('test-000');
     expect(router.navigate).toHaveBeenCalledWith([
       '/contact-proband/',
-      'TEST-000',
+      'test-000',
     ]);
   });
 
   it('should navigate to personal data page when clicking on view-button', () => {
-    component.viewContactInfo('TEST-000');
+    component.viewContactInfo('test-000');
     expect(router.navigate).toHaveBeenCalledWith([
       '/probands-personal-info/',
-      'TEST-000',
+      'test-000',
     ]);
   });
 

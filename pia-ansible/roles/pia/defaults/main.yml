@@ -38,7 +38,6 @@ pia_ssl_organization_name: 'HZI'
 pia_ssl_organizational_unit_name: 'HZI'
 
 pia_ssh_key_directory: /etc/pia/ssh
-pia_auth_key_directory: /etc/pia/authKey
 pia_ssl_directory: /etc/pia/ssl
 pia_firebase_directory: /etc/pia/firebase/
 
@@ -47,20 +46,8 @@ pia_ewpia_data_directory: /srv/dockerdata/ewpia/
 pia_ipia_data_directory: /srv/dockerdata/ipia/
 pia_messagequeue_data_directory: /srv/dockerdata/messagequeue/
 
-# NOTE: if both are enabled only one of both checks must succeed
-# specify if certificate checks are required for non proband users
-pia_ip_check_enabled: false
-# specify if ip checks are required for non proband users
-pia_cert_check_enabled: false
-
-# Required for external services that can create probands. Not used by sormas.
-# Use a complex unique key on productive systems (also for sormas)!
-pia_api_key: 66w66666-w666-666w-www6-666w6w666w66
-# If set to true, random api key will be generated
-generate_random_key: false
-
 # the default language, unless another language is explicitly set. Possible values:
-# de-CH, de-DE, en-US, fr-CH, it-CH
+# de-CH, de-DE, en-US
 pia_default_language: de-DE
 
 pia_mail_user: pia@some-faked-domain-that-hopefully-will-never-exist.faked
@@ -69,6 +56,17 @@ pia_mail_host: some-faked-domain-that-hopefully-will-never-exist.faked
 pia_mail_port: 465
 pia_mail_from_address: pia@some-faked-domain-that-hopefully-will-never-exist.faked
 pia_mail_from_name: PIA App
+
+# sets directAccessGrantsEnabled for keycloak admin realm
+pia_is_direct_access_grant_enabled: false
+
+pia_authserver_messagequeue_exchange: keycloak.events
+pia_authserver_proband_management_client_secret: generated-client-secret
+pia_authserver_proband_token_introspection_client_secret: generated-client-secret
+pia_authserver_admin_management_client_secret: generated-client-secret
+pia_authserver_admin_token_introspection_client_secret: generated-client-secret
+
+pia_user_password_length: 10
 
 # should always be true on productive systems
 pia_mail_require_tls: true
@@ -108,9 +106,7 @@ pia_modys_request_concurrency: 5
 
 # The X-frame-options Header that should be set
 # https://developer.mozilla.org/de/docs/Web/HTTP/Headers/X-Frame-Options
-# NatCoEdc / SORMAS has to be allowed on productive systems
-# https://edc.hgw.nationale-kohorte.de/
-# https://edc-hd.nationale-kohorte.de/
+# SORMAS has to be allowed on productive systems
 # ALLOW-FROM is deprecated and doesn't support multiple domains!
 # So using CSP is probably prefered
 # X-Frame-Options could be specified for older browsers when
@@ -119,9 +115,7 @@ pia_x_frame_options: ''
 
 # The Content-Security-Policy Header that sould be set
 # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy
-# NatCoEdc / SORMAS has to be allowed on productive systems
-# https://edc.hgw.nationale-kohorte.de/
-# https://edc-hd.nationale-kohorte.de/
+# SORMAS has to be allowed on productive systems
 # Example:
 # CONTENT_SECURITY_POLICY="frame-ancestors edc.hgw.nationale-kohorte.de edc-hd.nationale-kohorte.de 'self';"
 # CONTENT_SECURITY_POLICY="frame-ancestors 'none';"
@@ -145,8 +139,8 @@ pia_services:
     }
   - {
       fullName: ipiaservice,
-      # on ipia all services are already using DB_* aliases
-      # so we don't need the QPIA variable set for host and port
+      variableName: IPIASERVICE,
+      port: 5432,
       name: 'ipia',
       qpia: false,
       ewpia: false,
@@ -184,15 +178,6 @@ pia_services:
       variableName: USERSERVICE,
       portOffset: 1,
       name: 'us',
-      qpia: true,
-      ewpia: false,
-      ipia: false,
-    }
-  - {
-      fullName: authservice,
-      variableName: AUTHSERVICE,
-      portOffset: 2,
-      name: 'auth',
       qpia: true,
       ewpia: false,
       ipia: false,
@@ -277,6 +262,15 @@ pia_services:
       ipia: false,
     }
   - {
+      fullName: authserver,
+      variableName: AUTHSERVER,
+      portOffset: 14,
+      name: 'authserver',
+      qpia: false,
+      ewpia: false,
+      ipia: true,
+    }
+  - {
       fullName: deploymentservice,
       variableName: DEPLOYMENTSERVICE,
       portOffset: 20,
@@ -297,6 +291,15 @@ pia_services:
       variableName: MESSAGEQUEUE,
       port: 5672,
       name: 'mq',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
+      fullName: autheventproxy,
+      variableName: AUTHEVENTPROXY,
+      port: 4000,
+      name: 'aep',
       qpia: true,
       ewpia: false,
       ipia: false,

@@ -1,0 +1,107 @@
+/*!
+ * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+#kc-page-title {
+  margin-top: 0;
+  font-size: 1.5rem;
+}
+
+#kc-info,
+#kc-form-options + #kc-form-buttons {
+  margin-top: 1.75rem;
+}
+
+#kc-form-buttons {
+  .pf-c-button + .pf-c-button {
+    margin-left: 12px;
+  }
+}
+
+.pf-c-alert {
+  margin: 1rem 0;
+}
+
+.pf-c-button {
+  @include button;
+}
+
+.pf-c-brand {
+  display: block;
+  max-width: 30rem;
+  height: auto;
+}
+
+.pf-c-page {
+  &__header {
+    background-color: $color-white;
+  }
+
+  &__main-section {
+    background-color: $primary-color;
+  }
+}
+
+.pf-c-content {
+  a {
+    color: $link-color;
+  }
+}
+
+#kc-locale {
+  position: relative;
+  display: block;
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  a {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    text-decoration: none;
+
+    &:hover {
+      background-color: $primary-color;
+    }
+  }
+
+  .pf-c-dropdown__menu {
+    @include elevate-1;
+    display: none;
+    position: absolute;
+    top: 2rem;
+    left: 0;
+    background: $color-white;
+    padding: 0.5rem;
+    border-radius: 4px;
+  }
+
+  #kc-locale-dropdown:hover {
+    .pf-c-dropdown__menu {
+      display: block;
+    }
+  }
+}
+
+.pf-c-nav__item {
+  a {
+    color: $link-color !important;
+
+    &:active,
+    &:hover {
+      background-color: $primary-color;
+      &::after {
+        display: none !important;
+      }
+    }
+  }
+}
+
+.form-group label.control-label {
+  display: inline-block;
+}

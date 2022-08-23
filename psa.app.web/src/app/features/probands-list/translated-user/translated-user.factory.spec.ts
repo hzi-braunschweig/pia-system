@@ -44,8 +44,8 @@ describe('TranslatedUserFactory', () => {
         pseudonym: 'Testproband',
         ids: null,
         study: 'NAKO Test',
-        is_test_proband: false,
-        first_logged_in_at: new Date('2020-04-20'),
+        isTestProband: false,
+        firstLoggedInAt: new Date('2020-04-20'),
       });
       const expected: TranslatedUser = {
         username: 'Testproband',

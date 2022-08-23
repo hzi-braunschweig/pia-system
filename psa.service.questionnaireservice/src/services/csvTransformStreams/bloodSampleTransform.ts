@@ -18,7 +18,8 @@ export class BloodSampleTransform extends CsvTransform<
   protected convertToCsvRow(sample: BloodSample): CsvBloodSampleRow {
     return {
       Blutproben_ID: sample.sample_id,
-      Proband: sample.ids === sample.user_id ? '' : sample.user_id,
+      Proband:
+        sample.ids?.toLowerCase() === sample.user_id ? '' : sample.user_id,
       IDS: sample.ids ?? '',
       Status: sample.blood_sample_carried_out ? 'genommen' : 'nicht genommen',
       Bemerkung: sample.remark ? sample.remark : '.',

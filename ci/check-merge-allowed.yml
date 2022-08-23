@@ -1,5 +1,5 @@
 check-merge-allowed:
-  image: bash:5.1.12@sha256:876600f8a1ce04df27722f482ebfe6696aa4fec6a61a7ea2cf6d5045a63c5d9a
+  image: bash:5.1.16@sha256:fc742d0c3d9d8f5fb2681062398c04b710cd08c46dac1a8f0a5515687018acb9
   stage: prepare
   variables:
     GIT_STRATEGY: none
@@ -8,3 +8,5 @@ check-merge-allowed:
     - '[[ "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME" != "master" ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^release ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^bugfix ]] || [[ "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" =~ ^hotfix ]] || (>&2 echo -e "\e[1m\e[31mmerge requests from $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME to $CI_MERGE_REQUEST_TARGET_BRANCH_NAME are not allowed\e[0m"; false)'
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
+      when: never

@@ -2,5 +2,5 @@ INSERT INTO studies (name, description)
 VALUES ('ApiTestStudie', 'ApiTestStudie Beschreibung');
 
 INSERT INTO probands (pseudonym, first_logged_in_at, study)
-VALUES ('QTestProband1', NOW(), 'ApiTestStudie'),
-       ('QTestProband2', NOW(), 'ApiTestStudie');
+VALUES ('qtest-proband1', NOW(), 'ApiTestStudie'),
+       ('qtest-proband2', NOW(), 'ApiTestStudie');

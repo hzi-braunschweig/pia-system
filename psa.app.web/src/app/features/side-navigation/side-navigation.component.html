@@ -42,27 +42,10 @@
         {{ 'PROBAND.IDS' | translate }}: {{ selectedIDSUI }}
       </div>
     </div>
-    <div class="info-item-label" *ngIf="currentUser && currentUser.username">
-      {{ 'SIDENAV.USER' | translate }}
-    </div>
-    <div
-      data-e2e="e2e-username"
-      class="info-item-value"
-      *ngIf="currentUser && currentUser.username"
-    >
-      {{ currentUser.username }}
-    </div>
-    <div class="info-item-label" *ngIf="currentRoleUI">
-      {{ 'SIDENAV.ROLE' | translate }}
-    </div>
-    <div
-      data-e2e="e2e-current-role"
-      class="info-item-value"
-      *ngIf="currentRoleUI"
-    >
-      {{ currentRoleUI | translate }}
-    </div>
-    <br />
+    <app-account-info
+      [username]="user.username"
+      [role]="user.role"
+    ></app-account-info>
     <br />
     <a class="info-item-value" [routerLink]="['licenses']">
       {{ 'GENERAL.LICENSES' | translate }}

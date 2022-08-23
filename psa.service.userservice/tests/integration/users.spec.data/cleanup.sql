@@ -1,11 +1,6 @@
 DELETE
-FROM accounts
-WHERE username LIKE 'QTest%'
-   OR username LIKE '%@example.com';
-
-DELETE
 FROM probands
-WHERE pseudonym LIKE 'QTest%'
+WHERE pseudonym LIKE 'qtest%'
    OR pseudonym LIKE '%@example.com';
 
 DELETE
@@ -15,4 +10,4 @@ WHERE name LIKE 'QTestStudy%'
 
 DELETE
 FROM planned_probands
-WHERE user_id LIKE 'QTest%';
+WHERE user_id LIKE 'qtest%';

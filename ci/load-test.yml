@@ -1,0 +1,61 @@
+generate-load-test-data:
+  stage: performance
+  image: node:14.19.0-buster-slim@sha256:9a5460581050ca9f106b2908d34450a9304a84eeee5d50ea1ce6fca40593b5b7
+  cache:
+    - key:
+        files:
+          - package-lock.json
+      paths:
+        - node_modules/
+  variables:
+    GIT_DEPTH: '1'
+  script:
+    - 'echo "HOST = $LOAD_TEST_HOST"'
+    - 'echo "STAGE = $LOAD_TEST_STAGES"'
+    - cd psa.test.data
+    - npm install
+    - npm start -- seed -u ${SYSADMIN_USER} -p ${SYSADMIN_PASSWORD} -ku ${KEYCLOAK_USER} -kp ${KEYCLOAK_PASSWORD} -h $LOAD_TEST_HOST --study-prefix LOADTEST --studies-count 4 --probands-count 500
+  artifacts:
+    paths:
+      - psa.test.data/probands.json
+  rules:
+    - if: $CI_SCHEDULED_TASK == "generate_load_test_data"
+
+load-test-users-fixture:
+  stage: performance
+  image:
+    name: alpine/curl:3.14@sha256:c64976d53728ca1b4918a49257845af27e343c4a79090788f83afe9f3e800965
+    entrypoint: ['']
+  script:
+    - 'curl --location --output probands.json --header "JOB-TOKEN: $CI_JOB_TOKEN" "$CI_SERVER_URL/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_COMMIT_REF_NAME/raw/psa.test.data/probands.json?job=generate-load-test-data"'
+  artifacts:
+    paths:
+      - probands.json
+  rules:
+    - if: $CI_SCHEDULED_TASK == "load_test"
+
+load-test:
+  stage: performance
+  image:
+    name: grafana/k6:0.39.0-47-gf2684ad9@sha256:a304b9459f1745b08c8990754f1cbaa995aa4ded81241905a15491ddeacf07ad
+    entrypoint: ['']
+  variables:
+    GIT_DEPTH: '1'
+  needs: ['load-test-users-fixture']
+  script:
+    - export URL=https://$LOAD_TEST_HOST
+    - export STAGES=$LOAD_TEST_STAGES
+    - export USERS_FIXTURE=../probands.json
+    - 'echo "URL = $URL"'
+    - 'echo "STAGES = $STAGES"'
+    - 'echo "USERS_FIXTURE = $USERS_FIXTURE"'
+    - cd psa.test.load
+    - k6 run --summary-export=load-performance.json --out csv=results__01_login-and-show-questionnaires.csv ./scenarios/01_login-and-show-questionnaires.js
+  artifacts:
+    reports:
+      performance: psa.test.load/load-performance.json
+    paths:
+      - psa.test.load/*.csv
+    when: always
+  rules:
+    - if: $CI_SCHEDULED_TASK == "load_test"

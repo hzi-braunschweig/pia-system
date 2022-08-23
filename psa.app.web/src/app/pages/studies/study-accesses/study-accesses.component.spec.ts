@@ -13,23 +13,21 @@ import {
   tick,
 } from '@angular/core/testing';
 import { StudyAccessesComponent } from './study-accesses.component';
-import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
 import {
-  createProfessionalUser,
+  createProfessionalAccount,
   createStudy,
 } from '../../../psa.app.core/models/instance.helper.spec';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
-import { QuestionnaireService } from '../../../psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../../_services/alert.service';
+import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import SpyObj = jasmine.SpyObj;
 
 describe('StudyAccessesComponent', () => {
   let fixture: ComponentFixture<StudyAccessesComponent>;
   let component: StudyAccessesComponent;
-  let authService: SpyObj<AuthService>;
-  let questionnaireService: SpyObj<QuestionnaireService>;
+  let userService: SpyObj<UserService>;
   let alertService: SpyObj<AlertService>;
 
   beforeEach(async () => {
@@ -50,26 +48,22 @@ describe('StudyAccessesComponent', () => {
 
   beforeEach(fakeAsync(() => {
     // Setup mocks before creating component
-    authService = TestBed.inject(AuthService) as SpyObj<AuthService>;
-    authService.getProfessionalUsers.and.resolveTo([
-      createProfessionalUser({
-        study_accesses: [{ study_id: 'current study', access_level: 'admin' }],
+    userService = TestBed.inject(UserService) as SpyObj<UserService>;
+    userService.getProfessionalAccounts.and.resolveTo([
+      createProfessionalAccount({
+        studies: ['current study'],
       }),
-      createProfessionalUser({
-        study_accesses: [{ study_id: 'current study', access_level: 'read' }],
+      createProfessionalAccount({
+        studies: ['current study'],
       }),
-      createProfessionalUser({
-        study_accesses: [{ study_id: 'other study', access_level: 'write' }],
+      createProfessionalAccount({
+        studies: ['other study'],
       }),
-      createProfessionalUser(),
+      createProfessionalAccount(),
     ]);
-
-    questionnaireService = TestBed.inject(
-      QuestionnaireService
-    ) as SpyObj<QuestionnaireService>;
-    questionnaireService.getStudy.and.resolveTo(
-      createStudy({ name: 'current study' })
-    );
+    userService.getStudyAccesses.and.resolveTo([]);
+    userService.deleteUserFromStudy.and.resolveTo();
+    userService.getStudy.and.resolveTo(createStudy({ name: 'current study' }));
 
     alertService = TestBed.inject(AlertService) as SpyObj<AlertService>;
 

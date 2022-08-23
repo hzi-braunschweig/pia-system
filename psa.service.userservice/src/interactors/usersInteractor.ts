@@ -5,231 +5,234 @@
  */
 
 import Boom from '@hapi/boom';
+import Joi from 'joi';
+
 import postgresqlHelper from '../services/postgresqlHelper';
-import { AccessToken, MailService } from '@pia/lib-service-core';
-import mailTemplateService from '../services/mailTemplateService';
+import {
+  AccessToken,
+  asyncMap,
+  getPrimaryRealmRole,
+  MailService,
+} from '@pia/lib-service-core';
+import { MailTemplateService } from '../services/mailTemplateService';
 import { SecureRandomPasswordService } from '../services/secureRandomPasswordService';
-import { authserviceClient } from '../clients/authserviceClient';
-import { CreateProfessionalUser, ProfessionalUser } from '../models/user';
-import pgPromise from 'pg-promise';
-import { ProfessionalRole } from '../models/role';
-import { ProbandResponse } from '../models/proband';
-import { ProbandsRepository } from '../repositories/probandsRepository';
-import QueryResultError = pgPromise.errors.QueryResultError;
-import queryResultErrorCode = pgPromise.errors.queryResultErrorCode;
+import { CreateProfessionalUser } from '../models/user';
+import { ProfessionalRole, professionalRoles } from '../models/role';
+import { ProbandDto } from '../models/proband';
+import { ProfessionalAccountService } from '../services/professionalAccountService';
+import { ProfessionalAccount } from '../models/account';
+import { AccessLevel } from '@pia-system/lib-http-clients-internal';
+import { getRepository, In } from 'typeorm';
+import { StudyAccess } from '../entities/studyAccess';
+import { AccountAlreadyExistsError } from '../errors';
+import { FindConditions } from 'typeorm/find-options/FindConditions';
+import { ProbandService } from '../services/probandService';
+
+export interface GetProfessionalAccountsFilters {
+  studyName?: string;
+  role?: ProfessionalRole;
+  accessLevel?: AccessLevel;
+  onlyMailAddresses?: boolean;
+  filterSelf?: boolean;
+}
 
 /**
  * @description interactor that handles user requests based on users permissions
  */
 export class UsersInteractor {
   /**
-   * gets a user from DB if user is allowed to
-   * @param decodedToken the decoded jwt of the request
-   * @param pseudonym the pseudonym of the user to get
+   * Gets all users with the same role as a requester
    */
-  public static async getProband(
+  public static async getProfessionalAccounts(
     decodedToken: AccessToken,
-    pseudonym: string
-  ): Promise<ProbandResponse> {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
-    const userStudies = decodedToken.groups;
+    filters: GetProfessionalAccountsFilters
+  ): Promise<ProfessionalAccount[]> {
+    const userRole = getPrimaryRealmRole(decodedToken) as ProfessionalRole;
+    let accounts: ProfessionalAccount[];
 
-    switch (userRole) {
-      case 'Forscher':
-      case 'Untersuchungsteam':
-      case 'ProbandenManager':
-        try {
-          return await ProbandsRepository.getProbandAsProfessional(
-            pseudonym,
-            userStudies
-          );
-        } catch (err) {
-          console.log(err);
-          throw Boom.notFound('Could not get user, because user has no access');
-        }
-      case 'Proband':
-        if (userName === pseudonym) {
-          return (
-            (await ProbandsRepository.getProband(pseudonym)) ??
-            (await Promise.reject(Boom.notFound('Could not get user')))
-          );
-        } else {
-          throw Boom.forbidden('Probands can only get themself');
-        }
-      default:
-        throw Boom.forbidden('Could not get the user: Unknown or wrong role');
+    if (userRole !== 'SysAdmin') {
+      // Non SysAdmins may only see accounts of the same role
+      filters.role = userRole;
     }
+
+    if (filters.studyName) {
+      if (
+        userRole !== 'SysAdmin' &&
+        !decodedToken.studies.includes(filters.studyName)
+      ) {
+        throw Boom.forbidden(
+          `user has no access to study "${filters.studyName}"`
+        );
+      }
+      accounts =
+        await ProfessionalAccountService.getProfessionalAccountsByStudyName(
+          filters.studyName
+        );
+
+      if (filters.role) {
+        accounts = accounts.filter((account) => account.role === filters.role);
+      }
+    } else {
+      if (userRole !== 'SysAdmin') {
+        throw Boom.forbidden(`study must be defined for role "${userRole}"`);
+      }
+      /**
+       * This is mainly a performance optimization. If we know the role beforehand, we
+       * do not need to additionally fetch roles for each user.
+       */
+      accounts = (
+        await asyncMap(
+          filters.role ? [filters.role] : professionalRoles,
+          async (role) =>
+            await ProfessionalAccountService.getProfessionalAccountsByRole(role)
+        )
+      ).flat();
+    }
+
+    if (filters.onlyMailAddresses) {
+      accounts = accounts.filter((account) =>
+        this.isValidMail(account.username)
+      );
+    }
+
+    if (filters.filterSelf) {
+      accounts = accounts.filter(
+        (account) => account.username !== decodedToken.username
+      );
+    }
+
+    if (filters.accessLevel) {
+      const studyAccessesSet = new Set(
+        (
+          await getRepository(StudyAccess).find(
+            UsersInteractor.buildStudyAccessFindConditions(accounts, filters)
+          )
+        ).map((access) => access.username)
+      );
+
+      accounts = accounts.filter((account) =>
+        studyAccessesSet.has(account.username)
+      );
+    }
+    return accounts;
   }
 
   /**
-   * gets a user by ids from DB if requester is allowed to
-   * @param decodedToken the decoded jwt of the request
-   * @param ids the ids of the user
+   * Gets a user from DB if user is allowed to
    */
-  public static async getProbandByIDS(
+  public static async getProbandAsProfessional(
     decodedToken: AccessToken,
-    ids: string
-  ): Promise<ProbandResponse> {
-    const userRole = decodedToken.role;
-    const userStudies = decodedToken.groups;
-
-    if (userRole !== 'Untersuchungsteam') {
-      throw Boom.forbidden('Could not get the user: Unknown or wrong role');
-    }
-    const user = await ProbandsRepository.getProbandByIdsAsProfessional(
-      ids,
-      userStudies
-    );
-    if (user) {
-      return user;
-    } else {
+    pseudonym: string
+  ): Promise<ProbandDto> {
+    try {
+      return await ProbandService.getProbandByPseudonymOrFail(
+        pseudonym,
+        decodedToken.studies
+      );
+    } catch (err) {
+      console.log(err);
       throw Boom.notFound(
-        "The user with the given IDS does not exist or you don't have the permission"
+        'The proband with the given pseudonym does not exist or user has no access'
       );
     }
   }
 
   /**
-   * gets all users from DB the user has access to
-   * @param decodedToken the decoded jwt of the request
+   * Gets a user by ids from DB if requester is allowed to
    */
-  public static async getUsers(
-    decodedToken: AccessToken
-  ): Promise<ProbandResponse[] | ProfessionalUser[]> {
-    const userRole = decodedToken.role;
-    const userStudies = decodedToken.groups;
-
-    switch (userRole) {
-      case 'ProbandenManager':
-      case 'Untersuchungsteam':
-      case 'Forscher':
-        return await ProbandsRepository.getProbandsAsProfessional(userStudies);
-      case 'SysAdmin':
-        return (await postgresqlHelper.getUsersForSysAdmin()) as ProfessionalUser[];
-      default:
-        throw Boom.forbidden('Could not get the user: Unknown or wrong role');
-    }
-  }
-
-  /**
-   * gets all users with the same role as a requester
-   * @param decodedToken the decoded jwt of the request
-   */
-  public static async getUsersWithSameRole(
-    decodedToken: AccessToken
-  ): Promise<ProfessionalUser[]> {
-    const userRole = decodedToken.role;
-    const userName = decodedToken.username;
-
-    switch (userRole) {
-      case 'ProbandenManager':
-      case 'Untersuchungsteam':
-      case 'Forscher':
-      case 'SysAdmin':
-        return (await postgresqlHelper.getUsersWithSameRole(
-          userName,
-          userRole
-        )) as ProfessionalUser[];
-      default:
-        throw Boom.forbidden('Could not get the user: Unknown or wrong role');
-    }
-  }
-
-  /**
-   * creates the user in DB if it does not exist and the requester is allowed to
-   * @param decodedToken the decoded jwt of the request
-   * @param user the user object to create
-   */
-  public static async createUser(
+  public static async getProbandByIDS(
     decodedToken: AccessToken,
+    ids: string
+  ): Promise<ProbandDto> {
+    try {
+      return await ProbandService.getProbandByIdsOrFail(
+        ids,
+        decodedToken.studies
+      );
+    } catch (e) {
+      throw Boom.notFound(
+        'The proband with the given IDS does not exist or user has no access'
+      );
+    }
+  }
+
+  /**
+   * Creates the user in authserver if it does not exist and the requester is allowed to
+   */
+  public static async createProfessionalUser(
     user: CreateProfessionalUser
   ): Promise<void> {
-    const userRole = decodedToken.role;
-
-    if (userRole !== 'SysAdmin') {
-      throw Boom.forbidden('Could not create the user: Unknown or wrong role');
+    if (await ProfessionalAccountService.isProfessionalAccount(user.username)) {
+      throw new AccountAlreadyExistsError(
+        'account with username "' + user.username + '" already exists'
+      );
     }
-
-    const password = SecureRandomPasswordService.generate();
-
-    await authserviceClient.createAccount({
-      username: user.username,
-      role: user.role,
-      password: password,
-      pwChangeNeeded: true,
-    });
-
-    await MailService.sendMail(
-      user.username,
-      mailTemplateService.createRegistrationMail(password, user.role)
-    );
 
     await postgresqlHelper.insertStudyAccessesWithAccessLevel(
       user.study_accesses,
       user.username
     );
-  }
 
-  /**
-   * Performs changes on Probands attributes like is_test_proband
-   * @param decodedToken the decoded jwt of the request
-   * @param username the name of the user that should be updated
-   * @param userValues the values age and gender to change
-   */
-  public static async updateUser(
-    decodedToken: AccessToken,
-    username: string,
-    userValues: { is_test_proband?: boolean }
-  ): Promise<void> {
-    const userRole = decodedToken.role;
-    const userStudies = decodedToken.groups;
+    const password = SecureRandomPasswordService.generate();
 
-    if (userRole !== 'Untersuchungsteam') {
-      throw Boom.forbidden('Wrong role for this command');
-    }
-    if (userValues.is_test_proband === undefined) {
-      throw Boom.badData('payload incorrect');
-    }
-    await postgresqlHelper.changeTestProbandState(
-      username,
-      userValues.is_test_proband,
-      userStudies
+    await ProfessionalAccountService.createProfessionalAccount(
+      user.username,
+      user.role,
+      user.study_accesses,
+      password,
+      user.temporaryPassword ?? true
+    );
+
+    await MailService.sendMail(
+      user.username,
+      MailTemplateService.createRegistrationMail(password, user.role)
     );
   }
 
   /**
-   * deletes a professional user and all its data from DB if requesting user is allowed to
-   * @param decodedToken the decoded jwt of the request
-   * @param username the id of the user to delete
+   * Performs changes on Probands attributes like is_test_proband
    */
-  public static async deleteUser(
+  public static async updateProband(
     decodedToken: AccessToken,
-    username: string
-  ): Promise<{
-    username: string;
-    role: ProfessionalRole;
-    first_logged_in_at: Date | null;
-  }> {
-    const userRole = decodedToken.role;
+    pseudonym: string,
+    userValues: { is_test_proband?: boolean }
+  ): Promise<void> {
+    if (userValues.is_test_proband === undefined) {
+      throw Boom.badData('payload incorrect');
+    }
+    await postgresqlHelper.changeTestProbandState(
+      pseudonym,
+      userValues.is_test_proband,
+      decodedToken.studies
+    );
+  }
 
-    if (userRole !== 'SysAdmin') {
-      throw Boom.forbidden('Could not delete the user: Unknown or wrong role');
+  public static async deleteProfessionalUser(username: string): Promise<void> {
+    if (
+      (await ProfessionalAccountService.getPrimaryRoleOfProfessional(
+        username
+      )) === 'SysAdmin'
+    ) {
+      throw Boom.forbidden('SysAdmins cannot delete other SysAdmins');
     }
-    try {
-      return (await postgresqlHelper.deleteUser(username)) as {
-        username: string;
-        role: ProfessionalRole;
-        first_logged_in_at: Date | null;
-      };
-    } catch (err) {
-      if (
-        err instanceof QueryResultError &&
-        err.code === queryResultErrorCode.noData
-      ) {
-        throw Boom.notFound('Could not find the user that should be deleted.');
-      }
-      throw err;
-    }
+    await getRepository(StudyAccess).delete({
+      username,
+    });
+    await ProfessionalAccountService.deleteProfessionalAccount(username);
+  }
+
+  private static isValidMail(value: string): boolean {
+    return !Joi.string().email().validate(value).error;
+  }
+
+  private static buildStudyAccessFindConditions(
+    accounts: ProfessionalAccount[],
+    filters: GetProfessionalAccountsFilters
+  ): FindConditions<StudyAccess> {
+    return {
+      ...(filters.studyName && { studyName: filters.studyName }),
+      username: In(accounts.map((account) => account.username)),
+      accessLevel: filters.accessLevel,
+    };
   }
 }
