@@ -32,7 +32,6 @@
     "host": "[[env:MAIL_HOST]]",
     "from": "[[env:MAIL_FROM_ADDRESS]]",
     "fromDisplayName": "[[env:MAIL_FROM_NAME]]",
-    "ssl": "[[env:MAIL_REQUIRE_TLS]]",
     "user": "[[env:MAIL_USER]]"
   },
   "loginTheme": "pia",

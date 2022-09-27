@@ -32,5 +32,7 @@ unit:
       - $FOLDER/tests/reports/xunit-test-report-unit.xml
     reports:
       junit: $FOLDER/tests/reports/xunit-test-report*.xml
-      cobertura: $FOLDER/coverage/*.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: $FOLDER/coverage/*.xml
     when: always

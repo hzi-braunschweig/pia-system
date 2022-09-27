@@ -55,6 +55,14 @@ docker exec authserver /add-sysadmin.sh --email test@example.com --password Test
 
 ## Usage
 
+### Requirements for production setups
+
+As HTTPS is always required, you need to provide your own reverse proxy for SSL termination. If your reverse proxy is running on the same host as pia, you are free to set `pia_external_port` to a non-default port.
+
+Please ensure your reverse proxy is correctly setting `X-Forwarded-For`, `X-Forwarded-Proto`, and `X-Forwarded-Host` HTTP headers.
+
+For detailed instructions and requirements see [Setup instructions PIA on Debian 11](./pia-ansible/SETUP_debian_11.md).
+
 ### How to add a service
 
 A dockerized node service can be added by creating a new directory and placing the corresponding sources, `Dockerfile` and `package.json` into it.
