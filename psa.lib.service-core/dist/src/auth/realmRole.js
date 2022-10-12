@@ -5,6 +5,7 @@ const http_status_codes_1 = require("http-status-codes");
 const errorHandler_1 = require("../plugins/errorHandler");
 const realmRolePrefix = 'realm:';
 const realmRoleSpecializationSeparatorChar = '-';
+const realmRoleFeaturePrefix = 'feature:';
 class MissingPermissionError extends errorHandler_1.SpecificError {
     constructor() {
         super(...arguments);
@@ -23,7 +24,8 @@ function getRealmRoles(authCredentials) {
 }
 exports.getRealmRoles = getRealmRoles;
 function getPrimaryRealmRole(authCredentials) {
-    const primaryRole = getRealmRoles(authCredentials).find((role) => !role.includes(realmRoleSpecializationSeparatorChar));
+    const primaryRole = getRealmRoles(authCredentials).find((role) => !role.includes(realmRoleSpecializationSeparatorChar) &&
+        !role.includes(realmRoleFeaturePrefix));
     if (!primaryRole) {
         throw new MissingPermissionError('Missing permission error: user has no primary role');
     }

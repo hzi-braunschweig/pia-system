@@ -27,11 +27,17 @@ export type RealmRole = AdminRealmRole | ProbandRealmRole;
 const realmRolePrefix = 'realm:';
 
 /**
- * RealmRoles may be specialized by certain access types
- * like "admin". Those Specializations are appended to
+ * Realm roles may be specialized by certain access types
+ * like "admin". Those specializations are appended to
  * the primary role name with this character.
  */
 const realmRoleSpecializationSeparatorChar = '-';
+
+/**
+ * Realm roles may also give users access to certain features.
+ * Those roles are prefixed with "feature:".
+ */
+const realmRoleFeaturePrefix = 'feature:';
 
 export class MissingPermissionError extends SpecificError {
   public readonly statusCode = StatusCodes.FORBIDDEN;
@@ -66,7 +72,9 @@ export function getPrimaryRealmRole(
   authCredentials: AuthCredentials
 ): RealmRole {
   const primaryRole = getRealmRoles(authCredentials).find(
-    (role) => !role.includes(realmRoleSpecializationSeparatorChar)
+    (role) =>
+      !role.includes(realmRoleSpecializationSeparatorChar) &&
+      !role.includes(realmRoleFeaturePrefix)
   );
   if (!primaryRole) {
     throw new MissingPermissionError(

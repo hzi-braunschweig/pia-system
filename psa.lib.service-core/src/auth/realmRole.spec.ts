@@ -5,7 +5,7 @@
  */
 
 import { expect } from 'chai';
-import { getRealmRoles, hasRealmRole } from './realmRole';
+import { getPrimaryRealmRole, getRealmRoles, hasRealmRole } from './realmRole';
 import { AccessToken } from './authModel';
 
 describe('realm role', () => {
@@ -52,6 +52,24 @@ describe('realm role', () => {
           createDecodedToken(['realm:Forscher', 'realm:Forscher-admin'])
         )
       ).to.eql(['Forscher', 'Forscher-admin']);
+    });
+  });
+
+  describe('getPrimaryRealmRole()', () => {
+    it('should throw if scope is undefined', () => {
+      expect(() => getPrimaryRealmRole(createDecodedToken(undefined))).to.throw;
+    });
+
+    it('should only return the primary realm role', () => {
+      expect(
+        getPrimaryRealmRole(
+          createDecodedToken([
+            'feature:someCoolThing',
+            'realm:Forscher',
+            'realm:Forscher-admin',
+          ])
+        )
+      ).to.eql('Forscher');
     });
   });
 
