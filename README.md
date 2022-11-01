@@ -29,7 +29,7 @@ To get a local copy up and running follow these simple steps.
 
 ### Prerequisites
 
-[Docker](https://www.docker.com/), [Docker-Compose](https://docs.docker.com/compose/) and [Node.js](https://nodejs.org/) should be installed.
+[Docker](https://www.docker.com/), [Docker-Compose](https://docs.docker.com/compose/) and [Node.js](https://nodejs.org/) should be installed. 
 
 ### Startup
 
