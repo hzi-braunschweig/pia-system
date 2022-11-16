@@ -18,4 +18,5 @@ __exportStar(require("./messageQueueClient"), exports);
 __exportStar(require("./messageQueueClientConnection"), exports);
 __exportStar(require("./messageQueueClientHelper"), exports);
 __exportStar(require("./messageQueueTestUtils"), exports);
+__exportStar(require("./messageQueueTopics"), exports);
 //# sourceMappingURL=index.js.map

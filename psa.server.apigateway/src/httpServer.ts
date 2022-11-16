@@ -18,11 +18,17 @@ export abstract class HttpServer<T> {
 
   public constructor(ssl?: ISsl) {
     if (ssl) {
-      this.httpServer = https.createServer(ssl, (req, res) => {
+      this.httpServer = https.createServer<
+        typeof http.IncomingMessage,
+        typeof http.ServerResponse
+      >(ssl, (req, res) => {
         this.handleRequest(req, res);
       });
     } else {
-      this.httpServer = http.createServer((req, res) => {
+      this.httpServer = http.createServer<
+        typeof http.IncomingMessage,
+        typeof http.ServerResponse
+      >((req, res) => {
         this.handleRequest(req, res);
       });
     }

@@ -1055,6 +1055,11 @@ describe('Release Test, role: "Forscher", Administration', () => {
   });
 
   it('should deactivate a questionnaire', () => {
+    cy.intercept({
+      method: 'POST',
+      url: '/admin/api/v1/questionnaire/questionnaires',
+    }).as('saveQuestionnaire');
+
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
 
@@ -1093,6 +1098,13 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
+
+    // In slower environments like in CI, we need to wait for the save request
+    // to be done and for angular to actually know about the study
+    // name in its component. As we have no way to know when the component is
+    // ready, we additionally wait an arbitrary amount of time.
+    cy.wait('@saveQuestionnaire');
+    cy.wait(3000);
 
     // Deactivate questionnaire
     cy.get('[data-e2e="e2e-questionnaire-deactivate-button"]').click();

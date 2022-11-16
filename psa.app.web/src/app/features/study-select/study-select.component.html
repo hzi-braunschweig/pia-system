@@ -1,0 +1,24 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<mat-form-field *ngIf="selectedStudy">
+  <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
+  <mat-select [formControl]="selectedStudy" data-e2e="e2e-study-select">
+    <mat-option
+      *ngFor="let studyName of availableStudies"
+      [value]="studyName"
+      data-e2e="e2e-study-option"
+    >
+      {{ studyName }}
+    </mat-option>
+  </mat-select>
+  <mat-error
+    unit-required-error
+    *ngIf="selectedStudy.touched && selectedStudy.hasError('required')"
+  >
+    {{ 'DIALOG.STUDY_REQUIRED' | translate }}
+  </mat-error>
+</mat-form-field>

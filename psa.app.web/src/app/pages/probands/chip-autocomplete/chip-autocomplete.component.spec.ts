@@ -196,9 +196,7 @@ describe('ChipAutocompleteComponent', () => {
     expect(await input.isDisabled()).toBeTrue();
 
     const autocompleteHarness = await loader.getHarness(MatAutocompleteHarness);
-    const options = await autocompleteHarness.getOptions();
-
-    expect(options.length).toEqual(0);
+    expect(await autocompleteHarness.isOpen()).toBeFalse();
   });
 
   async function triggerAutocompleteByInputFocus(): Promise<MatInputHarness> {

@@ -19,7 +19,9 @@
 #landing-applications,
 #nav-link-personal-info,
 #nav-link-applications,
-#nav-link-resources {
+#nav-link-resources,
+// We don't want to show the welcome message, which has no unique identifier on its wrapper
+.pf-c-page__main-section.pf-m-limit-width.pf-m-light.pf-m-shadow-bottom {
   display: none;
 }
 
@@ -34,6 +36,24 @@
     margin: 0 auto;
     width: 20rem;
   }
+}
+
+#page-sidebar {
+  .pf-c-nav__item.pf-m-expandable {
+    &:before {
+      display: none;
+    }
+  }
+}
+
+// fix spacing between links in card on startpage
+#landing-signingin {
+  margin-bottom: 0.35rem;
+}
+
+// fix welcomeScreen not fully centered
+.pf-c-page__main-section.pf-m-limit-width > .pf-c-page__main-body {
+  max-width: none;
 }
 
 #spinner_screen {
@@ -64,18 +84,46 @@
   visibility: visible;
 }
 
-// Fix button in page-heading being pushed out of frame
+// allow titles to be closer to their subtitles and be bold
+h1:first-child {
+  font-weight: 500 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+h2,
+h3 {
+  font-weight: 500 !important;
+}
+
+// fix button in page-heading being pushed out of frame
 #refresh-page {
   float: right;
 }
 
-@media screen and (max-width: 460px) {
+#referrerLink {
+  @include button;
+
+  line-height: 38px;
+  padding: 0 20px;
+
+  svg {
+    width: 15px;
+    height: 18px;
+    margin-right: 4px;
+  }
+}
+
+@media screen and (max-width: 764px) {
   .pf-l-toolbar__group {
     margin-right: 0 !important;
   }
 
   .pf-c-page__header-tools {
-    display: blocK;
+    display: block;
+
+    > .pf-c-page__header-tools-group:first-child {
+      display: block !important;
+    }
   }
 
   #mobileKebab,

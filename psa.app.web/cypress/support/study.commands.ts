@@ -13,7 +13,29 @@ export interface Study {
   description: string;
   pm_email: string | null;
   hub_email: string | null;
+  has_open_self_registration: boolean;
+  max_allowed_accounts_count: number | null;
   has_required_totp: boolean;
+  proband_realm_group_id?: string | null;
+}
+
+interface PendingStudyChangeRequest {
+  requested_for: string;
+  study_id: string;
+  description_to?: string | null;
+  has_rna_samples_to?: boolean;
+  sample_prefix_to?: string | null;
+  sample_suffix_length_to?: number | null;
+  pseudonym_prefix_to?: string | null;
+  pseudonym_suffix_length_to?: number | null;
+  has_answers_notify_feature_to?: boolean;
+  has_answers_notify_feature_by_mail_to?: boolean;
+  has_four_eyes_opposition_to?: boolean;
+  has_partial_opposition_to?: boolean;
+  has_total_opposition_to?: boolean;
+  has_compliance_opposition_to?: boolean;
+  has_logging_opt_in_from?: boolean;
+  has_logging_opt_in_to?: boolean;
 }
 
 /**
@@ -21,7 +43,7 @@ export interface Study {
  *
  * @param study study to create
  */
-export function createStudy(study: Study): Chainable<string> {
+export function createStudy(study: Study): Chainable<Study> {
   return cy
     .loginSysAdmin()
     .then((token) =>
@@ -34,7 +56,7 @@ export function createStudy(study: Study): Chainable<string> {
       })
     )
     .then((response) => {
-      return cy.wrap(response.body.name as string);
+      return cy.wrap(response.body as Study);
     });
 }
 
@@ -42,12 +64,14 @@ export function createStudy(study: Study): Chainable<string> {
  * Creates a study with random name prefixed with "E2E-Teststudie-".
  * Returns the studyId.
  */
-export function createRandomStudy(): Chainable<string> {
+export function createRandomStudy(isOpen = false): Chainable<Study> {
   return cy.createStudy({
     name: 'E2E-Teststudie-' + getRandomId(),
     description: 'Studie zur Nutzung innerhalb der E2E-Tests',
     pm_email: null,
     hub_email: null,
+    has_open_self_registration: isOpen,
+    max_allowed_accounts_count: isOpen ? 3 : null,
     has_required_totp: false,
   });
 }
@@ -61,11 +85,30 @@ export function createRandomStudy(): Chainable<string> {
  * @param studyId The study the change
  */
 export function disableFourEyesOpposition(studyId: string): Chainable {
+  return changeStudy({
+    study_id: studyId,
+    has_four_eyes_opposition_to: false,
+  });
+}
+
+export function configurePseudonymPrefix(studyId: string): Chainable {
+  return changeStudy({
+    study_id: studyId,
+    pseudonym_prefix_to: 'DEV',
+    pseudonym_suffix_length_to: 8,
+  });
+}
+
+export function changeStudy(
+  changes: Omit<PendingStudyChangeRequest, 'requested_for'>
+): Chainable {
   return cy.fixture('users').then((users) => {
     return cy
-      .createProfessionalUser(users.new.ConfirmingForscher, studyId)
+      .createProfessionalUser(users.new.ConfirmingForscher, changes.study_id)
       .as('confirmingForscherCredentials')
-      .then(() => cy.createProfessionalUser(users.new.Forscher, studyId))
+      .then(() =>
+        cy.createProfessionalUser(users.new.Forscher, changes.study_id)
+      )
       .as('forscherCredentials')
       .then((forscherCredentials) => cy.loginProfessional(forscherCredentials))
       .then((token) =>
@@ -76,8 +119,7 @@ export function disableFourEyesOpposition(studyId: string): Chainable {
             headers: { Authorization: token },
             body: {
               requested_for: users.new.ConfirmingForscher.username,
-              study_id: studyId,
-              has_four_eyes_opposition_to: false,
+              ...changes,
             },
           })
           .then((result) => cy.wrap(result.body.id))

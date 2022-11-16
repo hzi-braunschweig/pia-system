@@ -8,7 +8,10 @@ import Chainable = Cypress.Chainable;
 import * as mimelib from 'mimelib';
 import totp from 'totp-generator';
 import { getRandomId } from './helper.commands';
-import { CreateProbandRequest } from '../../src/app/psa.app.core/models/proband';
+import {
+  CreateProbandRequest,
+  ProbandOrigin,
+} from '../../src/app/psa.app.core/models/proband';
 import { setupTotpForSysAdmin } from './totp';
 
 export interface UserCredentials {
@@ -205,6 +208,7 @@ export function createRandomProband(
       complianceBloodsamples: true,
       studyCenter: 'E2E-Testcenter',
       examinationWave: 1,
+      origin: ProbandOrigin.INVESTIGATOR,
     },
     studyId
   );
@@ -246,6 +250,34 @@ export function deleteProband(username, studyId: string): Chainable {
   );
 }
 
+export function fetchEmailVerificationLinkForUserFromMailHog(
+  username: string,
+  retryCount = 5
+): Chainable<string> {
+  return fetchFromMailHogWithRetry(username, retryCount, (items) => {
+    const verificationMail = items.find(
+      (el) => el.Content.Headers.Subject[0] === 'E-Mail verifizieren'
+    );
+    return verificationMail
+      ? extractLinkUrl(verificationMail.Content.Body)
+      : null;
+  });
+}
+
+export function fetchWelcomeMailForUserFromMailHog(
+  username: string,
+  retryCount = 5
+): Chainable<string> {
+  return fetchFromMailHogWithRetry(username, retryCount, (items) => {
+    const welcomeMail = items.find((el) =>
+      el.Content.Headers.Subject[0].includes('Willkommen bei PIA')
+    );
+    return welcomeMail
+      ? mimelib.decodeQuotedPrintable(welcomeMail.Content.Body)
+      : null;
+  });
+}
+
 export function fetchPasswordResetLinkForUserFromMailHog(
   username: string,
   retryCount = 5
@@ -284,6 +316,29 @@ export function fetchPasswordForUserFromMailHog(
         username,
         password: extractPassword(result.body.items[0].Content.Body),
       });
+    });
+}
+
+function fetchFromMailHogWithRetry(
+  username: string,
+  retryCount = 5,
+  findFn: (items) => string | null
+): Chainable<any> {
+  return cy
+    .request({
+      method: 'GET',
+      url:
+        (Cypress.env('MAILSERVER_BASEURL') || 'http://localhost:8025') +
+        `/api/v2/search?kind=to&query=${username}&start=0&limit=1`,
+    })
+    .then((result) => {
+      const foundItemString = findFn(result.body.items);
+      if ((!result.body.items.length && retryCount > 0) || !foundItemString) {
+        return fetchFromMailHogWithRetry(username, --retryCount, (i) =>
+          findFn(i)
+        );
+      }
+      return cy.wrap(foundItemString);
     });
 }
 

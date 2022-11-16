@@ -44,9 +44,9 @@ import { By } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
 import { createProband } from '../../psa.app.core/models/instance.helper.spec';
-import SpyObj = jasmine.SpyObj;
 import { ProbandService } from '../../psa.app.core/providers/proband-service/proband.service';
 import { CurrentUser } from '../../_services/current-user.service';
+import SpyObj = jasmine.SpyObj;
 
 describe('DialogExportDataComponent', () => {
   let component: DialogExportDataComponent;

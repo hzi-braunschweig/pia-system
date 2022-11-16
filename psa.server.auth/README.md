@@ -33,3 +33,12 @@ new language file. Also check, whether the parent theme PIA is using, is also us
 might have to merge all inherited language files into your new language file, to get all keys from all parent themes.
 
 The parent theme is defined in each `themes/pia/*/theme.properties` file, anf can vary every time.
+
+## Terms of services and policy for user registration
+
+If you want your users to accept terms of services and/or a policy you can set the environment variables with URLs, leading to those terms.
+
+- `AUTHSERVER_PROBAND_TERMS_OF_SERVICE_URL`
+- `AUTHSERVER_PROBAND_POLICY_URL`
+
+As soon as one of these is set, a corresponding checkbox will appear during registration.

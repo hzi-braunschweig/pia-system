@@ -1,5 +1,5 @@
 ﻿/*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -37,17 +37,64 @@ import { ComplianceType } from './psa.app.core/models/compliance';
 import { ProbandsToContactComponent } from './pages/probands-to-contact/probands-to-contact.component';
 import { ComplianceManagerComponent } from './pages/compliance/compliance-manager/compliance-manager.component';
 import { ComplianceExaminerComponent } from './pages/compliance/compliance-examiner/compliance-examiner.component';
-import { StudyWelcomeTextComponent } from './pages/study-welcome-text/study-welcome-text.component';
 import { QuestionnaireInstancesListForProbandComponent } from './pages/questionnaire-instances/questionnaire-instances-list-for-proband/questionnaire-instances-list-for-proband.component';
 import { QuestionnaireInstancesListForInvestigatorComponent } from './pages/questionnaire-instances/questionnaire-instances-list-for-investigator/questionnaire-instances-list-for-investigator.component';
 import { LicenseListComponent } from './pages/license-list/license-list.component';
 import { ComplianceEditProbandComponent } from './pages/compliance/compliance-edit/compliance-edit-proband/compliance-edit-proband.component';
+import { RegistrationComponent } from './pages/registration/registration/registration.component';
+import { StudyComponent } from './pages/study/study.component';
 
 const routes: Routes = [
   {
     path: 'home',
     component: HomeComponent,
     canActivate: [AuthGuard, ComplianceGuard],
+    pathMatch: 'full',
+  },
+  {
+    path: 'study',
+    redirectTo: 'study/',
+  },
+  {
+    path: 'study/:studyName',
+    component: StudyComponent,
+    canActivate: [AuthGuard],
+    data: {
+      authorizedRoles: [
+        'Forscher',
+        'ProbandenManager',
+        'Untersuchungsteam',
+        'EinwilligungsManager',
+      ],
+    },
+    pathMatch: 'full',
+  },
+  {
+    path: 'extlink/study/:studyName/pendingstudychange',
+    redirectTo: 'study/:studyName/pendingstudychange',
+    pathMatch: 'full',
+  },
+  {
+    path: 'study/:studyName/pendingstudychange',
+    component: StudyComponent,
+    canActivate: [AuthGuard],
+    data: {
+      authorizedRoles: ['Forscher'],
+    },
+    pathMatch: 'full',
+  },
+  {
+    path: 'study/:studyName',
+    component: StudyComponent,
+    canActivate: [AuthGuard],
+    data: {
+      authorizedRoles: [
+        'Forscher',
+        'ProbandenManager',
+        'Untersuchungsteam',
+        'EinwilligungsManager',
+      ],
+    },
     pathMatch: 'full',
   },
   {
@@ -149,10 +196,8 @@ const routes: Routes = [
     pathMatch: 'full',
   },
   {
-    path: 'welcome-text',
-    component: StudyWelcomeTextComponent,
-    canActivate: [AuthGuard],
-    data: { authorizedRoles: ['Forscher'] },
+    path: 'registration/:study',
+    component: RegistrationComponent,
     pathMatch: 'full',
   },
   {

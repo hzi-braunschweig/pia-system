@@ -24,8 +24,11 @@ import {
 import { Proband } from './entities/proband';
 import { Study } from './entities/study';
 import { PlannedProband } from './entities/plannedProband';
-import { Account } from './entities/account';
 import { StudyAccess } from './entities/studyAccess';
+import { StudyWelcomeMail } from './entities/studyWelcomeMail';
+import { CreateStudyWelcomeMail1664954890203 } from './migrations/1664954890203-CreateStudyWelcomeMail';
+import { AddProbandCreatedAtOrigin1666003459920 } from './migrations/1666003459920-AddProbandCreatedAtOrigin';
+import { AlterProbandCreatedAtOriginDefaultValue1666089544308 } from './migrations/1666089544308-AlterProbandCreatedAtOriginDefaultValue';
 
 const pgp = pgPromise({ capSQL: true });
 
@@ -55,11 +58,15 @@ const typeOrmOptions: ConnectionOptions = {
   password: config.database.password,
   database: config.database.database,
   ssl: config.database.ssl,
-  entities: [Proband, Study, PlannedProband, Account, StudyAccess],
+  entities: [Proband, Study, PlannedProband, StudyAccess, StudyWelcomeMail],
   namingStrategy: new SnakeNamingStrategyWithPlural(),
   synchronize: false,
-  migrationsRun: false,
-  migrations: [],
+  migrationsRun: true,
+  migrations: [
+    CreateStudyWelcomeMail1664954890203,
+    AddProbandCreatedAtOrigin1666003459920,
+    AlterProbandCreatedAtOriginDefaultValue1666089544308,
+  ],
   logging: false,
 };
 

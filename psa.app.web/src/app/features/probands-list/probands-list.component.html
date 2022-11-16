@@ -112,12 +112,30 @@
         </td>
       </ng-container>
 
+      <!-- Date of creation -->
+      <ng-container matColumnDef="created_at">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'PROBANDEN.CREATED_AT' | translate }}
+        </th>
+        <td mat-cell *matCellDef="let row">
+          {{ row.created_at | date }}
+        </td>
+      </ng-container>
+
       <!-- Account status Column -->
       <ng-container matColumnDef="accountStatus">
         <th mat-header-cell *matHeaderCellDef mat-sort-header>
           {{ 'PROBANDEN.ACCOUNT_STATUS' | translate }}
         </th>
         <td mat-cell *matCellDef="let row">{{ row.status }}</td>
+      </ng-container>
+
+      <!-- Account origin -->
+      <ng-container matColumnDef="origin">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'PROBANDEN.ORIGIN' | translate }}
+        </th>
+        <td mat-cell *matCellDef="let row">{{ row.origin }}</td>
       </ng-container>
 
       <ng-container

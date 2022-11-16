@@ -19,7 +19,8 @@ export class InternalPersonalDataHandler {
   ): Promise<PersonalData> => {
     return InternalPersonalDataInteractor.createOrUpdate(
       request.params['pseudonym'] as string,
-      request.payload as PersonalDataReq
+      request.payload as PersonalDataReq,
+      request.query['skipUpdateAccount'] as boolean
     ).catch((err: Error) =>
       handleError(request, 'Could not update user values in DB:', err)
     );

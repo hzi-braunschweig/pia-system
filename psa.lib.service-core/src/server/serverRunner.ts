@@ -15,6 +15,7 @@ export class ServerRunner {
 
   public start(): void {
     this.init().catch((err) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       console.error('Could not start the server:', err);
       process.exit(1);
     });
@@ -26,6 +27,7 @@ export class ServerRunner {
       console.log('SIGINT/SIGTERM received -> cleaning up...');
 
       this.stop().catch((err) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         console.error('Could not stop the server gracefully:', err);
         process.exit(1);
       });

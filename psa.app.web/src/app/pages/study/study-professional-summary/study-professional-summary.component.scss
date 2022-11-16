@@ -1,0 +1,51 @@
+/*!
+ * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+.study-status {
+  &.study-status-active {
+    background-color: #a0cf69;
+  }
+  &.study-status-deletion-pending {
+    background-color: #ffc409;
+  }
+  &.study-status-deleted {
+    background-color: #cf3c4f;
+  }
+
+  display: inline;
+  float: right;
+  color: white;
+  padding: 4px 8px;
+  text-align: center;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.study-accounts-count {
+  strong {
+    color: #558b2f;
+  }
+}
+
+.study-description-label {
+  color: #808080;
+}
+.study-description {
+  margin-top: 5px;
+}
+
+.registration-link {
+  display: inline-block;
+  padding: 10px 10px 10px 15px;
+
+  background-color: #d4d8d1;
+  border-radius: 5px;
+
+  pre {
+    display: inline-block;
+    margin-right: 10px;
+  }
+}

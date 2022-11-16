@@ -1,0 +1,35 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<ng-container *appNgLet="selectedStudy$ | async as selectedStudy">
+  <app-loading-spinner
+    *ngIf="selectedStudyName && selectedStudy === null"
+    cover="true"
+  ></app-loading-spinner>
+
+  <div class="jumbotron" data-e2e="e2e-home-professional-content">
+    <app-study-select
+      [required]="true"
+      [(ngModel)]="selectedStudyName"
+      (ngModelChange)="changeSelectedStudy($event)"
+    ></app-study-select>
+
+    <app-study-professional-summary
+      *ngIf="selectedStudyName && selectedStudy !== null"
+      [study]="selectedStudy"
+      (editStudy)="editStudy(selectedStudy)"
+      (cancelPendingStudyChange)="
+        cancelPendingStudyChange(selectedStudy.pendingStudyChange?.id)
+      "
+      (editWelcomeMail)="editWelcomeMail()"
+      (editWelcomeText)="editWelcomeText()"
+    ></app-study-professional-summary>
+
+    <mat-card *ngIf="!selectedStudyName">
+      <p>{{ 'STUDY.EMPTY_CONTENT_HINT' | translate }}</p>
+    </mat-card>
+  </div>
+</ng-container>

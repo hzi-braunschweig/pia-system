@@ -11,6 +11,10 @@ import { ProfessionalAccount } from '../../models/professionalAccount';
 import { ProfessionalRole } from '../../models/user';
 import { Study } from '../../models/study';
 import { StudyWelcomeText } from '../../models/studyWelcomeText';
+import {
+  StudyWelcomeMailTemplateRequestDto,
+  StudyWelcomeMailTemplateResponseDto,
+} from '../../models/studyWelcomeMail';
 
 export interface GetProfessionalAccountsFilters {
   studyName?: string;
@@ -106,6 +110,28 @@ export class UserService {
         {
           welcome_text: welcomeText,
         }
+      )
+      .toPromise();
+  }
+
+  getStudyWelcomeMail(
+    studyName: string
+  ): Promise<StudyWelcomeMailTemplateResponseDto> {
+    return this.http
+      .get<StudyWelcomeMailTemplateResponseDto>(
+        `${this.apiUrl}/studies/${studyName}/welcome-mail`
+      )
+      .toPromise();
+  }
+
+  putStudyWelcomeMail(
+    studyName: string,
+    welcomeMail: StudyWelcomeMailTemplateRequestDto
+  ): Promise<StudyWelcomeMailTemplateResponseDto> {
+    return this.http
+      .put<StudyWelcomeMailTemplateResponseDto>(
+        `${this.apiUrl}/studies/${studyName}/welcome-mail`,
+        welcomeMail
       )
       .toPromise();
   }

@@ -63,6 +63,36 @@ describe('PersonaldataserviceClient', () => {
         )
       ).to.be.true;
     });
+
+    it('should add "skipUpdateAccount" query param', async () => {
+      // Arrange
+      const pseudonym = 'TEST-1234';
+      fetchMock.put(
+        {
+          url: 'express:/personal/personalData/proband/' + pseudonym,
+        },
+        {
+          status: StatusCodes.OK,
+          body: JSON.stringify(null),
+        }
+      );
+
+      await client.updatePersonalData(pseudonym, createPersonalData(), true);
+
+      // Assert
+      expect(
+        fetchMock.called(
+          'express:/personal/personalData/proband/' + pseudonym,
+          {
+            method: 'PUT',
+            query: {
+              skipUpdateAccount: 'true',
+            },
+            body: createPersonalData(),
+          }
+        )
+      ).to.be.true;
+    });
   });
 
   describe('getPersonalDataEmail', () => {

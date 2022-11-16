@@ -8,9 +8,9 @@ INSERT INTO studies (name)
 VALUES ('ApiTestStudie1'),
        ('ApiTestStudie2');
 
-INSERT INTO probands (pseudonym, compliance_labresults, compliance_samples, compliance_bloodsamples, study)
-VALUES ('qtest-api-proband1', TRUE, TRUE, TRUE, 'ApiTestStudie1'),
-       ('qtest-api-proband2', TRUE, TRUE, TRUE, 'ApiTestStudie2');
+INSERT INTO probands (pseudonym, compliance_labresults, compliance_samples, compliance_bloodsamples, study, origin)
+VALUES ('qtest-api-proband1', TRUE, TRUE, TRUE, 'ApiTestStudie1', 'investigator'),
+       ('qtest-api-proband2', TRUE, TRUE, TRUE, 'ApiTestStudie2', 'investigator');
 
 INSERT INTO study_users (study_id, user_id, access_level)
 VALUES ('ApiTestStudie1', 'forscher1@apitest.de', 'write'),

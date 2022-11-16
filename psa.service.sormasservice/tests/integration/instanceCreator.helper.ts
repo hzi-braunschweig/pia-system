@@ -97,7 +97,7 @@ export function createProbandResponse(
     examinationWave: 0,
     ids: 'some-uuid',
     password: 'secret',
-    pseudonym: 'TEST-0123456789',
+    pseudonym: 'test-0123456789',
     study: 'Teststudy',
     studyCenter: null,
     ...overwrites,

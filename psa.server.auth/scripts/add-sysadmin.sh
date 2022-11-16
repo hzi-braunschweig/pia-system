@@ -33,10 +33,10 @@ fi
 export NEW_USER_EMAIL NEW_USER_PASSWORD
 
 java -jar /keycloak-config-cli.jar \
-    --import.path=/templates/user.json \
-    --import.var-substitution=true \
-    --import.var-substitution-prefix=[[ \
-    --import.var-substitution-suffix=]] \
+    --import.files.locations=/templates/user.json \
+    --import.var-substitution.enabled=true \
+    --import.var-substitution.prefix=[[ \
+    --import.var-substitution.suffix=]] \
     --keycloak.availability-check.enabled=true \
     --keycloak.url=https://localhost:4000/ \
     --keycloak.user=${KEYCLOAK_ADMIN} \

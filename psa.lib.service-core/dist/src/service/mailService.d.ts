@@ -1,7 +1,7 @@
 import { MailserverConnection } from '../config/configModel';
 export interface MailContent {
     subject: string;
-    text: string;
+    text?: string;
     html?: string;
 }
 export declare class MailService {

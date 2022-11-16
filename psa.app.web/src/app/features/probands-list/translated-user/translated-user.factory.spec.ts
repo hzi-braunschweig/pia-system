@@ -11,6 +11,7 @@ import { TranslatedUserFactory } from './translated-user.factory';
 import { AccountStatusPipe } from '../../../pipes/account-status.pipe';
 import { TranslatedUser } from './translated-user.model';
 import { createProband } from '../../../psa.app.core/models/instance.helper.spec';
+import { ProbandOrigin } from '../../../psa.app.core/models/proband';
 
 describe('TranslatedUserFactory', () => {
   let service: TranslatedUserFactory;
@@ -36,7 +37,7 @@ describe('TranslatedUserFactory', () => {
 
   describe('create()', () => {
     it('should create a TranslatedUser from a UserWithStudyAccess', () => {
-      translate.instant.and.returnValue('Test');
+      translate.instant.and.callFake((value) => value);
       accountStatusPipe.transform.and.returnValue('PROBANDEN.STATUS_ACTIVE');
       datePipe.transform.and.returnValue('20.04.2020');
 
@@ -46,21 +47,22 @@ describe('TranslatedUserFactory', () => {
         study: 'NAKO Test',
         isTestProband: false,
         firstLoggedInAt: new Date('2020-04-20'),
+        origin: ProbandOrigin.INVESTIGATOR,
+        createdAt: new Date('2022-10-18'),
       });
       const expected: TranslatedUser = {
         username: 'Testproband',
         ids: null,
         study: 'NAKO Test',
-        is_test_proband: 'Test',
+        is_test_proband: 'GENERAL.NO',
         first_logged_in_at: new Date('2020-04-20'),
-        status: 'Test',
+        status: 'PROBANDEN.STATUS_ACTIVE',
         userObject: selected,
+        origin: 'PROBAND.ORIGIN.INVESTIGATOR',
+        created_at: new Date('2022-10-18'),
       };
 
       expect(service.create(selected)).toEqual(expected);
-      expect(translate.instant).toHaveBeenCalledTimes(2);
-      expect(translate.instant).toHaveBeenCalledWith('GENERAL.NO');
-      expect(translate.instant).toHaveBeenCalledWith('PROBANDEN.STATUS_ACTIVE');
     });
   });
 });

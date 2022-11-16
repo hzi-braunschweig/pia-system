@@ -3,14 +3,14 @@ INSERT INTO studies(name, description, pm_email, hub_email, status, address, has
 VALUES ('QTestStudy1', 'QTestStudy1 Beschreibung', 'pm@pia.de', 'hub@pia.de', 'active',
         'Studienzentrum des QTestStudy1 für Infektionsforschung<br> QTestStudy1<br> Api-Test-Str. 1<br> 53111 Bonn<br> Tel.: 0111 1111 1111<br> Fax: 0111 1111 1111<br> Email: QTestStudy1@QTestStudy1.de',
         FALSE, 'TESTPREFIX', 5, FALSE);
-INSERT INTO studies(name, description, has_logging_opt_in)
-VALUES ('QTestStudy2', 'QTestStudy2 Beschreibung', FALSE),
-       ('QTestStudy3', 'QTestStudy3 Beschreibung', FALSE);
+INSERT INTO studies(name, description, has_logging_opt_in, pseudonym_suffix_length)
+VALUES ('QTestStudy2', 'QTestStudy2 Beschreibung', FALSE, 8),
+       ('QTestStudy3', 'QTestStudy3 Beschreibung', FALSE, 4);
 
-INSERT INTO probands (pseudonym, study)
-VALUES ('qtest-proband1', 'QTestStudy1'),
-       ('qtest-proband2', 'QTestStudy2'),
-       ('qtest-proband3', 'QTestStudy3');
+INSERT INTO probands (pseudonym, study, origin)
+VALUES ('qtest-proband1', 'QTestStudy1', 'investigator'),
+       ('qtest-proband2', 'QTestStudy2', 'investigator'),
+       ('qtest-proband3', 'QTestStudy3', 'investigator');
 
 INSERT INTO study_welcome_text(study_id, welcome_text, language)
 VALUES ('QTestStudy1', '# Welcome to our study! We are happy to have you with us!', 'de_DE');

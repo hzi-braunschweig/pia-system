@@ -1,7 +1,6 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
-  "defaultProject": "app",
   "newProjectRoot": "projects",
   "projects": {
     "app": {
@@ -40,6 +39,11 @@
                 "input": "src/global.scss",
                 "inject": true
               }
+            ],
+            "allowedCommonJsDependencies": [
+              "keycloak-js",
+              "base64-js",
+              "js-sha256"
             ],
             "scripts": [],
             "aot": false,
@@ -178,7 +182,7 @@
     }
   },
   "cli": {
-    "defaultCollection": "@angular-eslint/schematics"
+    "schematicCollections": ["@angular-eslint/schematics"]
   },
   "schematics": {
     "@ionic/angular-toolkit:component": {

@@ -18,10 +18,13 @@ describe('ScanDialogComponent', () => {
 
   beforeEach(async () => {
     // Build Base Module
-    await MockBuilder(ScanDialogComponent, AppModule).mock(MAT_DIALOG_DATA, {
-      isBloodSample: true,
-      study: createStudy(),
-    });
+    await MockBuilder(ScanDialogComponent, [AppModule, MAT_DIALOG_DATA]).mock(
+      MAT_DIALOG_DATA,
+      {
+        isBloodSample: true,
+        study: createStudy(),
+      }
+    );
   });
 
   beforeEach(fakeAsync(() => {

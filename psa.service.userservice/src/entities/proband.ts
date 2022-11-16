@@ -4,9 +4,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryColumn,
+} from 'typeorm';
 import { Study } from './study';
 import { ProbandStatus } from '../models/probandStatus';
+import { ProbandOrigin } from '@pia-system/lib-http-clients-internal';
 
 @Entity({ name: 'probands' })
 export class Proband {
@@ -51,6 +59,9 @@ export class Proband {
    */
   @Column({ type: 'varchar', nullable: false, select: false })
   public mappingId!: string;
+
+  @CreateDateColumn({ type: 'timestamptz' })
+  public readonly createdAt!: Date;
   @Column({ type: 'timestamptz', nullable: true })
   public deactivatedAt!: Date;
   @Column({ type: 'timestamptz', nullable: true })
@@ -68,4 +79,10 @@ export class Proband {
     referencedColumnName: 'name',
   })
   public study?: Study;
+
+  @Column({
+    type: 'enum',
+    enum: ProbandOrigin,
+  })
+  public origin!: string;
 }

@@ -13,16 +13,21 @@ export function initializeAuthentication(
   currentUser: CurrentUser
 ): () => Promise<boolean> {
   return async () => {
-    const result = await keycloak.init({
-      config: environment.authserver,
-      initOptions: {
-        pkceMethod: 'S256',
-        onLoad: 'check-sso',
-        silentCheckSsoRedirectUri:
-          environment.baseUrl + '/assets/silent-check-sso.html',
-      },
-    });
-    await currentUser.init(keycloak);
-    return result;
+    try {
+      const result = await keycloak.init({
+        config: environment.authserver,
+        initOptions: {
+          pkceMethod: 'S256',
+          onLoad: 'check-sso',
+          silentCheckSsoRedirectUri:
+            environment.baseUrl + '/assets/silent-check-sso.html',
+        },
+      });
+      await currentUser.init(keycloak);
+      return result;
+    } catch (e) {
+      await keycloak.logout();
+      return false;
+    }
   };
 }

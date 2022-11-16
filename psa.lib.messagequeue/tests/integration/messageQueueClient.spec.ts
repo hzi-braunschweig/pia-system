@@ -11,6 +11,7 @@ import * as util from 'util';
 
 import { MessageQueueClient } from '../../src/messageQueueClient';
 import { MessageQueueClientHelper } from '../../src/messageQueueClientHelper';
+import { MessageQueueTopic } from '../../src';
 
 const delay = util.promisify(setTimeout);
 
@@ -24,7 +25,7 @@ const password = process.env['MESSAGEQUEUE_APP_PASSWORD'] ?? 'app';
 
 const serviceName = 'test-service-a';
 const serviceName2 = 'test-service-b';
-const topic = 'test-topic';
+const topic = MessageQueueTopic.PROBAND_CREATED;
 
 const DELAY_TIME = 10;
 
@@ -334,7 +335,7 @@ describe('MessageQueueClient functionality', () => {
     await mq1.connect();
 
     try {
-      await mq1.removeQueue('some-non-existing-queue');
+      await mq1.removeQueue('some-non-existing-queue' as MessageQueueTopic);
     } finally {
       await mq1.disconnect();
     }

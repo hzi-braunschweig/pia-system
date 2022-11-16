@@ -11,35 +11,27 @@ import { AccessToken, asyncMap, hasRealmRole } from '@pia/lib-service-core';
 import { StudyWelcomeText } from '../models/studyWelcomeText';
 import { ProbandAccountService } from '../services/probandAccountService';
 import { ProfessionalAccountService } from '../services/professionalAccountService';
+import { StudyService } from '../services/studyService';
+import {
+  StudyWelcomeMailTemplateRequestDto,
+  StudyWelcomeMailTemplateResponseDto,
+} from '../models/studyWelcomeEmail';
+import { StudyWelcomeMailService } from '../services/studyWelcomeMailService';
+import { StudyRepository } from '../repositories/studyRepository';
 
 /**
  * @description interactor that handles study requests based on users permissions
  */
 export class StudiesInteractor {
-  private static readonly REQUIRE_TOTP_ROLE = 'feature:RequireTotp';
-
   /**
    * @description gets a study from DB if user is allowed to
-   * @param decodedToken the jwt of the request
    * @param studyName the id of the study to get
    * @returns promise a promise that will be resolved in case of success or rejected otherwise
    */
-  public static async getStudy(
-    decodedToken: AccessToken,
-    studyName: string
-  ): Promise<Study> {
+  public static async getStudy(studyName: string): Promise<Study> {
     try {
-      const study = (await pgHelper.getStudy(studyName)) as DbStudy;
-      if (hasRealmRole('Proband', decodedToken)) {
-        return {
-          ...study,
-          pm_email: null,
-          hub_email: null,
-          has_required_totp: null,
-        };
-      } else {
-        return this.addTotpRequiredField(study);
-      }
+      const study = await StudyRepository.getStudy(studyName);
+      return StudyService.mapDbStudyToStudy(study);
     } catch (err) {
       console.error(err);
       throw Boom.notFound('Could not get the study');
@@ -63,7 +55,7 @@ export class StudiesInteractor {
       }
       return await asyncMap(
         studies,
-        async (study) => await this.addTotpRequiredField(study)
+        async (study) => await StudyService.mapDbStudyToStudy(study)
       );
     } catch (err) {
       throw Boom.badImplementation('Could not get studies', err);
@@ -80,8 +72,12 @@ export class StudiesInteractor {
       const result = (await pgHelper.createStudy(study)) as DbStudy;
       await ProbandAccountService.createStudy(study.name);
       await ProfessionalAccountService.createStudy(study.name);
-      await this.setTotpRequiredForStudy(study.has_required_totp, study.name);
-      return this.addTotpRequiredField(result);
+      await StudyService.setTotpRequiredForStudy(
+        study.has_required_totp,
+        study.name
+      );
+      await StudyService.updateMaxAllowedAccountsCountOfStudy(study);
+      return StudyService.mapDbStudyToStudy(result);
     } catch (err) {
       console.log('Could not create study:', err);
       throw Boom.notFound(String(err));
@@ -96,11 +92,15 @@ export class StudiesInteractor {
    */
   public static async updateStudy(id: string, study: Study): Promise<Study> {
     try {
-      await this.setTotpRequiredForStudy(study.has_required_totp, study.name);
+      await StudyService.setTotpRequiredForStudy(
+        study.has_required_totp,
+        study.name
+      );
+      await StudyService.updateMaxAllowedAccountsCountOfStudy(study);
       const result = (await pgHelper.updateStudyAsAdmin(id, study)) as DbStudy;
-      return this.addTotpRequiredField(result);
+      return StudyService.mapDbStudyToStudy(result);
     } catch (err) {
-      console.log('Could not update study in DB:', err);
+      console.log('Could not update study:', err);
       throw Boom.notFound(String(err));
     }
   }
@@ -137,41 +137,30 @@ export class StudiesInteractor {
     return (await pgHelper.getStudyWelcomeText(studyName)) as StudyWelcomeText;
   }
 
-  private static async addTotpRequiredField(study: DbStudy): Promise<Study> {
-    let hasRequiredOtp = false;
-    if (study.status !== 'deleted') {
-      hasRequiredOtp =
-        await ProfessionalAccountService.hasGroupRealmRoleMapping(
-          this.REQUIRE_TOTP_ROLE,
-          study.name
-        );
-    }
-    return {
-      ...study,
-      has_required_totp: hasRequiredOtp,
-    };
+  /**
+   * @description updates the study welcome mail content
+   * @param studyName the name of the study
+   * @param welcomeMail the mail content
+   * @returns promise a promise that will be resolved in case of success or rejected otherwise
+   */
+  public static async updateStudyWelcomeMail(
+    studyName: string,
+    welcomeMail: StudyWelcomeMailTemplateRequestDto
+  ): Promise<StudyWelcomeMailTemplateResponseDto> {
+    return await StudyWelcomeMailService.updateStudyWelcomeMailTemplate(
+      studyName,
+      welcomeMail
+    );
   }
 
-  private static async setTotpRequiredForStudy(
-    isTotpRequired: boolean | null,
+  /**
+   * @description returns the study welcome mail content
+   * @param studyName the name of the study
+   * @returns promise a promise that will be resolved in case of success or rejected otherwise
+   */
+  public static async getStudyWelcomeMail(
     studyName: string
-  ): Promise<void> {
-    if (isTotpRequired === true) {
-      await ProfessionalAccountService.addRealmRoleMappingToGroup(
-        this.REQUIRE_TOTP_ROLE,
-        studyName
-      );
-    } else if (
-      isTotpRequired === false &&
-      (await ProfessionalAccountService.hasGroupRealmRoleMapping(
-        this.REQUIRE_TOTP_ROLE,
-        studyName
-      ))
-    ) {
-      await ProfessionalAccountService.removeRealmRoleMappingFromGroup(
-        this.REQUIRE_TOTP_ROLE,
-        studyName
-      );
-    }
+  ): Promise<StudyWelcomeMailTemplateResponseDto> {
+    return await StudyWelcomeMailService.getStudyWelcomeMailTemplate(studyName);
   }
 }

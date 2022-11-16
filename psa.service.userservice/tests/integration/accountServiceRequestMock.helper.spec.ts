@@ -15,6 +15,7 @@ import { Groups } from '@keycloak/keycloak-admin-client/lib/resources/groups';
 import { ProfessionalRole } from '../../src/models/role';
 import { Roles } from '@keycloak/keycloak-admin-client/lib/resources/roles';
 import UserRepresentation from '@keycloak/keycloak-admin-client/lib/defs/userRepresentation';
+import { AuthServerClient } from '@pia-system/lib-auth-server-client';
 
 export function mockGetProfessionalAccount(
   sandbox: SinonSandbox,
@@ -54,6 +55,7 @@ export function mockGetProbandAccount(
     {
       username,
       id: '1234',
+      email: 'testproband@example.com',
     },
   ]);
   authClientUsersStub.listGroups.resolves([
@@ -67,14 +69,15 @@ export function mockGetProbandAccount(
 export function mockGetProbandAccountsByStudyName(
   sandbox: SinonSandbox,
   studies: string[],
-  pseudonyms: string[]
+  pseudonyms: string[],
+  authClientGroupsStub = sandbox.stub(probandAuthClient.groups)
 ): SinonStubbedInstance<Groups> {
-  const authClientGroupsStub = sandbox.stub(probandAuthClient.groups);
   authClientGroupsStub.find.resolves(
     studies.map((studyName) => ({
       name: studyName,
       id: 'abc',
       path: '/' + studyName,
+      attributes: { maxAccountsCount: 1000 },
     }))
   );
   authClientGroupsStub.listMembers.resolves(
@@ -310,22 +313,48 @@ export function mockGetProfessionalAccountsByStudyName(
 }
 
 export function mockRealmRoleMapping(
-  sandbox: SinonSandbox
+  sandbox: SinonSandbox,
+  authClient: AuthServerClient
 ): SinonStubbedInstance<Groups> {
-  const authClientGroupsStub = sandbox.stub(adminAuthClient.groups);
+  const authClientGroupsStub = sandbox.stub(authClient.groups);
   authClientGroupsStub.find.resolves([
-    { name: 'QTestStudy1', id: 'abc', path: '/QTestStudy1' },
-    { name: 'QTestStudy2', id: 'abc', path: '/QTestStudy2' },
-    { name: 'QTestStudy3', id: 'def', path: '/QTestStudy3' },
-    { name: 'NewQTestStudy1', id: 'cde', path: '/NewQTestStudy1' },
-    { name: 'NewQTestStudy2', id: 'cde', path: '/NewQTestStudy2' },
-    { name: 'NewQTestStudy3', id: 'cde', path: '/NewQTestStudy3' },
+    { name: 'QTestStudy1', id: 'abc', path: '/QTestStudy1', attributes: {} },
+    { name: 'QTestStudy2', id: 'abc', path: '/QTestStudy2', attributes: {} },
+    {
+      name: 'QTestStudy3',
+      id: 'def',
+      path: '/QTestStudy3',
+      attributes: { maxAccountsCount: 1000 },
+    },
+    {
+      name: 'NewQTestStudy1',
+      id: 'cde',
+      path: '/NewQTestStudy1',
+      attributes: {},
+    },
+    {
+      name: 'NewQTestStudy2',
+      id: 'cde',
+      path: '/NewQTestStudy2',
+      attributes: {},
+    },
+    {
+      name: 'NewQTestStudy3',
+      id: 'cde',
+      path: '/NewQTestStudy3',
+      attributes: {},
+    },
+    {
+      name: 'NewQTestStudy4',
+      id: 'cde',
+      path: '/NewQTestStudy4',
+      attributes: { maxAccountsCount: 5000 },
+    },
   ]);
   authClientGroupsStub.listRealmRoleMappings.resolves([
     { id: 'abc', name: 'feature:RequireTotp' },
   ]);
-
-  const authClientRolesStub = sandbox.stub(adminAuthClient.roles);
+  const authClientRolesStub = sandbox.stub(authClient.roles);
   authClientRolesStub.findOneByName.resolves({
     id: 'abc',
     name: 'feature:RequireTotp',

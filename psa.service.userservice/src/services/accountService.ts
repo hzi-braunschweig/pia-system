@@ -19,6 +19,7 @@ import { Role } from '../models/role';
 
 interface AccountInput {
   username: string;
+  email?: string;
   role: Role;
   studies: string[];
   password: string;
@@ -89,6 +90,7 @@ export abstract class AccountService {
       const { id } = await authClient.users.create({
         realm: authClient.realm,
         username: account.username,
+        ...(account.email ? { email: account.email } : {}),
         groups,
         enabled: true,
         credentials: [
@@ -143,10 +145,12 @@ export abstract class AccountService {
 
   protected static async getGroupByNameOrFail(
     groupName: string,
-    authClient: AuthServerClient
+    authClient: AuthServerClient,
+    includeAttributes = false
   ): Promise<SafeGroupRepresentation> {
     const availableGroups = await authClient.groups.find({
       realm: authClient.realm,
+      briefRepresentation: !includeAttributes,
     });
     const groupRepresentation = availableGroups.find(
       (group) => group.name === groupName

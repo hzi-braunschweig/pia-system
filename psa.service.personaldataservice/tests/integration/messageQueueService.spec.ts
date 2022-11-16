@@ -7,11 +7,11 @@
 import util from 'util';
 import { expect } from 'chai';
 
-import { MessageQueueClient } from '@pia/lib-messagequeue';
+import { MessageQueueClient, MessageQueueTopic } from '@pia/lib-messagequeue';
 import { config } from '../../src/config';
 import { Server } from '../../src/server';
 import { db } from '../../src/db';
-import { setup, cleanup } from './messageQueueService.spec.data/setup.helper';
+import { cleanup, setup } from './messageQueueService.spec.data/setup.helper';
 
 const delay = util.promisify(setTimeout);
 const DELAY_TIME = 10;
@@ -33,7 +33,9 @@ describe('message queue service', function () {
 
   it('should delete personal data on proband.deleted', async () => {
     // Arrange
-    const producer = await mqc.createProducer('proband.deleted');
+    const producer = await mqc.createProducer(
+      MessageQueueTopic.PROBAND_DELETED
+    );
 
     // Act
     await producer.publish({

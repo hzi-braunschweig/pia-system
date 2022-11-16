@@ -7,10 +7,10 @@
 <div *ngIf="form">
   <form [formGroup]="form">
     <h1 mat-dialog-title *ngIf="!data.study.pendingStudyChange">
-      {{ 'STUDIES.REQUEST_CHANGES' | translate }}
+      {{ 'STUDY.CHANGE' | translate }}
     </h1>
     <h1 mat-dialog-title *ngIf="data.study.pendingStudyChange">
-      {{ 'STUDIES.CONFIRM_CHANGES' | translate }}
+      {{ 'STUDY.CONFIRM_CHANGES' | translate }}
     </h1>
     <h5 *ngIf="!data.study.pendingStudyChange">
       {{

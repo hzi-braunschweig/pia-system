@@ -50,6 +50,7 @@ import {
   createStudy,
   disableFourEyesOpposition,
   createRandomStudy,
+  configurePseudonymPrefix,
 } from './study.commands';
 import { expectLocation } from './helper.commands';
 
@@ -70,6 +71,7 @@ declare global {
       createStudy: typeof createStudy;
       createRandomStudy: typeof createRandomStudy;
       disableFourEyesOpposition: typeof disableFourEyesOpposition;
+      configurePseudonymPrefix: typeof configurePseudonymPrefix;
       // helper commands
       expectPathname: typeof expectLocation;
     }
@@ -90,5 +92,6 @@ Cypress.Commands.add('deleteProband', deleteProband);
 Cypress.Commands.add('createStudy', createStudy);
 Cypress.Commands.add('createRandomStudy', createRandomStudy);
 Cypress.Commands.add('disableFourEyesOpposition', disableFourEyesOpposition);
+Cypress.Commands.add('configurePseudonymPrefix', configurePseudonymPrefix);
 // helper commands
 Cypress.Commands.add('expectPathname', expectLocation);

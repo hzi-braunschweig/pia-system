@@ -16,10 +16,13 @@
   "actionTokenGeneratedByAdminLifespan": 43200,
   "actionTokenGeneratedByUserLifespan": 600,
   "sslRequired": "all",
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "verifyEmail": false,
+  "editUsernameAllowed": true,
   "rememberMe": true,
   "loginWithEmailAllowed": false,
   "duplicateEmailsAllowed": true,
-  "verifyEmail": false,
   "resetPasswordAllowed": true,
   "bruteForceProtected": true,
   "failureFactor": 10,
@@ -89,7 +92,7 @@
       "alias": "CONFIGURE_TOTP",
       "name": "Configure OTP",
       "providerId": "CONFIGURE_TOTP",
-      "enabled": false,
+      "enabled": true,
       "defaultAction": false,
       "priority": 10,
       "config": {}
@@ -122,9 +125,9 @@
       "config": {}
     },
     {
-      "alias": "VERIFY_EMAIL",
-      "name": "Verify Email",
-      "providerId": "VERIFY_EMAIL",
+      "alias": "VERIFY_EMAIL_WITH_USERNAME_ACKNOWLEDGEMENT",
+      "name": "Verify Email With Username Acknowledgement",
+      "providerId": "VERIFY_EMAIL_WITH_USERNAME_ACKNOWLEDGEMENT",
       "enabled": true,
       "defaultAction": false,
       "priority": 50,
@@ -215,7 +218,10 @@
       "frontchannelLogout": false,
       "protocol": "openid-connect",
       "attributes": {
-        "pkce.code.challenge.method": "S256"
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "+",
+        "tosUri": "[[env:AUTHSERVER_PROBAND_TERMS_OF_SERVICE_URL]]",
+        "policyUri": "[[env:AUTHSERVER_PROBAND_POLICY_URL]]"
       },
       "protocolMappers": [
         {
@@ -271,7 +277,8 @@
       "frontchannelLogout": false,
       "protocol": "openid-connect",
       "attributes": {
-        "pkce.code.challenge.method": "S256"
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "+"
       },
       "protocolMappers": [
         {
@@ -305,24 +312,90 @@
       "fullScopeAllowed": false
     }
   ],
-  "requiredActions": [
+  "registrationFlow": "Study registration",
+  "authenticationFlows": [
     {
-      "alias": "UPDATE_PASSWORD",
-      "name": "Update Password",
-      "providerId": "UPDATE_PASSWORD",
-      "enabled": true,
-      "defaultAction": false,
-      "priority": 30,
-      "config": {}
+      "alias": "Study registration",
+      "description": "",
+      "providerId": "basic-flow",
+      "topLevel": true,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "study-authenticator",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 14,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "registration-page-form",
+          "authenticatorFlow": true,
+          "requirement": "REQUIRED",
+          "priority": 15,
+          "autheticatorFlow": true,
+          "flowAlias": "Study registration form",
+          "userSetupAllowed": false
+        }
+      ]
     },
     {
-      "alias": "VERIFY_EMAIL",
-      "name": "Verify Email",
-      "providerId": "VERIFY_EMAIL",
-      "enabled": false,
-      "defaultAction": false,
-      "priority": 50,
-      "config": {}
+      "alias": "Study registration form",
+      "description": "registration form",
+      "providerId": "form-flow",
+      "topLevel": false,
+      "builtIn": false,
+      "authenticationExecutions": [
+        {
+          "authenticator": "registration-user-creation",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 61,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "pia-study-form-action",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 62,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "pia-terms-of-service-form-action",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 63,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "registration-password-action",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 64,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "registration-profile-action",
+          "authenticatorFlow": false,
+          "requirement": "REQUIRED",
+          "priority": 65,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        },
+        {
+          "authenticator": "registration-recaptcha-action",
+          "authenticatorFlow": false,
+          "requirement": "DISABLED",
+          "priority": 66,
+          "autheticatorFlow": false,
+          "userSetupAllowed": false
+        }
+      ]
     }
   ]
 }

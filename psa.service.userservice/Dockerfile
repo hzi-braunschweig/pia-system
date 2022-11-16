@@ -1,5 +1,6 @@
 FROM node:14.19.0-alpine@sha256:9a2aa545388a135b496bd55cef2be920b96c4526c99c140170e05a8de3fce653 AS base
 RUN apk --update --no-cache add curl tzdata
+RUN apk --update --no-cache add chromium ttf-dejavu ttf-liberation ttf-freefont
 
 USER node
 WORKDIR /usr/src/node-app/
@@ -8,13 +9,16 @@ ARG DIR=.
 COPY $DIR/package*.json ./
 #copy dependencies' package.json
 COPY --chown=node:node psa.lib.service-core/package*.json ../psa.lib.service-core/
+COPY --chown=node:node psa.lib.templatepipeline/package*.json ../psa.lib.templatepipeline/
 COPY --chown=node:node psa.lib.messagequeue/package*.json ../psa.lib.messagequeue/
 COPY --chown=node:node psa.lib.http-clients-internal/package*.json ../psa.lib.http-clients-internal/
 COPY --chown=node:node psa.lib.auth-server-client/package.json ../psa.lib.auth-server-client/
 
-
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 #copy dependencies' source
 COPY --chown=node:node psa.lib.service-core/dist ../psa.lib.service-core/dist
+COPY --chown=node:node psa.lib.templatepipeline/dist ../psa.lib.templatepipeline/dist
 COPY --chown=node:node psa.lib.messagequeue/dist ../psa.lib.messagequeue/dist
 COPY --chown=node:node psa.lib.http-clients-internal/dist ../psa.lib.http-clients-internal/dist
 COPY --chown=node:node psa.lib.auth-server-client/dist ../psa.lib.auth-server-client/dist

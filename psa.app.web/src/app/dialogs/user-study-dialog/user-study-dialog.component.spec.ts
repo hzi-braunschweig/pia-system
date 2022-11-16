@@ -52,7 +52,11 @@ describe('DialogUserStudyAccessComponent', () => {
     ]);
 
     // Build Base Module
-    await MockBuilder(DialogUserStudyAccessComponent, AppModule)
+    await MockBuilder(DialogUserStudyAccessComponent, [
+      AppModule,
+      MatDialogRef,
+      MAT_DIALOG_DATA,
+    ])
       .provide({ provide: MatDialogRef, useValue: dialogRef })
       .provide({
         provide: MAT_DIALOG_DATA,

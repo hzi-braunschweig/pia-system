@@ -30,3 +30,27 @@ export interface KeycloakLoginEvent extends KeycloakGenericEvent {
     response_mode: string;
   };
 }
+
+export interface KeycloakVerifyEmailEvent extends KeycloakGenericEvent {
+  details: {
+    auth_method: string;
+    response_type: string;
+    remember_me: string;
+    redirect_uri: string;
+    consent: string;
+    code_id: string;
+    username: string;
+    response_mode: string;
+  };
+}
+
+export interface KeycloakRegisterEvent extends KeycloakGenericEvent {
+  details: {
+    auth_method: string;
+    register_method: string;
+    redirect_uri: string;
+    code_id: string;
+    email: string;
+    username: string;
+  };
+}

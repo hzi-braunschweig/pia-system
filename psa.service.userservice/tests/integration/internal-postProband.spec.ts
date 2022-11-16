@@ -20,6 +20,7 @@ import {
 import { Response } from '@pia/lib-service-core';
 import { probandAuthClient } from '../../src/clients/authServerClient';
 import { Users } from '@keycloak/keycloak-admin-client/lib/resources/users';
+import { ProbandOrigin } from '@pia-system/lib-http-clients-internal';
 
 chai.use(chaiHttp);
 chai.use(sinonChai);
@@ -108,7 +109,7 @@ describe('Internal: post proband', function () {
 
     it('should return 428 if study does not exist in DB', async function () {
       // Arrange
-      const body = createProbandRequest();
+      const body = createProbandRequest({ pseudonym: 'qtest-proband3' });
       const studyName = 'NoStudy';
 
       // Act
@@ -124,7 +125,7 @@ describe('Internal: post proband', function () {
 
     it('should return 428 if study does not exist in authserver', async function () {
       // Arrange
-      const body = createProbandRequest();
+      const body = createProbandRequest({ pseudonym: 'qtest-proband3' });
       const studyName = 'QTestStudy1';
       authClientGroupsStub.resolves([]);
 
@@ -141,7 +142,7 @@ describe('Internal: post proband', function () {
 
     it('should return 500 if role does not exist in authserver', async function () {
       // Arrange
-      const body = createProbandRequest();
+      const body = createProbandRequest({ pseudonym: 'qtest-proband3' });
       const studyName = 'QTestStudy1';
       authClientRolesStub.resolves(undefined);
 
@@ -156,9 +157,9 @@ describe('Internal: post proband', function () {
       expect(authClientUsersStub.create.notCalled).to.be.true;
     });
 
-    it('should create a user with a random password', async () => {
+    it('should return 200 and create a proband with a random password', async () => {
       // Arrange
-      const body = createProbandRequest();
+      const body = createProbandRequest({ pseudonym: 'qtest-proband3' });
       const studyName = 'QTestStudy1';
 
       // Act
@@ -193,9 +194,12 @@ describe('Internal: post proband', function () {
       });
     });
 
-    it('should create the proband and return 200', async () => {
+    it('should return 200 and create the proband', async () => {
       // Arrange
-      const body = createProbandRequest({ ids: 'doesnotexist' });
+      const body = createProbandRequest({
+        pseudonym: 'qtest-proband3',
+        ids: 'doesnotexist',
+      });
       const studyName = 'QTestStudy1';
 
       // Act
@@ -210,7 +214,8 @@ describe('Internal: post proband', function () {
                  compliance_bloodsamples,
                  study_center,
                  examination_wave,
-                 ids
+                 ids,
+                 origin
           FROM probands WHERE pseudonym=$(pseudonym)`,
         body
       );
@@ -224,6 +229,7 @@ describe('Internal: post proband', function () {
         study_center: null,
         examination_wave: null,
         ids: 'doesnotexist',
+        origin: ProbandOrigin.INVESTIGATOR,
       });
 
       expect(authClientUsersStub.create).to.be.calledOnceWith({
@@ -246,14 +252,65 @@ describe('Internal: post proband', function () {
       });
     });
 
+    it('should return 200 and create proband with random pseudonym', async () => {
+      // Arrange
+      const body = createProbandRequest();
+      const studyName = 'QTestStudy1';
+
+      // Act
+      const result: Response<CreateProbandResponse> = await chai
+        .request(internalApiAddress)
+        .post(`/user/studies/${studyName}/probands`)
+        .send(body);
+
+      expect(result, result.text).to.have.status(StatusCodes.OK);
+      expect(result.body.password).to.be.a('string');
+      expect(result.body.password.length).to.equal(config.userPasswordLength);
+      expect(result.body.pseudonym).to.match(/test-\d{8}/);
+
+      expect(authClientUsersStub.create).to.be.calledOnceWith({
+        realm: 'pia-proband-realm',
+        username: result.body.pseudonym,
+        groups: ['/QTestStudy1'],
+        enabled: true,
+        credentials: [
+          {
+            type: 'password',
+            value: result.body.password,
+            temporary: true,
+          },
+        ],
+      });
+
+      expect(authClientUsersStub.addRealmRoleMappings).to.be.calledOnceWith({
+        id: '1234',
+        realm: 'pia-proband-realm',
+        roles: [{ id: 'abc-123', name: 'Proband' }],
+      });
+    });
+
+    it('should return 428 when all possible pseudonyms have already been assigned', async () => {
+      // Arrange
+      const body = createProbandRequest();
+      const studyName = 'QTestStudyLimit';
+
+      // Act
+      const result: Response<CreateProbandResponse> = await chai
+        .request(internalApiAddress)
+        .post(`/user/studies/${studyName}/probands`)
+        .send(body);
+
+      expect(result, result.text).to.have.status(StatusCodes.CONFLICT);
+    });
+
     function createProbandRequest(
       proband: Partial<CreateProbandRequest> = {}
     ): CreateProbandRequest {
       return {
-        pseudonym: 'qtest-proband3',
         complianceLabresults: false,
         complianceSamples: false,
         complianceBloodsamples: false,
+        origin: ProbandOrigin.INVESTIGATOR,
         ...proband,
       };
     }

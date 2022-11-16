@@ -6,6 +6,7 @@
 
 import * as util from 'util';
 import * as amqp from 'amqplib';
+import { MessageQueueTopic } from './messageQueueTopics';
 
 const delay = util.promisify(setTimeout);
 
@@ -15,7 +16,7 @@ export class MessageQueueClientHelper {
   /**
    * A helper function that can be used to obtain the
    * specific name of a queue.
-   * Especially helpfull in integration tests.
+   * Especially helpful in integration tests.
    */
   public static getQueueName(topic: string, serviceName: string): string {
     return `${topic}@${serviceName}`;
@@ -24,10 +25,10 @@ export class MessageQueueClientHelper {
   /**
    * A helper function that can be used to obtain the
    * specific name of a dead letter queue.
-   * Especially helpfull in integration tests.
+   * Especially helpful in integration tests.
    */
   public static getDeadLetterQueueName(
-    topic: string,
+    topic: MessageQueueTopic,
     serviceName: string
   ): string {
     return `${topic}@${serviceName}-dead-letter`;

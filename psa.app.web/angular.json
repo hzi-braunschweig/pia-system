@@ -26,7 +26,15 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
-            "allowedCommonJsDependencies": ["jspdf-autotable", "keycloak-js"],
+            "allowedCommonJsDependencies": [
+              "base64-js",
+              "jspdf",
+              "jspdf-autotable",
+              "js-sha256",
+              "keycloak-js",
+              "luxon",
+              "remove-markdown"
+            ],
             "assets": [
               "src/favicon.png",
               "src/assets",
@@ -196,6 +204,6 @@
   },
   "defaultProject": "psa",
   "cli": {
-    "defaultCollection": "@angular-eslint/schematics"
+    "schematicCollections": ["@angular-eslint/schematics"]
   }
 }

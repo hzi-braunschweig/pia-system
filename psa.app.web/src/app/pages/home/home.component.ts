@@ -5,7 +5,7 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 import { NotificationService } from 'src/app/psa.app.core/providers/notification-service/notification-service';
@@ -29,19 +29,23 @@ export class HomeComponent implements OnInit {
     private readonly activatedRoute: ActivatedRoute,
     private readonly notificationService: NotificationService,
     private readonly questionnaireService: QuestionnaireService,
-    private readonly notification: NotificationPresenter
-  ) {}
+    private readonly notification: NotificationPresenter,
+    private readonly router: Router
+  ) {
+    // this "redirect" is needed as a fallback as long as probands and professionals share the same app
+    if (this.user.isProfessional()) {
+      this.router.navigate(['study']);
+    }
+  }
 
   public async ngOnInit(): Promise<void> {
     this.activatedRoute.queryParams
       .pipe(filter((params) => params.notification_id))
       .subscribe((params) => this.presentNotification(params.notification_id));
 
-    if (this.user.isProband()) {
-      this.welcomeText = (
-        await this.questionnaireService.getStudyWelcomeText(this.user.study)
-      )?.welcome_text;
-    }
+    this.welcomeText = (
+      await this.questionnaireService.getStudyWelcomeText(this.user.study)
+    )?.welcome_text;
   }
 
   public async presentNotification(notificationId: string): Promise<void> {

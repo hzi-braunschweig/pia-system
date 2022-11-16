@@ -4,19 +4,25 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { MessageQueueClient, Producer } from '@pia/lib-messagequeue';
+import {
+  MessageQueueClient,
+  MessageQueueTopic,
+  Producer,
+} from '@pia/lib-messagequeue';
 import { config } from '../config';
-import { ProbandDeletionType } from './probandService';
+import { ProbandDeletionType, ProbandService } from './probandService';
+import { MessagePayloadProbandRegistered } from '../models/messagePayloadProbandRegistered';
+import { StudyService } from './studyService';
 
 interface ProbandDeletedMessage extends Message {
   deletionType: ProbandDeletionType;
 }
 
-interface Message {
+export interface Message {
   pseudonym: string;
 }
 
-class MessageQueueService extends MessageQueueClient {
+export class MessageQueueService extends MessageQueueClient {
   private probandDelete?: Producer<ProbandDeletedMessage>;
   private probandDeactivated?: Producer<Message>;
   private probandCreated?: Producer<Message>;
@@ -24,12 +30,32 @@ class MessageQueueService extends MessageQueueClient {
   public async connect(): Promise<void> {
     await super.connect();
     this.probandDelete = await this.createProducer<ProbandDeletedMessage>(
-      'proband.deleted'
+      MessageQueueTopic.PROBAND_DELETED
     );
     this.probandDeactivated = await this.createProducer<Message>(
-      'proband.deactivated'
+      MessageQueueTopic.PROBAND_DEACTIVATED
     );
-    this.probandCreated = await this.createProducer<Message>('proband.created');
+    this.probandCreated = await this.createProducer<Message>(
+      MessageQueueTopic.PROBAND_CREATED
+    );
+
+    await this.createConsumer(
+      MessageQueueTopic.PROBAND_EMAIL_VERIFIED,
+      async (message: Message) =>
+        await this.onProbandEmailVerified(message.pseudonym)
+    );
+
+    await this.createConsumer(
+      MessageQueueTopic.PROBAND_REGISTERED,
+      async (message: MessagePayloadProbandRegistered) => {
+        await ProbandService.createProbandForRegistration(message.username);
+      }
+    );
+  }
+
+  public async onProbandEmailVerified(pseudonym: string): Promise<void> {
+    const email = await StudyService.saveVerifiedEmailAddress(pseudonym);
+    await StudyService.sendWelcomeMail(pseudonym, email);
   }
 
   public async sendProbandDelete(

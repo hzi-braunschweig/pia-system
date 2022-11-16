@@ -1,0 +1,42 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<h2 mat-dialog-title data-unit="dialog-title">
+  {{ data.dialogTitle | translate }}
+</h2>
+<mat-dialog-content>
+  <mat-form-field appearance="fill" class="markdown-editor-subject">
+    <mat-label>{{ 'GENERAL.MAIL_SUBJECT' | translate }}</mat-label>
+    <input
+      matInput
+      type="text"
+      [(ngModel)]="subject"
+      data-unit="markdown-editor-subject-input"
+      data-e2e="markdown-editor-subject-input"
+    />
+  </mat-form-field>
+
+  <button mat-flat-button color="primary" (click)="insertPseudonymTag()">
+    {{ 'GENERAL.ADD_PSEUDONYM_TAG' | translate }}
+  </button>
+
+  <app-markdown-editor [(ngModel)]="text"></app-markdown-editor>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button
+    mat-button
+    color="primary"
+    data-unit="publish-text-button"
+    data-e2e="publish-text-button"
+    [disabled]="!hasContentChanged()"
+    (click)="publish()"
+  >
+    {{ 'GENERAL.PUBLISH' | translate }}
+  </button>
+  <button mat-button [mat-dialog-close]="null">
+    {{ 'GENERAL.CANCEL' | translate }}
+  </button>
+</mat-dialog-actions>

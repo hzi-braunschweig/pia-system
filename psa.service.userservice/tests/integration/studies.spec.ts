@@ -7,6 +7,7 @@
 
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
+import sinonChai from 'sinon-chai';
 import sinon, { SinonStubbedInstance } from 'sinon';
 import { StatusCodes } from 'http-status-codes';
 
@@ -19,10 +20,18 @@ import {
   adminAuthClient,
   probandAuthClient,
 } from '../../src/clients/authServerClient';
-import { mockRealmRoleMapping } from './accountServiceRequestMock.helper.spec';
+import {
+  mockGetProbandAccountsByStudyName,
+  mockRealmRoleMapping,
+} from './accountServiceRequestMock.helper.spec';
 import { Groups } from '@keycloak/keycloak-admin-client/lib/resources/groups';
+import { StudyWelcomeMailTemplateRequestDto } from '../../src/models/studyWelcomeEmail';
+import { getRepository } from 'typeorm';
+import { StudyWelcomeMail } from '../../src/entities/studyWelcomeMail';
+import { defaultStudyWelcomeMail } from '../../src/services/studyWelcomeMail/defaultStudyWelcomeMail';
 
 chai.use(chaiHttp);
+chai.use(sinonChai);
 
 const apiAddress = `http://localhost:${config.public.port}`;
 
@@ -57,12 +66,6 @@ const pmHeader = AuthTokenMockBuilder.createAuthHeader({
   studies: ['QTestStudy1'],
 });
 
-const studyWelcomeText =
-  '# Welcome to our study! We are happy to have you with us!';
-
-const anotherStudyWelcomeText =
-  '# Your are welcome to participate in our study!';
-
 describe('/studies', function () {
   const sandbox = sinon.createSandbox();
 
@@ -93,7 +96,19 @@ describe('/studies', function () {
       await cleanup();
     });
 
-    beforeEach(() => mockRealmRoleMapping(sandbox));
+    beforeEach(() => {
+      mockRealmRoleMapping(sandbox, adminAuthClient);
+      const authClientGroupsStub = mockRealmRoleMapping(
+        sandbox,
+        probandAuthClient
+      );
+      mockGetProbandAccountsByStudyName(
+        sandbox,
+        ['QTestStudy1', 'QTestStudy2', 'QTestStudy3'],
+        ['Testproband'],
+        authClientGroupsStub
+      );
+    });
 
     it('should return HTTP 403 if trying as Proband', async function () {
       const result = await chai
@@ -203,7 +218,19 @@ describe('/studies', function () {
       await cleanup();
     });
 
-    beforeEach(() => mockRealmRoleMapping(sandbox));
+    beforeEach(() => {
+      mockRealmRoleMapping(sandbox, adminAuthClient);
+      const authClientGroupsStub = mockRealmRoleMapping(
+        sandbox,
+        probandAuthClient
+      );
+      mockGetProbandAccountsByStudyName(
+        sandbox,
+        ['QTestStudy1', 'QTestStudy2', 'QTestStudy3'],
+        ['Testproband'],
+        authClientGroupsStub
+      );
+    });
 
     it('should return HTTP 403 if the Forscher has no access to study', async function () {
       const result = await chai
@@ -287,12 +314,36 @@ describe('/studies', function () {
   });
 
   describe('POST /admin/studies', function () {
-    let authClientGroupsStub: SinonStubbedInstance<Groups>;
+    let adminAuthClientGroupsStub: SinonStubbedInstance<Groups>;
+    let probandAuthClientGroupsStub: SinonStubbedInstance<Groups>;
 
     beforeEach(async () => {
-      authClientGroupsStub = mockRealmRoleMapping(sandbox);
-      authClientGroupsStub.create.resolves();
-      sandbox.stub(probandAuthClient.groups).create.resolves();
+      probandAuthClientGroupsStub = mockRealmRoleMapping(
+        sandbox,
+        probandAuthClient
+      );
+      mockGetProbandAccountsByStudyName(
+        sandbox,
+        [
+          'QTestStudy1',
+          'QTestStudy2',
+          'QTestStudy3',
+          'NewQTestStudy1',
+          'NewQTestStudy2',
+          'NewQTestStudy3',
+          'NewQTestStudy4',
+        ],
+        ['Testproband'],
+        probandAuthClientGroupsStub
+      );
+      probandAuthClientGroupsStub.create.resolves();
+
+      adminAuthClientGroupsStub = mockRealmRoleMapping(
+        sandbox,
+        adminAuthClient
+      );
+      adminAuthClientGroupsStub.update.resolves();
+      adminAuthClientGroupsStub.create.resolves();
       await setup();
     });
 
@@ -322,6 +373,7 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: 'hub@pia.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -337,6 +389,7 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: 'hub@pia.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -352,6 +405,7 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: 'hub@pia.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -367,6 +421,7 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: 'hub@pia.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.NOT_FOUND);
     });
@@ -382,6 +437,58 @@ describe('/studies', function () {
           pm_email: 'pmpmpm',
           hub_email: 'hub@pia.de',
           has_required_totp: true,
+          has_open_self_registration: false,
+        });
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return HTTP 400 if max_allowed_accounts_count exceeds the maximum', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/studies')
+        .set(sysadminHeader)
+        .send({
+          name: 'NewQTestStudy1',
+          description: 'QTestStudy1 Beschreibung',
+          pm_email: 'pm@pia.de',
+          hub_email: 'hub@pia.de',
+          has_required_totp: true,
+          has_open_self_registration: true,
+          max_allowed_accounts_count: 10000001,
+        });
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return HTTP 400 if max_allowed_accounts_count is negative', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/studies')
+        .set(sysadminHeader)
+        .send({
+          name: 'NewQTestStudy1',
+          description: 'QTestStudy1 Beschreibung',
+          pm_email: 'pm@pia.de',
+          hub_email: 'hub@pia.de',
+          has_required_totp: true,
+          has_open_self_registration: true,
+          max_allowed_accounts_count: -1,
+        });
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return HTTP 400 if max_allowed_accounts_count is set for closed study', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/studies')
+        .set(sysadminHeader)
+        .send({
+          name: 'NewQTestStudy1',
+          description: 'QTestStudy1 Beschreibung',
+          pm_email: 'pm@pia.de',
+          hub_email: 'hub@pia.de',
+          has_required_totp: true,
+          has_open_self_registration: false,
+          max_allowed_accounts_count: 1000,
         });
       expect(result).to.have.status(StatusCodes.BAD_REQUEST);
     });
@@ -397,6 +504,7 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: 'hub@pia.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body.name).to.equal('NewQTestStudy1');
@@ -420,7 +528,7 @@ describe('/studies', function () {
     });
 
     it('should return HTTP 200 and create the study for SysAdmin with empty pm email', async function () {
-      authClientGroupsStub.listRealmRoleMappings.resolves([]);
+      adminAuthClientGroupsStub.listRealmRoleMappings.resolves([]);
 
       const result = await chai
         .request(apiAddress)
@@ -432,6 +540,7 @@ describe('/studies', function () {
           pm_email: null,
           hub_email: 'hub@pia.de',
           has_required_totp: false,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body.name).to.equal('NewQTestStudy2');
@@ -466,6 +575,7 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: null,
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body.name).to.equal('NewQTestStudy3');
@@ -500,25 +610,75 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: null,
           has_required_totp: true,
+          has_open_self_registration: false,
         });
 
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body.has_required_totp).to.equal(true);
       expect(
-        authClientGroupsStub.addRealmRoleMappings.calledOnceWith({
+        adminAuthClientGroupsStub.addRealmRoleMappings.calledOnceWith({
           id: 'cde',
           roles: [{ id: 'abc', name: 'feature:RequireTotp' }],
           realm: adminAuthClient.realm,
         })
       ).to.be.true;
     });
+
+    it('should create open study by setting "maxAccountsCount" attribute for study group in authserver', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/studies')
+        .set(sysadminHeader)
+        .send({
+          name: 'NewQTestStudy4',
+          description: 'NewQTestStudy4 Beschreibung',
+          pm_email: 'pm@pia2.de',
+          hub_email: 'hub@pia2.de',
+          has_required_totp: true,
+          has_open_self_registration: true,
+          max_allowed_accounts_count: 1000,
+        });
+
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(result.body.proband_realm_group_id).to.equal('abc');
+      expect(result.body.has_required_totp).to.equal(true);
+      expect(result.body.has_open_self_registration).to.equal(true);
+      expect(result.body.max_allowed_accounts_count).to.equal(1000);
+      expect(result.body.accounts_count).to.equal(1);
+      expect(probandAuthClientGroupsStub.update).to.have.been.calledOnceWith(
+        {
+          id: 'abc',
+          realm: probandAuthClient.realm,
+        },
+        {
+          name: 'NewQTestStudy4',
+          id: 'abc',
+          path: '/NewQTestStudy4',
+          attributes: { maxAccountsCount: [1000] },
+        }
+      );
+    });
   });
 
   describe('PUT /admin/studies/{studyName}', function () {
-    let authClientGroupsStub: SinonStubbedInstance<Groups>;
+    let adminAuthClientGroupsStub: SinonStubbedInstance<Groups>;
+    let probandAuthClientGroupsStub: SinonStubbedInstance<Groups>;
 
     beforeEach(async () => {
-      authClientGroupsStub = mockRealmRoleMapping(sandbox);
+      adminAuthClientGroupsStub = mockRealmRoleMapping(
+        sandbox,
+        adminAuthClient
+      );
+      probandAuthClientGroupsStub = mockRealmRoleMapping(
+        sandbox,
+        probandAuthClient
+      );
+      mockGetProbandAccountsByStudyName(
+        sandbox,
+        ['QTestStudy1', 'QTestStudy2', 'QTestStudy3'],
+        ['Testproband'],
+        probandAuthClientGroupsStub
+      );
       await setup();
     });
 
@@ -546,6 +706,7 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: 'hub@pia.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.NOT_FOUND);
     });
@@ -561,6 +722,7 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: 'hub@pia.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -576,6 +738,7 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: 'hub@pia.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -591,6 +754,7 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: 'hub@pia.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -606,6 +770,7 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: 'hub@pia.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
@@ -621,6 +786,7 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: 'hub@pia.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.NOT_FOUND);
     });
@@ -636,8 +802,43 @@ describe('/studies', function () {
           pm_email: 'pm@pia.de',
           hub_email: 'hub@pia.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.NOT_FOUND);
+    });
+
+    it('should return HTTP 400 if max_allowed_accounts_count exceeds the maximum based on existing study', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .put('/admin/studies/QTestStudy3')
+        .set(sysadminHeader)
+        .send({
+          name: 'QTestStudy3',
+          description: 'QTestStudy3 Beschreibung',
+          pm_email: 'pm@pia.de',
+          hub_email: 'hub@pia.de',
+          has_required_totp: true,
+          has_open_self_registration: true,
+          max_allowed_accounts_count: 2000,
+        });
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return HTTP 400 if max_allowed_accounts_count is lower than its current value', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .put('/admin/studies/QTestStudy3')
+        .set(sysadminHeader)
+        .send({
+          name: 'QTestStudy3',
+          description: 'QTestStudy3 Beschreibung',
+          pm_email: 'pm@pia.de',
+          hub_email: 'hub@pia.de',
+          has_required_totp: true,
+          has_open_self_registration: true,
+          max_allowed_accounts_count: 500,
+        });
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
     });
 
     it('should return HTTP 200 and change only fields a sysadmin is allowed to change', async function () {
@@ -651,6 +852,7 @@ describe('/studies', function () {
           pm_email: 'pm@pia2.de',
           hub_email: 'hub@pia2.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body.name).to.equal('QTestStudy2');
@@ -697,21 +899,63 @@ describe('/studies', function () {
           pm_email: 'pm@pia2.de',
           hub_email: 'hub@pia2.de',
           has_required_totp: true,
+          has_open_self_registration: false,
         });
 
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body.has_required_totp).to.equal(true);
       expect(
-        authClientGroupsStub.addRealmRoleMappings.calledOnceWith({
+        adminAuthClientGroupsStub.addRealmRoleMappings.calledOnceWith({
           id: 'abc',
           roles: [{ id: 'abc', name: 'feature:RequireTotp' }],
           realm: adminAuthClient.realm,
         })
       ).to.be.true;
     });
+
+    it('should mark study as open by setting "maxAccountsCount" attribute for study group in authserver', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .put('/admin/studies/QTestStudy3')
+        .set(sysadminHeader)
+        .send({
+          name: 'QTestStudy3',
+          description: 'QTestStudy3 Beschreibung Changed3',
+          pm_email: 'pm@pia2.de',
+          hub_email: 'hub@pia2.de',
+          has_required_totp: true,
+          has_open_self_registration: true,
+          max_allowed_accounts_count: 1000,
+        });
+
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(result.body.proband_realm_group_id).to.equal('abc');
+      expect(result.body.has_required_totp).to.equal(true);
+      expect(result.body.has_open_self_registration).to.equal(true);
+      expect(result.body.max_allowed_accounts_count).to.equal(1000);
+      expect(result.body.accounts_count).to.equal(1);
+      expect(probandAuthClientGroupsStub.update).to.have.been.calledOnceWith(
+        {
+          id: 'abc',
+          realm: probandAuthClient.realm,
+        },
+        {
+          name: 'QTestStudy3',
+          id: 'abc',
+          path: '/QTestStudy3',
+          attributes: { maxAccountsCount: [1000] },
+        }
+      );
+    });
   });
 
   describe('PUT /admin/studies/{studyName}/welcome-text', function () {
+    const studyWelcomeText =
+      '# Welcome to our study! We are happy to have you with us!';
+
+    const anotherStudyWelcomeText =
+      '# Your are welcome to participate in our study!';
+
     beforeEach(async () => {
       await setup();
     });
@@ -813,6 +1057,9 @@ describe('/studies', function () {
   });
 
   describe('GET /admin/studies/{studyName}/welcome-text', function () {
+    const studyWelcomeText =
+      '# Welcome to our study! We are happy to have you with us!';
+
     before(async () => {
       await setup();
     });
@@ -862,6 +1109,167 @@ describe('/studies', function () {
       const result = await chai
         .request(apiAddress)
         .get('/admin/studies/QTestStudy1/welcome-text')
+        .set(sysadminHeader)
+        .send();
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+  });
+
+  describe('PUT /admin/studies/{studyName}/welcome-mail', function () {
+    const studyWelcomeMail: StudyWelcomeMailTemplateRequestDto = {
+      subject: 'Welcome to our Teststudy',
+      markdownText: '# Welcome to our _Teststudy_',
+    };
+
+    beforeEach(async () => {
+      await setup();
+    });
+
+    afterEach(async () => {
+      await cleanup();
+    });
+
+    it('should return HTTP 200 if Forscher tries', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .put('/admin/studies/QTestStudy1/welcome-mail')
+        .set(forscherHeader)
+        .send(studyWelcomeMail);
+
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(result.body.subject).to.equal(studyWelcomeMail.subject);
+      expect(result.body.markdownText).to.equal(studyWelcomeMail.markdownText);
+    });
+
+    it('should return HTTP 403 if Forscher tries and has no access to study', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .put('/admin/studies/QTestStudy2/welcome-mail')
+        .set(forscherHeader)
+        .send(studyWelcomeMail);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return HTTP 403 if Proband tries', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .put('/admin/studies/QTestStudy1/welcome-mail')
+        .set(probandHeader1)
+        .send(studyWelcomeMail);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return HTTP 403 if Untersuchungsteam tries', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .put('/admin/studies/QTestStudy1/welcome-mail')
+        .set(utHeader)
+        .send(studyWelcomeMail);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return HTTP 403 if Probandmanager tries', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .put('/admin/studies/QTestStudy1/welcome-mail')
+        .set(pmHeader)
+        .send(studyWelcomeMail);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return HTTP 403 if SysAdmin tries', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .put('/admin/studies/QTestStudy1/welcome-mail')
+        .set(sysadminHeader)
+        .send(studyWelcomeMail);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+  });
+
+  describe('GET /admin/studies/{studyName}/welcome-mail', function () {
+    before(async () => {
+      await setup();
+    });
+
+    after(async () => {
+      await cleanup();
+    });
+
+    it('should return default welcome mail', async function () {
+      // Arrange
+
+      // Act
+      const result = await chai
+        .request(apiAddress)
+        .get('/admin/studies/QTestStudy1/welcome-mail')
+        .set(forscherHeader)
+        .send();
+
+      // Assert
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(result.body).to.deep.equal({
+        studyName: 'QTestStudy1',
+        subject: defaultStudyWelcomeMail.subject,
+        markdownText: defaultStudyWelcomeMail.markdownText,
+      });
+    });
+
+    it('should return HTTP 200 if Forscher tries', async function () {
+      // Arrange
+      await getRepository(StudyWelcomeMail).save({
+        studyName: 'QTestStudy1',
+        subject: 'Welcome to our Teststudy',
+        markdownText: '# Welcome to our _Teststudy_',
+      });
+
+      // Act
+      const result = await chai
+        .request(apiAddress)
+        .get('/admin/studies/QTestStudy1/welcome-mail')
+        .set(forscherHeader)
+        .send();
+
+      // Assert
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(result.body).to.deep.equal({
+        studyName: 'QTestStudy1',
+        subject: 'Welcome to our Teststudy',
+        markdownText: '# Welcome to our _Teststudy_',
+      });
+    });
+
+    it('should return HTTP 403 if Forscher tries and has no access study', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .get('/admin/studies/QTestStudy2/welcome-mail')
+        .set(forscherHeader)
+        .send();
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return HTTP 403 if Untersuchungsteam tries', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .get('/admin/studies/QTestStudy1/welcome-mail')
+        .set(utHeader)
+        .send();
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return HTTP 403 if Probandmanager tries', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .get('/admin/studies/QTestStudy1/welcome-mail')
+        .set(pmHeader)
+        .send();
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return HTTP 403 if SysAdmin tries', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .get('/admin/studies/QTestStudy1/welcome-mail')
         .set(sysadminHeader)
         .send();
       expect(result).to.have.status(StatusCodes.FORBIDDEN);

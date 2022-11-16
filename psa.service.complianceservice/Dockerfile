@@ -11,8 +11,8 @@ COPY $DIR/package*.json ./
 COPY --chown=node:node psa.lib.service-core/package*.json ../psa.lib.service-core/
 COPY --chown=node:node psa.lib.templatepipeline/package*.json ../psa.lib.templatepipeline/
 COPY --chown=node:node psa.lib.messagequeue/package*.json ../psa.lib.messagequeue/
-COPY --chown=node:node psa.lib.hapi-i18n-plugin/package*.json ../psa.lib.hapi-i18n-plugin/
 COPY --chown=node:node psa.lib.http-clients-internal/package*.json ../psa.lib.http-clients-internal/
+COPY --chown=node:node psa.lib.hapi-i18n-plugin/package*.json ../psa.lib.hapi-i18n-plugin/
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
@@ -20,8 +20,8 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 COPY --chown=node:node psa.lib.service-core/dist ../psa.lib.service-core/dist
 COPY --chown=node:node psa.lib.templatepipeline/dist ../psa.lib.templatepipeline/dist
 COPY --chown=node:node psa.lib.messagequeue/dist ../psa.lib.messagequeue/dist
-COPY --chown=node:node psa.lib.hapi-i18n-plugin/dist ../psa.lib.hapi-i18n-plugin/dist
 COPY --chown=node:node psa.lib.http-clients-internal/dist ../psa.lib.http-clients-internal/dist
+COPY --chown=node:node psa.lib.hapi-i18n-plugin/dist ../psa.lib.hapi-i18n-plugin/dist
 
 ################################################################
 

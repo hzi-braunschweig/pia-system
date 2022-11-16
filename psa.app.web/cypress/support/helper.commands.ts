@@ -13,3 +13,7 @@ export function expectLocation(pathname: string) {
 export function getRandomId(): number {
   return Math.floor(Math.random() * 10000000000);
 }
+
+export function createRandomMailAddress(prefix: string): string {
+  return `${prefix}-${getRandomId()}@example.com`;
+}

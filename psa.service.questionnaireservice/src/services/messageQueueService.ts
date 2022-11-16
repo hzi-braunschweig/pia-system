@@ -5,7 +5,11 @@
  */
 
 import { config } from '../config';
-import { MessageQueueClient, Producer } from '@pia/lib-messagequeue';
+import {
+  MessageQueueClient,
+  MessageQueueTopic,
+  Producer,
+} from '@pia/lib-messagequeue';
 import { getRepository } from 'typeorm';
 import { QuestionnaireInstance } from '../entities/questionnaireInstance';
 import {
@@ -29,7 +33,7 @@ export class MessageQueueService extends MessageQueueClient {
     await super.connect();
 
     await this.createConsumer(
-      'proband.deactivated',
+      MessageQueueTopic.PROBAND_DEACTIVATED,
       async (message: MessagePayloadProbandDeactivated) => {
         await MessageQueueService.onUserDeactivated(message);
       }
@@ -37,7 +41,7 @@ export class MessageQueueService extends MessageQueueClient {
 
     this.questionnaireinstanceReleasedProducer =
       await this.createProducer<MessagePayloadQuestionnaireInstanceReleased>(
-        'questionnaire_instance.released'
+        MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED
       );
   }
 

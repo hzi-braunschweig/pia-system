@@ -18,7 +18,10 @@ describe('DialogDeleteAccountSuccessComponent', () => {
   let fixture: ComponentFixture<DialogDeleteAccountSuccessComponent>;
 
   beforeEach(async () => {
-    await MockBuilder(DialogDeleteAccountSuccessComponent, AppModule)
+    await MockBuilder(DialogDeleteAccountSuccessComponent, [
+      AppModule,
+      MAT_DIALOG_DATA,
+    ])
       .mock(MAT_DIALOG_DATA, true)
       .mock(TranslatePipe, (value) => value);
   });

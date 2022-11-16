@@ -14,6 +14,7 @@ import * as util from 'util';
 import { MessageQueueClient } from '../../src/messageQueueClient';
 import { MessageQueueClientHelper } from '../../src/messageQueueClientHelper';
 import { MessageQueueTestUtils } from '../../src/messageQueueTestUtils';
+import { MessageQueueTopic } from '../../src';
 
 const delay = util.promisify(setTimeout);
 
@@ -27,8 +28,8 @@ const password = process.env['MESSAGEQUEUE_APP_PASSWORD'] ?? 'app';
 
 const serviceName1 = 'test-service-a';
 const serviceName2 = 'test-service-b';
-const topic1 = 'test-topic1';
-const topic2 = 'test-topic2';
+const topic1 = MessageQueueTopic.PROBAND_CREATED;
+const topic2 = MessageQueueTopic.PROBAND_DELETED;
 
 const DELAY_TIME = 10;
 

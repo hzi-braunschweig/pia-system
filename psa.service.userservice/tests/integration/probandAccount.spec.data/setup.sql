@@ -7,16 +7,8 @@
 INSERT INTO studies (name)
 VALUES ('QTestStudy1');
 
-INSERT INTO accounts (username, password, role)
-VALUES ('qtest-proband1', '', 'Proband'),
-       ('researcher1@example.com', '', 'Forscher'),
-       ('investigationteam1@example.com', '', 'Untersuchungsteam'),
-       ('investigationteam2@example.com', '', 'Untersuchungsteam'),
-       ('qtest-sysadmin1', '', 'SysAdmin'),
-       ('pm1@example.com', '', 'ProbandenManager');
-
-INSERT INTO probands (pseudonym, ids, study)
-VALUES ('qtest-proband1', NULL, 'QTestStudy1');
+INSERT INTO probands (pseudonym, ids, study, origin)
+VALUES ('qtest-proband1', NULL, 'QTestStudy1', 'investigator');
 
 INSERT INTO lab_results (id, user_id, order_id, status, remark, new_samples_sent, performing_doctor, study_status)
 VALUES ('QTEST_11111', 'qtest-proband1', 1, 'analyzed', 'my remark comment', FALSE, 'dr who', 'active'),

@@ -298,7 +298,7 @@
       "name": "PIA Admin App",
       "rootUrl": "[[env:WEBAPP_URL]]/admin",
       "adminUrl": "",
-      "baseUrl": "[[env:WEBAPP_URL]]/",
+      "baseUrl": "[[env:WEBAPP_URL]]/admin",
       "surrogateAuthRequired": false,
       "enabled": true,
       "alwaysDisplayInConsole": false,
@@ -319,7 +319,8 @@
       "frontchannelLogout": false,
       "protocol": "openid-connect",
       "attributes": {
-        "pkce.code.challenge.method": "S256"
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "+"
       },
       "protocolMappers": [
         {

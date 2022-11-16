@@ -16,9 +16,12 @@ describe('RemarkDialogComponent', () => {
 
   beforeEach(async () => {
     // Build Base Module
-    await MockBuilder(RemarkDialogComponent, AppModule).mock(MAT_DIALOG_DATA, {
-      remark: 'some remark',
-    });
+    await MockBuilder(RemarkDialogComponent, [AppModule, MAT_DIALOG_DATA]).mock(
+      MAT_DIALOG_DATA,
+      {
+        remark: 'some remark',
+      }
+    );
   });
 
   beforeEach(fakeAsync(() => {

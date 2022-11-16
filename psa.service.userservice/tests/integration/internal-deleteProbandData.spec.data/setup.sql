@@ -8,10 +8,10 @@ INSERT INTO studies(name)
 VALUES ('QTestStudy1'),
        ('QTestStudy2');
 
-INSERT INTO probands(pseudonym, ids, study)
-VALUES ('qtest-proband1', NULL, 'QTestStudy1'),
-       ('qtest-deleteme', '53ae2aea-67bc-4365-9d63-8acdc275d98c', 'QTestStudy2'),
-       ('qtest-deleteme_fully', NULL, 'QTestStudy2');
+INSERT INTO probands(pseudonym, ids, study, origin)
+VALUES ('qtest-proband1', NULL, 'QTestStudy1', 'investigator'),
+       ('qtest-deleteme', '53ae2aea-67bc-4365-9d63-8acdc275d98c', 'QTestStudy2', 'investigator'),
+       ('qtest-deleteme_fully', NULL, 'QTestStudy2', 'investigator');
 
 INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,

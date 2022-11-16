@@ -18,10 +18,12 @@ export class PersonalDataService {
    *
    * @param pseudonym the user the personal data belong to
    * @param personalData the personal data to change
+   * @param skipUpdateAccount  if true, the email address will not be updated in the probands account
    */
   public static async createOrUpdate(
     pseudonym: string,
-    personalData: PersonalDataReq
+    personalData: PersonalDataReq,
+    skipUpdateAccount = false
   ): Promise<PersonalData> {
     const proband = await userserviceClient.getProband(pseudonym);
     if (!proband) {
@@ -50,7 +52,7 @@ export class PersonalDataService {
           { transaction }
         );
       }
-      if (personalData.email) {
+      if (!skipUpdateAccount && personalData.email) {
         await this.updateAccountMailAddress(pseudonym, personalData.email);
       }
       return result;

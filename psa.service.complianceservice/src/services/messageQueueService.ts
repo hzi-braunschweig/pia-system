@@ -4,7 +4,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { MessageQueueClient, Producer } from '@pia/lib-messagequeue';
+import {
+  MessageQueueClient,
+  MessageQueueTopic,
+  Producer,
+} from '@pia/lib-messagequeue';
 import { config } from '../config';
 
 interface Message {
@@ -17,7 +21,7 @@ class MessageQueueService extends MessageQueueClient {
   public async connect(): Promise<void> {
     await super.connect();
     this.complianceCreate = await this.createProducer<Message>(
-      'compliance.created'
+      MessageQueueTopic.COMPLIANCE_CREATED
     );
   }
 

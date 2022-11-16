@@ -18,9 +18,10 @@ export class StudiesHandler {
   /**
    * @description gets the study if the proband has access
    */
-  public static getOne: Lifecycle.Method = async (request: Request) => {
-    const study = await StudiesInteractor.getStudy(
-      request.auth.credentials as AccessToken,
+  public static getOneForProband: Lifecycle.Method = async (
+    request: Request
+  ) => {
+    const study = await StudiesInteractor.getStudyForProband(
       request.params['studyName'] as string
     );
     return RESTPresenter.presentStudy(study);

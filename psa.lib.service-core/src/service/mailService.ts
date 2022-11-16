@@ -5,6 +5,7 @@
  */
 
 import mail, { Transporter } from 'nodemailer';
+import { htmlToText } from 'nodemailer-html-to-text';
 import { SentMessageInfo } from 'nodemailer/lib/smtp-transport';
 import { Options } from 'nodemailer/lib/mailer';
 import { sanitizeHtml } from '../utils/sanitizeHtml';
@@ -12,7 +13,7 @@ import { MailserverConnection } from '../config/configModel';
 
 export interface MailContent {
   subject: string;
-  text: string;
+  text?: string;
   html?: string;
 }
 
@@ -32,24 +33,26 @@ export class MailService {
         mailServerConfig.requireTLS ? 'requireTLS' : 'DONT requireTLS'
       }`
     );
-    MailService.mailTransporter = mail.createTransport(
-      {
-        host: mailServerConfig.host,
-        port: mailServerConfig.port,
-        auth:
-          mailServerConfig.user || mailServerConfig.password
-            ? {
-                user: mailServerConfig.user,
-                pass: mailServerConfig.password,
-              }
-            : undefined,
-        secure: secure,
-        requireTLS: mailServerConfig.requireTLS,
-      },
-      {
-        from: `"${mailServerConfig.name}" <${mailServerConfig.from}>`,
-      }
-    );
+    MailService.mailTransporter = mail
+      .createTransport(
+        {
+          host: mailServerConfig.host,
+          port: mailServerConfig.port,
+          auth:
+            mailServerConfig.user || mailServerConfig.password
+              ? {
+                  user: mailServerConfig.user,
+                  pass: mailServerConfig.password,
+                }
+              : undefined,
+          secure: secure,
+          requireTLS: mailServerConfig.requireTLS,
+        },
+        {
+          from: `"${mailServerConfig.name}" <${mailServerConfig.from}>`,
+        }
+      )
+      .use('compile', htmlToText());
   }
 
   public static async sendMail(

@@ -18,7 +18,10 @@ import {
   DialogPopUpData,
 } from 'src/app/_helpers/dialog-pop-up';
 import { Observable } from 'rxjs';
-import { CreateProbandRequest } from '../../psa.app.core/models/proband';
+import {
+  CreateProbandRequest,
+  ProbandOrigin,
+} from '../../psa.app.core/models/proband';
 import { map, shareReplay, startWith } from 'rxjs/operators';
 import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 
@@ -103,6 +106,7 @@ export class DialogNewProbandComponent implements OnInit {
         complianceSamples: this.form.get('complianceSamples').value,
         examinationWave: this.form.get('examinationWave').value,
         studyCenter: this.form.get('studyCenter').value,
+        origin: ProbandOrigin.INVESTIGATOR,
       };
       if (this.data) {
         payload.ids = this.data.ids;

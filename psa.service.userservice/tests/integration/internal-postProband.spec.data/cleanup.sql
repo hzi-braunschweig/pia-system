@@ -1,6 +1,10 @@
 DELETE
+FROM planned_probands
+WHERE user_id LIKE 'qtest%';
+
+DELETE
 FROM probands
-WHERE pseudonym IN ('qtest-proband1', 'qtest-proband2', 'qtest-proband3');
+WHERE pseudonym LIKE 'qtest%';
 
 DELETE
 FROM studies

@@ -11,10 +11,11 @@ import { probandAuthClient } from '../../src/clients/authServerClient';
 export function mockUpdateAccountMailAddress(
   username: string,
   sandbox: SinonSandbox
-): void {
+): SinonStubbedInstance<Users> {
   const authClientUsersStub: SinonStubbedInstance<Users> = sandbox.stub(
     probandAuthClient.users
   );
   authClientUsersStub.find.resolves([{ username, id: '1234' }]);
   authClientUsersStub.update.resolves();
+  return authClientUsersStub;
 }

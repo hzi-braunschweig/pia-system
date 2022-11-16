@@ -10,13 +10,13 @@ VALUES ('QTestStudy1'),
        ('QTestStudy3'),
        ('ZIFCO-Studie');
 
-INSERT INTO probands (pseudonym, ids, study)
-VALUES ('qtest-proband1', NULL, 'QTestStudy1'),
-       ('qtest-proband2', NULL, 'QTestStudy2'),
-       ('qtest-proband3', NULL, 'QTestStudy2'),
-       ('qtest-proband4', NULL, 'QTestStudy1'),
-       ('qtest-ids1', 'QTest-IDS1', 'QTestStudy3'),
-       ('qtest-ids2', 'qtest-ids2', 'QTestStudy3');
+INSERT INTO probands (pseudonym, ids, study, origin)
+VALUES ('qtest-proband1', NULL, 'QTestStudy1', 'investigator'),
+       ('qtest-proband2', NULL, 'QTestStudy2', 'investigator'),
+       ('qtest-proband3', NULL, 'QTestStudy2', 'investigator'),
+       ('qtest-proband4', NULL, 'QTestStudy1', 'investigator'),
+       ('qtest-ids1', 'QTest-IDS1', 'QTestStudy3', 'investigator'),
+       ('qtest-ids2', 'qtest-ids2', 'QTestStudy3', 'investigator');
 
 INSERT INTO study_users (study_id, user_id, access_level)
 VALUES ('QTestStudy1', 'pm1@example.com', 'write'),

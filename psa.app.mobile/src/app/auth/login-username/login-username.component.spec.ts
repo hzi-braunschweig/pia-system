@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -122,7 +122,7 @@ describe('LoginUsernameComponent', () => {
   let menuCtrl: SpyObj<MenuController>;
 
   beforeEach(() =>
-    MockBuilder(LoginUsernameComponent, AuthModule)
+    MockBuilder(LoginUsernameComponent, [AuthModule, Platform, Router])
       .keep(IonicModule)
       .keep(ReactiveFormsModule)
       .mock(TranslatePipe, (x) => x)

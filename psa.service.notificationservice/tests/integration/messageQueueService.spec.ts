@@ -16,7 +16,7 @@ import { FcmHelper } from '../../src/services/fcmHelper';
 import { cleanup, setup } from './multipleToken.spec.data/setup.helper';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
-import { MessageQueueClient } from '@pia/lib-messagequeue';
+import { MessageQueueClient, MessageQueueTopic } from '@pia/lib-messagequeue';
 import { EventEmitter, once } from 'events';
 import { MessageQueueService } from '../../src/services/messageQueueService';
 import { HttpClient } from '@pia-system/lib-http-clients-internal';
@@ -107,7 +107,9 @@ describe('message queue service', () => {
   it('onProbandDeleted should delete the user token', async () => {
     fetchMock.get('express:/user/users/qtest-proband1', StatusCodes.NOT_FOUND);
 
-    const producer = await mqc.createProducer('proband.deleted');
+    const producer = await mqc.createProducer(
+      MessageQueueTopic.PROBAND_DELETED
+    );
 
     const resultPostToken1 = await chai
       .request(apiAddress)

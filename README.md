@@ -29,7 +29,7 @@ To get a local copy up and running follow these simple steps.
 
 ### Prerequisites
 
-[Docker](https://www.docker.com/), [Docker-Compose](https://docs.docker.com/compose/) and [Node.js](https://nodejs.org/) should be installed. 
+[Docker](https://www.docker.com/), [Docker-Compose](https://docs.docker.com/compose/) and [Node.js](https://nodejs.org/) should be installed.
 
 ### Startup
 
@@ -52,6 +52,16 @@ To add the first admin user, you can use the following command:
 ```bash
 docker exec authserver /add-sysadmin.sh --email test@example.com --password TestPassword
 ```
+
+Please note, that the password needs to meet to the following password policy:
+
+- minimum length of 10 characters (unless configured differently)
+- maximum length of 80 characters
+- must contain at least one digit
+- must contain at least one special character
+- must contain at least one lower case character
+- must contain at least one upper case character
+- must not equal the username or the email
 
 ## Usage
 

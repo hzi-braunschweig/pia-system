@@ -28,7 +28,7 @@ import { QuestionnaireService } from '../../psa.app.core/providers/questionnaire
 import { KeycloakService } from 'keycloak-angular';
 import SpyObj = jasmine.SpyObj;
 
-fdescribe('SettingsComponent', () => {
+describe('SettingsComponent', () => {
   let component: SettingsComponent;
   let fixture: ComponentFixture<SettingsComponent>;
 

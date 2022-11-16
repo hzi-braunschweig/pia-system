@@ -81,7 +81,7 @@ describe('CompliancePage', () => {
     auth = jasmine.createSpyObj<AuthService>(['getCurrentUser']);
 
     // Build Base Module
-    await MockBuilder(CompliancePage, CompliancePageModule)
+    await MockBuilder(CompliancePage, [CompliancePageModule, ActivatedRoute])
       .mock(ToastPresenterService, toastPresenter)
       .mock(Router, router)
       .mock(ActivatedRoute, activatedRoute)

@@ -192,6 +192,8 @@ describe('ProbandsListComponent', () => {
       first_logged_in_at: new Date('2020-04-20'),
       status: 'Aktiv',
       userObject: createProband(),
+      origin: 'PROBAND.ORIGIN.INVESTIGATOR',
+      created_at: null,
     };
   }
 

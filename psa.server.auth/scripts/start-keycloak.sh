@@ -14,13 +14,6 @@ if [ "${EXTERNAL_PROTOCOL}" == "http" ]; then
 fi
 
 kc.sh \
-    -Dkc.db=postgres \
-    -Dkc.db.username=${DB_AUTHSERVER_USER} \
-    -Dkc.db.password=${DB_AUTHSERVER_PASSWORD} \
-    -Dkc.db.url.port=${DB_AUTHSERVER_PORT} \
-    -Dkc.db.url.host=${DB_AUTHSERVER_HOST} \
-    -Dkc.db.url.database=${DB_AUTHSERVER_DB} \
-    "-Dkc.db.url.properties=\"?sslmode=verify-ca&sslrootcert=/certs/ca.cert\"" \
     -Djava.security.egd=file:/dev/urandom \
     start \
     --hostname=${EXTERNAL_HOST} \
@@ -32,4 +25,12 @@ kc.sh \
     --https-certificate-key-file=/certs/authserver.key \
     --https-certificate-file=/certs/authserver.cert \
     --https-port=4000 \
-    --proxy=reencrypt
+    --proxy=reencrypt \
+    --db=postgres \
+    --db-username=${DB_AUTHSERVER_USER} \
+    --db-password=${DB_AUTHSERVER_PASSWORD} \
+    --db-url-port=${DB_AUTHSERVER_PORT} \
+    --db-url-host=${DB_AUTHSERVER_HOST} \
+    --db-url-database=${DB_AUTHSERVER_DB} \
+    "--db-url-properties=\"?sslmode=verify-ca&sslrootcert=/certs/ca.cert\""
+

@@ -29,6 +29,7 @@ import { cleanup, setup } from './probands.spec.data/setup.helper';
 import { Users } from '@keycloak/keycloak-admin-client/lib/resources/users';
 import { probandAuthClient } from '../../src/clients/authServerClient';
 import { mockGetProbandAccountsByStudyName } from './accountServiceRequestMock.helper.spec';
+import { ProbandOrigin } from '@pia-system/lib-http-clients-internal';
 
 chai.use(chaiHttp);
 chai.use(sinonChai);
@@ -200,7 +201,9 @@ describe('/admin/studies/{studyName}/probands', () => {
 
     it('should return 403 if user is not an investigator', async () => {
       const studyName = 'QTestStudy1';
-      const probandRequest = createProbandRequest();
+      const probandRequest = createProbandRequest({
+        pseudonym: 'qtest-proband_new1',
+      });
       let result = await chai
         .request(apiAddress)
         .post(`/admin/studies/${studyName}/probands`)
@@ -240,7 +243,7 @@ describe('/admin/studies/{studyName}/probands', () => {
         .request(apiAddress)
         .post(`/admin/studies/${studyName}/probands`)
         .set(investigatorHeader)
-        .send(createProbandRequest());
+        .send(createProbandRequest({ pseudonym: 'qtest-proband_new1' }));
       expect(result, result.text).to.have.status(StatusCodes.FORBIDDEN);
     });
 
@@ -274,7 +277,7 @@ describe('/admin/studies/{studyName}/probands', () => {
         .request(apiAddress)
         .post(`/admin/studies/${studyName}/probands`)
         .set(investigatorHeader)
-        .send(createProbandRequest());
+        .send(createProbandRequest({ pseudonym: 'qtest-proband_new1' }));
       expect(result, result.text).to.have.status(
         StatusCodes.INTERNAL_SERVER_ERROR
       );
@@ -370,7 +373,55 @@ describe('/admin/studies/{studyName}/probands', () => {
         compliance_samples: true,
         compliance_bloodsamples: true,
         study: 'QTestStudy3',
+        origin: ProbandOrigin.INVESTIGATOR,
       });
+    });
+
+    it('should return 428 if no pseudonym was given', async () => {
+      const studyName = 'QTestStudy1';
+      const result = await chai
+        .request(apiAddress)
+        .post(`/admin/studies/${studyName}/probands`)
+        .set(investigatorHeader)
+        .send(createProbandRequest());
+      expect(result, result.text).to.have.status(
+        StatusCodes.PRECONDITION_REQUIRED
+      );
+    });
+
+    it('should return 400 if origin is set to an unsupported value', async () => {
+      const pseudonym = 'qtest-proband_new1';
+      const studyName = 'QTestStudy1';
+      const request = createProbandRequest({
+        pseudonym,
+        origin: 'some string',
+      });
+
+      const result = await chai
+        .request(apiAddress)
+        .post(`/admin/studies/${studyName}/probands`)
+        .set(investigatorHeader)
+        .send(request);
+      expect(result, result.text).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return 400 if origin is missing', async () => {
+      const studyName = 'QTestStudy1';
+      const request: Partial<CreateProbandRequest> = {
+        pseudonym: 'qtest-proband_new1',
+        complianceLabresults: true,
+        complianceSamples: true,
+        complianceBloodsamples: true,
+        studyCenter: 'test_sz',
+        examinationWave: 1,
+      };
+
+      const result = await chai
+        .request(apiAddress)
+        .post(`/admin/studies/${studyName}/probands`)
+        .set(investigatorHeader)
+        .send(request);
+      expect(result, result.text).to.have.status(StatusCodes.BAD_REQUEST);
     });
   });
 
@@ -448,12 +499,12 @@ function createProbandRequest(
   overwrite?: Partial<CreateProbandRequest>
 ): CreateProbandRequest {
   return {
-    pseudonym: 'qtest-proband_new1',
     complianceLabresults: true,
     complianceSamples: true,
     complianceBloodsamples: true,
     studyCenter: 'test_sz',
     examinationWave: 1,
+    origin: ProbandOrigin.INVESTIGATOR,
     ...overwrite,
   };
 }

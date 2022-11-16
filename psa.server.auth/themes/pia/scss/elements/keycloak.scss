@@ -4,6 +4,18 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+// Font family definition from keycloak 16
+$font-family: overpass, overpass, open sans, -apple-system, blinkmacsystemfont,
+  Segoe UI, roboto, Helvetica Neue, arial, sans-serif, Apple Color Emoji,
+  Segoe UI Emoji, Segoe UI Symbol;
+:root {
+  --pf-global--FontFamily--sans-serif: $font-family;
+  --pf-global--FontFamily--heading--sans-serif: $font-family;
+  --pf-global--FontFamily--monospace: 'Courier New', monospace;
+  --pf-global--FontFamily--redhat-updated--sans-serif: $font-family;
+  --pf-global--FontFamily--redhat-updated--heading--sans-serif: $font-family;
+}
+
 #kc-page-title {
   margin-top: 0;
   font-size: 1.5rem;
@@ -35,7 +47,8 @@
 }
 
 .pf-c-page {
-  &__header {
+  &__header,
+  &__sidebar {
     background-color: $color-white;
   }
 
@@ -88,16 +101,16 @@
   }
 }
 
-.pf-c-nav__item {
-  a {
-    color: $link-color !important;
+.pf-c-nav__link,
+.pf-c-nav__item a {
+  color: $link-color !important;
 
-    &:active,
-    &:hover {
-      background-color: $primary-color;
-      &::after {
-        display: none !important;
-      }
+  &:active,
+  &.pf-m-current,
+  &:hover {
+    background-color: $primary-color !important;
+    &::after {
+      display: none !important;
     }
   }
 }

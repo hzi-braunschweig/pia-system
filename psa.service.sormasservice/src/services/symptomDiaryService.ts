@@ -5,7 +5,6 @@
  */
 
 import { userserviceClient } from '../clients/userserviceClient';
-import { PseudonymGenerator } from './pseudonymGenerator';
 import { SormasClient } from '../clients/sormasClient';
 import { personaldataserviceClient } from '../clients/personaldataserviceClient';
 import { getRepository } from 'typeorm';
@@ -21,36 +20,6 @@ import {
 import { JournalPersonDto } from '../models/sormas';
 
 export class SymptomDiaryService {
-  private static readonly MAX_TRIES_TO_GENERATE_NEW_PSEUDONYM = 1000;
-
-  public static async generateNewPseudonym(studyName: string): Promise<string> {
-    let generatedPseudonym: string;
-    // get study with config
-    const study = await userserviceClient.getStudy(studyName);
-    if (!study) throw new Error('Study not found.');
-    if (!study.pseudonym_prefix || !study.pseudonym_suffix_length)
-      throw new Error('Study has no pseudonym settings.');
-    for (
-      let i = 1;
-      i <= SymptomDiaryService.MAX_TRIES_TO_GENERATE_NEW_PSEUDONYM;
-      i++
-    ) {
-      generatedPseudonym = PseudonymGenerator.generateRandomPseudonym(
-        study.pseudonym_prefix,
-        study.pseudonym_suffix_length
-      );
-      const pseudonymIsNotYetAssigned = !(await userserviceClient.getProband(
-        generatedPseudonym
-      ));
-      if (pseudonymIsNotYetAssigned) return generatedPseudonym;
-      // else try again
-    }
-
-    throw new Error(
-      'It seems to be impossible to generate a unused Pseudonym. I tried a thousand times.'
-    );
-  }
-
   /**
    * Updates the followUp and email in PIA after fetching it from SORMAS
    * @param identifications the persons UUID and/or its pseudonym

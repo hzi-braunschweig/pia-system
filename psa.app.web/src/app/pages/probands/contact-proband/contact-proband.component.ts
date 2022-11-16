@@ -15,6 +15,12 @@ import { CurrentUser } from '../../../_services/current-user.service';
 import { ProbandService } from '../../../psa.app.core/providers/proband-service/proband.service';
 import { filter } from 'rxjs/operators';
 
+interface EmailRequestForm {
+  recipients: FormControl<string[] | undefined[]>;
+  title: FormControl<string>;
+  body: FormControl<string>;
+}
+
 @Component({
   selector: 'app-contact-proband',
   templateUrl: './contact-proband.component.html',
@@ -25,7 +31,7 @@ export class ContactProbandComponent implements OnInit {
 
   public studyName = new FormControl(null, [Validators.required]);
 
-  public message = new FormGroup({
+  public message = new FormGroup<EmailRequestForm>({
     recipients: new FormControl([], [Validators.required]),
     title: new FormControl('', [Validators.required]),
     body: new FormControl('', [Validators.required]),
@@ -100,14 +106,16 @@ export class ContactProbandComponent implements OnInit {
 
   private async sendNotification(): Promise<void> {
     try {
-      await this.notificationService.sendNotification(this.message.value);
+      await this.notificationService.sendNotification(
+        this.message.getRawValue()
+      );
       this.matDialog.open(DialogPopUpComponent, {
         width: '500px',
         data: {
           data: '',
           content: 'CONTACT_PROBAND.NOTIFICATIONS_SENT',
           values: {
-            probanden: this.message.get('recipients').value.join(',\n'),
+            probanden: this.message.get('recipients').getRawValue().join(',\n'),
           },
           isSuccess: true,
         },
@@ -128,7 +136,7 @@ export class ContactProbandComponent implements OnInit {
   private async sendMail(): Promise<void> {
     try {
       const emailRecipients = await this.notificationService.sendEmail(
-        this.message.value
+        this.message.getRawValue()
       );
 
       if (emailRecipients.length <= 0) {
@@ -173,7 +181,7 @@ export class ContactProbandComponent implements OnInit {
     this.notifyByEmail.reset(false);
     this.notifyByNotification.reset(false);
     this.message.reset({
-      receipients: [],
+      recipients: [],
       title: '',
       body: '',
     });

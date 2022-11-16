@@ -55,7 +55,7 @@ describe('Release Test, role: "Forscher", General', () => {
 
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Startseite')
+      .contains('Studien')
       .should('be.visible');
     cy.get('[data-e2e="e2e-sidenav-content"]')
       .contains('Verwaltung')
@@ -64,13 +64,7 @@ describe('Release Test, role: "Forscher", General', () => {
       .contains('Teilnehmende')
       .should('be.visible');
     cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Studien')
-      .should('be.visible');
-    cy.get('[data-e2e="e2e-sidenav-content"]')
       .contains('Einwilligung')
-      .should('be.visible');
-    cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Begrüßungstext')
       .should('be.visible');
   });
   it('should logout', () => {

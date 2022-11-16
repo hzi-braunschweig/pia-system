@@ -82,6 +82,47 @@
           placeholder="{{ 'STUDIES.PSEUDONYM_SUFFIX_LENGTH' | translate }}"
         />
       </mat-form-field>
+      <span
+        *ngIf="form.errors?.['maxRecruitmentLimit'] && (form.get('pseudonym_suffix_length').touched || form.get('pseudonym_suffix_length').dirty)"
+        class="form-field-error"
+      >
+        {{ 'STUDIES.PSEUDONYM_SUFFIX_LENGTH_MIN_ERROR' | translate }}
+      </span>
+
+      <mat-checkbox
+        class="text-wrap"
+        formControlName="has_open_self_registration"
+        >{{ 'STUDIES.HAS_OPEN_SELF_REGISTRATION' | translate }}</mat-checkbox
+      >
+      <mat-form-field
+        *ngIf="form.get('has_open_self_registration').value === true"
+      >
+        <input
+          type="number"
+          id="maxallowedaccountscount"
+          matInput
+          data-e2e="max-allowed-proband-count-input"
+          formControlName="max_allowed_accounts_count"
+          placeholder="{{ 'STUDIES.MAX_ALLOWED_ACCOUNTS_COUNT' | translate }}"
+        />
+        <mat-error
+          *ngIf="form.get('max_allowed_accounts_count').hasError('min') && (form.get('max_allowed_accounts_count').touched || form.get('max_allowed_accounts_count').dirty)"
+        >
+          {{ 'STUDIES.MAX_ALLOWED_ACCOUNTS_COUNT_MIN_ERROR' | translate }}
+        </mat-error>
+      </mat-form-field>
+      <span
+        *ngIf="form.errors?.['requireMaxAllowedAccountsCountForOpenSelfRegistration'] && (form.get('max_allowed_accounts_count').touched || form.get('max_allowed_accounts_count').dirty)"
+        class="form-field-error"
+      >
+        {{ 'STUDIES.MAX_ALLOWED_ACCOUNTS_COUNT_REQUIRED_ERROR' | translate }}
+      </span>
+      <span
+        *ngIf="form.errors?.['maxRecruitmentLimit'] && (form.get('max_allowed_accounts_count').touched || form.get('max_allowed_accounts_count').dirty)"
+        class="form-field-error"
+      >
+        {{ 'STUDIES.MAX_ALLOWED_ACCOUNTS_COUNT_MAX_ERROR' | translate }}
+      </span>
 
       <mat-checkbox class="text-wrap" formControlName="has_rna_samples"
         >{{ 'STUDIES.HAS_RNA_SAMPLES' | translate }}</mat-checkbox

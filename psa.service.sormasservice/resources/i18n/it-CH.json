@@ -1,6 +1,5 @@
 {
   "NEW_PROBAND_ERROR_FETCHING_DATA": "Das Symptomtagebuch konnte die Daten zum/r Teilnehmer:in nicht aus SORMAS laden.",
-  "NEW_PROBAND_ERROR_GENERATING_PSEUDONYM": "Es konnte kein freies Pseudonym generiert werden.",
   "NEW_PROBAND_ERROR_EMAIL_NOT_VALID": "Die E-Mail Adresse fehlt oder ist nicht gültig. Bitte stellen Sie sicher, dass eine gültige E-Mail-Adresse angegeben ist und als primär markiert ist.",
   "NEW_PROBAND_COULD_NOT_SAVE_FOLLOW_UP_ENDDATE": "Das Symptomtagebuch konnte das Nachverfolgungsenddatum nicht speichern.",
   "NEW_PROBAND_ERROR_REGISTERING": "Teilnehmer:in konnte nicht registriert werden. Dies kann an einer falschen Konfiguration des Systems liegen oder daran, dass die Person (UUID) schon im Symptomtagebuch existiert.",

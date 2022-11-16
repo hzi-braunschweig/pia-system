@@ -1,5 +1,5 @@
 ﻿/*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -91,8 +91,6 @@ import { DialogDeletePartnerComponent } from './_helpers/dialog-delete-partner';
 import { DialogInfoComponent } from './_helpers/dialog-info';
 import { DialogOkCancelComponent } from './_helpers/dialog-ok-cancel';
 import { DialogPopUpComponent } from './_helpers/dialog-pop-up';
-import { DialogQuestionnaireFailComponent } from './_helpers/dialog-questionnaire-fail';
-import { DialogQuestionnaireSuccessComponent } from './_helpers/dialog-questionnaire-success';
 import { ScanSampleComponent } from './_helpers/dialog-scan-sample';
 import { DialogUserDataComponent } from './_helpers/dialog-user-data';
 import { DialogYesNoComponent } from './_helpers/dialog-yes-no';
@@ -123,7 +121,6 @@ import { LocaleService } from './_services/locale.service';
 import { ContentTypeInterceptor } from './_interceptors/content-type-interceptor';
 import { UnauthorizedInterceptor } from './_interceptors/unauthorized-interceptor';
 import { SelectedProbandInfoService } from './_services/selected-proband-info.service';
-import { StudyWelcomeTextComponent } from './pages/study-welcome-text/study-welcome-text.component';
 import { TemplateModule } from './features/template-viewer/template.module';
 import { DateAdapter } from '@angular/material/core';
 import { CustomDateAdapter } from './_helpers/custom-date-adapter';
@@ -154,6 +151,15 @@ import { DialogDeleteAccountConfirmationComponent } from './dialogs/dialog-delet
 import { DialogDeleteAccountSuccessComponent } from './dialogs/dialog-delete-account-success/dialog-delete-account-success.component';
 import { ChipAutocompleteComponent } from './pages/probands/chip-autocomplete/chip-autocomplete.component';
 import { AccountInfoComponent } from './features/account-info/account-info.component';
+import { RegistrationComponent } from './pages/registration/registration/registration.component';
+import { StudyProfessionalSummaryComponent } from './pages/study/study-professional-summary/study-professional-summary.component';
+import { StudyComponent } from './pages/study/study.component';
+import { StudySelectComponent } from './features/study-select/study-select.component';
+import { NgLetDirective } from './_directives/ng-let.directive';
+import { ClipboardModule } from '@angular/cdk/clipboard';
+import { MarkdownEditorComponent } from './features/markdown-editor/markdown-editor.component';
+import { DialogMarkdownEditorComponent } from './dialogs/dialog-markdown-editor/dialog-markdown-editor.component';
+import { DialogMarkdownMailEditorComponent } from './dialogs/dialog-markdown-mail-editor/dialog-markdown-mail-editor.component';
 
 // === LOCALE ===
 // Setup ngx-translate
@@ -195,6 +201,7 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireMessagingModule,
     KeycloakAngularModule,
+    ClipboardModule,
   ],
   declarations: [
     AccessLevelPipe,
@@ -223,14 +230,14 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     DialogConfirmPartialDeletionComponent,
     DialogNewUserComponent,
     DialogNewPlannedProbandsComponent,
-    DialogQuestionnaireSuccessComponent,
-    DialogQuestionnaireFailComponent,
     DialogYesNoComponent,
     DialogOkCancelComponent,
     DialogInfoComponent,
     DialogDeleteAccountHealthDataPermissionComponent,
     DialogDeleteAccountConfirmationComponent,
     DialogDeleteAccountSuccessComponent,
+    DialogMarkdownEditorComponent,
+    DialogMarkdownMailEditorComponent,
     QuestionnairesResearcherComponent,
     QuestionnaireResearcherComponent,
     QuestionProbandComponent,
@@ -277,7 +284,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     ComplianceEditExaminerComponent,
     ComplianceEditProbandComponent,
     DialogEditComplianceComponent,
-    StudyWelcomeTextComponent,
     ComplianceTextComponent,
     ComplianceRadioComponent,
     QuestionnaireInstancesListComponent,
@@ -286,6 +292,12 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     LicenseListComponent,
     ChipAutocompleteComponent,
     AccountInfoComponent,
+    RegistrationComponent,
+    StudyProfessionalSummaryComponent,
+    StudyComponent,
+    StudySelectComponent,
+    NgLetDirective,
+    MarkdownEditorComponent,
   ],
   providers: [
     {

@@ -8,7 +8,10 @@ import {
   fetchPasswordForUserFromMailHog,
   loginSysAdmin,
 } from './user.commands';
-import { CreateProbandRequest } from '../../src/app/psa.app.core/models/proband';
+import {
+  CreateProbandRequest,
+  ProbandOrigin,
+} from '../../src/app/psa.app.core/models/proband';
 import Chainable = Cypress.Chainable;
 
 const short = require('short-uuid');
@@ -146,6 +149,7 @@ export function generateRandomProbandForStudy(): CreateProbandRequest {
     complianceBloodsamples: false,
     studyCenter: 'hzi',
     examinationWave: 1,
+    origin: ProbandOrigin.INVESTIGATOR,
   };
 }
 
@@ -160,6 +164,8 @@ export function generateRandomStudy(): any {
     sample_suffix_length: null,
     pseudonym_prefix: '',
     pseudonym_suffix_length: null,
+    has_open_self_registration: false,
+    max_allowed_accounts_count: null,
     has_required_totp: false,
   };
 }

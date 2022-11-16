@@ -23,10 +23,18 @@ export interface Proband extends ExternalCompliance {
   firstLoggedInAt: Date | null;
   deactivatedAt: string;
   deletedAt: string;
+  createdAt: Date | null;
+  origin: string;
 }
 
 export type AccountStatus = 'account' | 'no_account';
 export type ProbandStatus = 'active' | 'deactivated' | 'deleted';
+
+export enum ProbandOrigin {
+  SELF = 'self',
+  INVESTIGATOR = 'investigator',
+  SORMAS = 'sormas',
+}
 
 export interface CreateProbandRequest {
   pseudonym: string;
@@ -36,6 +44,7 @@ export interface CreateProbandRequest {
   complianceBloodsamples: boolean;
   studyCenter: string;
   examinationWave: number;
+  origin: ProbandOrigin;
 }
 
 export interface CreateIDSProbandRequest {

@@ -17,7 +17,10 @@ describe('QuestionnaireListPage', () => {
   let fixture: ComponentFixture<QuestionnaireListPage>;
 
   beforeEach(async () => {
-    await MockBuilder(QuestionnaireListPage, QuestionnaireModule)
+    await MockBuilder(QuestionnaireListPage, [
+      QuestionnaireModule,
+      ActivatedRoute,
+    ])
       .mock(Router)
       .mock(ActivatedRoute);
 

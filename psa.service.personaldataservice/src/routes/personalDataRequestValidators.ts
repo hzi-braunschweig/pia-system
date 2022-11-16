@@ -15,6 +15,14 @@ export const personalDataRequestValidator: RouteOptionsValidate = {
       .required()
       .default('Testproband1'),
   }).unknown(),
+  query: Joi.object({
+    skipUpdateAccount: Joi.boolean()
+      .description(
+        'if true, the email address will not be updated in the probands account'
+      )
+      .optional()
+      .default(false),
+  }),
   payload: Joi.object({
     anrede: Joi.string().allow('', null).default(''),
     titel: Joi.string().allow('', null).default(''),

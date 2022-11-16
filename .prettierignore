@@ -10,3 +10,4 @@ psa.app.mobile/src/assets/licenses.json
 psa.app.web/src/assets/licenses.json
 ci/generated.yml
 psa.server.auth/realms/
+psa.server.auth/templates/

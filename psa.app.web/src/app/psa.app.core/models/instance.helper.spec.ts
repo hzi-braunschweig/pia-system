@@ -5,7 +5,7 @@
  */
 
 import { Study } from './study';
-import { Proband } from './proband';
+import { Proband, ProbandOrigin } from './proband';
 import { User } from './user';
 import { ProbandToContact } from './probandToContact';
 import { PersonalData } from './personalData';
@@ -16,10 +16,16 @@ import { ComplianceDataResponse, ComplianceText } from './compliance';
 import { SegmentType } from './Segments';
 import { BloodSample, LabResult } from './labresult';
 import { ProfessionalAccount } from './professionalAccount';
+import { Condition, Questionnaire } from './questionnaire';
+import { Question } from './question';
 
 export function createStudy(overwrite: Partial<Study> = {}): Study {
   return {
+    proband_realm_group_id: 'abc-def',
     description: '',
+    has_open_self_registration: false,
+    max_allowed_accounts_count: null,
+    accounts_count: 0,
     has_answers_notify_feature: false,
     has_answers_notify_feature_by_mail: false,
     has_compliance_opposition: false,
@@ -28,9 +34,11 @@ export function createStudy(overwrite: Partial<Study> = {}): Study {
     has_total_opposition: false,
     has_logging_opt_in: false,
     has_required_totp: false,
+    pseudonym_prefix: 'DEV',
+    pseudonym_suffix_length: 8,
     hub_email: '',
     name: '',
-    pendingStudyChange: undefined,
+    pendingStudyChange: null,
     pm_email: '',
     status: 'active',
     ...overwrite,
@@ -55,6 +63,8 @@ export function createProband(overwrite: Partial<Proband> = {}): Proband {
     studyCenter: '',
     deactivatedAt: null,
     deletedAt: null,
+    createdAt: null,
+    origin: ProbandOrigin.INVESTIGATOR,
     ...overwrite,
   };
 }
@@ -252,6 +262,48 @@ export function createLabResult(overwrite: Partial<LabResult> = {}): LabResult {
     study_status: 'active',
     new_samples_sent: true,
     remark: 'no remark',
+    ...overwrite,
+  };
+}
+
+export function createQuestionnaire(
+  overwrite: Partial<Questionnaire> = {}
+): Questionnaire {
+  return {
+    id: 1234,
+    study_id: 'TestStudy',
+    name: 'TestQuestionnaire',
+    no_questions: 2,
+    cycle_amount: 0,
+    cycle_unit: 'once',
+    activate_after_days: 1,
+    deactivate_after_days: 0,
+    notification_tries: 1,
+    notification_title: 'string',
+    notification_body_new: 'string',
+    notification_body_in_progress: 'string',
+    notification_weekday: 'sunday',
+    notification_interval: 2,
+    notification_interval_unit: 'days',
+    activate_at_date: 'string',
+    compliance_needed: false,
+    expires_after_days: 14,
+    finalises_after_days: 2,
+    cycle_per_day: 1,
+    cycle_first_hour: 1,
+    updated_at: new Date().toISOString(),
+    type: 'for_probands',
+    version: 1,
+    publish: 'string',
+    notify_when_not_filled: false,
+    notify_when_not_filled_time: '08:00',
+    notify_when_not_filled_day: 3,
+    keep_answers: false,
+    active: true,
+    questions: [],
+    condition: null,
+    condition_error: null,
+    condition_postview: null,
     ...overwrite,
   };
 }

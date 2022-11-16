@@ -13,7 +13,10 @@ import {
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
 import { UserService } from '../../psa.app.core/providers/user-service/user.service';
-import { CreateProbandRequest } from '../../psa.app.core/models/proband';
+import {
+  CreateProbandRequest,
+  ProbandOrigin,
+} from '../../psa.app.core/models/proband';
 import {
   ComponentFixture,
   fakeAsync,
@@ -129,6 +132,7 @@ describe('DialogNewProbandComponent', () => {
         complianceSamples: true,
         examinationWave: 5,
         studyCenter: 'test-sz',
+        origin: ProbandOrigin.INVESTIGATOR,
       };
       const studyName = 'Test1';
       expect(component).toBeDefined();
@@ -200,6 +204,7 @@ describe('DialogNewProbandComponent', () => {
         complianceSamples: true,
         examinationWave: 5,
         studyCenter: 'test-sz',
+        origin: ProbandOrigin.INVESTIGATOR,
       };
       const studyName = 'Test1';
       expect(component).toBeDefined();

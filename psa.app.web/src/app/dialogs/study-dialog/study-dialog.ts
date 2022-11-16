@@ -11,6 +11,10 @@ import { UserService } from '../../psa.app.core/providers/user-service/user.serv
 import { Study } from '../../psa.app.core/models/study';
 import { AlertService } from '../../_services/alert.service';
 import { CurrentUser } from '../../_services/current-user.service';
+import {
+  maxAllowedAccountsCountLimit,
+  requireMaxAllowedAccountsCountForOpenSelfRegistration,
+} from './study-form-validators';
 
 @Component({
   selector: 'app-study-dialog',
@@ -37,6 +41,8 @@ export class DialogStudyComponent implements OnInit {
     return {
       name: null,
       description: null,
+      has_open_self_registration: false,
+      max_allowed_accounts_count: null,
       pm_email: null,
       hub_email: null,
       status: 'active',
@@ -53,7 +59,7 @@ export class DialogStudyComponent implements OnInit {
       has_compliance_opposition: false,
       has_logging_opt_in: false,
       has_required_totp: true,
-      pendingStudyChange: {},
+      pendingStudyChange: null,
     };
   }
 
@@ -81,6 +87,9 @@ export class DialogStudyComponent implements OnInit {
     study.pseudonym_prefix = study.pseudonym_prefix ?? '';
     study.pseudonym_suffix_length = study.pseudonym_suffix_length ?? null;
     study.has_required_totp = study.has_required_totp ?? true;
+    study.max_allowed_accounts_count = study.has_open_self_registration
+      ? study.max_allowed_accounts_count
+      : null;
 
     try {
       let result: Study;
@@ -98,21 +107,41 @@ export class DialogStudyComponent implements OnInit {
   }
 
   private initForm(study: Study): void {
-    this.form = new FormGroup({
-      name: new FormControl(study.name, Validators.required),
-      description: new FormControl(study.description, Validators.required),
-      pm_email: new FormControl(study.pm_email, Validators.email),
-      hub_email: new FormControl(study.hub_email, Validators.email),
-      has_rna_samples: new FormControl(
-        study.has_rna_samples,
-        Validators.required
-      ),
-      has_required_totp: new FormControl(study.has_required_totp),
-      sample_prefix: new FormControl(study.sample_prefix),
-      sample_suffix_length: new FormControl(study.sample_suffix_length),
-      pseudonym_prefix: new FormControl(study.pseudonym_prefix),
-      pseudonym_suffix_length: new FormControl(study.pseudonym_suffix_length),
-    });
+    this.form = new FormGroup(
+      {
+        name: new FormControl(study.name, Validators.required),
+        description: new FormControl(study.description, Validators.required),
+        has_open_self_registration: new FormControl(
+          study.has_open_self_registration
+        ),
+        max_allowed_accounts_count: new FormControl(
+          study.max_allowed_accounts_count,
+          Validators.min(
+            Math.max(
+              study.accounts_count ?? 0,
+              study.max_allowed_accounts_count ?? 0
+            )
+          )
+        ),
+        pm_email: new FormControl(study.pm_email, Validators.email),
+        hub_email: new FormControl(study.hub_email, Validators.email),
+        has_rna_samples: new FormControl(
+          study.has_rna_samples,
+          Validators.required
+        ),
+        has_required_totp: new FormControl(study.has_required_totp),
+        sample_prefix: new FormControl(study.sample_prefix),
+        sample_suffix_length: new FormControl(study.sample_suffix_length),
+        pseudonym_prefix: new FormControl(study.pseudonym_prefix),
+        pseudonym_suffix_length: new FormControl(study.pseudonym_suffix_length),
+      },
+      {
+        validators: [
+          requireMaxAllowedAccountsCountForOpenSelfRegistration,
+          maxAllowedAccountsCountLimit,
+        ],
+      }
+    );
 
     if (this.isEditMode) {
       this.form.get('name').disable();
@@ -121,6 +150,8 @@ export class DialogStudyComponent implements OnInit {
       this.form.get('pm_email').disable();
       this.form.get('hub_email').disable();
       this.form.get('has_required_totp').disable();
+      this.form.get('has_open_self_registration').disable();
+      this.form.get('max_allowed_accounts_count').disable();
     } else if (this.user.hasRole('SysAdmin')) {
       this.form.get('has_rna_samples').disable();
       this.form.get('sample_prefix').disable();

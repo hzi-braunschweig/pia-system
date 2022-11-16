@@ -38,7 +38,11 @@ describe('DialogChangeComplianceComponent', () => {
     ]);
 
     // Build Base Module
-    await MockBuilder(DialogChangeComplianceComponent, AppModule)
+    await MockBuilder(DialogChangeComplianceComponent, [
+      AppModule,
+      MatDialogRef,
+      MAT_DIALOG_DATA,
+    ])
       .mock(MatDialogRef, dialogRef)
       .mock(UserService, userService)
       .mock(MAT_DIALOG_DATA, createDialogData());

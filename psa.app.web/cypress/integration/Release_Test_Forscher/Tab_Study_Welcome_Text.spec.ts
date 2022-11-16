@@ -48,17 +48,11 @@ const adminAppUrl = '/admin/';
 const probandAppUrl = '/';
 
 function selectStudy(studyName: string) {
-  cy.intercept({
-    method: 'GET',
-    url: `/admin/api/v1/user/studies`,
-  }).as('getStudies');
-
   cy.get('[data-e2e="e2e-sidenav-content"]').click();
-  cy.get('[data-e2e="e2e-sidenav-content"]').contains('Begrüßungstext').click();
+  cy.get('[data-e2e="e2e-sidenav-content"]').contains('Studien').click();
 
-  cy.wait('@getStudies');
   cy.get('[data-e2e="e2e-study-select"]').click();
-  cy.get('[data-e2e="e2e-study-options"]').contains(studyName).click();
+  cy.get('[data-e2e="e2e-study-option"]').contains(studyName).click();
 }
 
 describe('Release Test, role: "Forscher", Tab: Study Welcome Text', () => {
@@ -162,18 +156,22 @@ describe('Release Test, role: "Forscher", Tab: Study Welcome Text', () => {
     // Select first study name
     selectStudy(study.name);
 
-    cy.get('[data-e2e="e2e-welcome-text-input"]').type(
+    cy.get('[data-e2e="edit-welcome-text-button"]').click();
+
+    cy.get('[data-e2e="markdown-editor-textarea"]').type(
       '<h1>Welcome</h1> \n' + 'If you have any questions, please contact us'
     );
-    cy.get('[data-e2e="e2e-publish-text-button"]').click();
+    cy.get('[data-e2e="publish-text-button"]').click();
     cy.get('#confirmbutton').click();
 
     // Create welcome text for study B
     // Select second study name
     selectStudy(study2.name);
 
-    cy.get('[data-e2e="e2e-welcome-text-input"]').clear().type('Foo Bar');
-    cy.get('[data-e2e="e2e-publish-text-button"]').click();
+    cy.get('[data-e2e="edit-welcome-text-button"]').click();
+
+    cy.get('[data-e2e="markdown-editor-textarea"]').clear().type('Foo Bar');
+    cy.get('[data-e2e="publish-text-button"]').click();
     cy.get('#confirmbutton').click();
 
     logout(false);
@@ -228,8 +226,11 @@ describe('Release Test, role: "Forscher", Tab: Study Welcome Text', () => {
     // Create welcome test for study A
     // Select first study name
     selectStudy(study.name);
-    cy.get('[data-e2e="e2e-welcome-text-input"]').type('<h1>First Text</h1>');
-    cy.get('[data-e2e="e2e-publish-text-button"]').click();
+
+    cy.get('[data-e2e="edit-welcome-text-button"]').click();
+
+    cy.get('[data-e2e="markdown-editor-textarea"]').type('<h1>First Text</h1>');
+    cy.get('[data-e2e="publish-text-button"]').click();
     cy.get('#confirmbutton').click();
 
     logout(false);
@@ -251,10 +252,13 @@ describe('Release Test, role: "Forscher", Tab: Study Welcome Text', () => {
 
     // Change text for study A
     selectStudy(study.name);
-    cy.get('[data-e2e="e2e-welcome-text-input"]')
+
+    cy.get('[data-e2e="edit-welcome-text-button"]').click();
+
+    cy.get('[data-e2e="markdown-editor-textarea"]')
       .clear()
       .type('<h1>Second Text</h1>');
-    cy.get('[data-e2e="e2e-publish-text-button"]').click();
+    cy.get('[data-e2e="publish-text-button"]').click();
     cy.get('#confirmbutton').click();
 
     logout(false);

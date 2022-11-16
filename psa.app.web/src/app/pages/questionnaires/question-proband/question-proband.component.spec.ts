@@ -91,7 +91,7 @@ describe('QuestionProbandComponent', () => {
     );
 
     // Build Base Module
-    await MockBuilder(QuestionProbandComponent, AppModule)
+    await MockBuilder(QuestionProbandComponent, [AppModule, DOCUMENT])
       .mock(ActivatedRoute, activatedRoute)
       .mock(QuestionnaireService, questionnaireService)
       .mock(CurrentUser, user)

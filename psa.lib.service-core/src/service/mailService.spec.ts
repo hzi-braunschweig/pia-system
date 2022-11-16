@@ -33,12 +33,15 @@ describe('MailService', () => {
     sendMailStub = sandbox.stub().callsFake((mailOptions: Options) => ({
       accepted: [mailOptions.to],
     }));
+    const useStub = sandbox.stub();
     const transporter: Partial<Transporter> = {
       sendMail: sendMailStub,
+      use: useStub,
     };
     createTransportStub = sandbox
       .stub(nodemailer, 'createTransport')
       .returns(transporter as Transporter);
+    useStub.returns(transporter);
   });
   afterEach(() => {
     sandbox.restore();

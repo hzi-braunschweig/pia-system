@@ -12,6 +12,7 @@ export declare class LicenseTextCompleter {
     static MIT_ESBUILD: string;
     static MIT_SINDRE_SORHUS: string;
     static MIT_JASMINE: string;
+    static MIT_MOMENT_MINI: string;
     static knownMissingLicenseTexts: Map<string, string> | undefined;
     private static initialize;
     static init(): Promise<void>;

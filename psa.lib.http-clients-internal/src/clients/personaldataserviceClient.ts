@@ -13,10 +13,15 @@ export class PersonaldataserviceClient extends ServiceClient {
    */
   public async updatePersonalData(
     pseudonym: string,
-    personalData: PersonalDataInternalDto
+    personalData: PersonalDataInternalDto,
+    skipUpdateAccount = false
   ): Promise<void> {
+    let query = '';
+    if (skipUpdateAccount) {
+      query = '?skipUpdateAccount=true';
+    }
     return await this.httpClient.put(
-      `/personal/personalData/proband/${pseudonym}`,
+      `/personal/personalData/proband/${pseudonym}${query}`,
       personalData
     );
   }

@@ -2,6 +2,13 @@
 
 This file contains notes about changes that are important to the operations team.
 
+## 1.31 (Self-Registration)
+
+- New ansible variables can be set to show mandatory checkboxes on registration:
+  - URL for link to terms and conditions: `pia_authserver_proband_terms_of_service_url`
+  - URL for link to privacy policy: `pia_authserver_proband_policy_url`
+  - if not set, checkboxes and its texts won't be shown
+
 ## 1.30 (Keycloak)
 
 This release introduces a Keycloak server for authentication and authorization management. It replaces

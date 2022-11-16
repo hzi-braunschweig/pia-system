@@ -12,4 +12,8 @@ export class Study {
   public name!: string;
   @Column()
   public has_logging_opt_in!: boolean;
+  @Column()
+  public pseudonym_prefix!: string;
+  @Column()
+  public pseudonym_suffix_length!: number;
 }

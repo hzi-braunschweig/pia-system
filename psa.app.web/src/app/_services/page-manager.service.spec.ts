@@ -57,7 +57,11 @@ describe('PageManager', () => {
       // Assert
       expect(pagesCallback).toHaveBeenCalledTimes(1);
       expect(pagesCallback).toHaveBeenCalledWith([
-        { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
+        {
+          name: 'SIDENAV.STUDY',
+          path: ['study'],
+          subpaths: ['study', 'study/'],
+        },
         {
           name: 'SIDENAV.ADMINISTRATION',
           path: ['questionnaires/admin'],
@@ -79,16 +83,10 @@ describe('PageManager', () => {
             'view',
           ],
         },
-        { name: 'SIDENAV.STUDIES', path: ['studies'], subpaths: ['studies'] },
         {
           name: 'SIDENAV.COMPLIANCE',
           path: ['compliance/setup'],
           subpaths: ['compliance/'],
-        },
-        {
-          name: 'SIDENAV.STUDY_WELCOME_TEXT',
-          path: ['welcome-text'],
-          subpaths: ['welcome-text'],
         },
       ]);
     }));
@@ -106,7 +104,11 @@ describe('PageManager', () => {
       // Assert
       expect(pagesCallback).toHaveBeenCalledTimes(1);
       expect(pagesCallback).toHaveBeenCalledWith([
-        { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
+        {
+          name: 'SIDENAV.STUDY',
+          path: ['study'],
+          subpaths: ['study', 'study/'],
+        },
         {
           name: 'SIDENAV.PROBANDS',
           path: ['probands'],
@@ -176,7 +178,11 @@ describe('PageManager', () => {
       // Assert
       expect(pagesCallback).toHaveBeenCalledTimes(1);
       expect(pagesCallback).toHaveBeenCalledWith([
-        { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
+        {
+          name: 'SIDENAV.STUDY',
+          path: ['study'],
+          subpaths: ['study', 'study/'],
+        },
         {
           name: 'SIDENAV.PROBANDS',
           path: ['probands-personal-info'],
@@ -217,7 +223,11 @@ describe('PageManager', () => {
       // Assert
       expect(pagesCallback).toHaveBeenCalledTimes(1);
       expect(pagesCallback).toHaveBeenCalledWith([
-        { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
+        {
+          name: 'SIDENAV.STUDY',
+          path: ['study'],
+          subpaths: ['study', 'study/'],
+        },
         {
           name: 'SIDENAV.COMPLIANCE',
           path: ['compliance/view'],

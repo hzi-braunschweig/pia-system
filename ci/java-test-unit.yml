@@ -1,0 +1,29 @@
+include: ci/rules.yml
+
+java-test-unit:
+  extends: .job-exclude-scheduled-pipelines
+  stage: test
+  image: maven:3.8.6-jdk-11
+  variables:
+    ARTIFACT_DIR_NAME: test-artifacts
+  script:
+    - mkdir -p psa.server.auth/$ARTIFACT_DIR_NAME
+    - cd psa.server.auth/extensions/keycloak-study-registration/
+    - mvn test
+    - mv target/classes/ ../../$ARTIFACT_DIR_NAME/
+    - mv target/surefire-reports/TEST-*.xml ../../$ARTIFACT_DIR_NAME/
+    - mv target/site/jacoco/jacoco*.xml ../../$ARTIFACT_DIR_NAME/
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH =~ /^develop/
+    - if: $CI_COMMIT_BRANCH =~ /^release/
+  artifacts:
+    paths:
+      - psa.server.auth/$ARTIFACT_DIR_NAME/
+    reports:
+      junit: psa.server.auth/$ARTIFACT_DIR_NAME/TEST-*.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: psa.server.auth/$ARTIFACT_DIR_NAME/jacoco*.xml
+    when: always

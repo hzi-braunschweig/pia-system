@@ -7,10 +7,10 @@
 import * as amqp from 'amqplib';
 import { KeycloakLoginEvent } from '../models/keycloakEvent';
 import { MessageQueueService } from '../services/messageQueueService';
-import { Producer } from '@pia/lib-messagequeue';
+import { MessageQueueTopic, Producer } from '@pia/lib-messagequeue';
 import { EventProxy } from './eventProxy';
 
-const TARGET_TOPIC = 'proband.logged_in';
+const TARGET_TOPIC = MessageQueueTopic.PROBAND_LOGGED_IN;
 
 export class LoginWebAppProxy extends EventProxy {
   public pattern = 'KK.EVENT.CLIENT.*.SUCCESS.pia-proband-web-app-client.LOGIN';

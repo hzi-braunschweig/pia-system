@@ -10,7 +10,11 @@ import { db } from '../../src/db';
 import { EventEmitter, once } from 'events';
 import { MessageQueueService } from '../../src/services/messageQueueService';
 import { createSandbox } from 'sinon';
-import { MessageQueueClient, Producer } from '@pia/lib-messagequeue';
+import {
+  MessageQueueClient,
+  MessageQueueTopic,
+  Producer,
+} from '@pia/lib-messagequeue';
 import { config } from '../../src/config';
 import { MessagePayloadProbandDeactivated } from '../../src/models/messagePayloads';
 import { getManager, getRepository, Not, Repository } from 'typeorm';
@@ -69,7 +73,9 @@ describe('MessageQueueService', () => {
           endOfMessageHandlingEmitter.emit(endOfUserDeactivated);
         });
       });
-      producer = await mqc.createProducer('proband.deactivated');
+      producer = await mqc.createProducer(
+        MessageQueueTopic.PROBAND_DEACTIVATED
+      );
 
       await getManager().transaction(async (manager) => {
         const q1 = await manager.save(

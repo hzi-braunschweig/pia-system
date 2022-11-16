@@ -6,11 +6,10 @@
 
 import * as pgHelper from '../services/postgresqlHelper';
 import Boom from '@hapi/boom';
-import { Study } from '../models/study';
-import { AccessToken, hasRealmRole } from '@pia/lib-service-core';
+import { AccessToken } from '@pia/lib-service-core';
 import { StudyWelcomeText } from '../models/studyWelcomeText';
 import { StudyAddress } from '../models/studyAddress';
-import { MarkOptional } from 'ts-essentials';
+import { StudyForProbands } from '../models/studyForProbands';
 
 /**
  * @description interactor that handles study requests based on users permissions
@@ -20,25 +19,21 @@ import { MarkOptional } from 'ts-essentials';
  */
 export class StudiesInteractor {
   /**
-   * @description gets a study from DB if proband is allowed to
-   * @param decodedToken the jwt of the request
+   * @description gets a study from DB, only with fields probands are allowed to see
    * @param studyName the id of the study to get
    * @returns promise a promise that will be resolved in case of success or rejected otherwise
    */
-  public static async getStudy(
-    decodedToken: AccessToken,
+  public static async getStudyForProband(
     studyName: string
-  ): Promise<MarkOptional<Study, 'pm_email' | 'hub_email'>> {
+  ): Promise<StudyForProbands> {
     try {
-      const study = (await pgHelper.getStudy(studyName)) as MarkOptional<
-        Study,
-        'pm_email' | 'hub_email'
-      >;
-      if (hasRealmRole('Proband', decodedToken)) {
-        delete study.pm_email;
-        delete study.hub_email;
-      }
-      return study;
+      return (await pgHelper.getStudy(studyName, [
+        'name',
+        'sample_prefix',
+        'sample_suffix_length',
+        'has_rna_samples',
+        'has_partial_opposition',
+      ])) as StudyForProbands;
     } catch (err) {
       console.error(err);
       throw Boom.notFound('Could not get study, because it does not exist');

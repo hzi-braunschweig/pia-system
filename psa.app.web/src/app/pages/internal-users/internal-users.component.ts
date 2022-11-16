@@ -43,7 +43,7 @@ export class InternalUsersComponent implements OnInit {
     { value: 'EinwilligungsManager', viewValue: 'ROLES.COMPLIANCE_MANAGER' },
     { value: 'Untersuchungsteam', viewValue: 'ROLES.RESEARCH_TEAM' },
   ];
-  public selectedRole = new FormControl('Forscher');
+  public selectedRole = new FormControl<ProfessionalRole>('Forscher');
 
   public dataSource: MatTableDataSource<ProfessionalAccount> =
     new MatTableDataSource<ProfessionalAccount>();

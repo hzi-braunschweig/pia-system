@@ -1097,8 +1097,11 @@ const postgresqlHelper = (function () {
     );
   }
 
-  async function getStudy(id) {
-    return db.one('SELECT * FROM studies WHERE name=${id}', { id: id });
+  async function getStudy(id, columns) {
+    return db.one('SELECT ${columns:name} FROM studies WHERE name=${id}', {
+      id: id,
+      columns: columns,
+    });
   }
 
   async function getStudyAddresses(studyNames) {
@@ -1655,6 +1658,7 @@ const postgresqlHelper = (function () {
      * @description gets the study with the specified id
      * @memberof module:postgresqlHelper
      * @param {string} id the id of the study to find
+     * @param {(string[])} fields fields to fetch
      * @returns {Promise} a resolved promise with the found study or a rejected promise with the error
      */
     getStudy: getStudy,

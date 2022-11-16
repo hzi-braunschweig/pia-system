@@ -5,7 +5,11 @@
  */
 
 import { Component } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular';
+import {
+  AlertController,
+  LoadingController,
+  ModalController,
+} from '@ionic/angular';
 import { AccountClientService } from '../../services/account-client.service';
 import { AuthService } from '../../../auth/auth.service';
 import { DeleteAccountModalService } from '../../services/delete-account-modal.service';
@@ -26,7 +30,8 @@ export class DeleteAccountModalComponent {
     private deleteAccountModalService: DeleteAccountModalService,
     private alertController: AlertController,
     private authService: AuthService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private loadingCtrl: LoadingController
   ) {}
 
   async delete() {
@@ -54,9 +59,12 @@ export class DeleteAccountModalComponent {
       'DELETE_ACCOUNT.BUTTON_LOGOUT'
     );
 
-    await this.presentAlert(text, buttonLabel, () => {
-      this.dismiss();
-      this.authService.logout();
+    await this.presentAlert(text, buttonLabel, async () => {
+      const loading = await this.loadingCtrl.create({
+        message: this.translateService.instant('GENERAL.LOADING'),
+      });
+      await loading.present();
+      await this.authService.logout().catch(loading.dismiss);
     });
   }
 

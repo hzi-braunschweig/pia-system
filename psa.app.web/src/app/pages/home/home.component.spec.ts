@@ -10,7 +10,7 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { MockBuilder } from 'ng-mocks';
 
@@ -33,11 +33,16 @@ describe('HomeComponent', () => {
   let queryParamsSubject: Subject<Params>;
   let notificationService: SpyObj<NotificationService>;
   let notification: SpyObj<NotificationPresenter>;
+  let router: Router;
 
   beforeEach(async () => {
-    user = jasmine.createSpyObj<CurrentUser>('CurrentUser', ['isProband'], {
-      study: 'Teststudy',
-    });
+    user = jasmine.createSpyObj<CurrentUser>(
+      'CurrentUser',
+      ['isProband', 'isProfessional'],
+      {
+        study: 'Teststudy',
+      }
+    );
     user.isProband.and.returnValue(true);
     questionnaireService = jasmine.createSpyObj<QuestionnaireService>(
       'QuestionnaireService',
@@ -48,6 +53,7 @@ describe('HomeComponent', () => {
       welcome_text: 'Welcome',
       language: 'de-de',
     });
+    router = jasmine.createSpyObj('Router', ['navigate']);
 
     queryParamsSubject = new Subject<Params>();
     activatedRoute = jasmine.createSpyObj<ActivatedRoute>(
@@ -73,7 +79,8 @@ describe('HomeComponent', () => {
       .mock(QuestionnaireService, questionnaireService)
       .mock(ActivatedRoute, activatedRoute)
       .mock(NotificationService, notificationService)
-      .mock(NotificationPresenter, notification);
+      .mock(NotificationPresenter, notification)
+      .mock(Router, router);
   });
 
   describe('ngOnInit()', () => {
@@ -82,10 +89,10 @@ describe('HomeComponent', () => {
       expect(component.welcomeText).toEqual('Welcome');
     }));
 
-    it('should not request the welcome text for professionals', fakeAsync(() => {
-      user.isProband.and.returnValue(false);
+    it('should redirect professionals to study page', fakeAsync(() => {
+      user.isProfessional.and.returnValue(true);
       createComponent();
-      expect();
+      expect(router.navigate).toHaveBeenCalledWith(['study']);
     }));
 
     it('should request notification on param changes', fakeAsync(() => {

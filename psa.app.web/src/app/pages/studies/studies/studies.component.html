@@ -18,6 +18,7 @@
         mat-raised-button
         color="primary"
         (click)="addOrEditStudy()"
+        data-unit="create-study-button"
         data-e2e="create-study-button"
       >
         {{ 'STUDIES.NEW_STUDY' | translate }}
@@ -29,6 +30,7 @@
           matInput
           [formControl]="filterKeyword"
           placeholder="{{ 'DIALOG.FILTER' | translate }}"
+          data-e2e="filter"
         />
       </mat-form-field>
     </div>
@@ -79,6 +81,71 @@
         </mat-cell>
       </ng-container>
 
+      <!-- Registration Column -->
+      <ng-container matColumnDef="registration">
+        <mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          fxLayoutAlign="center center"
+        >
+          {{ 'STUDIES.REGISTRATION' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row" fxLayoutAlign="center center">
+          {{
+            (row.has_open_self_registration
+              ? 'STUDIES.OPEN_REGISTRATION'
+              : 'STUDIES.CLOSED_REGISTRATION'
+            ) | translate
+          }}
+          <a
+            mat-icon-button
+            color="primary"
+            target="_blank"
+            *ngIf="
+              row.has_open_self_registration &&
+              isStudyConfigurationComplete(row)
+            "
+            [href]="row.registrationUrl"
+            [matTooltip]="'STUDY.OPEN_REGISTRATION_LINK' | translate"
+          >
+            <mat-icon>open_in_new</mat-icon>
+          </a>
+          <div
+            *ngIf="
+              row.has_open_self_registration &&
+              !isStudyConfigurationComplete(row)
+            "
+            [matTooltip]="'STUDY.CONFIGURATION_INCOMPLETE_HINT' | translate"
+          >
+            &nbsp;<mat-icon>warning</mat-icon>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Accounts Count Column -->
+      <ng-container matColumnDef="accounts">
+        <mat-header-cell
+          *matHeaderCellDef
+          mat-sort-header
+          fxLayoutAlign="center center"
+        >
+          {{ 'STUDIES.ACCOUNTS' | translate }}
+        </mat-header-cell>
+        <mat-cell *matCellDef="let row" fxLayoutAlign="center center">
+          <span [matTooltip]="'STUDY.ACCOUNTS_COUNT_HINT' | translate">
+            {{ row.accounts_count }}
+          </span>
+          <ng-container>
+            <span
+              *ngIf="row.max_allowed_accounts_count"
+              [matTooltip]="'STUDY.MAX_ALLOWED_ACCOUNTS_COUNT_HINT' | translate"
+            >
+              &nbsp;/ {{ row.max_allowed_accounts_count }}</span
+            >
+          </ng-container>
+        </mat-cell>
+      </ng-container>
+
       <ng-container matColumnDef="view">
         <mat-header-cell
           *matHeaderCellDef
@@ -108,47 +175,12 @@
           </button>
           <button
             mat-icon-button
+            data-unit="edit-study-button"
             (click)="addOrEditStudy(row.name)"
             *ngIf="user.hasRole('SysAdmin')"
             [disabled]="row.status === 'deleted'"
           >
             <mat-icon>edit</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            (click)="openDialogChangeStudy(row)"
-            [disabled]="row.status === 'deleted'"
-            matTooltip="{{ 'STUDIES.REQUEST_CHANGES' | translate }}"
-            [matTooltipDisabled]="row.pendingStudyChange"
-            *ngIf="!row.pendingStudyChange && user.hasRole('Forscher')"
-          >
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            (click)="openDialogChangeStudy(row)"
-            [disabled]="row.status === 'deleted'"
-            matTooltip="{{ 'STUDIES.CONFIRM_CHANGES' | translate }}"
-            *ngIf="
-              row.pendingStudyChange &&
-              user.hasRole('Forscher') &&
-              row.pendingStudyChange.requested_for === user.username
-            "
-          >
-            <mat-icon>check_circle_outline</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            (click)="cancelPendingStudyChange(row.pendingStudyChange.id)"
-            [disabled]="row.status === 'deleted'"
-            matTooltip="{{ 'STUDIES.CANCEL_STUDY_CHANGES' | translate }}"
-            *ngIf="
-              row.pendingStudyChange &&
-              user.hasRole('Forscher') &&
-              row.pendingStudyChange.requested_for !== user.username
-            "
-          >
-            <mat-icon>highlight_off_outlined</mat-icon>
           </button>
         </mat-cell>
       </ng-container>

@@ -26,6 +26,10 @@ export class TranslatedUserFactory {
         user.isTestProband ? 'GENERAL.YES' : 'GENERAL.NO'
       ),
       first_logged_in_at: user.firstLoggedInAt,
+      created_at: user.createdAt,
+      origin: this.translate.instant(
+        `PROBAND.ORIGIN.${user.origin.toUpperCase()}`
+      ),
       status: this.translate.instant(this.accountStatusPipe.transform(user)),
       userObject: user,
     };

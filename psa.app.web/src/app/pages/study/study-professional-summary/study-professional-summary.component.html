@@ -1,0 +1,140 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<mat-card *ngIf="study">
+  <mat-card-title>
+    {{ study.name }}
+    <div
+      class="study-status"
+      data-unit="study-status"
+      [ngClass]="mapStudyStatusToCssClass(study.status)"
+    >
+      {{ study.status | studyStatusConvert | translate }}
+    </div></mat-card-title
+  >
+  <mat-card-subtitle class="study-accounts-count">
+    <strong [matTooltip]="'STUDY.ACCOUNTS_COUNT_HINT' | translate">
+      {{ study.accounts_count }}
+    </strong>
+    <ng-container>
+      <strong
+        *ngIf="study.max_allowed_accounts_count"
+        [matTooltip]="'STUDY.MAX_ALLOWED_ACCOUNTS_COUNT_HINT' | translate"
+        >/ {{ study.max_allowed_accounts_count }}</strong
+      >
+    </ng-container>
+    {{ 'STUDY.PROBANDS' | translate }}</mat-card-subtitle
+  >
+
+  <mat-card-content>
+    <small class="study-description-label">{{
+      'STUDY.PSEUDONYM_PREFIX' | translate
+    }}</small>
+    <p class="study-description">{{ study.pseudonym_prefix }}</p>
+
+    <small class="study-description-label">{{
+      'STUDIES.DESCRIPTION' | translate
+    }}</small>
+    <p class="study-description">{{ study.description }}</p>
+
+    <ng-container
+      *ngIf="
+        study.has_open_self_registration &&
+        !currentUser.hasRole('EinwilligungsManager')
+      "
+    >
+      <small class="study-description-label">{{
+        'STUDY.REGISTRATION_LINK' | translate
+      }}</small>
+      <p class="study-description">
+        {{ 'STUDY.REGISTRATION_LINK_HINT' | translate }}
+      </p>
+
+      <div
+        class="registration-link"
+        *appNgLet="createRegistrationUrl() as registrationUrl"
+      >
+        <ng-container *ngIf="isStudyConfigurationComplete()">
+          <pre data-unit="registration-link">{{ registrationUrl }}</pre>
+          <button
+            mat-icon-button
+            color="primary"
+            [matTooltip]="'STUDY.COPY_REGISTRATION_LINK' | translate"
+            [cdkCopyToClipboard]="registrationUrl"
+          >
+            <mat-icon>content_copy</mat-icon>
+          </button>
+          <a
+            mat-icon-button
+            color="primary"
+            target="_blank"
+            [href]="registrationUrl"
+            [matTooltip]="'STUDY.OPEN_REGISTRATION_LINK' | translate"
+          >
+            <mat-icon>open_in_new</mat-icon>
+          </a>
+        </ng-container>
+        <ng-container *ngIf="!isStudyConfigurationComplete()">
+          <p>
+            <mat-icon>warning</mat-icon>
+            {{ 'STUDY.CONFIGURATION_INCOMPLETE_HINT' | translate }}
+          </p>
+        </ng-container>
+      </div>
+    </ng-container>
+  </mat-card-content>
+  <ng-container *ngIf="canUserEdit() && isStudyActive()">
+    <mat-divider></mat-divider>
+    <mat-card-actions data-unit="study-actions">
+      <button
+        mat-button
+        color="primary"
+        *ngIf="!study.pendingStudyChange"
+        (click)="editStudy.emit()"
+      >
+        {{ 'STUDY.CHANGE' | translate }}
+      </button>
+      <button
+        mat-button
+        color="primary"
+        *ngIf="
+          study.pendingStudyChange?.requested_for &&
+          study.pendingStudyChange?.requested_for === currentUser.username
+        "
+        (click)="editStudy.emit()"
+      >
+        {{ 'STUDY.CONFIRM_CHANGES' | translate }}
+      </button>
+      <button
+        mat-button
+        color="primary"
+        *ngIf="
+          study.pendingStudyChange?.requested_for &&
+          study.pendingStudyChange.requested_for !== currentUser.username
+        "
+        (click)="cancelPendingStudyChange.emit()"
+      >
+        {{ 'STUDY.CANCEL_CHANGES' | translate }}
+      </button>
+      <button
+        mat-button
+        color="primary"
+        (click)="editWelcomeMail.emit()"
+        data-e2e="edit-welcome-mail-button"
+      >
+        {{ 'STUDY.EDIT_WELCOME_MAIL' | translate }}
+      </button>
+      <button
+        mat-button
+        color="primary"
+        (click)="editWelcomeText.emit()"
+        data-e2e="edit-welcome-text-button"
+      >
+        {{ 'STUDY.EDIT_WELCOME_TEXT' | translate }}
+      </button>
+    </mat-card-actions>
+  </ng-container>
+</mat-card>

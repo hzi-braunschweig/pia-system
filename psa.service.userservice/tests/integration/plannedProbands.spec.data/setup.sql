@@ -10,9 +10,9 @@ VALUES ('ApiTestStudie'),
        ('ApiTestMultiProband'),
        ('ApiTestMultiProf');
 
-INSERT INTO probands(pseudonym, first_logged_in_at, study)
-VALUES ('qtest-proband1', '2021-05-20T09:34:22.760+02:00', 'ApiTestStudie'),
-       ('qtest-proband2', NULL, 'ApiTestStudie2');
+INSERT INTO probands(pseudonym, first_logged_in_at, study, origin)
+VALUES ('qtest-proband1', '2021-05-20T09:34:22.760+02:00', 'ApiTestStudie', 'investigator'),
+       ('qtest-proband2', NULL, 'ApiTestStudie2', 'investigator');
 
 INSERT INTO study_users(study_id, user_id, access_level)
 VALUES ('ApiTestStudie', 'qtest-forscher1', 'write'),

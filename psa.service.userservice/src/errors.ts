@@ -17,6 +17,10 @@ export class PseudonymAlreadyExistsError extends ErrorWithCausedBy {}
 export class IdsAlreadyExistsError extends ErrorWithCausedBy {}
 export class ProbandNotFoundError extends ErrorWithCausedBy {}
 export class UnknownRole extends ErrorWithCausedBy {}
+export class CannotGeneratePseudonymError extends ErrorWithCausedBy {}
+export class CannotUpdateAuthserverUsername extends ErrorWithCausedBy {}
+export class AccountLogoutError extends ErrorWithCausedBy {}
+export class CouldNotCreateNewRandomPseudonymError extends ErrorWithCausedBy {}
 
 export class MissingPermissionError extends SpecificError {
   public readonly statusCode = StatusCodes.FORBIDDEN;

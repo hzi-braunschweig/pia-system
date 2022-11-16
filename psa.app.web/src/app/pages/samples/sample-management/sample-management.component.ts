@@ -48,38 +48,16 @@ export class SampleManagementComponent implements OnInit {
   dataSource: MatTableDataSource<any>;
   dataWithProbandsWhoNeedsMaterial = [];
   data = [];
-  public cols: Observable<number>;
+  cols: Observable<number>;
   sample_id = new FormControl('');
   personalDataAllStudies: PersonalData[];
-
-  constructor(
-    public currentUser: CurrentUser,
-    private probandService: ProbandService,
-    private router: Router,
-    private matDialog: MatDialog,
-    private sampleTrackingService: SampleTrackingService,
-    private mediaObserver: MediaObserver,
-    private dataService: DataService,
-    private personalDataService: PersonalDataService,
-    private accountStatusPipe: AccountStatusPipe
-  ) {
-    const gridAns = new Map([
-      ['xs', 1],
-      ['sm', 2],
-      ['md', 3],
-      ['lg', 5],
-      ['xl', 5],
-    ]);
-    let startCond2: number;
-    gridAns.forEach((cols, mqAlias) => {
-      if (this.mediaObserver.isActive(mqAlias)) {
-        startCond2 = cols;
-      }
-    });
-    this.cols = this.mediaObserver.media$
-      .pipe(map((change) => gridAns.get(change.mqAlias)))
-      .pipe(startWith(startCond2));
-  }
+  readonly mediaColumnMap = new Map([
+    ['xs', 1],
+    ['sm', 2],
+    ['md', 3],
+    ['lg', 5],
+    ['xl', 5],
+  ]);
 
   displayedColumns = [
     'select',
@@ -99,6 +77,20 @@ export class SampleManagementComponent implements OnInit {
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   needsMaterialFilterCheckbox: any;
 
+  constructor(
+    public currentUser: CurrentUser,
+    private probandService: ProbandService,
+    private router: Router,
+    private matDialog: MatDialog,
+    private sampleTrackingService: SampleTrackingService,
+    private mediaObserver: MediaObserver,
+    private dataService: DataService,
+    private personalDataService: PersonalDataService,
+    private accountStatusPipe: AccountStatusPipe
+  ) {
+    this.initializeCols();
+  }
+
   async ngOnInit(): Promise<void> {
     this.personalDataAllStudies =
       await this.personalDataService.getPersonalDataAll();
@@ -114,6 +106,23 @@ export class SampleManagementComponent implements OnInit {
       .subscribe(
         () => (this.dataSource.filter = this.filter.nativeElement.value)
       );
+  }
+
+  initializeCols(): void {
+    let startCond2: number;
+    this.mediaColumnMap.forEach((cols, mqAlias) => {
+      if (this.mediaObserver.isActive(mqAlias)) {
+        startCond2 = cols;
+      }
+    });
+
+    this.cols = this.mediaObserver.asObservable().pipe(
+      map((changes) =>
+        changes.find((change) => this.mediaObserver.isActive(change.mqAlias))
+      ),
+      map((media) => this.mediaColumnMap.get(media.mqAlias)),
+      startWith(startCond2)
+    );
   }
 
   async initTable(studyName: string): Promise<void> {
@@ -167,25 +176,9 @@ export class SampleManagementComponent implements OnInit {
     }
   }
 
-  filterSelectMethod(): void {
-    if (!this.dataSource) {
-      return;
-    }
-  }
-
-  resetFilter(): void {
-    this.dataSource.filter = '';
-  }
-
   onClickViewSampleListForUser(username: string, status: string): void {
-    let deactivated;
-    if (status === 'PROBANDEN.STATUS_DEACTIVATED') {
-      deactivated = true;
-    } else {
-      deactivated = false;
-    }
     this.router.navigate(['/sample-management/', username], {
-      queryParams: { deactivated },
+      queryParams: { deactivated: status === 'PROBANDEN.STATUS_DEACTIVATED' },
     });
   }
 
@@ -217,7 +210,7 @@ export class SampleManagementComponent implements OnInit {
             newData
           );
         },
-        (err) => {
+        () => {
           this.geBloodSamplesForBloodSampleID(
             usersArray,
             filterSampleID,
@@ -249,7 +242,7 @@ export class SampleManagementComponent implements OnInit {
           });
           this.dataSource.data = newData;
         },
-        (err: any) => {
+        () => {
           usersArray.forEach((probandUsername) => {
             this.dataSource.data.forEach((proband) => {
               if (proband.username === probandUsername) {
@@ -303,7 +296,7 @@ export class SampleManagementComponent implements OnInit {
   }
 
   openDialog(): void {
-    const dialogRef = this.matDialog.open(DialogOkCancelComponent, {
+    this.matDialog.open(DialogOkCancelComponent, {
       width: '450px',
       data: {
         q: 'SAMPLE_MANAGEMENT.COLLECTIVE_LETTERS',

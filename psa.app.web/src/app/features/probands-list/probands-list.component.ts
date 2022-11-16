@@ -70,7 +70,9 @@ export class ProbandsListComponent implements OnInit {
     'study',
     'is_test_proband',
     'first_logged_in_at',
+    'created_at',
     'accountStatus',
+    'origin',
   ];
 
   // eslint-disable-next-line @angular-eslint/no-output-rename

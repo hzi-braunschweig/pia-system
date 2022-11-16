@@ -9,7 +9,7 @@ import { baseEnvironment, Environment } from './environment.base';
 export const environment: Environment = {
   ...baseEnvironment,
   production: true,
-  baseUrl: window.location.origin + '/admin',
+  baseUrl: `${window.location.origin}/admin`,
   defaultLanguage: '${DEFAULT_LANGUAGE}',
   isSormasEnabled:
     '${IS_SORMAS_ENABLED}' && '${IS_SORMAS_ENABLED}'.toLowerCase() !== 'false',

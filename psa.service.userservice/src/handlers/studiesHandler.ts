@@ -9,6 +9,7 @@ import { Lifecycle, Request } from '@hapi/hapi';
 import { AccessToken } from '@pia/lib-service-core';
 import { StudiesInteractor } from '../interactors/studiesInteractor';
 import { Study } from '../models/study';
+import { StudyWelcomeMailTemplateRequestDto } from '../models/studyWelcomeEmail';
 
 export class StudiesHandler {
   /**
@@ -16,7 +17,6 @@ export class StudiesHandler {
    */
   public static getOne: Lifecycle.Method = async (request: Request) => {
     return await StudiesInteractor.getStudy(
-      request.auth.credentials as AccessToken,
       request.params['studyName'] as string
     );
   };
@@ -66,6 +66,29 @@ export class StudiesHandler {
     request: Request
   ) => {
     return await StudiesInteractor.getStudyWelcomeText(
+      request.params['studyName'] as string
+    );
+  };
+
+  /**
+   * @description updates the study welcome mail content
+   */
+  public static updateStudyWelcomeMail: Lifecycle.Method = async (
+    request: Request
+  ) => {
+    return await StudiesInteractor.updateStudyWelcomeMail(
+      request.params['studyName'] as string,
+      request.payload as StudyWelcomeMailTemplateRequestDto
+    );
+  };
+
+  /**
+   * @description gets the study welcome mail content
+   */
+  public static getStudyWelcomeMail: Lifecycle.Method = async (
+    request: Request
+  ) => {
+    return await StudiesInteractor.getStudyWelcomeMail(
       request.params['studyName'] as string
     );
   };

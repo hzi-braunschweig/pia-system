@@ -60,6 +60,23 @@ describe('Example Pipelines', () => {
     expect(pdf).to.be.an.instanceOf(Buffer);
   });
 
+  it('should create a HTMLDocument', async () => {
+    const htmlText = await new MarkdownDocument(
+      '# Hello\n<pia-my-custom-tag></pia-my-custom-tag>\nHallo _italic_ World'
+    )
+      .pipe(new MarkdownCompiler(allowedTags))
+      .pipe(new HtmlParser())
+      .pipe(new PiaMyCustomTag())
+      .pipe(new HtmlSerializer())
+      .pipe(new TemplateRenderer({ hello: 'Hello World' })).htmlText;
+    expect(htmlText).to.equal(
+      `<h1 id="hello">Hello</h1>
+<p><p>Hello World</p>
+Hallo <em>italic</em> World</p>
+`
+    );
+  });
+
   it('should segment a simple example', async () => {
     const NUMBER_OF_SEGMENTS = 3;
     const segments = await new MarkdownDocument(

@@ -9,7 +9,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DialogDeleteAccountHealthDataPermissionComponent } from './dialog-delete-account-health-data-permission.component';
 import { MockBuilder } from 'ng-mocks';
 import { AppModule } from '../../app.module';
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { TranslatePipe } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 
@@ -21,9 +20,7 @@ describe('DeleteAccountHealthDataPermissionDialogComponent', () => {
     await MockBuilder(
       DialogDeleteAccountHealthDataPermissionComponent,
       AppModule
-    )
-      .mock(MAT_DIALOG_DATA, true)
-      .mock(TranslatePipe, (value) => value);
+    ).mock(TranslatePipe, (value) => value);
   });
 
   beforeEach(() => {

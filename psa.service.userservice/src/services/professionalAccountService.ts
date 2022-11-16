@@ -104,6 +104,7 @@ export class ProfessionalAccountService extends AccountService {
     await this.createAccount(
       {
         username,
+        email: username,
         role,
         studies: studyAccesses.map((access) => access.study_id),
         password,

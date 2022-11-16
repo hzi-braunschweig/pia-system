@@ -21,6 +21,7 @@
     "OK": "OK",
     "CANCEL": "Abbrechen",
     "OPEN": "Öffnen",
+    "PUBLISH": "Veröffentlichen",
     "DOWNLOAD": "Herunterladen",
     "TIMESTAMP": "Zeitstempel",
     "SET": "Setzen",
@@ -33,7 +34,10 @@
     "SEARCH": "Suche",
     "NO_OPTION_FOUND": "Keine Optionen gefunden",
     "LICENSES": "Software-Lizenzen",
-    "SELECT_STUDY": "Studie"
+    "SELECT_STUDY": "Studie",
+    "MARKDOWN_TEXT_INPUT": "Markdowntext eingeben",
+    "MAIL_SUBJECT": "Betreff",
+    "ADD_PSEUDONYM_TAG": "Pseudonym-Platzhalter einfügen"
   },
   "ERROR": {
     "ERROR": "Fehler",
@@ -68,6 +72,7 @@
   "SIDENAV": {
     "LOGOUT": "Abmelden",
     "HOME": "Startseite",
+    "STUDY": "Studien",
     "ADMINISTRATION": "Verwaltung",
     "QUESTIONNAIRES": "Fragebögen",
     "PROBANDS": "Teilnehmende",
@@ -89,8 +94,7 @@
       "QUESTION": "Wollen Sie sich wirklich abmelden?",
       "CONTENT": "Wenn Sie sich abmelden, werden Sie keine weiteren Benachrichtigungen von PIA erhalten. Wenn Sie nur die Benachrichtigungen ausstellen möchten, können Sie das in den Benachrichtigungseinstellungen Ihres Webbrowsers tun."
     },
-    "PROBAND": "Teilnehmer:in",
-    "STUDY_WELCOME_TEXT": "Begrüßungstext"
+    "PROBAND": "Teilnehmer:in"
   },
   "PLANNED_PROBANDS": {
     "CREATE_LOGIN_PDFS": "Login-Bögen erstellen",
@@ -475,7 +479,9 @@
     "NASAL_SWABS": "Nasenabstriche von",
     "BLOOD_SAMPLES": "Blutproben von",
     "TESTPROBAND": "Testteilnehmer:in:",
-    "FILTER_NO_RESULTS": "Keine Teilnehmenden gefunden."
+    "FILTER_NO_RESULTS": "Keine Teilnehmenden gefunden.",
+    "CREATED_AT": "Erstellt am",
+    "ORIGIN": "Erstellt durch"
   },
   "PROBAND": {
     "OPEN_SAMPLES": "Zur Probenverwaltung",
@@ -492,6 +498,11 @@
     "TEST_PROBAND": "Als Testteilnehmer:in markieren",
     "IS_TEST_PROBAND": "Testteilnehmer:in",
     "NOT_EXIST": "Teilnehmer:in existiert nicht",
+    "ORIGIN": {
+      "SELF": "Selbstregistrierung",
+      "INVESTIGATOR": "Untersuchungsteam",
+      "SORMAS": "SORMAS"
+    },
     "ERROR": {
       "USER_NOT_FOUND": "Es existiert kein Nutzer mit der Rolle 'Untersuchungsteam' in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen.",
       "NO_ACCESS_TO_STUDY": "Der Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen, hat keine Berechtigung für die Studie",
@@ -546,8 +557,8 @@
     "YEARS": " Jahre",
     "ANSWERS_SAVED": "Die Antworten wurden gespeichert, aber noch nicht abgeschickt.",
     "ANSWERS_SUBMMITED": "Die Antworten wurden gespeichert und abgeschickt.",
-    "SUCCESS": "Der Fragebogen {{data}} wurde erfolgreich erstellt. ",
-    "FAIL": "Der Fragebogen wurde aufgrund eines Fehlers nicht erfolgreich erstellt: {{data}}",
+    "SUCCESS": "Der Fragebogen {{questionnaireName}} wurde erfolgreich erstellt. ",
+    "FAIL": "Der Fragebogen wurde aufgrund eines Fehlers nicht erfolgreich erstellt: {{message}}",
     "SAME_STUDY": "Sie dürfen keine Studie zweimal auswählen.",
     "EMPTY_STUDY": " Der Studienname darf nicht leer sein.",
     "EMAIL": "Der Anmeldename muss eine gültige E-Mail-Adresse sein.",
@@ -612,6 +623,26 @@
       "VIEW_DATA_DELETE": "Bitte bestätigen Sie, dass die folgenden Daten für Teilnehmer:in {{ probandId }} über einen Zeitraum vom {{ startDate }} bis zum {{ endDate }} gelöscht werden sollen."
     }
   },
+  "STUDY": {
+    "EMPTY_CONTENT_HINT": "Bitte wählen Sie eine Studie aus, um sie ansehen und bearbeiten zu können",
+    "PROBANDS": "Teilnehmende mit Benutzeraccount",
+    "PSEUDONYM_PREFIX": "Pseudonym-Präfix",
+    "REGISTRATION_LINK": "Öffentlicher Registrierungslink",
+    "REGISTRATION_LINK_HINT": "Über den öffentlichen Registrierungslink können sich Teilnehmende selbstständig in der Studie registrieren. Er kann öffentlich geteilt werden.",
+    "COPY_REGISTRATION_LINK": "Registrierungslink in die Zwischenablage kopieren",
+    "OPEN_REGISTRATION_LINK": "Registrierungslink in neuem Tab öffnen",
+    "MAX_ALLOWED_ACCOUNTS_COUNT_HINT": "Maximal mögliche Anzahl registrierter Teilnehmender",
+    "ACCOUNTS_COUNT_HINT": "Aktuelle Anzahl registrierter Teilnehmender",
+    "CHANGE": "Studie ändern",
+    "CONFIRM_CHANGES": "Änderungen an der Studie bestätigen",
+    "EDIT_WELCOME_MAIL": "Begrüßungs-E-Mail anpassen",
+    "WELCOME_MAIL_PUBLISHED_SUCCESSFULLY": "Die Begrüßungs-E-Mail wurde erfolgreich angepasst.",
+    "EDIT_WELCOME_TEXT": "Begrüßungstext anpassen",
+    "WELCOME_TEXT_PUBLISHED_SUCCESSFULLY": "Der Begrüßungstext wurde erfolgreich angepasst.",
+    "CANCEL_CHANGES": "Änderungen an der Studie beenden",
+    "CANCEL_CHANGES_CONFIRMATION_QUESTION": "Möchten Sie die angefragte Studienänderung beenden?",
+    "CONFIGURATION_INCOMPLETE_HINT": "Bevor die Selbstregistrierung genutzt werden kann, muss zuerst das Pseudonym-Präfix und die Pseudonym-Länge von Forschenden mit Administrationsrechten konfiguriert werden."
+  },
   "STUDIES": {
     "NEW_STUDY": "Studie erstellen",
     "CHANGE_STUDY": "Studie ändern",
@@ -630,13 +661,13 @@
     "USERNAME_OR_IDS": "Anmeldename/IDS",
     "SAMPLE_PREFIX": "Präfix der Proben-IDs (z.B. 'ZIFCO')",
     "SAMPLE_SUFFIX_LENGTH": "Ziffernlänge der Proben-IDs (z.B. \"10\")",
-    "PSEUDONYM_PREFIX": "Präfix der Pseudonym-IDs (z.B. 'PIA')",
-    "PSEUDONYM_SUFFIX_LENGTH": "Ziffernlänge der Pseudonym-IDs (z.B. \"10\")",
+    "PSEUDONYM_PREFIX": "Präfix der Pseudonyme (z.B. \"PIA\")",
+    "PSEUDONYM_SUFFIX_LENGTH": "Ziffernlänge der Pseudonyme (z.B. \"10\")",
     "INVALID_PSEUDONYM_PREFIX": "Das Pseudonym-Präfix ist ungültig.",
     "MISSING_PERMISSION": "Sie haben nicht die nötigen Rechte, um die Studie zu ändern. Bitte wenden Sie sich an Ihre:n Administrator:in.",
     "PENDING_CHANGE_ALREADY_EXISTS": "Es existiert bereits eine angefragte Änderung zu dieser Studie, die zuerst bearbeitet werden muss.",
     "REQUESTED_FOR_NOT_REACHED": "Der Benutzer, der die Anfrage bestätigen soll, konnte nicht per Mail erreicht werden.",
-    "HAS_RNA_SAMPLES": "Eine zusätzliche RNAlater Probe soll eingescannt werden.",
+    "HAS_RNA_SAMPLES": "Eine zusätzliche RNAlater Probe soll eingescannt werden",
     "HAS_REQUIRED_TOTP": "Zwei-Faktor-Authentifizierung ist für professionelle Nutzer:innen verpflichtend",
     "HAS_ANSWERS_NOTIFY_FEATURE": "Auffällige Antworten",
     "HAS_ANSWERS_NOTIFY_FEATURE_BY_MAIL": "E-Mail bei auffälligen Antworten",
@@ -652,7 +683,17 @@
     "HAS_TOTAL_OPPOSITION": "Vollständiger Widerspruch",
     "HAS_COMPLIANCE_OPPOSITION": "Einwilligungs-Widerspruch",
     "HAS_LOGGING_OPT_IN": "Opt-in für Logdaten-Erhebung (sonst Opt-out)",
-    "EXAMPLE_RESULT": "Beispiel Ergebnis"
+    "EXAMPLE_RESULT": "Beispiel Ergebnis",
+    "HAS_OPEN_SELF_REGISTRATION": "Offene Selbst-Registrierung aktivieren",
+    "MAX_ALLOWED_ACCOUNTS_COUNT": "Maximale Anzahl aktiver Teilnehmender der Studie (z.B. \"1000\")",
+    "MAX_ALLOWED_ACCOUNTS_COUNT_MIN_ERROR": "Die maximale Anzahl aktiver Teilnehmender darf nicht negativ sein, darf nicht kleiner als die tatsächliche Anzahl aktiver Teilnehmender sein und kann nur nach oben korrigiert werden",
+    "MAX_ALLOWED_ACCOUNTS_COUNT_REQUIRED_ERROR": "Für die offene Selbst-Registrierung muss die Anzahl der Teilnehmenden limitiert werden",
+    "MAX_ALLOWED_ACCOUNTS_COUNT_MAX_ERROR": "Die Ziffernlänge der Pseudonyme muss erhöht werden, um das Teilnehmenden-Limit erhöhen zu können",
+    "PSEUDONYM_SUFFIX_LENGTH_MIN_ERROR": "Bitte wählen Sie eine höhere Ziffernlänge, um das oben angegebene Teilnehmenden-Limit unterstützen zu können",
+    "REGISTRATION": "Registrierung",
+    "ACCOUNTS": "Teilnehmende mit Benutzeraccount",
+    "OPEN_REGISTRATION": "offen",
+    "CLOSED_REGISTRATION": "geschlossen"
   },
   "ROLES": {
     "ROLES": "Rollen",
@@ -805,13 +846,6 @@
     "FILTER_BY_NOTABLE": "Nur auffällige Antworten",
     "FILTER_BY_NOT_FILLEDOUT": "Nur nicht ausgefüllte FB",
     "PROCESSED_STATUS_CHANGED": "Der Bearbeitungsstatus wurde geändert"
-  },
-  "WELCOME_TEXT": {
-    "WELCOME_TEXT_INPUT": "Begrüßungstext eingeben",
-    "PREVIEW": "Vorschau",
-    "EDIT": "Bearbeiten",
-    "PUBLISH": "Veröffentlichen",
-    "PUBLISHED_SUCCESSFULLY": "Der Begrüßungstext wurde erfolgreich bereitgestellt."
   },
   "SYSTEM": {
     "IS_DEVELOPMENT_SYSTEM": "Achtung! Dies ist ein Entwicklungssystem!"

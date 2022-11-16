@@ -5,7 +5,7 @@
  */
 
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 
 export interface DialogPopUpData {
@@ -17,35 +17,25 @@ export interface DialogPopUpData {
 @Component({
   selector: 'app-dialog-pop-up',
   template: `
-    <h1 mat-dialog-title style=" display: flex; justify-content: center; ">
-      <button disabled mat-icon-button style="margin:10px;margin-right:90px;">
-        <mat-icon
-          style="font-size: 100px; color:#7aa228;"
-          *ngIf="data.isSuccess"
-          >check_circle</mat-icon
-        >
-        <mat-icon
-          style="font-size: 100px; color:#f44336;"
-          *ngIf="!data.isSuccess"
-          >cancel</mat-icon
-        >
-      </button>
-    </h1>
-    <mat-dialog-content>{{
-      data.content | translate: data.values
-    }}</mat-dialog-content>
-    <hr />
+    <div
+      style="display: flex; justify-content: center; font-size: 80px; margin-bottom: 25px;"
+    >
+      <mat-icon [inline]="true" style="color:#7aa228;" *ngIf="data.isSuccess">
+        check_circle
+      </mat-icon>
+      <mat-icon [inline]="true" style="color:#f44336;" *ngIf="!data.isSuccess">
+        cancel
+      </mat-icon>
+    </div>
+    <mat-dialog-content>
+      {{ data.content | translate: data.values }}
+    </mat-dialog-content>
     <mat-dialog-actions align="center">
-      <button id="confirmbutton" mat-button [mat-dialog-close]>OK</button>
+      <button mat-button color="primary" [mat-dialog-close] id="confirmbutton">
+        OK
+      </button>
     </mat-dialog-actions>
   `,
-  styles: [
-    `
-      mat-dialog-content {
-        white-space: pre-wrap;
-      }
-    `,
-  ],
 })
 export class DialogPopUpComponent {
   constructor(

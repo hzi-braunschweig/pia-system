@@ -2,15 +2,15 @@
   "realm": "pia-admin-realm",
   "users": [
     {
-      "username": "[[env:NEW_USER_EMAIL]]",
-      "email": "[[env:NEW_USER_EMAIL]]",
+      "username": [[env:NEW_USER_EMAIL]],
+      "email": [[env:NEW_USER_EMAIL]],
       "enabled": true,
       "emailVerified": true,
       "credentials": [
         {
           "type": "password",
           "userLabel": "initial",
-          "value": "[[env:NEW_USER_PASSWORD]]"
+          "value": [[env:NEW_USER_PASSWORD]]
         }
       ],
       "realmRoles": ["SysAdmin"]

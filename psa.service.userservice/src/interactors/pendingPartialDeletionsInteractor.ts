@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -101,22 +101,23 @@ export class PendingPartialDeletionsInteractor {
     }
 
     return await runTransaction(async (transaction) => {
-      if (
-        !(await pgHelper.areInstanceIdsFromUser(
-          data.probandId,
-          data.forInstanceIds,
-          {
-            transaction,
-          }
-        )) ||
-        !(await pgHelper.areSampleIdsFromUser(
-          data.probandId,
-          data.forLabResultsIds,
-          {
-            transaction,
-          }
-        ))
-      ) {
+      const instanceIdsAreNotFromUser = !(await pgHelper.areInstanceIdsFromUser(
+        data.probandId,
+        data.forInstanceIds,
+        {
+          transaction,
+        }
+      ));
+
+      const sampleTestsAreNotFromUser = !(await pgHelper.areSampleIdsFromUser(
+        data.probandId,
+        data.forLabResultsIds,
+        {
+          transaction,
+        }
+      ));
+
+      if (instanceIdsAreNotFromUser || sampleTestsAreNotFromUser) {
         throw Boom.forbidden('Not all data belong to the submitted proband.');
       }
 

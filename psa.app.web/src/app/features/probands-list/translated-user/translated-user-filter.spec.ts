@@ -88,6 +88,8 @@ describe('TranslatedUserFilter', () => {
       first_logged_in_at: new Date('2019-02-12'),
       status: 'Aktiv',
       userObject: createProband(),
+      created_at: null,
+      origin: 'PROBAND.ORIGIN.INVESTIGATOR',
     };
   }
 });

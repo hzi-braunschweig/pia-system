@@ -80,8 +80,8 @@ export class NotificationService {
     this.subscriptions.push(
       this.fcm
         .onMessageReceived()
-        .pipe(filter((data) => data.tap))
-        .subscribe((data: PushNotification) => this.openNotification(data.id))
+        .pipe(filter((data) => !!data.tap && !!data.id))
+        .subscribe((data) => this.openNotification(data.id))
     );
     this.auth.onBeforeLogout(() => this.fcm.unregister());
   }

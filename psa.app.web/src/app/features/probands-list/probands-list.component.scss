@@ -30,3 +30,13 @@
     }
   }
 }
+
+// ensure, cells have a spacing in between
+mat-cell,
+.mat-cell,
+mat-footer-cell,
+.mat-footer-cell,
+mat-header-cell,
+.mat-header-cell {
+  padding: 0.5rem;
+}

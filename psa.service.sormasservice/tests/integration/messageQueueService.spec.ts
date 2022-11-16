@@ -13,6 +13,7 @@ import { getRepository } from 'typeorm';
 import {
   MessageQueueClient,
   MessageQueueTestUtils,
+  MessageQueueTopic,
   Producer,
 } from '@pia/lib-messagequeue';
 import { Server } from '../../src/server';
@@ -67,11 +68,11 @@ describe('message queue service', function () {
       processedComplianceCreated =
         MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
-          'compliance.created',
+          MessageQueueTopic.COMPLIANCE_CREATED,
           testSandbox
         );
 
-      producer = await mqc.createProducer('compliance.created');
+      producer = await mqc.createProducer(MessageQueueTopic.COMPLIANCE_CREATED);
 
       fetchMock
         .get('express:/user/users/test-pseudonym/ids', 'test-ids')
@@ -112,11 +113,11 @@ describe('message queue service', function () {
       processedProbandDeleted =
         MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
-          'proband.deleted',
+          MessageQueueTopic.PROBAND_DELETED,
           testSandbox
         );
 
-      producer = await mqc.createProducer('proband.deleted');
+      producer = await mqc.createProducer(MessageQueueTopic.PROBAND_DELETED);
 
       fetchMock
         .get('express:/user/users/test-pseudonym/ids', 'test-ids')

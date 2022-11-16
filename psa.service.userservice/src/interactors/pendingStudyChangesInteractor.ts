@@ -188,7 +188,8 @@ export class PendingStudyChangesInteractor {
     id: number
   ): MailContent {
     const confirmationURL =
-      config.adminAppUrl + `/studies?pendingStudyChangeId=${id}&type=study`;
+      config.adminAppUrl +
+      `/extlink/study/${study_name}/pendingstudychange?id=${id}`;
     return {
       subject: 'PIA - Sie wurden gebeten eine Studienänderung zu bestätigen',
       text:

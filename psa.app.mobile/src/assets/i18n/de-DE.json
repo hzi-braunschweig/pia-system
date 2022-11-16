@@ -34,7 +34,8 @@
     "TOAST_MSG_NO_INTERNET": "Die Anfrage konnte nicht bearbeitet werden. Bitte überprüfen Sie Ihre Internetverbindung.",
     "TOAST_MSG_UNKNOWN_ERROR": "Die Anfrage konnte nicht bearbeitet werden. Ein unbekannter Fehler ist aufgetreten.",
     "CONFIRM_LOGOUT_TITLE": "Wollen Sie sich wirklich abmelden?",
-    "CONFIRM_LOGOUT_MSG": "Wenn Sie sich abmelden, werden Sie keine weiteren Benachrichtigungen von PIA erhalten. Wenn Sie nur die Benachrichtigungen ausstellen möchten, können Sie das in den Benachrichtigungseinstellungen Ihres Gerätes tun."
+    "CONFIRM_LOGOUT_MSG": "Wenn Sie sich abmelden, werden Sie keine weiteren Benachrichtigungen von PIA erhalten. Wenn Sie nur die Benachrichtigungen ausstellen möchten, können Sie das in den Benachrichtigungseinstellungen Ihres Gerätes tun.",
+    "LOGGING_OUT": "Ausloggen..."
   },
   "HOME": {
     "TITLE": "Startseite"

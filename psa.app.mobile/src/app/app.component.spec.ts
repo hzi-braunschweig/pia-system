@@ -13,10 +13,11 @@ import { ComplianceService } from './compliance/compliance-service/compliance.se
 import { NotificationService } from './shared/services/notification/notification.service';
 import { User } from './auth/auth.model';
 import { AppModule } from './app.module';
-import { Platform } from '@ionic/angular';
+import { AlertController, LoadingController, Platform } from '@ionic/angular';
 import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
 import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
 import { TranslatePipe } from '@ngx-translate/core';
+import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
 import SpyObj = jasmine.SpyObj;
 
 describe('AppComponent', () => {
@@ -26,7 +27,11 @@ describe('AppComponent', () => {
   let auth: SpyObj<AuthService>;
   let compliance: SpyObj<ComplianceService>;
   let notification: SpyObj<NotificationService>;
+  let alertCtrl: SpyObj<AlertController>;
+  let loadingCtrl: SpyObj<LoadingController>;
   let currentUser$: BehaviorSubject<User>;
+  let alertOkHandler: (value) => void;
+
   const currentUser: User = {
     username: 'TESTUSER-1234',
     role: 'Proband',
@@ -46,7 +51,7 @@ describe('AppComponent', () => {
     currentUser$ = new BehaviorSubject<User>(currentUser);
     auth = jasmine.createSpyObj(
       'AuthService',
-      ['getCurrentUser', 'isAuthenticated'],
+      ['getCurrentUser', 'isAuthenticated', 'logout'],
       {
         currentUser$,
       }
@@ -63,11 +68,38 @@ describe('AppComponent', () => {
       ['initPushNotifications']
     );
 
+    alertCtrl = jasmine.createSpyObj<AlertController>('AlertController', [
+      'create',
+    ]);
+    alertCtrl.create.and.callFake((config) => {
+      alertOkHandler = (
+        config.buttons
+          .filter((button) => typeof button !== 'string')
+          .find((button: AlertButton) => button.handler) as AlertButton
+      ).handler;
+
+      return Promise.resolve({
+        present: () => Promise.resolve(),
+        dismiss: () => Promise.resolve(),
+      } as unknown as HTMLIonAlertElement);
+    });
+
+    loadingCtrl = jasmine.createSpyObj<LoadingController>('LoadingController', [
+      'create',
+    ]);
+    loadingCtrl.create.and.callFake(() => {
+      return Promise.resolve({
+        present: () => Promise.resolve(),
+        dismiss: () => Promise.resolve(),
+      } as unknown as HTMLIonLoadingElement);
+    });
+
     platformSpy.ready.and.resolveTo();
     compliance.userHasCompliances.and.resolveTo(true);
     compliance.isInternalComplianceActive.and.resolveTo(true);
     auth.isAuthenticated.and.returnValue(true);
     auth.getCurrentUser.and.returnValue(currentUser);
+    auth.logout.and.resolveTo();
 
     await MockBuilder(AppComponent, AppModule)
       .mock(AuthService, auth)
@@ -77,6 +109,8 @@ describe('AppComponent', () => {
       .mock(SplashScreen, splashScreenSpy)
       .mock(Platform, platformSpy)
       .mock(Platform, platformSpy)
+      .mock(AlertController, alertCtrl)
+      .mock(LoadingController, loadingCtrl)
       .mock(TranslatePipe, (value) => value);
   });
 
@@ -144,4 +178,27 @@ describe('AppComponent', () => {
       '/contact'
     );
   }));
+
+  describe('onLogout()', () => {
+    beforeEach(fakeAsync(() => {
+      const fixture = TestBed.createComponent(AppComponent);
+      tick();
+      fixture.detectChanges();
+
+      fixture.componentInstance.onLogout();
+    }));
+
+    it('should present a confirm alert on logout', () => {
+      expect(alertCtrl.create).toHaveBeenCalledTimes(1);
+    });
+
+    it('should logout on ok click', fakeAsync(() => {
+      expect(alertOkHandler).toBeDefined();
+
+      alertOkHandler(null);
+      tick();
+
+      expect(auth.logout).toHaveBeenCalledTimes(1);
+    }));
+  });
 });

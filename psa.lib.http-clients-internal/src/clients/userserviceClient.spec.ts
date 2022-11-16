@@ -18,6 +18,7 @@ import {
   ProbandRequestInternalDto,
   ProbandStatus,
 } from '../dtos/proband';
+import { ProbandOrigin } from '../../dist';
 
 chai.use(chaiAsPromised);
 
@@ -632,6 +633,7 @@ describe('UserserviceClient', () => {
       complianceBloodsamples: true,
       studyCenter: 'THE SC',
       examinationWave: 1,
+      origin: ProbandOrigin.INVESTIGATOR,
     };
   }
 });

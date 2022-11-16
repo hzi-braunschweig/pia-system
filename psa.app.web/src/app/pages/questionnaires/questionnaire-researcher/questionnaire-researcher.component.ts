@@ -35,13 +35,14 @@ import {
 } from '@angular/material/core';
 import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 import { MatDialog } from '@angular/material/dialog';
-import { DialogQuestionnaireSuccessComponent } from '../../../_helpers/dialog-questionnaire-success';
-import { DialogQuestionnaireFailComponent } from '../../../_helpers/dialog-questionnaire-fail';
 import {
   APP_DATE_FORMATS,
   AppDateAdapter,
 } from '../../../_helpers/date-adapter';
-import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
+import {
+  DialogPopUpComponent,
+  DialogPopUpData,
+} from '../../../_helpers/dialog-pop-up';
 import { MediaObserver } from '@angular/flex-layout';
 import { NgxMaterialTimepickerTheme } from 'ngx-material-timepicker';
 import { environment } from '../../../../environments/environment';
@@ -568,10 +569,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
         );
       }
       this.myForm.markAsPristine();
-      this.dialog.open(DialogQuestionnaireSuccessComponent, {
-        width: '500px',
-        data: { data: savedQuestionnaire.name },
-      });
+      this.showSuccessDialog(savedQuestionnaire.name);
       await this.router.navigateByUrl('/', { skipLocationChange: true });
       this.router.navigate([
         '/questionnaire',
@@ -580,10 +578,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
         'edit',
       ]);
     } catch (err) {
-      this.dialog.open(DialogQuestionnaireFailComponent, {
-        width: '500px',
-        data: { data: err.error.message },
-      });
+      this.showFailureDialog(err.error.message);
     }
     this.isLoading = false;
   }
@@ -3138,18 +3133,32 @@ export class QuestionnaireResearcherComponent implements OnInit {
     return numOfErr;
   }
 
-  private showSuccessDialog(message: string): void {
-    this.dialog.open(DialogQuestionnaireSuccessComponent, {
-      width: '500px',
-      data: { data: message },
-    });
+  private showSuccessDialog(questionnaireName: string): void {
+    this.dialog.open<DialogPopUpComponent, DialogPopUpData>(
+      DialogPopUpComponent,
+      {
+        width: '500px',
+        data: {
+          content: 'DIALOG.SUCCESS',
+          values: { questionnaireName },
+          isSuccess: true,
+        },
+      }
+    );
   }
 
   private showFailureDialog(message: string): void {
-    this.dialog.open(DialogQuestionnaireFailComponent, {
-      width: '500px',
-      data: { data: message },
-    });
+    this.dialog.open<DialogPopUpComponent, DialogPopUpData>(
+      DialogPopUpComponent,
+      {
+        width: '500px',
+        data: {
+          content: 'DIALOG.FAIL',
+          values: { message },
+          isSuccess: false,
+        },
+      }
+    );
   }
 
   private showDialog(message: string): void {

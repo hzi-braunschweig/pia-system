@@ -9,6 +9,7 @@ export async function asyncForEach<T>(
   callback: (entry: T, index: number, array: T[]) => Promise<void>
 ): Promise<void> {
   for (let index = 0; index < array.length; index++) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion,security/detect-object-injection
     await callback(array[index]!, index, array);
   }
 }
@@ -19,6 +20,7 @@ export async function asyncMap<I, O>(
 ): Promise<O[]> {
   const outputArray: O[] = [];
   for (let index = 0; index < array.length; index++) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion,security/detect-object-injection
     outputArray[index] = await callback(array[index]!, index, array);
   }
   return outputArray;

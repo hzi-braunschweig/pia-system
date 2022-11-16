@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { MessageQueueClient } from '@pia/lib-messagequeue';
+import { MessageQueueClient, MessageQueueTopic } from '@pia/lib-messagequeue';
 import { config } from '../config';
 import { NotificationHandlers } from './notificationHandlers';
 import { performance } from 'perf_hooks';
@@ -51,19 +51,19 @@ export class MessageQueueService extends MessageQueueClient {
     await super.connect();
 
     await this.createConsumer(
-      'proband.deleted',
+      MessageQueueTopic.PROBAND_DELETED,
       async (message: ProbandMessage) =>
         await MessageQueueService.onProbandDeleted(message.pseudonym)
     );
 
     await this.createConsumer(
-      'proband.created',
+      MessageQueueTopic.PROBAND_CREATED,
       async (message: ProbandMessage) =>
         await MessageQueueService.onProbandCreated(message.pseudonym)
     );
 
     await this.createConsumer(
-      'proband.logged_in',
+      MessageQueueTopic.PROBAND_LOGGED_IN,
       async (message: ProbandMessage) =>
         await MessageQueueService.onProbandLoggedIn(message.pseudonym)
     );

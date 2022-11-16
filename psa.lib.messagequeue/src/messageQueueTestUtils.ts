@@ -6,6 +6,7 @@
 
 import { MessageQueueClient } from './messageQueueClient';
 import { HandleMessageArgs } from './messageQueueClientInternals';
+import { MessageQueueTopic } from './messageQueueTopics';
 
 type HandleMessage = (args: HandleMessageArgs<unknown>) => Promise<void>;
 
@@ -32,7 +33,7 @@ export class MessageQueueTestUtils {
    */
   public static async injectMessageProcessedAwaiter(
     messageQueueClient: MessageQueueClient,
-    topic: string,
+    topic: MessageQueueTopic,
     sandbox?: Sandbox
   ): Promise<void> {
     return new Promise<void>((resolve) => {

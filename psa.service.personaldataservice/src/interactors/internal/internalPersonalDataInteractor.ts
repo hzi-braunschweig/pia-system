@@ -13,9 +13,14 @@ export class InternalPersonalDataInteractor {
    */
   public static async createOrUpdate(
     pseudonym: string,
-    personalData: PersonalDataReq
+    personalData: PersonalDataReq,
+    skipUpdateAccount: boolean
   ): Promise<PersonalData> {
-    return PersonalDataService.createOrUpdate(pseudonym, personalData);
+    return PersonalDataService.createOrUpdate(
+      pseudonym,
+      personalData,
+      skipUpdateAccount
+    );
   }
 
   /**

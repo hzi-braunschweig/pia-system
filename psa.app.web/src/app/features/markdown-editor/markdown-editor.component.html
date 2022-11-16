@@ -1,0 +1,22 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<div class="markdown-editor-container">
+  <mat-form-field appearance="fill" class="markdown-editor">
+    <mat-label>{{ 'GENERAL.MARKDOWN_TEXT_INPUT' | translate }}</mat-label>
+    <textarea
+      #markdownTextarea
+      matInput
+      cdkTextareaAutosize
+      cdkAutosizeMinRows="20"
+      [formControl]="text"
+      data-unit="markdown-editor-textarea"
+      data-e2e="markdown-editor-textarea"
+    ></textarea>
+  </mat-form-field>
+
+  <markdown class="markdown-preview" [data]="text.value"></markdown>
+</div>

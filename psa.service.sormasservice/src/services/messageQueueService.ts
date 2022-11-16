@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { MessageQueueClient } from '@pia/lib-messagequeue';
+import { MessageQueueClient, MessageQueueTopic } from '@pia/lib-messagequeue';
 import { config } from '../config';
 import { SormasStatusUpdateService } from './sormasStatusUpdateService';
 import { getRepository } from 'typeorm';
@@ -48,21 +48,21 @@ export class MessageQueueService extends MessageQueueClient {
     await super.connect();
 
     await this.createConsumer(
-      'compliance.created',
+      MessageQueueTopic.COMPLIANCE_CREATED,
       async (message: MessagePayloadComplianceCreated) => {
         await MessageQueueService.onComplianceCreated(message);
       }
     );
 
     await this.createConsumer(
-      'proband.deleted',
+      MessageQueueTopic.PROBAND_DELETED,
       async (message: MessagePayloadProbandDeleted) => {
         await MessageQueueService.onProbandDeleted(message);
       }
     );
 
     await this.createConsumer(
-      'questionnaire_instance.released',
+      MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
       async (message: MessagePayloadQuestionnaireInstanceReleased) => {
         await MessageQueueService.onQuestionnaireInstanceReleased(message);
       }

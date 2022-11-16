@@ -11,6 +11,7 @@ import chaiHttp from 'chai-http';
 import {
   HttpClient,
   ProbandInternalDto,
+  ProbandOrigin,
 } from '@pia-system/lib-http-clients-internal';
 import fetchMocker, { MockOptions } from 'fetch-mock';
 import { StatusCodes } from 'http-status-codes';
@@ -31,6 +32,7 @@ import {
   createProbandResponse,
 } from './instanceCreator.helper';
 import { MailService } from '@pia/lib-service-core';
+import { JournalPersonDto } from '../../src/models/sormas';
 
 chai.use(chaiHttp);
 chai.use(sinonChai);
@@ -140,10 +142,13 @@ describe('/symptomdiary', () => {
     it('should register proband in userservice and fetch additional data from SORMAS', async () => {
       // Arrange
       const personUUID = 'test-person2-uuid';
+      const personData: Partial<JournalPersonDto> = {
+        emailAddress: 'dummy@localhost',
+      };
       fetchMock
-        .get('express:/user/studies/:study', {
+        .put('express:/personal/personalData/proband/:pseudonym', {
           status: StatusCodes.OK,
-          body: { pseudonym_prefix: 'TEST', pseudonym_suffix_length: 10 },
+          body: personData,
         })
         .get('express:/sormas-rest/visits-external/person/' + personUUID, {
           status: StatusCodes.OK,
@@ -158,22 +163,55 @@ describe('/symptomdiary', () => {
         });
 
       // Act
-      await chai
+      const result = await chai
         .request(apiAddress)
         .post('/symptomdiary/external-data/' + personUUID)
         .send()
         .set(await getAuthHeader());
 
       // Assert
+      const body = result.body as { success: boolean; message: string };
+      const pseudonym = body.message.match(/(test-\d+)/)?.pop();
+      expect(body.success).to.eq(true);
+      expect(pseudonym).to.eq('test-0123456789');
+
       expect(
         fetchMock.called(
           'express:/sormas-rest/visits-external/person/' + personUUID,
           'GET'
         )
       ).to.be.true;
+
       expect(
-        fetchMock.called('express:/user/studies/:studyName/probands', 'POST')
-      ).to.be.true;
+        fetchMock.lastOptions(
+          'express:/personal/personalData/proband/:pseudonym',
+          'PUT'
+        )?.body
+      ).to.eq(JSON.stringify({ email: 'test-user@example.com' }));
+
+      expect(
+        fetchMock.lastUrl(
+          'express:/personal/personalData/proband/:pseudonym',
+          'PUT'
+        )
+      ).to.include(pseudonym);
+
+      expect(
+        fetchMock.lastOptions(
+          'express:/user/studies/:studyName/probands',
+          'POST'
+        )?.body
+      ).to.eq(
+        JSON.stringify({
+          ids: 'test-person2-uuid',
+          complianceLabresults: false,
+          complianceBloodsamples: false,
+          complianceSamples: false,
+          studyCenter: null,
+          examinationWave: 0,
+          origin: ProbandOrigin.SORMAS,
+        })
+      );
     });
 
     it('should return success=false if registration in userservice failed', async () => {

@@ -15,10 +15,10 @@ else
 fi
 
 java -jar /keycloak-config-cli.jar \
-    --import.path=/import \
-    --import.var-substitution=true \
-    --import.var-substitution-prefix=[[ \
-    --import.var-substitution-suffix=]] \
+    --import.files.locations=/import/* \
+    --import.var-substitution.enabled=true \
+    --import.var-substitution.prefix=[[ \
+    --import.var-substitution.suffix=]] \
     --keycloak.availability-check.enabled=true \
     --keycloak.url=https://localhost:4000/ \
     --keycloak.user=${KEYCLOAK_ADMIN} \

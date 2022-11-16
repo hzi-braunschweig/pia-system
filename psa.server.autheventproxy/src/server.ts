@@ -40,10 +40,7 @@ export class AuthEventProxyServer implements Server {
   }
 
   public async init(): Promise<void> {
-    await this.hapi.register([
-      Metrics as Hapi.Plugin<unknown>,
-      ErrorHandler as Hapi.Plugin<unknown>,
-    ]);
+    await this.hapi.register([Metrics, ErrorHandler]);
 
     await this.messageQueueService.connect();
     await this.hapi.start();

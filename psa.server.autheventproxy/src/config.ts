@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { LoginWebAppProxy } from './proxys/loginWebAppProxy';
-import { LoginMobileAppProxy } from './proxys/loginMobileAppProxy';
 import {
   ConfigUtils,
   GlobalConfig,
@@ -13,10 +11,16 @@ import {
   SupersetOfServiceConfig,
 } from '@pia/lib-service-core';
 import { EventProxy } from './proxys/eventProxy';
+import { UserRegistrationProxy } from './proxys/userRegistrationProxy';
+import { LoginMobileAppProxy } from './proxys/loginMobileAppProxy';
+import { LoginWebAppProxy } from './proxys/loginWebAppProxy';
+import { ProbandEmailVerifiedProxy } from './proxys/probandEmailVerifiedProxy';
 
 export const proxys: typeof EventProxy[] = [
   LoginWebAppProxy,
   LoginMobileAppProxy,
+  UserRegistrationProxy,
+  ProbandEmailVerifiedProxy,
 ];
 
 const SSL_CERTS: SslCerts = {

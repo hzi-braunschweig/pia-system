@@ -379,7 +379,17 @@ describe('/admin/users', function () {
 
       // Assert
       expect(result).to.have.status(StatusCodes.NO_CONTENT);
-      expect(authClientUsersMock.create).to.be.calledOnce;
+
+      expect(authClientUsersMock.create).to.be.calledOnceWith({
+        realm: 'pia-admin-realm',
+        username: newUserForscher.username,
+        email: newUserForscher.username,
+        groups: ['/QTestStudy1'],
+        enabled: true,
+        credentials: [
+          { type: 'password', value: sinon.match.any, temporary: true },
+        ],
+      });
       expect(authClientUsersMock.addRealmRoleMappings).to.be.calledOnceWith({
         id: '1234',
         realm: 'pia-admin-realm',
@@ -403,7 +413,16 @@ describe('/admin/users', function () {
 
       // Assert
       expect(result).to.have.status(StatusCodes.NO_CONTENT);
-      expect(authClientUsersMock.create).to.be.calledOnce;
+      expect(authClientUsersMock.create).to.be.calledOnceWith({
+        realm: 'pia-admin-realm',
+        username: newUserUntersuchungsTeam.username,
+        email: newUserUntersuchungsTeam.username,
+        groups: [],
+        enabled: true,
+        credentials: [
+          { type: 'password', value: sinon.match.any, temporary: true },
+        ],
+      });
       expect(authClientUsersMock.addRealmRoleMappings).to.be.calledOnceWith({
         id: '1234',
         realm: 'pia-admin-realm',
@@ -427,7 +446,16 @@ describe('/admin/users', function () {
 
       // Assert
       expect(result).to.have.status(StatusCodes.NO_CONTENT);
-      expect(authClientUsersMock.create).to.be.calledOnce;
+      expect(authClientUsersMock.create).to.be.calledOnceWith({
+        realm: 'pia-admin-realm',
+        username: newUserProbandenManager.username,
+        email: newUserProbandenManager.username,
+        groups: [],
+        enabled: true,
+        credentials: [
+          { type: 'password', value: sinon.match.any, temporary: true },
+        ],
+      });
       expect(authClientUsersMock.addRealmRoleMappings).to.be.calledOnceWith({
         id: '1234',
         realm: 'pia-admin-realm',
@@ -451,7 +479,16 @@ describe('/admin/users', function () {
 
       // Assert
       expect(result).to.have.status(StatusCodes.NO_CONTENT);
-      expect(authClientUsersMock.create).to.be.calledOnce;
+      expect(authClientUsersMock.create).to.be.calledOnceWith({
+        realm: 'pia-admin-realm',
+        username: newUserEinwilligungsManager.username,
+        email: newUserEinwilligungsManager.username,
+        groups: [],
+        enabled: true,
+        credentials: [
+          { type: 'password', value: sinon.match.any, temporary: true },
+        ],
+      });
       expect(authClientUsersMock.addRealmRoleMappings).to.be.calledOnceWith({
         id: '1234',
         realm: 'pia-admin-realm',

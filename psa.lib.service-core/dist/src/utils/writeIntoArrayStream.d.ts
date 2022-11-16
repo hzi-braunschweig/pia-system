@@ -1,4 +1,5 @@
 /// <reference types="node" />
+/// <reference types="node" />
 import { Writable } from 'stream';
 export declare class WriteIntoArrayStream<T> extends Writable {
     private readonly array;

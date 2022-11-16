@@ -27,7 +27,8 @@ Producer -> [exchange]
 3. Create only one `Producer` using `createProducer` per topic.
 4. If a message could not be handled by a `Consumer`, throw an exception in the callback.
 5. The payload of a message should only contain the most basic infos (e.g. an ID of an DB-object or a username)
-6. The topic should not be too specific. For example `user-created` is fine, `user-of-study-${study}-created` would be too specific.
+6. The topic should not be too specific. For example `user-created` is fine, `user-of-study-${study}-created` would be
+   too specific.
 7. The healthcheck of a service should use the `isConnected` result of the `MessageQueueClient`
 8. Disconnect the `MessageQueueClient` instance on service shutdown.
 
@@ -57,15 +58,19 @@ Currently in use:
 - deactivated
 - created
 - released
+- logged_in
+- registered
 
 ### Existing topics
 
 | Topic name                        | Description                                                                            |
 | --------------------------------- | -------------------------------------------------------------------------------------- |
-| `proband.created`                 | Published when a proband is registered                                                 |
-| `proband.deleted`                 | Published when a proband's data should be fully deleted                                |
+| `proband.created`                 | Published when a proband was created                                                   |
+| `proband.deleted`                 | Published when a proband's data were fully deleted                                     |
 | `proband.deactivated`             | Published when a proband was deactivated and should not receive any new questionnaires |
-| `proband.logged_in`               | Published when a proband logs in                                                       |
+| `proband.logged_in`               | Published when a proband logged in                                                     |
+| `proband.registered`              | Published when a proband registered                                                    |
+| `proband.email_verified`          | Published when a proband successfully verified its email after registration            |
 | `compliance.created`              | Published when a compliance was filled out by a proband                                |
 | `questionnaire_instance.released` | Published when a questionnaire instance moves to any "released[...]" status            |
 

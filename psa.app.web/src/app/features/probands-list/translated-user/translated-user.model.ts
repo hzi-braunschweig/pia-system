@@ -14,4 +14,6 @@ export interface TranslatedUser {
   first_logged_in_at: Date;
   status: string;
   userObject: Proband;
+  created_at: Date;
+  origin: string;
 }

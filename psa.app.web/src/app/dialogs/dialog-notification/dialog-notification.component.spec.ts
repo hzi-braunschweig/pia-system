@@ -32,7 +32,11 @@ describe('DialogNotificationComponent', () => {
     notification = createNotificationDto();
 
     // Build Base Module
-    await MockBuilder(DialogNotificationComponent, AppModule)
+    await MockBuilder(DialogNotificationComponent, [
+      AppModule,
+      MatDialogRef,
+      MAT_DIALOG_DATA,
+    ])
       .mock(MatDialogRef, dialogRef)
       .mock(MAT_DIALOG_DATA, notification);
   });

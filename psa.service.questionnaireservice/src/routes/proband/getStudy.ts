@@ -12,7 +12,7 @@ import { studyParamsValidation } from '../studyRequestValidators';
 const route: ServerRoute = {
   path: '/studies/{studyName}',
   method: 'GET',
-  handler: StudiesHandler.getOne,
+  handler: StudiesHandler.getOneForProband,
   options: {
     description: 'get the study with the specified name if the user has access',
     auth: {

@@ -36,16 +36,16 @@ This file has been modified:
 
             <div class="${properties.kcFormGroupClass!}">
                 <div class="${properties.kcLabelWrapperClass!}">
-                    <label for="password-new" class="${properties.kcLabelClass!}" data-e2e="login-password-new">${msg("passwordNew")}</label>
+                    <label for="password-new" class="${properties.kcLabelClass!}">${msg("passwordNew")}</label>
                 </div>
                 <div class="${properties.kcInputWrapperClass!}">
                     <input type="password" id="password-new" name="password-new" class="${properties.kcInputClass!}"
                            autofocus autocomplete="new-password"
-                           data-e2e="login-password-confirm]"
+                           data-e2e="login-password-new"
                            aria-invalid="<#if messagesPerField.existsError('password','password-confirm')>true</#if>"
                     />
 
-                    <button type="button" id="reveal-password-new-button" class="input-icon-button-suffix">
+                    <button type="button" id="reveal-password-new-button" class="input-icon-button-suffix" tabindex="-1">
                         <img class="icon-eye" src="${url.resourcesPath}/img/eye.svg" alt="show password button icon"/>
                     </button>
 
@@ -69,7 +69,7 @@ This file has been modified:
                            aria-invalid="<#if messagesPerField.existsError('password-confirm')>true</#if>"
                     />
 
-                    <button type="button" id="reveal-password-confirm-button" class="input-icon-button-suffix">
+                    <button type="button" id="reveal-password-confirm-button" class="input-icon-button-suffix" tabindex="-1">
                         <img class="icon-eye" src="${url.resourcesPath}/img/eye.svg" alt="show password button icon"/>
                     </button>
 

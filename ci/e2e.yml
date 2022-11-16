@@ -1,4 +1,7 @@
+include: ci/rules.yml
+
 e2e:
+  extends: .job-exclude-scheduled-pipelines
   stage: test
   image:
     name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.e2e-runner:$IMAGE_ID
@@ -162,6 +165,9 @@ e2e:
     AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET: secret
     AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET: secret
 
+    AUTHSERVER_PROBAND_TERMS_OF_SERVICE_URL: https://info-pia.de/
+    AUTHSERVER_PROBAND_POLICY_URL: https://info-pia.de/
+
     SYSADMIN_EMAIL: e2e-admin@example.com
     SYSADMIN_PASSWORD: admin-PW-with-22-chars
 
@@ -246,10 +252,6 @@ e2e:
       alias: autheventproxy
 
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
-      when: never
     # e2e tests for non renovate merge requests should be triggered manually
     - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME !~ /^renovate/
       when: manual

@@ -475,7 +475,9 @@
     "NASAL_SWABS": "Nasenabstriche von",
     "BLOOD_SAMPLES": "Blutproben von",
     "TESTPROBAND": "Testteilnehmer:in:",
-    "FILTER_NO_RESULTS": "Keine Teilnehmenden gefunden."
+    "FILTER_NO_RESULTS": "Keine Teilnehmenden gefunden.",
+    "CREATED_AT": "Erstellt am",
+    "ORIGIN": "Erstellt durch"
   },
   "PROBAND": {
     "OPEN_SAMPLES": "Zur Probenverwaltung",
@@ -492,6 +494,11 @@
     "TEST_PROBAND": "Als Testteilnehmer:in markieren",
     "IS_TEST_PROBAND": "Testteilnehmer:in",
     "NOT_EXIST": "Teilnehmer:in existiert nicht",
+    "ORIGIN": {
+      "SELF": "Selbstregistrierung",
+      "INVESTIGATOR": "Untersuchungsteam",
+      "SORMAS": "SORMAS"
+    },
     "ERROR": {
       "USER_NOT_FOUND": "Es existiert kein Nutzer mit der Rolle 'Untersuchungsteam' in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen.",
       "NO_ACCESS_TO_STUDY": "Der Nutzer in PIA zu der E-Mail-Adresse, mit der versucht wurde, eine:n Teilnehmer:in in PIA anzulegen, hat keine Berechtigung für die Studie",

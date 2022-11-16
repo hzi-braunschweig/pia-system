@@ -44,7 +44,11 @@ describe('DialogDeletePartnerComponent', () => {
       };
 
       // Build Base Module
-      await MockBuilder(DialogDeletePartnerComponent, AppModule)
+      await MockBuilder(DialogDeletePartnerComponent, [
+        AppModule,
+        MatDialogRef,
+        MAT_DIALOG_DATA,
+      ])
         .mock(MatDialogRef, dialogRef)
         .mock(UserService, userService)
         .mock(MAT_DIALOG_DATA, dialogData);
@@ -99,7 +103,11 @@ describe('DialogDeletePartnerComponent', () => {
       };
 
       // Build Base Module
-      await MockBuilder(DialogDeletePartnerComponent, AppModule)
+      await MockBuilder(DialogDeletePartnerComponent, [
+        AppModule,
+        MatDialogRef,
+        MAT_DIALOG_DATA,
+      ])
         .mock(MatDialogRef, dialogRef)
         .mock(UserService, userService)
         .mock(MAT_DIALOG_DATA, dialogData);

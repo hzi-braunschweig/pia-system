@@ -46,3 +46,6 @@ pia_deployment_password: deployer
 pia_has_sormas: false
 pia_sormas_study: Teststudie
 sormas_url: http://example.com
+
+pia_authserver_proband_terms_of_service_url: https://localhost/fake-tos
+pia_authserver_proband_policy_url: https://localhost/fake-policy

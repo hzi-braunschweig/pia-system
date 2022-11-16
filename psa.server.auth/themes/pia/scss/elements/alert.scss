@@ -23,8 +23,8 @@
   border-radius: 4px;
   color: #666;
 
-  .pia-alert-content {
-    margin-bottom: 10px;
+  .pia-alert-content + .pia-alert-button {
+    margin-top: 10px;
   }
 
   .pia-alert-button {

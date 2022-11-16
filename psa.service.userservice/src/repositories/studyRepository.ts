@@ -15,7 +15,9 @@ export class StudyRepository {
   public static async getStudy(studyName: string): Promise<DbStudy> {
     try {
       return await db.one<DbStudy>(
-        'SELECT * FROM studies WHERE name = $(name)',
+        `SELECT *, (
+                    SELECT row_to_json(r, true) FROM (SELECT * FROM pending_study_changes WHERE study_id = $(name)) r) AS "pendingStudyChange"
+                FROM studies s WHERE name = $(name);`,
         {
           name: studyName,
         }

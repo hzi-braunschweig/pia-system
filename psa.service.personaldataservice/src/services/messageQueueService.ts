@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { MessageQueueClient } from '@pia/lib-messagequeue';
+import { MessageQueueClient, MessageQueueTopic } from '@pia/lib-messagequeue';
 import { config } from '../config';
 import { runTransaction } from '../db';
 import { PendingDeletionRepository } from '../repositories/pendingDeletionRepository';
@@ -34,7 +34,7 @@ export class MessageQueueService extends MessageQueueClient {
     await super.connect();
 
     await this.createConsumer(
-      'proband.deleted',
+      MessageQueueTopic.PROBAND_DELETED,
       async (message: ProbandDeletedMessage) =>
         await MessageQueueService.onProbandDeleted(message.pseudonym)
     );

@@ -26,8 +26,8 @@ import {
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { AlertService } from '../../../_services/alert.service';
-import * as JsPDF from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
 import { BloodSample, LabResult } from '../../../psa.app.core/models/labresult';
 import { Proband } from '../../../psa.app.core/models/proband';
@@ -619,7 +619,7 @@ export class SamplesComponent implements OnInit {
     const rowsNasenabstricht = [];
     const rowsBluteprobe = [];
     const pdfsize = 'a4';
-    const doc = new JsPDF('p', 'pt', pdfsize);
+    const doc = new jsPDF('p', 'pt', pdfsize);
     const fileName =
       'Proben_' +
       formatDate(new Date(), 'dd-MM-yyyy hh:mm:ss', 'en-US') +
@@ -645,16 +645,20 @@ export class SamplesComponent implements OnInit {
     });
 
     doc.text(this.title1.nativeElement.innerHTML, 14, 30);
-    doc.autoTable(columnsNasenabstricht, rowsNasenabstricht, {
+    autoTable(doc, {
+      columns: columnsNasenabstricht,
+      body: rowsNasenabstricht,
       startY: 40,
     });
     doc.text(
       this.title2.nativeElement.innerHTML,
       14,
-      doc.autoTable.previous.finalY + 20
+      (doc as any).autoTable.previous.finalY + 20
     );
-    doc.autoTable(columnsBluteproben, rowsBluteprobe, {
-      startY: doc.autoTable.previous.finalY + 30,
+    autoTable(doc, {
+      columns: columnsBluteproben,
+      body: rowsBluteprobe,
+      startY: (doc as any).autoTable.previous.finalY + 30,
     });
     doc.save(fileName);
   }

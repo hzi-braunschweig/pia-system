@@ -1,4 +1,3 @@
-DELETE FROM accounts;
 DELETE FROM probands;
 DELETE FROM studies;
 DELETE FROM lab_results;

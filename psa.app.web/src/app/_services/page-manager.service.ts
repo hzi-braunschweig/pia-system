@@ -39,7 +39,11 @@ export class PageManager {
     let pages = [];
     if (this.user.hasRole('Forscher')) {
       pages = [
-        { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
+        {
+          name: 'SIDENAV.STUDY',
+          path: ['study'],
+          subpaths: ['study', 'study/'],
+        },
         {
           name: 'SIDENAV.ADMINISTRATION',
           path: ['questionnaires/admin'],
@@ -61,21 +65,19 @@ export class PageManager {
             'view',
           ],
         },
-        { name: 'SIDENAV.STUDIES', path: ['studies'], subpaths: ['studies'] },
         {
           name: 'SIDENAV.COMPLIANCE',
           path: ['compliance/setup'],
           subpaths: ['compliance/'],
         },
-        {
-          name: 'SIDENAV.STUDY_WELCOME_TEXT',
-          path: ['welcome-text'],
-          subpaths: ['welcome-text'],
-        },
       ];
     } else if (this.user.hasRole('Untersuchungsteam')) {
       pages = [
-        { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
+        {
+          name: 'SIDENAV.STUDY',
+          path: ['study'],
+          subpaths: ['study', 'study/'],
+        },
         {
           name: 'SIDENAV.PROBANDS',
           path: ['probands'],
@@ -119,7 +121,11 @@ export class PageManager {
       ];
     } else if (this.user.hasRole('ProbandenManager')) {
       pages = [
-        { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
+        {
+          name: 'SIDENAV.STUDY',
+          path: ['study'],
+          subpaths: ['study', 'study/'],
+        },
         {
           name: 'SIDENAV.PROBANDS',
           path: ['probands-personal-info'],
@@ -147,7 +153,11 @@ export class PageManager {
       ];
     } else if (this.user.hasRole('EinwilligungsManager')) {
       pages = [
-        { name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] },
+        {
+          name: 'SIDENAV.STUDY',
+          path: ['study'],
+          subpaths: ['study', 'study/'],
+        },
         {
           name: 'SIDENAV.COMPLIANCE',
           path: ['compliance/view'],

@@ -1,0 +1,27 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<h2 mat-dialog-title data-unit="dialog-title">
+  {{ data.dialogTitle | translate }}
+</h2>
+<mat-dialog-content>
+  <app-markdown-editor [(ngModel)]="text"></app-markdown-editor>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button
+    mat-button
+    color="primary"
+    data-unit="publish-text-button"
+    data-e2e="publish-text-button"
+    [disabled]="!hasTextChanged()"
+    (click)="publish()"
+  >
+    {{ 'GENERAL.PUBLISH' | translate }}
+  </button>
+  <button mat-button [mat-dialog-close]="null">
+    {{ 'GENERAL.CANCEL' | translate }}
+  </button>
+</mat-dialog-actions>

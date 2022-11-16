@@ -8,6 +8,7 @@ import { FirebaseOptions } from 'firebase/app';
 import { KeycloakConfig } from 'keycloak-js';
 
 interface BaseEnvironment {
+  probandAppBaseUrl: string;
   firebase: FirebaseOptions;
   vapidKey: string;
 }
@@ -25,6 +26,7 @@ export interface Environment extends BaseEnvironment {
  * Configuration shared by every environment
  */
 export const baseEnvironment: BaseEnvironment = {
+  probandAppBaseUrl: window.location.origin,
   firebase: {
     apiKey: 'AIzaSyDf4H-r-iDYG1lVtlDQXs2xJTmvDT4lzV0',
     authDomain: 'pia-app-c50e8.firebaseapp.com',

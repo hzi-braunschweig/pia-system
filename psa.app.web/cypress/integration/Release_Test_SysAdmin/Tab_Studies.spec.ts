@@ -33,6 +33,11 @@ describe('Release Test, role: "SysAdmin", Studies', () => {
       study_accesses: [],
     };
 
+    cy.intercept({
+      method: 'GET',
+      url: '/admin/api/v1/user/studies',
+    }).as('getStudies');
+
     cy.visit(appUrl);
     loginWithTotp();
     cy.expectPathname('/admin/home');
@@ -47,7 +52,9 @@ describe('Release Test, role: "SysAdmin", Studies', () => {
     cy.get('[data-e2e="required-otp-checkbox"] input').should('be.checked');
 
     cy.get('[data-e2e="confirm-create-study-button"]').click();
+    cy.wait('@getStudies');
 
+    cy.get('[data-e2e="filter"]').type(study.name);
     cy.get('[data-e2e="study-list"]').contains(study.name);
     logout(false);
 

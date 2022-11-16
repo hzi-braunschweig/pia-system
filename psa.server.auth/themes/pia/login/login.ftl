@@ -54,12 +54,10 @@ This file has been modified:
       <div id="kc-form-wrapper">
         <#if realm.password>
             <form id="kc-form-login" onsubmit="login.disabled = true; return true;" action="${url.loginAction}" method="post" data-e2e="login-form">
-                <div class="${properties.kcFormGroupClass!}">
-                    <label for="username" class="${properties.kcLabelClass!}"><#if !realm.loginWithEmailAllowed>${msg("username")}<#elseif !realm.registrationEmailAsUsername>${msg("usernameOrEmail")}<#else>${msg("email")}</#if></label>
+                <#if !usernameHidden??>
+                    <div class="${properties.kcFormGroupClass!}">
+                        <label for="username" class="${properties.kcLabelClass!}"><#if !realm.loginWithEmailAllowed>${msg("username")}<#elseif !realm.registrationEmailAsUsername>${msg("usernameOrEmail")}<#else>${msg("email")}</#if></label>
 
-                    <#if usernameEditDisabled??>
-                        <input tabindex="1" id="username" class="${properties.kcInputClass!}" name="username" value="${(login.username!'')}" type="text" disabled data-e2e="login-input-username" />
-                    <#else>
                         <input tabindex="1" id="username" class="${properties.kcInputClass!}" name="username" value="${(login.username!'')}"  type="text" autofocus autocomplete="off"
                                data-e2e="login-input-username"
                                aria-invalid="<#if messagesPerField.existsError('username','password')>true</#if>"
@@ -70,8 +68,8 @@ This file has been modified:
                                     ${kcSanitize(messagesPerField.getFirstError('username','password'))?no_esc}
                             </span>
                         </#if>
-                    </#if>
-                </div>
+                    </div>
+                </#if>
 
                 <div class="${properties.kcFormGroupClass!}">
                     <label for="password" class="${properties.kcLabelClass!}">${msg("password")}</label>
@@ -81,7 +79,13 @@ This file has been modified:
                            data-e2e="login-input-password"
                     />
 
-                    <button type="button" id="reveal-password-button" class="input-icon-button-suffix">
+                    <#if usernameHidden?? && messagesPerField.existsError('username','password')>
+                        <span id="input-error" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
+                                ${kcSanitize(messagesPerField.getFirstError('username','password'))?no_esc}
+                        </span>
+                    </#if>
+
+                    <button type="button" id="reveal-password-button" class="input-icon-button-suffix" tabindex="-1">
                         <img class="icon-eye" src="${url.resourcesPath}/img/eye.svg" alt="show password button icon"/>
                     </button>
                 </div>
@@ -145,12 +149,25 @@ This file has been modified:
 
     </div>
     <#elseif section = "info" >
-        <#if realm.password && realm.registrationAllowed && !registrationDisabled??>
-            <div id="kc-registration-container">
-                <div id="kc-registration">
-                    <span>${msg("noAccount")} <a tabindex="6"
-                                                 href="${url.registrationUrl}">${msg("doRegister")}</a></span>
-                </div>
+    <#elseif section = "socialProviders" >
+        <#if realm.password && social.providers??>
+            <div id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">
+                <hr/>
+                <h4>${msg("identity-provider-login-label")}</h4>
+
+                <ul class="${properties.kcFormSocialAccountListClass!} <#if social.providers?size gt 3>${properties.kcFormSocialAccountListGridClass!}</#if>">
+                    <#list social.providers as p>
+                        <a id="social-${p.alias}" class="${properties.kcFormSocialAccountListButtonClass!} <#if social.providers?size gt 3>${properties.kcFormSocialAccountGridItem!}</#if>"
+                           type="button" href="${p.loginUrl}">
+                            <#if p.iconClasses?has_content>
+                                <i class="${properties.kcCommonLogoIdP!} ${p.iconClasses!}" aria-hidden="true"></i>
+                                <span class="${properties.kcFormSocialAccountNameClass!} kc-social-icon-text">${p.displayName!}</span>
+                            <#else>
+                                <span class="${properties.kcFormSocialAccountNameClass!}">${p.displayName!}</span>
+                            </#if>
+                        </a>
+                    </#list>
+                </ul>
             </div>
         </#if>
     </#if>

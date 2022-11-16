@@ -6,6 +6,7 @@
 
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
+import sinonChai from 'sinon-chai';
 import sinon from 'sinon';
 import fetchMocker from 'fetch-mock';
 import { StatusCodes } from 'http-status-codes';
@@ -16,8 +17,10 @@ import { Server } from '../../src/server';
 import { setup, cleanup } from './internal-personalData.spec.data/setup.helper';
 import { PersonalData, PersonalDataReq } from '../../src/models/personalData';
 import { mockUpdateAccountMailAddress } from './mockUpdateAccountMailAddress.helper.spec';
+import { probandAuthClient } from '../../src/clients/authServerClient';
 
 chai.use(chaiHttp);
+chai.use(sinonChai);
 
 const apiAddress = `http://localhost:${config.internal.port}/personal`;
 
@@ -120,6 +123,68 @@ describe('Internal: /personalData', () => {
       expect(result.body.titel).to.equal('prof');
       expect(result.body.vorname).to.equal('Testvorname1');
       expect(result.body.name).to.equal('Testname1');
+    });
+
+    it('should return HTTP 200 and update account email address', async () => {
+      // Arrange
+      const authClientUsersStub = mockUpdateAccountMailAddress(
+        'qtest-proband2',
+        testSandbox
+      );
+      fetchMock.get('express:/user/users/:pseudonym', {
+        body: {
+          study: 'QTestStudy1',
+          complianceContact: true,
+        },
+      });
+      const personalData = createPersonalData();
+
+      // Act
+      const result: Response<PersonalData> = await chai
+        .request(apiAddress)
+        .put('/personalData/proband/qtest-proband2')
+        .send(personalData);
+
+      // Assert
+      expect(result, result.text).to.have.status(StatusCodes.OK);
+      expect(authClientUsersStub.update).to.have.been.calledWith(
+        {
+          id: '1234',
+          realm: probandAuthClient.realm,
+        },
+        { email: 'test1@example.com' }
+      );
+    });
+
+    it('should return HTTP 200 and not update account email address if skipUpdateAccount is true', async () => {
+      // Arrange
+      const authClientUsersStub = mockUpdateAccountMailAddress(
+        'qtest-proband2',
+        testSandbox
+      );
+      fetchMock.get('express:/user/users/:pseudonym', {
+        body: {
+          study: 'QTestStudy1',
+          complianceContact: true,
+        },
+      });
+      const personalData = createPersonalData();
+
+      // Act
+      const result: Response<PersonalData> = await chai
+        .request(apiAddress)
+        .put('/personalData/proband/qtest-proband2?skipUpdateAccount=true')
+        .send(personalData);
+
+      // Assert
+      expect(result, result.text).to.have.status(StatusCodes.OK);
+      expect(authClientUsersStub.update).not.to.have.been.calledWith(
+        {
+          id: '1234',
+          realm: probandAuthClient.realm,
+        },
+        { email: 'test1@example.com' }
+      );
     });
 
     it('should return HTTP 200 with personal proband data with empty strings as values', async () => {

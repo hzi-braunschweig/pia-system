@@ -8,7 +8,7 @@
    * Allow to reveal the password by button click
    */
   window.addEventListener('load', function () {
-    // login password input
+    // login/registration password input
     initPasswordReveal(
       document.getElementById('reveal-password-button'),
       document.getElementById('password')
@@ -18,7 +18,7 @@
       document.getElementById('reveal-password-new-button'),
       document.getElementById('password-new')
     );
-    // update password confirm input
+    // update password/registration confirm input
     initPasswordReveal(
       document.getElementById('reveal-password-confirm-button'),
       document.getElementById('password-confirm')

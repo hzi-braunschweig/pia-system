@@ -9,11 +9,11 @@ VALUES ('ApiTestStudie'),
        ('ApiTestStudie2'),
        ('ApiTestMultiProf');
 
-INSERT INTO probands (pseudonym, ids, status, study)
-VALUES ('qtest-proband1', 'ids1', 'active', 'ApiTestStudie'),
-       ('qtest-proband2', 'ids2', 'active', 'ApiTestStudie2'),
-       ('qtest-proband3', 'ids3', 'deactivated', 'ApiTestStudie'),
-       ('qtest-proband4', 'ids4', 'active', 'ApiTestStudie');
+INSERT INTO probands (pseudonym, ids, status, study, origin)
+VALUES ('qtest-proband1', 'ids1', 'active', 'ApiTestStudie', 'investigator'),
+       ('qtest-proband2', 'ids2', 'active', 'ApiTestStudie2', 'investigator'),
+       ('qtest-proband3', 'ids3', 'deactivated', 'ApiTestStudie', 'investigator'),
+       ('qtest-proband4', 'ids4', 'active', 'ApiTestStudie', 'investigator');
 
 INSERT INTO users_to_contact(
         id,

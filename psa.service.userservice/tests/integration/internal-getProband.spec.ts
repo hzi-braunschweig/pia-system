@@ -36,7 +36,7 @@ describe('Internal: get proband', () => {
     before(async () => {
       await db.none("INSERT INTO studies (name) VALUES ('QTestStudy1')");
       await db.none(
-        "INSERT INTO probands (pseudonym, study) VALUES ('qtest-proband1', 'QTestStudy1');"
+        "INSERT INTO probands (pseudonym, study, origin) VALUES ('qtest-proband1', 'QTestStudy1', 'investigator');"
       );
     });
 
@@ -80,7 +80,7 @@ describe('Internal: get proband', () => {
     before(async () => {
       await db.none("INSERT INTO studies (name) VALUES ('QTestStudy1')");
       await db.none(
-        "INSERT INTO probands (pseudonym, ids, study) VALUES ('qtest-proband2', 'ids-1234', 'QTestStudy1');"
+        "INSERT INTO probands (pseudonym, ids, study, origin) VALUES ('qtest-proband2', 'ids-1234', 'QTestStudy1', 'investigator');"
       );
     });
 

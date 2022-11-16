@@ -19,6 +19,7 @@ const route: ServerRoute = {
       strategy: 'jwt-admin',
       scope: [
         'realm:Untersuchungsteam',
+        'realm:EinwilligungsManager',
         'realm:ProbandenManager',
         'realm:Forscher',
         'realm:SysAdmin',

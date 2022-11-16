@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MailService = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
+const nodemailer_html_to_text_1 = require("nodemailer-html-to-text");
 const sanitizeHtml_1 = require("../utils/sanitizeHtml");
 class MailService {
     static initService(mailServerConfig) {
@@ -13,7 +14,8 @@ class MailService {
             secure = true;
         }
         console.log(`Using ${mailServerConfig.host}:${mailServerConfig.port} as smtp Server, ${secure ? 'secure' : 'NOT secure'}, ${mailServerConfig.requireTLS ? 'requireTLS' : 'DONT requireTLS'}`);
-        MailService.mailTransporter = nodemailer_1.default.createTransport({
+        MailService.mailTransporter = nodemailer_1.default
+            .createTransport({
             host: mailServerConfig.host,
             port: mailServerConfig.port,
             auth: mailServerConfig.user || mailServerConfig.password
@@ -26,7 +28,8 @@ class MailService {
             requireTLS: mailServerConfig.requireTLS,
         }, {
             from: `"${mailServerConfig.name}" <${mailServerConfig.from}>`,
-        });
+        })
+            .use('compile', (0, nodemailer_html_to_text_1.htmlToText)());
     }
     static async sendMail(recipient, email) {
         if (!MailService.mailTransporter) {

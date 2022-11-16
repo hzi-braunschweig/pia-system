@@ -15,6 +15,7 @@ import { JournalPersonDto } from '../models/sormas';
 import { config } from '../config';
 import {
   ProbandInternalDto,
+  ProbandOrigin,
   ProbandRequestInternalDto,
   ProbandResponseInternalDto,
   ProbandStatus,
@@ -38,31 +39,17 @@ export class SymptomDiaryInteractor {
     personUuid: string,
     i18n: I18n
   ): Promise<RegisterProbandResponse> {
-    // Generate free pseudonym
-    let generatedPseudonym: string;
-    try {
-      generatedPseudonym = await SymptomDiaryService.generateNewPseudonym(
-        config.sormas.study
-      );
-    } catch (e) {
-      console.warn(e);
-      return {
-        success: false,
-        message: i18n.__('NEW_PROBAND_ERROR_GENERATING_PSEUDONYM'),
-      };
-    }
-
     // Register person
     let proband: ProbandResponseInternalDto;
     try {
       const newProband: ProbandRequestInternalDto = {
-        pseudonym: generatedPseudonym,
         ids: personUuid,
         complianceLabresults: false,
         complianceBloodsamples: false,
         complianceSamples: false,
         studyCenter: null,
         examinationWave: 0,
+        origin: ProbandOrigin.SORMAS,
       };
       proband = await userserviceClient.registerProband(
         config.sormas.study,
@@ -80,13 +67,13 @@ export class SymptomDiaryInteractor {
     let person: JournalPersonDto;
     try {
       person = await SymptomDiaryService.updateProbandDataFromSormas({
-        pseudonym: generatedPseudonym,
+        pseudonym: proband.pseudonym,
         personUuid: personUuid,
       });
     } catch (e) {
       console.warn(e);
       await userserviceClient
-        .deleteProbanddata(generatedPseudonym, false, true)
+        .deleteProbanddata(proband.pseudonym, false, true)
         .catch(console.error);
       if (e instanceof SormasFetchPersonError) {
         return {

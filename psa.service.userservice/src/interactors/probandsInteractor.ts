@@ -54,9 +54,8 @@ export class ProbandsInteractor {
     studyName: string,
     probandRequest: CreateProbandRequest
   ): Promise<CreateProbandResponse> {
-    let password: string;
     try {
-      password = await ProbandService.createProbandWithAccount(
+      return await ProbandService.createProbandWithAccount(
         studyName,
         probandRequest,
         true,
@@ -86,10 +85,6 @@ export class ProbandsInteractor {
         throw Boom.badImplementation('an unknown error occurred');
       }
     }
-    return {
-      pseudonym: probandRequest.pseudonym,
-      password: password,
-    };
   }
 
   public static async createIDSProband(

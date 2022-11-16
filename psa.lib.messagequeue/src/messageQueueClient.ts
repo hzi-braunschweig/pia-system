@@ -9,6 +9,7 @@ import * as amqp from 'amqplib';
 import { MessageQueueClientConnection } from './messageQueueClientConnection';
 import { MessageQueueClientHelper } from './messageQueueClientHelper';
 import { HandleMessageArgs } from './messageQueueClientInternals';
+import { MessageQueueTopic } from './messageQueueTopics';
 
 export interface Producer<M> {
   publish: (message: M) => Promise<boolean>;
@@ -73,9 +74,11 @@ export class MessageQueueClient extends MessageQueueClientConnection {
    * a specific topic.
    * This producer should be reused! Don't create a producer
    * for every message you want to send!
-   * Otherwise we will get a memory leak!
+   * Otherwise, we will get a memory leak!
    */
-  public async createProducer<M>(topic: string): Promise<Producer<M>> {
+  public async createProducer<M>(
+    topic: MessageQueueTopic
+  ): Promise<Producer<M>> {
     if (!this.connection) {
       throw new Error('not connected');
     }
@@ -101,7 +104,7 @@ export class MessageQueueClient extends MessageQueueClientConnection {
    * This can be used if a service is no longer interested in a specific topic.
    * It should only be called on service initialisation.
    */
-  public async removeQueue(topic: string): Promise<void> {
+  public async removeQueue(topic: MessageQueueTopic): Promise<void> {
     if (!this.connection) {
       throw new Error('not connected');
     }
@@ -145,7 +148,7 @@ export class MessageQueueClient extends MessageQueueClientConnection {
    * This can be used if a service is no longer interested in a specific topic.
    * It should only be called on service initialisation.
    */
-  public async removeQueues(topics: string[]): Promise<void> {
+  public async removeQueues(topics: MessageQueueTopic[]): Promise<void> {
     for (const topic of topics) {
       await this.removeQueue(topic);
     }
@@ -157,7 +160,7 @@ export class MessageQueueClient extends MessageQueueClientConnection {
    * rescheduled once!
    */
   public async createConsumer<M>(
-    topic: string,
+    topic: MessageQueueTopic,
     onMessage: (message: M) => Promise<void>
   ): Promise<void> {
     if (!this.connection) {

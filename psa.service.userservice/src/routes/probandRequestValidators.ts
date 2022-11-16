@@ -7,6 +7,7 @@
 import Joi from 'joi';
 import { RouteOptionsValidate } from '@hapi/hapi';
 import { config } from '../config';
+import { ProbandOrigin } from '@pia-system/lib-http-clients-internal';
 
 export const postProbandValidation: RouteOptionsValidate = {
   params: Joi.object({
@@ -17,19 +18,22 @@ export const postProbandValidation: RouteOptionsValidate = {
   payload: Joi.object({
     // on development system it is possible to specify that
     // a password is not temporary.
-    // This is especially helpfull for e2e tests.
+    // This is especially helpful for e2e tests.
     ...(config.isDevelopmentSystem
       ? {
           temporaryPassword: Joi.bool().default(true),
         }
       : {}),
     pseudonym: Joi.string()
-      .required()
+      .optional()
       .lowercase()
       .description(
         'the pseudonym of planned probands that should be assigned to the proband'
       ),
     ids: Joi.string().optional().empty(null).description('an optional ids'),
+    origin: Joi.string()
+      .required()
+      .valid(...Object.values(ProbandOrigin)),
     complianceLabresults: Joi.bool()
       .optional()
       .default(false)

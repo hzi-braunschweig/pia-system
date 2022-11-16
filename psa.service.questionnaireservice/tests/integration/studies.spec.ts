@@ -98,16 +98,14 @@ describe('/studies', function () {
         .get('/studies/QTestStudy1')
         .set(probandHeader1);
       expect(result).to.have.status(StatusCodes.OK);
-      expect(result.body.name).to.equal('QTestStudy1');
-      expect(result.body.pm_email).to.equal(undefined);
-      expect(result.body.hub_email).to.equal(undefined);
-      expect(result.body.has_rna_samples).to.equal(false);
-      expect(result.body.sample_prefix).to.equal('TESTPREFIX');
-      expect(result.body.sample_suffix_length).to.equal(5);
-      expect(result.body.has_answers_notify_feature).to.equal(false);
-      expect(result.body.has_answers_notify_feature_by_mail).to.equal(false);
-      expect(result.body.has_logging_opt_in).to.equal(false);
-      expect(result.body.links.self.href).to.equal('/studies/QTestStudy1');
+      expect(result.body).to.deep.equal({
+        name: 'QTestStudy1',
+        sample_prefix: 'TESTPREFIX',
+        sample_suffix_length: 5,
+        has_rna_samples: false,
+        has_partial_opposition: true,
+        links: { self: { href: '/studies/QTestStudy1' } },
+      });
     });
   });
 

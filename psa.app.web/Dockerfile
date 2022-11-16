@@ -51,7 +51,7 @@ ENV NODE_OPTIONS=$nodeoptions
 
 FROM build-base AS build-public
 
-RUN npm run build -- --outputPath=./dist/out --configuration=production-proband-app
+RUN npm run build -- --output-path=./dist/out --configuration=production-proband-app
 
 # create the pre-compressed gzip files for faster serving
 RUN find /usr/src/node-app/dist/out/ | xargs gzip -k -9
@@ -60,7 +60,7 @@ RUN find /usr/src/node-app/dist/out/ | xargs gzip -k -9
 
 FROM build-base AS build-admin
 
-RUN npm run build -- --outputPath=./dist/out/admin --configuration=production-admin-app
+RUN npm run build -- --output-path=./dist/out/admin --configuration=production-admin-app
 
 # create the pre-compressed gzip files for faster serving
 RUN find /usr/src/node-app/dist/out/ | xargs gzip -k -9

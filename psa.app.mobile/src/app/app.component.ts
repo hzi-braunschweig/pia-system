@@ -5,7 +5,7 @@
  */
 
 import { Component, ViewEncapsulation } from '@angular/core';
-import { AlertController, Platform } from '@ionic/angular';
+import { AlertController, LoadingController, Platform } from '@ionic/angular';
 import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
 import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
@@ -43,6 +43,7 @@ export class AppComponent {
     private splashScreen: SplashScreen,
     private statusBar: StatusBar,
     private alertCtrl: AlertController,
+    private loadingCtrl: LoadingController,
     private translate: TranslateService,
     private auth: AuthService,
     private compliance: ComplianceService,
@@ -122,7 +123,13 @@ export class AppComponent {
         },
         {
           text: this.translate.instant('GENERAL.OK'),
-          handler: () => void this.auth.logout(),
+          handler: async () => {
+            const loading = await this.loadingCtrl.create({
+              message: this.translate.instant('APP.LOGGING_OUT'),
+            });
+            await loading.present();
+            await this.auth.logout().catch(loading.dismiss);
+          },
         },
       ],
     });

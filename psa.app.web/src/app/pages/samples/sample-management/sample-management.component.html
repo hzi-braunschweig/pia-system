@@ -7,7 +7,7 @@
 <app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
 <div class="jumbotron" data-e2e="e2e-sample-management-component">
   <!-- Fragoboegen filtern -->
-  <div class="questionnaire-header" align="left">
+  <div class="questionnaire-header">
     <mat-grid-list [cols]="cols | async" rowHeight="85px">
       <mat-grid-tile>
         <mat-form-field>
@@ -20,14 +20,12 @@
             <mat-option
               *ngFor="let studyName of currentUser.studies"
               [value]="studyName"
-              unit-study-option
             >
               {{ studyName }}
             </mat-option>
           </mat-select>
           <mat-error
             *ngIf="studyName.touched && studyName.hasError('required')"
-            unit-study-select-error
           >
             {{ 'DIALOG.STUDY_REQUIRED' | translate }}
           </mat-error>
@@ -54,7 +52,7 @@
         <button
           mat-raised-button
           color="primary"
-          [disabled]="selection.selected.length == 0"
+          [disabled]="selection.selected.length === 0"
           (click)="createLetters()"
         >
           {{ 'SAMPLE_MANAGEMENT.CREATE_COLLECTIVE_LETTERS' | translate }}

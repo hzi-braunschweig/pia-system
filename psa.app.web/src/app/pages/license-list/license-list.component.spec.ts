@@ -15,6 +15,7 @@ import { MockComponent, MockPipe } from 'ng-mocks';
 import { TranslatePipe } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { LoadingSpinnerComponent } from '../../features/loading-spinner/loading-spinner.component';
+import { MaterialModule } from '../../material.module';
 
 describe('LicenseListComponent', () => {
   let component: LicenseListComponent;
@@ -28,7 +29,7 @@ describe('LicenseListComponent', () => {
         MockPipe(TranslatePipe),
         MockComponent(LoadingSpinnerComponent),
       ],
-      imports: [HttpClientTestingModule],
+      imports: [HttpClientTestingModule, MaterialModule],
     }).compileComponents();
   });
 

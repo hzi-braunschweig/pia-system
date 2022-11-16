@@ -4,17 +4,18 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { UserCredentials } from '../../../support/user.commands';
 import Chainable = Cypress.Chainable;
+import { UserCredentials } from '../../../support/user.commands';
 import { login } from '../../../support/commands';
+import { Study } from '../../../support/study.commands';
 
-describe('Startseite', () => {
+describe('Login', () => {
   beforeEach(() => {
     cy.createRandomStudy()
-      .as('studyId')
-      .then((studyId) => {
-        cy.disableFourEyesOpposition(studyId)
-          .then(() => cy.createRandomProband(studyId))
+      .as('study')
+      .then((study: Study) => {
+        cy.disableFourEyesOpposition(study.name)
+          .then(() => cy.createRandomProband(study.name))
           .as('probandCredentials');
       });
   });
@@ -34,10 +35,10 @@ describe('Startseite', () => {
     loginProband();
     cy.expectPathname('/home');
 
-    cy.get<string>('@studyId').then((studyId) => {
+    cy.get<Study>('@study').then((study) => {
       cy.get<UserCredentials>('@probandCredentials').then(
         (probandCredentials) =>
-          cy.deleteProband(probandCredentials.username, studyId)
+          cy.deleteProband(probandCredentials.username, study.name)
       );
       cy.reload();
 

@@ -14,7 +14,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Study } from '../../../psa.app.core/models/study';
 import { DialogDeleteComponent } from '../../../_helpers/dialog-delete';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { DialogStudyComponent } from 'src/app/dialogs/study-dialog/study-dialog';
 import {
   DialogPopUpComponent,
   DialogPopUpData,
@@ -26,14 +25,16 @@ import {
   DialogDeletePartnerResult,
 } from '../../../_helpers/dialog-delete-partner';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
-import { DialogChangeStudyComponent } from 'src/app/dialogs/dialog-change-study/dialog-change-study.component';
 import { MatTableDataSource } from '@angular/material/table';
 import { FormControl } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CurrentUser } from '../../../_services/current-user.service';
-import { isSpecificHttpError } from '../../../psa.app.core/models/specificHttpError';
-import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
-import { filter } from 'rxjs/operators';
+import { StudyChangeService } from '../study-change.service';
+import { createRegistrationUrl } from '../../study/study-registration-link';
+
+interface StudyWithRegistrationUrl extends Study {
+  registrationUrl: string;
+}
 
 @Component({
   templateUrl: 'studies.component.html',
@@ -51,14 +52,22 @@ export class StudiesComponent implements OnInit {
   @ViewChild(MatSort, { static: true })
   private sort: MatSort;
 
-  public displayedColumns = ['name', 'description', 'status', 'view'];
-  public dataSource = new MatTableDataSource<Study>();
+  public displayedColumns = [
+    'name',
+    'description',
+    'status',
+    'registration',
+    'accounts',
+    'view',
+  ];
+  public dataSource = new MatTableDataSource<StudyWithRegistrationUrl>();
   public isLoading = false;
   public filterKeyword = new FormControl('');
 
   constructor(
     public readonly user: CurrentUser,
     private readonly userService: UserService,
+    private readonly studyChangeService: StudyChangeService,
     private readonly alertService: AlertService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly authService: AuthService,
@@ -145,7 +154,9 @@ export class StudiesComponent implements OnInit {
         correspondingStudy.pendingStudyChange.requested_for ===
           this.user.username
       ) {
-        this.openDialogChangeStudy(correspondingStudy);
+        this.studyChangeService
+          .reviewPendingStudyChange(correspondingStudy)
+          .subscribe(() => this.initTable());
       }
     }
   }
@@ -154,7 +165,12 @@ export class StudiesComponent implements OnInit {
     this.isLoading = true;
     this.dataSource.data = [];
     try {
-      this.dataSource.data = await this.userService.getStudies();
+      this.dataSource.data = (await this.userService.getStudies()).map(
+        (study) => ({
+          ...study,
+          registrationUrl: createRegistrationUrl(study),
+        })
+      );
     } catch (err) {
       this.alertService.errorObject(err);
     }
@@ -166,51 +182,9 @@ export class StudiesComponent implements OnInit {
   }
 
   addOrEditStudy(studyName?: string): void {
-    const dialogRef = this.dialog.open(DialogStudyComponent, {
-      width: '500px',
-      data: { name: studyName },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result !== undefined) {
-        this.initTable();
-      }
-    });
-  }
-
-  public openDialogChangeStudy(study: Study): void {
-    this.dialog
-      .open(DialogChangeStudyComponent, {
-        width: study.pendingStudyChange ? '1100px' : '700px',
-        height: 'auto',
-        data: { study },
-      })
-      .afterClosed()
-      .pipe(filter((result) => !!result))
-      .subscribe((result) => {
-        if (result === 'rejected') {
-          this.showResultDialog({
-            content: 'STUDIES.CHANGE_COMPLIANCES_REJECTED',
-            isSuccess: false,
-          });
-        } else if (result === 'accepted') {
-          this.showResultDialog({
-            content: 'STUDIES.CHANGE_COMPLIANCES_ACCEPTED',
-            isSuccess: true,
-          });
-        } else if (result === 'requested') {
-          this.showResultDialog({
-            content: 'STUDIES.CHANGE_COMPLIANCES_REQUESTED',
-            isSuccess: true,
-          });
-        } else {
-          this.showResultDialog({
-            content: this.getErrorMessage(result),
-            isSuccess: false,
-          });
-        }
-        this.initTable();
-      });
+    this.studyChangeService
+      .changeStudyAsSysAdmin(studyName)
+      .subscribe(() => this.initTable());
   }
 
   openDialog(name: string, type: DeletionType): void {
@@ -311,30 +285,6 @@ export class StudiesComponent implements OnInit {
     });
   }
 
-  public cancelPendingStudyChange(pendingStudyChangeId: number): void {
-    this.dialog
-      .open(DialogYesNoComponent, {
-        data: { content: 'STUDIES.CANCEL_STUDY_CHANGES_CONFIRMATION_QUESTION' },
-      })
-      .afterClosed()
-      .pipe(filter((result) => result === 'yes'))
-      .subscribe(async () => {
-        try {
-          await this.authService.deletePendingStudyChange(pendingStudyChangeId);
-          this.initTable();
-          this.showResultDialog({
-            content: 'STUDIES.CHANGE_COMPLIANCES_REJECTED',
-            isSuccess: true,
-          });
-        } catch (err) {
-          this.showResultDialog({
-            content: this.getErrorMessage(err),
-            isSuccess: false,
-          });
-        }
-      });
-  }
-
   showResultDialog(data): void {
     this.dialog.open(DialogPopUpComponent, {
       width: '300px',
@@ -342,21 +292,7 @@ export class StudiesComponent implements OnInit {
     });
   }
 
-  private getErrorMessage(err: unknown): string {
-    if (!isSpecificHttpError(err)) {
-      return 'ERROR.ERROR_UNKNOWN';
-    }
-    switch (err.error.errorCode) {
-      case 'MISSING_PERMISSION':
-        return 'STUDIES.MISSING_PERMISSION';
-      case '4_EYE_OPPOSITION.PENDING_CHANGE_ALREADY_EXISTS':
-        return 'STUDIES.PENDING_CHANGE_ALREADY_EXISTS';
-      case '4_EYE_OPPOSITION.REQUESTED_FOR_NOT_REACHED':
-        return 'STUDIES.REQUESTED_FOR_NOT_REACHED';
-      case 'STUDY.INVALID_PSEUDONYM_PREFIX':
-        return 'STUDIES.INVALID_PSEUDONYM_PREFIX';
-      default:
-        return 'ERROR.ERROR_UNKNOWN';
-    }
+  public isStudyConfigurationComplete(study: Study): boolean {
+    return Boolean(study.pseudonym_prefix && study.pseudonym_suffix_length);
   }
 }

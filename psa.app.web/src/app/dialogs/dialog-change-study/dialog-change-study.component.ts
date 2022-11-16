@@ -63,7 +63,7 @@ export class DialogChangeStudyComponent implements OnInit {
         this.filterUsers();
       });
     }
-    this.initForm(this.data.study.pendingStudyChange !== undefined);
+    this.initForm(this.data.study.pendingStudyChange !== null);
   }
 
   initForm(isChangeConfirmation: boolean): void {

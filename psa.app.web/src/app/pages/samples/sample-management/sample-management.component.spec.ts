@@ -16,8 +16,8 @@ import { SampleTrackingService } from '../../../psa.app.core/providers/sample-tr
 import { DataService } from '../../../_services/data.service';
 import { PersonalDataService } from '../../../psa.app.core/providers/personaldata-service/personaldata-service';
 import { AccountStatusPipe } from '../../../pipes/account-status.pipe';
-import { MediaObserver } from '@angular/flex-layout';
-import { NEVER } from 'rxjs';
+import { MediaChange, MediaObserver } from '@angular/flex-layout';
+import { firstValueFrom, from, NEVER, toArray } from 'rxjs';
 import {
   createPersonalData,
   createProband,
@@ -26,6 +26,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
+import { FormControl } from '@angular/forms';
 import SpyObj = jasmine.SpyObj;
 
 describe('SampleManagementComponent', () => {
@@ -61,13 +62,12 @@ describe('SampleManagementComponent', () => {
       'SampleTrackingService',
       ['getLabResultsForSampleID', 'getBloodSamplesForBloodSampleID']
     );
-    mediaObserver = jasmine.createSpyObj<MediaObserver>(
-      'MediaObserver',
-      ['isActive'],
-      {
-        media$: NEVER,
-      }
-    );
+    mediaObserver = jasmine.createSpyObj<MediaObserver>('MediaObserver', [
+      'isActive',
+      'asObservable',
+    ]);
+    mediaObserver.asObservable.and.returnValues(NEVER);
+
     dataService = jasmine.createSpyObj<DataService>('DataService', [
       'setProbandsForCreateLetters',
     ]);
@@ -105,11 +105,48 @@ describe('SampleManagementComponent', () => {
     tick(); // wait for ngOnInit to finish
   }));
 
-  it('it should initialize the table when study is selected', fakeAsync(() => {
+  it('should initialize the table when study is selected', fakeAsync(() => {
     expect(personalDataService.getPersonalDataAll).toHaveBeenCalledTimes(1);
     component.studyName.setValue('Teststudy1');
     tick();
     expect(probandService.getProbands).toHaveBeenCalledOnceWith('Teststudy1');
     expect(component.dataSource.data.length).toEqual(3);
   }));
+
+  describe('validateSampleID', () => {
+    const invalid = { sampleWrongFormat: true };
+    const fixture = [
+      ['ZIFCO-1234567890', null],
+      ['ZIFCO-3333333333', null],
+      ['ZIFCO-123456789', invalid],
+      ['ZIFCO-ABCDEFGAJK', invalid],
+      ['ZIFC0-12345678910', invalid],
+      ['zifco-12345678910', invalid],
+      ['ABCDE-12345678910', invalid],
+    ];
+
+    for (const test of fixture) {
+      const [id, expectation] = test;
+      it(`should ${expectation === null ? 'allow' : 'disallow'} ${id}`, () => {
+        expect(component.validateSampleID(new FormControl(id))).toEqual(
+          expectation
+        );
+      });
+    }
+  });
+
+  it('should adjust header columns according to screen size', async () => {
+    const changes = from(
+      Array.from(component.mediaColumnMap.keys()).map((mqAlias) => [
+        new MediaChange(null, null, mqAlias),
+      ])
+    );
+    mediaObserver.asObservable.and.returnValue(changes);
+    mediaObserver.isActive.and.returnValue(true);
+
+    component.initializeCols();
+
+    const cols = await firstValueFrom(component.cols.pipe(toArray()));
+    expect(cols).toEqual([5, ...Array.from(component.mediaColumnMap.values())]);
+  });
 });

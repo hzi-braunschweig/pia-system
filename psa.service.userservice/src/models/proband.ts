@@ -16,7 +16,7 @@ export interface CreateIDSProbandRequest {
 }
 
 export interface CreateProbandRequest {
-  pseudonym: string;
+  pseudonym?: string;
   ids?: string;
   complianceLabresults: boolean;
   complianceSamples: boolean;
@@ -24,6 +24,7 @@ export interface CreateProbandRequest {
   studyCenter?: string;
   examinationWave?: number;
   temporaryPassword?: boolean;
+  origin: string;
 }
 
 export interface CreateProbandResponse {

@@ -34,8 +34,14 @@ export interface ProbandInternalDto {
 
 export type ProbandRequestInternalDto = Omit<
   ProbandResponseInternalDto,
-  'password' | 'study'
+  'pseudonym' | 'password' | 'study'
 >;
+
+export enum ProbandOrigin {
+  SELF = 'self', // created on probands own accord
+  INVESTIGATOR = 'investigator', // created by an investigator
+  SORMAS = 'sormas', // created by sormas
+}
 
 export interface ProbandResponseInternalDto {
   pseudonym: string;
@@ -47,6 +53,7 @@ export interface ProbandResponseInternalDto {
   complianceBloodsamples: boolean;
   studyCenter: string | null;
   examinationWave: number;
+  origin: ProbandOrigin;
 }
 
 export interface ProbandExternalIdResponseInternalDto {

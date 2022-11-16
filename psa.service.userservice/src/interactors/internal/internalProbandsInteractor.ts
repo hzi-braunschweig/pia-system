@@ -23,6 +23,7 @@ import {
 } from '../../services/probandService';
 import {
   AccountCreateError,
+  CouldNotCreateNewRandomPseudonymError,
   IdsAlreadyExistsError,
   ProbandSaveError,
   PseudonymAlreadyExistsError,
@@ -42,9 +43,8 @@ export class InternalProbandsInteractor {
     studyName: string,
     probandRequest: CreateProbandRequest
   ): Promise<CreateProbandResponse> {
-    let password: string;
     try {
-      password = await ProbandService.createProbandWithAccount(
+      return await ProbandService.createProbandWithAccount(
         studyName,
         probandRequest,
         false,
@@ -67,15 +67,16 @@ export class InternalProbandsInteractor {
         throw Boom.badImplementation(
           'a problem occurred while saving the proband'
         );
+      } else if (e instanceof CouldNotCreateNewRandomPseudonymError) {
+        console.error(e);
+        throw Boom.conflict(
+          'unable to create a random, not yet assigned pseudonym'
+        );
       } else {
         console.error(e);
         throw Boom.badImplementation('an unknown error occurred');
       }
     }
-    return {
-      pseudonym: probandRequest.pseudonym,
-      password: password,
-    };
   }
 
   /**

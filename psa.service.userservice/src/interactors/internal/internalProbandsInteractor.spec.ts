@@ -17,6 +17,7 @@ import { Boom } from '@hapi/boom';
 import { assert } from 'ts-essentials';
 import { StatusCodes } from 'http-status-codes';
 import { CreateProbandRequest } from '../../models/proband';
+import { ProbandOrigin } from '@pia-system/lib-http-clients-internal';
 
 describe('InternalProbandsInteractor', () => {
   const testSandbox = createSandbox();
@@ -100,6 +101,7 @@ function createCreateProbandRequest(
     complianceBloodsamples: false,
     complianceLabresults: false,
     complianceSamples: false,
+    origin: ProbandOrigin.INVESTIGATOR,
     ...overwrite,
   };
 }

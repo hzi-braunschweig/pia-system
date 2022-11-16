@@ -28,6 +28,7 @@ export class MessageQueueService extends MessageQueueClient {
         await this.createTopicConsumer(
           config.servers.authserver.messageQueueExchange,
           proxyInstance.pattern,
+          proxyInstance.constructor.name,
           proxyInstance.onMessage.bind(proxyInstance)
         );
         console.log(
@@ -50,14 +51,12 @@ export class MessageQueueService extends MessageQueueClient {
   public async createTopicConsumer(
     topic: string,
     pattern: string,
+    proxyName: string,
     onMessage: (
       channel: amqp.Channel
     ) => (message: amqp.ConsumeMessage | null) => void
   ): Promise<void> {
-    const queueName = MessageQueueClientHelper.getQueueName(
-      topic,
-      this.serviceName
-    );
+    const queueName = MessageQueueClientHelper.getQueueName(topic, proxyName);
     const channel = await this.createChannel(topic, 'topic');
     await channel.deleteQueue(topic);
     const queue = await channel.assertQueue(queueName, {});

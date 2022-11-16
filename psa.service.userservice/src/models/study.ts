@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { PendingStudyChange } from './pendingStudyChange';
+
 export type StudyStatus = 'active' | 'deletion_pending' | 'deleted';
 
 export interface DbStudy {
@@ -25,16 +27,28 @@ export interface DbStudy {
   has_total_opposition: boolean | null;
   has_compliance_opposition: boolean | null;
   has_logging_opt_in: boolean | null;
+  pendingStudyChange?: PendingStudyChange | null;
 }
 
 /**
- * The totp require status is not persisted in the DB.
- * Instead it will be resolved by the authserver.
- * totp is required, if the group representing the study
+ * Some fields like the totp require status are not
+ * persisted in the DB. Instead, they will be resolved by
+ * the authserver.
+ *
+ * Totp is required, if the group representing the study
  * has a mapping to the realm role "feature:RequireTotp"
+ *
+ * has_open_self_registration is true, if the group
+ * representing the study has the attribute "maxAccountsCount".
+ * max_allowed_accounts_count will have the value of the
+ * attribute "maxAccountsCount" if it is set, otherwise null.
  */
-interface StudyTotpRequiredField {
+export interface AdditionalAuthserverFields {
+  proband_realm_group_id: string | null;
   has_required_totp: boolean | null;
+  has_open_self_registration: boolean;
+  max_allowed_accounts_count: number | null;
+  accounts_count: number;
 }
 
-export type Study = DbStudy & StudyTotpRequiredField;
+export type Study = DbStudy & AdditionalAuthserverFields;

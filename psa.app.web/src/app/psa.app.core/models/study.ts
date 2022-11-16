@@ -7,6 +7,7 @@
 export interface Study {
   name: string;
   description: string;
+  proband_realm_group_id?: string | null;
   pm_email: string;
   hub_email: string;
   status: StudyStatus;
@@ -15,6 +16,9 @@ export interface Study {
   sample_suffix_length?: number;
   pseudonym_prefix?: string;
   pseudonym_suffix_length?: number;
+  has_open_self_registration: boolean;
+  max_allowed_accounts_count: number | null;
+  accounts_count?: number;
   has_answers_notify_feature: boolean;
   has_answers_notify_feature_by_mail: boolean;
   has_four_eyes_opposition: boolean;

@@ -7,8 +7,6 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import createSpyObj = jasmine.createSpyObj;
-import SpyObj = jasmine.SpyObj;
 
 import { AppModule } from '../../app.module';
 import { DialogStudyComponent } from './study-dialog';
@@ -16,6 +14,8 @@ import { UserService } from '../../psa.app.core/providers/user-service/user.serv
 import { CurrentUser } from '../../_services/current-user.service';
 import { Study } from '../../psa.app.core/models/study';
 import { AlertService } from '../../_services/alert.service';
+import createSpyObj = jasmine.createSpyObj;
+import SpyObj = jasmine.SpyObj;
 
 describe('DialogStudyComponent', () => {
   let fixture: MockedComponentFixture;
@@ -37,8 +37,11 @@ describe('DialogStudyComponent', () => {
     user.hasRole.and.returnValue(false);
 
     // Build Base Module
-    await MockBuilder(DialogStudyComponent, AppModule)
-      .mock(MatDialogRef)
+    await MockBuilder(DialogStudyComponent, [
+      AppModule,
+      MAT_DIALOG_DATA,
+      MatDialogRef,
+    ])
       .mock(AlertService)
       .mock(MAT_DIALOG_DATA, existingStudy)
       .mock(UserService, userService)
@@ -100,6 +103,8 @@ describe('DialogStudyComponent', () => {
       expect(userService.putStudy).toHaveBeenCalledOnceWith('Teststudy', {
         name: 'Teststudy',
         description: 'a description',
+        has_open_self_registration: false,
+        max_allowed_accounts_count: null,
         pm_email: 'test@example.com',
         hub_email: 'test@example.com',
         has_rna_samples: true,
@@ -129,6 +134,8 @@ describe('DialogStudyComponent', () => {
       expect(userService.postStudy).toHaveBeenCalledOnceWith({
         name: 'a new study',
         description: 'a description',
+        has_open_self_registration: false,
+        max_allowed_accounts_count: null,
         pm_email: 'test@example.com',
         hub_email: null,
         has_rna_samples: true,
@@ -180,6 +187,8 @@ describe('DialogStudyComponent', () => {
     return {
       name: 'Teststudy',
       description: 'the description',
+      has_open_self_registration: false,
+      max_allowed_accounts_count: null,
       pm_email: null,
       hub_email: null,
       status: 'active',
@@ -196,7 +205,7 @@ describe('DialogStudyComponent', () => {
       has_compliance_opposition: false,
       has_logging_opt_in: false,
       has_required_totp: false,
-      pendingStudyChange: {},
+      pendingStudyChange: null,
     };
   }
 });
