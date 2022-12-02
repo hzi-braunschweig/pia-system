@@ -10,12 +10,11 @@ import {
   MessageQueueTopic,
   Producer,
 } from '@pia/lib-messagequeue';
-import { getRepository } from 'typeorm';
-import { QuestionnaireInstance } from '../entities/questionnaireInstance';
 import {
   MessagePayloadProbandDeactivated,
   MessagePayloadQuestionnaireInstanceReleased,
 } from '../models/messagePayloads';
+import { QuestionnaireService } from './questionnaireService';
 
 export class MessageQueueService extends MessageQueueClient {
   private questionnaireinstanceReleasedProducer?: Producer<MessagePayloadQuestionnaireInstanceReleased>;
@@ -23,10 +22,9 @@ export class MessageQueueService extends MessageQueueClient {
   public static async onUserDeactivated(
     message: MessagePayloadProbandDeactivated
   ): Promise<void> {
-    await getRepository(QuestionnaireInstance).delete({
-      pseudonym: message.pseudonym,
-      status: 'inactive',
-    });
+    await QuestionnaireService.deleteInactiveForProbandQuestionnaireInstances(
+      message.pseudonym
+    );
   }
 
   public async connect(): Promise<void> {

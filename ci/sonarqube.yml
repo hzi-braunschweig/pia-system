@@ -18,6 +18,8 @@ check-sonarqube:
     - find . -name tsconfig.json -exec sed -i "s/@pia\/lib-service-core/..\/psa.lib.service-core\/tsconfig.global.json/g" {} \;
     - sonar-scanner -Dsonar.qualitygate.wait=true
   rules:
+    - if: $SONAR_TOKEN == null
+      when: never
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
       when: never
     - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"

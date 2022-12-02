@@ -1,0 +1,21 @@
+questionnaire_id;questionnaire_version;questionnaire_name;variable_name;column_name;answer_position;text_level_1;text_level_2;answer_option_text;answer_type;answer_category;answer_category_code;valid_min;valid_max;answer_required;condition_question;condition_question_type;condition_question_questionnaire_id;condition_question_questionnaire_version;condition_question_column_name;condition_question_operand;condition_question_answer_value;condition_question_link
+299;2;FB4_Versionierung_mit_Labels_Codes;;299_FB4_v2_q1;q1;Frage mit Labels;;;;;;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Weihnachtslabel;299_FB4_Weihnachtslabel;q1_1;;Wie viele Tage sind es bis Weihnachten?;;numeric integer;;;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Weihnachtslabel;299_FB4_Weihnachtslabel;q1_1;;Wie viele Tage sind es bis Weihnachten?;;numeric integer;missing;.;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;;299_FB4_v2_q2;q2;Frage mit Codes und Labels;;;;;;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel;q2_1;;Was sind deine Lieblingsfarben;;multiple choice;;;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_Keine Angabe;q2_1_1;;;Keine Angabe;multiple choice;yes;1;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_Keine Angabe;q2_1_1;;;Keine Angabe;multiple choice;no;0;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_Keine Angabe;q2_1_1;;;Keine Angabe;multiple choice;missing;.;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_gruen;q2_1_2;;;gruen;multiple choice;yes;1;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_gruen;q2_1_2;;;gruen;multiple choice;no;0;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_gruen;q2_1_2;;;gruen;multiple choice;missing;.;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_blau;q2_1_3;;;blau;multiple choice;yes;1;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_blau;q2_1_3;;;blau;multiple choice;no;0;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_blau;q2_1_3;;;blau;multiple choice;missing;.;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_gelb;q2_1_4;;;gelb;multiple choice;yes;1;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_gelb;q2_1_4;;;gelb;multiple choice;no;0;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_gelb;q2_1_4;;;gelb;multiple choice;missing;.;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_rot;q2_1_5;;;rot;multiple choice;yes;1;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_rot;q2_1_5;;;rot;multiple choice;no;0;;;F;F;;;;;;;
+299;2;FB4_Versionierung_mit_Labels_Codes;Farbenlabel;299_FB4_Farbenlabel_rot;q2_1_5;;;rot;multiple choice;missing;.;;;F;F;;;;;;;

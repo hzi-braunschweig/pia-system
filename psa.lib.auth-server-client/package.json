@@ -9,41 +9,41 @@
     "./dist"
   ],
   "scripts": {
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint .",
     "build": "tsc -p tsconfig.build.json",
     "test.unit": "nyc mocha 'src/**/*.spec.ts'"
   },
   "dependencies": {
-    "@keycloak/keycloak-admin-client": "^16.1.1",
+    "@keycloak/keycloak-admin-client": "^18.0.2",
     "http-status-codes": "^2.2.0",
-    "ts-essentials": "^9.1.2"
+    "ts-essentials": "^9.3.0"
   },
   "devDependencies": {
     "@pia/eslint-config": "file:../psa.eslint-config",
     "@pia/lib-service-core": "file:../psa.lib.service-core",
-    "@types/chai": "^4.3.1",
+    "@types/chai": "^4.3.4",
     "@types/chai-as-promised": "^7.1.5",
     "@types/license-checker": "^25.0.3",
-    "@types/mocha": "^9.1.1",
-    "@types/node": "^14.18.12",
-    "@types/sinon": "^10.0.11",
-    "@types/sinon-chai": "^3.2.8",
-    "@typescript-eslint/eslint-plugin": "^5.23.0",
-    "@typescript-eslint/parser": "^5.23.0",
-    "chai": "^4.3.6",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.11.9",
+    "@types/sinon": "^10.0.13",
+    "@types/sinon-chai": "^3.2.9",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.43.0",
+    "chai": "^4.3.7",
     "chai-as-promised": "^7.1.1",
-    "eslint": "^8.15.0",
+    "eslint": "^8.27.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-no-only-tests": "^2.6.0",
+    "eslint-plugin-no-only-tests": "^3.1.0",
     "eslint-plugin-security": "^1.5.0",
-    "mocha": "^10.0.0",
+    "mocha": "^10.1.0",
     "mocha-multi-reporters": "^1.5.1",
-    "nock": "^13.2.4",
+    "nock": "^13.2.9",
     "nyc": "^15.1.0",
-    "sinon": "^14.0.0",
+    "sinon": "^14.0.2",
     "sinon-chai": "^3.7.0",
     "source-map-support": "^0.5.21",
-    "ts-node": "^10.7.0",
-    "typescript": "^4.6.4"
+    "ts-node": "^10.9.1",
+    "typescript": "~4.8.4"
   }
 }

@@ -4,14 +4,12 @@ e2e:
   extends: .job-exclude-scheduled-pipelines
   stage: test
   image:
-    name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.e2e-runner:$IMAGE_ID
+    name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.e2e-runner:$IMAGE_ID
     entrypoint: ['/bin/bash', '-c']
   script:
     - cd psa.app.web
     - ln -s $NODE_PATH ./node_modules
     - npm run e2e.ci.$FOLDER
-    - cd ..
-    - ./psa.utils.scripts/e2e-webdav-upload/upload.sh
 
   artifacts:
     when: always
@@ -195,63 +193,85 @@ e2e:
     # required for the services to communicate with each other
     FF_NETWORK_PER_BUILD: '1'
   services:
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.sftpserver:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.sftpserver:$IMAGE_ID-with-faked-secrets
       alias: sftpserver
       command: ['ftpuser:ftppassword:::upload']
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.mailserver:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.mailserver:$IMAGE_ID-with-faked-secrets
       alias: mailserver
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.database.ipia:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database.ipia:$IMAGE_ID-with-faked-secrets
       alias: ipiaservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.database.ewpia:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database.ewpia:$IMAGE_ID-with-faked-secrets
       alias: ewpiaservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.database:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database:$IMAGE_ID-with-faked-secrets
       # don't use a variable for alias - it doesn't get resolved!
       alias: databaseservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.service.loggingservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.loggingservice:$IMAGE_ID-with-faked-secrets
       alias: loggingservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.service.userservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.userservice:$IMAGE_ID-with-faked-secrets
       alias: userservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.service.questionnaireservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.questionnaireservice:$IMAGE_ID-with-faked-secrets
       alias: questionnaireservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.service.sampletrackingservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.sampletrackingservice:$IMAGE_ID-with-faked-secrets
       alias: sampletrackingservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.service.complianceservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.complianceservice:$IMAGE_ID-with-faked-secrets
       alias: complianceservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.service.personaldataservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.personaldataservice:$IMAGE_ID-with-faked-secrets
       alias: personaldataservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.service.analyzerservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.analyzerservice:$IMAGE_ID-with-faked-secrets
       alias: analyzerservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.app.web:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.web:$IMAGE_ID-with-faked-secrets
       alias: webappserver
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.apigateway:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.apigateway:$IMAGE_ID-with-faked-secrets
       alias: apigateway
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.service.notificationservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.notificationservice:$IMAGE_ID-with-faked-secrets
       alias: notificationservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.messagequeue:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.messagequeue:$IMAGE_ID-with-faked-secrets
       alias: messagequeue
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.auth:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.auth:$IMAGE_ID-with-faked-secrets
       alias: authserver
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.autheventproxy:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.autheventproxy:$IMAGE_ID-with-faked-secrets
       alias: autheventproxy
 
   rules:
+    # e2e tests for non renovate merge requests should be triggered manually
+    - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME !~ /^renovate/
+      when: manual
+    # run e2e tests for renovate automatically
+    - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^renovate/
+    - if: $CI_COMMIT_BRANCH =~ /^release/
+  resource_group: e2e-tests
+
+e2e-upload:
+  extends: .job-exclude-scheduled-pipelines
+  stage: test
+  image:
+    name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.e2e-runner:$IMAGE_ID
+    entrypoint: ['/bin/bash', '-c']
+  script:
+    - ./psa.utils.scripts/e2e-webdav-upload/upload.sh
+  needs:
+    - job: e2e
+      artifacts: true
+  rules:
+    - if: $WEBDAV_UPLOAD_URL == null
+      when: never
     # e2e tests for non renovate merge requests should be triggered manually
     - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME !~ /^renovate/
       when: manual

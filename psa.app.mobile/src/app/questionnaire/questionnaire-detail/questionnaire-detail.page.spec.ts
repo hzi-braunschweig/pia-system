@@ -146,7 +146,7 @@ describe('QuestionnaireDetailPage', () => {
             text: 'Die folgenden Fragen sind Testfragen, mit gegenseitigen Bedingungen',
             position: 1,
             is_mandatory: true,
-            label: '',
+            variable_name: '',
             questionnaire_version: 1,
             answer_options: [
               {
@@ -162,7 +162,7 @@ describe('QuestionnaireDetailPage', () => {
                 restriction_min: null,
                 restriction_max: null,
                 is_decimal: false,
-                label: '',
+                variable_name: '',
                 condition: null,
               },
             ],
@@ -174,7 +174,7 @@ describe('QuestionnaireDetailPage', () => {
             text: 'Wie war das Testergebnis?',
             position: 2,
             is_mandatory: true,
-            label: '',
+            variable_name: '',
             questionnaire_version: 1,
             answer_options: [
               {
@@ -193,7 +193,7 @@ describe('QuestionnaireDetailPage', () => {
                 restriction_min: null,
                 restriction_max: null,
                 is_decimal: false,
-                label: '',
+                variable_name: '',
                 condition: null,
               },
             ],
@@ -218,7 +218,7 @@ describe('QuestionnaireDetailPage', () => {
             text: 'Wann wurde der Test auf das Corona-Virus durchgeführt? Wenn Sie häufiger positiv getestet wurden, geben Sie bitte das Datum des letzten positiven Tests an. ',
             position: 3,
             is_mandatory: true,
-            label: '',
+            variable_name: '',
             questionnaire_version: 1,
             answer_options: [
               {
@@ -234,7 +234,7 @@ describe('QuestionnaireDetailPage', () => {
                 restriction_min: null,
                 restriction_max: null,
                 is_decimal: false,
-                label: '',
+                variable_name: '',
                 condition: null,
               },
             ],
@@ -259,7 +259,7 @@ describe('QuestionnaireDetailPage', () => {
             text: 'Wann wurde der Test auf das Corona-Virus durchgeführt? Wenn Sie häufiger getestet wurden, tragen Sie bitte das Datum des letzten Tests ein.',
             position: 4,
             is_mandatory: true,
-            label: '',
+            variable_name: '',
             questionnaire_version: 1,
             answer_options: [
               {
@@ -275,7 +275,7 @@ describe('QuestionnaireDetailPage', () => {
                 restriction_min: null,
                 restriction_max: null,
                 is_decimal: false,
-                label: '',
+                variable_name: '',
                 condition: null,
               },
             ],
@@ -300,7 +300,7 @@ describe('QuestionnaireDetailPage', () => {
             text: 'Welche Art von Test wurde durchgeführt? \n\nWenn Sie häufiger positiv getestet wurden, geben Sie bitte die Testart des letzten positiven Tests an. ',
             position: 5,
             is_mandatory: true,
-            label: '',
+            variable_name: '',
             questionnaire_version: 1,
             answer_options: [
               {
@@ -321,7 +321,7 @@ describe('QuestionnaireDetailPage', () => {
                 restriction_min: null,
                 restriction_max: null,
                 is_decimal: false,
-                label: '',
+                variable_name: '',
                 condition: null,
               },
               {
@@ -337,7 +337,7 @@ describe('QuestionnaireDetailPage', () => {
                 restriction_min: null,
                 restriction_max: null,
                 is_decimal: false,
-                label: '',
+                variable_name: '',
                 condition: {
                   condition_type: 'internal_this',
                   condition_answer_option_id: 10043,
@@ -375,7 +375,7 @@ describe('QuestionnaireDetailPage', () => {
             text: 'Vielen Dank für Ihre Angaben!',
             position: 6,
             is_mandatory: false,
-            label: '',
+            variable_name: '',
             questionnaire_version: 1,
             answer_options: [],
             condition: null,

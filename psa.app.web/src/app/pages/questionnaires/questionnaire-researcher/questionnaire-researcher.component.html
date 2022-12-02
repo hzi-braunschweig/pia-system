@@ -7,7 +7,7 @@
 <app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
 
 <div class="jumbotron">
-  <div *ngIf="myForm" class="page-wrapper">
+  <div *ngIf="myForm">
     <ngx-material-timepicker
       #picker
       [ngxMaterialTimepickerTheme]="timepickerTheme"
@@ -26,7 +26,7 @@
       <span *ngIf="isImportedQuestionnaire">{{
         'QUESTIONNAIRE_FORSCHER.FIRST_SAVE_QUESTIONNAIRE' | translate
       }}</span>
-      <!-- Questionnaire settings -->
+      <!-- questionnaire settings -->
       <mat-card class="questionnaire-card">
         <div class="grid-container">
           <mat-form-field>
@@ -369,7 +369,7 @@
                 </mat-error>
               </mat-form-field>
 
-              <!-- Notification weekday -->
+              <!-- notification weekday -->
               <mat-form-field
                 *ngIf="
                   myForm.controls['notification_tries'].value > 0 &&
@@ -876,7 +876,7 @@
                 </mat-select>
               </mat-form-field>
 
-              <!-- Main Question -->
+              <!-- main question -->
               <ng-container *ngIf="selectedAnswerOptionsIndex != undefined">
                 <mat-form-field
                   *ngIf="
@@ -999,7 +999,7 @@
                 </mat-form-field>
               </ng-container>
 
-              <!--Main Question condition link -->
+              <!--main question condition link -->
               <mat-form-field
                 *ngIf="
                   selectedAnswerOptionsIndex != undefined &&
@@ -1035,22 +1035,22 @@
         </mat-card>
       </mat-card>
 
-      <!-- Questions -->
+      <!-- questions -->
       <mat-card
-        id="questionList"
+        class="questions"
         formArrayName="questions"
         [ngClass]="{ 'import-view': isImportedQuestionnaire }"
-        data-e2e="e2e-question-list"
+        data-e2e="question-list"
       >
         <ul
           cdkDropList
           [cdkDropListData]="myForm.controls['questions'].controls"
           (cdkDropListDropped)="dndDrop($event)"
-          class="list-group example-list"
+          class="list-group"
         >
           <li
             cdkDrag
-            class="list-group example-box"
+            class="list-group"
             *ngFor="
               let question of myForm.controls['questions'].controls;
               let i = index
@@ -1082,122 +1082,140 @@
                   </mat-checkbox>
                 </mat-expansion-panel-header>
 
-                <button
-                  type="button"
-                  mat-icon-button
-                  class="button-clear"
-                  (click)="removeQuestion(i)"
-                  data-e2e="e2e-remove-question-button"
-                >
-                  <mat-icon>clear</mat-icon>
-                </button>
                 <div class="form-group">
-                  <mat-grid-list
-                    [cols]="settingsCols"
-                    (window:resize)="onResize($event)"
-                    rowHeight="150px"
-                  >
-                    <!-- Fragentext Markdown -->
-                    <mat-grid-tile
-                      class="wide-tile question-text-tile"
-                      [colspan]="7"
-                    >
-                      <mat-form-field>
-                        <textarea
-                          #questionTextInput
-                          id="questiontextinput"
-                          matInput
-                          type="text"
-                          placeholder="{{
-                            'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_MARKDOWN'
-                              | translate
+                  <div class="question">
+                    <div class="question-text">
+                      <div class="question-text-field">
+                        <mat-form-field>
+                          <textarea
+                            #questionTextInput
+                            id="questiontextinput"
+                            matInput
+                            type="text"
+                            placeholder="{{
+                              'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_MARKDOWN'
+                                | translate
+                            }}"
+                            formControlName="text"
+                            cdkTextareaAutosize
+                            #autosize="cdkTextareaAutosize"
+                            cdkAutosizeMinRows="1"
+                            cdkAutosizeMaxRows="7"
+                            data-e2e="e2e-question-text-input"
+                          ></textarea>
+                          <mat-error
+                            *ngIf="
+                              question.controls['text'].hasError('required')
+                            "
+                          >
+                            {{
+                              'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_REQUIRED'
+                                | translate
+                            }}
+                          </mat-error>
+                          <mat-error
+                            *ngIf="
+                              !question.controls['text'].hasError('required') &&
+                              question.controls['text'].hasError(
+                                'validVariable'
+                              )
+                            "
+                          >
+                            {{
+                              'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_VARIABLE_NUMBER'
+                                | translate
+                            }}
+                          </mat-error>
+                        </mat-form-field>
+                        <button
+                          type="button"
+                          mat-icon-button
+                          matTooltip="{{
+                            'QUESTIONNAIRE_FORSCHER.ADD_VARIABLE' | translate
                           }}"
-                          formControlName="text"
-                          cdkTextareaAutosize
-                          #autosize="cdkTextareaAutosize"
-                          cdkAutosizeMinRows="1"
-                          cdkAutosizeMaxRows="7"
-                          data-e2e="e2e-question-text-input"
-                        ></textarea>
-                        <mat-error
-                          *ngIf="question.controls['text'].hasError('required')"
-                        >
-                          {{
-                            'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_REQUIRED'
-                              | translate
-                          }}
-                        </mat-error>
-                        <mat-error
-                          *ngIf="
-                            !question.controls['text'].hasError('required') &&
-                            question.controls['text'].hasError('validVariable')
+                          (click)="
+                            addCustomVariable(
+                              question.controls['text'],
+                              questionTextInput
+                            )
                           "
                         >
-                          {{
-                            'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_VARIABLE_NUMBER'
-                              | translate
-                          }}
-                        </mat-error>
-                      </mat-form-field>
+                          <mat-icon>add_circle_outline</mat-icon>
+                        </button>
+                      </div>
+                      <div class="question-text-preview">
+                        <mat-card class="markdown-container">
+                          <mat-card-content>
+                            <h3>
+                              {{
+                                'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_PREVIEW'
+                                  | translate
+                              }}
+                            </h3>
+                            <markdown
+                              ngPreserveWhitespaces
+                              [data]="question.controls['text'].value"
+                            >
+                            </markdown>
+                          </mat-card-content>
+                        </mat-card>
+                      </div>
                       <button
-                        type="button"
                         mat-icon-button
-                        matTooltip="{{
-                          'QUESTIONNAIRE_FORSCHER.ADD_VARIABLE' | translate
-                        }}"
-                        (click)="
-                          addCustomVariable(
-                            question.controls['text'],
-                            questionTextInput
-                          )
-                        "
+                        type="button"
+                        class="button-clear"
+                        data-e2e="e2e-remove-question-button"
+                        (click)="removeQuestion(i)"
                       >
-                        <mat-icon>add_circle_outline</mat-icon>
+                        <mat-icon>clear</mat-icon>
                       </button>
-                    </mat-grid-tile>
-
-                    <!-- Fragen Label -->
-                    <mat-grid-tile
-                      class="wide-tile question-label-tile"
-                      [colspan]="3"
+                    </div>
+                    <div
+                      class="question-variable-name question-variable-name--warning"
                     >
                       <mat-form-field>
                         <input
                           type="text"
                           matInput
                           placeholder="{{
-                            'QUESTIONNAIRE_FORSCHER.LABEL' | translate
+                            'QUESTIONNAIRE_FORSCHER.VARIABLE_NAME' | translate
                           }}"
-                          formControlName="label"
+                          formControlName="variable_name"
                         />
+                        <mat-icon
+                          data-e2e="question-variable-name-warning-icon"
+                          class="warning-icon"
+                          matSuffix
+                          *ngIf="
+                            variableNameWarnings.has(
+                              question.controls.variable_name
+                            )
+                          "
+                          >warning</mat-icon
+                        >
                       </mat-form-field>
-                    </mat-grid-tile>
-
-                    <!-- Fragentext Vorschau -->
-                    <mat-grid-tile class="wide-tile" [colspan]="4">
-                      <mat-card class="markdown-container">
+                      <mat-card
+                        data-e2e="question-variable-name-warning-text"
+                        class="question-variable-name__warning warning-card"
+                        *ngIf="
+                          variableNameWarnings.has(
+                            question.controls.variable_name
+                          )
+                        "
+                      >
                         <mat-card-content>
-                          <h3>
-                            {{
-                              'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_PREVIEW'
-                                | translate
-                            }}
-                          </h3>
-                          <markdown
-                            ngPreserveWhitespaces
-                            [data]="question.controls['text'].value"
-                          >
-                          </markdown>
+                          {{
+                            'QUESTIONNAIRE_FORSCHER.VARIABLE_NAME_WARNING'
+                              | translate
+                          }}
                         </mat-card-content>
                       </mat-card>
-                    </mat-grid-tile>
-                    <mat-grid-tile
+                    </div>
+                    <div
                       *ngIf="
                         question.controls['condition_error'].value ===
                         'reference-not-found'
                       "
-                      class="wide-tile"
-                      [colspan]="8"
                     >
                       <div>
                         <mat-error>
@@ -1249,8 +1267,8 @@
                           </span>
                         </span>
                       </div>
-                    </mat-grid-tile>
-                  </mat-grid-list>
+                    </div>
+                  </div>
 
                   <button
                     *ngIf="question.controls['has_condition'].value !== true"
@@ -1540,7 +1558,7 @@
                           </mat-form-field>
                         </mat-grid-tile>
 
-                        <!-- Sub question -->
+                        <!-- sub question -->
                         <mat-grid-tile
                           class="sub-question"
                           *ngIf="
@@ -1812,7 +1830,7 @@
                     </mat-card-content>
                   </mat-card>
                 </div>
-                <!-- Answer Options -->
+
                 <div class="answer-options">
                   <div formArrayName="answer_options">
                     <div
@@ -1823,36 +1841,38 @@
                       "
                     >
                       <div formGroupName="{{ j }}">
-                        <mat-card class="answer-card">
+                        <mat-card class="answer-option">
                           <mat-card-title
                             fxLayout="row"
-                            fxLayoutAlign="space-between start"
+                            fxLayoutAlign="space-between center"
                           >
-                            <div flex>
-                              <span
-                                >{{
+                            <div class="answer-option__title">
+                              <span class="answer-option__index">
+                                {{
                                   'QUESTIONNAIRE_FORSCHER.SUB-QUESTION'
                                     | translate
                                 }}
-                                {{ j + 1 }}</span
-                              >
-                              <button
-                                type="button"
-                                mat-icon-button
-                                (click)="moveAnswerUp(i, j)"
-                              >
-                                <mat-icon>keyboard_arrow_up</mat-icon>
-                              </button>
-                              <button
-                                type="button"
-                                mat-icon-button
-                                (click)="moveAnswerDown(i, j)"
-                              >
-                                <mat-icon>keyboard_arrow_down</mat-icon>
-                              </button>
+                                {{ j + 1 }}
+                              </span>
+                              <div class="answer-option__move-buttons">
+                                <button
+                                  type="button"
+                                  mat-icon-button
+                                  (click)="moveAnswerUp(i, j)"
+                                >
+                                  <mat-icon>keyboard_arrow_up</mat-icon>
+                                </button>
+                                <button
+                                  type="button"
+                                  mat-icon-button
+                                  (click)="moveAnswerDown(i, j)"
+                                >
+                                  <mat-icon>keyboard_arrow_down</mat-icon>
+                                </button>
+                              </div>
                             </div>
-                            <span
-                              flex
+                            <div
+                              class="answer-option__condition-warning"
                               *ngIf="
                                 answer.controls['is_condition_target'].value ==
                                 true
@@ -1862,7 +1882,7 @@
                                 'QUESTIONNAIRE_FORSCHER.CONDITION_WARNING'
                                   | translate
                               }}
-                            </span>
+                            </div>
                             <button
                               type="button"
                               mat-icon-button
@@ -1878,21 +1898,23 @@
                               *ngIf="!answer.controls['has_condition'].value"
                             >
                               <mat-grid-tile [colspan]="3">
-                                <button
-                                  *ngIf="
-                                    answer.controls['has_condition'].value !==
-                                    true
-                                  "
-                                  mat-raised-button
-                                  type="button"
-                                  color="primary"
-                                  (click)="addAnswerCondition(i, j)"
-                                >
-                                  {{
-                                    'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_CONDITION_SET'
-                                      | translate
-                                  }}
-                                </button>
+                                <div fxFlex fxLayoutAlign="start center">
+                                  <button
+                                    *ngIf="
+                                      answer.controls['has_condition'].value !==
+                                      true
+                                    "
+                                    mat-raised-button
+                                    type="button"
+                                    color="primary"
+                                    (click)="addAnswerCondition(i, j)"
+                                  >
+                                    {{
+                                      'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_CONDITION_SET'
+                                        | translate
+                                    }}
+                                  </button>
+                                </div>
                               </mat-grid-tile>
                               <mat-grid-tile
                                 *ngIf="
@@ -1972,14 +1994,14 @@
                                 fxLayout="row"
                                 fxLayoutAlign="space-between start"
                               >
-                                <span flex
+                                <span
                                   >{{
                                     'QUESTIONNAIRE_FORSCHER.CONDITION'
                                       | translate
                                   }}
                                 </span>
                                 <span
-                                  flex
+                                  class="answer-option__condition-warning"
                                   *ngIf="
                                     myForm.dirty &&
                                     answer.controls['condition'].controls[
@@ -2278,7 +2300,7 @@
                                     </mat-form-field>
                                   </mat-grid-tile>
 
-                                  <!--Sub sub question (Unterfragen) multiple value-->
+                                  <!-- condition multiple choice options -->
                                   <mat-grid-tile
                                     *ngIf="
                                       answer.controls['tmp_for_condition']
@@ -2589,190 +2611,206 @@
                               </mat-card-content>
                             </mat-card>
 
-                            <div>
-                              <hr />
-                            </div>
-                            <div>
-                              <mat-grid-list
-                                layout="row"
-                                [cols]="colsAns | async"
-                                rowHeight="75px"
-                                class="answer-type-select"
-                              >
-                                <mat-grid-tile flex="25">
-                                  <mat-form-field>
-                                    <mat-select
-                                      disableOptionCentering
-                                      id="answertypeselect"
-                                      placeholder="{{
-                                        'QUESTIONNAIRE_FORSCHER.ANSWER_TYPE'
-                                          | translate
-                                      }}"
-                                      formControlName="answer_type_id"
-                                      (selectionChange)="
-                                        checkRestrictions(i, j)
-                                      "
-                                      data-e2e="e2e-answer-type-select-dropdown"
-                                    >
-                                      <ng-container
-                                        *ngFor="let answerType of answerTypes"
-                                      >
-                                        <mat-option
-                                          *ngIf="
-                                            answerType.availableFor.includes(
-                                              myForm.get('type').value
-                                            )
-                                          "
-                                          (click)="
-                                            checkAnswerType(
-                                              i,
-                                              j,
-                                              false,
-                                              answerType.id
-                                            )
-                                          "
-                                          [value]="answerType.id"
-                                        >
-                                          {{ answerType.viewValue | translate }}
-                                        </mat-option>
-                                      </ng-container>
-                                    </mat-select>
-                                    <mat-error
-                                      *ngIf="
-                                        answer.controls[
-                                          'answer_type_id'
-                                        ].hasError('required')
-                                      "
-                                    >
-                                      {{
-                                        'QUESTIONNAIRE_FORSCHER.ANSWER_TYPE_REQUIRED'
-                                          | translate
-                                      }}
-                                    </mat-error>
-                                    <div
-                                      style="color: black; font-size: 0.9em"
-                                      *ngIf="
-                                        answer.get('answer_type_id').value === 8
-                                      "
-                                    >
-                                      {{
-                                        'QUESTIONNAIRE_FORSCHER.IMAGE_INPUT_TYPES_HINT'
-                                          | translate
-                                      }}
-                                    </div>
-                                    <div
-                                      style="color: black; font-size: 0.9em"
-                                      *ngIf="
-                                        answer.get('answer_type_id').value ===
-                                        10
-                                      "
-                                    >
-                                      {{
-                                        'QUESTIONNAIRE_FORSCHER.FILE_INPUT_TYPES_HINT'
-                                          | translate
-                                      }}
-                                    </div>
-                                  </mat-form-field>
-                                  <button
-                                    type="button"
-                                    mat-icon-button
-                                    *ngIf="
-                                      answer.controls['answer_type_id']
-                                        .value === 3 ||
-                                      answer.controls['answer_type_id']
-                                        .value === 5
-                                    "
-                                    matTooltip="{{
-                                      'QUESTIONNAIRE_FORSCHER.RESTRICTED_VALUE'
+                            <mat-divider></mat-divider>
+
+                            <div class="answer-type-select">
+                              <div class="answer-option-type">
+                                <mat-form-field>
+                                  <mat-select
+                                    disableOptionCentering
+                                    id="answertypeselect"
+                                    placeholder="{{
+                                      'QUESTIONNAIRE_FORSCHER.ANSWER_TYPE'
                                         | translate
                                     }}"
-                                    (click)="addAnswerOptionsRestriction(i, j)"
+                                    formControlName="answer_type_id"
+                                    (selectionChange)="checkRestrictions(i, j)"
+                                    data-e2e="e2e-answer-type-select-dropdown"
                                   >
-                                    <mat-icon>code</mat-icon>
-                                  </button>
-                                </mat-grid-tile>
-                                <mat-grid-tile flex="75" class="w500">
-                                  <mat-form-field class="w92p">
-                                    <input
-                                      #answeroptiontestinput
-                                      id="answeroptiontestinput"
-                                      type="text"
-                                      matInput
-                                      placeholder="{{
-                                        'QUESTIONNAIRE_FORSCHER.DESCRIPTION'
-                                          | translate
-                                      }}"
-                                      formControlName="text"
-                                      data-e2e="e2e-answer-option-test-input"
-                                    />
-                                    <mat-error
-                                      *ngIf="
-                                        answer.controls['text'].hasError(
-                                          'validVariable'
-                                        )
-                                      "
+                                    <ng-container
+                                      *ngFor="let answerType of answerTypes"
                                     >
-                                      {{
-                                        'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_VARIABLE_NUMBER'
-                                          | translate
-                                      }}
-                                    </mat-error>
-                                  </mat-form-field>
-                                  <button
-                                    type="button"
-                                    mat-icon-button
-                                    class="button-add"
-                                    matTooltip="{{
-                                      'QUESTIONNAIRE_FORSCHER.ADD_VARIABLE'
+                                      <mat-option
+                                        *ngIf="
+                                          answerType.availableFor.includes(
+                                            myForm.get('type').value
+                                          )
+                                        "
+                                        (click)="
+                                          checkAnswerType(
+                                            i,
+                                            j,
+                                            false,
+                                            answerType.id
+                                          )
+                                        "
+                                        [value]="answerType.id"
+                                      >
+                                        {{ answerType.viewValue | translate }}
+                                      </mat-option>
+                                    </ng-container>
+                                  </mat-select>
+                                  <mat-error
+                                    *ngIf="
+                                      answer.controls[
+                                        'answer_type_id'
+                                      ].hasError('required')
+                                    "
+                                  >
+                                    {{
+                                      'QUESTIONNAIRE_FORSCHER.ANSWER_TYPE_REQUIRED'
+                                        | translate
+                                    }}
+                                  </mat-error>
+                                  <div
+                                    style="color: black; font-size: 0.9em"
+                                    *ngIf="
+                                      answer.get('answer_type_id').value === 8
+                                    "
+                                  >
+                                    {{
+                                      'QUESTIONNAIRE_FORSCHER.IMAGE_INPUT_TYPES_HINT'
+                                        | translate
+                                    }}
+                                  </div>
+                                  <div
+                                    style="color: black; font-size: 0.9em"
+                                    *ngIf="
+                                      answer.get('answer_type_id').value === 10
+                                    "
+                                  >
+                                    {{
+                                      'QUESTIONNAIRE_FORSCHER.FILE_INPUT_TYPES_HINT'
+                                        | translate
+                                    }}
+                                  </div>
+                                </mat-form-field>
+                                <button
+                                  type="button"
+                                  mat-icon-button
+                                  *ngIf="
+                                    answer.controls['answer_type_id'].value ===
+                                      3 ||
+                                    answer.controls['answer_type_id'].value ===
+                                      5
+                                  "
+                                  matTooltip="{{
+                                    'QUESTIONNAIRE_FORSCHER.RESTRICTED_VALUE'
+                                      | translate
+                                  }}"
+                                  (click)="addAnswerOptionsRestriction(i, j)"
+                                >
+                                  <mat-icon>code</mat-icon>
+                                </button>
+                              </div>
+                              <div class="answer-option-description">
+                                <mat-form-field>
+                                  <input
+                                    class
+                                    #answeroptiontestinput
+                                    id="answeroptiontestinput"
+                                    type="text"
+                                    matInput
+                                    placeholder="{{
+                                      'QUESTIONNAIRE_FORSCHER.DESCRIPTION'
                                         | translate
                                     }}"
-                                    (click)="
-                                      addCustomVariable(
-                                        answer.controls['text'],
-                                        answeroptiontestinput
+                                    formControlName="text"
+                                    data-e2e="e2e-answer-option-test-input"
+                                  />
+                                  <mat-error
+                                    *ngIf="
+                                      answer.controls['text'].hasError(
+                                        'validVariable'
                                       )
                                     "
                                   >
-                                    <mat-icon>add_circle_outline</mat-icon>
-                                  </button>
-                                </mat-grid-tile>
-                                <mat-grid-tile flex="75" class="w500">
-                                  <mat-form-field class="w92p">
-                                    <input
-                                      type="text"
-                                      matInput
-                                      placeholder="{{
-                                        'QUESTIONNAIRE_FORSCHER.LABEL'
-                                          | translate
-                                      }}"
-                                      formControlName="label"
-                                    />
-                                  </mat-form-field>
-                                </mat-grid-tile>
-                                <mat-grid-tile
-                                  flex="20"
-                                  *ngIf="
-                                    answer.controls['answer_type_id'].value ==
-                                      1 ||
-                                    answer.controls['answer_type_id'].value == 2
-                                  "
-                                >
-                                  <button
-                                    id="createnewvaluebutton"
-                                    class="createValueButton"
-                                    mat-raised-button
-                                    type="button"
-                                    color="primary"
-                                    (click)="addValue(i, j)"
-                                    class="left"
-                                  >
                                     {{
-                                      'QUESTIONNAIRE_FORSCHER.ADD_ANSWER'
+                                      'QUESTIONNAIRE_FORSCHER.QUESTION_TEXT_VARIABLE_NUMBER'
                                         | translate
                                     }}
-                                  </button>
-                                </mat-grid-tile>
-                              </mat-grid-list>
+                                  </mat-error>
+                                </mat-form-field>
+                                <button
+                                  type="button"
+                                  mat-icon-button
+                                  class="button-add"
+                                  matTooltip="{{
+                                    'QUESTIONNAIRE_FORSCHER.ADD_VARIABLE'
+                                      | translate
+                                  }}"
+                                  (click)="
+                                    addCustomVariable(
+                                      answer.controls['text'],
+                                      answeroptiontestinput
+                                    )
+                                  "
+                                >
+                                  <mat-icon>add_circle_outline</mat-icon>
+                                </button>
+                              </div>
+                              <div class="answer-option-variable-name">
+                                <mat-form-field>
+                                  <input
+                                    type="text"
+                                    matInput
+                                    placeholder="{{
+                                      'QUESTIONNAIRE_FORSCHER.VARIABLE_NAME'
+                                        | translate
+                                    }}"
+                                    formControlName="variable_name"
+                                  />
+                                  <mat-icon
+                                    data-e2e="answer-option-variable-name-warning-icon"
+                                    class="warning-icon"
+                                    matSuffix
+                                    *ngIf="
+                                      variableNameWarnings.has(
+                                        answer.controls.variable_name
+                                      )
+                                    "
+                                    >warning</mat-icon
+                                  >
+                                </mat-form-field>
+                                <mat-card
+                                  data-e2e="answer-option-variable-name-warning-text"
+                                  class="answer-option-variable-name__warning warning-card"
+                                  *ngIf="
+                                    variableNameWarnings.has(
+                                      answer.controls.variable_name
+                                    )
+                                  "
+                                >
+                                  <mat-card-content>
+                                    {{
+                                      'QUESTIONNAIRE_FORSCHER.VARIABLE_NAME_WARNING'
+                                        | translate
+                                    }}
+                                  </mat-card-content>
+                                </mat-card>
+                              </div>
+                              <div
+                                *ngIf="
+                                  answer.controls['answer_type_id'].value ==
+                                    1 ||
+                                  answer.controls['answer_type_id'].value == 2
+                                "
+                              >
+                                <button
+                                  id="createnewvaluebutton"
+                                  class="createValueButton"
+                                  mat-raised-button
+                                  type="button"
+                                  color="primary"
+                                  (click)="addValue(i, j)"
+                                  class="left"
+                                >
+                                  {{
+                                    'QUESTIONNAIRE_FORSCHER.ADD_ANSWER'
+                                      | translate
+                                  }}
+                                </button>
+                              </div>
                             </div>
 
                             <div
@@ -2923,6 +2961,7 @@
                             </div>
 
                             <div
+                              data-e2e="answer-option-values"
                               class="item-class"
                               formArrayName="values"
                               *ngIf="
@@ -3041,29 +3080,18 @@
                         </mat-card>
                       </div>
                     </div>
-                    <div>
-                      <mat-divider></mat-divider>
-                    </div>
-                    <mat-card-actions
-                      fxLayout="row"
-                      fxLayoutAlign="space-between start"
+                    <mat-divider></mat-divider>
+                    <button
+                      class="create-answer-option-button"
+                      mat-raised-button
+                      type="button"
+                      color="primary"
+                      (click)="addAnswer(i)"
                     >
-                      <span flex>
-                        <button
-                          id="createanswerbutton"
-                          class="createAnswerButton"
-                          mat-raised-button
-                          type="button"
-                          color="primary"
-                          (click)="addAnswer(i)"
-                        >
-                          {{
-                            'QUESTIONNAIRE_FORSCHER.NEW_SUB-QUESTION'
-                              | translate
-                          }}
-                        </button>
-                      </span>
-                    </mat-card-actions>
+                      {{
+                        'QUESTIONNAIRE_FORSCHER.NEW_SUB-QUESTION' | translate
+                      }}
+                    </button>
                   </div>
                 </div>
               </mat-expansion-panel>
@@ -3082,7 +3110,7 @@
         </button>
       </mat-card>
 
-      <!-- Submit Save Update Cancel Button -->
+      <!-- buttons for save, revise, update -->
       <mat-card class="buttons-group">
         <div class="col-xs-12">
           <button
@@ -3157,7 +3185,7 @@
             {{ 'GENERAL.IMPORT' | translate }}
           </button>
 
-          <!-- Hide this input field. Click on it from the code -->
+          <!-- hidden input field to open file picker dialog -->
           <input
             type="file"
             id="myFileInputField"
@@ -3167,7 +3195,7 @@
         </div>
       </mat-card>
 
-      <!-- Warning hint -->
+      <!-- warning hint -->
       <mat-card *ngIf="isEditMode">
         {{ 'QUESTIONNAIRE_FORSCHER.WARNING' | translate }}:
         {{ 'QUESTIONNAIRE_FORSCHER.WARNING_UPDATE' | translate }}

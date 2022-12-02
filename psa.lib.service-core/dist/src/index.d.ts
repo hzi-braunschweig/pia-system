@@ -17,6 +17,7 @@ export * from './plugins/version';
 export * from './plugins/registerPlugins';
 export * from './server/serverRunner';
 export * from './service/mailService';
+export * from './service/randomDigitsGenerator';
 export * from './utils/async';
 export * from './utils/json';
 export * from './utils/typeGuards';

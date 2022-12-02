@@ -49,7 +49,7 @@ export class Condition {
 export interface Question {
   id?: number;
   text: string;
-  label: string;
+  variable_name: string;
   position: number;
   is_mandatory: boolean;
   condition?: Condition;
@@ -59,7 +59,7 @@ export interface Question {
 export interface AnswerOption {
   id?: number;
   text: string;
-  label: string;
+  variable_name: string;
   position: number;
   answer_type_id: number;
   restriction_min?: number;

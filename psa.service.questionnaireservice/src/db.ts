@@ -28,6 +28,7 @@ import { Condition } from './entities/condition';
 import { Answer } from './entities/answer';
 import util from 'util';
 import { ConnectionOptions } from 'typeorm/connection/ConnectionOptions';
+import { RenameLabelToVariableName1668436755983 } from './migrations/1668436755983-RenameLabelToVariableName';
 
 const pgp = pgPromise({ capSQL: true, noLocking: config.isTestMode });
 
@@ -67,8 +68,8 @@ const typeOrmOptions: ConnectionOptions = {
   ],
   namingStrategy: new SnakeNamingStrategyWithPlural(),
   synchronize: false,
-  migrationsRun: false,
-  migrations: [],
+  migrationsRun: true,
+  migrations: [RenameLabelToVariableName1668436755983],
   logging: false,
 };
 

@@ -84,7 +84,7 @@ describe('MessageQueueService', () => {
         );
         const q2 = await manager.save(
           Questionnaire,
-          createQuestionnaire({ id: 9200 })
+          createQuestionnaire({ id: 9200, type: 'for_research_team' })
         );
         await manager.save(
           QuestionnaireInstance,
@@ -127,6 +127,15 @@ describe('MessageQueueService', () => {
           createQuestionnaireInstance({
             id: 59200,
             questionnaire: q2,
+            status: 'inactive',
+            pseudonym: pseudonym1,
+          })
+        );
+        await manager.save(
+          QuestionnaireInstance,
+          createQuestionnaireInstance({
+            id: 69200,
+            questionnaire: q2,
             status: 'released_twice',
             pseudonym: pseudonym2,
           })
@@ -134,7 +143,7 @@ describe('MessageQueueService', () => {
         await manager.save(
           QuestionnaireInstance,
           createQuestionnaireInstance({
-            id: 69100,
+            id: 79100,
             questionnaire: q1,
             status: 'inactive',
             pseudonym: pseudonym2,
@@ -143,13 +152,13 @@ describe('MessageQueueService', () => {
       });
     });
 
-    it('should delete the inactive questionnaire instances of the deactivated pseudonym', async () => {
+    it('should delete inactive "for_proband" questionnaire instances of the deactivated pseudonym', async () => {
       // Arrange
       const inactiveOfP1Before = await qiRepo.count({
         pseudonym: pseudonym1,
         status: 'inactive',
       });
-      expect(inactiveOfP1Before).to.be.greaterThan(0);
+      expect(inactiveOfP1Before).to.equal(2);
 
       // Act
       await producer.publish({
@@ -158,12 +167,17 @@ describe('MessageQueueService', () => {
 
       // Assert
       await once(endOfMessageHandlingEmitter, endOfUserDeactivated);
-      const inactiveOfP1After = await qiRepo.count({
-        pseudonym: pseudonym1,
-        status: 'inactive',
+      const inactiveOfP1After = await qiRepo.find({
+        relations: ['questionnaire'],
+        where: {
+          pseudonym: pseudonym1,
+          status: 'inactive',
+        },
       });
-      expect(inactiveOfP1Before).to.be.greaterThan(inactiveOfP1After);
-      expect(inactiveOfP1After).to.equal(0);
+      expect(inactiveOfP1After.length).to.equal(1);
+      expect(inactiveOfP1After[0].questionnaire.type).equals(
+        'for_research_team'
+      );
     });
 
     it('should not delete any other questionnaire instance', async () => {

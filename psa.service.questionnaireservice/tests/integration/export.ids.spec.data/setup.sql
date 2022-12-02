@@ -43,11 +43,11 @@ VALUES (297, 'Teststudie - Export', 'FB2_alle_Antworttypen_UT', 1, 1, 'once', 0,
         FALSE, 999999, 999999, '2021-06-08', 'for_research_team', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL,
         FALSE);
 
-INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, label, questionnaire_version)
+INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, variable_name, questionnaire_version)
 VALUES (2620, 297, 'Es werden verschiedene Antworttypen durchgetestet.', 1, FALSE, '', 1);
 
 INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position",
-                            is_condition_target, restriction_min, restriction_max, is_decimal, label)
+                            is_condition_target, restriction_min, restriction_max, is_decimal, variable_name)
 VALUES (5987, 2620, 'Ist dies eine Einzelauswahl?', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE, '');
 
 --

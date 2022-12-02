@@ -13,6 +13,7 @@
       psa.service.sormasservice psa.service.userservice psa.test.data
       psa.utils.ci-analyze-secret-report psa.utils.ci-git-mirror
       psa.utils.ci-release-image psa.utils.ci-thirdparty-license-collector
+      psa.utils.ci-awx-cli
       psa.utils.codeformatter psa.utils.coverage psa.utils.deploymentservice
       psa.utils.e2e-runner psa.utils.log-sink psa.utils.metrics
       psa.utils.repo-tool

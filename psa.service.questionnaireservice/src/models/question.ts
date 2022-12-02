@@ -5,14 +5,14 @@
  */
 
 import {
-  AnswerOptionDto,
   AnswerOption,
+  AnswerOptionDto,
   AnswerOptionRequest,
   AnswerOptionResponse,
 } from './answerOption';
 import {
-  ConditionDto,
   Condition,
+  ConditionDto,
   ConditionRequest,
   ConditionResponse,
 } from './condition';
@@ -25,6 +25,7 @@ export interface DbQuestion {
   text: string;
   position: number;
   is_mandatory: boolean | null;
+  variable_name: string | null;
 }
 
 /**
@@ -33,6 +34,7 @@ export interface DbQuestion {
 export interface Question extends DbQuestion {
   answer_options: AnswerOption[];
   condition: Condition | null;
+  variable_name: string | null;
 }
 
 export interface QuestionDto {
@@ -53,7 +55,7 @@ export interface QuestionResponse extends DbQuestion {
 export interface QuestionRequest {
   id?: number;
   text: string;
-  label: string;
+  variable_name: string;
   position: number;
   is_mandatory: boolean;
   answer_options?: AnswerOptionRequest[];

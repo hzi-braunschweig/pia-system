@@ -1,12 +1,3 @@
-BEGIN;
+DELETE FROM probands WHERE pseudonym LIKE 'qtest%';
 
-DELETE FROM questionnaires;
-DELETE FROM questions;
-DELETE FROM answer_options;
-DELETE FROM questionnaire_instances;
-DELETE FROM answers;
-DELETE FROM study_users;
-DELETE FROM probands;
-DELETE FROM studies;
-
-COMMIT;
+DELETE FROM studies WHERE name LIKE 'QTest%';

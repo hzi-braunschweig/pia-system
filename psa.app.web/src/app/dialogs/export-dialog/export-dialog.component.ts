@@ -9,6 +9,7 @@ import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import {
   AbstractControl,
+  FormArray,
   FormControl,
   FormGroup,
   Validators,
@@ -27,6 +28,7 @@ interface StudyQuestionnaire {
   id: number;
   study_id: string;
   name: string;
+  version: number;
 }
 
 @Component({
@@ -46,6 +48,29 @@ interface StudyQuestionnaire {
   ],
 })
 export class DialogExportDataComponent implements OnInit {
+  exportCheckboxes = [
+    {
+      name: 'QUESTIONNAIRE_FORSCHER.EXPORT_ANSWERS',
+      value: 'answers',
+    },
+    {
+      name: 'QUESTIONNAIRE_FORSCHER.EXPORT_CODEBOOK',
+      value: 'codebook',
+    },
+    {
+      name: 'QUESTIONNAIRE_FORSCHER.EXPORT_LABRESULTS',
+      value: 'labresults',
+    },
+    {
+      name: 'QUESTIONNAIRE_FORSCHER.EXPORT_SAMPLES',
+      value: 'samples,bloodsamples',
+    },
+    {
+      name: 'QUESTIONNAIRE_FORSCHER.EXPORT_SETTINGS',
+      value: 'settings',
+    },
+  ];
+
   form: FormGroup = this.getExportForm();
 
   studiesForSelection: string[] = this.currentUser.studies;
@@ -79,6 +104,7 @@ export class DialogExportDataComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     await this.fetchSelectionData();
     this.resetSelectionOnStudyChange();
+    this.controlProbandSelectionOnExportsChange();
   }
 
   onStartDateChange(): void {
@@ -96,17 +122,27 @@ export class DialogExportDataComponent implements OnInit {
 
     this.isLoading = true;
 
-    const exportRequestData = this.form.value;
+    const exportRequestData = this.form.getRawValue();
 
-    if (this.form.get('probands').value === 'allProbandsCheckbox') {
-      exportRequestData.probands = this.allProbandsOfSelectedStudy;
+    if (this.isOnlyCodebookSelected(exportRequestData.exports)) {
+      exportRequestData.probands = [];
     } else {
-      exportRequestData.probands = [this.form.get('probands').value];
+      if (exportRequestData.probands === 'allProbandsCheckbox') {
+        exportRequestData.probands = this.allProbandsOfSelectedStudy;
+      } else if (typeof exportRequestData.probands === 'string') {
+        exportRequestData.probands = [this.form.get('probands').value];
+      }
     }
 
-    const responseStream = this.questionnaireService.getExportData(
-      this.form.value
-    );
+    // we allow an export checkbox to set multiple exports, separated by comma
+    exportRequestData.exports = this.getExports()
+      .map((value: string) =>
+        value.search(',') >= 0 ? value.split(',') : value
+      )
+      .flatMap((v) => v);
+
+    const responseStream =
+      this.questionnaireService.getExportData(exportRequestData);
     this.saveExportFile(responseStream);
   }
 
@@ -125,20 +161,23 @@ export class DialogExportDataComponent implements OnInit {
   private getExportForm(): FormGroup {
     return new FormGroup(
       {
-        start_date: new FormControl(null),
-        end_date: new FormControl(null),
-        study_name: new FormControl(null, Validators.required),
-        questionnaires: new FormControl({ value: [], disabled: true }),
-        probands: new FormControl(
-          { value: null, disabled: true },
-          Validators.required
+        start_date: new FormControl<string>(null),
+        end_date: new FormControl<string>(null),
+        study_name: new FormControl<string>(null, Validators.required),
+        questionnaires: new FormControl<{ id: number; version: number }[]>({
+          value: [],
+          disabled: true,
+        }),
+        probands: new FormControl<string>({ value: null, disabled: true }),
+        exports: new FormArray(
+          this.exportCheckboxes.map(() => new FormControl(true))
         ),
-        exportAnswers: new FormControl(true, Validators.required),
-        exportLabResults: new FormControl(true, Validators.required),
-        exportSamples: new FormControl(true, Validators.required),
-        exportSettings: new FormControl(true, Validators.required),
       },
-      [this.validateCheckboxes, this.validateQuestionnaires]
+      [
+        this.validateCheckboxes.bind(this),
+        this.validateQuestionnaires.bind(this),
+        this.validateProbands.bind(this),
+      ]
     );
   }
 
@@ -149,9 +188,14 @@ export class DialogExportDataComponent implements OnInit {
 
       const { questionnaires } =
         await this.questionnaireService.getQuestionnaires();
-      const studyQuestionnaires: StudyQuestionnaire[] = questionnaires.map(
-        (q) => ({ id: q.id, study_id: q.study_id, name: q.name })
-      );
+      const studyQuestionnaires: StudyQuestionnaire[] = questionnaires
+        .map((q) => ({
+          id: q.id,
+          study_id: q.study_id,
+          name: q.name,
+          version: q.version,
+        }))
+        .sort(this.sortStudyQuestionnaire);
       this.questionnairesForSelection =
         this.getQuestionnairesForSelection(studyQuestionnaires);
     } catch (err) {
@@ -211,21 +255,27 @@ export class DialogExportDataComponent implements OnInit {
       this.form.get('questionnaires').setValue([]);
       this.form.get('questionnaires').enable();
       this.form.get('probands').setValue([]);
-      this.form.get('probands').enable();
+      if (!this.isOnlyCodebookSelected()) {
+        this.form.get('probands').enable();
+      }
+    });
+  }
+
+  private controlProbandSelectionOnExportsChange(): void {
+    this.form.get('exports').valueChanges.subscribe((value) => {
+      const exports = this.mapSelectedExportValuesToStrings(value);
+      if (this.isOnlyCodebookSelected(exports)) {
+        this.form.get('probands').disable();
+      } else if (this.form.get('study_name').value) {
+        this.form.get('probands').enable();
+      }
     });
   }
 
   private validateCheckboxes(control: AbstractControl): {
     emptyCheckboxes: boolean;
   } {
-    if (
-      (!control.get('exportAnswers') || !control.get('exportAnswers').value) &&
-      (!control.get('exportLabResults') ||
-        !control.get('exportLabResults').value) &&
-      (!control.get('exportSettings') ||
-        !control.get('exportSettings').value) &&
-      (!control.get('exportSamples') || !control.get('exportSamples').value)
-    ) {
+    if (this.getExports(control).length === 0) {
       return { emptyCheckboxes: true };
     } else {
       return null;
@@ -235,14 +285,72 @@ export class DialogExportDataComponent implements OnInit {
   private validateQuestionnaires(control: AbstractControl): {
     emptyQuestionnaires: boolean;
   } {
+    const exports = this.getExports(control);
     if (
       (!control.get('questionnaires').value ||
         control.get('questionnaires').value.length === 0) &&
-      control.get('exportAnswers').value
+      (exports.includes('answers') || exports.includes('codebook'))
     ) {
       return { emptyQuestionnaires: true };
     } else {
       return null;
     }
+  }
+
+  private validateProbands(control: AbstractControl): {
+    emptyProbands: boolean;
+  } {
+    if (this.isOnlyCodebookSelected(control)) {
+      return null;
+    }
+
+    if (control.get('probands')?.value?.length > 0) {
+      return null;
+    }
+
+    return { emptyProbands: true };
+  }
+
+  private getExports(control?: AbstractControl): string[] {
+    if (!control) {
+      control = this.form;
+    }
+
+    return this.mapSelectedExportValuesToStrings(control.get('exports').value);
+  }
+
+  private mapSelectedExportValuesToStrings(values: boolean[]): string[] {
+    return values
+      .map((isChecked, index) =>
+        isChecked ? this.exportCheckboxes[index].value : null
+      )
+      .filter((value) => value !== null);
+  }
+
+  private isOnlyCodebookSelected(
+    exports?: string[] | AbstractControl
+  ): boolean {
+    if (!exports) {
+      exports = this.getExports();
+    } else if (exports instanceof AbstractControl) {
+      exports = this.getExports(exports);
+    }
+
+    return exports.length === 1 && exports.includes('codebook');
+  }
+
+  private sortStudyQuestionnaire(
+    a: StudyQuestionnaire,
+    b: StudyQuestionnaire
+  ): number {
+    const nameA = a.name.toLowerCase();
+    const nameB = b.name.toLowerCase();
+    if (nameA < nameB || a.version < b.version) {
+      return -1;
+    }
+    if (nameA > nameB || a.version > b.version) {
+      return 1;
+    }
+    return 0;
   }
 }

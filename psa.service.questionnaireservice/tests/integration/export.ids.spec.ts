@@ -35,32 +35,9 @@ const forscherHeader1 = AuthTokenMockBuilder.createAuthHeader({
   studies: ['Teststudie - Export'],
 });
 
-const binaryParser = function (
-  res: Response,
-  cb: (err: Error | null, body: Buffer) => void
-): void {
-  let data = '';
-  res.setEncoding('binary');
-  res.on('data', function (chunk: Buffer) {
-    data += chunk;
-  });
-  res.on('end', function () {
-    cb(null, Buffer.from(data, 'binary'));
-  });
-};
+const questionnaire = { id: 297, version: 1 };
 
-async function loadCsv<T>(zipFile: JSZip, name: string): Promise<T[]> {
-  const file = zipFile.files[name];
-  if (!file) {
-    throw new Error();
-  }
-  const content = await file.async('string');
-  return (await csv.parse(content, { columns: true })) as T[];
-}
-
-const questionnaire = 297;
-
-describe('/dataExport/searches should work with ids field', function () {
+describe('/export should work with ids field', function () {
   const sandbox = createSandbox();
 
   let receivedAnswersRows: CsvAnswerRow[];
@@ -85,15 +62,19 @@ describe('/dataExport/searches should work with ids field', function () {
       study_name: 'Teststudie - Export',
       questionnaires: [questionnaire],
       probands: ['test-1', 'test-ids2'],
-      exportAnswers: true,
-      exportLabResults: true,
-      exportSamples: true,
-      exportSettings: true,
+      exports: [
+        'answers',
+        'labresults',
+        'samples',
+        'bloodsamples',
+        'settings',
+        'codebook',
+      ],
     };
 
     const response = await chai
       .request(apiAddress)
-      .post('/admin/dataExport/searches')
+      .post('/admin/export')
       .set(forscherHeader1)
       .send(search)
       .parse(binaryParser)
@@ -265,3 +246,27 @@ describe('/dataExport/searches should work with ids field', function () {
     });
   });
 });
+
+function binaryParser(
+  res: Response,
+  cb: (err: Error | null, body: Buffer) => void
+): void {
+  let data = '';
+  res.setEncoding('binary');
+  res.on('data', function (chunk: Buffer) {
+    data += chunk;
+  });
+  res.on('end', function () {
+    cb(null, Buffer.from(data, 'binary'));
+  });
+}
+
+async function loadCsv<T>(zipFile: JSZip, name: string): Promise<T[]> {
+  // eslint-disable-next-line security/detect-object-injection
+  const file = zipFile.files[name];
+  if (!file) {
+    throw new Error(`Could not find file "${name}" in zip archive.`);
+  }
+  const content = await file.async('string');
+  return (await csv.parse(content, { columns: true, delimiter: ';' })) as T[];
+}

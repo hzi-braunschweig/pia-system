@@ -434,15 +434,15 @@ describe('/notification', function () {
       await notificationHelper.sendAllOpenNotifications();
 
       expect(logSpy).to.have.been.calledWith(
-        'Successfully sent scheduled custom notification to: qtest-proband1 (1/1 token notified successfull)'
+        'Successfully sent scheduled custom notification to: qtest-proband1 (1/1 token were notified successfully)'
       );
 
       expect(logSpy).to.have.been.calledWith(
-        'Successfully sent sample id (LAB_RESULT-9999999999) notification to: qtest-proband1 (1/1 token notified successfull)'
+        'Successfully sent sample id (LAB_RESULT-9999999999) notification to: qtest-proband1 (1/1 token were notified successfully)'
       );
 
       expect(logSpy).to.have.been.calledWith(
-        'Successfully sent instance id (9999996) notification to: qtest-proband1 (1/1 token notified successfull)'
+        'Successfully sent instance id (9999996) notification to: qtest-proband1 (1/1 token were notified successfully)'
       );
     });
 

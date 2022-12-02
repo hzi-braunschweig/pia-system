@@ -22,7 +22,7 @@ function createAnswerOption(
     isConditionTarget: false,
     isDecimal: null,
     isNotable: [],
-    label: '',
+    variable_name: '',
     restrictionMax: null,
     restrictionMin: null,
     values: null,

@@ -729,6 +729,13 @@ export class NotificationHelper {
     updateTimeForNotification?: boolean;
     type: string;
   }): Promise<boolean> {
+    if (tokens.length <= 0) {
+      console.info(
+        `Notification to ${recipient} is not sent due to a missing token. Skipping.`
+      );
+      return false;
+    }
+
     console.log(
       `Sending ${type} notification to: ${recipient} (${tokens.length} token)`
     );
@@ -755,14 +762,14 @@ export class NotificationHelper {
 
     if (successfull > 0) {
       console.log(
-        `Successfully sent ${type} notification to: ${recipient} (${successfull}/${tokens.length} token notified successfull)`
+        `Successfully sent ${type} notification to: ${recipient} (${successfull}/${tokens.length} token were notified successfully)`
       );
       if (updateTimeForNotification) {
         await postgresqlHelper.updateTimeForNotification(notificationId, null);
       }
     } else {
       console.log(
-        `Failed to sent ${type} notification to: ${recipient} (none of ${tokens.length} token notified successfull)`
+        `Failed to sent ${type} notification to: ${recipient} (none of ${tokens.length} token were notified successfully)`
       );
     }
     return successfull > 0;

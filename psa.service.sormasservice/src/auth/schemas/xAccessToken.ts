@@ -17,6 +17,10 @@ interface Options {
   validate: (token: string) => Promise<boolean>;
 }
 
+interface RequestWithAccessTokenHeader extends Request {
+  headers: { 'x-access-token': string | undefined };
+}
+
 export const xAccessTokenSchema: ServerAuthScheme = (
   _server,
   options
@@ -26,7 +30,7 @@ export const xAccessTokenSchema: ServerAuthScheme = (
   }
   return {
     authenticate: async function (
-      request: Request,
+      request: RequestWithAccessTokenHeader,
       h: ResponseToolkit
     ): Promise<Auth> {
       const token: string | undefined = request.headers['x-access-token'];

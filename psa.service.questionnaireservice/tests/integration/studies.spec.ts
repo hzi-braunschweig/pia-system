@@ -12,7 +12,7 @@ import { StatusCodes } from 'http-status-codes';
 import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
-import { cleanup, setup } from './studies.spec.data/setup.helper';
+import { cleanup, setup } from './export.spec.data/setup.helper';
 import sinon from 'sinon';
 
 chai.use(chaiHttp);

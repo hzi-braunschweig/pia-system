@@ -166,6 +166,15 @@
             formControlName="pseudonym_suffix_length_to"
             placeholder="{{ 'STUDIES.PSEUDONYM_SUFFIX_LENGTH' | translate }}"
           />
+          <mat-error
+            *ngIf="form.controls['pseudonym_suffix_length_to'].hasError('min')"
+          >
+            {{
+              'DIALOG.MIN_PSEUDONYM_SUFFIX_LENGTH'
+                | translate
+                  : form.controls['pseudonym_suffix_length_to'].getError('min')
+            }}
+          </mat-error>
         </mat-form-field>
         <ng-container
           *ngIf="

@@ -196,8 +196,8 @@ export const questionnaireRequestPayload = Joi.object<Questionnaire>({
         .description('the question text')
         .required()
         .example('Welche Symptome haben Sie?'),
-      label: Joi.string()
-        .description('an optional label for export')
+      variable_name: Joi.string()
+        .description('an optional variable name for export')
         .allow('')
         .required(),
       position: Joi.number()
@@ -220,8 +220,8 @@ export const questionnaireRequestPayload = Joi.object<Questionnaire>({
             .description('the answer option text')
             .optional()
             .allow(''),
-          label: Joi.string()
-            .description('an optional label for export')
+          variable_name: Joi.string()
+            .description('an optional variable name for export')
             .allow('')
             .required(),
           position: Joi.number()

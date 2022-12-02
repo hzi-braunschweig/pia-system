@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Questionnaire } from '../../../psa.app.core/models/questionnaire';
+import {
+  ConditionLink,
+  ConditionOperand,
+  ConditionType,
+  Questionnaire,
+} from '../../../psa.app.core/models/questionnaire';
 import { Question } from '../../../psa.app.core/models/question';
 import { AnswerOption } from '../../../psa.app.core/models/answerOption';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
@@ -52,11 +57,20 @@ import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
 import { filter } from 'rxjs/operators';
 import { validateQuestionnaireInstanceCount } from './questionnaire-instance-count-validator';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
+import {
+  AnswerOptionConditionForm,
+  AnswerOptionForm,
+  AnswerOptionValueForm,
+  QuestionConditionForm,
+  QuestionnaireForm,
+} from './questionnaire-form';
+import { VariableNameFormService } from './variable-name-form.service';
 
 @Component({
   templateUrl: 'questionnaire-researcher.component.html',
   styleUrls: ['questionnaire-researcher.component.scss'],
   providers: [
+    VariableNameFormService,
     { provide: MAT_DATE_LOCALE, useValue: 'de' },
     {
       provide: DateAdapter,
@@ -72,7 +86,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
   fieldsWithErrors: any[];
   currentQuestionnaire: Questionnaire = null;
   questionnaireRequest: Questionnaire;
-  public myForm: FormGroup;
+  public myForm: FormGroup<QuestionnaireForm>;
   isEditMode = false;
   public questionnaireId: any;
   public questionnaireVersion: any;
@@ -97,10 +111,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
   selectedQuestionnaireIndex: number = undefined;
   selectedQuestionIndex: number = undefined;
   selectedAnswerOptionsIndex: number = undefined;
-  condition_type: string;
+  condition_type: ConditionType;
   condition_questionnaire_id: string;
   condition_answer_option_id: number;
-  condition_operand: string;
+  condition_operand: ConditionOperand;
   condition_value: any;
   condition_question_id: number;
   deactivate_min_days = 0;
@@ -119,7 +133,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
   notification_body_new: string;
   notification_body_in_progress: string;
   needToSentQuestionnaire = false;
-  condition_link: string;
+  condition_link: ConditionLink;
   selectedWeekday: string;
   selectedUnit: string;
   isImportedQuestionnaire = false;
@@ -147,6 +161,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
   hoursPerDay = QuestionnaireEditOptions.hoursPerDay;
 
   private readonly maxInstanceCount = 1500;
+
+  variableNameWarnings = new Set<FormControl<unknown>>();
 
   translationData = {
     deactivate_min_days: this.deactivate_min_days.toString(),
@@ -196,7 +212,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
     private alertService: AlertService,
     private questionnaireService: QuestionnaireService,
     private userService: UserService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private variableNameFormService: VariableNameFormService
   ) {
     if ('id' in this.activatedRoute.snapshot.params) {
       this.isEditMode = true;
@@ -239,10 +256,13 @@ export class QuestionnaireResearcherComponent implements OnInit {
       } else {
         this.initForm();
       }
+
+      this.initVariableNameWarning();
       this.onResize();
     } catch (err) {
       this.alertService.errorObject(err);
     }
+
     this.isLoading = false;
   }
 
@@ -259,23 +279,18 @@ export class QuestionnaireResearcherComponent implements OnInit {
       this.myForm.get('notify_when_not_filled_time').setValue(null);
       this.myForm.get('notify_when_not_filled_day').setValue(null);
 
-      const questionFGs: FormGroup[] = (
-        this.myForm.get('questions') as FormArray
-      ).controls as FormGroup[];
-      if (questionFGs && questionFGs.length > 0) {
-        questionFGs.forEach((fgQuestion: FormGroup) => {
-          const answerOptionFGs: FormGroup[] = (
-            fgQuestion.get('answer_options') as FormArray
-          ).controls as FormGroup[];
+      const questionFormGroups = this.myForm.controls.questions.controls;
+
+      if (questionFormGroups && questionFormGroups.length > 0) {
+        questionFormGroups.forEach((fgQuestion) => {
+          const answerOptionFGs = fgQuestion.controls.answer_options.controls;
           if (answerOptionFGs && answerOptionFGs.length > 0) {
-            answerOptionFGs.forEach((fgAnswerOption: FormGroup) => {
-              (fgAnswerOption.get('is_notable') as FormArray).reset();
-              const valueFGs: FormGroup[] = (
-                fgAnswerOption.get('values') as FormArray
-              ).controls as FormGroup[];
+            answerOptionFGs.forEach((fgAnswerOption) => {
+              fgAnswerOption.controls.is_notable.reset();
+              const valueFGs = fgAnswerOption.controls.values.controls;
               if (valueFGs && valueFGs.length > 0) {
                 valueFGs.forEach((fgValue: FormGroup) => {
-                  fgValue.get('is_notable').setValue(false);
+                  fgValue.controls.is_notable.setValue(false);
                 });
               }
             });
@@ -294,21 +309,21 @@ export class QuestionnaireResearcherComponent implements OnInit {
       this.myForm.enable();
     }
 
-    if (this.myForm.controls['cycle_unit'].value === 'once') {
-      this.myForm.controls['deactivate_after_days'].clearValidators();
-      this.myForm.controls['deactivate_after_days'].setValue(1);
-      this.myForm.controls['deactivate_after_days'].updateValueAndValidity();
+    if (this.myForm.controls.cycle_unit.value === 'once') {
+      this.myForm.controls.deactivate_after_days.clearValidators();
+      this.myForm.controls.deactivate_after_days.setValue(1);
+      this.myForm.controls.deactivate_after_days.updateValueAndValidity();
 
-      this.myForm.controls['cycle_amount'].clearValidators();
-      this.myForm.controls['cycle_amount'].setValue(1);
-      this.myForm.controls['cycle_amount'].updateValueAndValidity();
+      this.myForm.controls.cycle_amount.clearValidators();
+      this.myForm.controls.cycle_amount.setValue(1);
+      this.myForm.controls.cycle_amount.updateValueAndValidity();
     }
 
     if (
       !(
-        this.myForm.controls['notification_tries'].value > 0 &&
-        (this.myForm.controls['cycle_unit'].value === 'week' ||
-          this.myForm.controls['cycle_unit'].value === 'month')
+        this.myForm.controls.notification_tries.value > 0 &&
+        (this.myForm.controls.cycle_unit.value === 'week' ||
+          this.myForm.controls.cycle_unit.value === 'month')
       )
     ) {
       this.myForm.get('notification_weekday').clearValidators();
@@ -317,9 +332,9 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
     if (
       !(
-        this.myForm.controls['notification_tries'].value > 1 &&
-        (this.myForm.controls['cycle_unit'].value === 'week' ||
-          this.myForm.controls['cycle_unit'].value === 'month')
+        this.myForm.controls.notification_tries.value > 1 &&
+        (this.myForm.controls.cycle_unit.value === 'week' ||
+          this.myForm.controls.cycle_unit.value === 'month')
       )
     ) {
       this.myForm.get('notification_interval').clearValidators();
@@ -328,37 +343,37 @@ export class QuestionnaireResearcherComponent implements OnInit {
       this.myForm.get('notification_interval_unit').updateValueAndValidity();
     }
 
-    if (this.myForm.controls['cycle_unit'].value !== 'date') {
-      this.myForm.controls['activate_at_date'].clearValidators();
-      this.myForm.controls['activate_at_date'].updateValueAndValidity();
+    if (this.myForm.controls.cycle_unit.value !== 'date') {
+      this.myForm.controls.activate_at_date.clearValidators();
+      this.myForm.controls.activate_at_date.updateValueAndValidity();
     }
 
-    if (this.myForm.controls['cycle_unit'].value === 'date') {
-      this.myForm.controls['deactivate_after_days'].clearValidators();
-      this.myForm.controls['deactivate_after_days'].setValue(0);
-      this.myForm.controls['deactivate_after_days'].updateValueAndValidity();
+    if (this.myForm.controls.cycle_unit.value === 'date') {
+      this.myForm.controls.deactivate_after_days.clearValidators();
+      this.myForm.controls.deactivate_after_days.setValue(0);
+      this.myForm.controls.deactivate_after_days.updateValueAndValidity();
 
-      this.myForm.controls['cycle_amount'].clearValidators();
-      this.myForm.controls['cycle_amount'].setValue(0);
-      this.myForm.controls['cycle_amount'].updateValueAndValidity();
+      this.myForm.controls.cycle_amount.clearValidators();
+      this.myForm.controls.cycle_amount.setValue(0);
+      this.myForm.controls.cycle_amount.updateValueAndValidity();
 
-      this.myForm.controls['activate_after_days'].clearValidators();
-      this.myForm.controls['activate_after_days'].setValue(0);
-      this.myForm.controls['activate_after_days'].updateValueAndValidity();
+      this.myForm.controls.activate_after_days.clearValidators();
+      this.myForm.controls.activate_after_days.setValue(0);
+      this.myForm.controls.activate_after_days.updateValueAndValidity();
     }
 
-    if (this.myForm.controls['cycle_unit'].value === 'spontan') {
-      this.myForm.controls['deactivate_after_days'].clearValidators();
-      this.myForm.controls['deactivate_after_days'].setValue(0);
-      this.myForm.controls['deactivate_after_days'].updateValueAndValidity();
+    if (this.myForm.controls.cycle_unit.value === 'spontan') {
+      this.myForm.controls.deactivate_after_days.clearValidators();
+      this.myForm.controls.deactivate_after_days.setValue(0);
+      this.myForm.controls.deactivate_after_days.updateValueAndValidity();
 
-      this.myForm.controls['cycle_amount'].clearValidators();
-      this.myForm.controls['cycle_amount'].setValue(0);
-      this.myForm.controls['cycle_amount'].updateValueAndValidity();
+      this.myForm.controls.cycle_amount.clearValidators();
+      this.myForm.controls.cycle_amount.setValue(0);
+      this.myForm.controls.cycle_amount.updateValueAndValidity();
 
-      this.myForm.controls['activate_after_days'].clearValidators();
-      this.myForm.controls['activate_after_days'].setValue(0);
-      this.myForm.controls['activate_after_days'].updateValueAndValidity();
+      this.myForm.controls.activate_after_days.clearValidators();
+      this.myForm.controls.activate_after_days.setValue(0);
+      this.myForm.controls.activate_after_days.updateValueAndValidity();
 
       this.myForm.get('notification_interval').clearValidators();
       this.myForm.get('notification_interval').updateValueAndValidity();
@@ -390,17 +405,15 @@ export class QuestionnaireResearcherComponent implements OnInit {
     } else {
       this.isImportedQuestionnaire = false;
 
-      (this.myForm.controls['questions'] as FormArray).value.forEach(
+      this.myForm.controls.questions.value.forEach(
         (question, questionIndex) => {
-          const questionController = (
-            this.myForm.controls['questions'] as FormArray
-          ).controls[questionIndex] as FormGroup;
+          const questionController =
+            this.myForm.controls.questions.controls[questionIndex];
 
           let questionConditionLink = null;
-          if (questionController.controls['condition'] as FormGroup) {
-            questionConditionLink = (
-              questionController.controls['condition'] as FormGroup
-            ).controls['condition_link'];
+          if (questionController.controls.condition) {
+            questionConditionLink =
+              questionController.controls.condition.controls.condition_link;
 
             if (questionConditionLink.value === null) {
               questionConditionLink.disable();
@@ -410,71 +423,56 @@ export class QuestionnaireResearcherComponent implements OnInit {
            *Disable controller that should not be send with request
            */
           // Disable condition link if data is null
-          if (questionController.controls['has_condition'] !== undefined) {
-            questionController.controls['has_condition'].disable();
+          if (questionController.controls.has_condition !== undefined) {
+            questionController.controls.has_condition.disable();
           }
-          if (
-            (questionController.controls['condition'] as FormGroup) !==
-            undefined
-          ) {
-            (questionController.controls['condition'] as FormGroup).controls[
+          if (questionController.controls.condition !== undefined) {
+            questionController.controls.condition.controls[
               'condition_question_id'
             ].disable();
           }
-          questionController.controls['tmp_for_condition'].disable();
+          questionController.controls.tmp_for_condition.disable();
           if (
-            questionController.controls['id'].value == null ||
-            questionController.controls['id'].value === -1 ||
+            questionController.controls.id.value == null ||
+            questionController.controls.id.value === -1 ||
             action === 'revise'
           ) {
-            questionController.controls['id'].disable();
+            questionController.controls.id.disable();
           }
 
-          const questions = this.myForm.controls['questions'] as FormArray;
+          const questions = this.myForm.controls.questions;
 
           // For every subquestion (Unterfrage) in the form
-          (
-            (questions.controls[questionIndex] as FormGroup).controls[
-              'answer_options'
-            ] as FormArray
-          ).value.forEach((answer, answerIndex) => {
-            const answerOptionController = (
-              (
-                (this.myForm.controls['questions'] as FormArray).controls[
-                  questionIndex
-                ] as FormGroup
-              ).controls['answer_options'] as FormArray
-            ).controls[answerIndex] as FormGroup;
+          questions.controls[questionIndex].controls[
+            'answer_options'
+          ].value.forEach((answer, answerIndex) => {
+            const answerOptionController =
+              this.myForm.controls.questions.controls[questionIndex].controls
+                .answer_options.controls[answerIndex];
             answerOptionController.removeControl('current_answer_type_id');
-            answerOptionController.controls['coding_enable'].disable();
+            answerOptionController.controls.coding_enable.disable();
 
             if (
-              answerOptionController.controls['id'] &&
-              (answerOptionController.controls['id'].value == null ||
-                answerOptionController.controls['id'].value === -1)
+              answerOptionController.controls.id &&
+              (answerOptionController.controls.id.value == null ||
+                answerOptionController.controls.id.value === -1)
             ) {
-              answerOptionController.controls['id'].disable();
+              answerOptionController.controls.id.disable();
             }
 
-            if (
-              answerOptionController.controls['has_condition'] !== undefined
-            ) {
-              answerOptionController.controls['has_condition'].disable();
+            if (answerOptionController.controls.has_condition !== undefined) {
+              answerOptionController.controls.has_condition.disable();
             }
             if (
-              answerOptionController.controls['is_condition_target'] !==
-              undefined
+              answerOptionController.controls.is_condition_target !== undefined
             ) {
-              answerOptionController.controls['is_condition_target'].disable();
+              answerOptionController.controls.is_condition_target.disable();
             }
-            answerOptionController.controls['tmp_for_condition'].disable();
-            if (
-              (answerOptionController.controls['condition'] as FormGroup) !==
-              undefined
-            ) {
-              (
-                answerOptionController.controls['condition'] as FormGroup
-              ).controls['condition_question_id'].disable();
+            answerOptionController.controls.tmp_for_condition.disable();
+            if (answerOptionController.controls.condition !== undefined) {
+              answerOptionController.controls.condition.controls[
+                'condition_question_id'
+              ].disable();
             }
           });
         }
@@ -483,6 +481,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
       this.questionnaireRequest = this.generateQuestionnaireRequestDataFrom(
         this.myForm
       );
+
+      this.resetVariableNameWarning();
 
       switch (action) {
         case 'create': {
@@ -709,7 +709,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
       this.finalises_after_days = 2;
     }
 
-    this.myForm = new FormGroup(
+    this.myForm = new FormGroup<QuestionnaireForm>(
       {
         name: new FormControl(name, Validators.required),
         type: new FormControl(this.type, Validators.required),
@@ -768,7 +768,6 @@ export class QuestionnaireResearcherComponent implements OnInit {
         notify_when_not_filled_day: new FormControl(
           this.notify_when_not_filled_day
         ),
-
         expires_after_days: new FormControl(this.expires_after_days, [
           Validators.min(1),
         ]),
@@ -783,22 +782,22 @@ export class QuestionnaireResearcherComponent implements OnInit {
       validateQuestionnaireInstanceCount(this.maxInstanceCount)
     );
 
-    this.myForm.controls['notify_when_not_filled'].setValidators(
+    this.myForm.controls.notify_when_not_filled.setValidators(
       this.mustNotEmptyTimeAndDayIfEnabled(this.myForm)
     );
 
     if (this.notification_tries === 0) {
-      this.myForm.controls['notification_title'].clearValidators();
-      this.myForm.controls['notification_weekday'].clearValidators();
-      this.myForm.controls['notification_interval'].clearValidators();
-      this.myForm.controls['notification_interval_unit'].clearValidators();
-      this.myForm.controls['notification_body_new'].clearValidators();
-      this.myForm.controls['notification_body_in_progress'].clearValidators();
+      this.myForm.controls.notification_title.clearValidators();
+      this.myForm.controls.notification_weekday.clearValidators();
+      this.myForm.controls.notification_interval.clearValidators();
+      this.myForm.controls.notification_interval_unit.clearValidators();
+      this.myForm.controls.notification_body_new.clearValidators();
+      this.myForm.controls.notification_body_in_progress.clearValidators();
     }
 
     if (this.notification_tries < 2) {
-      this.myForm.controls['notification_interval'].clearValidators();
-      this.myForm.controls['notification_interval_unit'].clearValidators();
+      this.myForm.controls.notification_interval.clearValidators();
+      this.myForm.controls.notification_interval_unit.clearValidators();
     }
 
     if (!questionnaire) {
@@ -829,7 +828,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     this.setNotificationControls();
     this.checkCycleUnit();
     if (this.isImportedQuestionnaire) {
-      this.myForm.controls['questions'].disable();
+      this.myForm.controls.questions.disable();
     }
   }
 
@@ -840,24 +839,23 @@ export class QuestionnaireResearcherComponent implements OnInit {
    * @return void
    */
   addQuestion(question?: Question): void {
-    const answer_options = new FormArray([]);
+    const answer_options = new FormArray<FormGroup<AnswerOptionForm>>([]);
     const text = question ? question.text : '';
-    const label = question ? question.label : '';
+    const variable_name = question?.variable_name ?? '';
     const id = question ? question.id : null;
     const position = question ? question.position : null;
     const isMandatory =
       question && question.is_mandatory ? question.is_mandatory : false;
     const hasCondition = !!(question && question.condition);
-    const questionIndex = (this.myForm.controls['questions'] as FormArray)
-      .length;
+    const questionIndex = this.myForm.controls.questions.controls.length;
 
-    (this.myForm.controls['questions'] as FormArray).push(
+    this.myForm.controls.questions.push(
       new FormGroup({
         text: new FormControl(text, [
           Validators.required,
           this.validateFormControlTextVariableValue,
         ]),
-        label: new FormControl(label),
+        variable_name: new FormControl(variable_name),
         id: new FormControl(id),
         position: new FormControl(position),
         is_mandatory: new FormControl(isMandatory),
@@ -872,6 +870,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
           selectedQuestionnaireIndexQuestion: new FormControl(undefined),
           selectedQuestionIndexQuestion: new FormControl(undefined),
           selectedAnswerOptionsIndexQuestion: new FormControl(undefined),
+          condition_link: new FormControl(undefined),
         }),
         answer_options,
       })
@@ -887,7 +886,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
   removeQuestion(questionIndex: number): void {
     // remove question from the list
-    const control = this.myForm.controls['questions'] as FormArray;
+    const control = this.myForm.controls.questions;
     control.removeAt(questionIndex);
   }
 
@@ -899,7 +898,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
    */
   addAnswer(questionIndex: number, answerOption?: AnswerOption): void {
     const text = answerOption ? answerOption.text : '';
-    const label = answerOption ? answerOption.label : '';
+    const variable_name = answerOption?.variable_name ?? '';
     this.answer_type_id = answerOption ? answerOption.answer_type_id : null;
     const values = new FormArray([]);
     const values_code = new FormArray([]);
@@ -931,26 +930,19 @@ export class QuestionnaireResearcherComponent implements OnInit {
       answerOption && answerOption.is_condition_target
         ? answerOption.is_condition_target
         : false;
-    const answerIndex = (
-      (
-        (this.myForm.controls['questions'] as FormArray).controls[
-          questionIndex
-        ] as FormGroup
-      ).controls['answer_options'] as FormArray
-    ).length;
+    const answerIndex =
+      this.myForm.controls.questions.controls[questionIndex].controls[
+        'answer_options'
+      ].length;
 
-    (
-      (
-        (this.myForm.controls['questions'] as FormArray).controls[
-          questionIndex
-        ] as FormGroup
-      ).controls['answer_options'] as FormArray
-    ).push(
-      new FormGroup({
+    this.myForm.controls.questions.controls[
+      questionIndex
+    ].controls.answer_options.push(
+      new FormGroup<AnswerOptionForm>({
         id: new FormControl(id),
         position: new FormControl(position),
         text: new FormControl(text, this.validateFormControlTextVariableValue),
-        label: new FormControl(label),
+        variable_name: new FormControl(variable_name),
         answer_type_id: new FormControl(
           this.answer_type_id,
           Validators.required
@@ -980,15 +972,9 @@ export class QuestionnaireResearcherComponent implements OnInit {
     );
 
     if (id == null) {
-      (
-        (
-          (
-            (this.myForm.controls['questions'] as FormArray).controls[
-              questionIndex
-            ] as FormGroup
-          ).controls['answer_options'] as FormArray
-        ).controls[answerIndex] as FormGroup
-      ).removeControl('id');
+      this.myForm.controls.questions.controls[
+        questionIndex
+      ].controls.answer_options.controls[answerIndex].removeControl('id');
     }
     if (has_condition) {
       this.addAnswerCondition(questionIndex, answerIndex, answerOption);
@@ -1022,13 +1008,9 @@ export class QuestionnaireResearcherComponent implements OnInit {
         ? answerOption.is_decimal
         : false
       : false;
-    const answerControl = (
-      (
-        (this.myForm.controls['questions'] as FormArray).controls[
-          questionIndex
-        ] as FormGroup
-      ).controls['answer_options'] as FormArray
-    ).controls[answerIndex] as FormGroup;
+    const answerControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex];
 
     answerControl.addControl(
       'restriction_min',
@@ -1047,13 +1029,9 @@ export class QuestionnaireResearcherComponent implements OnInit {
   }
 
   checkRestrictions(questionIndex: number, answerIndex: number): void {
-    const answerControl = (
-      (
-        (this.myForm.controls['questions'] as FormArray).controls[
-          questionIndex
-        ] as FormGroup
-      ).controls['answer_options'] as FormArray
-    ).controls[answerIndex] as FormGroup;
+    const answerControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex];
     if (answerControl.get('restriction_max')) {
       answerControl.clearValidators();
       answerControl.removeControl('restriction_min');
@@ -1167,13 +1145,9 @@ export class QuestionnaireResearcherComponent implements OnInit {
     answerIndex: number,
     answerOption?: AnswerOption
   ): void {
-    const answerControl = (
-      (
-        (this.myForm.controls['questions'] as FormArray).controls[
-          questionIndex
-        ] as FormGroup
-      ).controls['answer_options'] as FormArray
-    ).controls[answerIndex] as FormGroup;
+    const answerControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex];
 
     const condition_type = answerOption
       ? answerOption.condition.condition_type
@@ -1210,9 +1184,9 @@ export class QuestionnaireResearcherComponent implements OnInit {
         answerIndex,
         condition_type
       );
-      const questionnairesForAnswerOptionConditionValue = (
-        answerControl.controls['tmp_for_condition'] as FormGroup
-      ).controls['questionnairesForAnswerOptionCondition'].value;
+      const questionnairesForAnswerOptionConditionValue =
+        answerControl.controls.tmp_for_condition.controls
+          .questionnairesForAnswerOptionCondition.value;
       if (questionnairesForAnswerOptionConditionValue) {
         questionnairesForAnswerOptionConditionValue.forEach(
           (questionnaireResponse, questionnaireIndex) => {
@@ -1275,7 +1249,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
     answerControl.addControl(
       'condition',
-      new FormGroup({
+      new FormGroup<AnswerOptionConditionForm>({
         condition_type: new FormControl(condition_type, Validators.required),
         condition_target_questionnaire: new FormControl(
           this.isImportedQuestionnaire && condition_questionnaire_id === -1
@@ -1307,19 +1281,17 @@ export class QuestionnaireResearcherComponent implements OnInit {
         condition_link: new FormControl(condition_link, Validators.required),
       })
     );
-    answerControl.controls['has_condition'].setValue(true);
-    answerControl.controls['condition_error'].setValue(undefined);
+    answerControl.controls.has_condition.setValue(true);
+    answerControl.controls.condition_error.setValue(undefined);
   }
 
   moveAnswerUp(questionIndex: number, oldAnswerIndex: number): void {
     if (oldAnswerIndex === 0) {
       return;
     }
-    const control = (
-      (this.myForm.controls['questions'] as FormArray).controls[
-        questionIndex
-      ] as FormGroup
-    ).controls['answer_options'] as FormArray;
+    const control =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options;
     const newAnswerIndex = oldAnswerIndex - 1;
     const movingAnswer = control.at(newAnswerIndex);
     const reverseMovingAnswer = control.at(oldAnswerIndex);
@@ -1328,11 +1300,9 @@ export class QuestionnaireResearcherComponent implements OnInit {
   }
 
   moveAnswerDown(questionIndex: number, oldAnswerIndex: number): void {
-    const control = (
-      (this.myForm.controls['questions'] as FormArray).controls[
-        questionIndex
-      ] as FormGroup
-    ).controls['answer_options'] as FormArray;
+    const control =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options;
     const newAnswerIndex = oldAnswerIndex + 1;
     if (newAnswerIndex === control.length) {
       return;
@@ -1345,11 +1315,9 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
   removeAnswer(questionIndex: number, answerIndex: number): void {
     // remove AnswerOption from the list
-    const control = (
-      (this.myForm.controls['questions'] as FormArray).controls[
-        questionIndex
-      ] as FormGroup
-    ).controls['answer_options'] as FormArray;
+    const control =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options;
     control.removeAt(answerIndex);
   }
 
@@ -1363,24 +1331,17 @@ export class QuestionnaireResearcherComponent implements OnInit {
     const text = value ? value : '';
     const code = coded_value !== undefined ? coded_value : null;
     const notable = is_notable !== undefined ? is_notable : false;
-    const groupControl = (
-      (
-        (this.myForm.controls['questions'] as FormArray).controls[
-          questionIndex
-        ] as FormGroup
-      ).controls['answer_options'] as FormArray
-    ).controls[answerIndex] as FormGroup;
+    const groupControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex];
 
-    (groupControl.controls['values'] as FormArray).push(
-      new FormGroup({
+    groupControl.controls.values.push(
+      new FormGroup<AnswerOptionValueForm>({
         value: new FormControl(text, [Validators.required, this.checkValue]),
         value_coded: new FormControl(
           {
             value: code,
-            disabled: (groupControl.controls['coding_enable'] as FormArray)
-              .value
-              ? false
-              : true,
+            disabled: groupControl.value.coding_enable ? false : true,
           },
           [Validators.required]
         ),
@@ -1401,27 +1362,27 @@ export class QuestionnaireResearcherComponent implements OnInit {
   setQuestionnaireType(): void {
     switch (this.myForm.value.type) {
       case 'for_probands':
-        this.myForm.controls['cycle_unit'].clearValidators();
-        this.myForm.controls['cycle_unit'].setValue(null);
-        this.myForm.controls['cycle_amount'].setValue(null);
-        this.myForm.controls['activate_after_days'].setValue(null);
-        this.myForm.controls['deactivate_after_days'].setValue(null);
-        this.myForm.controls['finalises_after_days'].setValue(5);
-        this.myForm.controls['expires_after_days'].setValue(2);
-        this.myForm.controls['notification_tries'].setValue(null);
-        this.myForm.controls['notification_tries'].updateValueAndValidity();
+        this.myForm.controls.cycle_unit.clearValidators();
+        this.myForm.controls.cycle_unit.setValue(null);
+        this.myForm.controls.cycle_amount.setValue(null);
+        this.myForm.controls.activate_after_days.setValue(null);
+        this.myForm.controls.deactivate_after_days.setValue(null);
+        this.myForm.controls.finalises_after_days.setValue(5);
+        this.myForm.controls.expires_after_days.setValue(2);
+        this.myForm.controls.notification_tries.setValue(null);
+        this.myForm.controls.notification_tries.updateValueAndValidity();
         this.setNotificationControls();
         break;
       case 'for_research_team':
-        this.myForm.controls['cycle_unit'].clearValidators();
-        this.myForm.controls['cycle_unit'].setValue('once');
-        this.myForm.controls['cycle_amount'].setValue(1);
-        this.myForm.controls['activate_after_days'].setValue(0);
-        this.myForm.controls['deactivate_after_days'].setValue(999999);
-        this.myForm.controls['finalises_after_days'].setValue(999999);
-        this.myForm.controls['expires_after_days'].setValue(999999);
-        this.myForm.controls['notification_tries'].setValue(0);
-        this.myForm.controls['notification_tries'].updateValueAndValidity();
+        this.myForm.controls.cycle_unit.clearValidators();
+        this.myForm.controls.cycle_unit.setValue('once');
+        this.myForm.controls.cycle_amount.setValue(1);
+        this.myForm.controls.activate_after_days.setValue(0);
+        this.myForm.controls.deactivate_after_days.setValue(999999);
+        this.myForm.controls.finalises_after_days.setValue(999999);
+        this.myForm.controls.expires_after_days.setValue(999999);
+        this.myForm.controls.notification_tries.setValue(0);
+        this.myForm.controls.notification_tries.updateValueAndValidity();
         this.setNotificationControls();
         break;
     }
@@ -1433,28 +1394,20 @@ export class QuestionnaireResearcherComponent implements OnInit {
     valueIndex: number
   ): void {
     // remove value from the list
-    const control = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).controls['values'] as FormArray;
+    const control =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex].controls.values;
     control.removeAt(valueIndex);
   }
 
   checkCycleUnit(): void {
     if (this.myForm.value.cycle_unit === 'once') {
-      this.myForm.controls['cycle_amount'].clearValidators();
-      this.myForm.controls['cycle_amount'].setValue(1);
-      this.myForm.controls['cycle_amount'].updateValueAndValidity();
-      (
-        this.myForm.get('deactivate_after_days') as FormControl
-      ).clearValidators();
-      this.myForm.controls['deactivate_after_days'].setValue(1);
-      this.myForm.controls['deactivate_after_days'].updateValueAndValidity();
+      this.myForm.controls.cycle_amount.clearValidators();
+      this.myForm.controls.cycle_amount.setValue(1);
+      this.myForm.controls.cycle_amount.updateValueAndValidity();
+      this.myForm.controls.deactivate_after_days.clearValidators();
+      this.myForm.controls.deactivate_after_days.setValue(1);
+      this.myForm.controls.deactivate_after_days.updateValueAndValidity();
     } else {
       switch (this.myForm.value.cycle_unit) {
         case 'hour':
@@ -1475,18 +1428,18 @@ export class QuestionnaireResearcherComponent implements OnInit {
       );
       this.translationData.deactivate_min_days =
         this.deactivate_min_days.toString();
-      (
-        this.myForm.get('deactivate_after_days') as FormControl
-      ).clearValidators();
-      (this.myForm.get('deactivate_after_days') as FormControl).setValidators([
-        Validators.min(this.deactivate_min_days),
-        Validators.required,
-      ]);
-      this.myForm.controls['deactivate_after_days'].updateValueAndValidity();
+      this.myForm.get('deactivate_after_days').clearValidators();
+      this.myForm
+        .get('deactivate_after_days')
+        .setValidators([
+          Validators.min(this.deactivate_min_days),
+          Validators.required,
+        ]);
+      this.myForm.controls.deactivate_after_days.updateValueAndValidity();
     }
     if (this.myForm.value.cycle_unit !== 'hour') {
-      this.myForm.controls['cycle_per_day'].setValue(null);
-      this.myForm.controls['cycle_first_hour'].setValue(null);
+      this.myForm.controls.cycle_per_day.setValue(null);
+      this.myForm.controls.cycle_first_hour.setValue(null);
     }
   }
 
@@ -1496,12 +1449,14 @@ export class QuestionnaireResearcherComponent implements OnInit {
     );
     this.translationData.deactivate_min_days =
       this.deactivate_min_days.toString();
-    (this.myForm.get('deactivate_after_days') as FormControl).clearValidators();
-    (this.myForm.get('deactivate_after_days') as FormControl).setValidators([
-      Validators.min(this.deactivate_min_days),
-      Validators.required,
-    ]);
-    this.myForm.controls['deactivate_after_days'].updateValueAndValidity();
+    this.myForm.get('deactivate_after_days').clearValidators();
+    this.myForm
+      .get('deactivate_after_days')
+      .setValidators([
+        Validators.min(this.deactivate_min_days),
+        Validators.required,
+      ]);
+    this.myForm.controls.deactivate_after_days.updateValueAndValidity();
   }
 
   checkAnswerType(
@@ -1509,35 +1464,21 @@ export class QuestionnaireResearcherComponent implements OnInit {
     answerIndex: number,
     isValueFromServer: boolean
   ): void {
-    const control = (
-      (this.myForm.controls['questions'] as FormArray).controls[
-        questionIndex
-      ] as FormGroup
-    ).controls['answer_options'] as FormArray;
-    const control_coding = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).controls['coding_enable'] as FormControl;
+    const control =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options;
+    const control_coding =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex].controls.coding_enable;
     const currentId = control.at(answerIndex).value.current_answer_type_id;
     const id = control.at(answerIndex).value.answer_type_id;
     if (id === 1 || id === 2) {
       control_coding.setValue(true);
     }
 
-    const controlValues = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).controls['values'] as FormArray;
+    const controlValues =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex].controls.values;
     if (id !== currentId) {
       while (controlValues.length) {
         controlValues.removeAt(0);
@@ -1557,11 +1498,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
         }
       }
     }
-    (
-      (control.controls[answerIndex] as FormGroup).get(
-        'current_answer_type_id'
-      ) as FormControl
-    ).setValue(id);
+    control.controls[answerIndex].get('current_answer_type_id').setValue(id);
   }
 
   removeQuestionnaireCondition(): void {
@@ -1586,7 +1523,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
   addQuestionnaireCondition(): void {
     this.myForm.addControl(
       'condition',
-      new FormGroup({
+      new FormGroup<QuestionConditionForm>({
         condition_type: new FormControl(
           this.condition_type,
           Validators.required
@@ -1615,10 +1552,12 @@ export class QuestionnaireResearcherComponent implements OnInit {
           this.condition_link,
           Validators.required
         ),
+        condition_target_question_pos: new FormControl(undefined),
+        condition_target_answer_option_pos: new FormControl(undefined),
       })
     );
     this.showQuestionnaireCondition = true;
-    this.myForm.controls['condition_error'].setValue(undefined);
+    this.myForm.controls.condition_error.setValue(undefined);
   }
 
   /**
@@ -1627,8 +1566,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
    * @param question (Frage)
    */
   addQuestionCondition(questionIndex: number, question?: Question): void {
-    const questionControl = (this.myForm.controls['questions'] as FormArray)
-      .controls[questionIndex] as FormGroup;
+    const questionControl =
+      this.myForm.controls.questions.controls[questionIndex];
     const condition_type =
       question && question.condition ? question.condition.condition_type : null;
     const condition_questionnaire_id =
@@ -1666,9 +1605,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
         questionIndex,
         condition_type
       );
-      const questionnairesForQuestionConditionValue = (
-        questionControl.controls['tmp_for_condition'] as FormGroup
-      ).controls['questionnairesForQuestionCondition'].value;
+      const questionnairesForQuestionConditionValue =
+        questionControl.controls.tmp_for_condition.controls[
+          'questionnairesForQuestionCondition'
+        ].value;
       if (questionnairesForQuestionConditionValue) {
         questionnairesForQuestionConditionValue.forEach(
           (questionnaireResponse, questionnaireIndex) => {
@@ -1757,8 +1697,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
         condition_link: new FormControl(condition_link, Validators.required),
       })
     );
-    questionControl.controls['has_condition'].setValue(true);
-    questionControl.controls['condition_error'].setValue(undefined);
+    questionControl.controls.has_condition.setValue(true);
+    questionControl.controls.condition_error.setValue(undefined);
   }
 
   /**
@@ -1766,31 +1706,27 @@ export class QuestionnaireResearcherComponent implements OnInit {
    * @param questionIndex Index of the question you want to remove condition
    */
   removeQuestionCondition(questionIndex: number): void {
-    const questionControl = (this.myForm.controls['questions'] as FormArray)
-      .controls[questionIndex] as FormGroup;
+    const questionControl =
+      this.myForm.controls.questions.controls[questionIndex];
     questionControl.removeControl('condition');
-    questionControl.controls['has_condition'].setValue(false);
-    (questionControl.controls['tmp_for_condition'] as FormGroup).controls[
+    questionControl.controls.has_condition.setValue(false);
+    questionControl.controls.tmp_for_condition.controls[
       'questionMessageNeedToSentQuestionnaire'
     ].setValue(false);
-    (questionControl.controls['tmp_for_condition'] as FormGroup).controls[
+    questionControl.controls.tmp_for_condition.controls[
       'selectedConditionTypeQuestion'
     ].setValue(undefined);
-    (questionControl.controls['tmp_for_condition'] as FormGroup).controls[
+    questionControl.controls.tmp_for_condition.controls[
       'selectedQuestionnaireIndexQuestion'
     ].setValue(undefined);
-    (questionControl.controls['tmp_for_condition'] as FormGroup).controls[
+    questionControl.controls.tmp_for_condition.controls[
       'selectedQuestionIndexQuestion'
     ].setValue(undefined);
-    (questionControl.controls['tmp_for_condition'] as FormGroup).controls[
+    questionControl.controls.tmp_for_condition.controls[
       'selectedAnswerOptionsIndexQuestion'
     ].setValue(undefined);
-    if (
-      (questionControl.controls['tmp_for_condition'] as FormGroup).controls[
-        'condition_link'
-      ]
-    ) {
-      (questionControl.controls['tmp_for_condition'] as FormGroup).controls[
+    if (questionControl.controls.tmp_for_condition.controls.condition_link) {
+      questionControl.controls.tmp_for_condition.controls[
         'condition_link'
       ].setValue(undefined);
     }
@@ -1800,25 +1736,15 @@ export class QuestionnaireResearcherComponent implements OnInit {
     questionIndex: number,
     answerIndex: number
   ): void {
-    const answerOptionControl = (
-      (
-        (this.myForm.controls['questions'] as FormArray).controls[
-          questionIndex
-        ] as FormGroup
-      ).controls['answer_options'] as FormArray
-    ).controls[answerIndex] as FormGroup;
-    answerOptionControl.controls['has_condition'].setValue(false);
+    const answerOptionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex];
+    answerOptionControl.controls.has_condition.setValue(false);
     answerOptionControl.removeControl('condition');
 
-    const answerOptionTmpConditionControl = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).controls['tmp_for_condition'] as FormGroup;
+    const answerOptionTmpConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex].controls.tmp_for_condition;
     answerOptionTmpConditionControl.controls[
       'answerOptionMessageNeedToSentQuestionnaire'
     ].setValue(false);
@@ -1834,51 +1760,49 @@ export class QuestionnaireResearcherComponent implements OnInit {
     answerOptionTmpConditionControl.controls[
       'selectedAnswerOptionsIndexAnswerOption'
     ].setValue(undefined);
-    answerOptionTmpConditionControl.controls['condition_link'].setValue(
-      undefined
-    );
+    answerOptionTmpConditionControl.controls.condition_link.setValue(undefined);
   }
 
   setNotificationControls(): void {
-    if ((this.myForm.get('notification_tries') as FormControl).value === 0) {
-      this.myForm.controls['notification_title'].clearValidators();
-      this.myForm.controls['notification_weekday'].clearValidators();
-      this.myForm.controls['notification_interval'].clearValidators();
-      this.myForm.controls['notification_interval_unit'].clearValidators();
-      this.myForm.controls['notification_body_new'].clearValidators();
-      this.myForm.controls['notification_body_in_progress'].clearValidators();
-      this.myForm.controls['notification_title'].setValue('');
-      this.myForm.controls['notification_weekday'].setValue('');
-      this.myForm.controls['notification_interval'].setValue(0);
-      this.myForm.controls['notification_interval_unit'].setValue('');
-      this.myForm.controls['notification_body_new'].setValue('');
-      this.myForm.controls['notification_body_in_progress'].setValue('');
+    if (this.myForm.get('notification_tries').value === 0) {
+      this.myForm.controls.notification_title.clearValidators();
+      this.myForm.controls.notification_weekday.clearValidators();
+      this.myForm.controls.notification_interval.clearValidators();
+      this.myForm.controls.notification_interval_unit.clearValidators();
+      this.myForm.controls.notification_body_new.clearValidators();
+      this.myForm.controls.notification_body_in_progress.clearValidators();
+      this.myForm.controls.notification_title.setValue('');
+      this.myForm.controls.notification_weekday.setValue('');
+      this.myForm.controls.notification_interval.setValue(0);
+      this.myForm.controls.notification_interval_unit.setValue('');
+      this.myForm.controls.notification_body_new.setValue('');
+      this.myForm.controls.notification_body_in_progress.setValue('');
     } else {
-      this.myForm.controls['notification_title'].setValidators(
+      this.myForm.controls.notification_title.setValidators(
         Validators.required
       );
-      this.myForm.controls['notification_weekday'].setValidators(
+      this.myForm.controls.notification_weekday.setValidators(
         Validators.required
       );
-      this.myForm.controls['notification_interval'].setValidators(
+      this.myForm.controls.notification_interval.setValidators(
         Validators.required
       );
-      this.myForm.controls['notification_interval_unit'].setValidators(
+      this.myForm.controls.notification_interval_unit.setValidators(
         Validators.required
       );
-      this.myForm.controls['notification_body_new'].setValidators(
+      this.myForm.controls.notification_body_new.setValidators(
         Validators.required
       );
-      this.myForm.controls['notification_body_in_progress'].setValidators(
+      this.myForm.controls.notification_body_in_progress.setValidators(
         Validators.required
       );
-      this.myForm.controls['notification_title'].updateValueAndValidity();
-      this.myForm.controls['notification_weekday'].updateValueAndValidity();
-      this.myForm.controls['notification_interval'].updateValueAndValidity();
+      this.myForm.controls.notification_title.updateValueAndValidity();
+      this.myForm.controls.notification_weekday.updateValueAndValidity();
+      this.myForm.controls.notification_interval.updateValueAndValidity();
       this.myForm.controls[
         'notification_interval_unit'
       ].updateValueAndValidity();
-      this.myForm.controls['notification_body_new'].updateValueAndValidity();
+      this.myForm.controls.notification_body_new.updateValueAndValidity();
       this.myForm.controls[
         'notification_body_in_progress'
       ].updateValueAndValidity();
@@ -1911,27 +1835,25 @@ export class QuestionnaireResearcherComponent implements OnInit {
     questionIndex: number,
     conditionType: string
   ): void {
-    const questionTmpConditionControl = (
-      (this.myForm.controls['questions'] as FormArray).controls[
-        questionIndex
-      ] as FormGroup
-    ).controls['tmp_for_condition'] as FormGroup;
-    const questionConditionControl = (
-      (this.myForm.controls['questions'] as FormArray).controls[
-        questionIndex
-      ] as FormGroup
-    ).controls['condition'] as FormGroup;
+    const questionTmpConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls[
+        'tmp_for_condition'
+      ];
+    const questionConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls[
+        'condition'
+      ];
 
     if (questionConditionControl !== undefined) {
       questionConditionControl.controls[
         'condition_target_questionnaire'
       ].setValue(null);
-      questionConditionControl.controls['condition_question_id'].setValue(null);
+      questionConditionControl.controls.condition_question_id.setValue(null);
       questionConditionControl.controls[
         'condition_target_answer_option'
       ].setValue(null);
-      questionConditionControl.controls['condition_operand'].setValue(null);
-      questionConditionControl.controls['condition_value'].setValue(null);
+      questionConditionControl.controls.condition_operand.setValue(null);
+      questionConditionControl.controls.condition_value.setValue(null);
     }
 
     if (conditionType === 'external') {
@@ -1993,37 +1915,25 @@ export class QuestionnaireResearcherComponent implements OnInit {
     answerIndex: number,
     conditionType: string
   ): void {
-    const answerOptionTmpConditionControl = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).controls['tmp_for_condition'] as FormGroup;
-    const answerOptionConditionControl = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).controls['condition'] as FormGroup;
+    const answerOptionTmpConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex].controls.tmp_for_condition;
+    const answerOptionConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex].controls.condition;
 
     if (answerOptionConditionControl !== undefined) {
       answerOptionConditionControl.controls[
         'condition_target_questionnaire'
       ].setValue(null);
-      answerOptionConditionControl.controls['condition_question_id'].setValue(
+      answerOptionConditionControl.controls.condition_question_id.setValue(
         null
       );
       answerOptionConditionControl.controls[
         'condition_target_answer_option'
       ].setValue(null);
-      answerOptionConditionControl.controls['condition_operand'].setValue(null);
-      answerOptionConditionControl.controls['condition_value'].setValue(null);
+      answerOptionConditionControl.controls.condition_operand.setValue(null);
+      answerOptionConditionControl.controls.condition_value.setValue(null);
     }
 
     if (conditionType === 'external') {
@@ -2056,24 +1966,13 @@ export class QuestionnaireResearcherComponent implements OnInit {
           'questionnairesForAnswerOptionCondition'
         ].setValue([currentQuestionnaireValue]);
         if (conditionType === 'internal_this') {
-          const currentQuestionPosition = (
-            (
-              (this.myForm.controls['questions'] as FormArray).controls[
-                questionIndex
-              ] as FormGroup
-            ).controls['position'] as FormControl
-          ).value;
-          const currentAnswerOptionPosition = (
-            (
-              (
-                (
-                  (this.myForm.controls['questions'] as FormArray).controls[
-                    questionIndex
-                  ] as FormGroup
-                ).controls['answer_options'] as FormArray
-              ).controls[answerIndex] as FormGroup
-            ).controls['position'] as FormControl
-          ).value;
+          const currentQuestionPosition =
+            this.myForm.controls.questions.controls[questionIndex].controls[
+              'position'
+            ].value;
+          const currentAnswerOptionPosition =
+            this.myForm.controls.questions.controls[questionIndex].controls
+              .answer_options.controls[answerIndex].controls.position.value;
           answerOptionTmpConditionControl.controls[
             'questionnairesForAnswerOptionCondition'
           ].value[0].questions.forEach((question, question_index) => {
@@ -2134,23 +2033,21 @@ export class QuestionnaireResearcherComponent implements OnInit {
     questionIndex: number,
     index: number
   ): void {
-    const questionTmpConditionControl = (
-      (this.myForm.controls['questions'] as FormArray).controls[
-        questionIndex
-      ] as FormGroup
-    ).controls['tmp_for_condition'] as FormGroup;
-    const questionConditionControl = (
-      (this.myForm.controls['questions'] as FormArray).controls[
-        questionIndex
-      ] as FormGroup
-    ).controls['condition'] as FormGroup;
+    const questionTmpConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls[
+        'tmp_for_condition'
+      ];
+    const questionConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls[
+        'condition'
+      ];
     if (questionConditionControl !== undefined) {
-      questionConditionControl.controls['condition_question_id'].setValue(null);
+      questionConditionControl.controls.condition_question_id.setValue(null);
       questionConditionControl.controls[
         'condition_target_answer_option'
       ].setValue(null);
-      questionConditionControl.controls['condition_operand'].setValue(null);
-      questionConditionControl.controls['condition_value'].setValue(null);
+      questionConditionControl.controls.condition_operand.setValue(null);
+      questionConditionControl.controls.condition_value.setValue(null);
     }
     questionTmpConditionControl.controls[
       'selectedQuestionnaireIndexQuestion'
@@ -2167,22 +2064,20 @@ export class QuestionnaireResearcherComponent implements OnInit {
     questionIndex: number,
     index: number
   ): void {
-    const questionTmpConditionControl = (
-      (this.myForm.controls['questions'] as FormArray).controls[
-        questionIndex
-      ] as FormGroup
-    ).controls['tmp_for_condition'] as FormGroup;
-    const questionConditionControl = (
-      (this.myForm.controls['questions'] as FormArray).controls[
-        questionIndex
-      ] as FormGroup
-    ).controls['condition'] as FormGroup;
+    const questionTmpConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls[
+        'tmp_for_condition'
+      ];
+    const questionConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls[
+        'condition'
+      ];
     if (questionConditionControl !== undefined) {
       questionConditionControl.controls[
         'condition_target_answer_option'
       ].setValue(null);
-      questionConditionControl.controls['condition_operand'].setValue(null);
-      questionConditionControl.controls['condition_value'].setValue(null);
+      questionConditionControl.controls.condition_operand.setValue(null);
+      questionConditionControl.controls.condition_value.setValue(null);
     }
     questionTmpConditionControl.controls[
       'selectedQuestionIndexQuestion'
@@ -2196,19 +2091,17 @@ export class QuestionnaireResearcherComponent implements OnInit {
     questionIndex: number,
     index: number
   ): void {
-    const questionTmpConditionControl = (
-      (this.myForm.controls['questions'] as FormArray).controls[
-        questionIndex
-      ] as FormGroup
-    ).controls['tmp_for_condition'] as FormGroup;
-    const questionConditionControl = (
-      (this.myForm.controls['questions'] as FormArray).controls[
-        questionIndex
-      ] as FormGroup
-    ).controls['condition'] as FormGroup;
+    const questionTmpConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls[
+        'tmp_for_condition'
+      ];
+    const questionConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls[
+        'condition'
+      ];
     if (questionConditionControl !== undefined) {
-      questionConditionControl.controls['condition_operand'].setValue(null);
-      questionConditionControl.controls['condition_value'].setValue(null);
+      questionConditionControl.controls.condition_operand.setValue(null);
+      questionConditionControl.controls.condition_value.setValue(null);
     }
     questionTmpConditionControl.controls[
       'selectedAnswerOptionsIndexQuestion'
@@ -2220,33 +2113,21 @@ export class QuestionnaireResearcherComponent implements OnInit {
     answerIndex: number,
     index: number
   ): void {
-    const answerOptionTmpConditionControl = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).controls['tmp_for_condition'] as FormGroup;
-    const answerOptionConditionControl = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).controls['condition'] as FormGroup;
+    const answerOptionTmpConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex].controls.tmp_for_condition;
+    const answerOptionConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex].controls.condition;
     if (answerOptionConditionControl !== undefined) {
-      answerOptionConditionControl.controls['condition_question_id'].setValue(
+      answerOptionConditionControl.controls.condition_question_id.setValue(
         null
       );
       answerOptionConditionControl.controls[
         'condition_target_answer_option'
       ].setValue(null);
-      answerOptionConditionControl.controls['condition_operand'].setValue(null);
-      answerOptionConditionControl.controls['condition_value'].setValue(null);
+      answerOptionConditionControl.controls.condition_operand.setValue(null);
+      answerOptionConditionControl.controls.condition_value.setValue(null);
     }
     answerOptionTmpConditionControl.controls[
       'selectedQuestionnaireIndexAnswerOption'
@@ -2264,30 +2145,18 @@ export class QuestionnaireResearcherComponent implements OnInit {
     answerIndex: number,
     index: number
   ): void {
-    const answerOptionTmpConditionControl = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).controls['tmp_for_condition'] as FormGroup;
-    const answerOptionConditionControl = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).controls['condition'] as FormGroup;
+    const answerOptionTmpConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex].controls.tmp_for_condition;
+    const answerOptionConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex].controls.condition;
     if (answerOptionConditionControl !== undefined) {
       answerOptionConditionControl.controls[
         'condition_target_answer_option'
       ].setValue(null);
-      answerOptionConditionControl.controls['condition_operand'].setValue(null);
-      answerOptionConditionControl.controls['condition_value'].setValue(null);
+      answerOptionConditionControl.controls.condition_operand.setValue(null);
+      answerOptionConditionControl.controls.condition_value.setValue(null);
     }
     answerOptionTmpConditionControl.controls[
       'selectedQuestionIndexAnswerOption'
@@ -2302,28 +2171,16 @@ export class QuestionnaireResearcherComponent implements OnInit {
     answerIndex: number,
     index: number
   ): void {
-    const answerOptionTmpConditionControl = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).controls['tmp_for_condition'] as FormGroup;
-    const answerOptionConditionControl = (
-      (
-        (
-          (this.myForm.controls['questions'] as FormArray).controls[
-            questionIndex
-          ] as FormGroup
-        ).controls['answer_options'] as FormArray
-      ).controls[answerIndex] as FormGroup
-    ).controls['condition'] as FormGroup;
+    const answerOptionTmpConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex].controls.tmp_for_condition;
+    const answerOptionConditionControl =
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.controls[answerIndex].controls.condition;
 
     if (answerOptionConditionControl !== undefined) {
-      answerOptionConditionControl.controls['condition_operand'].setValue(null);
-      answerOptionConditionControl.controls['condition_value'].setValue(null);
+      answerOptionConditionControl.controls.condition_operand.setValue(null);
+      answerOptionConditionControl.controls.condition_value.setValue(null);
     }
     answerOptionTmpConditionControl.controls[
       'selectedAnswerOptionsIndexAnswerOption'
@@ -2555,85 +2412,69 @@ export class QuestionnaireResearcherComponent implements OnInit {
    *
    * @returns questionnaireRequest
    */
-  generateQuestionnaireRequestDataFrom(form: FormGroup): Questionnaire {
-    (this.myForm.controls['questions'] as FormArray).value.forEach(
-      (question, questionIndex) => {
-        const questionController = (
-          this.myForm.controls['questions'] as FormArray
-        ).controls[questionIndex] as FormGroup;
+  generateQuestionnaireRequestDataFrom(
+    form: FormGroup<QuestionnaireForm>
+  ): Questionnaire {
+    this.myForm.controls.questions.value.forEach((question, questionIndex) => {
+      const questionController =
+        this.myForm.controls.questions.controls[questionIndex];
 
-        let questionConditionLink = null;
-        if (questionController.controls['condition'] as FormGroup) {
-          questionConditionLink = (
-            questionController.controls['condition'] as FormGroup
-          ).controls['condition_link'];
+      let questionConditionLink = null;
+      if (questionController.controls.condition) {
+        questionConditionLink =
+          questionController.controls.condition.controls.condition_link;
 
-          if (questionConditionLink.value === null) {
-            questionConditionLink.disable();
-          }
+        if (questionConditionLink.value === null) {
+          questionConditionLink.disable();
         }
-        /*
-         *Disable controller that should not be send with request
-         */
-        // Disable condition link if data is null
-        if (questionController.controls['has_condition'] !== undefined) {
-          questionController.controls['has_condition'].disable();
+      }
+      /*
+       *Disable controller that should not be send with request
+       */
+      // Disable condition link if data is null
+      if (questionController.controls.has_condition !== undefined) {
+        questionController.controls.has_condition.disable();
+      }
+      if (questionController.controls.condition !== undefined) {
+        questionController.controls.condition.controls[
+          'condition_question_id'
+        ].disable();
+      }
+      questionController.controls.tmp_for_condition.disable();
+      if (questionController.controls.id.value == null) {
+        questionController.controls.id.disable();
+      }
+
+      const questions = this.myForm.controls.questions;
+
+      // For every subquestion (Unterfrage) in the form
+      questions.controls[questionIndex].controls[
+        'answer_options'
+      ].value.forEach((answer, answerIndex) => {
+        const answerOptionControler =
+          this.myForm.controls.questions.controls[questionIndex].controls
+            .answer_options.controls[answerIndex];
+        answerOptionControler.removeControl('current_answer_type_id');
+        answerOptionControler.controls.coding_enable.disable();
+
+        if (answerOptionControler.controls.has_condition !== undefined) {
+          answerOptionControler.controls.has_condition.disable();
         }
-        if (
-          (questionController.controls['condition'] as FormGroup) !== undefined
-        ) {
-          (questionController.controls['condition'] as FormGroup).controls[
+        if (answerOptionControler.controls.is_condition_target !== undefined) {
+          answerOptionControler.controls.is_condition_target.disable();
+        }
+        answerOptionControler.controls.tmp_for_condition.disable();
+        if (answerOptionControler.controls.condition !== undefined) {
+          answerOptionControler.controls.condition.controls[
             'condition_question_id'
           ].disable();
         }
-        questionController.controls['tmp_for_condition'].disable();
-        if (questionController.controls['id'].value == null) {
-          questionController.controls['id'].disable();
-        }
+      });
+    });
 
-        const questions = this.myForm.controls['questions'] as FormArray;
-
-        // For every subquestion (Unterfrage) in the form
-        (
-          (questions.controls[questionIndex] as FormGroup).controls[
-            'answer_options'
-          ] as FormArray
-        ).value.forEach((answer, answerIndex) => {
-          const answerOptionControler = (
-            (
-              (this.myForm.controls['questions'] as FormArray).controls[
-                questionIndex
-              ] as FormGroup
-            ).controls['answer_options'] as FormArray
-          ).controls[answerIndex] as FormGroup;
-          answerOptionControler.removeControl('current_answer_type_id');
-          answerOptionControler.controls['coding_enable'].disable();
-
-          if (answerOptionControler.controls['has_condition'] !== undefined) {
-            answerOptionControler.controls['has_condition'].disable();
-          }
-          if (
-            answerOptionControler.controls['is_condition_target'] !== undefined
-          ) {
-            answerOptionControler.controls['is_condition_target'].disable();
-          }
-          answerOptionControler.controls['tmp_for_condition'].disable();
-          if (
-            (answerOptionControler.controls['condition'] as FormGroup) !==
-            undefined
-          ) {
-            (answerOptionControler.controls['condition'] as FormGroup).controls[
-              'condition_question_id'
-            ].disable();
-          }
-        });
-      }
-    );
-
-    if (form.controls['condition'] as FormGroup) {
-      const questionnaireConditionLink = (
-        form.controls['condition'] as FormGroup
-      ).controls['condition_link'];
+    if (form.controls.condition) {
+      const questionnaireConditionLink =
+        form.controls.condition.controls.condition_link;
 
       if (
         questionnaireConditionLink &&
@@ -2644,20 +2485,23 @@ export class QuestionnaireResearcherComponent implements OnInit {
     }
 
     // Disable condition_question_id because it should not be send with request
-    if ((form.controls['condition'] as FormGroup) !== undefined) {
-      (form.controls['condition'] as FormGroup).controls[
-        'condition_question_id'
-      ].disable();
+    if (form.controls.condition !== undefined) {
+      form.controls.condition.controls.condition_question_id.disable();
     }
-    const questionnaireRequest = form.value;
+    const questionnaireRequest = form.value as Questionnaire &
+      Record<string, unknown>;
 
     questionnaireRequest.activate_at_date = this.activate_at_date;
 
     if (questionnaireRequest.condition) {
       //
-      if (questionnaireRequest.condition.condition_value instanceof Array) {
-        questionnaireRequest.condition.condition_value =
-          questionnaireRequest.condition.condition_value.join(';');
+      if (
+        (questionnaireRequest.condition.condition_value as unknown) instanceof
+        Array
+      ) {
+        questionnaireRequest.condition.condition_value = (
+          questionnaireRequest.condition.condition_value as unknown as string[]
+        ).join(';');
       } else {
         questionnaireRequest.condition.condition_link = undefined;
         questionnaireRequest.condition.condition_value =
@@ -2665,16 +2509,18 @@ export class QuestionnaireResearcherComponent implements OnInit {
       }
       if (
         questionnaireRequest.condition.condition_target_questionnaire &&
-        questionnaireRequest.condition.condition_target_questionnaire.split
+        typeof questionnaireRequest.condition.condition_target_questionnaire ===
+          'string'
       ) {
+        const [questionnaireId, questionnaireVersion] = (
+          questionnaireRequest.condition
+            .condition_target_questionnaire as unknown as string
+        ).split('-');
+
         questionnaireRequest.condition.condition_target_questionnaire =
-          questionnaireRequest.condition.condition_target_questionnaire.split(
-            '-'
-          );
-        [
-          questionnaireRequest.condition.condition_target_questionnaire,
-          questionnaireRequest.condition.condition_target_questionnaire_version,
-        ] = questionnaireRequest.condition.condition_target_questionnaire;
+          parseInt(questionnaireId);
+        questionnaireRequest.condition.condition_target_questionnaire_version =
+          parseInt(questionnaireVersion);
       }
     }
 
@@ -2683,9 +2529,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
       // Convert Condition value to string before sending them
       if (question.condition) {
-        if (question.condition.condition_value instanceof Array) {
-          question.condition.condition_value =
-            question.condition.condition_value.join(';');
+        if ((question.condition.condition_value as unknown) instanceof Array) {
+          question.condition.condition_value = (
+            question.condition.condition_value as unknown as string[]
+          ).join(';');
         } else {
           question.condition.condition_link = undefined;
           question.condition.condition_value =
@@ -2693,14 +2540,17 @@ export class QuestionnaireResearcherComponent implements OnInit {
         }
         if (
           question.condition.condition_target_questionnaire &&
-          question.condition.condition_target_questionnaire.split
+          typeof question.condition.condition_target_questionnaire === 'string'
         ) {
+          const [questionnaireId, questionnaireVersion] = (
+            question.condition
+              .condition_target_questionnaire as unknown as string
+          ).split('-');
+
           question.condition.condition_target_questionnaire =
-            question.condition.condition_target_questionnaire.split('-');
-          [
-            question.condition.condition_target_questionnaire,
-            question.condition.condition_target_questionnaire_version,
-          ] = question.condition.condition_target_questionnaire;
+            parseInt(questionnaireId);
+          question.condition.condition_target_questionnaire_version =
+            parseInt(questionnaireVersion);
         }
       }
 
@@ -2708,9 +2558,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
         // Convert Condition value to string before sending them if its single or multiple
         if (answer.condition) {
           // Single or multiple answers a from type array.
-          if (answer.condition.condition_value instanceof Array) {
-            answer.condition.condition_value =
-              answer.condition.condition_value.join(';');
+          if ((answer.condition.condition_value as unknown) instanceof Array) {
+            answer.condition.condition_value = (
+              answer.condition.condition_value as unknown as string[]
+            ).join(';');
           } else {
             answer.condition.condition_link = undefined;
             answer.condition.condition_value =
@@ -2718,14 +2569,16 @@ export class QuestionnaireResearcherComponent implements OnInit {
           }
           if (
             answer.condition.condition_target_questionnaire &&
-            answer.condition.condition_target_questionnaire.split
+            typeof answer.condition.condition_target_questionnaire === 'string'
           ) {
+            const [questionnaireId, questionnaireVersion] = (
+              answer.condition
+                .condition_target_questionnaire as unknown as string
+            ).split('-');
             answer.condition.condition_target_questionnaire =
-              answer.condition.condition_target_questionnaire.split('-');
-            [
-              answer.condition.condition_target_questionnaire,
-              answer.condition.condition_target_questionnaire_version,
-            ] = answer.condition.condition_target_questionnaire;
+              parseInt(questionnaireId);
+            answer.condition.condition_target_questionnaire_version =
+              parseInt(questionnaireVersion);
           }
         }
 
@@ -2839,6 +2692,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
       }
 
       for (const question of fragebogenObj.questions) {
+        this.migrateExportLabel(question);
+
         if (question.condition) {
           this.fixImportedCondition(question.condition);
 
@@ -2850,6 +2705,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
         }
 
         for (const answer_option of question.answer_options) {
+          this.migrateExportLabel(question);
+
           if (answer_option.condition) {
             this.fixImportedCondition(answer_option.condition);
 
@@ -2886,7 +2743,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
   onDateChange(event: MatDatepickerInputEvent<Date>): void {
     this.activate_at_date = event.value.toDateString();
-    this.myForm.controls['activate_at_date'].setValue(event.value);
+    this.myForm.controls.activate_at_date.setValue(event.value);
   }
 
   fixImportedCondition(condition: any): void {
@@ -3003,55 +2860,47 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
     Object.keys(this.myForm.controls).forEach((key) => {
       if (this.myForm.get(key) instanceof FormArray) {
-        (this.myForm.controls[key] as FormArray).value.forEach(
-          (keyObject, keyIndex) => {
-            const keyController = (this.myForm.controls[key] as FormArray)
-              .controls[keyIndex] as FormGroup;
-            Object.keys(keyController.controls).forEach((key2) => {
-              if (keyController.get(key2) instanceof FormArray) {
-                (keyController.controls[key2] as FormArray).value.forEach(
-                  (key2Object, key2Index) => {
-                    const key2Controller = (
-                      keyController.controls[key2] as FormArray
-                    ).controls[key2Index] as FormGroup;
-                    Object.keys(key2Controller.controls).forEach((key3) => {
-                      const controlErrors3: ValidationErrors = (
-                        key2Controller.controls[key3] as FormControl
-                      ).errors;
-                      if (controlErrors3 != null) {
-                        Object.keys(controlErrors3).forEach((keyError3) => {
-                          this.fieldsWithErrors.push(
-                            key +
-                              '[' +
-                              keyIndex +
-                              '].' +
-                              key2 +
-                              '[' +
-                              key2Index +
-                              '].' +
-                              key3
-                          );
-                          numOfErr++;
-                        });
-                      }
-                    });
-                  }
-                );
-              }
-              const controlErrors2: ValidationErrors = (
-                keyController.controls[key2] as FormControl
-              ).errors;
-              if (controlErrors2 != null) {
-                Object.keys(controlErrors2).forEach((keyError2) => {
-                  this.fieldsWithErrors.push(
-                    key + '[' + keyIndex + '].' + key2
-                  );
-                  numOfErr++;
-                });
-              }
-            });
-          }
-        );
+        this.myForm.controls[key].value.forEach((keyObject, keyIndex) => {
+          const keyController = this.myForm.controls[key].controls[keyIndex];
+          Object.keys(keyController.controls).forEach((key2) => {
+            if (keyController.get(key2) instanceof FormArray) {
+              keyController.controls[key2].value.forEach(
+                (key2Object, key2Index) => {
+                  const key2Controller =
+                    keyController.controls[key2].controls[key2Index];
+                  Object.keys(key2Controller.controls).forEach((key3) => {
+                    const controlErrors3: ValidationErrors =
+                      key2Controller.controls[key3].errors;
+                    if (controlErrors3 != null) {
+                      Object.keys(controlErrors3).forEach((keyError3) => {
+                        this.fieldsWithErrors.push(
+                          key +
+                            '[' +
+                            keyIndex +
+                            '].' +
+                            key2 +
+                            '[' +
+                            key2Index +
+                            '].' +
+                            key3
+                        );
+                        numOfErr++;
+                      });
+                    }
+                  });
+                }
+              );
+            }
+            const controlErrors2: ValidationErrors =
+              keyController.controls[key2].errors;
+            if (controlErrors2 != null) {
+              Object.keys(controlErrors2).forEach((keyError2) => {
+                this.fieldsWithErrors.push(key + '[' + keyIndex + '].' + key2);
+                numOfErr++;
+              });
+            }
+          });
+        });
       }
       const controlErrors: ValidationErrors = this.myForm.get(key).errors;
       if (controlErrors != null) {
@@ -3071,55 +2920,47 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
     Object.keys(this.myForm.controls).forEach((key) => {
       if (this.myForm.get(key) instanceof FormArray) {
-        (this.myForm.controls[key] as FormArray).value.forEach(
-          (keyObject, keyIndex) => {
-            const keyController = (this.myForm.controls[key] as FormArray)
-              .controls[keyIndex] as FormGroup;
-            Object.keys(keyController.controls).forEach((key2) => {
-              if (keyController.get(key2) instanceof FormArray) {
-                (keyController.controls[key2] as FormArray).value.forEach(
-                  (key2Object, key2Index) => {
-                    const key2Controller = (
-                      keyController.controls[key2] as FormArray
-                    ).controls[key2Index] as FormGroup;
-                    Object.keys(key2Controller.controls).forEach((key3) => {
-                      const controlErrors3: ValidationErrors = (
-                        key2Controller.controls[key3] as FormControl
-                      ).errors;
-                      if (controlErrors3 != null) {
-                        Object.keys(controlErrors3).forEach((keyError3) => {
-                          this.fieldsWithErrors.push(
-                            key +
-                              '[' +
-                              keyIndex +
-                              '].' +
-                              key2 +
-                              '[' +
-                              key2Index +
-                              '].' +
-                              key3
-                          );
-                          numOfErr++;
-                        });
-                      }
-                    });
-                  }
-                );
-              }
-              const controlErrors2: ValidationErrors = (
-                keyController.controls[key2] as FormControl
-              ).errors;
-              if (controlErrors2 != null) {
-                Object.keys(controlErrors2).forEach((keyError2) => {
-                  this.fieldsWithErrors.push(
-                    key + '[' + keyIndex + '].' + key2
-                  );
-                  numOfErr++;
-                });
-              }
-            });
-          }
-        );
+        this.myForm.controls[key].value.forEach((keyObject, keyIndex) => {
+          const keyController = this.myForm.controls[key].controls[keyIndex];
+          Object.keys(keyController.controls).forEach((key2) => {
+            if (keyController.get(key2) instanceof FormArray) {
+              keyController.controls[key2].value.forEach(
+                (key2Object, key2Index) => {
+                  const key2Controller =
+                    keyController.controls[key2].controls[key2Index];
+                  Object.keys(key2Controller.controls).forEach((key3) => {
+                    const controlErrors3: ValidationErrors =
+                      key2Controller.controls[key3].errors;
+                    if (controlErrors3 != null) {
+                      Object.keys(controlErrors3).forEach((keyError3) => {
+                        this.fieldsWithErrors.push(
+                          key +
+                            '[' +
+                            keyIndex +
+                            '].' +
+                            key2 +
+                            '[' +
+                            key2Index +
+                            '].' +
+                            key3
+                        );
+                        numOfErr++;
+                      });
+                    }
+                  });
+                }
+              );
+            }
+            const controlErrors2: ValidationErrors =
+              keyController.controls[key2].errors;
+            if (controlErrors2 != null) {
+              Object.keys(controlErrors2).forEach(() => {
+                this.fieldsWithErrors.push(key + '[' + keyIndex + '].' + key2);
+                numOfErr++;
+              });
+            }
+          });
+        });
       }
       const controlErrors: ValidationErrors = this.myForm.get(key).errors;
       if (controlErrors != null) {
@@ -3195,10 +3036,9 @@ export class QuestionnaireResearcherComponent implements OnInit {
    * @param control form control
    */
   validateFormControlTextVariableValue(control: FormControl): ValidationErrors {
-    const formControlText = control.value;
     const myRegex = /\(dat=(.*?)\)/g;
     const str = control.value ? control.value : '';
-    const counter = 0;
+
     while (true) {
       const myArray = myRegex.exec(str);
       if (myArray === null) {
@@ -3238,7 +3078,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
   dndDrop(event: CdkDragDrop<string[]>): void {
     moveItemInArray(
-      this.myForm.controls['questions']['controls'],
+      this.myForm.controls.questions.controls,
       event.previousIndex,
       event.currentIndex
     );
@@ -3249,12 +3089,48 @@ export class QuestionnaireResearcherComponent implements OnInit {
   }
 
   mustNotEmptyTimeAndDayIfEnabled(form: FormGroup): ValidatorFn {
-    return (control: AbstractControl): { [key: string]: any } | null => {
+    return () => {
       const assert =
-        form.controls['notify_when_not_filled'].value === true &&
-        (!form.controls['notify_when_not_filled_time'].value ||
-          form.controls['notify_when_not_filled_day'].value === null);
+        form.controls.notify_when_not_filled.value === true &&
+        (!form.controls.notify_when_not_filled_time.value ||
+          form.controls.notify_when_not_filled_day.value === null);
       return assert ? { emptyHourOrDay: true } : null;
     };
+  }
+
+  private initVariableNameWarning(): void {
+    if (this.isEditMode) {
+      this.variableNameFormService.initVariableNameWarning(
+        this.myForm,
+        this.currentQuestionnaire,
+        this.variableNameWarnings
+      );
+    }
+  }
+
+  private resetVariableNameWarning(): void {
+    this.myForm.controls.questions.controls.forEach((questionFormGroup) => {
+      this.variableNameWarnings.delete(
+        questionFormGroup.controls.variable_name
+      );
+      questionFormGroup.controls.answer_options.controls.forEach(
+        (answerOptionFormGroup) =>
+          this.variableNameWarnings.delete(
+            answerOptionFormGroup.controls.variable_name
+          )
+      );
+    });
+  }
+
+  /**
+   * Detects if the legacy field "label" is still used, and will migrate it
+   * to the new field "variable_name".
+   */
+  private migrateExportLabel(
+    fields: (Question | AnswerOption) & { label?: string }
+  ): void {
+    if ('label' in fields) {
+      fields.variable_name = fields.label;
+    }
   }
 }

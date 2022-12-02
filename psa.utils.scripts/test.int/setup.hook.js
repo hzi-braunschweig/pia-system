@@ -33,7 +33,7 @@ const options = {
     messagequeue: process.env.KEEP_MESSAGEQUEUE === 'true',
     sftp: process.env.KEEP_SFTP === 'true',
   },
-  registry: process.env.DOCKER_REGISTRY || 'registry.netzlink.com',
+  registry: process.env.DOCKER_REGISTRY || 'registry.gitlab.com',
 };
 
 // Create the secrets

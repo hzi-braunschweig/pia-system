@@ -36,7 +36,7 @@ export interface Question {
   questionnaire_id: number;
   questionnaire_version: number;
   text: string;
-  label: string;
+  variable_name: string;
   position: number;
   is_mandatory: boolean;
   answer_options: AnswerOption[];
@@ -50,7 +50,7 @@ export interface AnswerOption {
   is_condition_target: boolean;
   is_decimal: boolean;
   is_notable: boolean[];
-  label: string;
+  variable_name: string;
   position: number;
   question_id: number;
   restriction_min: number;

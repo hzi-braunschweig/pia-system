@@ -56,9 +56,9 @@ export interface FullAnswer {
   date_of_release_v2: Date | null;
   date_of_issue: Date;
   status: QuestionnaireInstanceStatus;
-  question_label: string;
+  question_variable_name: string;
   qposition: number;
-  answer_option_label: string;
+  answer_option_variable_name: string;
   aposition: number;
   values: string[] | null;
   values_code: number[] | null;

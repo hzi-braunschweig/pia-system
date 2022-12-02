@@ -43,6 +43,7 @@ export class RandomDataService {
       complianceBloodsamples: faker.datatype.boolean(),
       studyCenter: 'Testdaten Studienzentrum',
       examinationWave: faker.datatype.number(10),
+      origin: 'investigator',
     };
   }
 
@@ -53,6 +54,7 @@ export class RandomDataService {
       pm_email: null,
       hub_email: null,
       has_required_totp: false,
+      has_open_self_registration: false,
     };
   }
 
@@ -93,14 +95,14 @@ export class RandomDataService {
       questions: [
         {
           text: '**Bitte geben Sie an, inwieweit die folgenden Beschwerden Sie innerhalb der letzten 24 Stunden neu betroffen haben.** Bitte geben Sie keine Beschwerden an, die aufgrund einer Allergie aufgetreten sind. \nDieser Fragebogen bezieht sich auf die von Ihnen am (dat=0) gemeldeten Symptome. ',
-          label: '',
+          variable_name: '',
           position: 1,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: 'Husten?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -109,7 +111,7 @@ export class RandomDataService {
             {
               position: 2,
               text: 'Ich hatte Husten...',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Mit Auswurf' }, { value: 'Ohne Auswurf' }],
@@ -129,7 +131,7 @@ export class RandomDataService {
             {
               position: 3,
               text: 'Der Auswurf des Husten ist:',
-              label: '',
+              variable_name: '',
               answer_type_id: 2,
               is_notable: [],
               values: [
@@ -153,7 +155,7 @@ export class RandomDataService {
             {
               position: 4,
               text: 'Verstopfte Nase?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -162,7 +164,7 @@ export class RandomDataService {
             {
               position: 5,
               text: 'Laufende Nase?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -171,7 +173,7 @@ export class RandomDataService {
             {
               position: 6,
               text: 'Welche Farbe hat das Nasensekret?',
-              label: '',
+              variable_name: '',
               answer_type_id: 2,
               is_notable: [],
               values: [
@@ -195,7 +197,7 @@ export class RandomDataService {
             {
               position: 7,
               text: 'Niesen?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -204,7 +206,7 @@ export class RandomDataService {
             {
               position: 8,
               text: 'Halsschmerzen?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -213,7 +215,7 @@ export class RandomDataService {
             {
               position: 9,
               text: 'Kopfschmerzen?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -222,7 +224,7 @@ export class RandomDataService {
             {
               position: 10,
               text: 'Ohrenschmerzen?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -231,7 +233,7 @@ export class RandomDataService {
             {
               position: 11,
               text: 'Allgemeines Unwohlsein/Krankheitsgefühl?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -240,7 +242,7 @@ export class RandomDataService {
             {
               position: 12,
               text: 'Gliederschmerzen?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -249,7 +251,7 @@ export class RandomDataService {
             {
               position: 13,
               text: 'Kältegefühl/Frösteln?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -258,7 +260,7 @@ export class RandomDataService {
             {
               position: 14,
               text: 'Kurzatmigkeit?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [
@@ -277,7 +279,7 @@ export class RandomDataService {
             {
               position: 15,
               text: 'Tränende Augen?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -286,7 +288,7 @@ export class RandomDataService {
             {
               position: 16,
               text: 'Brennende und/oder juckende Augen?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -295,7 +297,7 @@ export class RandomDataService {
             {
               position: 17,
               text: 'Raue Stimme/Heiserkeit?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -304,7 +306,7 @@ export class RandomDataService {
             {
               position: 18,
               text: 'Vorübergehender Verlust der Stimme?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -313,7 +315,7 @@ export class RandomDataService {
             {
               position: 19,
               text: 'Druckgefühl im Gesicht?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -322,7 +324,7 @@ export class RandomDataService {
             {
               position: 20,
               text: 'Zahnschmerzen?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -331,7 +333,7 @@ export class RandomDataService {
             {
               position: 21,
               text: 'Geruchs- und Geschmacksverlust?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -340,7 +342,7 @@ export class RandomDataService {
             {
               position: 22,
               text: 'Bindehautentzündung?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -349,7 +351,7 @@ export class RandomDataService {
             {
               position: 23,
               text: 'Hautausschlag?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -358,7 +360,7 @@ export class RandomDataService {
             {
               position: 24,
               text: 'Lymphknotenschwellung?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -367,7 +369,7 @@ export class RandomDataService {
             {
               position: 25,
               text: 'Benommenheit/ungewöhnliche Schläfrigkeit?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -376,7 +378,7 @@ export class RandomDataService {
             {
               position: 26,
               text: 'Erhöhte Temperatur/Fieber?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [
@@ -389,7 +391,7 @@ export class RandomDataService {
             {
               position: 27,
               text: 'Wie hoch war die höchste Temperatur?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [
@@ -413,7 +415,7 @@ export class RandomDataService {
             {
               position: 28,
               text: 'Wo wurde gemessen?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [
@@ -445,7 +447,7 @@ export class RandomDataService {
             {
               position: 29,
               text: 'Wann wurde gemessen? Wenn Sie sich nicht erinnern, dann überspringen Sie die Frage.',
-              label: '',
+              variable_name: '',
               answer_type_id: 5,
               is_notable: [],
               values: [],
@@ -465,7 +467,7 @@ export class RandomDataService {
             {
               position: 30,
               text: 'Übelkeit/Erbrechen?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -474,7 +476,7 @@ export class RandomDataService {
             {
               position: 31,
               text: 'Durchfall?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -483,7 +485,7 @@ export class RandomDataService {
             {
               position: 32,
               text: 'Sie haben Durchfall angegeben. Welcher der folgenden Aussagen stimmen Sie zu?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [
@@ -512,7 +514,7 @@ export class RandomDataService {
             {
               position: 33,
               text: 'Bauchschmerzen?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -521,7 +523,7 @@ export class RandomDataService {
             {
               position: 34,
               text: 'Andere Beschwerden?',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [{ value: 'Ja' }, { value: 'Nein' }],
@@ -530,7 +532,7 @@ export class RandomDataService {
             {
               position: 35,
               text: 'Welche anderen Beschwerden sind aufgetreten?',
-              label: '',
+              variable_name: '',
               answer_type_id: 4,
               is_notable: [],
               values: [],
@@ -551,14 +553,14 @@ export class RandomDataService {
         },
         {
           text: 'Wann sind Ihre Beschwerden zum ersten Mal aufgetreten? Wenn Sie sich nicht erinnern, dann überspringen Sie die Frage.',
-          label: '',
+          variable_name: '',
           position: 2,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 5,
               is_notable: [],
               values: [],
@@ -571,14 +573,14 @@ export class RandomDataService {
         },
         {
           text: 'Sind gleichzeitig, kurz vor Ihnen oder kurz nach Ihnen (bis zu einem Abstand von 2 Tagen) Personen, die mit Ihnen in einem Haushalt leben an einer Atemwegsinfektion erkrankt?',
-          label: '',
+          variable_name: '',
           position: 3,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [
@@ -598,14 +600,14 @@ export class RandomDataService {
         },
         {
           text: 'Hatten Sie Kontakt zu einem bestätigten Covid-19-Fall bis max. 14 Tage vor Krankheitsbeginn?',
-          label: '',
+          variable_name: '',
           position: 4,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [
@@ -619,14 +621,14 @@ export class RandomDataService {
         },
         {
           text: 'Wurden Sie auf Corona getestet? [Stand 13.03.2020, Hinweis: Nicht jede Erkältung muss auf Corona untersucht werden.]',
-          label: '',
+          variable_name: '',
           position: 5,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [],
               values: [
@@ -645,7 +647,7 @@ export class RandomDataService {
             {
               position: 2,
               text: 'Wann wurden Sie getestet?',
-              label: '',
+              variable_name: '',
               answer_type_id: 5,
               is_notable: [],
               values: [],
@@ -670,14 +672,14 @@ export class RandomDataService {
         },
         {
           text: 'Was denken Sie: Warum sind Sie krank geworden?',
-          label: '',
+          variable_name: '',
           position: 6,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 4,
               is_notable: [],
               values: [],
@@ -687,7 +689,7 @@ export class RandomDataService {
         },
         {
           text: 'Bitte beachten: Eine Studienteilnahme ersetzt keinen Arztbesuch. Bitte wenden Sie sich bei gesundheitlichen Problemen an Ihren Arzt/Ihre Ärztin! Vielen Dank für Ihre Angaben. Wir wünschen Ihnen gute Besserung! Bitte gehen Sie zur nächsten Seite, um den Fragebogen abzuschicken.',
-          label: '',
+          variable_name: '',
           position: 7,
           is_mandatory: false,
           answer_options: [],

@@ -201,6 +201,10 @@ export class LicenseTextCompleter {
       ['@firebase/functions', LicenseTextCompleter.APACHE_LICENSE_2_0],
       ['@firebase/functions-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
       [
+        '@firebase/installations-compat',
+        LicenseTextCompleter.APACHE_LICENSE_2_0,
+      ],
+      [
         '@firebase/installations-types',
         LicenseTextCompleter.APACHE_LICENSE_2_0,
       ],
@@ -232,6 +236,10 @@ export class LicenseTextCompleter {
       ['@firebase/storage-compat', LicenseTextCompleter.APACHE_LICENSE_2_0],
       ['@firebase/util', LicenseTextCompleter.APACHE_LICENSE_2_0],
       ['@firebase/webchannel-wrapper', LicenseTextCompleter.APACHE_LICENSE_2_0],
+      [
+        '@firebase/installations-compat',
+        LicenseTextCompleter.APACHE_LICENSE_2_0,
+      ],
       [
         '@awesome-cordova-plugins/core',
         LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
@@ -630,6 +638,30 @@ export class LicenseTextCompleter {
           'CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,\n' +
           'OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE\n' +
           'OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.',
+      ],
+      [
+        'mermaid',
+        'The MIT License (MIT)\n' +
+          '\n' +
+          'Copyright (c) 2014 - 2022 Knut Sveidqvist\n' +
+          '\n' +
+          'Permission is hereby granted, free of charge, to any person obtaining a copy\n' +
+          'of this software and associated documentation files (the "Software"), to deal\n' +
+          'in the Software without restriction, including without limitation the rights\n' +
+          'to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n' +
+          'copies of the Software, and to permit persons to whom the Software is\n' +
+          'furnished to do so, subject to the following conditions:\n' +
+          '\n' +
+          'The above copyright notice and this permission notice shall be included in all\n' +
+          'copies or substantial portions of the Software.\n' +
+          '\n' +
+          'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n' +
+          'IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n' +
+          'FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n' +
+          'AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n' +
+          'LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n' +
+          'OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n' +
+          'SOFTWARE.',
       ],
       [
         'ospath',

@@ -26,8 +26,14 @@ import { Question, QuestionRequest } from '../../src/models/question';
 import {
   AnswerOption,
   AnswerOptionRequest,
+  AnswerType,
 } from '../../src/models/answerOption';
 import { db } from '../../src/db';
+import pgHelper from '../../src/services/postgresqlHelper';
+import { QuestionnaireService } from '../../src/services/questionnaireService';
+import { QuestionnaireRepository } from '../../src/repositories/questionnaireRepository';
+import * as variableNameGeneratorModule from '../../src/helpers/variableNameGenerator';
+import { CouldNotCreateNewRandomVariableNameError } from '../../src/errors';
 
 chai.use(chaiHttp);
 
@@ -82,6 +88,10 @@ const existingQuestionnaire5 = {
   questionId1: 1005101,
 };
 
+const questionnaireApiTestGeneratedVariableNames = {
+  id: 200300,
+};
+
 const conditionSourceQuestionnaire = {
   id: 200200,
   version: 1,
@@ -90,6 +100,7 @@ const conditionSourceQuestionnaire = {
 const sandbox = sinon.createSandbox();
 const fetchMock = fetchMocker.sandbox();
 
+const generatedLabelRegex = /^auto-[0-9]{8}$/;
 describe('/questionnaires', function () {
   before(async () => {
     await Server.init();
@@ -120,6 +131,19 @@ describe('/questionnaires', function () {
   });
 
   describe('POST /admin/questionnaires', function () {
+    it('should return HTTP 500 if database query failed', async function () {
+      sandbox.stub(pgHelper, 'insertQuestionnaire').rejects();
+
+      const questionnaireRequest = getValidQuestionnaire1();
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/questionnaires')
+        .set(forscherHeader1)
+        .send(questionnaireRequest);
+
+      expect(result).to.have.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    });
+
     it('should return HTTP 400 if the questionnaire is invalid', async function () {
       const result = await chai
         .request(apiAddress)
@@ -485,9 +509,54 @@ describe('/questionnaires', function () {
         .send(getValidQuestionnaireEmptyQuestion());
       expect(result).to.have.status(StatusCodes.OK);
     });
+
+    it('should return HTTP 200 with the posted questionnaire and generated variable names', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/questionnaires')
+        .set(forscherHeader1)
+        .send(getValidQuestionnaireWithVariableNames());
+
+      const body = result.body as QuestionnaireResponse;
+
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(body.questions[0].variable_name).to.match(generatedLabelRegex);
+      expect(body.questions[0].answer_options[0].variable_name).to.eq('ao1');
+      expect(body.questions[0].answer_options[1].variable_name).to.match(
+        generatedLabelRegex
+      );
+      expect(body.questions[1].variable_name).to.eq('q1');
+    });
+
+    it('should return HTTP 409 when it was not possible to generate a new variable name', async () => {
+      sandbox
+        .stub(variableNameGeneratorModule, 'default')
+        .throws(new CouldNotCreateNewRandomVariableNameError());
+
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/questionnaires')
+        .set(forscherHeader1)
+        .send(getValidQuestionnaireWithVariableNames());
+
+      expect(result).to.have.status(StatusCodes.CONFLICT);
+    });
   });
 
   describe('POST /admin/revisequestionnaire/{id}', function () {
+    it('should return HTTP 500 if database query failed', async function () {
+      sandbox.stub(pgHelper, 'reviseQuestionnaire').rejects();
+
+      const questionnaireRequest = getValidQuestionnaire1();
+      const result = await chai
+        .request(apiAddress)
+        .post(`/admin/revisequestionnaire/${existingQuestionnaire4.id}`)
+        .set(forscherHeader1)
+        .send(questionnaireRequest);
+
+      expect(result).to.have.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    });
+
     it('should return HTTP 403 if a Proband tries', async function () {
       const result = await chai
         .request(apiAddress)
@@ -558,7 +627,8 @@ describe('/questionnaires', function () {
 
       checkIfResponseMatchesRequestQuestionnaire(
         questionnaireRequest,
-        result.body
+        result.body,
+        true
       );
 
       expect(result.body.id).to.equal(existingQuestionnaire4.id);
@@ -597,7 +667,8 @@ describe('/questionnaires', function () {
 
       checkIfResponseMatchesRequestQuestionnaire(
         existingQuestionnaireRequest,
-        result2.body
+        result2.body,
+        true
       );
 
       expect(result2.body.id).to.equal(existingQuestionnaire4.id);
@@ -609,9 +680,112 @@ describe('/questionnaires', function () {
         existingQuestionnaire4.answerOptionId1_1
       );
     });
+
+    it('should return HTTP 200 and automatically generate variable names, when previous version had variable names set for every question', async () => {
+      const questionnaireRequest =
+        getValidQuestionnaireWithGeneratedVariableNames();
+
+      questionnaireRequest.questions.push({
+        text: 'Fragen die Variablennamen erhalten sollten',
+        position: 3,
+        is_mandatory: true,
+        variable_name: '',
+        answer_options: [
+          {
+            text: 'A',
+            answer_type_id: AnswerType.Text,
+            position: 1,
+            variable_name: '',
+            values: [],
+          },
+          {
+            text: 'B',
+            answer_type_id: AnswerType.Text,
+            position: 2,
+            variable_name: '',
+            values: [],
+          },
+        ],
+      });
+
+      const result = await chai
+        .request(apiAddress)
+        .post(
+          `/admin/revisequestionnaire/${questionnaireApiTestGeneratedVariableNames.id}`
+        )
+        .set(forscherHeader2)
+        .send(questionnaireRequest);
+
+      expect(result).to.have.status(StatusCodes.OK);
+
+      const body = result.body as QuestionnaireResponse;
+
+      expect(body.questions[1].variable_name).to.match(generatedLabelRegex);
+      expect(body.questions[1].answer_options[0].variable_name).to.match(
+        generatedLabelRegex
+      );
+      expect(body.questions[1].answer_options[1].variable_name).to.match(
+        generatedLabelRegex
+      );
+    });
+
+    it('should return HTTP 200 and keep empty variable names, when previous version had not set variable names for every question', async () => {
+      const questionnaireRequest = getExistingQuestionnaire2v2();
+
+      questionnaireRequest.questions.push({
+        text: 'Haben Sie Fieber?',
+        position: 3,
+        is_mandatory: true,
+        variable_name: '',
+        answer_options: [
+          {
+            text: '',
+            answer_type_id: 1,
+            values: [
+              { value: 'Ja' },
+              { value: 'Nein' },
+              { value: 'Keine Angabe' },
+            ],
+            values_code: null,
+            position: 1,
+            variable_name: '',
+            is_notable: [],
+          },
+        ],
+      });
+
+      const result = await chai
+        .request(apiAddress)
+        .post(`/admin/revisequestionnaire/${existingQuestionnaire4.id}`)
+        .set(forscherHeader1)
+        .send(questionnaireRequest);
+
+      expect(result).to.have.status(StatusCodes.OK);
+
+      const body = result.body as QuestionnaireResponse;
+
+      body.questions.forEach((q) => {
+        expect(q.variable_name).to.eq('');
+        q.answer_options.forEach((ao) => {
+          expect(ao.variable_name).to.eq('');
+        });
+      });
+    });
   });
 
   describe('PUT /admin/questionnaires/{id}/{version}', () => {
+    it('should return HTTP 500 if database query failed', async function () {
+      sandbox.stub(pgHelper, 'updateQuestionnaire').rejects();
+      const result = await chai
+        .request(apiAddress)
+        .put(
+          `/admin/questionnaires/${existingQuestionnaire4.id}/${existingQuestionnaire4.version}`
+        )
+        .set(forscherHeader1)
+        .send(getExistingQuestionnaire4());
+      expect(result).to.have.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    });
+
     it('should return HTTP 400 if the questionnaire is invalid', async function () {
       const result = await chai
         .request(apiAddress)
@@ -713,10 +887,10 @@ describe('/questionnaires', function () {
       changedConditionQuestionnaire.name = 'Testfragebogenname2Geändert';
       changedConditionQuestionnaire.compliance_needed = true;
       changedConditionQuestionnaire.keep_answers = true;
-      changedConditionQuestionnaire.questions[0].label = 'q1changed';
+      changedConditionQuestionnaire.questions[0].variable_name = 'q1changed';
       changedConditionQuestionnaire.questions[0].answer_options[0].text =
         'Fieber?2Geändert';
-      changedConditionQuestionnaire.questions[0].answer_options[0].label =
+      changedConditionQuestionnaire.questions[0].answer_options[0].variable_name =
         'ao1changed';
       const result = await chai
         .request(apiAddress)
@@ -732,7 +906,8 @@ describe('/questionnaires', function () {
 
       checkIfResponseMatchesRequestQuestionnaire(
         changedConditionQuestionnaire,
-        result.body
+        result.body,
+        true
       );
 
       expect(result.body.id).to.equal(existingQuestionnaire4.id);
@@ -779,7 +954,8 @@ describe('/questionnaires', function () {
 
       checkIfResponseMatchesRequestQuestionnaire(
         changedConditionQuestionnaire,
-        result2.body
+        result2.body,
+        true
       );
 
       expect(result2.body.questions[0].answer_options[0].is_condition_target).to
@@ -822,7 +998,8 @@ describe('/questionnaires', function () {
 
       checkIfResponseMatchesRequestQuestionnaire(
         questionnaireRequest,
-        result.body
+        result.body,
+        true
       );
 
       AuthServerMock.adminRealm().returnValid();
@@ -840,7 +1017,8 @@ describe('/questionnaires', function () {
 
       checkIfResponseMatchesRequestQuestionnaire(
         questionnaireRequest,
-        result2.body
+        result2.body,
+        true
       );
 
       expect(result2.body.version).to.equal(1);
@@ -877,7 +1055,8 @@ describe('/questionnaires', function () {
 
       checkIfResponseMatchesRequestQuestionnaire(
         changedQuestionnaire,
-        result.body
+        result.body,
+        true
       );
     });
 
@@ -891,7 +1070,7 @@ describe('/questionnaires', function () {
           text: 'Version2 question',
           position: 1,
           is_mandatory: false,
-          label: 'v2 question',
+          variable_name: 'v2 question',
           answer_options: [
             {
               answer_type_id: 2,
@@ -902,7 +1081,7 @@ describe('/questionnaires', function () {
               ],
               values_code: [{ value: 1 }, { value: 2 }, { value: 0 }],
               position: 1,
-              label: 'v2 ao',
+              variable_name: 'v2 ao',
             },
           ],
         },
@@ -951,7 +1130,8 @@ describe('/questionnaires', function () {
 
       checkIfResponseMatchesRequestQuestionnaire(
         unchangedVerion1,
-        result2.body
+        result2.body,
+        true
       );
 
       expect(result2.body.id).to.equal(existingQuestionnaire2v1.id);
@@ -974,7 +1154,8 @@ describe('/questionnaires', function () {
 
       checkIfResponseMatchesRequestQuestionnaire(
         unchangedQuestionnaire,
-        result.body
+        result.body,
+        true
       );
       expect(result.body.id).to.equal(conditionSourceQuestionnaire.id);
       expect(result.body.version).to.equal(
@@ -1012,6 +1193,23 @@ describe('/questionnaires', function () {
       expect(questionnairesResponse.links.self.href).to.equal(
         '/questionnaires'
       );
+    });
+
+    it('should return HTTP 200 and empty array if database query failed', async function () {
+      sandbox
+        .stub(QuestionnaireRepository, 'getQuestionnairesByStudyIds')
+        .rejects();
+
+      const result = await chai
+        .request(apiAddress)
+        .get('/admin/questionnaires')
+        .set(forscherHeader1);
+
+      expect(result).to.have.status(StatusCodes.OK);
+      const questionnairesResponse = result.body as {
+        questionnaires: Questionnaire[];
+      };
+      expect(questionnairesResponse.questionnaires.length).to.equal(0);
     });
   });
 
@@ -1078,7 +1276,8 @@ describe('/questionnaires', function () {
 
       checkIfResponseMatchesRequestQuestionnaire(
         getExistingQuestionnaire2v1(),
-        result.body
+        result.body,
+        true
       );
 
       expect(result.body.id).to.equal(existingQuestionnaire2v1.id);
@@ -1107,7 +1306,8 @@ describe('/questionnaires', function () {
 
       checkIfResponseMatchesRequestQuestionnaire(
         getExistingQuestionnaire2v2(),
-        result.body
+        result.body,
+        true
       );
 
       expect(result.body.id).to.equal(existingQuestionnaire2v2.id);
@@ -1134,7 +1334,8 @@ describe('/questionnaires', function () {
       console.log(JSON.stringify(result.body, null, 2));
       checkIfResponseMatchesRequestQuestionnaire(
         getConditionSourceQuestionnaire(),
-        result.body
+        result.body,
+        true
       );
       expect(result.body.id).to.equal(conditionSourceQuestionnaire.id);
       expect(result.body.version).to.equal(
@@ -1175,6 +1376,19 @@ describe('/questionnaires', function () {
   });
 
   describe('DELETE /admin/questionnaires/{id}/{version}', function () {
+    it('should return HTTP 500 if database query failed', async function () {
+      sandbox.stub(pgHelper, 'deleteQuestionnaire').rejects();
+
+      const result = await chai
+        .request(apiAddress)
+        .delete(
+          `/admin/questionnaires/${existingQuestionnaire4.id}/${existingQuestionnaire4.version}`
+        )
+        .set(forscherHeader1);
+
+      expect(result).to.have.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    });
+
     it('should return HTTP 404 if the questionnaire id is wrong', async function () {
       const result = await chai
         .request(apiAddress)
@@ -1309,7 +1523,8 @@ describe('/questionnaires', function () {
       expect(result).to.have.status(StatusCodes.OK);
       checkIfResponseMatchesRequestQuestionnaire(
         getExistingQuestionnaire4(),
-        result.body
+        result.body,
+        true
       );
 
       expect(result.body.active).to.be.false;
@@ -1362,6 +1577,30 @@ describe('/questionnaires', function () {
       );
       expect(resultFromDatabse).to.deep.equal([{ id: 140300 }]);
     });
+
+    it('should return HTTP 500 if database query failed', async function () {
+      sandbox.stub(QuestionnaireService, 'deactivateQuestionnaire').rejects();
+
+      const result = await chai
+        .request(apiAddress)
+        .patch('/admin/ApiTestStudy1/questionnaires/100300/1')
+        .set(forscherHeader1)
+        .send({ active: false });
+
+      expect(result).to.have.status(StatusCodes.INTERNAL_SERVER_ERROR);
+    });
+
+    it('should return HTTP 422 if active status would not change', async function () {
+      sandbox.stub(QuestionnaireService, 'deactivateQuestionnaire').rejects();
+
+      const result = await chai
+        .request(apiAddress)
+        .patch('/admin/ApiTestStudy1/questionnaires/100300/1')
+        .set(forscherHeader1)
+        .send({});
+
+      expect(result).to.have.status(StatusCodes.UNPROCESSABLE_ENTITY);
+    });
   });
 
   function mockHasAgreedToCompliance(
@@ -1381,22 +1620,26 @@ describe('/questionnaires', function () {
 
 function checkIfResponseMatchesRequestQuestionnaire(
   questionnaireRequest: QuestionnaireRequest,
-  questionnaireResponseInput: unknown | undefined
+  questionnaireResponseInput: unknown | undefined,
+  expectUnchangedVariableNames = false
 ): asserts questionnaireResponseInput is QuestionnaireResponse {
   const questionnaireResponse =
     questionnaireResponseInput as QuestionnaireResponse;
   const { activate_at_date, questions, condition, ...expected } = {
     ...questionnaireRequest,
   };
+
   if (activate_at_date) {
     (expected as { activate_at_date?: string }).activate_at_date = new Date(
       activate_at_date
     ).toISOString();
   }
+
   expect(
     questionnaireResponse,
     JSON.stringify(questionnaireResponse, null, 2)
   ).to.deep.include(expected);
+
   if (condition !== undefined) {
     if (condition.condition_type !== 'external') {
       delete condition.condition_target_questionnaire;
@@ -1422,25 +1665,35 @@ function checkIfResponseMatchesRequestQuestionnaire(
   questions.forEach((question) =>
     checkIfResponseMatchesRequestQuestion(
       question,
-      questionnaireResponse.questions
+      questionnaireResponse.questions,
+      expectUnchangedVariableNames
     )
   );
 }
 
 function checkIfResponseMatchesRequestQuestion(
   questionRequest: QuestionRequest,
-  questionsResposeInput: unknown | undefined
+  questionsResposeInput: unknown | undefined,
+  expectUnchangedVariableNames: boolean
 ): asserts questionsResposeInput is Question[] {
   const questionsRespose = questionsResposeInput as Question[];
-  const { answer_options, condition, ...expected } = {
+  const { answer_options, condition, variable_name, ...expected } = {
     ...questionRequest,
   };
   const foundQuestion = questionsRespose.find(
     (q) => q.position === questionRequest.position
   );
+
   expect(foundQuestion, JSON.stringify(foundQuestion, null, 2)).to.deep.include(
     expected
   );
+
+  if (expectUnchangedVariableNames || variable_name || variable_name !== '') {
+    expect(foundQuestion.variable_name).to.eq(variable_name);
+  } else {
+    expect(foundQuestion.variable_name).to.match(/^auto-[0-9]{8}/);
+  }
+
   if (condition !== undefined) {
     if (condition.condition_type !== 'external') {
       delete condition.condition_target_questionnaire;
@@ -1463,12 +1716,17 @@ function checkIfResponseMatchesRequestQuestion(
     JSON.stringify(foundQuestion, null, 2)
   ).to.equal(answer_options.length);
   answer_options.forEach((ao) =>
-    checkIfResponseMatchesRequestAnswerOption(ao, foundQuestion.answer_options)
+    checkIfResponseMatchesRequestAnswerOption(
+      ao,
+      expectUnchangedVariableNames,
+      foundQuestion.answer_options
+    )
   );
 }
 
 function checkIfResponseMatchesRequestAnswerOption(
   answerOptionRequest: AnswerOptionRequest,
+  expectUnchangedVariableNames: boolean,
   answerOptionsResponse?: AnswerOption[]
 ): void {
   const {
@@ -1477,6 +1735,7 @@ function checkIfResponseMatchesRequestAnswerOption(
     restriction_max,
     restriction_min,
     condition,
+    variable_name,
     ...aoCopy
   } = {
     ...answerOptionRequest,
@@ -1487,6 +1746,7 @@ function checkIfResponseMatchesRequestAnswerOption(
     restriction_max?: string;
     restriction_min?: string;
   };
+
   if (Array.isArray(values)) {
     expect(answerOptionRequest.values.length).to.equal(values.length);
     expected.values = values.map((v) => v.value);
@@ -1501,19 +1761,30 @@ function checkIfResponseMatchesRequestAnswerOption(
   if (typeof restriction_min === 'number') {
     expected.restriction_min = String(restriction_min);
   }
+
   const foundAnswerOption = answerOptionsResponse.find(
     (ao) => ao.position === answerOptionRequest.position
   );
+
   expect(
     foundAnswerOption,
     JSON.stringify(foundAnswerOption, null, 2)
   ).to.deep.include(expected);
+
+  if (expectUnchangedVariableNames || variable_name) {
+    expect(foundAnswerOption.variable_name).to.eq(variable_name);
+  } else {
+    expect(foundAnswerOption.variable_name).to.match(/^auto-[0-9]{8}/);
+  }
+
   if (condition !== undefined) {
     delete condition.condition_target_question_pos;
     delete condition.condition_target_answer_option_pos;
+
     if (condition.condition_type !== 'external') {
       delete condition.condition_target_questionnaire;
     }
+
     expect(
       foundAnswerOption.condition,
       JSON.stringify(foundAnswerOption, null, 2)
@@ -1555,7 +1826,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
         text: 'Haben Sie Fieber?',
         position: 1,
         is_mandatory: true,
-        label: '',
+        variable_name: '',
         answer_options: [
           {
             id: 1002111,
@@ -1568,7 +1839,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
             ],
             values_code: null,
             position: 1,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
         ],
@@ -1578,7 +1849,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
         text: 'Wie fühlen Sie sich?',
         position: 2,
         is_mandatory: true,
-        label: '',
+        variable_name: '',
         answer_options: [
           {
             id: 1002211,
@@ -1592,7 +1863,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
             ],
             values_code: null,
             position: 1,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
           {
@@ -1607,7 +1878,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
             ],
             values_code: null,
             position: 2,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
           {
@@ -1617,7 +1888,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
             values: [],
             values_code: null,
             position: 3,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
           {
@@ -1627,7 +1898,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
             values: [],
             values_code: null,
             position: 4,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
           {
@@ -1637,7 +1908,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
             values: [],
             values_code: null,
             position: 5,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
           {
@@ -1647,7 +1918,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
             values: [],
             values_code: null,
             position: 6,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
           {
@@ -1657,7 +1928,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
             values: [],
             values_code: null,
             position: 7,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
         ],
@@ -1703,7 +1974,7 @@ function getExistingQuestionnaire4(): QuestionnaireRequest {
         text: 'Wie fühlen Sie sich?',
         position: 1,
         is_mandatory: true,
-        label: '',
+        variable_name: '',
         answer_options: [
           {
             id: 1004111,
@@ -1716,7 +1987,7 @@ function getExistingQuestionnaire4(): QuestionnaireRequest {
             ],
             values_code: null,
             position: 1,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
           {
@@ -1731,7 +2002,7 @@ function getExistingQuestionnaire4(): QuestionnaireRequest {
             ],
             values_code: null,
             position: 2,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
         ],
@@ -1741,7 +2012,7 @@ function getExistingQuestionnaire4(): QuestionnaireRequest {
         text: 'Haben Sie Fieber?',
         position: 2,
         is_mandatory: true,
-        label: '',
+        variable_name: '',
         condition: {
           condition_type: 'external',
           condition_value: 'Ja',
@@ -1762,7 +2033,7 @@ function getExistingQuestionnaire4(): QuestionnaireRequest {
             ],
             values_code: null,
             position: 1,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
         ],
@@ -1812,7 +2083,7 @@ function getConditionSourceQuestionnaire(): QuestionnaireRequest {
         text: 'Bedingung auf Ja',
         position: 1,
         is_mandatory: true,
-        label: '',
+        variable_name: '',
         condition: {
           condition_type: 'external',
           condition_operand: '==',
@@ -1835,7 +2106,7 @@ function getConditionSourceQuestionnaire(): QuestionnaireRequest {
             ],
             values_code: null,
             position: 1,
-            label: '',
+            variable_name: '',
           },
           {
             id: 2002121,
@@ -1849,7 +2120,7 @@ function getConditionSourceQuestionnaire(): QuestionnaireRequest {
             ],
             values_code: null,
             position: 2,
-            label: '',
+            variable_name: '',
             condition: {
               condition_type: 'internal_this',
               condition_operand: '\\=',
@@ -1867,7 +2138,7 @@ function getConditionSourceQuestionnaire(): QuestionnaireRequest {
         text: 'Bedingung auf Nein',
         position: 2,
         is_mandatory: true,
-        label: '',
+        variable_name: '',
         condition: {
           condition_type: 'internal_last',
           condition_operand: '\\=',
@@ -1890,7 +2161,7 @@ function getConditionSourceQuestionnaire(): QuestionnaireRequest {
             ],
             values_code: null,
             position: 1,
-            label: '',
+            variable_name: '',
             condition: {
               condition_type: 'internal_this',
               condition_operand: '==',
@@ -1913,7 +2184,7 @@ function getConditionSourceQuestionnaire(): QuestionnaireRequest {
             ],
             values_code: null,
             position: 2,
-            label: '',
+            variable_name: '',
           },
         ],
       },
@@ -1922,7 +2193,7 @@ function getConditionSourceQuestionnaire(): QuestionnaireRequest {
         text: 'Frage ohne Unterfrage',
         position: 3,
         is_mandatory: false,
-        label: '',
+        variable_name: '',
         answer_options: [],
       },
     ],
@@ -2014,7 +2285,7 @@ function getValidQuestionnaire1(): QuestionnaireRequest {
         text: 'Welche Symptome haben Sie?1',
         position: 1,
         is_mandatory: true,
-        label: '',
+        variable_name: '',
         answer_options: [
           {
             text: 'Fieber?1',
@@ -2022,7 +2293,7 @@ function getValidQuestionnaire1(): QuestionnaireRequest {
             values: [{ value: 'Ja' }, { value: 'Nein' }],
             values_code: null,
             position: 1,
-            label: 'ao1',
+            variable_name: 'ao1',
             is_notable: [],
           },
           {
@@ -2030,7 +2301,7 @@ function getValidQuestionnaire1(): QuestionnaireRequest {
             answer_type_id: 1,
             values: [{ value: 'Ja' }, { value: 'Nein' }],
             position: 2,
-            label: 'ao2',
+            variable_name: 'ao2',
             is_notable: [],
           },
           {
@@ -2042,7 +2313,7 @@ function getValidQuestionnaire1(): QuestionnaireRequest {
             restriction_max: 7,
             is_decimal: false,
             position: 3,
-            label: 'ao3',
+            variable_name: 'ao3',
             is_notable: [],
           },
           {
@@ -2054,7 +2325,7 @@ function getValidQuestionnaire1(): QuestionnaireRequest {
             restriction_max: 100,
             is_decimal: false,
             position: 4,
-            label: 'ao4',
+            variable_name: 'ao4',
             is_notable: [],
           },
         ],
@@ -2063,7 +2334,7 @@ function getValidQuestionnaire1(): QuestionnaireRequest {
         text: 'Wie geht es Ihnen?1',
         position: 2,
         is_mandatory: true,
-        label: 'q1',
+        variable_name: 'q1',
         answer_options: [
           {
             answer_type_id: 2,
@@ -2080,7 +2351,7 @@ function getValidQuestionnaire1(): QuestionnaireRequest {
               { value: 0 },
             ],
             position: 1,
-            label: 'ao1',
+            variable_name: 'ao1',
             is_notable: [],
           },
         ],
@@ -2113,7 +2384,7 @@ function getValidQuestionnaire2(): QuestionnaireRequest {
         text: 'Welche Symptome haben Sie?2',
         position: 1,
         is_mandatory: true,
-        label: '',
+        variable_name: '',
         answer_options: [
           {
             text: 'Fieber?2',
@@ -2121,7 +2392,7 @@ function getValidQuestionnaire2(): QuestionnaireRequest {
             values: [{ value: 'Ja' }, { value: 'Nein' }],
             values_code: [{ value: 1 }, { value: 0 }],
             position: 1,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
           {
@@ -2130,7 +2401,7 @@ function getValidQuestionnaire2(): QuestionnaireRequest {
             values: [{ value: 'Ja' }, { value: 'Nein' }],
             values_code: [{ value: 1 }, { value: 0 }],
             position: 2,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
         ],
@@ -2139,7 +2410,7 @@ function getValidQuestionnaire2(): QuestionnaireRequest {
         text: 'Wie geht es Ihnen?2',
         position: 2,
         is_mandatory: true,
-        label: '',
+        variable_name: '',
         answer_options: [
           {
             answer_type_id: 2,
@@ -2156,8 +2427,114 @@ function getValidQuestionnaire2(): QuestionnaireRequest {
               { value: 0 },
             ],
             position: 1,
-            label: '',
+            variable_name: '',
             is_notable: [],
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function getValidQuestionnaireWithVariableNames(): QuestionnaireRequest {
+  return {
+    study_id: 'ApiTestStudy1',
+    name: 'Testfragebogenname1',
+    type: 'for_probands',
+    cycle_amount: 7,
+    cycle_unit: 'hour',
+    cycle_per_day: 2,
+    cycle_first_hour: 6,
+    publish: 'allaudiences',
+    keep_answers: false,
+    activate_after_days: 1,
+    deactivate_after_days: 365,
+    notification_tries: 3,
+    notification_title: 'PIA Fragebogen',
+    notification_body_new: 'Sie haben einen neuen Fragebogen',
+    notification_body_in_progress: 'Sie haben einen unvollständigen Fragebogen',
+    notification_weekday: 'monday',
+    notification_interval: 1,
+    notification_interval_unit: 'days',
+    activate_at_date: startOfToday(),
+    compliance_needed: true,
+    expires_after_days: 5,
+    questions: [
+      {
+        text: 'Question without label',
+        position: 1,
+        is_mandatory: true,
+        variable_name: '',
+        answer_options: [
+          {
+            text: 'Answer with label',
+            answer_type_id: 1,
+            values: [{ value: 'Ja' }, { value: 'Nein' }],
+            values_code: null,
+            position: 1,
+            variable_name: 'ao1',
+            is_notable: [],
+          },
+          {
+            text: 'Answer without label',
+            answer_type_id: 1,
+            values: [{ value: 'Ja' }, { value: 'Nein' }],
+            position: 2,
+            variable_name: '',
+            is_notable: [],
+          },
+        ],
+      },
+      {
+        text: 'Question with label',
+        position: 2,
+        is_mandatory: true,
+        variable_name: 'q1',
+        answer_options: [],
+      },
+    ],
+  };
+}
+
+function getValidQuestionnaireWithGeneratedVariableNames(): QuestionnaireRequest {
+  return {
+    study_id: 'ApiTestStudy2',
+    name: 'ApiTestGeneratedVariableNames',
+    type: 'for_research_team',
+    cycle_amount: 1,
+    cycle_unit: 'once',
+    publish: 'allaudiences',
+    keep_answers: false,
+    activate_after_days: 0,
+    deactivate_after_days: 365,
+    notification_tries: 0,
+    notification_title: '',
+    notification_body_new: '',
+    notification_body_in_progress: '',
+    notification_weekday: '',
+    notification_interval: 0,
+    notification_interval_unit: '',
+    expires_after_days: 5,
+    questions: [
+      {
+        text: 'Frage mit Variablennamen',
+        position: 1,
+        is_mandatory: false,
+        variable_name: 'auto-11111111',
+        answer_options: [
+          {
+            text: '',
+            answer_type_id: AnswerType.Text,
+            position: 1,
+            variable_name: 'auto-22222222',
+            values: [],
+          },
+          {
+            text: '',
+            answer_type_id: AnswerType.Text,
+            position: 2,
+            variable_name: 'auto-33333333',
+            values: [],
           },
         ],
       },
@@ -2188,7 +2565,7 @@ function getQuestionnaireImported(): QuestionnaireRequest {
         text: 'Welche Symptome haben Sie?2',
         position: 1,
         is_mandatory: true,
-        label: '',
+        variable_name: '',
         answer_options: [
           {
             text: 'Fieber?2',
@@ -2196,7 +2573,7 @@ function getQuestionnaireImported(): QuestionnaireRequest {
             values: [{ value: 'Ja' }, { value: 'Nein' }],
             values_code: [{ value: 1 }, { value: 0 }],
             position: 1,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
           {
@@ -2205,7 +2582,7 @@ function getQuestionnaireImported(): QuestionnaireRequest {
             values: [{ value: 'Ja' }, { value: 'Nein' }],
             values_code: [{ value: 1 }, { value: 0 }],
             position: 2,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
         ],
@@ -2214,7 +2591,7 @@ function getQuestionnaireImported(): QuestionnaireRequest {
         text: 'Wie geht es Ihnen?2',
         position: 2,
         is_mandatory: true,
-        label: '',
+        variable_name: '',
         answer_options: [
           {
             answer_type_id: 2,
@@ -2231,7 +2608,7 @@ function getQuestionnaireImported(): QuestionnaireRequest {
               { value: 0 },
             ],
             position: 1,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
         ],
@@ -2263,14 +2640,14 @@ function getValidQuestionnaireEmptyQuestion(): QuestionnaireRequest {
         text: 'Dies ist ein Info Text1',
         position: 1,
         is_mandatory: false,
-        label: '',
+        variable_name: '',
         answer_options: [],
       },
       {
         text: 'Dies ist ein Info Text2',
         position: 2,
         is_mandatory: false,
-        label: '',
+        variable_name: '',
         answer_options: [],
       },
     ],
@@ -2300,14 +2677,14 @@ function getWrongNotificationQuestionnaire(): QuestionnaireRequest {
         text: 'Dies ist ein Info Text1',
         position: 1,
         is_mandatory: false,
-        label: '',
+        variable_name: '',
         answer_options: [],
       },
       {
         text: 'Dies ist ein Info Text2',
         position: 2,
         is_mandatory: false,
-        label: '',
+        variable_name: '',
         answer_options: [],
       },
     ],
@@ -2336,7 +2713,7 @@ function getValidQuestionnaireSpontan(): QuestionnaireRequest {
         text: 'Welche Symptome haben Sie?1',
         position: 1,
         is_mandatory: true,
-        label: '',
+        variable_name: '',
         answer_options: [
           {
             text: 'Fieber?1',
@@ -2344,14 +2721,14 @@ function getValidQuestionnaireSpontan(): QuestionnaireRequest {
             values: [{ value: 'Ja' }, { value: 'Nein' }],
             values_code: null,
             position: 1,
-            label: '',
+            variable_name: '',
           },
           {
             text: 'Kopfschmerzen?1',
             answer_type_id: 1,
             values: [{ value: 'Ja' }, { value: 'Nein' }],
             position: 2,
-            label: '',
+            variable_name: '',
           },
         ],
       },
@@ -2359,7 +2736,7 @@ function getValidQuestionnaireSpontan(): QuestionnaireRequest {
         text: 'Wie geht es Ihnen?1',
         position: 2,
         is_mandatory: true,
-        label: '',
+        variable_name: '',
         answer_options: [
           {
             answer_type_id: 2,
@@ -2376,7 +2753,7 @@ function getValidQuestionnaireSpontan(): QuestionnaireRequest {
               { value: 0 },
             ],
             position: 1,
-            label: '',
+            variable_name: '',
             is_notable: [],
           },
         ],

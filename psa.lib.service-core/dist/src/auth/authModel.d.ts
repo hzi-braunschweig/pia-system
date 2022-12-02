@@ -1,5 +1,5 @@
-import { AuthCredentials } from '@hapi/hapi';
-export interface AccessToken extends AuthCredentials {
+import { AuthCredentials, MergeType } from '@hapi/hapi';
+export interface AccessToken extends MergeType<Record<string, unknown>, AuthCredentials> {
     username: string;
     studies: string[];
     locale: string;

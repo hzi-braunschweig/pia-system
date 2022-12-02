@@ -1,6 +1,6 @@
 lint:
   stage: test
-  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$FOLDER-npm-install:$IMAGE_ID
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$FOLDER-npm-install:$IMAGE_ID
   script:
     - ln -s $NODE_PATH $FOLDER/node_modules
     - cd $FOLDER

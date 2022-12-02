@@ -10,6 +10,11 @@ export interface RepoMetaData {
    */
   docker: string[];
   /**
+   * A List of all second level folders that contain a package.json with at least one of the scripts
+   * 'lint', 'test.unit' or 'test.int' which all need a `npm install`
+   */
+  npm: string[];
+  /**
    * A List of all second level folders that contain a package.json with a 'lint' script
    */
   lint: string[];
@@ -26,8 +31,8 @@ export interface RepoMetaData {
    */
   testE2e: string[];
   /**
-   * A List of all second level folders that contain a package.json with at least one of the scripts
-   * 'lint', 'test.unit' or 'test.int' which all need a `npm install`
+   * A List of all second level folders that contain a package.json and a Dockerfile with
+   * npm-install stage
    */
   npmInstall: string[];
 }

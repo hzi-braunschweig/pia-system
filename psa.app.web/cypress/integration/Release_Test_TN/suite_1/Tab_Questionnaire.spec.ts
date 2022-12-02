@@ -10,7 +10,6 @@ import {
   createProband,
   createQuestionnaire,
   createStudy,
-  createUser,
   generateRandomProbandForStudy,
   generateRandomStudy,
   getCredentialsForProbandByUsername,
@@ -96,14 +95,14 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       questions: [
         {
           text: 'Conditional question',
-          label: '',
+          variable_name: '',
           position: 1,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 4,
               is_notable: [],
               values: [],
@@ -142,14 +141,14 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       questions: [
         {
           text: 'Wie alt sind Sie?',
-          label: '',
+          variable_name: '',
           position: 1,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 4,
               is_notable: [],
               values: [],
@@ -189,14 +188,14 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       questions: [
         {
           text: 'Wie heißen Sie?',
-          label: '',
+          variable_name: '',
           position: 1,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: 'Bitte tragen Sie Ihren Namen und Vornamen ein',
-              label: '',
+              variable_name: '',
               answer_type_id: 4,
               is_notable: [],
               values: [],
@@ -206,14 +205,14 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Wie alt sind sie?',
-          label: '',
+          variable_name: '',
           position: 2,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 3,
               is_notable: [],
               values: [],
@@ -223,14 +222,14 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Ihr Geschlecht',
-          label: '',
+          variable_name: '',
           position: 3,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [{ value: false }, { value: false }],
               values: [{ value: 'Männlich' }, { value: 'Weiblich' }],
@@ -240,14 +239,14 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Welche Symptome haben Sie?',
-          label: '',
+          variable_name: '',
           position: 4,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 2,
               is_notable: [
                 { value: false },
@@ -265,14 +264,14 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Wann sind erste Symptome aufgetreten?',
-          label: '',
+          variable_name: '',
           position: 5,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 5,
               is_notable: [],
               values: [],
@@ -501,14 +500,14 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       questions: [
         {
           text: 'Wie heißen Sie?',
-          label: '',
+          variable_name: '',
           position: 1,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: 'Bitte tragen Sie Ihren Namen und Vornamen ein',
-              label: '',
+              variable_name: '',
               answer_type_id: 4,
               is_notable: [],
               values: [],
@@ -518,14 +517,14 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Wie alt sind sie?',
-          label: '',
+          variable_name: '',
           position: 2,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 3,
               is_notable: [],
               values: [],
@@ -535,14 +534,14 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Ihr Geschlecht',
-          label: '',
+          variable_name: '',
           position: 3,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 1,
               is_notable: [{ value: false }, { value: false }],
               values: [{ value: 'Männlich' }, { value: 'Weiblich' }],
@@ -552,14 +551,14 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Welche Symptome haben Sie?',
-          label: '',
+          variable_name: '',
           position: 4,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 2,
               is_notable: [
                 { value: false },
@@ -577,14 +576,14 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Wann sind erste Symptome aufgetreten?',
-          label: '',
+          variable_name: '',
           position: 5,
           is_mandatory: false,
           answer_options: [
             {
               position: 1,
               text: '',
-              label: '',
+              variable_name: '',
               answer_type_id: 5,
               is_notable: [],
               values: [],

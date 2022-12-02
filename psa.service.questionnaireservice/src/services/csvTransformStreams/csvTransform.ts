@@ -13,7 +13,7 @@ import { config } from '../../config';
 type CsvRecord = CsvRecord[] | Record<string, CsvRecord> | string | null;
 
 /**
- * A transform stream wich receives a object and pushes a transformed object.
+ * A transform stream wich receives an object and pushes a transformed object.
  */
 export abstract class CsvTransform<T, U extends CsvRecord> extends Transform {
   protected readonly dateTimeFormat = new Intl.DateTimeFormat('de-DE', {
@@ -44,8 +44,13 @@ export abstract class CsvTransform<T, U extends CsvRecord> extends Transform {
     callback: TransformCallback
   ): void {
     const result = this.preventCsvInjection(this.convertToCsvRow(chunk));
-    if (result) {
-      this.push(result);
+
+    if (Array.isArray(result)) {
+      this._push(result, 0);
+    } else {
+      if (result) {
+        this.push(result);
+      }
     }
     callback();
   }
@@ -61,6 +66,28 @@ export abstract class CsvTransform<T, U extends CsvRecord> extends Transform {
     } else {
       return '.';
     }
+  }
+
+  /**
+   * Push multiple rows while keeping track if push() signaled that no more
+   * chunks should be pushed. In those cases we wait for the 'drain' event to push
+   * the next rows.
+   * @see https://nodejs.org/api/stream.html#readablepushchunk-encoding
+   * @see https://nodejs.org/en/docs/guides/backpressuring-in-streams/#lifecycle-of-pipe
+   */
+  private _push(rows: unknown[], index: number): void {
+    if (rows.length === index) {
+      return;
+    }
+
+    // eslint-disable-next-line security/detect-object-injection
+    if (!this.push(rows[index])) {
+      this.once('drain', () => {
+        this._push(rows, index + 1);
+      });
+    }
+
+    this._push(rows, index + 1);
   }
 
   /**
@@ -84,5 +111,5 @@ export abstract class CsvTransform<T, U extends CsvRecord> extends Transform {
     }
   }
 
-  protected abstract convertToCsvRow(chunk: T): U | undefined;
+  protected abstract convertToCsvRow(chunk: T): U | U[] | undefined;
 }

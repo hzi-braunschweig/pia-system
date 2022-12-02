@@ -82,46 +82,50 @@ export class MapperService {
     const sormasAnswers: SymptomsDto = {};
 
     for (const answer of answers) {
-      if (!answer.answerOption.label) {
+      if (!answer.answerOption.variableName) {
         continue;
       }
       if (!answer.value) {
         continue;
       }
       try {
-        if (isSymptomStringKey(answer.answerOption.label)) {
-          sormasAnswers[answer.answerOption.label] = this.convertString(
+        if (isSymptomStringKey(answer.answerOption.variableName)) {
+          sormasAnswers[answer.answerOption.variableName] = this.convertString(
             answer.value
           );
-        } else if (isSymptomIntegerKey(answer.answerOption.label)) {
-          sormasAnswers[answer.answerOption.label] = this.convertInteger(
+        } else if (isSymptomIntegerKey(answer.answerOption.variableName)) {
+          sormasAnswers[answer.answerOption.variableName] = this.convertInteger(
             answer.value
           );
-        } else if (isSymptomFloatKey(answer.answerOption.label)) {
-          sormasAnswers[answer.answerOption.label] = this.convertFloat(
+        } else if (isSymptomFloatKey(answer.answerOption.variableName)) {
+          sormasAnswers[answer.answerOption.variableName] = this.convertFloat(
             answer.value
           );
-        } else if (isSymptomBooleanKey(answer.answerOption.label)) {
-          sormasAnswers[answer.answerOption.label] = this.convertBoolean(
+        } else if (isSymptomBooleanKey(answer.answerOption.variableName)) {
+          sormasAnswers[answer.answerOption.variableName] = this.convertBoolean(
             answer.value,
             answer.answerOption
           );
-        } else if (isSymptomDateKey(answer.answerOption.label)) {
-          sormasAnswers[answer.answerOption.label] = this.convertDate(
+        } else if (isSymptomDateKey(answer.answerOption.variableName)) {
+          sormasAnswers[answer.answerOption.variableName] = this.convertDate(
             answer.value
           );
-        } else if (isSymptomBool3Key(answer.answerOption.label)) {
-          sormasAnswers[answer.answerOption.label] = this.convertBool3(
+        } else if (isSymptomBool3Key(answer.answerOption.variableName)) {
+          sormasAnswers[answer.answerOption.variableName] = this.convertBool3(
             answer.value,
             answer.answerOption
           );
-        } else if (isSymptomTemperatureSourceKey(answer.answerOption.label)) {
-          sormasAnswers[answer.answerOption.label] =
+        } else if (
+          isSymptomTemperatureSourceKey(answer.answerOption.variableName)
+        ) {
+          sormasAnswers[answer.answerOption.variableName] =
             this.convertTemperatureSource(answer.value, answer.answerOption);
         } else if (
-          isSymptomCongenitalHeartDiseaseTypeKey(answer.answerOption.label)
+          isSymptomCongenitalHeartDiseaseTypeKey(
+            answer.answerOption.variableName
+          )
         ) {
-          sormasAnswers[answer.answerOption.label] =
+          sormasAnswers[answer.answerOption.variableName] =
             this.convertCongenitalHeartDiseaseType(
               answer.value,
               answer.answerOption

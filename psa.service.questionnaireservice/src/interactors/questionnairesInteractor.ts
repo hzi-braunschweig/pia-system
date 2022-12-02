@@ -12,6 +12,10 @@ import Boom from '@hapi/boom';
 import { QuestionnaireRepository } from '../repositories/questionnaireRepository';
 import { DatabaseError } from 'pg-protocol';
 import { QuestionnaireService } from '../services/questionnaireService';
+import variableNameGenerator from '../helpers/variableNameGenerator';
+import { CouldNotCreateNewRandomVariableNameError } from '../errors';
+
+const GENERATED_VARIABLE_DIGITS_LENGTH = 8;
 
 export class QuestionnairesInteractor {
   /**
@@ -51,6 +55,15 @@ export class QuestionnairesInteractor {
       decodedToken,
       questionnaire.study_id
     );
+
+    try {
+      this.addGeneratedVariableNames(questionnaire);
+    } catch (e) {
+      if (e instanceof CouldNotCreateNewRandomVariableNameError) {
+        throw Boom.conflict('Could not create a new random variable name');
+      }
+      throw e;
+    }
     return (await pgHelper.insertQuestionnaire(questionnaire).catch((err) => {
       console.log(err);
       throw Boom.badImplementation('Could not create questionnaire');
@@ -145,6 +158,14 @@ export class QuestionnairesInteractor {
       decodedToken,
       revisedQuestionnaire.study_id
     );
+
+    // If all questions from the current questionnaire version have variable
+    // names set, we assume empty variable names in a new revision should be
+    // filled with automatically generated ones.
+    if (await this.currentQuestionnaireHasCompleteVariableNames(id)) {
+      this.addGeneratedVariableNames(revisedQuestionnaire);
+    }
+
     return (await pgHelper
       .reviseQuestionnaire(revisedQuestionnaire, id)
       .catch((err) => {
@@ -236,5 +257,50 @@ export class QuestionnairesInteractor {
       decodedToken,
       questionnaire.study_id
     );
+  }
+
+  /**
+   * Will fetch the current questionnaire version and return true,
+   * when all questions and answer options have variable names set.
+   */
+  private static async currentQuestionnaireHasCompleteVariableNames(
+    id: number
+  ): Promise<boolean> {
+    const questionnaire = await QuestionnaireRepository.getQuestionnaire(id);
+
+    return questionnaire.questions.every(
+      (q) =>
+        Boolean(q.variable_name) &&
+        q.answer_options.every((ao) => Boolean(ao.variable_name))
+    );
+  }
+
+  private static addGeneratedVariableNames(
+    questionnaire: QuestionnaireRequest
+  ): QuestionnaireRequest {
+    const unavailableNames: string[] = [];
+
+    questionnaire.questions?.forEach((question) => {
+      if (!question.variable_name) {
+        question.variable_name = variableNameGenerator(
+          GENERATED_VARIABLE_DIGITS_LENGTH,
+          unavailableNames
+        );
+        unavailableNames.push(question.variable_name);
+      }
+
+      question.answer_options
+        ?.filter((ao) => !ao.variable_name)
+        .forEach((answerOption) => {
+          answerOption.variable_name = variableNameGenerator(
+            GENERATED_VARIABLE_DIGITS_LENGTH,
+            unavailableNames
+          );
+          unavailableNames.push(answerOption.variable_name);
+        });
+      return question;
+    });
+
+    return questionnaire;
   }
 }

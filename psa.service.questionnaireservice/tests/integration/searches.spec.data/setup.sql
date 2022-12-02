@@ -87,7 +87,7 @@ INSERT INTO questionnaires
 VALUES (1234567, 'ApiTestStudie', 'ApiTestQuestionnaire', 1, 1, 'week', 1, 365, 13, 'PIA Fragebogen', 'NeuNachricht',
         'AltNachricht', NULL, NULL, NULL, NULL, TRUE, 1, 1, CURRENT_DATE, 'for_research_team', 1);
 
-INSERT INTO questions (id, questionnaire_id, text, position, is_mandatory, label, questionnaire_version)
+INSERT INTO questions (id, questionnaire_id, text, position, is_mandatory, variable_name, questionnaire_version)
 VALUES (55555, 55555, 'Mach mal n Bild', 1, TRUE, '', 1),
        (666666, 666666, 'Q1Frage1', 1, FALSE, '', 1),
        (666667, 666666, 'Q1Frage2', 2, FALSE, '', 1),

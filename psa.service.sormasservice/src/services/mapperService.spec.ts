@@ -41,7 +41,7 @@ describe('MapperService', () => {
           value: 'Lorem ipsum dolor sit amet',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.Text,
-            label: 'symptomsComments',
+            variableName: 'symptomsComments',
           }),
         }),
       ];
@@ -63,14 +63,14 @@ describe('MapperService', () => {
           value: '89',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.Number,
-            label: 'weight',
+            variableName: 'weight',
           }),
         }),
         createAnswer({
           value: 'a189',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.Number,
-            label: 'height',
+            variableName: 'height',
           }),
         }),
       ];
@@ -94,7 +94,7 @@ describe('MapperService', () => {
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.Number,
             isDecimal: true,
-            label: 'temperature',
+            variableName: 'temperature',
           }),
         }),
         createAnswer({
@@ -102,7 +102,7 @@ describe('MapperService', () => {
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.Number,
             isDecimal: true,
-            label: 'temperature',
+            variableName: 'temperature',
           }),
         }),
       ];
@@ -126,14 +126,14 @@ describe('MapperService', () => {
           value: '2021-09-07T15:17:57.328Z',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.Date,
-            label: 'onsetDate',
+            variableName: 'onsetDate',
           }),
         }),
         createAnswer({
           value: '1631085599717',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.Date,
-            label: 'onsetDate',
+            variableName: 'onsetDate',
           }),
         }),
         createAnswer({
@@ -142,7 +142,7 @@ describe('MapperService', () => {
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.Date,
             isDecimal: true,
-            label: 'lesionsOnsetDate',
+            variableName: 'lesionsOnsetDate',
           }),
         }),
       ];
@@ -166,7 +166,7 @@ describe('MapperService', () => {
           value: 'No',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.SingleSelect,
-            label: 'lesionsArms',
+            variableName: 'lesionsArms',
             values: ['Yes', 'No'],
             valuesCode: [1, 0],
           }),
@@ -175,7 +175,7 @@ describe('MapperService', () => {
           value: 'Yes',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.SingleSelect,
-            label: 'lesionsFace',
+            variableName: 'lesionsFace',
             values: ['Yes', 'No'],
             valuesCode: [1, 0],
           }),
@@ -184,7 +184,7 @@ describe('MapperService', () => {
           value: 'Ye',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.SingleSelect,
-            label: 'symptomatic',
+            variableName: 'symptomatic',
             values: ['Yes', 'No'],
             valuesCode: [1, 0],
           }),
@@ -210,7 +210,7 @@ describe('MapperService', () => {
           value: 'Yes',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.SingleSelect,
-            label: 'backache',
+            variableName: 'backache',
             values: ['Yes', 'No', 'Maybe'],
             valuesCode: [1, 0, 2],
           }),
@@ -219,7 +219,7 @@ describe('MapperService', () => {
           value: 'No',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.SingleSelect,
-            label: 'hiccups',
+            variableName: 'hiccups',
             values: ['Yes', 'No', 'Maybe'],
             valuesCode: [1, 0, 2],
           }),
@@ -228,7 +228,7 @@ describe('MapperService', () => {
           value: 'Maybe',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.SingleSelect,
-            label: 'headache',
+            variableName: 'headache',
             values: ['Yes', 'No', 'Maybe'],
             valuesCode: [1, 0, 2],
           }),
@@ -237,7 +237,7 @@ describe('MapperService', () => {
           value: 'Unknown',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.SingleSelect,
-            label: 'aerophobia',
+            variableName: 'aerophobia',
             values: ['Yes', 'No', 'Maybe'],
             valuesCode: [1, 0, 2],
           }),
@@ -246,7 +246,7 @@ describe('MapperService', () => {
           value: 'Unknown',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.SingleSelect,
-            label: 'musclePain',
+            variableName: 'musclePain',
             values: ['Yes', 'No', 'Maybe', 'Unknown'],
             valuesCode: [1, 0, 2, 3],
           }),
@@ -273,7 +273,7 @@ describe('MapperService', () => {
           value: 'Oral',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.SingleSelect,
-            label: 'temperatureSource',
+            variableName: 'temperatureSource',
             values: ['Infrared', 'Oral', 'Axillary', 'Rectal'],
             valuesCode: [1, 2, 3, 4],
           }),
@@ -297,7 +297,7 @@ describe('MapperService', () => {
           value: 'PDA',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.SingleSelect,
-            label: 'congenitalHeartDiseaseType',
+            variableName: 'congenitalHeartDiseaseType',
             values: ['PDA', 'PPS', 'VSD', 'OTHER'],
             valuesCode: [1, 2, 3, 4],
           }),
@@ -333,7 +333,7 @@ describe('MapperService', () => {
           value: 'Lorem ipsum dolor sit amet',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.Text,
-            label: '',
+            variableName: '',
           }),
         }),
       ];
@@ -353,7 +353,7 @@ describe('MapperService', () => {
           value: 'Lorem ipsum dolor sit amet',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.Text,
-            label: 'unknown',
+            variableName: 'unknown',
           }),
         }),
       ];
@@ -373,7 +373,7 @@ describe('MapperService', () => {
           value: '',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.Text,
-            label: 'symptomsComments',
+            variableName: 'symptomsComments',
           }),
         }),
       ];
@@ -393,7 +393,7 @@ describe('MapperService', () => {
           value: 'Yes',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.MultiSelect,
-            label: 'backache',
+            variableName: 'backache',
             values: ['Yes', 'No', 'Maybe'],
             valuesCode: [1, 0, 2],
           }),
@@ -415,7 +415,7 @@ describe('MapperService', () => {
           value: 'Yes',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.SingleSelect,
-            label: 'backache',
+            variableName: 'backache',
             values: null,
             valuesCode: [1, 0, 2],
           }),
@@ -437,7 +437,7 @@ describe('MapperService', () => {
           value: 'Yes',
           answerOption: createAnswerOption({
             answerTypeId: AnswerType.MultiSelect,
-            label: 'backache',
+            variableName: 'backache',
             values: ['Yes', 'No', 'Maybe'],
             valuesCode: null,
           }),
@@ -460,7 +460,7 @@ function createAnswerOption(
   return {
     answerTypeId: AnswerType.Text,
     id: 0,
-    label: null,
+    variableName: null,
     isConditionTarget: false,
     isDecimal: false,
     isNotable: null,

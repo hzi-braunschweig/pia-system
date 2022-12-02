@@ -23,8 +23,7 @@ exports.Metrics = {
                     return boom_1.default.unauthorized('ip address not whitelisted for metrics');
                 }
                 try {
-                    if (!server.settings.app ||
-                        !server.settings.app.healthcheck ||
+                    if (!server.settings.app?.healthcheck ||
                         !(await server.settings.app.healthcheck())) {
                         throw new Error('healthcheck failed');
                     }

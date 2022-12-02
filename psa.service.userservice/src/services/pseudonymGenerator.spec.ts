@@ -7,37 +7,8 @@
 
 import { expect } from 'chai';
 import { PseudonymGenerator } from './pseudonymGenerator';
-import { assert } from 'ts-essentials';
 
 describe('pseudonymGenerator', () => {
-  it('should generate checksum', () => {
-    expect(PseudonymGenerator.generateChecksum('12345678')).to.equal(4);
-  });
-
-  it('should validate checksum', () => {
-    expect(PseudonymGenerator.validateChecksum(21735388)).to.be.true;
-    expect(PseudonymGenerator.validateChecksum(21735389)).to.be.false;
-    expect(PseudonymGenerator.validateChecksum(42310887)).to.be.true;
-    expect(PseudonymGenerator.validateChecksum(42310888)).to.be.false;
-    expect(PseudonymGenerator.validateChecksum(92797577)).to.be.true;
-    expect(PseudonymGenerator.validateChecksum(48892501)).to.be.true;
-    expect(PseudonymGenerator.validateChecksum(84905866)).to.be.true;
-    expect(PseudonymGenerator.validateChecksum(64567623)).to.be.true;
-    expect(PseudonymGenerator.validateChecksum('00076238')).to.be.true;
-  });
-
-  it('should convert number to inverted array', () => {
-    expect(PseudonymGenerator.invArray(1234567)).to.deep.equal([
-      7, 6, 5, 4, 3, 2, 1,
-    ]);
-  });
-
-  it('should convert string to inverted array', () => {
-    expect(PseudonymGenerator.invArray('1234567')).to.deep.equal([
-      7, 6, 5, 4, 3, 2, 1,
-    ]);
-  });
-
   it('should generate random pseudonyms', () => {
     const pseudonym1 = PseudonymGenerator.generateRandomPseudonym('test', 8);
     const pseudonym2 = PseudonymGenerator.generateRandomPseudonym('test', 8);
@@ -118,26 +89,6 @@ describe('pseudonymGenerator', () => {
     expect(PseudonymGenerator.generateRandomPseudonym('test', 4)).to.match(
       /test-\d{4}$/
     );
-  });
-
-  it('should only generate pseudonyms with valid checksums', () => {
-    const NUMBER_OF_TRIALS = 1000;
-    const regex = /test-(\d{1,15})$/;
-    for (let numberOfDigits = 1; numberOfDigits <= 15; numberOfDigits++) {
-      for (let trial = 0; trial < NUMBER_OF_TRIALS; trial++) {
-        const pseudonym = PseudonymGenerator.generateRandomPseudonym(
-          'test',
-          numberOfDigits
-        );
-        expect(pseudonym).to.match(regex);
-        const digits = regex.exec(pseudonym)?.[1];
-        assert(digits);
-        expect(
-          PseudonymGenerator.validateChecksum(digits),
-          `Validating checksum for ${pseudonym} failed`
-        ).to.be.true;
-      }
-    }
   });
 
   it('should throw error if pseudonym has more than maximum digits', () => {

@@ -122,12 +122,14 @@ describe('QuestionnaireAnswersTransmissionService integration', function () {
       const answers = [
         createAnswer({
           value: 'Lorem ipsum dolor.',
-          answerOption: createAnswerOption({ label: 'symptomsComments' }),
+          answerOption: createAnswerOption({
+            variableName: 'symptomsComments',
+          }),
         }),
         createAnswer({
           value: 'It hurts',
           answerOption: createAnswerOption({
-            label: 'headache',
+            variableName: 'headache',
             answerTypeId: AnswerType.SingleSelect,
             values: ['Everything ok', 'It hurts', 'I do not know'],
             valuesCode: [BOOL3_NO, BOOL3_YES, BOOL3_UNKNOWN],
@@ -157,13 +159,13 @@ describe('QuestionnaireAnswersTransmissionService integration', function () {
       expect(fetchMock.called(undefined, idsRequest)).to.be.true;
       expect(fetchMock.called(undefined, answersRequest)).to.be.true;
 
-      const sormasRequestCall = fetchMock.lastCall(
+      const sormasRequestCall: { body: string }[] = fetchMock.lastCall(
         undefined,
         sormasUploadRequest
       );
       expect(sormasRequestCall).to.not.be.undefined;
       const sormasRequestBody = JSON.parse(
-        sormasRequestCall![1]!.body as string
+        sormasRequestCall[1].body
       ) as ExternalVisitDto[];
       expect(sormasRequestBody).to.be.an('array').and.to.have.length(1);
       const expectedExternalVisit: ExternalVisitDto = {
@@ -198,12 +200,12 @@ describe('QuestionnaireAnswersTransmissionService integration', function () {
       const answers = [
         createAnswer({
           value: '38.5',
-          answerOption: createAnswerOption({ label: 'temperature' }),
+          answerOption: createAnswerOption({ variableName: 'temperature' }),
         }),
         createAnswer({
           value: 'under the axles',
           answerOption: createAnswerOption({
-            label: 'temperatureSource',
+            variableName: 'temperatureSource',
             answerTypeId: AnswerType.SingleSelect,
             values: [
               'infrared',
@@ -243,15 +245,17 @@ describe('QuestionnaireAnswersTransmissionService integration', function () {
       expect(fetchMock.called(undefined, idsRequest)).to.be.true;
       expect(fetchMock.called(undefined, answersRequest)).to.be.true;
 
-      const sormasRequestCall = fetchMock.lastCall(
+      const sormasRequestCall: { body: string }[] = fetchMock.lastCall(
         undefined,
         sormasUploadRequest
       );
       expect(sormasRequestCall).to.not.be.undefined;
+
       const sormasRequestBody = JSON.parse(
-        sormasRequestCall![1]!.body as string
+        sormasRequestCall[1].body
       ) as ExternalVisitDto[];
       expect(sormasRequestBody).to.be.an('array').and.to.have.length(1);
+
       const expectedExternalVisit: ExternalVisitDto = {
         personUuid: user.ids,
         visitStatus: 'COOPERATIVE',
@@ -263,6 +267,7 @@ describe('QuestionnaireAnswersTransmissionService integration', function () {
         },
       };
       expect(sormasRequestBody[0]).to.deep.include(expectedExternalVisit);
+
       const transmission = await transmissionRepo.findOneOrFail({
         pseudonym: user.pseudonym,
         study: config.sormas.study,
@@ -284,12 +289,14 @@ describe('QuestionnaireAnswersTransmissionService integration', function () {
       const answers = [
         createAnswer({
           value: 'This is a marvelous software.',
-          answerOption: createAnswerOption({ label: 'user_experience' }),
+          answerOption: createAnswerOption({
+            variableName: 'user_experience',
+          }),
         }),
         createAnswer({
           value: 'Very Good',
           answerOption: createAnswerOption({
-            label: null,
+            variableName: null,
             answerTypeId: AnswerType.SingleSelect,
             values: ['very good', 'good', 'ok', 'bad', 'very bad'],
             // eslint-disable-next-line @typescript-eslint/no-magic-numbers

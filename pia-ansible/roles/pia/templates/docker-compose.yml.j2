@@ -62,7 +62,7 @@ services:
 # ewpia
 ####################################################################################
   ewpiaservice:
-    image: "${PIA_DOCKER_REGISTRY}/pia/psa.database.ewpia:${PIA_DOCKER_TAG}"
+    image: "${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.database.ewpia:${PIA_DOCKER_TAG}"
     restart: unless-stopped
     container_name: ewpiaservice
     extra_hosts: *default-extra_hosts
@@ -98,7 +98,7 @@ services:
 # ipia
 ####################################################################################
   ipiaservice:
-    image: "${PIA_DOCKER_REGISTRY}/pia/psa.database.ipia:${PIA_DOCKER_TAG}"
+    image: "${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.database.ipia:${PIA_DOCKER_TAG}"
     restart: unless-stopped
     container_name: ipiaservice
     extra_hosts: *default-extra_hosts
@@ -134,7 +134,7 @@ services:
       pia:
 
   authserver:
-    image: "${PIA_DOCKER_REGISTRY}/pia/psa.server.auth:${PIA_DOCKER_TAG}"
+    image: "${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.server.auth:${PIA_DOCKER_TAG}"
     restart: unless-stopped
     container_name: authserver
     extra_hosts: *default-extra_hosts
@@ -193,7 +193,7 @@ services:
       pia:
 
   personaldataservice:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.personaldataservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.service.personaldataservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -242,7 +242,7 @@ services:
 
 {% if pia_has_modysservice %}
   modysservice:
-    image: "${PIA_DOCKER_REGISTRY}/pia/psa.service.modysservice:${PIA_DOCKER_TAG}"
+    image: "${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.service.modysservice:${PIA_DOCKER_TAG}"
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -284,7 +284,7 @@ services:
 # qpia
 ####################################################################################
   userservice:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.userservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.service.userservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -341,7 +341,7 @@ services:
 {% endif %}
 
   questionnaireservice:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.questionnaireservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.service.questionnaireservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -385,7 +385,7 @@ services:
       pia:
 
   autheventproxy:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.server.autheventproxy:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.server.autheventproxy:${PIA_DOCKER_TAG}
 {% if pia_local_development %}
     build:
       context: "../../../"
@@ -409,7 +409,7 @@ services:
       pia:
 
   complianceservice:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.complianceservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.service.complianceservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -449,7 +449,7 @@ services:
       pia:
 
   analyzerservice:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.analyzerservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.service.analyzerservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -484,7 +484,7 @@ services:
       pia:
 
   notificationservice:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.notificationservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.service.notificationservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -538,7 +538,7 @@ services:
       pia:
 
   sampletrackingservice:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.sampletrackingservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.service.sampletrackingservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -587,7 +587,7 @@ services:
       pia:
 
   loggingservice:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.loggingservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.service.loggingservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -623,7 +623,7 @@ services:
       pia:
 
   databaseservice:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.database:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.database:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     volumes:
@@ -655,7 +655,7 @@ services:
       pia:
 
   webappserver:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.app.web:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.app.web:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -687,7 +687,7 @@ services:
       pia:
 
   mobileappasset:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.app.mobile:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.app.mobile:${PIA_DOCKER_TAG}
     container_name: mobileappasset
     extra_hosts: *default-extra_hosts
     environment:
@@ -708,7 +708,7 @@ services:
   # this service is ONLY for testing stages!
   # NEVER DEPLOY IT TO A PRODUCTIVE SYSTEM!
   deploymentservice:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.utils.deploymentservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.utils.deploymentservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -746,7 +746,7 @@ services:
 
 {% if hostvars[inventory_hostname]['PIA_IS_SORMAS_ACTIVE'] | default(pia_has_sormas) %}
   sormasservice:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.service.sormasservice:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.service.sormasservice:${PIA_DOCKER_TAG}
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
     environment:
@@ -818,7 +818,7 @@ services:
 {% endif %}
 
   labresultssftpserver:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.server.sftpserver:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.server.sftpserver:${PIA_DOCKER_TAG}
     container_name: labresultssftpserver
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
@@ -849,7 +849,7 @@ services:
     logging: *default-logging
 
   apigateway:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.server.apigateway:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.server.apigateway:${PIA_DOCKER_TAG}
     container_name: apigateway
     restart: unless-stopped
     extra_hosts: *default-extra_hosts
@@ -899,7 +899,7 @@ services:
     logging: *default-logging
 
   messagequeue:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.server.messagequeue:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.server.messagequeue:${PIA_DOCKER_TAG}
     container_name: messagequeue
     # do not change this name without a reason, the stored data will be lost!
     hostname: messagequeue
@@ -929,7 +929,7 @@ services:
 ####################################################################################
 
   metrics-reverse-proxy:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.utils.metrics:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.utils.metrics:${PIA_DOCKER_TAG}
     restart: unless-stopped
     container_name: metrics-reverse-proxy
     extra_hosts: *default-extra_hosts
@@ -968,7 +968,7 @@ services:
 
 {% if pia_local_development %}
   mailserver:
-    image: ${PIA_DOCKER_REGISTRY}/pia/psa.server.mailserver:${PIA_DOCKER_TAG}
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.server.mailserver:${PIA_DOCKER_TAG}
     container_name: mailserver
     # do not change this name without a reason, the stored data will be lost!
     hostname: mailserver

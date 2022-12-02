@@ -26,7 +26,7 @@ export interface AnswerOption {
   isConditionTarget: boolean | null;
   isDecimal: boolean | null;
   isNotable: boolean[] | null;
-  label: string | null;
+  variableName: string | null;
   restrictionMax: number | null;
   restrictionMin: number | null;
   values: string[] | null;

@@ -76,7 +76,8 @@ export class DialogChangeStudyComponent implements OnInit {
       ),
       pseudonym_prefix_to: new FormControl(this.data.study.pseudonym_prefix),
       pseudonym_suffix_length_to: new FormControl(
-        this.data.study.pseudonym_suffix_length
+        this.data.study.pseudonym_suffix_length,
+        Validators.min(2)
       ),
       has_answers_notify_feature_to: new FormControl(
         this.data.study.has_answers_notify_feature

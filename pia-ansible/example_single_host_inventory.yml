@@ -23,7 +23,8 @@ all:
       ansible_user: pia-deployer
 
       # registry login informations
-      pia_docker_registry: registry.example.com
+      pia_docker_registry: registry.gitlab.com
+      pia_docker_image_prefix: pia-eresearch-system/pia
       # username for the login to the docker registry
       survey_docker_user: example_user
       # password for the login to the docker registry

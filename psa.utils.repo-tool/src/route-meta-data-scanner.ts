@@ -23,6 +23,10 @@ interface RouteMetaData {
   description: string | undefined;
 }
 
+interface OpenAPIObjectWithHost extends OpenAPIObject {
+  host: string;
+}
+
 export class RouteMetaDataScanner {
   private static readonly MICROSERVICES_PORT_START = 4000;
   private static readonly MICROSERVICES_PORT_END = 4015;
@@ -49,7 +53,8 @@ export class RouteMetaDataScanner {
         const response = await fetch(url);
         if (response.ok) {
           console.log('response ok: ', url);
-          const spec: OpenAPIObject = (await response.json()) as OpenAPIObject;
+          const spec: OpenAPIObjectWithHost =
+            (await response.json()) as OpenAPIObjectWithHost;
           routeMetaData = [
             ...routeMetaData,
             ...this.mapSpecToRouteMetaData(spec),
@@ -69,13 +74,11 @@ export class RouteMetaDataScanner {
     console.log('wrote output to:', this.CSV_FILE_NAME);
   }
 
-  private static mapSpecToRouteMetaData(spec: OpenAPIObject): RouteMetaData[] {
+  private static mapSpecToRouteMetaData(
+    spec: OpenAPIObjectWithHost
+  ): RouteMetaData[] {
     const serviceName = spec.info.title.replace('API Documentation ', '');
-    return this.mapApiPathToRouteMetaData(
-      serviceName,
-      spec['host'] as string,
-      spec.paths
-    );
+    return this.mapApiPathToRouteMetaData(serviceName, spec.host, spec.paths);
   }
 
   private static mapApiPathToRouteMetaData(

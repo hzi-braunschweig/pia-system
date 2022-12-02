@@ -5,7 +5,14 @@
  */
 
 import { I18n, ConfigurationOptions } from 'i18n';
-import { PluginBase, PluginNameVersion, Request, Server } from '@hapi/hapi';
+import {
+  InternalRequestDefaults,
+  PluginBase,
+  PluginNameVersion,
+  Request,
+  Server,
+  Util,
+} from '@hapi/hapi';
 import { MarkRequired } from 'ts-essentials';
 import Accept from '@hapi/accept';
 
@@ -20,6 +27,10 @@ type ValidatedHapiI18nPluginOptions = MarkRequired<
   HapiI18nPluginOptions,
   'locales' | 'defaultLocale'
 >;
+
+export interface PluginReqRefDefaults extends InternalRequestDefaults {
+  Headers: Util.Dictionary<string>;
+}
 
 /**
  * Plugin that registers i18n to the request and parses the locale from the jwt-Token
@@ -73,7 +84,9 @@ export class HapiI18nPlugin
     );
   }
 
-  private determineBestLocaleFromRequest(request: Request): string | undefined {
+  private determineBestLocaleFromRequest(
+    request: Request<PluginReqRefDefaults>
+  ): string | undefined {
     // Try to determine from token
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     const tokenLocale = request.auth?.credentials?.['locale'] as
@@ -83,6 +96,7 @@ export class HapiI18nPlugin
     if (bestMatch) return bestMatch;
 
     // Try to determine from Accept-Language
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const acceptLocales = Accept.languages(request.headers['accept-language']);
     for (const acceptLocale of acceptLocales) {
       // If supported, with variant (dialect)

@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 import { QuestionnaireDto } from '../models/questionnaire';
 import { QuestionnaireInstanceDto } from '../models/questionnaireInstance';
@@ -13,6 +14,7 @@ import { QuestionCleaner } from './questionCleaner';
 import { ConditionChecker } from './conditionChecker';
 import { getRepository, In, LessThanOrEqual } from 'typeorm';
 import { Answer } from '../entities/answer';
+import { assert } from 'ts-essentials';
 
 export class QuestionnaireFilter {
   private conditionTargetAnswers: Map<number, AnswerDto> = new Map<
@@ -32,12 +34,11 @@ export class QuestionnaireFilter {
   }
 
   private async runFilterQuestionnaireOfInstance(): Promise<void> {
-    if (
-      !this.qInstance.questionnaire ||
-      !this.qInstance.questionnaire.questions
-    ) {
-      return;
-    }
+    assert(
+      this.qInstance.questionnaire?.questions,
+      'tried to run questionnaire filter on incomplete questionnaire'
+    );
+
     await this.loadConditionTargetAnswers();
 
     // Go through questions and determine if it should be added based on conditions

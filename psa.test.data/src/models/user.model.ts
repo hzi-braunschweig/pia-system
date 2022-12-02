@@ -30,6 +30,7 @@ export interface ProfessionalUser {
 
 export interface Proband {
   pseudonym: string;
+  origin: string;
   complianceLabresults: boolean;
   complianceSamples: boolean;
   complianceBloodsamples: boolean;

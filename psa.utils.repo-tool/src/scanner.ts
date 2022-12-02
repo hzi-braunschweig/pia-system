@@ -14,6 +14,7 @@ export class Scanner {
   public static async scanRepo(repoDir: string): Promise<RepoMetaData> {
     // Needed information about the Repo
     const docker: string[] = [];
+    const npm: string[] = [];
     const lint: string[] = [];
     const testUnit: string[] = [];
     const testInt: string[] = [];
@@ -23,17 +24,28 @@ export class Scanner {
     // Scan the repo dir for information
     for (const name of await Fs.readdir(repoDir)) {
       const fullName = path.join(repoDir, name);
+      let dockerfileContainsNpmInstallStage = false;
+
       // Look for docker builds
       if (await Fs.exists(path.join(fullName, 'Dockerfile'))) {
         docker.push(name);
+
+        const dockerfile = await Fs.readFile(
+          path.join(fullName, 'Dockerfile'),
+          'utf-8'
+        );
+        dockerfileContainsNpmInstallStage = dockerfile.includes('npm-install');
       }
       // Look for npm packages
       const packageFileName = path.join(fullName, 'package.json');
       if (await Fs.exists(packageFileName)) {
         const pack = await Fs.readJson<PackageJson>(packageFileName);
-        npmInstall.push(name);
+        npm.push(name);
         if (!pack.scripts) {
           continue;
+        }
+        if (dockerfileContainsNpmInstallStage) {
+          npmInstall.push(name);
         }
         if (pack.scripts['lint']) {
           lint.push(name);
@@ -55,6 +67,7 @@ export class Scanner {
 
     return {
       docker,
+      npm,
       lint,
       testUnit,
       testInt,

@@ -42,7 +42,7 @@ export function createAnswerOption(
   return {
     answerTypeId: AnswerType.Text,
     id: 0,
-    label: null,
+    variableName: null,
     isConditionTarget: false,
     isDecimal: false,
     isNotable: null,

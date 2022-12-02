@@ -1,6 +1,6 @@
 mirror-github:
   image:
-    name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.ci-git-mirror:$IMAGE_ID
+    name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-git-mirror:$IMAGE_ID
     entrypoint: ['/bin/sh', '-c']
   stage: push
   needs:

@@ -3,7 +3,7 @@ include: ci/rules.yml
 unit:
   extends: .job-exclude-scheduled-pipelines
   stage: test
-  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$FOLDER-npm-install:$IMAGE_ID
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$FOLDER-npm-install:$IMAGE_ID
   script:
     - mkdir -p $FOLDER/tests/
     - ln -s $NODE_PATH $FOLDER/node_modules

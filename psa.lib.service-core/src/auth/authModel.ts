@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { AuthCredentials } from '@hapi/hapi';
+import { AuthCredentials, MergeType } from '@hapi/hapi';
 
 /**
  * Used to access the application APIs
  */
-export interface AccessToken extends AuthCredentials {
+export interface AccessToken
+  extends MergeType<Record<string, unknown>, AuthCredentials> {
   username: string;
   studies: string[];
   locale: string;

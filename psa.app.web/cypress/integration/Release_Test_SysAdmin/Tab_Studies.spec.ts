@@ -77,7 +77,7 @@ describe('Release Test, role: "SysAdmin", Studies', () => {
     cy.readFile('.e2e-totp-secret').then((totpSecret) => {
       const token = totp(totpSecret);
 
-      cy.get('#kc-otp-login-form #otp').type(token);
+      cy.get('#otp').type(token);
 
       cy.get('#kc-login').click();
     });

@@ -13,6 +13,7 @@ import {
   QuestionnaireInstance,
 } from '../models/questionnaire.model';
 import { AuthToken } from '../models/user.model';
+import assert from 'assert';
 
 export class QuestionnaireClient {
   constructor(
@@ -54,7 +55,8 @@ export class QuestionnaireClient {
         },
       }
     );
-    return (await response?.json()).questionnaireInstances;
+    assert(response);
+    return (await response.json()).questionnaireInstances;
   }
 
   async createAnswers(

@@ -9,7 +9,7 @@ import { expect } from 'chai';
 
 import { Server } from '../../src/server';
 import { db } from '../../src/db';
-import { Questionnaire } from '../../src/models/questionnaire';
+
 import {
   addDays,
   addHours,
@@ -22,21 +22,26 @@ import {
   startOfToday,
   subDays,
 } from 'date-fns';
+import { zonedTimeToUtc } from 'date-fns-tz';
+import * as Mockdate from 'mockdate';
+import {
+  MessageQueueClient,
+  MessageQueueTestUtils,
+  MessageQueueTopic,
+} from '@pia/lib-messagequeue';
 
 import {
   cleanup,
   setup,
 } from './questionnaireInstanceCreation.spec.data/setup.helper';
 import { dbWait, txWait } from './helper';
-import { QuestionnaireInstance } from '../../src/models/questionnaireInstance';
-import { zonedTimeToUtc } from 'date-fns-tz';
 import { config } from '../../src/config';
-import {
-  MessageQueueClient,
-  MessageQueueTestUtils,
-} from '@pia/lib-messagequeue';
 import { messageQueueService } from '../../src/services/messageQueueService';
-import * as Mockdate from 'mockdate';
+import { QuestionnaireInstance } from '../../src/models/questionnaireInstance';
+import { Questionnaire } from '../../src/models/questionnaire';
+import { Question } from '../../src/models/question';
+import { AnswerOption } from '../../src/models/answerOption';
+import { Condition } from '../../src/models/condition';
 
 function localTimeToUtc(date: Date): Date {
   return zonedTimeToUtc(date, config.timeZone);
@@ -52,6 +57,7 @@ describe('Questionnaire instance creation', function () {
     cycle_unit: 'day',
     activate_after_days: 5,
     deactivate_after_days: 20,
+    type: 'for_probands',
   });
   const dayQuestion = {
     id: 99999,
@@ -126,10 +132,12 @@ describe('Questionnaire instance creation', function () {
       const processedProbandCreated =
         MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
-          'proband.created'
+          MessageQueueTopic.PROBAND_CREATED
         );
 
-      const probandCreated = await mqc.createProducer('proband.created');
+      const probandCreated = await mqc.createProducer(
+        MessageQueueTopic.PROBAND_CREATED
+      );
       await probandCreated.publish({
         pseudonym,
       });
@@ -141,10 +149,10 @@ describe('Questionnaire instance creation', function () {
         { qId: 99999 }
       );
 
-      expect(addedQI.length).to.equal(1);
-      console.log(addedQI[0]!.date_of_issue);
+      expect(addedQI.length).to.equal(2);
+      console.log(addedQI[1]!.date_of_issue);
       expect(
-        addedQI[0]!.date_of_issue.getTime() -
+        addedQI[1]!.date_of_issue.getTime() -
           localTimeToUtc(
             addHours(
               startOfDay(dateOfQuestionnaireCreation),
@@ -152,9 +160,9 @@ describe('Questionnaire instance creation', function () {
             )
           ).getTime()
       ).to.equal(0);
-      expect(addedQI[0]?.study_id).to.equal('ApiTestStudie');
-      expect(addedQI[0]?.user_id).to.equal(pseudonym);
-      expect(addedQI[0]?.cycle).to.equal(1);
+      expect(addedQI[1]?.study_id).to.equal('ApiTestStudie');
+      expect(addedQI[1]?.user_id).to.equal(pseudonym);
+      expect(addedQI[1]?.cycle).to.equal(1);
     });
 
     it('should delete questionaire instances on proband.deleted message', async () => {
@@ -182,10 +190,12 @@ describe('Questionnaire instance creation', function () {
       const processedProbandCreated =
         MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
-          'proband.created'
+          MessageQueueTopic.PROBAND_CREATED
         );
 
-      const probandCreated = await mqc.createProducer('proband.created');
+      const probandCreated = await mqc.createProducer(
+        MessageQueueTopic.PROBAND_CREATED
+      );
       await probandCreated.publish({
         pseudonym,
       });
@@ -195,10 +205,12 @@ describe('Questionnaire instance creation', function () {
       const processedProbandDeleted =
         MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
-          'proband.deleted'
+          MessageQueueTopic.PROBAND_DELETED
         );
 
-      const probandDeleted = await mqc.createProducer('proband.deleted');
+      const probandDeleted = await mqc.createProducer(
+        MessageQueueTopic.PROBAND_DELETED
+      );
       await probandDeleted.publish({
         pseudonym,
       });
@@ -210,7 +222,8 @@ describe('Questionnaire instance creation', function () {
         { qId: 99999 }
       );
 
-      expect(addedQI.length).to.equal(0);
+      expect(addedQI.length).to.equal(1);
+      expect(addedQI.find((qi) => qi.user_id === pseudonym)).to.be.undefined;
     });
   });
 
@@ -219,6 +232,7 @@ describe('Questionnaire instance creation', function () {
 
     const dateQuestionnaire = createQuestionnaire({
       cycle_unit: 'date',
+      type: 'for_probands',
     });
 
     before(async () => {
@@ -256,7 +270,7 @@ describe('Questionnaire instance creation', function () {
       expect(addedQI.length).to.equal(0);
     });
 
-    it('should not create any instances for probands which are deactivated in the study when adding a questionnaire', async function () {
+    it('should only create instances for probands which are deactivated in the study when adding a questionnaire of type "for_research_team"', async function () {
       await db.none(
         "UPDATE probands SET first_logged_in_at=$(date), status='deactivated' WHERE pseudonym=$(pseudonym)",
         {
@@ -698,10 +712,12 @@ describe('Questionnaire instance creation', function () {
       const processedProbandCreated =
         MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
-          'proband.logged_in'
+          MessageQueueTopic.PROBAND_LOGGED_IN
         );
 
-      const probandCreated = await mqc.createProducer('proband.logged_in');
+      const probandCreated = await mqc.createProducer(
+        MessageQueueTopic.PROBAND_LOGGED_IN
+      );
       await probandCreated.publish({
         pseudonym,
       });
@@ -756,10 +772,12 @@ describe('Questionnaire instance creation', function () {
       const processedProbandCreated =
         MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
-          'proband.logged_in'
+          MessageQueueTopic.PROBAND_LOGGED_IN
         );
 
-      const probandCreated = await mqc.createProducer('proband.logged_in');
+      const probandCreated = await mqc.createProducer(
+        MessageQueueTopic.PROBAND_LOGGED_IN
+      );
       await probandCreated.publish({
         pseudonym,
       });
@@ -816,10 +834,12 @@ describe('Questionnaire instance creation', function () {
       const processedProbandCreated =
         MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
-          'proband.logged_in'
+          MessageQueueTopic.PROBAND_LOGGED_IN
         );
 
-      const probandCreated = await mqc.createProducer('proband.logged_in');
+      const probandCreated = await mqc.createProducer(
+        MessageQueueTopic.PROBAND_LOGGED_IN
+      );
       await probandCreated.publish({
         pseudonym,
       });
@@ -867,10 +887,12 @@ describe('Questionnaire instance creation', function () {
       const processedProbandCreated =
         MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
-          'proband.logged_in'
+          MessageQueueTopic.PROBAND_LOGGED_IN
         );
 
-      const probandCreated = await mqc.createProducer('proband.logged_in');
+      const probandCreated = await mqc.createProducer(
+        MessageQueueTopic.PROBAND_LOGGED_IN
+      );
       await probandCreated.publish({
         pseudonym,
       });
@@ -927,10 +949,12 @@ describe('Questionnaire instance creation', function () {
       const processedProbandCreated =
         MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
-          'proband.logged_in'
+          MessageQueueTopic.PROBAND_LOGGED_IN
         );
 
-      const probandCreated = await mqc.createProducer('proband.logged_in');
+      const probandCreated = await mqc.createProducer(
+        MessageQueueTopic.PROBAND_LOGGED_IN
+      );
       await probandCreated.publish({
         pseudonym,
       });
@@ -3778,6 +3802,377 @@ describe('Questionnaire instance creation', function () {
         "SELECT * FROM questionnaire_instances_queued WHERE user_id='qtest-proband1'"
       );
       expect(queues.length).to.equal(3);
+
+      Mockdate.reset();
+    });
+
+    it('should create instance queues only for research team questionnaires if proband is deactivated', async function () {
+      Mockdate.set(new Date('2022-04-29T09:00:00+02:00'));
+
+      /**
+       * test questionnaire order:
+       * -------------------------
+       *
+       *                    /--> secondQuestionnaire --> fourthQuestionnaire
+       * firstQuestionnaire
+       *                    \--> thirdQuestionnaire
+       */
+
+      const firstQuestionnaire: Partial<Questionnaire> = {
+        id: 88880,
+        study_id: 'ApiTestStudie',
+        name: 'firstQuestionnaire',
+        type: 'for_research_team',
+        no_questions: 1,
+        cycle_amount: 2,
+        cycle_unit: 'day',
+        activate_after_days: 0,
+        deactivate_after_days: 15,
+        notification_tries: 3,
+        notification_title: 'title',
+        notification_body_new: 'new',
+        notification_body_in_progress: 'old',
+        created_at: addDays(startOfToday(), -100),
+      };
+
+      const firstQuestion: Partial<Question> = {
+        id: 88880,
+        questionnaire_id: 88880,
+        text: 'Beispielfrage',
+        position: 1,
+        is_mandatory: false,
+      };
+
+      const firstAnswerOption1: Partial<AnswerOption> = {
+        id: 888801,
+        question_id: 88880,
+        text: 'Beispielunterfrage1',
+        answer_type_id: 1,
+        values: ["{ value: 'Ja' }", "{ value: 'Nein' }"],
+        position: 1,
+      };
+
+      const firstAnswerOption2: Partial<AnswerOption> = {
+        id: 888802,
+        question_id: 88880,
+        text: 'Beispielunterfrage2',
+        answer_type_id: 1,
+        values: ["{ value: 'Ja' }", "{ value: 'Nein' }"],
+        position: 2,
+      };
+
+      const secondQuestionnaire: Partial<Questionnaire> = {
+        id: 88881,
+        study_id: 'ApiTestStudie',
+        name: 'secondQuestionnaire',
+        type: 'for_research_team',
+        no_questions: 1,
+        cycle_amount: 2,
+        cycle_unit: 'day',
+        activate_after_days: 0,
+        deactivate_after_days: 15,
+        notification_tries: 3,
+        notification_title: 'title',
+        notification_body_new: 'new',
+        notification_body_in_progress: 'old',
+        created_at: addDays(startOfToday(), -100),
+      };
+
+      const secondQuestion: Partial<Question> = {
+        id: 88881,
+        questionnaire_id: 88881,
+        text: 'Beispielfrage',
+        position: 1,
+        is_mandatory: false,
+      };
+
+      const secondAnswerOption: Partial<AnswerOption> = {
+        id: 88881,
+        question_id: 88881,
+        text: 'Beispielunterfrage',
+        answer_type_id: 1,
+        values: ["{ value: 'Ja' }", "{ value: 'Nein' }"],
+        position: 1,
+      };
+
+      const thirdQuestionnaire: Partial<Questionnaire> = {
+        id: 88882,
+        study_id: 'ApiTestStudie',
+        name: 'thirdQuestionnaire',
+        type: 'for_probands',
+        no_questions: 1,
+        cycle_amount: 2,
+        cycle_unit: 'day',
+        activate_after_days: 0,
+        deactivate_after_days: 15,
+        notification_tries: 3,
+        notification_title: 'title',
+        notification_body_new: 'new',
+        notification_body_in_progress: 'old',
+        created_at: addDays(startOfToday(), -100),
+      };
+
+      const thirdQuestion: Partial<Question> = {
+        id: 88882,
+        questionnaire_id: 88882,
+        text: 'Beispielfrage',
+        position: 1,
+        is_mandatory: false,
+      };
+
+      const thirdAnswerOption: Partial<AnswerOption> = {
+        id: 88882,
+        question_id: 88882,
+        text: 'Beispielunterfrage',
+        answer_type_id: 1,
+        values: ["{ value: 'Ja' }", "{ value: 'Nein' }"],
+        position: 1,
+      };
+
+      const fourthQuestionnaire: Partial<Questionnaire> = {
+        id: 88883,
+        study_id: 'ApiTestStudie',
+        name: 'fourthQuestionnaire',
+        type: 'for_probands',
+        no_questions: 1,
+        cycle_amount: 2,
+        cycle_unit: 'day',
+        activate_after_days: 0,
+        deactivate_after_days: 15,
+        notification_tries: 3,
+        notification_title: 'title',
+        notification_body_new: 'new',
+        notification_body_in_progress: 'old',
+        created_at: addDays(startOfToday(), -100),
+      };
+
+      const fourthQuestion: Partial<Question> = {
+        id: 88883,
+        questionnaire_id: 88883,
+        text: 'Beispielfrage',
+        position: 1,
+        is_mandatory: false,
+      };
+
+      const fourthAnswerOption: Partial<AnswerOption> = {
+        id: 88883,
+        question_id: 88883,
+        text: 'Beispielunterfrage',
+        answer_type_id: 1,
+        values: ["{ value: 'Ja' }", "{ value: 'Nein' }"],
+        position: 1,
+      };
+
+      const condition1: Partial<Condition> = {
+        condition_type: 'external',
+        condition_questionnaire_id: secondQuestionnaire.id,
+        condition_operand: '==',
+        condition_value: 'Ja',
+        condition_target_questionnaire: firstQuestionnaire.id,
+        condition_target_answer_option: firstAnswerOption1.id,
+      };
+
+      const condition2: Partial<Condition> = {
+        condition_type: 'external',
+        condition_questionnaire_id: thirdQuestionnaire.id,
+        condition_operand: '==',
+        condition_value: 'Ja',
+        condition_target_questionnaire: firstQuestionnaire.id,
+        condition_target_answer_option: firstAnswerOption2.id,
+      };
+
+      const condition3: Partial<Condition> = {
+        condition_type: 'external',
+        condition_questionnaire_id: fourthQuestionnaire.id,
+        condition_operand: '==',
+        condition_value: 'Ja',
+        condition_target_questionnaire: secondQuestionnaire.id,
+        condition_target_answer_option: secondAnswerOption.id,
+      };
+
+      await db.none(
+        'UPDATE probands SET first_logged_in_at=$(date), status=$(status) WHERE pseudonym=$(pseudonym)',
+        {
+          date: subDays(new Date(), 5),
+          status: 'deactivated',
+          pseudonym: 'qtest-proband1',
+        }
+      );
+
+      await txWait([
+        {
+          query:
+            'INSERT INTO questionnaires(id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, created_at, type) VALUES (${id}, ${study_id}, ${name}, ${no_questions}, ${cycle_amount}, ${cycle_unit}, ${activate_after_days}, ${deactivate_after_days}, ${notification_tries}, ${notification_title}, ${notification_body_new}, ${notification_body_in_progress}, ${created_at}, ${type})',
+          arg: firstQuestionnaire,
+        },
+        {
+          query:
+            'INSERT INTO questions VALUES(${id},${questionnaire_id},${text},${position},${is_mandatory})',
+          arg: firstQuestion,
+        },
+        {
+          query:
+            'INSERT INTO answer_options(id, question_id, text, answer_type_id, values, position) VALUES(${id},${question_id},${text},${answer_type_id},${values},${position})',
+          arg: firstAnswerOption1,
+        },
+        {
+          query:
+            'INSERT INTO answer_options(id, question_id, text, answer_type_id, values, position) VALUES(${id},${question_id},${text},${answer_type_id},${values},${position})',
+          arg: firstAnswerOption2,
+        },
+      ]);
+
+      await txWait([
+        {
+          query:
+            'INSERT INTO questionnaires(id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, created_at, type) VALUES (${id}, ${study_id}, ${name}, ${no_questions}, ${cycle_amount}, ${cycle_unit}, ${activate_after_days}, ${deactivate_after_days}, ${notification_tries}, ${notification_title}, ${notification_body_new}, ${notification_body_in_progress}, ${created_at}, ${type})',
+          arg: secondQuestionnaire,
+        },
+        {
+          query:
+            'INSERT INTO questions VALUES(${id},${questionnaire_id},${text},${position},${is_mandatory})',
+          arg: secondQuestion,
+        },
+        {
+          query:
+            'INSERT INTO answer_options(id, question_id, text, answer_type_id, values, position) VALUES(${id},${question_id},${text},${answer_type_id},${values},${position})',
+          arg: secondAnswerOption,
+        },
+        {
+          query:
+            'INSERT INTO conditions(condition_type,condition_questionnaire_id,condition_target_questionnaire,condition_target_answer_option,condition_operand,condition_value) VALUES(${condition_type},${condition_questionnaire_id},${condition_target_questionnaire},${condition_target_answer_option},${condition_operand},${condition_value})',
+          arg: condition1,
+        },
+      ]);
+
+      await txWait([
+        {
+          query:
+            'INSERT INTO questionnaires(id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, created_at) VALUES (${id}, ${study_id}, ${name}, ${no_questions}, ${cycle_amount}, ${cycle_unit}, ${activate_after_days}, ${deactivate_after_days}, ${notification_tries}, ${notification_title}, ${notification_body_new}, ${notification_body_in_progress}, ${created_at})',
+          arg: thirdQuestionnaire,
+        },
+        {
+          query:
+            'INSERT INTO questions VALUES(${id},${questionnaire_id},${text},${position},${is_mandatory})',
+          arg: thirdQuestion,
+        },
+        {
+          query:
+            'INSERT INTO answer_options(id, question_id, text, answer_type_id, values, position) VALUES(${id},${question_id},${text},${answer_type_id},${values},${position})',
+          arg: thirdAnswerOption,
+        },
+        {
+          query:
+            'INSERT INTO conditions(condition_type,condition_questionnaire_id,condition_target_questionnaire,condition_target_answer_option,condition_operand,condition_value) VALUES(${condition_type},${condition_questionnaire_id},${condition_target_questionnaire},${condition_target_answer_option},${condition_operand},${condition_value})',
+          arg: condition2,
+        },
+      ]);
+
+      await txWait([
+        {
+          query:
+            'INSERT INTO questionnaires(id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, created_at) VALUES (${id}, ${study_id}, ${name}, ${no_questions}, ${cycle_amount}, ${cycle_unit}, ${activate_after_days}, ${deactivate_after_days}, ${notification_tries}, ${notification_title}, ${notification_body_new}, ${notification_body_in_progress}, ${created_at})',
+          arg: fourthQuestionnaire,
+        },
+        {
+          query:
+            'INSERT INTO questions VALUES(${id},${questionnaire_id},${text},${position},${is_mandatory})',
+          arg: fourthQuestion,
+        },
+        {
+          query:
+            'INSERT INTO answer_options(id, question_id, text, answer_type_id, values, position) VALUES(${id},${question_id},${text},${answer_type_id},${values},${position})',
+          arg: fourthAnswerOption,
+        },
+        {
+          query:
+            'INSERT INTO conditions(condition_type,condition_questionnaire_id,condition_target_questionnaire,condition_target_answer_option,condition_operand,condition_value) VALUES(${condition_type},${condition_questionnaire_id},${condition_target_questionnaire},${condition_target_answer_option},${condition_operand},${condition_value})',
+          arg: condition3,
+        },
+      ]);
+
+      const addedFirstQI: QuestionnaireInstance = await db.one(
+        'SELECT * FROM questionnaire_instances WHERE questionnaire_id=$1 AND cycle=$2 AND release_version=0 AND user_id=$3',
+        [firstQuestionnaire.id, 1, 'qtest-proband1']
+      );
+
+      const firstAnswerOption1Answer = {
+        questionnaire_instance_id: addedFirstQI.id,
+        question_id: firstQuestion.id,
+        answer_option_id: firstAnswerOption1.id,
+        value: 'Ja',
+      };
+      const firstAnswerOption2Answer = {
+        questionnaire_instance_id: addedFirstQI.id,
+        question_id: firstQuestion.id,
+        answer_option_id: firstAnswerOption2.id,
+        value: 'Ja',
+      };
+
+      await txWait([
+        {
+          query:
+            'UPDATE questionnaire_instances SET status=${status},date_of_release_v1=${date} WHERE id=${id}',
+          arg: {
+            status: 'released_once',
+            date: new Date(),
+            id: addedFirstQI.id,
+          },
+        },
+        {
+          query:
+            'INSERT INTO answers(questionnaire_instance_id, question_id, answer_option_id, value) VALUES(${questionnaire_instance_id}, ${question_id}, ${answer_option_id}, ${value})',
+          arg: firstAnswerOption1Answer,
+        },
+        {
+          query:
+            'INSERT INTO answers(questionnaire_instance_id, question_id, answer_option_id, value) VALUES(${questionnaire_instance_id}, ${question_id}, ${answer_option_id}, ${value})',
+          arg: firstAnswerOption2Answer,
+        },
+      ]);
+
+      const addedSecondQI: QuestionnaireInstance = await db.one(
+        'SELECT * FROM questionnaire_instances WHERE questionnaire_id=$1 AND cycle=$2',
+        [secondQuestionnaire.id, 1]
+      );
+      const secondAnswerOptionAnswer = {
+        questionnaire_instance_id: addedSecondQI.id,
+        question_id: secondQuestion.id,
+        answer_option_id: secondAnswerOption.id,
+        value: 'Ja',
+      };
+      await txWait([
+        {
+          query:
+            'UPDATE questionnaire_instances SET status=${status},date_of_release_v1=${date} WHERE id=${id}',
+          arg: {
+            status: 'released_once',
+            date: new Date(),
+            id: addedSecondQI.id,
+          },
+        },
+        {
+          query:
+            'INSERT INTO answers(questionnaire_instance_id, question_id, answer_option_id, value) VALUES(${questionnaire_instance_id}, ${question_id}, ${answer_option_id}, ${value})',
+          arg: secondAnswerOptionAnswer,
+        },
+      ]);
+
+      const thirdQi: QuestionnaireInstance | null = await db.oneOrNone(
+        'SELECT * FROM questionnaire_instances WHERE questionnaire_id=$1 AND cycle=$2',
+        [thirdQuestionnaire.id, 1]
+      );
+      const fourthQi: QuestionnaireInstance | null = await db.oneOrNone(
+        'SELECT * FROM questionnaire_instances WHERE questionnaire_id=$1 AND cycle=$2',
+        [fourthQuestionnaire.id, 1]
+      );
+      expect(thirdQi).to.be.null;
+      expect(fourthQi).to.be.null;
+
+      const queues = await db.manyOrNone(
+        "SELECT * FROM questionnaire_instances_queued WHERE user_id='qtest-proband1'"
+      );
+      expect(queues.length).to.equal(0);
 
       Mockdate.reset();
     });

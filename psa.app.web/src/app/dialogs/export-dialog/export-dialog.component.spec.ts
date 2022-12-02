@@ -149,27 +149,37 @@ describe('DialogExportDataComponent', () => {
   });
 
   describe('questionnaire selection', () => {
-    it('should show all questionnaires within selected study', fakeAsync(() => {
+    it('should show all questionnaires sorted by name and version within selected study', fakeAsync(() => {
       probandService.getProbands.and.resolveTo([proband1]);
       expect(component.form.get('questionnaires').enabled).toBeFalsy();
+
       tick();
       fixture.detectChanges();
       component.form.get('study_name').setValue('Teststudie1');
+
       tick();
       fixture.detectChanges();
       expect(component.form.get('questionnaires').enabled).toBeTruthy();
+
       const options = fixture.debugElement.queryAll(
         By.css('[unit-questionnaire-option]')
       );
-      expect(options.length).toEqual(3);
+
+      expect(options.length).toEqual(5);
       expect(options[0].nativeElement.innerText.trim()).toEqual(
-        'Testfragebogen1'
+        'Testfragebogen1 - V1'
       );
       expect(options[1].nativeElement.innerText.trim()).toEqual(
-        'Testfragebogen2'
+        'Testfragebogen2 - V1'
       );
       expect(options[2].nativeElement.innerText.trim()).toEqual(
-        'Testfragebogen3'
+        'Testfragebogen3 - V1'
+      );
+      expect(options[3].nativeElement.innerText.trim()).toEqual(
+        'Testfragebogen3 - V2'
+      );
+      expect(options[4].nativeElement.innerText.trim()).toEqual(
+        'Testfragebogen3 - V3'
       );
     }));
 
@@ -185,6 +195,24 @@ describe('DialogExportDataComponent', () => {
         fixture.debugElement.query(By.css('[unit-questionnaire-select-error]'))
       ).toBeNull();
     }));
+
+    describe('when only codebook selected', () => {
+      it('should only validate when questionnaire has been selected', fakeAsync(() => {
+        component.form.get('study_name').setValue('Teststudie1');
+        component.form.get('questionnaires').setValue(null);
+        component.form
+          .get('exports')
+          .setValue([false, true, false, false, false]);
+        tick();
+        fixture.detectChanges();
+        expect(component.form.valid).toBeFalsy();
+
+        component.form.get('questionnaires').setValue(['Testfragebogen1']);
+        tick();
+        fixture.detectChanges();
+        expect(component.form.valid).toBeTruthy();
+      }));
+    });
   });
 
   describe('proband selection', () => {
@@ -198,6 +226,20 @@ describe('DialogExportDataComponent', () => {
       fixture.detectChanges();
       expect(component.form.get('probands').enabled).toBeTruthy();
       expect(probandsSpy).toHaveBeenCalledWith([proband2, proband3]);
+    }));
+
+    it('should be disabled when only codebook export has been selected', fakeAsync(() => {
+      expect(component.form.get('probands').enabled).toBeFalsy();
+      component.form.get('study_name').setValue('Teststudie2');
+      component.form.get('questionnaires').setValue(['Testfragebogen1']);
+      component.form
+        .get('exports')
+        .setValue([false, true, false, false, false]);
+      tick();
+      fixture.detectChanges();
+      expect(component.form.get('probands').enabled).toBeFalsy();
+      component.submit();
+      expect(questionnaireService.getExportData).toHaveBeenCalledTimes(1);
     }));
   });
 
@@ -213,10 +255,14 @@ describe('DialogExportDataComponent', () => {
         study_name: 'Teststudie1',
         questionnaires: ['Testfragebogen1'],
         probands: ['Testproband1'],
-        exportAnswers: true,
-        exportLabResults: true,
-        exportSamples: true,
-        exportSettings: true,
+        exports: [
+          'answers',
+          'codebook',
+          'labresults',
+          'samples',
+          'bloodsamples',
+          'settings',
+        ],
       });
     });
 
@@ -233,10 +279,14 @@ describe('DialogExportDataComponent', () => {
         study_name: 'Teststudie2',
         questionnaires: ['Testfragebogen4'],
         probands: ['Testproband2', 'Testproband3'],
-        exportAnswers: true,
-        exportLabResults: true,
-        exportSamples: true,
-        exportSettings: true,
+        exports: [
+          'answers',
+          'codebook',
+          'labresults',
+          'samples',
+          'bloodsamples',
+          'settings',
+        ],
       });
     }));
 
@@ -250,11 +300,13 @@ describe('DialogExportDataComponent', () => {
   function getQuestionnaireListResponse(): QuestionnaireListResponse {
     return {
       questionnaires: [
-        { id: 1, study_id: 'Teststudie1', name: 'Testfragebogen1' },
-        { id: 2, study_id: 'Teststudie1', name: 'Testfragebogen2' },
-        { id: 3, study_id: 'Teststudie1', name: 'Testfragebogen3' },
-        { id: 4, study_id: 'Teststudie2', name: 'Testfragebogen4' },
-        { id: 5, study_id: 'Teststudie3', name: 'Testfragebogen5' },
+        { id: 1, study_id: 'Teststudie1', name: 'Testfragebogen1', version: 1 },
+        { id: 2, study_id: 'Teststudie1', name: 'Testfragebogen2', version: 1 },
+        { id: 3, study_id: 'Teststudie1', name: 'Testfragebogen3', version: 1 },
+        { id: 4, study_id: 'Teststudie2', name: 'Testfragebogen4', version: 1 },
+        { id: 7, study_id: 'Teststudie1', name: 'Testfragebogen3', version: 3 },
+        { id: 6, study_id: 'Teststudie3', name: 'Testfragebogen5', version: 1 },
+        { id: 5, study_id: 'Teststudie1', name: 'Testfragebogen3', version: 2 },
       ] as Questionnaire[],
       links: null,
     };

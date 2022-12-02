@@ -250,7 +250,7 @@ export class QuestionnaireService {
     if (convertedData.end_date) {
       convertedData.end_date = postData.end_date.toDateString();
     }
-    return this.http.post(this.apiUrl + 'dataExport/searches', convertedData, {
+    return this.http.post(this.apiUrl + 'export', convertedData, {
       responseType: 'blob',
       observe: 'response',
     });

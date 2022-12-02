@@ -1,6 +1,6 @@
 int:
   stage: test
-  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$FOLDER-npm-install:$IMAGE_ID
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$FOLDER-npm-install:$IMAGE_ID
   script:
     - mkdir -p $FOLDER/tests/
     - cp -r secrets/* $FOLDER
@@ -90,20 +90,20 @@ int:
     AUTHSERVER_PORT: 5000
   services:
     # don't use a variable for alias - it doesn't get resolved!
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.sftpserver:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.sftpserver:$IMAGE_ID-with-faked-secrets
       alias: sftpserver
       command: ['ftpuser:ftppassword:::upload']
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.database:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database:$IMAGE_ID-with-faked-secrets
       alias: databaseservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.database.ipia:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database.ipia:$IMAGE_ID-with-faked-secrets
       alias: ipiaservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.database.ewpia:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database.ewpia:$IMAGE_ID-with-faked-secrets
       alias: ewpiaservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.server.messagequeue:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.messagequeue:$IMAGE_ID-with-faked-secrets
       alias: messagequeue
 
   artifacts:

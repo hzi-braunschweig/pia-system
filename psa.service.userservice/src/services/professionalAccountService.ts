@@ -10,6 +10,7 @@ import { ProfessionalRole, professionalRoles } from '../models/role';
 import { ProfessionalAccount } from '../models/account';
 import { asyncMap } from '@pia/lib-service-core';
 import { AccountService, SafeUserRepresentation } from './accountService';
+import { assert } from 'ts-essentials';
 
 export interface Page {
   first: number; // item to begin at
@@ -203,13 +204,14 @@ export class ProfessionalAccountService extends AccountService {
     const foundRole = realmRoles.find(
       (role) => role.name && this.isProfessionalRole(role.name)
     );
-    if (
-      !foundRole ||
-      !foundRole.name ||
-      !this.isProfessionalRole(foundRole.name)
-    ) {
-      throw Error('user has no role assigned');
-    }
+    assert(
+      foundRole?.name,
+      `could not find role of user with account id ${id}`
+    );
+    assert(
+      this.isProfessionalRole(foundRole.name),
+      `user with account id ${id} has no professional role assigned`
+    );
     return foundRole.name;
   }
 

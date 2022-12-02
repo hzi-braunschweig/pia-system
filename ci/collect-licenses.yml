@@ -1,6 +1,6 @@
 collect-licenses:
   stage: generate
-  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.ci-thirdparty-license-collector:$IMAGE_ID
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-thirdparty-license-collector:$IMAGE_ID
   cache:
     paths:
       - .npm/

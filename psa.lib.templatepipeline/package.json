@@ -10,41 +10,41 @@
     "dist/src/**/*"
   ],
   "scripts": {
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint .",
     "build": "tsc -p tsconfig.build.json",
     "test.unit": "nyc mocha src/**/*.spec.ts tests/**/*.spec.ts"
   },
   "dependencies": {
-    "dompurify": "^2.3.8",
-    "jsdom": "^19.0.0",
-    "marked": "^4.0.15",
+    "dompurify": "^2.4.1",
+    "jsdom": "^20.0.2",
+    "marked": "^4.2.2",
     "mustache": "^4.2.0",
     "parse5": "^6.0.1",
-    "puppeteer": "^14.1.0"
+    "puppeteer": "^19.2.2"
   },
   "devDependencies": {
     "@pia/eslint-config": "file:../psa.eslint-config",
     "@pia/lib-service-core": "file:../psa.lib.service-core",
-    "@types/chai": "^4.3.1",
-    "@types/dompurify": "^2.3.3",
-    "@types/jsdom": "^16.2.14",
-    "@types/marked": "^4.0.3",
-    "@types/mocha": "^9.1.1",
-    "@types/mustache": "^4.1.2",
+    "@types/chai": "^4.3.4",
+    "@types/dompurify": "^2.4.0",
+    "@types/jsdom": "^20.0.1",
+    "@types/marked": "^4.0.7",
+    "@types/mocha": "^10.0.0",
+    "@types/mustache": "^4.2.1",
     "@types/node": "^14.17.34",
     "@types/parse5": "^6.0.3",
-    "@typescript-eslint/eslint-plugin": "^5.24.0",
-    "@typescript-eslint/parser": "^5.24.0",
-    "chai": "^4.3.6",
-    "eslint": "^8.15.0",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.43.0",
+    "chai": "^4.3.7",
+    "eslint": "^8.27.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-no-only-tests": "^2.6.0",
+    "eslint-plugin-no-only-tests": "^3.1.0",
     "eslint-plugin-security": "^1.5.0",
-    "mocha": "^10.0.0",
+    "mocha": "^10.1.0",
     "mocha-multi-reporters": "^1.5.1",
     "nyc": "^15.1.0",
     "source-map-support": "^0.5.21",
-    "ts-node": "^10.7.0",
-    "typescript": "^4.6.4"
+    "ts-node": "^10.9.1",
+    "typescript": "~4.8.4"
   }
 }

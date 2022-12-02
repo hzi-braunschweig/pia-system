@@ -1,7 +1,7 @@
 ## ionic stuff
 
 build-ionic-ios-store:
-  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.app.mobile-npm-install:$CI_PIPELINE_ID
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
   needs:
     - job: npm-install
@@ -28,7 +28,7 @@ build-ionic-ios-store:
       allow_failure: true
 
 build-and-push-ionic-ios-store:
-  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.app.mobile-npm-install:$CI_PIPELINE_ID
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
   needs:
     - job: npm-install
@@ -56,14 +56,14 @@ build-and-push-ionic-ios-store:
       allow_failure: true
 
 build-ionic-android-store:
-  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.app.mobile-npm-install:$CI_PIPELINE_ID
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
   needs:
     - job: npm-install
       artifacts: false
   script:
     - cd psa.app.mobile
-    - ionic-cloud build android release --app-id="5be00d76" --native-config="Android-Store" --environment="pia_build_node_14" --build-stack="Linux - 2021.09" --signing-cert="PIA_Android" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
+    - ionic-cloud build android release --app-id="5be00d76" --native-config="Android-Store" --environment="pia_build_node_14" --build-stack="Linux - 2022.10" --signing-cert="PIA_Android" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
       when: never
@@ -83,14 +83,14 @@ build-ionic-android-store:
       allow_failure: true
 
 build-and-push-ionic-android-store:
-  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.app.mobile-npm-install:$CI_PIPELINE_ID
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
   needs:
     - job: npm-install
       artifacts: false
   script:
     - cd psa.app.mobile
-    - BUILD_ID=$(ionic-cloud build android release --app-id="5be00d76" --native-config="Android-Store" --environment="pia_build_node_14" --build-stack="Linux - 2021.09" --signing-cert="PIA_Android" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}" --json  | jq -r '.buildId')
+    - BUILD_ID=$(ionic-cloud build android release --app-id="5be00d76" --native-config="Android-Store" --environment="pia_build_node_14" --build-stack="Linux - 2022.10" --signing-cert="PIA_Android" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}" --json  | jq -r '.buildId')
     - ionic-cloud deploy android --app-id="5be00d76" --build-id=$BUILD_ID --destination="Google Play Store, Produktion" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"

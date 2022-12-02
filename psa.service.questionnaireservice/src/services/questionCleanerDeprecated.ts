@@ -54,9 +54,9 @@ export class QuestionCleanerDeprecated {
       });
   }
 
-  private canQuestionBeAdded(question: Question): CanBeAdded {
+  private canQuestionBeAdded(question: Question): CanBeAdded | undefined {
     if (this.questionsAndStatus.has(question.id)) {
-      return this.questionsAndStatus.get(question.id)!;
+      return this.questionsAndStatus.get(question.id);
     }
 
     if (
@@ -103,6 +103,7 @@ export class QuestionCleanerDeprecated {
 
   private canAnswerOptionBeAdded(answerOption: AnswerOption): CanBeAdded {
     if (this.answerOptionsAndStatus.has(answerOption.id)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this.answerOptionsAndStatus.get(answerOption.id)!;
     }
 

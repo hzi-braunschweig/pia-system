@@ -33,13 +33,7 @@ export class Runner {
     jobs: RepoMetaData,
     repoDir: string
   ): Promise<void> {
-    await Runner.runJobs(
-      'install',
-      jobs.npmInstall,
-      ['install'],
-      repoDir,
-      true
-    );
+    await Runner.runJobs('install', jobs.npm, ['install'], repoDir, true);
     await Runner.runJobs('lint', jobs.lint, ['run', 'lint'], repoDir, true);
     await Runner.runJobs(
       'test.unit',
@@ -63,7 +57,7 @@ export class Runner {
   ): Promise<void> {
     // parallel runs of npm install can cause problems with local libraries :-/
 
-    await Runner.runJobs('install', jobs.npmInstall, ['ci'], repoDir, false);
+    await Runner.runJobs('install', jobs.npm, ['ci'], repoDir, false);
 
     await this.executeUpdateJobUntilSuccessfully(jobs, repoDir, [
       'update',
@@ -77,14 +71,14 @@ export class Runner {
     jobs: RepoMetaData,
     repoDir: string
   ): Promise<void> {
-    await Runner.runJobs('check', jobs.npmInstall, ['outdated'], repoDir, true);
+    await Runner.runJobs('check', jobs.npm, ['outdated'], repoDir, true);
   }
 
   public static async executeNpmAudit(
     jobs: RepoMetaData,
     repoDir: string
   ): Promise<void> {
-    await Runner.runJobs('audit', jobs.npmInstall, ['audit'], repoDir, true);
+    await Runner.runJobs('audit', jobs.npm, ['audit'], repoDir, true);
   }
 
   private static printJobInfo(
@@ -216,7 +210,7 @@ export class Runner {
   ): Promise<void> {
     // I don't exactly know why, but for some repos we have to run the update multiple times.
     // So we are updating until there are no more messages about updates.
-    let toInstall = [...jobs.npmInstall];
+    let toInstall = [...jobs.npm];
     let iterations = 0;
     const maxIterations = 10;
     while (toInstall.length > 0) {

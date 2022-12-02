@@ -1,6 +1,6 @@
 accumulate-coverage:
   stage: accumulate
-  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.coverage:$IMAGE_ID
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.coverage:$IMAGE_ID
   script:
     - mkdir -p coverage
     - >

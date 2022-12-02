@@ -11,7 +11,7 @@ export interface Question {
   id: number;
   questionnaire_id: number;
   text: string;
-  label: string;
+  variable_name: string;
   position: number;
   is_mandatory: boolean;
   jump_step: number;

@@ -47,6 +47,7 @@ describe('Example Pipelines', () => {
     await PdfGenerator.closeBrowser();
   });
 
+  const generatePdfTestTimeout = 10000;
   it('should create a pdf', async () => {
     const pdf = await new MarkdownDocument(
       '# Hello\n<pia-my-custom-tag></pia-my-custom-tag>\nHallo _italic_ World'
@@ -58,7 +59,7 @@ describe('Example Pipelines', () => {
       .pipe(new TemplateRenderer({ hello: 'Hello World' }))
       .pipe(new PdfGenerator({ path: './tests/reports/meine.pdf' })).pdf;
     expect(pdf).to.be.an.instanceOf(Buffer);
-  });
+  }).timeout(generatePdfTestTimeout);
 
   it('should create a HTMLDocument', async () => {
     const htmlText = await new MarkdownDocument(

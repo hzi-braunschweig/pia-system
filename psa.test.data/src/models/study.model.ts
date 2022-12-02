@@ -10,4 +10,5 @@ export interface Study {
   pm_email: string | null;
   hub_email: string | null;
   has_required_totp: boolean;
+  has_open_self_registration: boolean;
 }

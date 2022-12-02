@@ -7,16 +7,18 @@ npm-install:
       for JOB in $JOBS_INSTALL; do
         echo Build Test Image $JOB
         echo -------------------
-        docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB-npm-install:$IMAGE_ID --target=npm-install --build-arg DIR=$JOB -f $JOB/Dockerfile .
+        docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB-npm-install:$IMAGE_ID --target=npm-install --build-arg DIR=$JOB -f $JOB/Dockerfile .
         echo -------------------
       done
     - >
       for JOB in $JOBS_INSTALL; do
         echo Push Test Image $JOB
         echo -------------------
-        docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$JOB-npm-install:$IMAGE_ID
+        docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB-npm-install:$IMAGE_ID
         echo -------------------
       done
+  tags:
+    - docker
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
       when: never

@@ -59,7 +59,7 @@ const postgresqlHelper = (function () {
         'text',
         'position',
         'is_mandatory',
-        'label',
+        'variable_name',
       ],
       { table: 'questions' }
     );
@@ -125,7 +125,7 @@ const postgresqlHelper = (function () {
               text: question.text,
               position: question.position,
               is_mandatory: question.is_mandatory,
-              label: question.label,
+              variable_name: question.variable_name,
             });
           });
           const qQuestions =
@@ -144,7 +144,7 @@ const postgresqlHelper = (function () {
                 const curAnswerOption =
                   questionnaire.questions[i].answer_options[j];
                 const insertedAnswerOption = await t.one(
-                  'INSERT INTO answer_options(question_id, text, answer_type_id, values, values_code, position, restriction_min, restriction_max, is_decimal, label, is_notable) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
+                  'INSERT INTO answer_options(question_id, text, answer_type_id, values, values_code, position, restriction_min, restriction_max, is_decimal, variable_name, is_notable) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
                   [
                     questionsResult[i].id,
                     curAnswerOption.text,
@@ -157,7 +157,7 @@ const postgresqlHelper = (function () {
                     curAnswerOption.restriction_min,
                     curAnswerOption.restriction_max,
                     curAnswerOption.is_decimal,
-                    curAnswerOption.label,
+                    curAnswerOption.variable_name,
                     curAnswerOption.is_notable
                       ? curAnswerOption.is_notable.map((value) => value.value)
                       : null,
@@ -361,7 +361,7 @@ const postgresqlHelper = (function () {
         'text',
         'position',
         'is_mandatory',
-        'label',
+        'variable_name',
       ],
       { table: 'questions' }
     );
@@ -431,7 +431,7 @@ const postgresqlHelper = (function () {
               text: question.text,
               position: question.position,
               is_mandatory: question.is_mandatory,
-              label: question.label,
+              variable_name: question.variable_name,
             });
           });
           const qQuestions =
@@ -452,7 +452,7 @@ const postgresqlHelper = (function () {
                 const curAnswerOption =
                   questionnaire.questions[i].answer_options[j];
                 const insertedAnswerOption = await t.one(
-                  'INSERT INTO answer_options(question_id, text, answer_type_id, values, values_code, position, restriction_min, restriction_max, is_decimal, label, is_notable) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
+                  'INSERT INTO answer_options(question_id, text, answer_type_id, values, values_code, position, restriction_min, restriction_max, is_decimal, variable_name, is_notable) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
                   [
                     questionsResult[i].id,
                     curAnswerOption.text,
@@ -465,7 +465,7 @@ const postgresqlHelper = (function () {
                     curAnswerOption.restriction_min,
                     curAnswerOption.restriction_max,
                     curAnswerOption.is_decimal,
-                    curAnswerOption.label,
+                    curAnswerOption.variable_name,
                     curAnswerOption.is_notable
                       ? curAnswerOption.is_notable.map((value) => value.value)
                       : null,
@@ -823,7 +823,7 @@ const postgresqlHelper = (function () {
                   }
 
                   const newAnswerOptionResult = await t.one(
-                    'UPDATE answer_options SET text=$1, answer_type_id=$2, values=$3, values_code=$4, position=$5, restriction_min=$7, restriction_max=$8, is_decimal=$9, label=$10, is_notable=$12 WHERE id=$11 RETURNING *',
+                    'UPDATE answer_options SET text=$1, answer_type_id=$2, values=$3, values_code=$4, position=$5, restriction_min=$7, restriction_max=$8, is_decimal=$9, variable_name=$10, is_notable=$12 WHERE id=$11 RETURNING *',
                     [
                       foundAnswerOption.text,
                       foundAnswerOption.answer_type_id,
@@ -838,7 +838,7 @@ const postgresqlHelper = (function () {
                       foundAnswerOption.restriction_min,
                       foundAnswerOption.restriction_max,
                       foundAnswerOption.is_decimal,
-                      foundAnswerOption.label,
+                      foundAnswerOption.variable_name,
                       curOldAnswerOption.id,
                       foundAnswerOption.is_notable
                         ? foundAnswerOption.is_notable.map(
@@ -878,7 +878,7 @@ const postgresqlHelper = (function () {
                   newAnswerOptions[i].question_id !== 0
                 ) {
                   const newAnswerOptionResult = await t.one(
-                    'INSERT INTO answer_options(question_id, text, answer_type_id, values, values_code, position, restriction_min, restriction_max, is_decimal, label, is_notable) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
+                    'INSERT INTO answer_options(question_id, text, answer_type_id, values, values_code, position, restriction_min, restriction_max, is_decimal, variable_name, is_notable) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
                     [
                       newAnswerOptions[i].question_id,
                       newAnswerOptions[i].text,
@@ -893,7 +893,7 @@ const postgresqlHelper = (function () {
                       newAnswerOptions[i].restriction_min,
                       newAnswerOptions[i].restriction_max,
                       newAnswerOptions[i].is_decimal,
-                      newAnswerOptions[i].label,
+                      newAnswerOptions[i].variable_name,
                       newAnswerOptions[i].is_notable.map(
                         (value) => value.value
                       ),
@@ -922,12 +922,12 @@ const postgresqlHelper = (function () {
                 }
                 if (foundQuestion !== null) {
                   const newQuestionResult = await t.one(
-                    'UPDATE questions SET text=$1, position=$2, is_mandatory=$3, label=$4 WHERE id=$5 RETURNING *',
+                    'UPDATE questions SET text=$1, position=$2, is_mandatory=$3, variable_name=$4 WHERE id=$5 RETURNING *',
                     [
                       foundQuestion.text,
                       foundQuestion.position,
                       foundQuestion.is_mandatory,
-                      foundQuestion.label,
+                      foundQuestion.variable_name,
                       curOldQuestion.id,
                     ]
                   );
@@ -953,13 +953,13 @@ const postgresqlHelper = (function () {
               }
               for (let i = 0; i < newQuestions.length; i++) {
                 const newQuestionResult = await t.one(
-                  'INSERT INTO questions(questionnaire_id, text, position, is_mandatory, label, questionnaire_version) VALUES($1, $2, $3, $4, $5, $6) RETURNING *',
+                  'INSERT INTO questions(questionnaire_id, text, position, is_mandatory, variable_name, questionnaire_version) VALUES($1, $2, $3, $4, $5, $6) RETURNING *',
                   [
                     id,
                     newQuestions[i].text,
                     newQuestions[i].position,
                     newQuestions[i].is_mandatory,
-                    newQuestions[i].label,
+                    newQuestions[i].variable_name,
                     version,
                   ]
                 );
@@ -967,7 +967,7 @@ const postgresqlHelper = (function () {
                   newQuestions[i].answer_options;
                 for (let j = 0; j < newAnswerOptionsInNewQuestion.length; j++) {
                   const newAnswerOptionInNewQuestionResult = await t.one(
-                    'INSERT INTO answer_options(question_id, text, answer_type_id, values, values_code, position, restriction_min, restriction_max, is_decimal, label, is_notable) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
+                    'INSERT INTO answer_options(question_id, text, answer_type_id, values, values_code, position, restriction_min, restriction_max, is_decimal, variable_name, is_notable) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
                     [
                       newQuestionResult.id,
                       newAnswerOptionsInNewQuestion[j].text,
@@ -984,7 +984,7 @@ const postgresqlHelper = (function () {
                       newAnswerOptionsInNewQuestion[j].restriction_min,
                       newAnswerOptionsInNewQuestion[j].restriction_max,
                       newAnswerOptionsInNewQuestion[j].is_decimal,
-                      newAnswerOptionsInNewQuestion[j].label,
+                      newAnswerOptionsInNewQuestion[j].variable_name,
                       newAnswerOptionsInNewQuestion[j].is_notable
                         ? newAnswerOptionsInNewQuestion[j].is_notable.map(
                             (value) => value.value
@@ -1461,6 +1461,13 @@ const postgresqlHelper = (function () {
     end_date,
     study_name
   ) {
+    let questionnaireTuples = '';
+    if (questionnaires) {
+      questionnaireTuples = questionnaires
+        .map((q) => `(${+q.id},${+q.version})`)
+        .join(',');
+    }
+
     const query = `SELECT qi.questionnaire_name,
                           qi.questionnaire_version,
                           qi.user_id,
@@ -1468,9 +1475,9 @@ const postgresqlHelper = (function () {
                           qi.date_of_release_v2,
                           qi.date_of_issue,
                           qi.status,
-                          quest.label       AS question_label,
+                          quest.variable_name       AS question_variable_name,
                           quest.position    AS qposition,
-                          ao.label          AS answer_option_label,
+                          ao.variable_name          AS answer_option_variable_name,
                           ao.position       AS aposition,
                           ao.values,
                           ao.values_code,
@@ -1496,7 +1503,7 @@ const postgresqlHelper = (function () {
                                               qi.status = 'released' OR
                                               (qi.status = 'in_progress' AND q.type = 'for_research_team'))
                    WHERE q.study_id = $(study_name)
-                     AND qi.questionnaire_id IN ($(questionnaires:csv))
+                     AND (qi.questionnaire_id, qi.questionnaire_version) IN ($(questionnaireTuples:raw))
                      AND qi.user_id IN ($(probands:csv))
                      AND qi.status != 'inactive'
                      AND qi.date_of_issue >= $(start_date)
@@ -1504,7 +1511,7 @@ const postgresqlHelper = (function () {
                    ORDER BY questionnaire_name, questionnaire_version, user_id, date_of_issue, qposition, aposition,
                             versioning`;
     return createQueryStream(query, {
-      questionnaires,
+      questionnaireTuples,
       probands,
       start_date,
       end_date,

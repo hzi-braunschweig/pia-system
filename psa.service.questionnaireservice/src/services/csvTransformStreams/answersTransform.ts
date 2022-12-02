@@ -99,12 +99,12 @@ export class AnswersTransform extends CsvTransform<FullAnswer, CsvAnswerRow> {
         '_v' +
         answer.questionnaire_version.toString() +
         '_' +
-        (answer.question_label
-          ? answer.question_label
+        (answer.question_variable_name
+          ? answer.question_variable_name
           : 'f' + answer.qposition.toString()) +
         '_' +
-        (answer.answer_option_label
-          ? answer.answer_option_label
+        (answer.answer_option_variable_name
+          ? answer.answer_option_variable_name
           : answer.aposition.toString()) +
         (answer.versioning ? '_a' + answer.versioning.toString() : ''),
       Proband:

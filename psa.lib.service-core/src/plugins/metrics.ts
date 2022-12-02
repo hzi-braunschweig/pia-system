@@ -44,8 +44,7 @@ export const Metrics: Plugin<unknown> = {
         // refresh health
         try {
           if (
-            !server.settings.app ||
-            !server.settings.app.healthcheck ||
+            !server.settings.app?.healthcheck ||
             !(await server.settings.app.healthcheck())
           ) {
             throw new Error('healthcheck failed');

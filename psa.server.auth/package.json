@@ -17,9 +17,9 @@
   "author": "",
   "license": "AGPL-3.0-or-later",
   "devDependencies": {
-    "autoprefixer": "^10.4.6",
-    "postcss": "^8.4.13",
-    "postcss-cli": "^9.1.0",
-    "sass": "^1.51.0"
+    "autoprefixer": "^10.4.13",
+    "postcss": "^8.4.19",
+    "postcss-cli": "^10.0.0",
+    "sass": "^1.56.1"
   }
 }

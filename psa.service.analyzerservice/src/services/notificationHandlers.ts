@@ -113,7 +113,7 @@ export class NotificationHandlers {
          * if questionnaire is a new version of a one time questionnaire we do not need to create a new instance
          * for probands who already answered one (those instances survived above)
          */
-        probands = await NotificationHandlers.getActiveProbandsOfStudy(
+        probands = await NotificationHandlers.getProbandsOfStudy(
           t,
           questionnaire.study_id,
           questionnaire.id
@@ -123,7 +123,7 @@ export class NotificationHandlers {
          * other questionnaires need to be created anyway (like spontaneous ones need
          * to replace the active one that was deleted above)
          */
-        probands = await NotificationHandlers.getActiveProbandsOfStudy(
+        probands = await NotificationHandlers.getProbandsOfStudy(
           t,
           questionnaire.study_id
         );
@@ -149,7 +149,7 @@ export class NotificationHandlers {
   ): Promise<void> {
     if (NotificationHandlers.isDeactivationChange(q_old, q_new)) {
       // Do nothing if a questionnaire is deactivated
-      // inactive and active questionnaire_instances are already deleted from questionnaireservice
+      // inactive and active questionnaire_instances are already deleted by questionnaireservice
       return;
     }
     await db.tx(async function (t) {
@@ -177,8 +177,10 @@ export class NotificationHandlers {
         return;
       }
 
-      const probands: Proband[] =
-        await NotificationHandlers.getActiveProbandsOfStudy(t, q_new.study_id);
+      const probands: Proband[] = await NotificationHandlers.getProbandsOfStudy(
+        t,
+        q_new.study_id
+      );
 
       await NotificationHandlers.createQuestionnaireInstancesForProbands(
         q_new,
@@ -331,8 +333,8 @@ export class NotificationHandlers {
         'found proband with pseudonym ' + instance_new.user_id
       );
 
-      // Do not create new instances for deactivated or deleted probands
-      if (!NotificationHandlers.isUserActiveInStudy(user)) {
+      // Do not create new instances for deleted probands
+      if (NotificationHandlers.isUserDeleted(user)) {
         return;
       }
 
@@ -343,10 +345,6 @@ export class NotificationHandlers {
       await asyncForEach(
         answersWithConditionOfOtherQuestionnaires,
         async function (answerWithCondition) {
-          const conditionTargetAnswerOption: AnswerOption = await t.one(
-            'SELECT * FROM answer_options WHERE id=$1',
-            [answerWithCondition.answer_option_id]
-          );
           const questionnaire: Questionnaire = await t.one(
             'SELECT * FROM questionnaires WHERE id=$1 AND version=$2',
             [
@@ -359,18 +357,33 @@ export class NotificationHandlers {
           if (!user.compliance_samples && questionnaire.compliance_needed) {
             return;
           }
+          // Do not create instances to be filled out by probands for deactivated probands
+          if (
+            !NotificationHandlers.isUserActiveInStudy(user) &&
+            questionnaire.type === 'for_probands'
+          ) {
+            return;
+          }
+          // Do not create instances for hidden questionnaires
           if (questionnaire.publish === 'hidden') {
             return;
           }
+          // Do not create instances for test probands if proband is not a test proband
           if (
             questionnaire.publish === 'testprobands' &&
             !user.is_test_proband
           ) {
             return;
           }
+          // Do not create instances for inactive questionnaires
           if (!questionnaire.active) {
             return;
           }
+
+          const conditionTargetAnswerOption: AnswerOption = await t.one(
+            'SELECT * FROM answer_options WHERE id=$1',
+            [answerWithCondition.answer_option_id]
+          );
 
           // Create instances for referenced questionnaires in external conditions
           if (answerWithCondition.condition_type === 'external') {
@@ -599,7 +612,7 @@ export class NotificationHandlers {
     });
   }
 
-  private static async getActiveProbandsOfStudy(
+  private static async getProbandsOfStudy(
     t: ITask<unknown>,
     study: string,
     excludeQuestionnaireId?: number
@@ -623,7 +636,7 @@ export class NotificationHandlers {
                 compliance_bloodsamples
          FROM probands
          WHERE study = $(study)
-           AND status IN ('active')
+           AND status IN ('active', 'deactivated')
            ${filterByQuestionnaireIdQuery}`,
       {
         study,
@@ -647,12 +660,23 @@ export class NotificationHandlers {
 
     if (probands.length > 0) {
       let qInstances: QuestionnaireInstanceNew[] = [];
-      await asyncForEach(probands, async (user) => {
-        if (!user.compliance_samples && questionnaire.compliance_needed) {
+      await asyncForEach(probands, async (proband) => {
+        if (!proband.compliance_samples && questionnaire.compliance_needed) {
           return;
         }
 
-        if (questionnaire.publish === 'testprobands' && !user.is_test_proband) {
+        if (
+          questionnaire.publish === 'testprobands' &&
+          !proband.is_test_proband
+        ) {
+          return;
+        }
+
+        // Do not create instances to be filled out by probands for deactivated probands
+        if (
+          !NotificationHandlers.isUserActiveInStudy(proband) &&
+          questionnaire.type === 'for_probands'
+        ) {
           return;
         }
 
@@ -668,7 +692,7 @@ export class NotificationHandlers {
             await t.manyOrNone(
               'SELECT * FROM answers,questionnaire_instances WHERE answers.questionnaire_instance_id=questionnaire_instances.id AND user_id=$1 AND answer_option_id=$2 AND cycle=ANY(SELECT MAX(cycle) FROM questionnaire_instances WHERE user_id=$1 AND questionnaire_id=$3 AND questionnaire_version=$4 AND (questionnaire_instances.status IN ($5, $6, $7))) ORDER BY versioning',
               [
-                user.pseudonym,
+                proband.pseudonym,
                 qCondition.condition_target_answer_option,
                 qCondition.condition_target_questionnaire,
                 qCondition.condition_target_questionnaire_version,
@@ -708,7 +732,7 @@ export class NotificationHandlers {
             ) {
               // this will have an effect on the start date of questionnaire instances which
               // will be created later on (@see questionnaireInstancesService#createQuestionnaireInstances)
-              user.first_logged_in_at = new Date(
+              proband.first_logged_in_at = new Date(
                 conditionTargetAnswer[1].date_of_release_v2.setHours(0, 0, 0, 0)
               );
             } else {
@@ -728,7 +752,7 @@ export class NotificationHandlers {
             ) {
               // this will have an effect on the start date of questionnaire instances which
               // will be created later on (@see questionnaireInstancesService#createQuestionnaireInstances)
-              user.first_logged_in_at = new Date(
+              proband.first_logged_in_at = new Date(
                 conditionTargetAnswer[0].date_of_release_v1.setHours(0, 0, 0, 0)
               );
             } else {
@@ -742,7 +766,7 @@ export class NotificationHandlers {
         qInstances = qInstances.concat(
           QuestionnaireInstancesService.createQuestionnaireInstances(
             questionnaire,
-            user,
+            proband,
             NotificationHandlers.hasInternalCondition(qCondition)
           )
         );
@@ -838,6 +862,10 @@ export class NotificationHandlers {
 
   private static isFirstLogin(proband: Proband): boolean {
     return proband.first_logged_in_at === null;
+  }
+
+  private static isUserDeleted(user: Proband): boolean {
+    return user.status === 'deleted';
   }
 
   private static isUserActiveInStudy(user: Proband): boolean {

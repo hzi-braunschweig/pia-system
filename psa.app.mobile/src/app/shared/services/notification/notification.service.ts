@@ -14,34 +14,6 @@ import { NotificationClientService } from './notification-client.service';
 import { NotificationPresenterService } from './notification-presenter.service';
 import { AuthService } from '../../../auth/auth.service';
 
-/**
- * @example
- * {
- *    body: "Bitte tippen Sie auf diese Meldung, um Sie anzuzeigen."
- *    collapse_key: "pia.ionic.ios"
- *    from: "10158607305"
- *    id: "9002"
- *    messageType: "notification"
- *    sent_time: "1606984493978"
- *    show_notification: "false"
- *    title: "PIA - Sie haben eine neue Nachricht."
- *    ttl: "2419200"
- * }
- *
- */
-interface PushNotification {
-  body: string;
-  collapse_key: string;
-  from: string;
-  id: string;
-  messageType: 'notification' | 'data';
-  tap: 'foreground' | 'background';
-  sent_time: string;
-  show_notification: 'true' | 'false';
-  title: string;
-  ttl: string;
-}
-
 @Injectable({
   providedIn: 'root',
 })

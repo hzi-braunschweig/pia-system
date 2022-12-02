@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+@use '@angular/material' as mat;
+
+$warning-color: mat.get-color-from-palette(mat.$yellow-palette, 500);
+
 /* Structure */
 .grid-container {
   display: grid;
@@ -17,338 +21,338 @@
   }
 }
 
-.page-wrapper {
-  form {
-    > span {
-      color: red;
+form {
+  > span {
+    color: red;
+  }
+}
+
+.questionnaire-card {
+  opacity: 0.8;
+
+  .mat-checkbox {
+    font-size: 0.8em;
+    margin-top: 20px;
+  }
+
+  .study-notifications-options {
+    width: 100%;
+    font-size: 0.8em;
+
+    input[type='text'] {
+      cursor: pointer;
+      pointer-events: all;
+      width: 3em;
     }
 
-    .questionnaire-card {
-      opacity: 0.8;
+    .mat-form-field {
+      width: 150px;
+      text-align: center;
+    }
+  }
+
+  .condition-questionnaire {
+    .mat-card-title {
+      button {
+        &.left {
+          float: left;
+        }
+
+        &.right {
+          float: right;
+        }
+      }
+    }
+
+    flex-wrap: wrap;
+  }
+}
+
+.questions {
+  z-index: 100;
+
+  .list-group {
+    margin-bottom: 10px;
+  }
+
+  .mat-expansion-panel {
+    .mat-expansion-panel-header {
+      .mat-expansion-panel-header-title {
+        display: block;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
 
       .mat-checkbox {
-        font-size: 0.8em;
-        margin-top: 20px;
+        margin-right: 20px;
+      }
+    }
+
+    .form-group {
+      .question-text {
+        display: flex;
       }
 
-      .study-notifications-options {
-        width: 100%;
-        font-size: 0.8em;
-
-        input[type='text'] {
-          cursor: pointer;
-          pointer-events: all;
-          width: 3em;
-        }
+      .question-text-field {
+        flex: 1;
+        margin-bottom: 20px;
+        max-width: 900px;
 
         .mat-form-field {
-          width: 150px;
-          text-align: center;
+          width: 90%;
+          max-width: 900px;
         }
       }
 
-      .condition-questionnaire {
-        .mat-card-title {
-          button {
-            &.left {
-              float: left;
-            }
+      .question-text-preview {
+        flex: 1;
+      }
 
-            &.right {
+      .question-variable-name {
+        width: 25%;
+        min-width: 200px;
+
+        .mat-form-field {
+          width: 100%;
+        }
+
+        &--warning {
+          mat-icon {
+            color: $warning-color;
+            text-shadow: 0 0 3px rgb(0 0 0 / 20%);
+          }
+        }
+
+        &__warning {
+          margin-top: -15px;
+          margin-bottom: 10px;
+        }
+      }
+
+      .condition-postview {
+        font-size: 1em;
+      }
+
+      #addQuestionCondition {
+        margin: 10px;
+      }
+
+      .mat-card {
+        &.conditionQuestion {
+          .mat-card-title {
+            button {
               float: right;
             }
           }
-        }
 
-        flex-wrap: wrap;
-      }
-    }
+          .mat-card-content {
+            .mat-grid-list {
+              #conditionTypeQuestionCondition {
+                .mat-option {
+                  width: auto;
+                }
+              }
 
-    #questionList {
-      z-index: 100;
+              .w60 {
+                width: 60px;
+              }
 
-      .list-group {
-        margin-bottom: 10px;
-      }
-
-      .mat-expansion-panel {
-        .mat-expansion-panel-header {
-          .mat-expansion-panel-header-title {
-            display: block;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap;
-          }
-
-          .mat-checkbox {
-            margin-right: 20px;
-          }
-        }
-
-        button {
-          &.button-clear {
-            float: right;
-            margin-right: 5px;
-          }
-        }
-
-        div {
-          &.form-group {
-            > .mat-grid-list {
-              width: 90%;
+              .w60p {
+                width: 60%;
+              }
 
               .mat-grid-tile {
-                &.question-text-tile {
-                  margin-bottom: 20px;
-                  max-width: 900px;
-
-                  .mat-form-field {
-                    width: 90%;
-                    max-width: 900px;
-                  }
-
-                  button {
-                    float: right;
-                  }
-                }
-
-                &.question-label-tile {
-                  margin-right: 60px;
-
-                  .mat-form-field {
-                    width: 92%;
-                  }
-                }
-
-                .markdown-container {
-                  markdown {
-                    text-align: left;
-                  }
-                }
-
-                .condition-postview {
-                  font-size: 1em;
+                &.sub-question {
                 }
               }
             }
+          }
+        }
+      }
+    }
 
-            #addQuestionCondition {
-              margin: 10px;
+    .answer-options {
+      .answer-option {
+        &__title {
+          display: flex;
+          align-items: center;
+          white-space: nowrap;
+        }
+        &__index {
+          padding-right: 15px;
+        }
+        &__move-buttons {
+          display: flex;
+        }
+        &__condition-warning {
+          font-weight: bold;
+          font-size: 16px;
+          color: orangered;
+          padding-left: 15px;
+        }
+
+        .mat-card-title {
+          button {
+            float: right;
+          }
+        }
+
+        .answer-option-type {
+          display: flex;
+          align-items: baseline;
+        }
+
+        .answer-option-description {
+          display: flex;
+          align-items: baseline;
+        }
+
+        .answer-option-variable-name {
+          display: block;
+          &__warning {
+            margin-top: -15px;
+            margin-bottom: 15px;
+          }
+        }
+
+        .answer-type-select {
+          max-width: 1000px;
+
+          mat-form-field {
+            width: 100%;
+          }
+
+          .mat-grid-tile {
+            .mat-form-field,
+            span:first-child {
+              margin-bottom: 20px;
             }
 
-            .mat-card {
-              &.conditionQuestion {
-                .mat-card-title {
-                  button {
-                    float: right;
-                  }
-                }
+            button {
+              float: right;
+              margin-bottom: 20px;
 
-                .mat-card-content {
-                  .mat-grid-list {
-                    #conditionTypeQuestionCondition {
-                      .mat-option {
+              &.button-add {
+                margin-right: 60px;
+                width: 8%;
+              }
+
+              &.left {
+                float: left;
+              }
+            }
+
+            span:nth-child(2) {
+              font-size: 10px;
+              font-style: italic;
+            }
+
+            &.checkbox-decimal {
+              max-width: 240px;
+
+              .mat-checkbox {
+                margin-bottom: 20px;
+              }
+            }
+          }
+        }
+
+        .mat-grid-content {
+          .mat-grid-list {
+            .mat-grid-tile {
+              button {
+                float: left;
+                margin: 10px;
+              }
+
+              > span {
+                font-size: 1em;
+              }
+            }
+          }
+
+          .mat-card.condition-card {
+            .mat-card-title {
+              button {
+                float: right;
+              }
+            }
+
+            .mat-card-content {
+              .mat-grid-list {
+                .mat-grid-tile {
+                  .mat-form-field {
+                    margin-bottom: 35px;
+
+                    .mat-option {
+                      &.auto {
                         width: auto;
                       }
                     }
 
-                    .w60 {
-                      width: 60px;
+                    .mat-hint {
+                      color: red;
                     }
+                  }
 
-                    .w60p {
-                      width: 60%;
-                    }
+                  > span {
+                    margin-bottom: 35px;
+                  }
 
-                    .mat-grid-tile {
-                      &.sub-question {
-                      }
-                    }
+                  .w60 {
+                    width: 60px;
                   }
                 }
               }
             }
           }
 
-          .answer-options {
-            > div {
-              padding-bottom: 10px;
-
-              .mat-card {
-                &.answer-card {
-                  .mat-card-title {
-                    > span:last-child {
-                      font-weight: bold;
-                      font-size: 16px;
-                      color: orangered;
-                      padding-left: 15px;
-                      max-width: 70%;
-                    }
-
-                    button {
-                      float: right;
-                    }
-                  }
-
-                  .mat-grid-content {
-                    .mat-grid-list {
-                      .mat-grid-tile {
-                        button {
-                          float: left;
-                          margin: 10px;
-                        }
-
-                        > span {
-                          font-size: 1em;
-                        }
-                      }
-                    }
-
-                    .mat-card {
-                      &.condition-card {
-                        .mat-card-title {
-                          button {
-                            float: right;
-                          }
-                        }
-
-                        .mat-card-content {
-                          .mat-grid-list {
-                            .mat-grid-tile {
-                              .mat-form-field {
-                                margin-bottom: 35px;
-
-                                .mat-option {
-                                  &.auto {
-                                    width: auto;
-                                  }
-                                }
-
-                                .mat-hint {
-                                  color: red;
-                                }
-                              }
-
-                              > span {
-                                margin-bottom: 35px;
-                              }
-
-                              .w60 {
-                                width: 60px;
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-
-                    hr {
-                      margin-top: 10px;
-                      margin-bottom: 20px;
-                      border: none;
-                      height: 1px;
-                      color: black;
-                      background-color: black;
-                    }
-
-                    div {
-                      .mat-grid-list {
-                        &.answer-type-select {
-                          max-width: 1000px;
-
-                          .mat-grid-tile {
-                            &.w500 {
-                              max-width: 500px;
-                            }
-
-                            .mat-form-field,
-                            span:first-child {
-                              margin-bottom: 20px;
-
-                              &.w92p {
-                                width: 92%;
-                              }
-                            }
-
-                            button {
-                              float: right;
-                              margin-bottom: 20px;
-
-                              &.button-add {
-                                margin-right: 60px;
-                                width: 8%;
-                              }
-
-                              &.left {
-                                float: left;
-                              }
-                            }
-
-                            span:nth-child(2) {
-                              font-size: 10px;
-                              font-style: italic;
-                            }
-
-                            &.checkbox-decimal {
-                              max-width: 240px;
-
-                              .mat-checkbox {
-                                margin-bottom: 20px;
-                              }
-                            }
-                          }
-                        }
-                      }
-
-                      &.item-class {
-                        .mat-form-field {
-                          margin-bottom: 20px;
-                        }
-
-                        .mat-checkbox {
-                          margin-left: 10px;
-                        }
-
-                        button {
-                          margin-left: 20px;
-                        }
-                      }
-                    }
-                  }
-                }
-              }
+          .item-class {
+            .mat-form-field {
+              margin-bottom: 20px;
             }
 
-            .mat-card-actions {
-              button {
-                float: left;
-                margin-bottom: 10px;
-              }
+            .mat-checkbox {
+              margin-left: 10px;
+            }
+
+            button {
+              margin-left: 20px;
             }
           }
         }
       }
     }
+  }
+}
 
-    .buttons-group {
-      margin-bottom: 25px;
+.create-answer-option-button {
+  margin-top: 15px;
+}
 
-      :not(:first-child) {
-        margin-left: 10px;
-      }
+.buttons-group {
+  margin-bottom: 25px;
 
-      #myFileInputField {
-        display: none;
-      }
-    }
+  :not(:first-child) {
+    margin-left: 10px;
   }
 
-  .dnd-placeholder {
-    background: #ccc;
-    border: dotted 3px #999;
-    min-height: 60px;
-    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+  #myFileInputField {
+    display: none;
   }
+}
+
+.button-clear {
+  margin-left: 5px;
+  margin-right: 20px;
+}
+
+.dnd-placeholder {
+  background: #ccc;
+  border: dotted 3px #999;
+  min-height: 60px;
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
 .notifications-card {
@@ -363,8 +367,7 @@
 }
 
 .markdown-container {
-  width: 100%;
-  height: 100%;
+  max-height: 100px;
   overflow: auto;
 }
 
@@ -374,4 +377,13 @@
 
 .error-outside-of-form-field {
   font-size: 13px;
+}
+
+mat-icon.warning-icon {
+  color: $warning-color;
+  text-shadow: 0 0 3px rgb(0 0 0 / 20%);
+}
+
+.warning-card {
+  background-color: $warning-color;
 }

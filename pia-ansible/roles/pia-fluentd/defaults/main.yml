@@ -10,4 +10,4 @@ pia_fluentd_feature: this_should_be_changed_for_each_feature
 loki_ip_address: localhost
 loki_port: 3100
 pia_docker_tag: latest
-pia_docker_registry: registry.netzlink.com
+pia_docker_registry: registry.gitlab.com

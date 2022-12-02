@@ -5,8 +5,8 @@
  */
 
 import {
-  ConditionDto,
   Condition,
+  ConditionDto,
   ConditionRequest,
   ConditionResponse,
 } from './condition';
@@ -15,7 +15,7 @@ import { QuestionDto } from './question';
 export interface DbAnswerOption {
   id: number;
   text: string | null;
-  label: string | null;
+  variable_name: string | null;
   position: number;
   question_id: number;
   answer_type_id: AnswerType;
@@ -57,7 +57,7 @@ export interface AnswerOptionDto {
   isConditionTarget: boolean | null;
   isDecimal: boolean | null;
   isNotable: boolean[] | null;
-  label: string | null;
+  variableName: string | null;
   restrictionMax: number | null;
   restrictionMin: number | null;
   values: string[] | null;
@@ -73,7 +73,7 @@ export interface AnswerOptionResponse extends DbAnswerOption {
 export interface AnswerOptionRequest {
   id?: number;
   text?: string;
-  label?: string;
+  variable_name?: string;
   position: number;
   answer_type_id: number;
   restriction_min?: number;

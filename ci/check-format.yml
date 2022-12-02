@@ -1,6 +1,6 @@
 check-format:
   stage: test
-  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/psa.utils.codeformatter:$IMAGE_ID
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.codeformatter:$IMAGE_ID
   needs:
     - job: build-docker
       artifacts: false

@@ -28,11 +28,14 @@ export class QuestionCleaner {
     number,
     CanBeAdded
   >();
-  private readonly questionAnswerOptionPairs: QuestionAnswerOptionPair[];
+  private readonly questionAnswerOptionPairs: (
+    | QuestionAnswerOptionPair
+    | undefined
+  )[];
 
   public constructor(private readonly questions: QuestionDto[]) {
     this.questionAnswerOptionPairs = questions.flatMap((question) =>
-      question.answerOptions!.map((answerOption) => ({
+      question.answerOptions?.map((answerOption) => ({
         question,
         answerOption,
       }))
@@ -45,18 +48,18 @@ export class QuestionCleaner {
         (question) => this.canQuestionBeAdded(question) === CanBeAdded.YES
       )
       .filter((question) => {
-        if (question.answerOptions!.length === 0) return true;
-        question.answerOptions = question.answerOptions!.filter(
+        if (question.answerOptions?.length === 0) return true;
+        question.answerOptions = question.answerOptions?.filter(
           (answerOption) =>
             this.canAnswerOptionBeAdded(answerOption) === CanBeAdded.YES
         );
-        return question.answerOptions.length > 0;
+        return question.answerOptions && question.answerOptions.length > 0;
       });
   }
 
-  private canQuestionBeAdded(question: QuestionDto): CanBeAdded {
+  private canQuestionBeAdded(question: QuestionDto): CanBeAdded | undefined {
     if (this.questionsAndStatus.has(question.id)) {
-      return this.questionsAndStatus.get(question.id)!;
+      return this.questionsAndStatus.get(question.id);
     }
 
     if (
@@ -67,9 +70,9 @@ export class QuestionCleaner {
       return CanBeAdded.YES;
     }
 
-    const targetAnswerOption = question.condition.targetAnswerOption!;
+    const targetAnswerOption = question.condition.targetAnswerOption;
     const conditionTarget = this.questionAnswerOptionPairs.find(
-      (pair) => pair.answerOption.id === targetAnswerOption.id
+      (pair) => pair?.answerOption.id === targetAnswerOption?.id
     );
     if (!conditionTarget) {
       this.questionsAndStatus.set(question.id, CanBeAdded.NO);
@@ -102,6 +105,7 @@ export class QuestionCleaner {
 
   private canAnswerOptionBeAdded(answerOption: AnswerOptionDto): CanBeAdded {
     if (this.answerOptionsAndStatus.has(answerOption.id)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this.answerOptionsAndStatus.get(answerOption.id)!;
     }
 
@@ -113,9 +117,9 @@ export class QuestionCleaner {
       return CanBeAdded.YES;
     }
 
-    const targetAnswerOption = answerOption.condition.targetAnswerOption!;
+    const targetAnswerOption = answerOption.condition.targetAnswerOption;
     const conditionTarget = this.questionAnswerOptionPairs.find(
-      (pair) => pair.answerOption.id === targetAnswerOption.id
+      (pair) => pair?.answerOption.id === targetAnswerOption?.id
     );
     if (!conditionTarget) {
       this.answerOptionsAndStatus.set(answerOption.id, CanBeAdded.NO);

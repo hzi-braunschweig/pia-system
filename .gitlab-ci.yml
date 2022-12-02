@@ -45,3 +45,4 @@ include:
   - /ci/detect-secrets.yml
   - /ci/load-test.yml
   - /ci/java-test-unit.yml
+  - /ci/renovate.yml

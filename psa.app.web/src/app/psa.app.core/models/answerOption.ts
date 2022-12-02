@@ -10,7 +10,7 @@ import { AnswerType } from './answerType';
 export interface AnswerOption {
   id: number;
   text: string;
-  label: string;
+  variable_name: string;
   position: number;
   question_id: number;
   answer_type_id: AnswerType;

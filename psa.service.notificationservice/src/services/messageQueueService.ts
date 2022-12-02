@@ -7,12 +7,16 @@
 import { MessageQueueClient, MessageQueueTopic } from '@pia/lib-messagequeue';
 import { config } from '../config';
 import * as postgresqlHelper from './postgresqlHelper';
-
-interface ProbandDeletedMessage {
-  pseudonym: string;
-}
+import {
+  MessagePayloadProbandDeactivated,
+  MessagePayloadProbandDeleted,
+} from '../models/messagePayloads';
 
 export class MessageQueueService extends MessageQueueClient {
+  public static async onProbandDeactivated(pseudonym: string): Promise<void> {
+    await postgresqlHelper.removeFCMTokenForPseudonym(pseudonym);
+  }
+
   public static async onProbandDeleted(pseudonym: string): Promise<void> {
     await postgresqlHelper.removeFCMTokenForPseudonym(pseudonym);
   }
@@ -21,8 +25,14 @@ export class MessageQueueService extends MessageQueueClient {
     await super.connect();
 
     await this.createConsumer(
+      MessageQueueTopic.PROBAND_DEACTIVATED,
+      async (message: MessagePayloadProbandDeactivated) =>
+        await MessageQueueService.onProbandDeactivated(message.pseudonym)
+    );
+
+    await this.createConsumer(
       MessageQueueTopic.PROBAND_DELETED,
-      async (message: ProbandDeletedMessage) =>
+      async (message: MessagePayloadProbandDeleted) =>
         await MessageQueueService.onProbandDeleted(message.pseudonym)
     );
   }

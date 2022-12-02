@@ -3,7 +3,7 @@
   "version": "1.6.0",
   "license": "AGPL-3.0-or-later",
   "scripts": {
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint .",
     "build": "tsc -p tsconfig.build.json",
     "help": "node ./dist/index.js --help",
     "start": "PUPPETEER_SKIP_DOWNLOAD=1 TARGET_FILE=../ci/generated.yml REPO_DIR=../ node ./dist/index.js",
@@ -16,27 +16,27 @@
   },
   "dependencies": {
     "chalk": "^4.1.2",
-    "cli-progress": "^3.9.1",
-    "commander": "^8.3.0",
-    "csv-stringify": "^6.0.4",
+    "cli-progress": "^3.11.2",
+    "commander": "^9.4.1",
+    "csv-stringify": "^6.2.1",
     "license-checker": "^25.0.1",
     "node-fetch": "^2.6.7",
-    "openapi3-ts": "^2.0.2",
-    "yaml": "^1.10.2"
+    "openapi3-ts": "^3.1.1",
+    "yaml": "^2.1.3"
   },
   "devDependencies": {
     "@pia/eslint-config": "file:../psa.eslint-config",
-    "@types/cli-progress": "^3.9.2",
+    "@types/cli-progress": "^3.11.0",
     "@types/csv-stringify": "^3.1.0",
     "@types/license-checker": "^25.0.3",
     "@types/node": "^14.18.12",
-    "@types/node-fetch": "^2.6.1",
-    "@typescript-eslint/eslint-plugin": "^5.12.1",
-    "@typescript-eslint/parser": "^5.12.1",
-    "eslint": "^8.10.0",
-    "eslint-config-prettier": "^8.4.0",
-    "eslint-plugin-no-only-tests": "^2.6.0",
-    "eslint-plugin-security": "^1.4.0",
-    "typescript": "^4.6.2"
+    "@types/node-fetch": "^2.6.2",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.43.0",
+    "eslint": "^8.27.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-no-only-tests": "^3.1.0",
+    "eslint-plugin-security": "^1.5.0",
+    "typescript": "~4.8.4"
   }
 }

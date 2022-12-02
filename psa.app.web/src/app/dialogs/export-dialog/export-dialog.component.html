@@ -84,10 +84,10 @@
           }}</app-mat-option-select-all>
           <mat-option
             *ngFor="let questionnaire of questionnairesForSelection | async"
-            [value]="questionnaire.id"
+            [value]="{ id: questionnaire.id, version: questionnaire.version }"
             unit-questionnaire-option
           >
-            {{ questionnaire.name }}
+            {{ questionnaire.name }} - V{{ questionnaire.version }}
           </mat-option>
         </mat-select>
         <mat-error
@@ -119,7 +119,7 @@
           </mat-option>
         </mat-select>
         <mat-error
-          *ngIf="form.controls['probands'].hasError('required')"
+          *ngIf="form.hasError('emptyProbands')"
           unit-proband-select-error
         >
           {{ 'DIALOG.PROBAND_REQUIRED' | translate }}
@@ -127,24 +127,12 @@
       </mat-form-field>
 
       <ul>
-        <li>
-          <mat-checkbox formControlName="exportAnswers"
-            >{{ 'QUESTIONNAIRE_FORSCHER.EXPORT_ANSWERS' | translate }}
-          </mat-checkbox>
-        </li>
-        <li>
-          <mat-checkbox formControlName="exportLabResults"
-            >{{ 'QUESTIONNAIRE_FORSCHER.EXPORT_LABRESULTS' | translate }}
-          </mat-checkbox>
-        </li>
-        <li>
-          <mat-checkbox formControlName="exportSamples"
-            >{{ 'QUESTIONNAIRE_FORSCHER.EXPORT_SAMPLES' | translate }}
-          </mat-checkbox>
-        </li>
-        <li>
-          <mat-checkbox formControlName="exportSettings"
-            >{{ 'QUESTIONNAIRE_FORSCHER.EXPORT_SETTINGS' | translate }}
+        <li
+          *ngFor="let checkbox of exportCheckboxes; let i = index"
+          formArrayName="exports"
+        >
+          <mat-checkbox [formControlName]="i">
+            {{ checkbox.name | translate }}
           </mat-checkbox>
         </li>
       </ul>

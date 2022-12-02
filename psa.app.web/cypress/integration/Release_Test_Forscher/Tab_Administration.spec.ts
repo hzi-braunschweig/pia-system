@@ -65,6 +65,16 @@ describe('Release Test, role: "Forscher", Administration', () => {
   const downloadsFolder = Cypress.config('downloadsFolder');
 
   beforeEach(() => {
+    cy.intercept({
+      method: 'POST',
+      url: '/admin/api/v1/questionnaire/questionnaires',
+    }).as('saveQuestionnaire');
+
+    cy.intercept({
+      method: 'POST',
+      url: '/admin/api/v1/questionnaire/revisequestionnaire/*',
+    }).as('reviseQuestionnaire');
+
     cy.task('deleteFolder', downloadsFolder);
     study = generateRandomStudy();
     study2 = generateRandomStudy();
@@ -346,6 +356,195 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-questionnaire-name"]')
       .contains('Second Questionnaire')
       .should('exist');
+  });
+
+  it('should get warnings when editing questions and answer options', () => {
+    cy.visit(adminAppUrl);
+    login(forscherCredentials.username, forscherCredentials.password);
+    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
+
+    cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
+
+    // input questionnaire settings
+    cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
+    cy.get('.mat-option').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type('Test Fragebogen');
+    cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
+    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
+    cy.get('.mat-option').contains('Einmal').click();
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+
+    // open first question and edit text field
+    cy.get('#mat-expansion-panel-header-0').click();
+    cy.get('#cdk-accordion-child-0')
+      .find('[data-e2e="e2e-question-text-input"]')
+      .type('Wie heißen Sie?{backspace}!');
+
+    cy.get('[data-e2e="question-variable-name-warning-text"]').should(
+      'not.exist'
+    );
+    cy.get('[data-e2e="question-variable-name-warning-icon"]').should(
+      'not.exist'
+    );
+
+    // Open answer option, set to single choice and edit text fields
+    cy.get('#cdk-accordion-child-0')
+      .find('[data-e2e="e2e-answer-type-select-dropdown"]')
+      .click();
+    cy.get('.mat-option').contains('Einzelauswahl').click();
+    cy.get('[data-e2e="e2e-answer-option-test-input"]').type(
+      'Unterfrage A{backspace}B'
+    );
+
+    cy.get('[data-e2e="question-variable-name-warning-text"]').should(
+      'not.exist'
+    );
+    cy.get('[data-e2e="question-variable-name-warning-icon"]').should(
+      'not.exist'
+    );
+
+    // Edit answer option single choice values
+    cy.get('[data-e2e="answer-option-values"]')
+      .find('input')
+      .eq(0)
+      .type('Wert B{backspace}A');
+    cy.get('[data-e2e="answer-option-values"]').find('input').eq(1).type('1');
+    cy.get('[data-e2e="answer-option-values"]')
+      .find('input')
+      .eq(2)
+      .type('Wert A{backspace}B');
+    cy.get('[data-e2e="answer-option-values"]').find('input').eq(3).type('1');
+
+    cy.get('[data-e2e="answer-option-variable-name-warning-text"]').should(
+      'not.exist'
+    );
+    cy.get('[data-e2e="answer-option-variable-name-warning-icon"]').should(
+      'not.exist'
+    );
+
+    // save questionnaire
+    cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
+    cy.get('#confirmbutton').click();
+
+    // In slower environments like in CI, we need to wait for the save request
+    // to be done and for angular to actually know about the study
+    // name in its component. As we have no way to know when the component is
+    // ready, we additionally wait an arbitrary amount of time.
+    cy.wait('@saveQuestionnaire');
+    cy.wait(3000);
+
+    // open question panel again
+    cy.get('#questionexpansionpanel').children().first().click();
+
+    // change question text
+    cy.get('[data-e2e="e2e-question-text-input"]').type('{backspace}?');
+
+    cy.get('[data-e2e="question-variable-name-warning-text"]').should('exist');
+    cy.get('[data-e2e="question-variable-name-warning-icon"]').should('exist');
+
+    cy.get('[data-e2e="e2e-question-text-input"]').type('{backspace}!');
+
+    cy.get('[data-e2e="question-variable-name-warning-text"]').should(
+      'not.exist'
+    );
+    cy.get('[data-e2e="question-variable-name-warning-icon"]').should(
+      'not.exist'
+    );
+
+    // change answer option text
+    cy.get('[data-e2e="e2e-answer-option-test-input"]').type('{backspace}A');
+
+    cy.get('[data-e2e="answer-option-variable-name-warning-text"]').should(
+      'exist'
+    );
+    cy.get('[data-e2e="answer-option-variable-name-warning-icon"]').should(
+      'exist'
+    );
+
+    cy.get('[data-e2e="e2e-answer-option-test-input"]').type('{backspace}B');
+
+    cy.get('[data-e2e="answer-option-variable-name-warning-text"]').should(
+      'not.exist'
+    );
+    cy.get('[data-e2e="answer-option-variable-name-warning-icon"]').should(
+      'not.exist'
+    );
+
+    // change answer option single choice values texts
+    cy.get('[data-e2e="answer-option-values"]')
+      .find('input')
+      .eq(0)
+      .type('{backspace}C');
+    cy.get('[data-e2e="answer-option-values"]')
+      .find('input')
+      .eq(2)
+      .type('{backspace}D');
+
+    cy.get('[data-e2e="answer-option-variable-name-warning-text"]').should(
+      'exist'
+    );
+    cy.get('[data-e2e="answer-option-variable-name-warning-icon"]').should(
+      'exist'
+    );
+
+    cy.get('[data-e2e="answer-option-values"]')
+      .find('input')
+      .eq(2)
+      .type('{backspace}B');
+
+    cy.get('[data-e2e="answer-option-variable-name-warning-text"]').should(
+      'exist'
+    );
+    cy.get('[data-e2e="answer-option-variable-name-warning-icon"]').should(
+      'exist'
+    );
+
+    cy.get('[data-e2e="answer-option-values"]')
+      .find('input')
+      .eq(0)
+      .type('{backspace}A');
+
+    cy.get('[data-e2e="answer-option-variable-name-warning-text"]').should(
+      'not.exist'
+    );
+    cy.get('[data-e2e="answer-option-variable-name-warning-icon"]').should(
+      'not.exist'
+    );
+
+    // should be able to save with warnings and clear them
+    cy.get('[data-e2e="e2e-question-text-input"]').type('{backspace}?');
+    cy.get('[data-e2e="e2e-answer-option-test-input"]').type('{backspace}A');
+
+    cy.get('[data-e2e="question-variable-name-warning-text"]').should('exist');
+    cy.get('[data-e2e="question-variable-name-warning-icon"]').should('exist');
+    cy.get('[data-e2e="answer-option-variable-name-warning-text"]').should(
+      'exist'
+    );
+    cy.get('[data-e2e="answer-option-variable-name-warning-icon"]').should(
+      'exist'
+    );
+
+    cy.get('[data-e2e="e2e-questionnaire-revise-button"]').click();
+    cy.get('#confirmbutton').click();
+
+    cy.wait('@reviseQuestionnaire');
+
+    cy.get('#questionexpansionpanel').children().first().click();
+
+    cy.get('[data-e2e="question-variable-name-warning-text"]').should(
+      'not.exist'
+    );
+    cy.get('[data-e2e="question-variable-name-warning-icon"]').should(
+      'not.exist'
+    );
+    cy.get('[data-e2e="answer-option-variable-name-warning-text"]').should(
+      'not.exist'
+    );
+    cy.get('[data-e2e="answer-option-variable-name-warning-icon"]').should(
+      'not.exist'
+    );
   });
 
   // This test works only in chromium and headless. Does not work on Firefox,
@@ -1051,15 +1250,10 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
 
-    cy.get('#questionList').find('li').should('have.length', 9);
+    cy.get('[data-e2e="question-list"]').find('li').should('have.length', 9);
   });
 
   it('should deactivate a questionnaire', () => {
-    cy.intercept({
-      method: 'POST',
-      url: '/admin/api/v1/questionnaire/questionnaires',
-    }).as('saveQuestionnaire');
-
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
 

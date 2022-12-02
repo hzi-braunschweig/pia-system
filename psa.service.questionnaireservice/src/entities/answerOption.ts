@@ -40,7 +40,7 @@ export class AnswerOption implements AnswerOptionDto {
   public isNotable!: boolean[] | null;
 
   @Column({ type: 'varchar', nullable: true })
-  public label!: string | null;
+  public variableName!: string | null;
 
   @Column({ type: 'integer', nullable: true })
   public restrictionMax!: number | null;

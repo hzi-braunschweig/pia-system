@@ -33,6 +33,7 @@ __exportStar(require("./plugins/version"), exports);
 __exportStar(require("./plugins/registerPlugins"), exports);
 __exportStar(require("./server/serverRunner"), exports);
 __exportStar(require("./service/mailService"), exports);
+__exportStar(require("./service/randomDigitsGenerator"), exports);
 __exportStar(require("./utils/async"), exports);
 __exportStar(require("./utils/json"), exports);
 __exportStar(require("./utils/typeGuards"), exports);

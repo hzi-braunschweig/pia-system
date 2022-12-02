@@ -10,37 +10,37 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "test.unit": "nyc mocha 'src/**/*.spec.ts' --timeout 5000",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@hapi/accept": "^6.0.0",
-    "@hapi/hapi": "^20.2.2",
-    "@types/hapi__hapi": "^20.0.10",
-    "i18n": "^0.14.2"
+    "@hapi/hapi": "^21.0.0",
+    "@types/hapi__hapi": "^20.0.13",
+    "i18n": "^0.15.1"
   },
   "devDependencies": {
     "@pia/eslint-config": "file:../psa.eslint-config",
-    "@types/chai": "^4.3.1",
+    "@types/chai": "^4.3.4",
     "@types/hapi__accept": "^5.0.1",
-    "@types/i18n": "^0.13.2",
-    "@types/mocha": "^9.1.1",
+    "@types/i18n": "^0.13.5",
+    "@types/mocha": "^10.0.0",
     "@types/node": "^14.17.34",
-    "@typescript-eslint/eslint-plugin": "^5.24.0",
-    "@typescript-eslint/parser": "^5.24.0",
-    "chai": "^4.3.6",
-    "eslint": "^8.15.0",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "@typescript-eslint/parser": "^5.43.0",
+    "chai": "^4.3.7",
+    "eslint": "^8.27.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-no-only-tests": "^2.6.0",
+    "eslint-plugin-no-only-tests": "^3.1.0",
     "eslint-plugin-security": "^1.5.0",
-    "mocha": "^10.0.0",
+    "mocha": "^10.1.0",
     "mocha-multi-reporters": "^1.5.1",
     "nyc": "^15.1.0",
-    "sinon": "^14.0.0",
+    "sinon": "^14.0.2",
     "source-map-support": "^0.5.21",
-    "ts-essentials": "^9.1.2",
+    "ts-essentials": "^9.3.0",
     "ts-mockito": "^2.6.1",
-    "ts-node": "^10.7.0",
-    "typescript": "^4.6.4"
+    "ts-node": "^10.9.1",
+    "typescript": "~4.8.4"
   },
   "tsconfig": "tsconfig.global.json"
 }

@@ -1,20 +1,24 @@
 INSERT INTO studies(name, pseudonym_prefix, pseudonym_suffix_length)
 VALUES ('QTestStudy1', 'qtest', 8),
        ('QTestStudy2', 'qtest', 8),
-       ('QTestStudyLimit', 'qtestlimit', 1);
+       ('QTestStudyLimit', 'qtestlimit', 2);
 
 INSERT INTO probands(pseudonym, ids, study, origin)
 VALUES ('qtest-proband1', 'exists', 'QTestStudy1', 'investigator'),
-       ('qtest-proband2', NULL, 'QTestStudy2', 'investigator'),
-       ('qtestlimit-1', NULL, 'QTestStudyLimit', 'investigator'),
-       ('qtestlimit-2', NULL, 'QTestStudyLimit', 'investigator'),
-       ('qtestlimit-3', NULL, 'QTestStudyLimit', 'investigator'),
-       ('qtestlimit-4', NULL, 'QTestStudyLimit', 'investigator'),
-       ('qtestlimit-5', NULL, 'QTestStudyLimit', 'investigator');
+       ('qtest-proband2', NULL, 'QTestStudy2', 'investigator');
 
-INSERT INTO planned_probands(user_id, password)
-VALUES ('qtestlimit-6', 'test'),
-       ('qtestlimit-7', 'test'),
-       ('qtestlimit-8', 'test'),
-       ('qtestlimit-9', 'test'),
-       ('qtestlimit-0', 'test');
+do
+$$
+    begin
+        for i in 1..49
+            loop
+                INSERT INTO probands(pseudonym, ids, study, origin)
+                VALUES (CONCAT('qtestlimit-', TO_CHAR(i,'fm00')), NULL, 'QTestStudyLimit', 'investigator');
+            end loop;
+        for i in 50..99
+            loop
+                INSERT INTO planned_probands(user_id, password)
+                VALUES (CONCAT('qtestlimit-', i), 'test');
+            end loop;
+    end;
+$$;

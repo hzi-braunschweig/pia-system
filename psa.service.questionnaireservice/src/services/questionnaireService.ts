@@ -8,6 +8,8 @@ import { runTransaction } from '../db';
 import { QuestionnaireInstanceRepository } from '../repositories/questionnaireInstanceRepository';
 import { QuestionnaireRepository } from '../repositories/questionnaireRepository';
 import { Questionnaire } from '../models/questionnaire';
+import { getRepository } from 'typeorm';
+import { QuestionnaireInstance } from '../entities/questionnaireInstance';
 
 export class QuestionnaireService {
   /**
@@ -31,5 +33,28 @@ export class QuestionnaireService {
         transaction,
       });
     });
+  }
+
+  /**
+   * Deletes all questionnaire instances of the proband which are inactive
+   * and are to be filled out by probands. Those instances are not needed
+   * anymore after a proband has been deactivated.
+   */
+  public static async deleteInactiveForProbandQuestionnaireInstances(
+    pseudonym: string
+  ): Promise<void> {
+    const instanceIdsToDelete = (
+      await getRepository(QuestionnaireInstance).find({
+        relations: ['questionnaire'],
+        where: {
+          pseudonym,
+          status: 'inactive',
+          questionnaire: {
+            type: 'for_probands',
+          },
+        },
+      })
+    ).map((instance) => instance.id);
+    await getRepository(QuestionnaireInstance).delete(instanceIdsToDelete);
   }
 }
