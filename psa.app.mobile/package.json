@@ -1,7 +1,7 @@
 {
   "name": "app-mobile",
   "description": "PIA mobile app",
-  "version": "1.31.0",
+  "version": "1.31.1",
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "prestart:browser": "npm run licenses",

@@ -2,6 +2,13 @@
 
 This file contains notes about changes that are important to the operations team.
 
+## 1.32 (Export improvements, GitLab Migration)
+
+- From now on PIA release images are pushed to the [GitLab cloud docker registry](registry.gitlab.com)
+  - the new registry url is already part of the default Ansible configuration
+  - please ensure that the registry url is not overwritten elsewhere
+  - please check whether the newly created credentials are used to fetch the release images
+
 ## 1.31 (Self-Registration)
 
 - New ansible variables can be set to show mandatory checkboxes on registration:
