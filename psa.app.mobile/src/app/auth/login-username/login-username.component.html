@@ -41,16 +41,6 @@
       </div>
     </ion-item>
 
-    <ion-item>
-      <ion-label>{{ 'LOGIN.REMEMBER_ME' | translate }}</ion-label>
-      <ion-checkbox
-        data-unit="checkbox-remember-me"
-        formControlName="rememberMe"
-        slot="end"
-      >
-      </ion-checkbox>
-    </ion-item>
-
     <ion-item *ngIf="form.get('customEndpointUrl').enabled">
       <ion-label position="stacked">{{
         'LOGIN.ENTER_BACKEND_URL' | translate

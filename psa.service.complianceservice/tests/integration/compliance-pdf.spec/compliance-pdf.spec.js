@@ -100,7 +100,7 @@ describe('Compliance PDF API', function () {
     });
 
     it('should return http 200 and the pdf', async function () {
-      this.timeout(5000);
+      this.timeout(20000);
       await Compliance.create(compl2, {
         include: [QuestionnaireCompliance, QuestionnaireTextCompliance],
       });

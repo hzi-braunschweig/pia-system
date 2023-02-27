@@ -38,15 +38,13 @@ import { Network } from '@awesome-cordova-plugins/network/ngx';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { LocaleService } from './shared/services/locale/locale.service';
-import { AuthInterceptor } from './shared/interceptors/auth-interceptor';
 import { ContentTypeInterceptor } from './shared/interceptors/content-type-interceptor';
 import { UnauthorizedInterceptor } from './shared/interceptors/unauthorized-interceptor';
 import { HttpErrorInterceptor } from './shared/interceptors/http-error-interceptor.service';
 import { KeycloakAngularModule } from 'keycloak-angular';
-import { AuthService } from './auth/auth.service';
-import { KeycloakClientService } from './auth/keycloak-client.service';
-import { initializeActiveSession } from './initialize-active-session';
+import { initializeExistingSession } from './initialize-existing-session';
 import { EndpointService } from './shared/services/endpoint/endpoint.service';
+import { AuthService } from './auth/auth.service';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/');
@@ -80,14 +78,8 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     },
     {
       provide: APP_INITIALIZER,
-      useFactory: initializeActiveSession,
-      deps: [
-        Platform,
-        AuthService,
-        KeycloakClientService,
-        EndpointService,
-        LocaleService,
-      ],
+      useFactory: initializeExistingSession,
+      deps: [Platform, EndpointService, AuthService],
       multi: true,
     },
     {
@@ -96,11 +88,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
         return localeService.currentLocale;
       },
       deps: [LocaleService],
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AuthInterceptor,
-      multi: true,
     },
     {
       provide: HTTP_INTERCEPTORS,

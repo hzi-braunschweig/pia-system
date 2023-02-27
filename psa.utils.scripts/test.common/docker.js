@@ -39,6 +39,7 @@ const docker = {
     const command = `docker build --tag ${imageName} ${arg} -f ${dockerFile} ${path}`;
     await exec(command, {
       env: {
+        ...process.env,
         DOCKER_BUILDKIT: '1',
       },
     });

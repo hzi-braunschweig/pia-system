@@ -66,7 +66,7 @@ RUN npm run build
 
 FROM base AS final
 
-#COPY $DIR/resources ./resources <- other resources than .js or .ts files should be placed in this folder because tsc does not copy them into dist
+COPY $DIR/resources ./resources
 COPY --from=install-production /usr/src/ /usr/src/
 COPY --from=build /usr/src/node-app/dist/src ./src
 

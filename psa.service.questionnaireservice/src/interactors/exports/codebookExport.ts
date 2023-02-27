@@ -10,6 +10,7 @@ import { getRepository } from 'typeorm';
 import { Questionnaire } from '../../entities/questionnaire';
 import { CodebookTransform } from '../../services/csvTransformStreams/codebookTransform';
 import { ExportUtilities } from '../../services/exportUtilities';
+import { ConditionalQuestionnaireInfo } from '../../models/questionnaireInfo';
 
 export class CodebookExport extends AbstractExportFeature {
   public async apply(): Promise<void> {
@@ -19,16 +20,23 @@ export class CodebookExport extends AbstractExportFeature {
       questionnaireWhere = this.options.questionnaires
         .map((q) => `(${+q.id},${+q.version})`)
         .join(',');
-      questionnaireWhere = ' AND (id, version) IN (' + questionnaireWhere + ')';
+      questionnaireWhere =
+        ' AND (q.id, q.version) IN (' + questionnaireWhere + ')';
     }
 
     const questionnaires = (await getRepository(Questionnaire)
-      .createQueryBuilder()
-      .select(['id', 'name', 'version'])
-      .where(`study_id = :studyId ${questionnaireWhere}`, {
+      .createQueryBuilder('q')
+      .select([
+        'q.id id',
+        'q.name "name"',
+        'q.version "version"',
+        'CASE WHEN c.condition_type IS NOT NULL THEN true ELSE false END AS has_condition',
+      ])
+      .where(`q.study_id = :studyId${questionnaireWhere}`, {
         studyId: this.options.study_name,
       })
-      .execute()) as Questionnaire[];
+      .leftJoin('q.condition', 'c')
+      .execute()) as ConditionalQuestionnaireInfo[];
 
     for (const questionnaire of questionnaires) {
       const questionnaireStream = await getRepository(Questionnaire)
@@ -38,7 +46,6 @@ export class CodebookExport extends AbstractExportFeature {
           'questionnaire.version',
           'questionnaire.study_id',
           'questionnaire.name',
-          'questionnaire.no_questions',
           'question.id',
           'question.text',
           'question.variable_name as question_variable_name',
@@ -129,16 +136,18 @@ export class CodebookExport extends AbstractExportFeature {
           'question_target_question',
           'question_target_question.id = question_target_answer_option.question_id'
         )
-        .addOrderBy('questionnaire.name', 'ASC')
-        .addOrderBy('questionnaire.version', 'ASC')
         .addOrderBy('question.position', 'ASC')
         .addOrderBy('answerOption.position', 'ASC')
         .stream();
 
-      const transformStream = new CodebookTransform();
+      const transformStream = new CodebookTransform(questionnaire);
       const csvStream = CsvService.stringify();
-      const studyName = this.sanitizeForFilename(this.options.study_name);
-      const questionnaireName = this.sanitizeForFilename(questionnaire.name);
+      const studyName = ExportUtilities.sanitizeForFilename(
+        this.options.study_name
+      );
+      const questionnaireName = ExportUtilities.sanitizeForFilename(
+        questionnaire.name
+      );
 
       this.archive.append(
         questionnaireStream.pipe(transformStream).pipe(csvStream),
@@ -147,11 +156,5 @@ export class CodebookExport extends AbstractExportFeature {
         }
       );
     }
-  }
-
-  private sanitizeForFilename(name: string): string {
-    name = ExportUtilities.normalizeFilename(name);
-    name = name.replace(/[\s_]+/g, '-');
-    return name;
   }
 }

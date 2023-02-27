@@ -10,24 +10,26 @@
   },
   "devDependencies": {
     "@pia/eslint-config": "file:../psa.eslint-config",
+    "@types/cli-progress": "^3.11.0",
+    "@types/jsonwebtoken": "^8.5.9",
     "@types/node": "^14.10.1",
     "@types/node-fetch": "^2.6.2",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "@typescript-eslint/parser": "^5.43.0",
-    "@types/jsonwebtoken": "^8.5.9",
+    "eslint": "^8.27.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-no-only-tests": "^3.1.0",
     "eslint-plugin-security": "^1.5.0",
-    "eslint": "^8.27.0",
     "ts-node": "^10.9.1",
     "typescript": "~4.8.4"
   },
   "dependencies": {
-    "chalk": "^4.1.0",
-    "commander": "^9.4.1",
     "@faker-js/faker": "^7.6.0",
+    "chalk": "^4.1.0",
+    "cli-progress": "^3.11.2",
+    "commander": "^9.4.1",
+    "jsonwebtoken": "^8.5.1",
     "mimelib": "^0.3.1",
-    "node-fetch": "^2.6.7",
-    "jsonwebtoken": "^8.5.1"
+    "node-fetch": "^2.6.7"
   }
 }

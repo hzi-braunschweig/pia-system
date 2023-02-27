@@ -14,9 +14,9 @@ import { Response } from 'superagent';
 
 import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 import {
-  CsvAnswerRow,
   CsvBloodSampleRow,
   CsvLabResultObservationRow,
+  CsvLegacyAnswerRow,
   CsvSampleRow,
   CsvUserSettingsRow,
 } from '../../src/models/csvExportRows';
@@ -40,7 +40,7 @@ const questionnaire = { id: 297, version: 1 };
 describe('/export should work with ids field', function () {
   const sandbox = createSandbox();
 
-  let receivedAnswersRows: CsvAnswerRow[];
+  let receivedAnswersRows: CsvLegacyAnswerRow[];
   let receivedSettingsRows: CsvUserSettingsRow[];
   let receivedBloodSamplesRows: CsvBloodSampleRow[];
   let receivedSamplesRows: CsvSampleRow[];
@@ -64,6 +64,7 @@ describe('/export should work with ids field', function () {
       probands: ['test-1', 'test-ids2'],
       exports: [
         'answers',
+        'legacy_answers',
         'labresults',
         'samples',
         'bloodsamples',

@@ -11,16 +11,15 @@ import { DeletionType } from './deletion-type.enum';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { QuestionnaireClientService } from '../../questionnaire/questionnaire-client.service';
 import { Study } from '../../questionnaire/questionnaire.model';
-import { AuthService } from '../../auth/auth.service';
-import { User } from '../../auth/auth.model';
 import { CannotDetermineDeletionTypeError } from './cannot-determine-deletion-type.error';
 import { KeepStudyAnswersModalComponent } from '../components/keep-study-answers-modal/keep-study-answers-modal.component';
 import { DeleteAccountModalComponent } from '../components/delete-account-modal/delete-account-modal.component';
+import { CurrentUser } from '../../auth/current-user.service';
 
 describe('DeleteAccountModalService', () => {
   let service: DeleteAccountModalService;
+  let currentUser: CurrentUser;
   let questionnaireClientService: QuestionnaireClientService;
-  let authService: AuthService;
   let modalController: ModalController;
 
   function mockGetStudy(study: Partial<Study>) {
@@ -29,17 +28,13 @@ describe('DeleteAccountModalService', () => {
     );
   }
 
-  function mockGetCurrentUser(user: Partial<User>) {
-    spyOn(authService, 'getCurrentUser').and.returnValue(user as User);
-  }
-
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [IonicModule, HttpClientTestingModule],
     });
     service = TestBed.inject(DeleteAccountModalService);
+    currentUser = TestBed.inject(CurrentUser);
     questionnaireClientService = TestBed.inject(QuestionnaireClientService);
-    authService = TestBed.inject(AuthService);
     modalController = TestBed.inject(ModalController);
   });
 
@@ -77,9 +72,7 @@ describe('DeleteAccountModalService', () => {
       modalControllerCreateSpy.and.returnValue(
         Promise.resolve(mockModal as HTMLIonModalElement)
       );
-      mockGetCurrentUser({
-        study: 'foobar',
-      });
+      currentUser.study = 'foobar';
     });
 
     [

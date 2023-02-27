@@ -84,8 +84,8 @@ export class GlobalAuthSettings implements AuthSettings {
  *
  * @example
  * export const config: ServiceConfig = {
- *     public: GlobalConfig.getPublic(SSL_CERTS),
- *     internal: GlobalConfig.internal,
+ *     public: GlobalConfig.getPublic(SSL_CERTS, serviceName),
+ *     internal: GlobalConfig.getInternal(serviceName),
  *     database: GlobalConfig.getQPia(SSL_CERTS)
  * };
  */
@@ -96,16 +96,6 @@ export class GlobalConfig {
    * Only use the configuration needed by the specific service!
    */
   public static authserver = GlobalAuthSettings;
-
-  /**
-   * Configuration of the internal API server of a microservice
-   */
-  public static get internal(): Connection {
-    return {
-      host: '0.0.0.0',
-      port: Number(ConfigUtils.getEnvVariable('INTERNAL_PORT')),
-    };
-  }
 
   /**
    * complianceservice http connection
@@ -192,12 +182,25 @@ export class GlobalConfig {
   }
 
   /**
-   * Configuration of the public API server of a microservice
+   * Configuration of the internal API server of a microservice
    */
-  public static getPublic(sslCerts: SslCerts): SecureConnection {
+  public static getInternal(serviceName: string): Connection {
     return {
       host: '0.0.0.0',
-      port: Number(ConfigUtils.getEnvVariable('PORT')),
+      port: GlobalConfig.getPort(serviceName, 'INTERNAL_'),
+    };
+  }
+
+  /**
+   * Configuration of the public API server of a microservice
+   */
+  public static getPublic(
+    sslCerts: SslCerts,
+    serviceName: string
+  ): SecureConnection {
+    return {
+      host: '0.0.0.0',
+      port: GlobalConfig.getPort(serviceName),
       tls: ConfigUtils.getEnvVariable('PROTOCOL', 'https') !== 'http' && {
         cert: sslCerts.cert,
         key: sslCerts.key,
@@ -269,6 +272,17 @@ export class GlobalConfig {
       ConfigUtils.getEnvVariable('INTERNAL_PROTOCOL', 'http') as HttpProtocol,
       ConfigUtils.getEnvVariable(servicePrefix + '_HOST'),
       Number(ConfigUtils.getEnvVariable(servicePrefix + '_INTERNAL_PORT'))
+    );
+  }
+
+  private static getPort(serviceName: string, prefix = ''): number {
+    const port = ConfigUtils.getEnvVariableInt(prefix + 'PORT', Number.NaN);
+
+    // make service port individually configurable for int/e2e tests
+    // this is required for running tests in k8s
+    return ConfigUtils.getEnvVariableInt(
+      `${serviceName.toUpperCase()}_${prefix}PORT`,
+      port
     );
   }
 }

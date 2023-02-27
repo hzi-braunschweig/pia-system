@@ -18,7 +18,7 @@ describe('pdfGeneratorService', () => {
   });
 
   it('should create a simple pdf', async function () {
-    this.timeout(5000);
+    this.timeout(20000);
     const getQuestionnaireTextCompliances = sandbox.stub().returns([]);
     const getQuestionnaireCompliances = sandbox.stub().returns([]);
     const translateStub = sandbox.stub();
@@ -35,7 +35,7 @@ describe('pdfGeneratorService', () => {
   });
 
   it('should create a more complex pdf', async function () {
-    this.timeout(5000);
+    this.timeout(20000);
     const translateStub = sandbox.stub();
     const i18n = { __: translateStub };
     const pdfBuffer = await pdfGeneratorService.createPdf(

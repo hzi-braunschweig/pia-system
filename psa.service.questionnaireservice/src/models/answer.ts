@@ -68,3 +68,22 @@ export interface FullAnswer {
   date_of_release: Date | null;
   ids: string | null;
 }
+
+export interface AnswerExportAnswer {
+  question_id: number;
+  answer_option_id: number;
+  value: string | null;
+  file_id: number | null;
+  file_name: string | null;
+}
+
+export interface AnswerExportDbRow {
+  instance_id: number;
+  participant: string;
+  is_test_participant: boolean;
+  cycle: number;
+  date_of_issue: Date;
+  answer_date: Date | null;
+  answer_status: QuestionnaireInstanceStatus;
+  answers: AnswerExportAnswer[];
+}

@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-import { AccessToken, LoginResponse, User } from './auth.model';
+import { User } from './auth.model';
 import { KeycloakTokenParsed } from 'keycloak-js';
 
 export function createKeycloakToken(
@@ -19,7 +19,7 @@ export function createKeycloakToken(
     iat: Date.now(),
     auth_time: Date.now(),
     realm_access: {
-      roles: [user?.role ?? 'Proband'],
+      roles: ['Proband'],
     },
     studies: [user?.study ?? 'Dummy Study'],
     locale: 'de-DE',
@@ -40,50 +40,5 @@ export function createKeycloakToken(
   return {
     token,
     payload,
-  };
-}
-
-export function createLegacyToken(tokenPayload: Partial<AccessToken> = {}) {
-  return (
-    btoa(JSON.stringify({ alg: 'RS512', typ: 'JWT' })) +
-    '.' +
-    btoa(
-      JSON.stringify({
-        id: 1,
-        role: tokenPayload.role ?? 'Proband',
-        username: tokenPayload.username ?? '',
-        groups: tokenPayload.groups ?? ['test study'],
-        locale: 'de-DE',
-        app: 'web',
-        iat: Date.now(),
-        exp: Date.now() + 60000,
-      })
-    ) +
-    '.' +
-    btoa('signature')
-  );
-}
-
-export function createLegacyLoginResponse(
-  tokenPayload: Partial<AccessToken> = {},
-  overwrite: Partial<LoginResponse> = {}
-): LoginResponse {
-  return {
-    pw_change_needed: false,
-    token_login:
-      btoa(JSON.stringify({ alg: 'RS512', typ: 'JWT' })) +
-      '.' +
-      btoa(
-        JSON.stringify({
-          id: 2,
-          username: tokenPayload.username ?? '',
-          iat: Date.now(),
-          exp: Date.now() + 60000,
-        })
-      ) +
-      '.' +
-      btoa('signature'),
-    token: createLegacyToken(tokenPayload),
-    ...overwrite,
   };
 }

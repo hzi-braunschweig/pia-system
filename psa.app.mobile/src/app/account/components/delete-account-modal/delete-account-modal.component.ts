@@ -14,6 +14,7 @@ import { AccountClientService } from '../../services/account-client.service';
 import { AuthService } from '../../../auth/auth.service';
 import { DeleteAccountModalService } from '../../services/delete-account-modal.service';
 import { TranslateService } from '@ngx-translate/core';
+import { CurrentUser } from '../../../auth/current-user.service';
 
 @Component({
   selector: 'app-delete-account-modal',
@@ -29,17 +30,16 @@ export class DeleteAccountModalComponent {
     private accountClientService: AccountClientService,
     private deleteAccountModalService: DeleteAccountModalService,
     private alertController: AlertController,
-    private authService: AuthService,
+    private auth: AuthService,
     private translateService: TranslateService,
-    private loadingCtrl: LoadingController
+    private loadingCtrl: LoadingController,
+    private currentUser: CurrentUser
   ) {}
 
   async delete() {
-    const username = this.authService.getCurrentUser().username;
-
     try {
       await this.accountClientService.deleteAccount(
-        username,
+        this.currentUser.username,
         this.deleteAccountModalService.getSelectedDeletionType()
       );
       await this.presentLogoutAlert();
@@ -64,7 +64,7 @@ export class DeleteAccountModalComponent {
         message: this.translateService.instant('GENERAL.LOADING'),
       });
       await loading.present();
-      await this.authService.logout().catch(loading.dismiss);
+      await this.auth.logout().catch(loading.dismiss);
     });
   }
 

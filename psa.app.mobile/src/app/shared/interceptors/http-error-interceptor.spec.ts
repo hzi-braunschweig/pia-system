@@ -14,7 +14,6 @@ import {
 
 import {
   HttpErrorInterceptor,
-  NoErrorToastHeader,
   ToastMsgNoInternet,
   ToastMsgUnknownError,
 } from './http-error-interceptor.service';
@@ -58,33 +57,6 @@ describe('HttpErrorInterceptor', () => {
       done();
     });
   });
-
-  it(
-    'should skip error message when ' + NoErrorToastHeader + ' Header is set',
-    (done) => {
-      const request = new HttpRequest('GET', 'some/url/', {
-        headers: new HttpHeaders({
-          [NoErrorToastHeader]: '',
-          Authorization: 'Bearer 1234567',
-        }),
-      });
-
-      let handlerRequest: HttpRequest<any>;
-      handlerSpy.handle.and.callFake((request) => {
-        handlerRequest = request;
-        return of(new HttpResponse());
-      });
-
-      interceptor.intercept(request, handlerSpy).subscribe(() => {
-        expect(handlerRequest.headers.keys()).toEqual(['Authorization']);
-        expect(handlerRequest.headers.get('Authorization')).toEqual(
-          'Bearer 1234567'
-        );
-        expect(toastPresenterSpy.presentToast).not.toHaveBeenCalled();
-        done();
-      });
-    }
-  );
 
   for (const errorCode of [404, 500]) {
     for (const networkIsOffline of [true, false]) {

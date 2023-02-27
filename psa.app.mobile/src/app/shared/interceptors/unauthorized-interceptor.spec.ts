@@ -25,17 +25,14 @@ describe('UnauthorizedInterceptor', () => {
 
   beforeEach(() => {
     request = new HttpRequest('GET', 'some/url/');
-    handler = jasmine.createSpyObj<SpyObj<HttpHandler>>('HttpHandler', [
-      'handle',
-    ]);
+    handler = jasmine.createSpyObj<HttpHandler>('HttpHandler', ['handle']);
     handleSubject = new Subject<HttpEvent<any>>();
     handler.handle.and.returnValue(handleSubject.asObservable());
-    authMock = jasmine.createSpyObj(AuthService, ['getToken', 'logout']);
+    authMock = jasmine.createSpyObj('AuthService', ['getToken', 'logout']);
   });
 
   it('should log user out if a 401 response was received', fakeAsync(() => {
     const error = new HttpErrorResponse({ status: 401 });
-    authMock.getToken.and.returnValue('an expired token');
     const interceptor = new UnauthorizedInterceptor(authMock);
     onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
     handleSubject.error(error);
@@ -47,19 +44,6 @@ describe('UnauthorizedInterceptor', () => {
 
   it('should only pass the error if a non 401 response was received', fakeAsync(() => {
     const error = new HttpErrorResponse({ status: 404 });
-    authMock.getToken.and.returnValue('an expired token');
-    const interceptor = new UnauthorizedInterceptor(authMock);
-    onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
-    handleSubject.error(error);
-    tick();
-
-    expect(handler.handle).toHaveBeenCalledWith(request);
-    expect(authMock.logout).not.toHaveBeenCalled();
-  }));
-
-  it('should only pass the error if no user is logged in', fakeAsync(() => {
-    const error = new HttpErrorResponse({ status: 401 });
-    authMock.getToken.and.returnValue(null);
     const interceptor = new UnauthorizedInterceptor(authMock);
     onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
     handleSubject.error(error);

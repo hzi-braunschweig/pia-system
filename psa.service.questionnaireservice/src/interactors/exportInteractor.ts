@@ -58,7 +58,7 @@ export class ExportInteractor {
       );
     }
     if (!study_name) {
-      throw Boom.badData('Unable to export for undefined study');
+      throw Boom.badData('Unable to export for undefined study.');
     }
 
     if (options.probands.length > 0) {
@@ -70,13 +70,14 @@ export class ExportInteractor {
       );
 
       if (foundProbands.length === 0) {
-        throw Boom.badData('There was no Proband found.');
+        throw Boom.badData('There was no proband found.');
       }
     }
 
     const archive = archiver('zip');
 
     const exportPromises = options.exports
+      .concat('readme')
       .filter((key) => availableExportFeatures.has(key))
       .map((key) => availableExportFeatures.get(key))
       .map(

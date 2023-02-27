@@ -8,7 +8,6 @@ export declare class GlobalAuthSettings implements AuthSettings {
 }
 export declare class GlobalConfig {
     static authserver: typeof GlobalAuthSettings;
-    static get internal(): Connection;
     static get complianceservice(): HttpConnection;
     static get loggingservice(): HttpConnection;
     static get personaldataservice(): HttpConnection;
@@ -18,10 +17,12 @@ export declare class GlobalConfig {
     static get mailserver(): MailserverConnection;
     static get probandAppUrl(): string;
     static get adminAppUrl(): string;
-    static getPublic(sslCerts: SslCerts): SecureConnection;
+    static getInternal(serviceName: string): Connection;
+    static getPublic(sslCerts: SslCerts, serviceName: string): SecureConnection;
     static getQPia(sslCerts: SslCerts): DatabaseConnection;
     static getMessageQueue(serviceName: string): MessageQueueConnection;
     static isDevelopmentSystem(): boolean;
     static isTest(): boolean;
     private static getHttpConnection;
+    private static getPort;
 }

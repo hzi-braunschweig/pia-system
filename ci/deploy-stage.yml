@@ -1,4 +1,6 @@
-include: ci/rules.yml
+include:
+  - local: ci/rules.yml
+  - local: ci/k8s.yml
 
 .rule-if-branch-manual: &rule-if-branch-manual
   - if: $CI_COMMIT_REF_SLUG =~ /^(feature|renovate|bugfix|hotfix)-pia-\d+/ && $CI_MERGE_REQUEST_IID
@@ -6,7 +8,10 @@ include: ci/rules.yml
     allow_failure: true
 
 deploy-pia-develop:
-  extends: .job-exclude-scheduled-pipelines
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
   variables:
@@ -21,7 +26,10 @@ deploy-pia-develop:
     url: https://pia-develop.netzlink.com/
 
 deploy-pia-release:
-  extends: .job-exclude-scheduled-pipelines
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
   variables:
@@ -37,7 +45,10 @@ deploy-pia-release:
     url: https://pia-release.netzlink.com/
 
 deploy-pia-load:
-  extends: .job-exclude-scheduled-pipelines
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
   variables:
@@ -57,7 +68,10 @@ deploy-pia-load:
     url: https://pia-load.netzlink.com/
 
 deploy-sb-pia:
-  extends: .job-exclude-scheduled-pipelines
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
   variables:
@@ -72,7 +86,10 @@ deploy-sb-pia:
     url: https://sb-pia.sormas.netzlink.com/
 
 deploy-sb-pia-niedersachsen-release:
-  extends: .job-exclude-scheduled-pipelines
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
   variables:
@@ -88,7 +105,10 @@ deploy-sb-pia-niedersachsen-release:
     url: https://release-niedersachsen-sb.ovh.netzlink.com
 
 deploy-stable:
-  extends: .job-exclude-scheduled-pipelines
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
   variables:
@@ -110,7 +130,10 @@ deploy-stable:
     url: https://$TARGET_NAME
 
 deploy-feature-stage:
-  extends: .job-exclude-scheduled-pipelines
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
   variables:
@@ -146,7 +169,10 @@ deploy-feature-stage:
     auto_stop_in: 1 week
 
 deploy-sb-feature-stage:
-  extends: .job-exclude-scheduled-pipelines
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
   variables:
@@ -182,7 +208,10 @@ deploy-sb-feature-stage:
     auto_stop_in: 1 week
 
 stop-feature-stage:
-  extends: .job-exclude-scheduled-pipelines
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: undeploy
   variables:
@@ -200,7 +229,10 @@ stop-feature-stage:
     action: stop
 
 stop-sb-feature-stage:
-  extends: .job-exclude-scheduled-pipelines
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: undeploy
   variables:

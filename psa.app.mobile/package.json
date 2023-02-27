@@ -1,7 +1,7 @@
 {
   "name": "app-mobile",
   "description": "PIA mobile app",
-  "version": "1.31.1",
+  "version": "1.33.0",
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "prestart:browser": "npm run licenses",
@@ -84,13 +84,14 @@
     "cordova-android": "^11.0.0",
     "cordova-ios": "^6.2.0",
     "cordova-plugin-add-swift-support": "^2.0.2",
+    "cordova-plugin-androidx-adapter": "^1.1.3",
     "cordova-plugin-app-version": "^0.1.14",
     "cordova-plugin-camera": "^6.0.0",
     "cordova-plugin-chooser": "^1.3.2",
     "cordova-plugin-device": "^2.1.0",
     "cordova-plugin-file": "^7.0.0",
-    "cordova-plugin-file-opener2": "^3.0.5",
-    "cordova-plugin-firebasex": "^14.2.1-cli",
+    "cordova-plugin-file-opener2": "^4.0.0",
+    "cordova-plugin-firebasex": "^15.0.0-cli",
     "cordova-plugin-inappbrowser": "^5.0.0",
     "cordova-plugin-ionic-keyboard": "^2.2.0",
     "cordova-plugin-ionic-webview": "^5.0.0",
@@ -132,9 +133,6 @@
       "cordova-plugin-file": {
         "ANDROIDX_WEBKIT_VERSION": "1.4.0"
       },
-      "cordova-plugin-file-opener2": {
-        "ANDROID_SUPPORT_V4_VERSION": "27.+"
-      },
       "cordova-plugin-market": {},
       "cordova-plugin-firebasex": {
         "IOS_STRIP_DEBUG": "true",
@@ -165,7 +163,9 @@
       "cordova-plugin-inappbrowser": {},
       "phonegap-plugin-barcodescanner": {
         "ANDROID_SUPPORT_V4_VERSION": "27.+"
-      }
+      },
+      "cordova-plugin-androidx-adapter": {},
+      "cordova-plugin-file-opener2": {}
     },
     "platforms": [
       "ios",

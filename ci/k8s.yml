@@ -1,0 +1,5 @@
+# can be used for jobs that are not performance critical
+# we specify a low cpu request so that these jobs can be scheduled easier but can potentially run longer
+.no-cpu-request:
+  variables:
+    KUBERNETES_CPU_REQUEST: '0.1'

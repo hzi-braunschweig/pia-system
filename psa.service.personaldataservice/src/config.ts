@@ -18,8 +18,8 @@ const SSL_CERTS: SslCerts = {
 };
 
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS),
-  internal: GlobalConfig.internal,
+  public: GlobalConfig.getPublic(SSL_CERTS, 'personaldataservice'),
+  internal: GlobalConfig.getInternal('personaldataservice'),
   database: {
     host: ConfigUtils.getEnvVariable('DB_PERSONALDATA_HOST'),
     port: Number(ConfigUtils.getEnvVariable('DB_PERSONALDATA_PORT')),

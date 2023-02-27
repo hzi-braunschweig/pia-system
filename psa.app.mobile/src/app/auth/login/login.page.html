@@ -7,26 +7,9 @@
 <ion-content color="primary-light">
   <ion-card class="pia-login-card">
     <ion-card-header class="pia-logo-container">
-      <ion-button
-        *ngIf="username"
-        class="go-back-button"
-        fill="clear"
-        color="tertiary"
-        (click)="switchUser()"
-      >
-        <ion-icon slot="icon-only" name="arrow-back-outline"></ion-icon>
-      </ion-button>
       <img class="pia-logo" src="assets/images/pia_logo.png" alt="pia logo" />
     </ion-card-header>
 
-    <app-login-username
-      *ngIf="!username"
-      (usernameChange)="username = $event"
-    ></app-login-username>
-
-    <app-login-password-legacy
-      *ngIf="username"
-      [username]="username"
-    ></app-login-password-legacy>
+    <app-login-username></app-login-username>
   </ion-card>
 </ion-content>

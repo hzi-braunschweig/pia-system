@@ -16,29 +16,24 @@ import { AuthService } from './auth.service';
 
 /**
  * This Guard checks whether a user is authenticated. If not the user will be redirected to login.
- * If a new password is needed, the user will be redirected to the change password page.
  */
 @Injectable({
   providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(
+    private readonly auth: AuthService,
+    private readonly router: Router
+  ) {}
 
-  canActivate(
+  public async canActivate(
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
-  ): true | UrlTree {
-    if (!this.auth.isAuthenticated()) {
+  ): Promise<true | UrlTree> {
+    if (await this.auth.isAuthenticated()) {
+      return true;
+    } else {
       return this.router.createUrlTree(['auth', 'login']);
     }
-    if (this.auth.isPasswordChangeNeeded()) {
-      return this.router.createUrlTree(['auth', 'change-password'], {
-        queryParams: {
-          isUserIntent: false,
-          returnTo: next.url.map((segment) => segment.path),
-        },
-      });
-    }
-    return true;
   }
 }

@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { AuthService } from '../auth.service';
 import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
 import {
@@ -20,23 +19,40 @@ import { Market } from '@awesome-cordova-plugins/market/ngx';
 import { environment } from '../../../environments/environment';
 import { LocaleService } from '../../shared/services/locale/locale.service';
 import { ToastPresenterService } from '../../shared/services/toast-presenter/toast-presenter.service';
-import { KeycloakClientService } from '../keycloak-client.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../auth.service';
+
+class EndpointNotCompatibleError extends Error {
+  constructor() {
+    super('Endpoint is not compatible');
+  }
+}
+
+class MissingBackendMappingError extends Error {
+  constructor() {
+    super('Missing backend mapping');
+  }
+}
+
+class EndpointUrlInvalidError extends Error {
+  constructor() {
+    super('Endpoint URL is invalid');
+  }
+}
 
 @Component({
   selector: 'app-login-username',
   templateUrl: './login-username.component.html',
   styleUrls: ['./login-username.component.scss'],
 })
-export class LoginUsernameComponent implements OnInit {
-  @Output()
-  public usernameChange = new EventEmitter<string>();
-
+export class LoginUsernameComponent {
   public readonly form = new FormGroup({
     username: new FormControl('', Validators.required),
-    rememberMe: new FormControl(false),
     customEndpointUrl: new FormControl(
-      this.endpoint.getCustomEndpoint(),
+      {
+        value: this.endpoint.getCustomEndpointUrl(),
+        disabled: !this.endpoint.isCustomEndpoint(),
+      },
       Validators.required
     ),
   });
@@ -54,69 +70,83 @@ export class LoginUsernameComponent implements OnInit {
     private toastPresenter: ToastPresenterService,
     private alertCtrl: AlertController,
     private translate: TranslateService,
-    private keycloakClient: KeycloakClientService,
     private router: Router,
     private menuCtrl: MenuController
-  ) {
-    if (!this.endpoint.isCustomEndpoint()) {
-      this.form.get('customEndpointUrl').disable();
-    }
-  }
+  ) {}
 
-  public async ngOnInit(): Promise<void> {
-    const username = this.auth.getRememberedUsername();
-    const customEndpointUrl = this.endpoint.getCustomEndpoint();
-    await this.setUsernameAndEndpoint(username, customEndpointUrl);
+  public toggleCustomEndpointField(): void {
+    const customEndpointUrl = this.form.get('customEndpointUrl');
+    if (customEndpointUrl.disabled) {
+      customEndpointUrl.enable();
+    } else {
+      customEndpointUrl.setValue(null);
+      customEndpointUrl.disable();
+      this.endpoint.removeLatestEndpoint();
+    }
   }
 
   public async onSubmit(): Promise<void> {
     const username = this.form.get('username').value;
-    const customEndpointUrl = this.form.get('customEndpointUrl').value;
-    if (this.form.get('rememberMe').value) {
-      this.auth.setRememberedUsername(username);
-    } else {
-      this.auth.setRememberedUsername(null);
-    }
-    await this.setUsernameAndEndpoint(username, customEndpointUrl);
-  }
 
-  private async setUsernameAndEndpoint(
-    username: string,
-    customEndpointUrl: string
-  ): Promise<void> {
     if (!username || this.loading) {
       return;
     }
-    if (!this.setEndpoint(username, customEndpointUrl)) {
-      return;
-    }
-    this.auth.resetCurrentUser();
 
-    await this.showLoader('LOGIN.CONNECTING_TO_SERVER');
+    try {
+      await this.showLoader('LOGIN.CONNECTING_TO_SERVER');
+
+      await this.setEndpoint(
+        username,
+        this.form.get('customEndpointUrl').value
+      );
+
+      await this.authenticateWithKeycloak(username);
+
+      await this.dismissLoader();
+    } catch (e) {
+      await this.dismissLoader();
+
+      if (e instanceof EndpointNotCompatibleError) {
+        await this.showAppIncompatibleAlert();
+      } else if (e instanceof MissingBackendMappingError) {
+        this.toastPresenter.presentToast(
+          'LOGIN.TOAST_MSG_LOGIN_NO_BACKEND_MAPPING_EXISTS'
+        );
+      } else if (e instanceof EndpointUrlInvalidError) {
+        this.toastPresenter.presentToast('LOGIN.GIVEN_BACKEND_URL_NOT_VALID');
+      }
+    }
+  }
+
+  private async setEndpoint(
+    username: string,
+    customEndpointUrl: string
+  ): Promise<void> {
+    if (!customEndpointUrl) {
+      const success = this.endpoint.setEndpointForUser(username);
+      if (!success) {
+        throw new MissingBackendMappingError();
+      }
+    } else {
+      const success = this.endpoint.setCustomEndpoint(customEndpointUrl);
+      if (!success) {
+        throw new EndpointUrlInvalidError();
+      }
+    }
 
     if (this.platform.is('cordova')) {
       const currentAppVersion = await this.appVersion
         .getVersionNumber()
         .catch(() => null);
       if (!(await this.endpoint.isEndpointCompatible(currentAppVersion))) {
-        await this.dismissLoader();
-        await this.showAppIncompatibleAlert();
-        return;
+        throw new EndpointNotCompatibleError();
       }
     }
-
-    if (await this.keycloakClient.isCompatible()) {
-      await this.authenticateWithKeycloak(username);
-    } else {
-      this.usernameChange.next(username);
-    }
-
-    await this.dismissLoader();
   }
 
   private async authenticateWithKeycloak(username: string): Promise<void> {
     try {
-      await this.keycloakClient.login(
+      await this.auth.loginWithUsername(
         username,
         this.localeService.currentLocale
       );
@@ -124,7 +154,7 @@ export class LoginUsernameComponent implements OnInit {
       await this.router.navigate(['home']);
       await this.menuCtrl.enable(true);
     } catch (e) {
-      if (e.reason !== 'closed_by_user') {
+      if (e?.message !== 'closed_by_user') {
         console.error('Authentication failed with: ', e);
 
         const alert = await this.alertCtrl.create({
@@ -165,35 +195,6 @@ export class LoginUsernameComponent implements OnInit {
     });
 
     await alert.present();
-  }
-
-  public toggleCustomEndpointField(): void {
-    const customEndpointUrl = this.form.get('customEndpointUrl');
-    if (customEndpointUrl.disabled) {
-      customEndpointUrl.enable();
-    } else {
-      customEndpointUrl.setValue(null);
-      customEndpointUrl.disable();
-      this.endpoint.removeCustomEndpoint();
-    }
-  }
-
-  private setEndpoint(username: string, customEndpointUrl: string): boolean {
-    if (!customEndpointUrl) {
-      const success = this.endpoint.setEndpointForUser(username);
-      if (!success) {
-        this.toastPresenter.presentToast(
-          'LOGIN.TOAST_MSG_LOGIN_NO_BACKEND_MAPPING_EXISTS'
-        );
-      }
-      return success;
-    } else {
-      const success = this.endpoint.setCustomEndpoint(customEndpointUrl);
-      if (!success) {
-        this.toastPresenter.presentToast('LOGIN.GIVEN_BACKEND_URL_NOT_VALID');
-      }
-      return success;
-    }
   }
 
   private async showLoader(message: string): Promise<void> {

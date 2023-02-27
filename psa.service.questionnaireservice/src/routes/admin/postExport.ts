@@ -57,7 +57,10 @@ const route: ServerRoute = {
               .example('Testproband1')
           )
           .when('exports', {
-            is: Joi.array().items(Joi.string().valid('codebook')),
+            is: Joi.array().items(
+              Joi.string().valid('codebook'),
+              Joi.string().valid('questionnaires')
+            ),
             then: Joi.optional(),
             otherwise: Joi.array().min(1).required(),
           }),

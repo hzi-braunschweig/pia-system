@@ -1,6 +1,14 @@
+include:
+  - local: ci/rules.yml
+  - local: ci/k8s.yml
+
 ## ionic stuff
 
 build-ionic-ios-store:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
   needs:
@@ -10,10 +18,6 @@ build-ionic-ios-store:
     - cd psa.app.mobile
     - ionic-cloud build ios app-store --app-id="5be00d76" --native-config="iOS-Store" --environment="pia_build_node_14" --signing-cert="PIA_Store" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test"
-      when: never
     - if: $CI_MERGE_REQUEST_IID
       when: manual
       allow_failure: true
@@ -28,6 +32,10 @@ build-ionic-ios-store:
       allow_failure: true
 
 build-and-push-ionic-ios-store:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
   needs:
@@ -38,10 +46,6 @@ build-and-push-ionic-ios-store:
     - BUILD_ID=$(ionic-cloud build ios app-store --app-id="5be00d76" --native-config="iOS-Store" --environment="pia_build_node_14" --signing-cert="PIA_Store" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}" --json  | jq -r '.buildId')
     - ionic-cloud deploy ios --app-id="5be00d76" --build-id=$BUILD_ID --destination="Apple App Store" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test"
-      when: never
     - if: $CI_MERGE_REQUEST_IID
       when: manual
       allow_failure: true
@@ -56,6 +60,10 @@ build-and-push-ionic-ios-store:
       allow_failure: true
 
 build-ionic-android-store:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
   needs:
@@ -65,10 +73,6 @@ build-ionic-android-store:
     - cd psa.app.mobile
     - ionic-cloud build android release --app-id="5be00d76" --native-config="Android-Store" --environment="pia_build_node_14" --build-stack="Linux - 2022.10" --signing-cert="PIA_Android" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test"
-      when: never
     - if: $CI_MERGE_REQUEST_IID
       when: manual
       allow_failure: true
@@ -83,6 +87,10 @@ build-ionic-android-store:
       allow_failure: true
 
 build-and-push-ionic-android-store:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
   needs:
@@ -93,10 +101,6 @@ build-and-push-ionic-android-store:
     - BUILD_ID=$(ionic-cloud build android release --app-id="5be00d76" --native-config="Android-Store" --environment="pia_build_node_14" --build-stack="Linux - 2022.10" --signing-cert="PIA_Android" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}" --json  | jq -r '.buildId')
     - ionic-cloud deploy android --app-id="5be00d76" --build-id=$BUILD_ID --destination="Google Play Store, Produktion" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
-      when: never
     - if: $CI_MERGE_REQUEST_IID
       when: manual
       allow_failure: true

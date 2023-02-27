@@ -539,8 +539,6 @@ export class QuestionnaireInstancesService {
 
   /**
    * Returns true if either the expiration date is reached
-   *
-   *
    */
   public static isExpired(
     curDate: Date,

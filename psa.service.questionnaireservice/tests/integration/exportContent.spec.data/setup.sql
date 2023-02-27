@@ -14,13 +14,14 @@ VALUES ('Teststudie - Export', 'Studie, um die Integrationstest des Exports vorz
         'active', NULL, FALSE, 'ZIFCO', 10, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, FALSE, NULL, NULL);
 
 INSERT INTO probands (pseudonym, first_logged_in_at, compliance_labresults, compliance_samples, needs_material,
-                      study_center, examination_wave, compliance_bloodsamples, status, logging_active, study)
-VALUES ('qtest-0000000002', '2021-06-08', TRUE, TRUE, TRUE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export'),
-       ('qtest-0000000003', '2021-06-08', TRUE, TRUE, FALSE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export'),
-       ('qtest-0000000004', '2021-06-08', TRUE, TRUE, FALSE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export'),
-       ('qtest-0000000005', '2021-06-08', TRUE, TRUE, FALSE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export'),
-       ('qtest-0000000006', NULL, TRUE, TRUE, FALSE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export'),
-       ('qtest-0000000007', NULL, FALSE, FALSE, FALSE, '.', 1, FALSE, 'active', TRUE, 'Teststudie - Export');
+                      study_center, examination_wave, compliance_bloodsamples, status, logging_active, study, is_test_proband)
+VALUES ('qtest-0000000002', '2021-06-08', TRUE, TRUE, TRUE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export', FALSE),
+       ('qtest-0000000003', '2021-06-08', TRUE, TRUE, FALSE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export', FALSE),
+       ('qtest-0000000004', '2021-06-08', TRUE, TRUE, FALSE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export', FALSE),
+       ('qtest-0000000005', '2021-06-08', TRUE, TRUE, FALSE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export', FALSE),
+       ('qtest-0000000006', NULL, TRUE, TRUE, FALSE, '.', 1, TRUE, 'active', TRUE, 'Teststudie - Export', FALSE),
+       ('qtest-0000000007', NULL, FALSE, FALSE, FALSE, '.', 1, FALSE, 'active', TRUE, 'Teststudie - Export', FALSE),
+       ('qtest-0000000008', NULL, FALSE, FALSE, FALSE, '.', 1, FALSE, 'active', TRUE, 'Teststudie - Export', TRUE);
 
 --
 -- Questionnaires
@@ -35,33 +36,33 @@ INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycl
                             keep_answers)
 VALUES (298, 'Teststudie - Export', 'FB3_morgen_expired', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, FALSE, 1,
         1, '2021-06-08', 'for_probands', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
-       (299, 'Teststudie - Export', 'FB4_Versionierung_mit_Labels_Codes', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
+       (299, 'Teststudie - Export', 'FB4_Versionierung_mit_Variablennamen_Codes', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
         NULL, FALSE, 2, 5, '2021-06-08', 'for_probands', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
        (295, 'Teststudie - Export', 'FB1_alle_Antworttypen', 1, 1, 'day', 0, 3, 0, '', '', '', '', 0, '', NULL, FALSE,
         300, 100, '2021-06-08', 'for_probands', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
        (297, 'Teststudie - Export', 'FB2_alle_Antworttypen_UT', 1, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL,
         FALSE, 999999, 999999, '2021-06-08', 'for_research_team', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL,
         FALSE),
-       (299, 'Teststudie - Export', 'FB4_Versionierung_mit_Labels_Codes', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
+       (299, 'Teststudie - Export', 'FB4_Versionierung_mit_Variablennamen_Codes', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
         NULL, FALSE, 2, 5, '2021-06-08', 'for_probands', 2, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
-       (300, 'Teststudie - Export', 'FB5 Bedingungen, Labels und ÄÖÜßá%', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
+       (300, 'Teststudie - Export', 'FB5 Bedingungen, Variablennamen und ÄÖÜßá%', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
         NULL, FALSE, 2, 5, '2021-06-08', 'for_probands', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
-       (301, 'Teststudie - Export', 'FB4_Versionierung_mit_Labels_Codes', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
+       (301, 'Teststudie - Export', 'FB4_Versionierung_mit_Variablennamen_Codes', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
         NULL, FALSE, 2, 5, '2021-06-08', 'for_probands', 3, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE);
 
 
 INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, variable_name, questionnaire_version)
-VALUES (2618, 295, 'Es werden verschiedene Antworttypen durchgetestet.', 1, FALSE, '', 1),
+VALUES (2618, 295, 'Es werden verschiedene Antworttypen durchgetestet.', 1, TRUE, '', 1),
        (2620, 297, 'Es werden verschiedene Antworttypen durchgetestet.', 1, FALSE, '', 1),
        (2621, 298, 'Wähle aus', 1, FALSE, '', 1),
        (2622, 298, 'Wähle aus', 2, FALSE, '', 1),
-       (2623, 299, 'Frage mit Labels', 1, FALSE, '', 1),
-       (2624, 299, 'Frage mit Codes und Labels', 2, FALSE, '', 1),
-       (2625, 299, 'Frage mit Labels', 1, FALSE, '', 2),
-       (2626, 299, 'Frage mit Codes und Labels', 2, FALSE, '', 2),
-       (2629, 301, 'Frage mit Labels', 1, FALSE, '', 3),
-       (2630, 301, 'Frage mit Codes und Labels', 2, FALSE, '', 3),
-       (2627, 300, 'Es werden verschiedene Antworttypen durchgetestet.', 1, TRUE, 'UeberLabel', 1),
+       (2623, 299, 'Frage mit Vars', 1, FALSE, '', 1),
+       (2624, 299, 'Frage mit Codes und Vars', 2, FALSE, '', 1),
+       (2625, 299, 'Frage mit Vars', 1, FALSE, '', 2),
+       (2626, 299, 'Frage mit Codes und Vars', 2, FALSE, '', 2),
+       (2629, 301, 'Frage mit Vars', 1, FALSE, '', 3),
+       (2630, 301, 'Frage mit Codes und Vars', 2, FALSE, '', 3),
+       (2627, 300, 'Es werden verschiedene Antworttypen durchgetestet.', 1, TRUE, 'UeberVariable', 1),
        (2628, 300, 'Eine bedingte Frage.', 2, FALSE, '', 1),
        (2631, 300, 'Frage ohne Unterfrage', 3, FALSE, '', 1);
 
@@ -93,32 +94,32 @@ VALUES (5967, 2618, 'Ist dies eine Einzelauswahl?', 1, '{f,f}', '{Ja,Nein}', '{1
        (5995, 2620, 'Gib eine PZN ein.', 7, '{}', '{}', '{}', 9, FALSE, NULL, NULL, FALSE, ''),
        (5996, 2620, 'Zeitstempel', 9, '{}', '{}', '{}', 10, FALSE, NULL, NULL, FALSE, ''),
        (6011, 2627, 'Öst düs einä Eînzeláußwahl?', 1, '{f,f}', '{Jeß,Nö}', '{1,0}', 1, FALSE, NULL, NULL, TRUE,
-        'LabelÄ'),
+        'VarÄ'),
        (6012, 2627, 'Ist dies eine Mehrfachauswahl?', 2, '{f,f,f}', '{"Keine Angabe",Ja,Nein}', '{99,1,0}', 2, FALSE,
-        NULL, NULL, FALSE, 'LabelB'),
+        NULL, NULL, FALSE, 'VarB'),
        (6003, 2627, 'Ohne Markdown: **Können** *hier* `nur` [Zahlen](http://localhost) ![eingetragen](image.jpg) werden?', 3, '{}', '{}', '{}', 3, FALSE, NULL, NULL, FALSE,
-        'LabelC'),
-       (6004, 2627, 'Klappt diese Freitextfrage?', 4, '{}', '{}', '{}', 4, FALSE, NULL, NULL, FALSE, 'LabelD'),
-       (6005, 2627, 'Gib das heutige Datum an.', 5, '{}', '{}', '{}', 5, FALSE, NULL, NULL, FALSE, 'LabelE'),
+        'VarC'),
+       (6004, 2627, 'Klappt diese Freitextfrage?', 4, '{}', '{}', '{}', 4, FALSE, NULL, NULL, FALSE, 'VarD'),
+       (6005, 2627, 'Gib das heutige Datum an.', 5, '{}', '{}', '{}', 5, FALSE, NULL, NULL, FALSE, 'VarE'),
        (6006, 2627, 'Wähle ja, und prüfe, ob eine weitere Frage erscheint (Prüfung von Bedingung).', 1, '{f,f}',
-        '{Ja,Nein}', '{1,0}', 6, FALSE, NULL, NULL, FALSE, 'LabelF'),
-       (6007, 2627, 'Lade ein Foto hoch.', 8, '{}', '{}', '{}', 7, FALSE, NULL, NULL, FALSE, 'LabelG'),
-       (6008, 2627, 'Gib eine Proben-ID ein.', 6, '{}', '{}', '{}', 8, FALSE, NULL, NULL, FALSE, 'LabelH'),
-       (6009, 2627, 'Gib eine PZN ein.', 7, '{}', '{}', '{}', 9, FALSE, NULL, NULL, FALSE, 'LabelI'),
-       (6010, 2627, 'Zeitstempel', 9, '{}', '{}', '{}', 10, FALSE, NULL, NULL, FALSE, 'LabelJ'),
+        '{Ja,Nein}', '{1,0}', 6, FALSE, NULL, NULL, FALSE, 'VarF'),
+       (6007, 2627, 'Lade ein Foto hoch.', 8, '{}', '{}', '{}', 7, FALSE, NULL, NULL, FALSE, 'VarG'),
+       (6008, 2627, 'Gib eine Proben-ID ein.', 6, '{}', '{}', '{}', 8, FALSE, NULL, NULL, FALSE, 'VarH'),
+       (6009, 2627, 'Gib eine PZN ein.', 7, '{}', '{}', '{}', 9, FALSE, NULL, NULL, FALSE, 'VarI'),
+       (6010, 2627, 'Zeitstempel', 9, '{}', '{}', '{}', 10, FALSE, NULL, NULL, FALSE, 'VarJ'),
        (6013, 2628, 'Zahlenfrage Min Max', 3, '{}', '{}', '{}', 1, FALSE, -3, 12, TRUE, ''),
        (5997, 2621, '', 1, '{f,f}', '{Ja,Nein}', '{}', 1, FALSE, NULL, NULL, FALSE, ''),
        (5998, 2622, '', 2, '{f,f,f}', '{"Keine Angabe",Timbuktu,Venezuela}', '{}', 1, FALSE, NULL, NULL, FALSE, ''),
        (5999, 2623, 'Wie viele Tage sind es bis Weihnachten?', 3, '{}', '{}', '{}', 1, FALSE, NULL, NULL, FALSE,
-        'Weihnachtslabel'),
+        'Weihnachten'),
        (6000, 2624, 'Was sind deine Lieblingsfarben', 2, '{f,f,f,f,f}', '{"Keine Angabe",grün,blau,gelb,rot}',
         '{99,1,2,3,4}', 1, FALSE, NULL, NULL, FALSE, ''),
        (6001, 2625, 'Wie viele Tage sind es bis Weihnachten?', 3, '{}', '{}', '{}', 1, FALSE, NULL, NULL, FALSE,
-        'Weihnachtslabel'),
+        'Weihnachten'),
        (6002, 2626, 'Was sind deine Lieblingsfarben', 2, '{f,f,f,f,f}', '{"Keine Angabe",grün,blau,gelb,rot}',
         '{99,1,2,3,4}', 1, FALSE, NULL, NULL, FALSE, 'Farbenlabel'),
        (6014, 2629, 'Wie viele Tage sind es bis Weihnachten?', 3, '{}', '{}', '{}', 1, FALSE, NULL, NULL, FALSE,
-        'Weihnachtslabel'),
+        'Weihnachten'),
        (6015, 2630, 'Was sind deine Lieblingsfarben', 2, '{f,f,f,f,f}', '{"Keine Angabe",grün,blau,gelb,rot}',
         '{99,1,2,3,4}', 1, FALSE, NULL, NULL, FALSE, 'Farbenlabel');
 
@@ -132,7 +133,8 @@ INSERT INTO conditions (condition_type, condition_answer_option_id, condition_qu
 VALUES ('internal_this', 6012, null, null, '==', 'Nein', 6011, 300, 'OR', 1, 1),
        ('internal_this', null, 2628, null, '>=', 'Nein', 6011, 300, 'OR', 1, 1),
        ('internal_last', 6004, null, null, '==', 'Ja;Nein', 6012, 300, 'AND', 1, 1),
-       ('external', 6007, null, null, '\=', 'Eine Texteingabe', 5970, 295, 'OR', 1, 1);
+       ('external', 6007, null, null, '\=', 'Eine Texteingabe', 5970, 295, 'OR', 1, 1),
+       ('external', null, null, 299, '==', 'Eine Texteingabe', 5970, 295, 'OR', 1, 1);
 
 --
 -- Questionnaire Instances with Answers
@@ -163,9 +165,9 @@ VALUES (17712526, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'qtest-00
         NULL, 1, 'expired', TRUE, 0, 0, 1),
        (17712530, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'qtest-0000000004', '2021-06-08 00:00:00', NULL,
         NULL, 1, 'in_progress', TRUE, 60, 0, 1),
-       (17712534, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Labels_Codes', 'qtest-0000000004',
+       (17712534, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Variablennamen_Codes', 'qtest-0000000004',
         '2021-06-08 00:00:00', NULL, NULL, 1, 'in_progress', TRUE, 50, 0, 2),
-       (17712528, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Labels_Codes', 'qtest-0000000003',
+       (17712528, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Variablennamen_Codes', 'qtest-0000000003',
         '2021-06-08 00:00:00', '2021-06-08 15:20:27.142', NULL, 1, 'released_once', FALSE, 100, 1, 2),
        (17712531, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'qtest-0000000004', '2021-06-09 00:00:00',
         '2021-06-09 07:12:38.338', NULL, 2, 'released_once', TRUE, 30, 1, 1),
@@ -177,7 +179,7 @@ VALUES (17712526, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'qtest-00
         NULL, 1, 'expired', TRUE, 0, 0, 1),
        (17712536, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'qtest-0000000005', '2021-06-08 00:00:00', NULL,
         NULL, 1, 'active', TRUE, 0, 0, 1),
-       (17712540, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Labels_Codes', 'qtest-0000000005',
+       (17712540, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Variablennamen_Codes', 'qtest-0000000005',
         '2021-06-08 00:00:00', NULL, NULL, 1, 'active', TRUE, 0, 0, 2),
        (17712537, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'qtest-0000000005', '2021-06-09 00:00:00',
         '2021-06-09 07:14:04.508', NULL, 2, 'released_once', TRUE, 10, 1, 1),
@@ -195,7 +197,7 @@ VALUES (17712526, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'qtest-00
         '2021-06-09 07:00:19.809', '2021-06-09 07:00:29.534', 2, 'released_twice', TRUE, 80, 2, 1),
        (17712518, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'qtest-0000000002', '2021-06-08 00:00:00',
         '2021-06-08 15:11:23.371', '2021-06-08 15:11:50.364', 1, 'released_twice', TRUE, 100, 2, 1),
-       (17712522, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Labels_Codes', 'qtest-0000000002',
+       (17712522, 'Teststudie - Export', 299, 'FB4_Versionierung_mit_Variablennamen_Codes', 'qtest-0000000002',
         '2021-06-08 00:00:00', '2021-06-08 15:13:25.708', '2021-06-08 15:13:42.345', 1, 'released_twice', TRUE, 100, 2,
         2),
        (17712517, 'Teststudie - Export', 298, 'FB3_morgen_expired', 'qtest-0000000002', '2021-06-08 00:00:00', NULL,
@@ -203,6 +205,10 @@ VALUES (17712526, 'Teststudie - Export', 295, 'FB1_alle_Antworttypen', 'qtest-00
        (17712542, 'Teststudie - Export', 297, 'FB2_alle_Antworttypen_UT', 'qtest-0000000007', '2021-06-08 00:00:00',
         NULL, NULL, 1, 'released', FALSE, 20, 2, 1);
 
+INSERT INTO user_files (id, user_id, questionnaire_instance_id, answer_option_id, file_name, file)
+VALUES
+    (3001, 'qtest-0000000002', 17712518, 5973, '1px.jpeg', 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='),
+    (3002, 'qtest-0000000002', 17712518, 5973, 'file.txt', 'Textfile');
 
 INSERT INTO answers (questionnaire_instance_id, question_id, answer_option_id, versioning, value, date_of_release,
                      releasing_person)
@@ -212,7 +218,7 @@ VALUES (17712518, 2618, 5967, 1, 'Ja', NULL, NULL),
        (17712518, 2618, 5970, 1, 'Freitext', NULL, NULL),
        (17712518, 2618, 5971, 1, 'Tue Jun 08 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)', NULL, NULL),
        (17712518, 2618, 5972, 1, 'Ja', NULL, NULL),
-       (17712518, 2618, 5973, 1, '321', NULL, NULL),
+       (17712518, 2618, 5973, 1, '3001', NULL, NULL),
        (17712518, 2618, 5974, 1, 'ZIFCO-1234567852', NULL, NULL),
        (17712518, 2618, 5975, 1, 'PZN-5678', NULL, NULL),
        (17712518, 2618, 5976, 1, '1623165077219', NULL, NULL),
@@ -222,7 +228,7 @@ VALUES (17712518, 2618, 5967, 1, 'Ja', NULL, NULL),
        (17712518, 2618, 5970, 2, 'Freitext', NULL, NULL),
        (17712518, 2618, 5971, 2, 'Tue Jun 08 2021 00:00:00 GMT+0200 (Mitteleuropäische Sommerzeit)', NULL, NULL),
        (17712518, 2618, 5972, 2, 'Ja', NULL, NULL),
-       (17712518, 2618, 5973, 2, '321', NULL, NULL),
+       (17712518, 2618, 5973, 2, '3002', NULL, NULL),
        (17712518, 2618, 5974, 2, 'ZIFCO-1234567852', NULL, NULL),
        (17712518, 2618, 5975, 2, 'PZN-56789', NULL, NULL),
        (17712518, 2618, 5976, 2, '1623165077219', NULL, NULL),

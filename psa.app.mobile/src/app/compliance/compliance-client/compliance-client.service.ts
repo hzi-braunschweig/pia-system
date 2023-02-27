@@ -10,14 +10,13 @@ import { File } from '@awesome-cordova-plugins/file/ngx';
 import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
-
-import { AuthService } from '../../auth/auth.service';
 import {
   ComplianceDataRequest,
   ComplianceDataResponse,
   ComplianceText,
 } from '../compliance.model';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
+import { CurrentUser } from '../../auth/current-user.service';
 
 @Injectable({
   providedIn: 'root',
@@ -29,7 +28,7 @@ export class ComplianceClientService {
 
   constructor(
     private http: HttpClient,
-    private auth: AuthService,
+    private currentUser: CurrentUser,
     private file: File,
     private fileOpener: FileOpener,
     private endpoint: EndpointService
@@ -50,9 +49,7 @@ export class ComplianceClientService {
   ): Promise<ComplianceDataResponse> {
     return this.http
       .get<ComplianceDataResponse>(
-        `${this.getApiUrl()}${studyName}/agree/${
-          this.auth.getCurrentUser().username
-        }`
+        `${this.getApiUrl()}${studyName}/agree/${this.currentUser.username}`
       )
       .toPromise();
   }
@@ -68,9 +65,7 @@ export class ComplianceClientService {
   ): Promise<ComplianceDataResponse> {
     return this.http
       .post<ComplianceDataResponse>(
-        `${this.getApiUrl()}${studyName}/agree/${
-          this.auth.getCurrentUser().username
-        }`,
+        `${this.getApiUrl()}${studyName}/agree/${this.currentUser.username}`,
         complianceData
       )
       .toPromise();
@@ -95,20 +90,18 @@ export class ComplianceClientService {
     return this.http
       .get<boolean>(
         `${this.getApiUrl()}${studyName}/agree/${
-          this.auth.getCurrentUser().username
+          this.currentUser.username
         }/needed`
       )
       .toPromise();
   }
 
   getComplianceAgreementPdfForCurrentUser(studyName: string): void {
-    const fileName = `Einwilligung_${studyName}_${
-      this.auth.getCurrentUser().username
-    }.pdf`;
+    const fileName = `Einwilligung_${studyName}_${this.currentUser.username}.pdf`;
     this.http
       .get(
         `${this.getApiUrl()}${studyName}/agree-pdf/${
-          this.auth.getCurrentUser().username
+          this.currentUser.username
         }`,
         { responseType: 'blob' }
       )

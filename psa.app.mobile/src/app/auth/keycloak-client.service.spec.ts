@@ -17,42 +17,55 @@ import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
-import {
-  InAppBrowser,
-  InAppBrowserEvent,
-  InAppBrowserEventType,
-  InAppBrowserObject,
-} from '@awesome-cordova-plugins/in-app-browser/ngx';
+import { InAppBrowser } from '@awesome-cordova-plugins/in-app-browser/ngx';
 import { EndpointService } from '../shared/services/endpoint/endpoint.service';
 import { environment } from '../../environments/environment';
-import { AuthService } from './auth.service';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { LoginFailedError } from './errors/login-failed-error';
-import { NoErrorToastHeader } from '../shared/interceptors/http-error-interceptor.service';
 import { TranslateService } from '@ngx-translate/core';
-import { MockService } from 'ng-mocks';
+import { MockProvider, MockService } from 'ng-mocks';
+import { Platform } from '@ionic/angular';
+import { CurrentUser } from './current-user.service';
+import { KeycloakPromiseImpl } from './keycloak-adapter/keycloak-promise';
+import Keycloak from 'keycloak-js';
+import { PiaKeycloakAdapter } from './keycloak-adapter/keycloak-adapter';
 import Spy = jasmine.Spy;
-import createSpy = jasmine.createSpy;
-import createSpyObj = jasmine.createSpyObj;
 import SpyObj = jasmine.SpyObj;
 
 describe('KeycloakClientService', () => {
   const endpointUrl = 'http://localhost';
-  const logoutUrl = 'https://localhost/logout';
-  const accountUrl = 'https://localhost/account';
+
   let service: KeycloakClientService;
-  let authService: AuthService;
-  let keycloakService: KeycloakService;
-  let endpointService: EndpointService;
+
+  let keycloakService: SpyObj<KeycloakService>;
+  let endpoint: EndpointService;
   let inAppBrowser: InAppBrowser;
+  let currentUser: CurrentUser;
   let httpMock: HttpTestingController;
-  let keycloakInitSpy: Spy;
-  let inAppBrowserCreateSpy: Spy;
-  let browserSpy: SpyObj<InAppBrowserObject>;
-  let loadStart: BehaviorSubject<InAppBrowserEvent>;
-  let loadError: BehaviorSubject<InAppBrowserEvent>;
+
+  let keycloakEvents$: Subject<KeycloakEvent>;
 
   beforeEach(() => {
+    keycloakEvents$ = new Subject<KeycloakEvent>();
+    keycloakService = jasmine.createSpyObj(
+      'KeycloakService',
+      [
+        'keycloakService.',
+        'updateToken',
+        'getToken',
+        'init',
+        'isLoggedIn',
+        'isTokenExpired',
+        'login',
+        'getToken',
+        'getKeycloakInstance',
+        'logout',
+      ],
+      {
+        keycloakEvents$: keycloakEvents$.asObservable(),
+      }
+    );
+
     TestBed.configureTestingModule({
       imports: [KeycloakAngularModule, HttpClientTestingModule],
       providers: [
@@ -61,87 +74,41 @@ describe('KeycloakClientService', () => {
           provide: TranslateService,
           useValue: MockService(TranslateService),
         },
+        {
+          provide: Platform,
+          useValue: { ready: () => Promise.resolve() },
+        },
+        MockProvider(KeycloakService, keycloakService),
       ],
     });
     service = TestBed.inject(KeycloakClientService);
-    authService = TestBed.inject(AuthService);
-    keycloakService = TestBed.inject(KeycloakService);
-    endpointService = TestBed.inject(EndpointService);
+    endpoint = TestBed.inject(EndpointService);
     httpMock = TestBed.inject(HttpTestingController);
     inAppBrowser = TestBed.inject(InAppBrowser);
-    endpointService.setCustomEndpoint(endpointUrl);
+    currentUser = TestBed.inject(CurrentUser);
+
+    endpoint.setCustomEndpoint(endpointUrl);
 
     environment.authServer.realm = 'dummy-realm';
     environment.authServer.clientId = 'dummy-client';
-
-    keycloakInitSpy = spyOn(keycloakService, 'init');
-    keycloakInitSpy.and.resolveTo(undefined);
-
-    loadStart = new BehaviorSubject({
-      url: 'http://localhost',
-    } as InAppBrowserEvent);
-    loadError = new BehaviorSubject({
-      url: 'http://localhost',
-    } as InAppBrowserEvent);
-
-    browserSpy = createSpyObj<InAppBrowserObject>([
-      'show',
-      'hide',
-      'close',
-      'on',
-    ]);
-
-    browserSpy.on.and.callFake((event: InAppBrowserEventType) => {
-      switch (event) {
-        case 'loadstart':
-          return loadStart;
-
-        case 'loaderror':
-          return loadError;
-      }
-    });
-
-    inAppBrowserCreateSpy = spyOn(inAppBrowser, 'create');
-    inAppBrowserCreateSpy.and.returnValue(browserSpy);
-
-    const createLogoutUrlSpy = createSpy('createLogoutUrl');
-    createLogoutUrlSpy.and.returnValue(logoutUrl);
-
-    const createAccountUrlSpy = createSpy('createAccountUrl');
-    createAccountUrlSpy.and.returnValue(accountUrl);
-
-    const spy = spyOn(keycloakService, 'getKeycloakInstance');
-    spy.and.returnValue({
-      createLogoutUrl: createLogoutUrlSpy,
-      createAccountUrl: createAccountUrlSpy,
-    } as any);
-
-    spyOn(document, 'addEventListener').and.callFake((type, listener) =>
-      listener()
-    );
   });
 
   describe('initialize', () => {
-    it('should initialize keycloak', () => {
-      service.initialize();
-      expect(keycloakInitSpy).toHaveBeenCalledWith({
+    it('should initialize keycloak', async () => {
+      await service.initialize();
+      expect(keycloakService.init).toHaveBeenCalledWith({
         config: {
           realm: environment.authServer.realm,
           clientId: environment.authServer.clientId,
           url: `${endpointUrl}/api/v1/auth/`,
         },
         initOptions: {
+          adapter: jasmine.any(PiaKeycloakAdapter),
           pkceMethod: 'S256',
           checkLoginIframe: false,
         },
         shouldAddToken: jasmine.any(Function),
       });
-    });
-
-    it('should add before logout entry', async () => {
-      const onBeforeLogoutSpy = spyOn(authService, 'onBeforeLogout');
-      await service.initialize();
-      expect(onBeforeLogoutSpy).toHaveBeenCalledWith(jasmine.any(Function));
     });
 
     it('should set initialization flag to true', async () => {
@@ -153,42 +120,42 @@ describe('KeycloakClientService', () => {
     it('should do nothing when initialization flag is true', async () => {
       await service.initialize();
       await service.initialize();
-      expect(keycloakInitSpy).toHaveBeenCalledTimes(1);
+      expect(keycloakService.init).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw errors', async () => {
+      const expectedError = { foo: 'bar' };
+      keycloakService.init.and.rejectWith(expectedError);
+
+      try {
+        await service.initialize();
+      } catch (e) {
+        expect(e).toBe(expectedError);
+      }
     });
 
     describe('keycloak events', () => {
-      let keycloakEvents$: Subject<KeycloakEvent>;
-
-      beforeEach(() => {
-        keycloakEvents$ = new Subject<KeycloakEvent>();
-        spyOnProperty(keycloakService, 'keycloakEvents$').and.returnValue(
-          keycloakEvents$
-        );
-      });
-
       it('should refresh token on token expired event', async () => {
-        const updateTokenSpy = spyOn(keycloakService, 'updateToken');
         await service.initialize();
 
         keycloakEvents$.next({ type: KeycloakEventType.OnTokenExpired });
 
-        expect(updateTokenSpy).toHaveBeenCalledTimes(1);
+        expect(keycloakService.updateToken).toHaveBeenCalledTimes(1);
       });
 
       it('should logout on token refresh error', async () => {
-        const logoutSpy = spyOn(authService, 'logout');
         await service.initialize();
 
         keycloakEvents$.next({ type: KeycloakEventType.OnAuthRefreshError });
 
-        expect(logoutSpy).toHaveBeenCalledTimes(1);
+        expect(keycloakService.logout).toHaveBeenCalledTimes(1);
       });
 
-      it('should update used token on token refresh success', fakeAsync(async () => {
+      it('should reinitialize current user on token refresh success', fakeAsync(async () => {
         const expectedTokenValue = 'fake-token-value';
-        const handleTokenSpy = spyOn(authService, 'handleKeycloakToken');
+        const handleTokenSpy = spyOn(currentUser, 'init');
 
-        spyOn(keycloakService, 'getToken').and.resolveTo(expectedTokenValue);
+        keycloakService.getToken.and.resolveTo(expectedTokenValue);
         await service.initialize();
 
         keycloakEvents$.next({ type: KeycloakEventType.OnAuthRefreshSuccess });
@@ -200,40 +167,29 @@ describe('KeycloakClientService', () => {
     });
   });
 
-  describe('isCompatible', () => {
-    let url;
+  describe('isLoggedIn', () => {
+    it('should return false if not initialized', async () => {
+      const result = await service.isLoggedIn();
 
-    beforeEach(() => {
-      url = `${endpointUrl}/api/v1/auth/realms/${environment.authServer.realm}`;
+      expect(result).toBeFalse();
     });
 
-    afterEach(() => {
-      httpMock.verify();
+    it('should return false if not logged in', async () => {
+      await service.initialize();
+      keycloakService.isLoggedIn.and.resolveTo(false);
+
+      const result = await service.isLoggedIn();
+
+      expect(result).toBeFalse();
     });
 
-    it('should add header to suppress error toast', () => {
-      service.isCompatible();
+    it('should return true if logged in', async () => {
+      await service.initialize();
+      keycloakService.isLoggedIn.and.resolveTo(true);
 
-      const req = httpMock.expectOne(url);
-      expect(req.request.headers.has(NoErrorToastHeader)).toBeTrue();
-    });
+      const result = await service.isLoggedIn();
 
-    it('should return true on 200', () => {
-      service.isCompatible().then((result) => {
-        expect(result).toEqual(true);
-      });
-
-      const req = httpMock.expectOne(url);
-      req.flush({}, { status: 200, statusText: 'OK' });
-    });
-
-    it('should return false on 404', () => {
-      service.isCompatible().then((result) => {
-        expect(result).toEqual(false);
-      });
-
-      const req = httpMock.expectOne(url);
-      req.flush({}, { status: 404, statusText: 'Not Found' });
+      expect(result).toBeTrue();
     });
   });
 
@@ -243,38 +199,46 @@ describe('KeycloakClientService', () => {
     const token =
       'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTY1NjQwNzk4NywiZXhwIjoxNjU2NDExNTg3fQ.0Blo63XFPdo6JtYj-0rPP3gu_LZMhT1U4zvBS8JnvHQ';
 
-    let loginSpy: Spy;
-    let getTokenSpy: Spy;
     let handleKeycloakTokenSpy: Spy;
 
     beforeEach(() => {
-      loginSpy = spyOn(keycloakService, 'login');
-      loginSpy.and.resolveTo(undefined);
+      keycloakService.init.and.resolveTo();
+      keycloakService.login.and.resolveTo(undefined);
+      keycloakService.getToken.and.resolveTo(token);
 
-      getTokenSpy = spyOn(keycloakService, 'getToken');
-      getTokenSpy.and.resolveTo(token);
-
-      handleKeycloakTokenSpy = spyOn(authService, 'handleKeycloakToken');
+      handleKeycloakTokenSpy = spyOn(currentUser, 'init');
     });
 
     it('should login successfully ', async () => {
-      await service.login(loginHint, locale, true);
+      await service.initialize();
 
-      expect(loginSpy).toHaveBeenCalledWith(
-        jasmine.objectContaining({
-          loginHint,
-          locale,
-        })
-      );
+      await service.login(true, loginHint, locale);
+
+      expect(keycloakService.login).toHaveBeenCalledWith({
+        loginHint,
+        locale,
+        cordovaOptions: {
+          hidden: 'yes',
+        },
+      });
 
       expect(handleKeycloakTokenSpy).toHaveBeenCalledWith(token);
     });
 
+    it('should throw an error if not already initialized', async () => {
+      try {
+        await service.login(false, loginHint, locale);
+      } catch (e) {
+        expect(e).toBeInstanceOf(LoginFailedError);
+      }
+    });
+
     it('should throw an error when login failed', async () => {
-      keycloakInitSpy.and.rejectWith(undefined);
+      keycloakService.login.and.rejectWith(undefined);
+      await service.initialize();
 
       try {
-        await service.login(loginHint, locale);
+        await service.login(false, loginHint, locale);
       } catch (e) {
         expect(e).toBeInstanceOf(LoginFailedError);
       }
@@ -282,10 +246,11 @@ describe('KeycloakClientService', () => {
 
     it('should throw the same error when it is not undefined', async () => {
       const expectedError = { foo: 'bar' };
-      keycloakInitSpy.and.rejectWith(expectedError);
+      keycloakService.login.and.rejectWith(expectedError);
+      await service.initialize();
 
       try {
-        await service.login(loginHint, locale);
+        await service.login(false, loginHint, locale);
       } catch (e) {
         expect(e).toBe(expectedError);
       }
@@ -294,38 +259,47 @@ describe('KeycloakClientService', () => {
 
   describe('openAccountManagement', () => {
     it('should open accountManagement with InAppBrowser', async () => {
-      await service.openAccountManagement();
+      keycloakService.getKeycloakInstance.and.returnValue({
+        accountManagement: () => KeycloakPromiseImpl.resolve(),
+      } as Keycloak);
 
-      expect(inAppBrowserCreateSpy).toHaveBeenCalled();
-      expect(browserSpy.show).toHaveBeenCalled();
+      await service.openAccountManagement();
     });
   });
 
   describe('logout', () => {
-    let clearTokenSpy: Spy;
+    let removeEndpointSpy: Spy;
 
     beforeEach(() => {
-      clearTokenSpy = spyOn(keycloakService, 'clearToken');
+      removeEndpointSpy = spyOn(endpoint, 'removeLatestEndpoint');
+    });
+
+    it('should initialize if not already done', async () => {
+      await service.logout();
+
+      expect(keycloakService.init).toHaveBeenCalled();
+      expect(keycloakService.logout).toHaveBeenCalled();
+      expect(removeEndpointSpy).toHaveBeenCalled();
     });
 
     it('should open logout with InAppBrowser', async () => {
+      keycloakService.init.and.resolveTo();
+
       await service.logout();
-      expect(inAppBrowserCreateSpy).toHaveBeenCalled();
-      expect(browserSpy.close).toHaveBeenCalled();
-      expect(clearTokenSpy).toHaveBeenCalled();
+
+      expect(keycloakService.logout).toHaveBeenCalled();
+      expect(removeEndpointSpy).toHaveBeenCalled();
     });
 
     it('should close browser and reject on error', async () => {
-      loadStart.next({ url: 'wrong-url' } as InAppBrowserEvent);
-      loadError.next({ url: 'wrong-url' } as InAppBrowserEvent);
+      keycloakService.logout.and.rejectWith('some error');
 
       try {
         await service.logout();
         // we want the promise to be rejected
         expect(true).toBeFalse();
       } catch {
-        expect(browserSpy.close).toHaveBeenCalled();
-        expect(clearTokenSpy).not.toHaveBeenCalled();
+        expect(removeEndpointSpy).not.toHaveBeenCalled();
       }
     });
   });

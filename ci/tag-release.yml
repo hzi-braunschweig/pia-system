@@ -1,47 +1,48 @@
+include:
+  - local: ci/rules.yml
+  - local: ci/k8s.yml
+
 # creates tags for the images and for git
 tag-release:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-release-image:$IMAGE_ID
   stage: release
   variables:
     GIT_STRATEGY: none
   dependencies: []
   script:
-    - sh -c "docker login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
+    - sh -c "skopeo login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
     # the token is owned by piatodo@helmholtz-hzi.de
-    - sh -c "docker login -u '$CI_RELEASE_REGISTRY_USER' -p '$CI_RELEASE_REGISTRY_PASSWORD' '$CI_RELEASE_REGISTRY'"
+    - sh -c "skopeo login -u '$CI_RELEASE_REGISTRY_USER' -p '$CI_RELEASE_REGISTRY_PASSWORD' '$CI_RELEASE_REGISTRY'"
     - export TARGET_TAG=`echo $CI_COMMIT_REF_SLUG | sed -e 's/release-//g' -e 's/-/./g'`
     # docker pull of pipeline images + check for release images + push for release images will be added by the generator
     # also creating of the git tag + gitlab release will be added over here
     - >
       for JOB in $JOBS_DOCKER; do
-        docker pull $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID
+        skopeo inspect docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID
       done
     - >
       for JOB in $JOBS_DOCKER; do
-        if docker pull $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
+        if skopeo inspect docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
       done
     - >
       for JOB in $JOBS_DOCKER; do
-        docker tag $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG
+        if skopeo inspect docker://$CI_RELEASE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
       done
     - >
       for JOB in $JOBS_DOCKER; do
-        docker tag $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID $CI_RELEASE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG
+        skopeo copy docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG
       done
     - >
       for JOB in $JOBS_DOCKER; do
-        docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG
-      done
-    - >
-      for JOB in $JOBS_DOCKER; do
-        docker push $CI_RELEASE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG
+        skopeo copy docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID docker://$CI_RELEASE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG
       done
     - release-cli create --description "Release $TARGET_TAG" --tag-name "$TARGET_TAG"
   rules:
     - if: $CI_COMMIT_BRANCH =~ /^release/
       when: manual
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
-      when: never
   environment:
     name: release-images
     url: https://$CI_REGISTRY/

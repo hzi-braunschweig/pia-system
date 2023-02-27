@@ -74,6 +74,7 @@ export class QuestionCleaner {
     const conditionTarget = this.questionAnswerOptionPairs.find(
       (pair) => pair?.answerOption.id === targetAnswerOption?.id
     );
+
     if (!conditionTarget) {
       this.questionsAndStatus.set(question.id, CanBeAdded.NO);
       return CanBeAdded.NO;

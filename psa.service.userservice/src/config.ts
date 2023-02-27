@@ -18,8 +18,8 @@ const SSL_CERTS: SslCerts = {
 };
 
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS),
-  internal: GlobalConfig.internal,
+  public: GlobalConfig.getPublic(SSL_CERTS, 'userservice'),
+  internal: GlobalConfig.getInternal('userservice'),
   database: GlobalConfig.getQPia(SSL_CERTS),
   services: {
     loggingservice: GlobalConfig.loggingservice,

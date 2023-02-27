@@ -35,7 +35,7 @@ const SSL_CERTS: SslCerts = {
 };
 
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS),
+  public: GlobalConfig.getPublic(SSL_CERTS, 'notificationservice'),
   database: GlobalConfig.getQPia(SSL_CERTS),
   services: {
     userservice: GlobalConfig.userservice,

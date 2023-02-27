@@ -8,7 +8,7 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 import { SampleTrackingClientService } from '../sample-tracking-client.service';
-import { AuthService } from '../../auth/auth.service';
+import { CurrentUser } from '../../auth/current-user.service';
 
 @Component({
   selector: 'app-lab-result-detail',
@@ -27,7 +27,7 @@ export class LabResultDetailPage implements OnInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private sampleTrackingClient: SampleTrackingClientService,
-    private auth: AuthService
+    private currentUser: CurrentUser
   ) {}
 
   public async ngOnInit() {
@@ -39,7 +39,7 @@ export class LabResultDetailPage implements OnInit {
 
     try {
       this.labResultHtml = await this.sampleTrackingClient.getLabResultForUser(
-        this.auth.getCurrentUser().username,
+        this.currentUser.username,
         this.labResultId
       );
     } catch (error) {

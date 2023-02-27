@@ -1,0 +1,14 @@
+[
+  {
+    "username": "researcher@localhost",
+    "password": "some-password",
+    "realm": "admin",
+    "role": "Forscher",
+    "studies": [
+      {
+        "study_id": "Some Study",
+        "access_level": "admin"
+      }
+    ]
+  }
+]

@@ -23,27 +23,24 @@ import { ComplianceService } from '../compliance/compliance-service/compliance.s
 import { ComplianceType } from '../compliance/compliance.model';
 import { MaterialClientService } from './material-client.service';
 import SpyObj = jasmine.SpyObj;
+import { CurrentUser } from '../auth/current-user.service';
 
 describe('ContactPage', () => {
   let component: ContactPage;
   let fixture: ComponentFixture<ContactPage>;
 
-  let auth: SpyObj<AuthService>;
+  let currentUser: SpyObj<CurrentUser>;
   let complianceService: SpyObj<ComplianceService>;
   let materialClient: SpyObj<MaterialClientService>;
   let alertCtrl: SpyObj<AlertController>;
   let translate: SpyObj<TranslateService>;
   let toastPresenter: SpyObj<ToastPresenterService>;
 
-  const currentUser: User = {
-    username: 'Testuser',
-    role: 'Proband',
-    study: 'teststudy',
-  };
-
   beforeEach(async () => {
     // Provider and Services
-    auth = jasmine.createSpyObj<AuthService>(['getCurrentUser']);
+    currentUser = jasmine.createSpyObj<CurrentUser>([], {
+      username: 'Testuser',
+    });
     complianceService = jasmine.createSpyObj<ComplianceService>([
       'userHasCompliances',
     ]);
@@ -58,17 +55,14 @@ describe('ContactPage', () => {
 
     // Build Base Module
     await MockBuilder(ContactPage, ContactPageModule)
+      .mock(CurrentUser, currentUser)
       .mock(AlertController, alertCtrl)
-      .mock(AuthService, auth)
       .mock(ComplianceService, complianceService)
       .mock(TranslateService, translate)
       .mock(MaterialClientService, materialClient);
   });
 
   beforeEach(fakeAsync(() => {
-    // Setup mocks before creating component
-    auth.getCurrentUser.and.returnValue(currentUser);
-
     // Create component
     fixture = TestBed.createComponent(ContactPage);
     component = fixture.componentInstance;
@@ -78,7 +72,6 @@ describe('ContactPage', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-    expect(auth.getCurrentUser).toHaveBeenCalled();
     expect(complianceService.userHasCompliances).toHaveBeenCalledOnceWith([
       ComplianceType.SAMPLES,
     ]);

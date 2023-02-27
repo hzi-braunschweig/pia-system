@@ -7,6 +7,8 @@
 import { AnswerType } from '../models/answerOption';
 import * as normalize from 'normalize-diacritics';
 import path from 'path';
+import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
+import { ExportBoolean } from '../models/csvExportRows';
 
 export interface AnswerPosition {
   questionPosition?: number;
@@ -34,6 +36,12 @@ export interface ColumnNameAnswerValue extends ColumnNameAnswerOption {
   answerValueSampleId?: number;
 }
 
+export enum DateFormat {
+  Date = 'yyyy-MM-dd',
+  ISO = `yyyy-MM-dd'T'HH:mm:ssxxx`,
+  InFilename = `yyyy-MM-dd'T'HHmm`,
+}
+
 const nameLength = 3;
 
 export class ExportUtilities {
@@ -51,7 +59,7 @@ export class ExportUtilities {
     questionnaireName: string,
     suffix: string
   ): string {
-    const normalizedName = this.normalizeDiacritics(questionnaireName);
+    const normalizedName = this.replaceUmlauts(questionnaireName);
     const shortenedName = normalizedName.substring(0, nameLength);
 
     return `${questionnaireId}_${shortenedName}_${suffix}`;
@@ -132,7 +140,6 @@ export class ExportUtilities {
 
   /**
    * Remove diacritics (áūë etc.) and substitute umlauts (äöüß)
-   * @param value
    */
   public static normalizeDiacritics(value: string): string {
     return normalize.normalizeSync(this.replaceUmlauts(value));
@@ -155,5 +162,74 @@ export class ExportUtilities {
     value = value.replace(/Ö/g, 'Oe');
     value = value.replace(/Ü/g, 'Ue');
     return value;
+  }
+
+  public static sanitizeForFilename(name: string): string {
+    name = ExportUtilities.normalizeFilename(name);
+    name = name.replace(/[\s_]+/g, '-');
+    return name;
+  }
+
+  public static formatDateString(date: string, dateFormat: DateFormat): string {
+    return formatInTimeZone(
+      this.convertStringToDateObject(date),
+      'UTC',
+      dateFormat
+    );
+  }
+
+  public static formatDate(date: Date, dateFormat: DateFormat): string {
+    return formatInTimeZone(date, 'UTC', dateFormat);
+  }
+
+  /**
+   * Checks if the answer type will deflate e.g. add additional rows
+   */
+  public static answerTypeDoesDeflate(answerType: AnswerType): boolean {
+    return [
+      AnswerType.SingleSelect,
+      AnswerType.MultiSelect,
+      AnswerType.Sample,
+    ].includes(answerType);
+  }
+
+  public static convertStringToDateObject(value: string): Date {
+    let date = new Date(value);
+
+    if (!isNaN(date.getTime())) {
+      return date;
+    }
+
+    date = new Date(parseInt(value, 10));
+
+    if (!isNaN(date.getTime())) {
+      return date;
+    }
+
+    throw new Error('Could not parse the date');
+  }
+
+  public static mapBoolean(bool: boolean): ExportBoolean {
+    return bool ? ExportBoolean.true : ExportBoolean.false;
+  }
+
+  public static composeFileName(
+    fileId: number,
+    fileName: string | null | undefined
+  ): string {
+    const sanitizedFileName = fileName ? this.normalizeFilename(fileName) : '';
+    return `${fileId}-${sanitizedFileName}`;
+  }
+
+  /**
+   * Wraps a risky csv value like an operand (e.g. ==, !=) or a number (-7)
+   * to prevent csv sanitation from removing it.
+   *
+   * @param value
+   */
+  public static wrapRiskyCsvValue(
+    value: string | number | null
+  ): string | null {
+    return value ? `"${value}"` : null;
   }
 }

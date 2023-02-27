@@ -308,7 +308,10 @@ const postgresqlHelper = (function () {
                           questionnaires.notify_when_not_filled_day  AS notify_when_not_filled_day
                    FROM questionnaire_instances
                    JOIN questionnaires ON questionnaire_instances.questionnaire_id = questionnaires.id
-                   WHERE (questionnaire_instances.status = 'in_progress' OR questionnaire_instances.status = 'active' OR
+                   JOIN studies ON questionnaires.study_id = studies.name
+                   WHERE studies.has_answers_notify_feature = true
+                     AND studies.status = 'active'
+                     AND (questionnaire_instances.status = 'in_progress' OR questionnaire_instances.status = 'active' OR
                           questionnaire_instances.status = 'expired')
                      AND questionnaires.notify_when_not_filled = TRUE
                      AND NOT EXISTS(SELECT id

@@ -27,6 +27,7 @@ import {
 import { SegmentType } from './segment.model';
 import { CompliancePageModule } from './compliance.page.module';
 import { AuthService } from '../auth/auth.service';
+import { CurrentUser } from '../auth/current-user.service';
 import SpyObj = jasmine.SpyObj;
 
 describe('CompliancePage', () => {
@@ -35,13 +36,13 @@ describe('CompliancePage', () => {
 
   let complianceClient: SpyObj<ComplianceClientService>;
   let complianceService: SpyObj<ComplianceService>;
-  let auth: SpyObj<AuthService>;
   let translateService: SpyObj<TranslateService>;
   let loadingCtrl: SpyObj<LoadingController>;
   let toastPresenter: SpyObj<ToastPresenterService>;
   let menuCtrl: SpyObj<MenuController>;
   let router: SpyObj<Router>;
   let activatedRoute;
+  let currentUser: SpyObj<CurrentUser>;
 
   const testStudyName = 'Teststudie';
   const complianceText =
@@ -78,18 +79,20 @@ describe('CompliancePage', () => {
     activatedRoute = {
       snapshot: { queryParamMap: convertToParamMap({ returnTo: 'home' }) },
     };
-    auth = jasmine.createSpyObj<AuthService>(['getCurrentUser']);
+    currentUser = jasmine.createSpyObj<CurrentUser>([], {
+      study: testStudyName,
+    });
 
     // Build Base Module
     await MockBuilder(CompliancePage, [CompliancePageModule, ActivatedRoute])
       .mock(ToastPresenterService, toastPresenter)
       .mock(Router, router)
       .mock(ActivatedRoute, activatedRoute)
-      .mock(AuthService, auth)
       .mock(ComplianceService, complianceService)
       .mock(LoadingController, loadingCtrl)
       .mock(ComplianceClientService, complianceClient)
-      .mock(MenuController, menuCtrl);
+      .mock(MenuController, menuCtrl)
+      .mock(CurrentUser, currentUser);
   });
 
   beforeEach(fakeAsync(() => {
@@ -108,11 +111,6 @@ describe('CompliancePage', () => {
     loading.present.and.returnValue(Promise.resolve(null));
     loading.dismiss.and.returnValue(Promise.resolve(null));
     loadingCtrl.create.and.resolveTo(loading);
-    auth.getCurrentUser.and.returnValue({
-      username: 'TEST-1234',
-      role: 'Proband',
-      study: testStudyName,
-    });
 
     // Create component
     fixture = TestBed.createComponent(CompliancePage);

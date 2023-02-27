@@ -1,6 +1,6 @@
 # psa.app.mobile
 
-PIA Mobile App for iOS and Android
+PIA Mobile App for iOS and Android.
 
 ## Development
 

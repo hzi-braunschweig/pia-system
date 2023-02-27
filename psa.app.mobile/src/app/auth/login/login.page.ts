@@ -6,7 +6,6 @@
 
 import { Component } from '@angular/core';
 import { MenuController, ViewWillEnter } from '@ionic/angular';
-import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-login',
@@ -14,16 +13,9 @@ import { AuthService } from '../auth.service';
   styleUrls: ['./login.page.scss'],
 })
 export class LoginPage implements ViewWillEnter {
-  public username = '';
-
-  constructor(private menuCtrl: MenuController, private auth: AuthService) {}
+  constructor(private menuCtrl: MenuController) {}
 
   async ionViewWillEnter(): Promise<void> {
     await this.menuCtrl.enable(false);
-  }
-
-  public switchUser(): void {
-    this.auth.removeRememberedUsername();
-    this.username = '';
   }
 }

@@ -5,36 +5,70 @@
  */
 
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  Router,
+  RouterStateSnapshot,
+  UrlSegment,
+  UrlTree,
+} from '@angular/router';
 import SpyObj = jasmine.SpyObj;
 
 import { ComplianceGuard } from './compliance.guard';
 import { ComplianceService } from './compliance-service/compliance.service';
+import { AuthService } from '../auth/auth.service';
+import { MockProvider } from 'ng-mocks';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('ComplianceGuard', () => {
   let guard: ComplianceGuard;
 
+  let auth: SpyObj<AuthService>;
   let compliance: SpyObj<ComplianceService>;
-  let router: SpyObj<Router>;
 
   beforeEach(() => {
+    auth = jasmine.createSpyObj('AuthService', ['isAuthenticated']);
     compliance = jasmine.createSpyObj('ComplianceService', [
-      'isInternalComplianceActive',
-      'userHasAppUsageCompliance',
+      'isInternalComplianceNeeded',
       'userHasCompliances',
     ]);
-    router = jasmine.createSpyObj('Router', ['createUrlTree']);
 
     TestBed.configureTestingModule({
+      imports: [RouterTestingModule],
       providers: [
-        { provide: ComplianceService, useValue: compliance },
-        { provide: Router, useValue: router },
+        MockProvider(AuthService, auth),
+        MockProvider(ComplianceService, compliance),
       ],
     });
     guard = TestBed.inject(ComplianceGuard);
   });
 
-  it('should be created', () => {
-    expect(guard).toBeTruthy();
+  it('should return false if user is not authenticated', async () => {
+    auth.isAuthenticated.and.resolveTo(false);
+
+    const result = await guard.canActivate(new ActivatedRouteSnapshot(), null);
+
+    expect(result).toBe(false);
+  });
+
+  it('should redirect to compliance page if internal compliance is needed', async () => {
+    auth.isAuthenticated.and.resolveTo(true);
+    compliance.isInternalComplianceNeeded.and.resolveTo(true);
+    const snapshot = new ActivatedRouteSnapshot();
+    snapshot.url = [new UrlSegment('test', {})];
+
+    const result = await guard.canActivate(snapshot, null);
+
+    expect(result).toBeInstanceOf(UrlTree);
+    expect(result.toString()).toEqual('/compliance?returnTo=test');
+  });
+
+  it('should return true if internal compliance is not needed', async () => {
+    auth.isAuthenticated.and.resolveTo(true);
+    compliance.isInternalComplianceNeeded.and.resolveTo(false);
+
+    const result = await guard.canActivate(new ActivatedRouteSnapshot(), null);
+
+    expect(result).toBeTrue();
   });
 });

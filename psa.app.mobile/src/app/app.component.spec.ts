@@ -19,6 +19,7 @@ import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
 import SpyObj = jasmine.SpyObj;
+import { CurrentUser } from './auth/current-user.service';
 
 describe('AppComponent', () => {
   let statusBarSpy: SpyObj<StatusBar>;
@@ -29,14 +30,8 @@ describe('AppComponent', () => {
   let notification: SpyObj<NotificationService>;
   let alertCtrl: SpyObj<AlertController>;
   let loadingCtrl: SpyObj<LoadingController>;
-  let currentUser$: BehaviorSubject<User>;
+  let currentUser: SpyObj<CurrentUser>;
   let alertOkHandler: (value) => void;
-
-  const currentUser: User = {
-    username: 'TESTUSER-1234',
-    role: 'Proband',
-    study: 'teststudy',
-  };
 
   beforeEach(async () => {
     statusBarSpy = jasmine.createSpyObj<StatusBar>('StatusBar', [
@@ -48,14 +43,9 @@ describe('AppComponent', () => {
       'hide',
     ]);
     platformSpy = jasmine.createSpyObj<Platform>('Platform', ['ready', 'is']);
-    currentUser$ = new BehaviorSubject<User>(currentUser);
-    auth = jasmine.createSpyObj(
-      'AuthService',
-      ['getCurrentUser', 'isAuthenticated', 'logout'],
-      {
-        currentUser$,
-      }
-    );
+    auth = jasmine.createSpyObj('AuthService', ['isAuthenticated', 'logout'], {
+      isAuthenticated$: NEVER,
+    });
     compliance = jasmine.createSpyObj(
       'ComplianceService',
       ['userHasCompliances', 'isInternalComplianceActive'],
@@ -94,11 +84,15 @@ describe('AppComponent', () => {
       } as unknown as HTMLIonLoadingElement);
     });
 
+    currentUser = jasmine.createSpyObj<CurrentUser>('CurrentUser', [], {
+      username: 'TESTUSER-1234',
+      study: 'teststudy',
+    });
+
     platformSpy.ready.and.resolveTo();
     compliance.userHasCompliances.and.resolveTo(true);
     compliance.isInternalComplianceActive.and.resolveTo(true);
-    auth.isAuthenticated.and.returnValue(true);
-    auth.getCurrentUser.and.returnValue(currentUser);
+    auth.isAuthenticated.and.resolveTo(true);
     auth.logout.and.resolveTo();
 
     await MockBuilder(AppComponent, AppModule)
@@ -111,6 +105,7 @@ describe('AppComponent', () => {
       .mock(Platform, platformSpy)
       .mock(AlertController, alertCtrl)
       .mock(LoadingController, loadingCtrl)
+      .mock(CurrentUser, currentUser)
       .mock(TranslatePipe, (value) => value);
   });
 
@@ -185,7 +180,7 @@ describe('AppComponent', () => {
       tick();
       fixture.detectChanges();
 
-      fixture.componentInstance.onLogout();
+      fixture.componentInstance.logout();
     }));
 
     it('should present a confirm alert on logout', () => {

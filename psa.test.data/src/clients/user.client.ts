@@ -23,6 +23,7 @@ export class UserClient {
   private tokens = new Map<UserCredentials, KeycloakTokenResponse>();
 
   constructor(
+    private readonly ci: boolean,
     private readonly baseUrl: string,
     private readonly adminBaseUrl: string,
     private readonly keycloakAdmin: UserCredentials,
@@ -135,17 +136,26 @@ export class UserClient {
 
     await this.resetUserPassword('admin', user.username, password);
 
-    console.log(
-      chalk.blue(
-        'UserClient: created professional user with username: ' + user.username
-      )
-    );
+    if (this.ci) {
+      console.log(
+        chalk.blue(
+          'UserClient: created professional user with username: ' +
+            user.username
+        )
+      );
+    }
 
     const credentials: UserCredentials = {
       username: user.username,
       password,
       realm: 'admin',
     };
+
+    this.userExportService.addProfessional(
+      credentials,
+      user.role,
+      user.study_accesses
+    );
 
     return Promise.resolve(credentials);
   }
@@ -197,11 +207,13 @@ export class UserClient {
     await this.removeRequiredActions('proband', username);
     await this.resetUserPassword('proband', username, password);
 
-    console.log(
-      chalk.blue(
-        'UserClient: created proband username: ' + probandCredentials.username
-      )
-    );
+    if (this.ci) {
+      console.log(
+        chalk.blue(
+          'UserClient: created proband username: ' + probandCredentials.username
+        )
+      );
+    }
 
     this.userExportService.addProband(probandCredentials, studyId);
 

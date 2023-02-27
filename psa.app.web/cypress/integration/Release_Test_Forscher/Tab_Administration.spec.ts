@@ -286,7 +286,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('.mat-option').contains('auf externen Fragebogen').click();
 
     cy.get('[data-e2e="e2e-condition-target-questionnaire-select"]').click();
-    cy.get('.mat-option').contains('First Questionnaire (1)').click();
+    cy.get('.mat-option').contains('First Questionnaire').click();
 
     cy.get('[data-e2e="e2e-condition-question-id-select"]').click();
     cy.get('.mat-option').contains('F1: Wie alt sind Sie?').click();

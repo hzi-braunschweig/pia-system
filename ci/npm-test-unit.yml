@@ -1,7 +1,9 @@
 include: ci/rules.yml
 
 unit:
-  extends: .job-exclude-scheduled-pipelines
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
   stage: test
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$FOLDER-npm-install:$IMAGE_ID
   script:
@@ -16,11 +18,11 @@ unit:
   needs:
     - job: npm-install
       artifacts: true
+  variables:
+    # mobile and web are using a lot of memory
+    KUBERNETES_MEMORY_REQUEST: 2Gi
+    KUBERNETES_MEMORY_LIMIT: 4Gi
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
-      when: never
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH =~ /^develop/

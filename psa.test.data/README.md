@@ -26,12 +26,16 @@ Keycloak admin.
 Per default all created probands will be saved to `probands.json`. You can overwrite the filename and path by
 setting `--probands-export-file` (`-pef`).
 
-Optionally you can set `--blood-samples-count` to create blood samples and `--answer-questions` to randomly answer
+Optionally you can set `--blood-samples-count` to create blood samples and `--submit-answers` to randomly answer
 questions for each proband.
+
+The number of questionnaires per study is set to 1. You can set `--questionnaires-count` to either another value,
+or an array of values to set how many questionnaires each study should have. For example when settings
+`--studies-count 4` you can set `--questionnaires-count 2,2,4,1` to set the number of questionnaires for each study.
 
 For more information run `npm start -- --help` and `npm start -- help seed`
 
-**Example for creating 2000 probands, distributed across 4 studies for e.g. load testing:**
+**Example for creating 2000 probands, distributed across 4 studies, with answers for e.g. load testing:**
 
 ```shell
  npm start -- seed \
@@ -42,5 +46,6 @@ For more information run `npm start -- --help` and `npm start -- help seed`
   --keycloak-password admin \
   --study-prefix LOADTEST \
   --studies-count 4 \
+  --submit-answers \
   --probands-count 500
 ```

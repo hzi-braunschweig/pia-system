@@ -6,18 +6,22 @@
 /* eslint-disable security/detect-object-injection */
 
 import { CsvTransform } from './csvTransform';
-import { CodebookBoolean, CodebookDbRow } from '../../models/codebook';
+import { CodebookDbRow } from '../../models/codebook';
 import { AnswerType } from '../../models/answerOption';
 import { ConditionType } from '../../models/condition';
 import { ColumnNameAnswerOption, ExportUtilities } from '../exportUtilities';
 import { CsvCodebookRow } from '../../models/csvExportRows';
 import removeMarkdown from 'remove-markdown';
+import { getMissingString, Missing } from '../../models/missing';
+import { ConditionalQuestionnaireInfo } from '../../models/questionnaireInfo';
 
 interface Parameter {
   answerOptionText?: string;
   answerOption?: string;
   code?: number | string;
 }
+
+const maxSampleIdFields = 2;
 
 const answerTypeMapping = new Map<AnswerType, string>([
   [AnswerType.SingleSelect, 'single choice'],
@@ -38,16 +42,17 @@ const conditionTypeMapping = new Map<ConditionType | null, string>([
   [ConditionType.EXTERNAL, 'on external questionnaire'],
 ]);
 
-const missingParam: Parameter = {
-  code: '.',
-  answerOption: 'missing',
-};
-
 export class CodebookTransform extends CsvTransform<
   CodebookDbRow,
   CsvCodebookRow
 > {
   protected currentQuestionId: number | null = null;
+
+  public constructor(
+    private readonly questionnaireInfo: ConditionalQuestionnaireInfo
+  ) {
+    super();
+  }
 
   protected convertToCsvRow(
     dbRow: CodebookDbRow
@@ -62,9 +67,33 @@ export class CodebookTransform extends CsvTransform<
     }
 
     if (this.hasAnswerOptions(dbRow)) {
-      if (!this.answerWillTypeDeflate(dbRow)) {
+      if (!ExportUtilities.answerTypeDoesDeflate(dbRow.answer_type_id)) {
         rows.push(this.createAnswerOptionRow(dbRow));
-        rows.push(this.createAnswerOptionRow(dbRow, missingParam));
+        rows.push(
+          this.createAnswerOptionRow(
+            dbRow,
+            this.returnMissingParameter(Missing.NotReleased)
+          )
+        );
+        if (
+          this.answerOptionHasCondition(dbRow) ||
+          this.questionnaireInfo.has_condition
+        ) {
+          rows.push(
+            this.createAnswerOptionRow(
+              dbRow,
+              this.returnMissingParameter(Missing.NotApplicable)
+            )
+          );
+        }
+        if (!dbRow.is_mandatory) {
+          rows.push(
+            this.createAnswerOptionRow(
+              dbRow,
+              this.returnMissingParameter(Missing.Unobtainable)
+            )
+          );
+        }
       }
 
       switch (dbRow.answer_type_id) {
@@ -100,19 +129,40 @@ export class CodebookTransform extends CsvTransform<
       );
       rows.push(
         this.createAnswerValueRow(dbRow, {
-          code: 0,
-          answerOption: 'no',
+          ...this.returnMissingParameter(Missing.NotReleased),
           answerOptionText: value,
           answerValuePosition,
         })
       );
       rows.push(
         this.createAnswerValueRow(dbRow, {
-          ...missingParam,
+          ...this.returnMissingParameter(Missing.NoOrUnobtainable),
           answerOptionText: value,
           answerValuePosition,
         })
       );
+
+      if (
+        this.answerOptionHasCondition(dbRow) ||
+        this.questionnaireInfo.has_condition
+      ) {
+        rows.push(
+          this.createAnswerValueRow(dbRow, {
+            ...this.returnMissingParameter(Missing.NotApplicable),
+            answerOptionText: value,
+            answerValuePosition,
+          })
+        );
+      }
+      if (!dbRow.is_mandatory) {
+        rows.push(
+          this.createAnswerValueRow(dbRow, {
+            ...this.returnMissingParameter(Missing.Unobtainable),
+            answerOptionText: value,
+            answerValuePosition,
+          })
+        );
+      }
     });
   }
 
@@ -132,53 +182,90 @@ export class CodebookTransform extends CsvTransform<
 
     rows.push(
       this.createAnswerOptionRow(dbRow, {
-        ...missingParam,
+        ...this.returnMissingParameter(Missing.NotReleased),
         answerOptionText: dbRow.answeroption_text,
       })
     );
+
+    if (
+      this.answerOptionHasCondition(dbRow) ||
+      this.questionnaireInfo.has_condition
+    ) {
+      rows.push(
+        this.createAnswerOptionRow(
+          dbRow,
+          this.returnMissingParameter(Missing.NotApplicable)
+        )
+      );
+    }
+
+    if (!dbRow.is_mandatory) {
+      rows.push(
+        this.createAnswerOptionRow(
+          dbRow,
+          this.returnMissingParameter(Missing.Unobtainable)
+        )
+      );
+    }
   }
 
   private addSampleRows(dbRow: CodebookDbRow, rows: CsvCodebookRow[]): void {
-    rows.push(
-      this.createAnswerValueRow(dbRow, {
-        textLevel2: dbRow.answeroption_text,
-        answerValueSampleId: 1,
-      })
-    );
-    rows.push(
-      this.createAnswerValueRow(dbRow, {
-        ...missingParam,
-        textLevel2: dbRow.answeroption_text,
-        answerValueSampleId: 1,
-      })
-    );
-    rows.push(
-      this.createAnswerValueRow(dbRow, {
-        textLevel2: dbRow.answeroption_text,
-        answerValueSampleId: 2,
-      })
-    );
-    rows.push(
-      this.createAnswerValueRow(dbRow, {
-        ...missingParam,
-        textLevel2: dbRow.answeroption_text,
-        answerValueSampleId: 2,
-      })
-    );
+    for (
+      let answerValueSampleId = 1;
+      answerValueSampleId <= maxSampleIdFields;
+      answerValueSampleId++
+    ) {
+      rows.push(
+        this.createAnswerValueRow(dbRow, {
+          textLevel2: dbRow.answeroption_text,
+          answerValueSampleId,
+        })
+      );
+      rows.push(
+        this.createAnswerValueRow(dbRow, {
+          ...this.returnMissingParameter(Missing.NotReleased),
+          textLevel2: dbRow.answeroption_text,
+          answerValueSampleId,
+        })
+      );
+
+      if (
+        this.answerOptionHasCondition(dbRow) ||
+        this.questionnaireInfo.has_condition
+      ) {
+        rows.push(
+          this.createAnswerValueRow(dbRow, {
+            ...this.returnMissingParameter(Missing.NotApplicable),
+            textLevel2: dbRow.answeroption_text,
+            answerValueSampleId,
+          })
+        );
+      }
+
+      if (!dbRow.is_mandatory) {
+        rows.push(
+          this.createAnswerValueRow(dbRow, {
+            ...this.returnMissingParameter(Missing.Unobtainable),
+            textLevel2: dbRow.answeroption_text,
+            answerValueSampleId,
+          })
+        );
+      }
+    }
   }
 
   private createQuestionRow(row: CodebookDbRow): CsvCodebookRow {
     return {
-      questionnaire_id: row.questionnaire_id,
-      questionnaire_version: row.questionnaire_version,
-      questionnaire_name: row.questionnaire_name,
+      questionnaire_id: this.questionnaireInfo.id,
+      questionnaire_version: this.questionnaireInfo.version,
+      questionnaire_name: this.questionnaireInfo.name,
       variable_name: row.question_variable_name,
       column_name: ExportUtilities.composeColumnNameQuestion({
         questionVariableName: row.question_variable_name,
         questionPosition: row.question_position,
-        questionnaireName: row.questionnaire_name,
-        questionnaireVersion: row.questionnaire_version,
-        questionnaireId: row.questionnaire_id,
+        questionnaireName: this.questionnaireInfo.name,
+        questionnaireVersion: this.questionnaireInfo.version,
+        questionnaireId: this.questionnaireInfo.id,
       }),
       answer_position: ExportUtilities.composeAnswerPosition({
         questionPosition: row.question_position,
@@ -191,8 +278,10 @@ export class CodebookTransform extends CsvTransform<
       answer_category_code: null,
       valid_min: null,
       valid_max: null,
-      answer_required: this.mapBoolean(row.is_mandatory),
-      condition_question: this.mapBoolean(!!row.question_condition_type),
+      answer_required: ExportUtilities.mapBoolean(row.is_mandatory),
+      condition_question: ExportUtilities.mapBoolean(
+        this.questionHasCondition(row)
+      ),
       condition_question_type: this.mapConditionType(
         row.question_condition_type
       ),
@@ -201,7 +290,7 @@ export class CodebookTransform extends CsvTransform<
       condition_question_questionnaire_version:
         row.question_condition_target_questionnaire_version,
       condition_question_column_name: this.composeConditionColumnName(row),
-      condition_question_operand: this.wrapRiskyCsvValue(
+      condition_question_operand: ExportUtilities.wrapRiskyCsvValue(
         row.question_condition_operand
       ),
       condition_question_answer_value: row.question_condition_value,
@@ -218,9 +307,9 @@ export class CodebookTransform extends CsvTransform<
       column_name: ExportUtilities.composeColumnNameAnswerOption({
         questionVariableName: row.question_variable_name,
         questionPosition: row.question_position,
-        questionnaireName: row.questionnaire_name,
-        questionnaireId: row.questionnaire_id,
-        questionnaireVersion: row.questionnaire_version,
+        questionnaireName: this.questionnaireInfo.name,
+        questionnaireId: this.questionnaireInfo.id,
+        questionnaireVersion: this.questionnaireInfo.version,
         answerOptionVariableName: row.answeroption_variable_name,
         answerOptionPosition: row.answeroption_position,
       }),
@@ -234,13 +323,11 @@ export class CodebookTransform extends CsvTransform<
       text_level_1: null,
       text_level_2: row.answeroption_text,
       answer_option_text: null,
-      valid_min: this.wrapRiskyCsvValue(row.restriction_min),
-      valid_max: this.wrapRiskyCsvValue(row.restriction_max),
+      valid_min: ExportUtilities.wrapRiskyCsvValue(row.restriction_min),
+      valid_max: ExportUtilities.wrapRiskyCsvValue(row.restriction_max),
       answer_type: this.mapAnswerType(row),
-      condition_question: this.mapBoolean(
-        !!(row.answeroption_condition_type !== null
-          ? row.answeroption_condition_type
-          : row.question_condition_type)
+      condition_question: ExportUtilities.mapBoolean(
+        this.answerOptionHasCondition(row)
       ),
       condition_question_type: this.mapConditionType(
         row.answeroption_condition_type ?? row.question_condition_type
@@ -252,7 +339,7 @@ export class CodebookTransform extends CsvTransform<
         row.answeroption_condition_target_questionnaire_version ??
         row.question_condition_target_questionnaire_version,
       condition_question_column_name: this.composeConditionColumnName(row),
-      condition_question_operand: this.wrapRiskyCsvValue(
+      condition_question_operand: ExportUtilities.wrapRiskyCsvValue(
         row.answeroption_condition_operand ?? row.question_condition_operand
       ),
       condition_question_answer_value:
@@ -280,9 +367,9 @@ export class CodebookTransform extends CsvTransform<
       column_name: ExportUtilities.composeColumnNameAnswerValue({
         questionVariableName: row.question_variable_name,
         questionPosition: row.question_position,
-        questionnaireName: row.questionnaire_name,
-        questionnaireId: row.questionnaire_id,
-        questionnaireVersion: row.questionnaire_version,
+        questionnaireName: this.questionnaireInfo.name,
+        questionnaireId: this.questionnaireInfo.id,
+        questionnaireVersion: this.questionnaireInfo.version,
         answerOptionVariableName: row.answeroption_variable_name,
         answerOptionPosition: row.answeroption_position,
         answerType: row.answer_type_id,
@@ -296,10 +383,6 @@ export class CodebookTransform extends CsvTransform<
         answerValuePosition: param.answerValuePosition,
       }),
     };
-  }
-
-  private mapBoolean(bool: boolean): CodebookBoolean {
-    return bool ? CodebookBoolean.true : CodebookBoolean.false;
   }
 
   private mapAnswerType(row: CodebookDbRow): string {
@@ -316,26 +399,11 @@ export class CodebookTransform extends CsvTransform<
     return conditionTypeMapping.get(type) ?? '';
   }
 
-  /**
-   * Checks if the answer type will deflate e.g. add additional rows
-   * @param row
-   */
-  private answerWillTypeDeflate(row: CodebookDbRow): boolean {
-    return [
-      AnswerType.SingleSelect,
-      AnswerType.MultiSelect,
-      AnswerType.Sample,
-    ].includes(row.answer_type_id);
-  }
-
   private normalizeStringsInRows(rows: CsvCodebookRow[]): CsvCodebookRow[] {
     rows.forEach((row) => {
       Object.keys(row).forEach((key) => {
         if (key in row && typeof row[key] === 'string') {
-          let value = row[key] as string;
-          value = ExportUtilities.normalizeDiacritics(value);
-          value = removeMarkdown(value);
-          row[key] = value;
+          row[key] = removeMarkdown(row[key] as string);
         }
       });
     });
@@ -395,17 +463,24 @@ export class CodebookTransform extends CsvTransform<
     return ExportUtilities.composeColumnNameAnswerOption(answerOptions);
   }
 
-  /**
-   * Wraps a risky csv value like an operand (e.g. ==, !=) or a number (-7)
-   * to prevent csv sanitation from removing it.
-   *
-   * @param value
-   */
-  private wrapRiskyCsvValue(value: string | number | null): string | null {
-    return value ? `"${value}"` : null;
-  }
-
   private hasAnswerOptions(dbRow: CodebookDbRow): boolean {
     return !!dbRow.answer_type_id;
+  }
+
+  private returnMissingParameter(missing: Missing): Parameter {
+    return {
+      code: missing,
+      answerOption: getMissingString(missing),
+    };
+  }
+
+  private questionHasCondition(row: CodebookDbRow): boolean {
+    return !!row.question_condition_type;
+  }
+
+  private answerOptionHasCondition(row: CodebookDbRow): boolean {
+    return !!(row.answeroption_condition_type !== null
+      ? row.answeroption_condition_type
+      : this.questionHasCondition(row));
   }
 }

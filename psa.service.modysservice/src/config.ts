@@ -30,7 +30,7 @@ const modysConfig: ModysConfig = {
 const DEFAULT_MODYS_REQUEST_CONCURRENCY = '5';
 
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS),
+  public: GlobalConfig.getPublic(SSL_CERTS, 'modysservice'),
   services: {
     personaldataservice: GlobalConfig.personaldataservice,
     userservice: GlobalConfig.userservice,

@@ -8,7 +8,7 @@ import { Archiver } from 'archiver';
 import { ExportOptions } from '../exportInteractor';
 
 export interface ExportFeature {
-  apply(): Promise<void>;
+  apply(): Promise<void | void[]>;
 }
 
 export type ExportFeatureClass = new (

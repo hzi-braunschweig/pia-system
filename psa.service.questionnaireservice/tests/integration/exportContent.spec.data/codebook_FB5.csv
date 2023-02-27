@@ -1,38 +1,45 @@
 questionnaire_id;questionnaire_version;questionnaire_name;variable_name;column_name;answer_position;text_level_1;text_level_2;answer_option_text;answer_type;answer_category;answer_category_code;valid_min;valid_max;answer_required;condition_question;condition_question_type;condition_question_questionnaire_id;condition_question_questionnaire_version;condition_question_column_name;condition_question_operand;condition_question_answer_value;condition_question_link
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;UeberLabel;300_FB5_UeberLabel;q1;Es werden verschiedene Antworttypen durchgetestet.;;;;;;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelAe;300_FB5_LabelAe;q1_1;;Oest dues einae Einzelausswahl?;;single choice;Jess;1;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelAe;300_FB5_LabelAe;q1_1;;Oest dues einae Einzelausswahl?;;single choice;Noe;0;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelAe;300_FB5_LabelAe;q1_1;;Oest dues einae Einzelausswahl?;;single choice;missing;.;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelB;300_FB5_LabelB;q1_2;;Ist dies eine Mehrfachauswahl?;;multiple choice;;;;;T;T;on current questionnaire;300;1;300_FB5_LabelAe;"""==""";Nein;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelB;300_FB5_LabelB_Keine Angabe;q1_2_1;;;Keine Angabe;multiple choice;yes;1;;;T;T;on current questionnaire;300;1;300_FB5_LabelAe;"""==""";Nein;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelB;300_FB5_LabelB_Keine Angabe;q1_2_1;;;Keine Angabe;multiple choice;no;0;;;T;T;on current questionnaire;300;1;300_FB5_LabelAe;"""==""";Nein;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelB;300_FB5_LabelB_Keine Angabe;q1_2_1;;;Keine Angabe;multiple choice;missing;.;;;T;T;on current questionnaire;300;1;300_FB5_LabelAe;"""==""";Nein;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelB;300_FB5_LabelB_Ja;q1_2_2;;;Ja;multiple choice;yes;1;;;T;T;on current questionnaire;300;1;300_FB5_LabelAe;"""==""";Nein;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelB;300_FB5_LabelB_Ja;q1_2_2;;;Ja;multiple choice;no;0;;;T;T;on current questionnaire;300;1;300_FB5_LabelAe;"""==""";Nein;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelB;300_FB5_LabelB_Ja;q1_2_2;;;Ja;multiple choice;missing;.;;;T;T;on current questionnaire;300;1;300_FB5_LabelAe;"""==""";Nein;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelB;300_FB5_LabelB_Nein;q1_2_3;;;Nein;multiple choice;yes;1;;;T;T;on current questionnaire;300;1;300_FB5_LabelAe;"""==""";Nein;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelB;300_FB5_LabelB_Nein;q1_2_3;;;Nein;multiple choice;no;0;;;T;T;on current questionnaire;300;1;300_FB5_LabelAe;"""==""";Nein;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelB;300_FB5_LabelB_Nein;q1_2_3;;;Nein;multiple choice;missing;.;;;T;T;on current questionnaire;300;1;300_FB5_LabelAe;"""==""";Nein;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelC;300_FB5_LabelC;q1_3;;Ohne Markdown: Koennen hier nur Zahlen eingetragen werden?;;numeric integer;;;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelC;300_FB5_LabelC;q1_3;;Ohne Markdown: Koennen hier nur Zahlen eingetragen werden?;;numeric integer;missing;.;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelD;300_FB5_LabelD;q1_4;;Klappt diese Freitextfrage?;;text;;;;;T;T;on last questionnaire instance;300;1;300_FB5_LabelB;"""==""";"Ja;Nein";AND
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelD;300_FB5_LabelD;q1_4;;Klappt diese Freitextfrage?;;text;missing;.;;;T;T;on last questionnaire instance;300;1;300_FB5_LabelB;"""==""";"Ja;Nein";AND
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelE;300_FB5_LabelE;q1_5;;Gib das heutige Datum an.;;date;;;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelE;300_FB5_LabelE;q1_5;;Gib das heutige Datum an.;;date;missing;.;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelF;300_FB5_LabelF;q1_6;;Waehle ja, und pruefe, ob eine weitere Frage erscheint (Pruefung von Bedingung).;;single choice;Ja;1;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelF;300_FB5_LabelF;q1_6;;Waehle ja, und pruefe, ob eine weitere Frage erscheint (Pruefung von Bedingung).;;single choice;Nein;0;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelF;300_FB5_LabelF;q1_6;;Waehle ja, und pruefe, ob eine weitere Frage erscheint (Pruefung von Bedingung).;;single choice;missing;.;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelG;300_FB5_LabelG;q1_7;;Lade ein Foto hoch.;;image;;;;;T;T;on external questionnaire;295;1;295_FB1_v1_q1_4;"""\=""";Eine Texteingabe;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelG;300_FB5_LabelG;q1_7;;Lade ein Foto hoch.;;image;missing;.;;;T;T;on external questionnaire;295;1;295_FB1_v1_q1_4;"""\=""";Eine Texteingabe;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelH;300_FB5_LabelH_ProbenID1;q1_8;;Gib eine Proben-ID ein.;;sample;;;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelH;300_FB5_LabelH_ProbenID1;q1_8;;Gib eine Proben-ID ein.;;sample;missing;.;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelH;300_FB5_LabelH_ProbenID2;q1_8;;Gib eine Proben-ID ein.;;sample;;;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelH;300_FB5_LabelH_ProbenID2;q1_8;;Gib eine Proben-ID ein.;;sample;missing;.;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelI;300_FB5_LabelI;q1_9;;Gib eine PZN ein.;;pzn;;;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelI;300_FB5_LabelI;q1_9;;Gib eine PZN ein.;;pzn;missing;.;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelJ;300_FB5_LabelJ;q1_10;;Zeitstempel;;timestamp;;;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;LabelJ;300_FB5_LabelJ;q1_10;;Zeitstempel;;timestamp;missing;.;;;T;F;;;;;;;
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;;300_FB5_v1_q2;q2;Eine bedingte Frage.;;;;;;;;F;T;on current questionnaire;300;1;300_FB5_LabelAe;""">=""";Nein;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;;300_FB5_v1_q2_1;q2_1;;Zahlenfrage Min Max;;numeric float;;;"""-3""";"""12""";F;T;on current questionnaire;300;1;300_FB5_LabelAe;""">=""";Nein;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;;300_FB5_v1_q2_1;q2_1;;Zahlenfrage Min Max;;numeric float;missing;.;"""-3""";"""12""";F;T;on current questionnaire;300;1;300_FB5_LabelAe;""">=""";Nein;OR
-300;1;FB5 Bedingungen, Labels und AeOeUessa%;;300_FB5_v1_q3;q3;Frage ohne Unterfrage;;;;;;;;F;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;UeberVariable;300_FB5_UeberVariable;q1;Es werden verschiedene Antworttypen durchgetestet.;;;;;;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarÄ;300_FB5_VarÄ;q1_1;;Öst düs einä Eînzeláußwahl?;;single choice;Jeß;1;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarÄ;300_FB5_VarÄ;q1_1;;Öst düs einä Eînzeláußwahl?;;single choice;Nö;0;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarÄ;300_FB5_VarÄ;q1_1;;Öst düs einä Eînzeláußwahl?;;single choice;notreleased;-6666;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarB;300_FB5_VarB;q1_2;;Ist dies eine Mehrfachauswahl?;;multiple choice;;;;;T;T;on current questionnaire;300;1;300_FB5_VarÄ;"""==""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarB;300_FB5_VarB_Keine Angabe;q1_2_1;;;Keine Angabe;multiple choice;yes;1;;;T;T;on current questionnaire;300;1;300_FB5_VarÄ;"""==""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarB;300_FB5_VarB_Keine Angabe;q1_2_1;;;Keine Angabe;multiple choice;notreleased;-6666;;;T;T;on current questionnaire;300;1;300_FB5_VarÄ;"""==""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarB;300_FB5_VarB_Keine Angabe;q1_2_1;;;Keine Angabe;multiple choice;no_or_unobtainable;-7777;;;T;T;on current questionnaire;300;1;300_FB5_VarÄ;"""==""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarB;300_FB5_VarB_Keine Angabe;q1_2_1;;;Keine Angabe;multiple choice;notapplicable;-8888;;;T;T;on current questionnaire;300;1;300_FB5_VarÄ;"""==""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarB;300_FB5_VarB_Ja;q1_2_2;;;Ja;multiple choice;yes;1;;;T;T;on current questionnaire;300;1;300_FB5_VarÄ;"""==""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarB;300_FB5_VarB_Ja;q1_2_2;;;Ja;multiple choice;notreleased;-6666;;;T;T;on current questionnaire;300;1;300_FB5_VarÄ;"""==""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarB;300_FB5_VarB_Ja;q1_2_2;;;Ja;multiple choice;no_or_unobtainable;-7777;;;T;T;on current questionnaire;300;1;300_FB5_VarÄ;"""==""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarB;300_FB5_VarB_Ja;q1_2_2;;;Ja;multiple choice;notapplicable;-8888;;;T;T;on current questionnaire;300;1;300_FB5_VarÄ;"""==""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarB;300_FB5_VarB_Nein;q1_2_3;;;Nein;multiple choice;yes;1;;;T;T;on current questionnaire;300;1;300_FB5_VarÄ;"""==""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarB;300_FB5_VarB_Nein;q1_2_3;;;Nein;multiple choice;notreleased;-6666;;;T;T;on current questionnaire;300;1;300_FB5_VarÄ;"""==""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarB;300_FB5_VarB_Nein;q1_2_3;;;Nein;multiple choice;no_or_unobtainable;-7777;;;T;T;on current questionnaire;300;1;300_FB5_VarÄ;"""==""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarB;300_FB5_VarB_Nein;q1_2_3;;;Nein;multiple choice;notapplicable;-8888;;;T;T;on current questionnaire;300;1;300_FB5_VarÄ;"""==""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarC;300_FB5_VarC;q1_3;;Ohne Markdown: Können hier nur Zahlen eingetragen werden?;;numeric integer;;;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarC;300_FB5_VarC;q1_3;;Ohne Markdown: Können hier nur Zahlen eingetragen werden?;;numeric integer;notreleased;-6666;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarD;300_FB5_VarD;q1_4;;Klappt diese Freitextfrage?;;text;;;;;T;T;on last questionnaire instance;300;1;300_FB5_VarB;"""==""";"Ja;Nein";AND
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarD;300_FB5_VarD;q1_4;;Klappt diese Freitextfrage?;;text;notreleased;-6666;;;T;T;on last questionnaire instance;300;1;300_FB5_VarB;"""==""";"Ja;Nein";AND
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarD;300_FB5_VarD;q1_4;;Klappt diese Freitextfrage?;;text;notapplicable;-8888;;;T;T;on last questionnaire instance;300;1;300_FB5_VarB;"""==""";"Ja;Nein";AND
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarE;300_FB5_VarE;q1_5;;Gib das heutige Datum an.;;date;;;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarE;300_FB5_VarE;q1_5;;Gib das heutige Datum an.;;date;notreleased;-6666;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarF;300_FB5_VarF;q1_6;;Wähle ja, und prüfe, ob eine weitere Frage erscheint (Prüfung von Bedingung).;;single choice;Ja;1;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarF;300_FB5_VarF;q1_6;;Wähle ja, und prüfe, ob eine weitere Frage erscheint (Prüfung von Bedingung).;;single choice;Nein;0;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarF;300_FB5_VarF;q1_6;;Wähle ja, und prüfe, ob eine weitere Frage erscheint (Prüfung von Bedingung).;;single choice;notreleased;-6666;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarG;300_FB5_VarG;q1_7;;Lade ein Foto hoch.;;image;;;;;T;T;on external questionnaire;295;1;295_FB1_v1_q1_4;"""\=""";Eine Texteingabe;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarG;300_FB5_VarG;q1_7;;Lade ein Foto hoch.;;image;notreleased;-6666;;;T;T;on external questionnaire;295;1;295_FB1_v1_q1_4;"""\=""";Eine Texteingabe;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarG;300_FB5_VarG;q1_7;;Lade ein Foto hoch.;;image;notapplicable;-8888;;;T;T;on external questionnaire;295;1;295_FB1_v1_q1_4;"""\=""";Eine Texteingabe;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarH;300_FB5_VarH_ProbenID1;q1_8;;Gib eine Proben-ID ein.;;sample;;;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarH;300_FB5_VarH_ProbenID1;q1_8;;Gib eine Proben-ID ein.;;sample;notreleased;-6666;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarH;300_FB5_VarH_ProbenID2;q1_8;;Gib eine Proben-ID ein.;;sample;;;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarH;300_FB5_VarH_ProbenID2;q1_8;;Gib eine Proben-ID ein.;;sample;notreleased;-6666;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarI;300_FB5_VarI;q1_9;;Gib eine PZN ein.;;pzn;;;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarI;300_FB5_VarI;q1_9;;Gib eine PZN ein.;;pzn;notreleased;-6666;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarJ;300_FB5_VarJ;q1_10;;Zeitstempel;;timestamp;;;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;VarJ;300_FB5_VarJ;q1_10;;Zeitstempel;;timestamp;notreleased;-6666;;;T;F;;;;;;;
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;;300_FB5_v1_q2;q2;Eine bedingte Frage.;;;;;;;;F;T;on current questionnaire;300;1;300_FB5_VarÄ;""">=""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;;300_FB5_v1_q2_1;q2_1;;Zahlenfrage Min Max;;numeric float;;;"""-3""";"""12""";F;T;on current questionnaire;300;1;300_FB5_VarÄ;""">=""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;;300_FB5_v1_q2_1;q2_1;;Zahlenfrage Min Max;;numeric float;notreleased;-6666;"""-3""";"""12""";F;T;on current questionnaire;300;1;300_FB5_VarÄ;""">=""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;;300_FB5_v1_q2_1;q2_1;;Zahlenfrage Min Max;;numeric float;notapplicable;-8888;"""-3""";"""12""";F;T;on current questionnaire;300;1;300_FB5_VarÄ;""">=""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;;300_FB5_v1_q2_1;q2_1;;Zahlenfrage Min Max;;numeric float;unobtainable;-9999;"""-3""";"""12""";F;T;on current questionnaire;300;1;300_FB5_VarÄ;""">=""";Nein;OR
+300;1;FB5 Bedingungen, Variablennamen und ÄÖÜßá%;;300_FB5_v1_q3;q3;Frage ohne Unterfrage;;;;;;;;F;F;;;;;;;

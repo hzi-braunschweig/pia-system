@@ -17,7 +17,8 @@ import { ComplianceService } from './compliance/compliance-service/compliance.se
 import { NotificationService } from './shared/services/notification/notification.service';
 import { EndpointService } from './shared/services/endpoint/endpoint.service';
 import { BadgeService } from './shared/services/badge/badge.service';
-import { User } from './auth/auth.model';
+import { CurrentUser } from './auth/current-user.service';
+import { filter } from 'rxjs/operators';
 
 interface AppPage {
   title: string;
@@ -45,47 +46,40 @@ export class AppComponent {
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     private translate: TranslateService,
-    private auth: AuthService,
     private compliance: ComplianceService,
     private notification: NotificationService,
     private endpoint: EndpointService,
-    private badgeService: BadgeService
+    private badgeService: BadgeService,
+    private currentUser: CurrentUser,
+    private auth: AuthService
   ) {
-    this.onAppStart();
-    this.auth.currentUser$.subscribe((user) => {
-      if (user) {
-        this.onLogin(user);
-      }
-    });
+    void this.onAppStart();
     this.compliance.complianceDataChangesObservable.subscribe(() =>
       this.onComplianceChanges()
     );
     this.platform.ready().then(() => this.onPlatformReady());
+    this.auth.isAuthenticated$
+      .pipe(filter(Boolean))
+      .subscribe(async () => await this.onLogin());
   }
 
-  onLogout() {
-    this.presentConfirmLogout();
-    this.badgeService.clear();
+  public async logout() {
+    await this.presentConfirmLogout();
   }
 
   /**
    * Executed once at app start
    */
-  private onAppStart() {
-    if (!this.endpoint.isCustomEndpoint() && this.auth.isAuthenticated()) {
-      this.endpoint.setEndpointForUser(this.auth.getCurrentUser().username);
-    }
-    if (this.auth.isAuthenticated()) {
-      this.setupSideMenu();
+  private async onAppStart() {
+    if (await this.auth.isAuthenticated()) {
+      await this.setupSideMenu();
     }
   }
 
-  /**
-   * Executed on every user login for initializations
-   */
-  private onLogin(user: User) {
-    this.setupSideMenu();
-    this.notification.initPushNotifications(user.username);
+  private async onLogin() {
+    await this.setupSideMenu();
+
+    await this.notification.initPushNotifications(this.currentUser.username);
   }
 
   /**
@@ -99,10 +93,8 @@ export class AppComponent {
    * Executed as soon as the cordova platform is ready and plugins may be used
    */
   private async onPlatformReady() {
-    if (this.auth.isAuthenticated()) {
-      this.notification.initPushNotifications(
-        this.auth.getCurrentUser().username
-      );
+    if (await this.auth.isAuthenticated()) {
+      await this.notification.initPushNotifications(this.currentUser.username);
     }
 
     if (this.platform.is('cordova')) {

@@ -185,12 +185,6 @@ form {
         &__move-buttons {
           display: flex;
         }
-        &__condition-warning {
-          font-weight: bold;
-          font-size: 16px;
-          color: orangered;
-          padding-left: 15px;
-        }
 
         .mat-card-title {
           button {
@@ -325,6 +319,13 @@ form {
       }
     }
   }
+}
+
+.condition-warning {
+  font-weight: bold;
+  font-size: 16px;
+  color: orangered;
+  padding-left: 15px;
 }
 
 .create-answer-option-button {

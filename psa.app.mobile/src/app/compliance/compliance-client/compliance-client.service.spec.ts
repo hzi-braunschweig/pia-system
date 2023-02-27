@@ -11,25 +11,27 @@ import {
 } from '@angular/common/http/testing';
 import { File } from '@awesome-cordova-plugins/file/ngx';
 import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
-import SpyObj = jasmine.SpyObj;
 
 import { ComplianceClientService } from './compliance-client.service';
-import { AuthService } from '../../auth/auth.service';
-import { User } from '../../auth/auth.model';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
+import { CurrentUser } from '../../auth/current-user.service';
+import SpyObj = jasmine.SpyObj;
 
 describe('ComplianceClientService', () => {
   let complianceService: ComplianceClientService;
   let httpMock: HttpTestingController;
+  let currentUser: SpyObj<CurrentUser>;
   let file: SpyObj<File>;
   let fileOpener: SpyObj<FileOpener>;
-  let auth: SpyObj<AuthService>;
   let endpoint: SpyObj<EndpointService>;
 
   const apiUrl = 'http://localhost';
   const testStudyName = 'Teststudie';
 
   beforeEach(() => {
+    currentUser = jasmine.createSpyObj('CurrentUser', [], {
+      username: 'Testuser',
+    });
     file = jasmine.createSpyObj('File', ['writeFile']);
     file.dataDirectory = '/some/path';
     file.writeFile.and.returnValue(
@@ -37,8 +39,6 @@ describe('ComplianceClientService', () => {
     );
     fileOpener = jasmine.createSpyObj('FileOpener', ['open']);
     fileOpener.open.and.returnValue(Promise.resolve());
-    auth = jasmine.createSpyObj('AuthService', ['getCurrentUser']);
-    auth.getCurrentUser.and.returnValue({ username: 'Testuser' } as User);
     endpoint = jasmine.createSpyObj('EndpointService', ['getUrl']);
     endpoint.getUrl.and.returnValue('http://localhost');
 
@@ -47,7 +47,7 @@ describe('ComplianceClientService', () => {
         ComplianceClientService,
         { provide: File, useValue: file },
         { provide: FileOpener, useValue: fileOpener },
-        { provide: AuthService, useValue: auth },
+        { provide: CurrentUser, useValue: currentUser },
         { provide: EndpointService, useValue: endpoint },
       ],
       imports: [HttpClientTestingModule],

@@ -18,8 +18,8 @@ const SSL_CERTS: SslCerts = {
 };
 
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS),
-  internal: GlobalConfig.internal,
+  public: GlobalConfig.getPublic(SSL_CERTS, 'complianceservice'),
+  internal: GlobalConfig.getInternal('complianceservice'),
   database: {
     host: ConfigUtils.getEnvVariable('EWPIA_HOST'),
     port: Number(ConfigUtils.getEnvVariable('EWPIA_PORT')),

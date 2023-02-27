@@ -310,6 +310,7 @@
     "CONDITION_LAST": "auf letzte Fragebogeninstanz",
     "CONDITION_MESSAGE": "Bitte speichern Sie den Fragebogen, um alle aktuellen Elemente zu sehen. ",
     "CONDITION_SEND_QUESTIONNAIRE": "Sie müssen den Fragebogen erst speichern, bevor Sie diese Bedingung anlegen können",
+    "CONDITION_SELECT_STUDY": "Sie müssen für den Fragebogen eine Studie  auswählen, bevor Sie diese Bedingung anlegen können",
     "CONDITION_THIS": "auf den aktuellen Fragebogen",
     "SAMPLE": "Probe",
     "PZN": "PZN",
@@ -327,7 +328,9 @@
     "QUESTIONNAIRE_CONDITION_SET": "Bedingung setzen",
     "QUESTIONNAIRE_CONDITION_REMOVE": "Bedingung entfernen",
     "EXPORT_ANSWERS": "Antworten",
+    "EXPORT_ANSWERS_IMPROVED": "Antworten - verbesserter Export",
     "EXPORT_CODEBOOK": "Codebook",
+    "EXPORT_QUESTIONNAIRE": "Fragebogeneinstellungen",
     "EXPORT_LABRESULTS": "Laborergebnisse",
     "EXPORT_UNASSIGNED_LABRESULTS": "Laborergebnisse ohne Zuordnung",
     "INTERNAL_CONDITIONS_REMOVED": "Alle internen Bedingungen werden aus dem Export entfernt!",
@@ -352,7 +355,8 @@
     "FILE_INPUT_TYPES_HINT": "Es können nur PDF- und CSV-Dateien hochgeladen werden.",
     "IMAGE_INPUT_TYPES_HINT": "Es können nur PNG- und JPEG-Dateien hochgeladen werden.",
     "DEACTIVATION_HINT": "Dieser Fragebogen ist deaktiviert und kann nicht mehr geändert werden.",
-    "DEACTIVATION_CONFIRMATION_HINT": "<p>Hinweis: Bei Deaktivierung des Fragebogens wird dieser Teilnehmenden nicht mehr angezeigt. Die bereits bestehenden Antworten bleiben erhalten. Nach Deaktivierung kann der Fragebogen <strong>nicht</strong> wieder aktiviert werden. Sind Sie sicher, dass Sie den Fragebogen deaktivieren wollen?</p>"
+    "DEACTIVATION_CONFIRMATION_HINT": "<p>Hinweis: Bei Deaktivierung des Fragebogens wird dieser Teilnehmenden nicht mehr angezeigt. Die bereits bestehenden Antworten bleiben erhalten. Nach Deaktivierung kann der Fragebogen <strong>nicht</strong> wieder aktiviert werden. Sind Sie sicher, dass Sie den Fragebogen deaktivieren wollen?</p>",
+    "WARNING_STUDY_CHANGE": "Dieser Fragebogen enthält Bedingungen auf externe Fragebögen der gleichen Studie. Mit dem Ändern der Studie gehen diese Bedingungen verloren. Sind Sie sicher, dass Sie die Studie ändern wollen?"
   },
   "QUESTIONNAIRES_FORSCHER": {
     "VERSION": "Version",

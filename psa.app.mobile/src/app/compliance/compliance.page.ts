@@ -18,7 +18,7 @@ import { ComplianceService } from './compliance-service/compliance.service';
 import { ToastPresenterService } from '../shared/services/toast-presenter/toast-presenter.service';
 import { ComplianceClientService } from './compliance-client/compliance-client.service';
 import { ComplianceForStudyWrapper } from './compliance-for-study-wrapper';
-import { AuthService } from '../auth/auth.service';
+import { CurrentUser } from '../auth/current-user.service';
 
 @Component({
   selector: 'app-page-compliance',
@@ -27,7 +27,7 @@ import { AuthService } from '../auth/auth.service';
 export class CompliancePage implements ViewWillEnter, DoCheck {
   complianceSent = false;
 
-  studyName: string;
+  studyName: string = this.currentUser.study;
 
   studyWrapper: ComplianceForStudyWrapper;
 
@@ -49,10 +49,8 @@ export class CompliancePage implements ViewWillEnter, DoCheck {
     private menuCtrl: MenuController,
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    auth: AuthService
-  ) {
-    this.studyName = auth.getCurrentUser().study;
-  }
+    private currentUser: CurrentUser
+  ) {}
 
   ngDoCheck(): void {
     if (this.studyWrapper && !this.studyWrapper.editMode) {

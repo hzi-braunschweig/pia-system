@@ -37,6 +37,12 @@ program
   )
   .option('--studies-count <number>', 'amount of studies to generate', '1')
   .option(
+    '--questionnaires-count <number>',
+    'amount of questionnaires to generate for each study. Either set a single value for each study or set an' +
+      'array of values, that matches --studies-count in length. e.g. "2,2,4,1".',
+    '1'
+  )
+  .option(
     '--probands-count <number>',
     'amount of probands to generate for each study',
     '1'
@@ -52,10 +58,16 @@ program
     'probands.json'
   )
   .option(
-    '-aq, --answer-questions',
-    'should probands have answered questions',
+    '--professionals-export-file <string>',
+    'file to save professional usernames/passwords to',
+    'professionals.json'
+  )
+  .option(
+    '-sa, --submit-answers',
+    'should proband questionnaires be answered',
     false
   )
+  .option('-ci', 'output logs instead of progress when in CI mode', false)
   .action((options, cmd) => {
     GenerateTestDataCommand.execute(cmd.optsWithGlobals()).catch((error) => {
       program.error(error, { exitCode: 1 });

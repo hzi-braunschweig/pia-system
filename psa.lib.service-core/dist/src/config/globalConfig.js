@@ -42,12 +42,6 @@ class GlobalAuthSettings {
 }
 exports.GlobalAuthSettings = GlobalAuthSettings;
 class GlobalConfig {
-    static get internal() {
-        return {
-            host: '0.0.0.0',
-            port: Number(configUtils_1.ConfigUtils.getEnvVariable('INTERNAL_PORT')),
-        };
-    }
     static get complianceservice() {
         return GlobalConfig.getHttpConnection('COMPLIANCESERVICE');
     }
@@ -85,10 +79,16 @@ class GlobalConfig {
         return (this.probandAppUrl +
             (this.probandAppUrl.endsWith('/') ? 'admin' : '/admin'));
     }
-    static getPublic(sslCerts) {
+    static getInternal(serviceName) {
         return {
             host: '0.0.0.0',
-            port: Number(configUtils_1.ConfigUtils.getEnvVariable('PORT')),
+            port: GlobalConfig.getPort(serviceName, 'INTERNAL_'),
+        };
+    }
+    static getPublic(sslCerts, serviceName) {
+        return {
+            host: '0.0.0.0',
+            port: GlobalConfig.getPort(serviceName),
             tls: configUtils_1.ConfigUtils.getEnvVariable('PROTOCOL', 'https') !== 'http' && {
                 cert: sslCerts.cert,
                 key: sslCerts.key,
@@ -129,6 +129,10 @@ class GlobalConfig {
     }
     static getHttpConnection(servicePrefix) {
         return new configModel_1.HttpConnection(configUtils_1.ConfigUtils.getEnvVariable('INTERNAL_PROTOCOL', 'http'), configUtils_1.ConfigUtils.getEnvVariable(servicePrefix + '_HOST'), Number(configUtils_1.ConfigUtils.getEnvVariable(servicePrefix + '_INTERNAL_PORT')));
+    }
+    static getPort(serviceName, prefix = '') {
+        const port = configUtils_1.ConfigUtils.getEnvVariableInt(prefix + 'PORT', Number.NaN);
+        return configUtils_1.ConfigUtils.getEnvVariableInt(`${serviceName.toUpperCase()}_${prefix}PORT`, port);
     }
 }
 exports.GlobalConfig = GlobalConfig;

@@ -9,7 +9,6 @@ import { StatusCodes } from 'http-status-codes';
 
 export class QuestionnaireInstanceNotFoundError extends Error {}
 export class CouldNotCreateNewRandomVariableNameError extends Error {}
-
 export class WrongRoleError extends SpecificError {
   public readonly statusCode = StatusCodes.FORBIDDEN;
   public readonly errorCode = 'WRONG_ROLE';

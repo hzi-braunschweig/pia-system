@@ -47,15 +47,17 @@ export class NotificationService {
     await this.updateToken(await this.fcm.getToken());
     this.unsubscribe();
     this.subscriptions.push(
-      this.fcm.onTokenRefresh().subscribe((token) => this.updateToken(token))
-    );
-    this.subscriptions.push(
+      this.fcm.onTokenRefresh().subscribe((token) => this.updateToken(token)),
+
       this.fcm
         .onMessageReceived()
         .pipe(filter((data) => !!data.tap && !!data.id))
-        .subscribe((data) => this.openNotification(data.id))
+        .subscribe((data) => this.openNotification(data.id)),
+
+      this.auth.isAuthenticated$
+        .pipe(filter((isAuthenticated) => !isAuthenticated))
+        .subscribe(async () => await this.fcm.unregister())
     );
-    this.auth.onBeforeLogout(() => this.fcm.unregister());
   }
 
   private async updateToken(token: string) {
@@ -70,7 +72,7 @@ export class NotificationService {
   }
 
   private async openNotification(notificationId: string) {
-    if (this.auth.isAuthenticated()) {
+    if (await this.auth.isAuthenticated()) {
       await this.notificationPresenter.present(notificationId);
     } else {
       this.lastUndeliveredMessage = {

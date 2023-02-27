@@ -13,7 +13,7 @@ import { config } from '../../config';
 type CsvRecord = CsvRecord[] | Record<string, CsvRecord> | string | null;
 
 /**
- * A transform stream wich receives an object and pushes a transformed object.
+ * A transform stream which receives an object and pushes a transformed object.
  */
 export abstract class CsvTransform<T, U extends CsvRecord> extends Transform {
   protected readonly dateTimeFormat = new Intl.DateTimeFormat('de-DE', {
@@ -43,16 +43,20 @@ export abstract class CsvTransform<T, U extends CsvRecord> extends Transform {
     _encoding: BufferEncoding,
     callback: TransformCallback
   ): void {
-    const result = this.preventCsvInjection(this.convertToCsvRow(chunk));
+    Promise.resolve(this.convertToCsvRow(chunk))
+      .then((csvRow) => {
+        const result = this.preventCsvInjection(csvRow);
 
-    if (Array.isArray(result)) {
-      this._push(result, 0);
-    } else {
-      if (result) {
-        this.push(result);
-      }
-    }
-    callback();
+        if (Array.isArray(result)) {
+          this._pushMultiple(result);
+        } else {
+          if (result) {
+            this.push(result);
+          }
+        }
+        callback();
+      })
+      .catch((err) => console.error(err));
   }
 
   /**
@@ -69,25 +73,14 @@ export abstract class CsvTransform<T, U extends CsvRecord> extends Transform {
   }
 
   /**
-   * Push multiple rows while keeping track if push() signaled that no more
-   * chunks should be pushed. In those cases we wait for the 'drain' event to push
-   * the next rows.
-   * @see https://nodejs.org/api/stream.html#readablepushchunk-encoding
-   * @see https://nodejs.org/en/docs/guides/backpressuring-in-streams/#lifecycle-of-pipe
+   * Push multiple rows while ignoring whether push() signaled that no more
+   * chunks should be pushed. Backpressure will be handled by NodeJS itself
+   * in case of Transform streams.
+   *
+   * @see https://github.com/nodejs/help/issues/1791#issuecomment-759622422
    */
-  private _push(rows: unknown[], index: number): void {
-    if (rows.length === index) {
-      return;
-    }
-
-    // eslint-disable-next-line security/detect-object-injection
-    if (!this.push(rows[index])) {
-      this.once('drain', () => {
-        this._push(rows, index + 1);
-      });
-    }
-
-    this._push(rows, index + 1);
+  private _pushMultiple(rows: CsvRecord[]): void {
+    rows.forEach((row) => this.push(row));
   }
 
   /**
@@ -111,5 +104,7 @@ export abstract class CsvTransform<T, U extends CsvRecord> extends Transform {
     }
   }
 
-  protected abstract convertToCsvRow(chunk: T): U | U[] | undefined;
+  protected abstract convertToCsvRow(
+    chunk: T
+  ): U | U[] | undefined | Promise<U | U[] | undefined>;
 }

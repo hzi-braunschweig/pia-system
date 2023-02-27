@@ -12,6 +12,12 @@ import { db } from '../../../src/db';
 const setupFile = new QueryFile(path.join(__dirname, 'setup.sql'), {
   minify: true,
 });
+const setupAnswersFile = new QueryFile(
+  path.join(__dirname, 'setup_answers.sql'),
+  {
+    minify: true,
+  }
+);
 const cleanupFile = new QueryFile(path.join(__dirname, 'cleanup.sql'), {
   minify: true,
 });
@@ -19,6 +25,7 @@ const cleanupFile = new QueryFile(path.join(__dirname, 'cleanup.sql'), {
 export async function setup(): Promise<void> {
   await db.none(cleanupFile);
   await db.none(setupFile);
+  await db.none(setupAnswersFile);
 }
 
 export async function cleanup(): Promise<void> {

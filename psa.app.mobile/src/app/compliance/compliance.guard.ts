@@ -29,7 +29,7 @@ export class ComplianceGuard implements CanActivate {
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Promise<boolean | UrlTree> {
-    if (!this.auth.isAuthenticated()) {
+    if (!(await this.auth.isAuthenticated())) {
       return false;
     }
     const isComplianceNeeded =

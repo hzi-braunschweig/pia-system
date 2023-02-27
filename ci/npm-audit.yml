@@ -1,19 +1,26 @@
+include:
+  - local: ci/rules.yml
+  - local: ci/k8s.yml
+
 npm-audit:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   stage: prepare
   image: node:14.19.0-buster-slim@sha256:9a5460581050ca9f106b2908d34450a9304a84eeee5d50ea1ce6fca40593b5b7
   script:
+    - npm install -g better-npm-audit
     - >
       for JOB in $JOBS_INSTALL; do
+        cd $JOB
         echo Audit $JOB
         echo -------------------
-        script -qefc "npm audit --production --audit-level=critical --prefix $JOB"
+        script -qefc "better-npm-audit audit --production --level=critical"
         echo -------------------
+        cd ..
       done
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
-      when: never
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH =~ /^develop/

@@ -35,7 +35,7 @@ describe('EndpointService', () => {
       service.setEndpointForUser('some-username');
 
       expect(localStorage.removeItem).toHaveBeenCalledOnceWith(
-        'customBackendUrl'
+        'latestEndpoint'
       );
     });
 

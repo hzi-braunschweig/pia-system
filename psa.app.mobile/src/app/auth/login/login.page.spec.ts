@@ -9,7 +9,6 @@ import { Router } from '@angular/router';
 import { MockBuilder } from 'ng-mocks';
 
 import { LoginPage } from './login.page';
-import { AuthClientService } from '../auth-client.service';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
 import { AuthModule } from '../auth.module';
 import {
@@ -17,9 +16,7 @@ import {
   fakeAsync,
   TestBed,
   tick,
-  waitForAsync,
 } from '@angular/core/testing';
-import { AuthService } from '../auth.service';
 import SpyObj = jasmine.SpyObj;
 
 describe('LoginPage', () => {
@@ -27,17 +24,12 @@ describe('LoginPage', () => {
   let fixture: ComponentFixture<LoginPage>;
 
   let loadingCtrl: SpyObj<LoadingController>;
-  let authClient: SpyObj<AuthClientService>;
   let router: SpyObj<Router>;
   let alertCtrl: SpyObj<AlertController>;
   let endpoint: SpyObj<EndpointService>;
 
   beforeEach(async () => {
     loadingCtrl = jasmine.createSpyObj(LoadingController, ['create']);
-    authClient = jasmine.createSpyObj(AuthClientService, [
-      'login',
-      'loginWithToken',
-    ]);
     router = jasmine.createSpyObj(Router, ['navigate']);
     alertCtrl = jasmine.createSpyObj(AlertController, ['create']);
     endpoint = jasmine.createSpyObj(EndpointService, [
@@ -61,7 +53,6 @@ describe('LoginPage', () => {
       .mock(EndpointService, endpoint)
       .mock(AlertController, alertCtrl)
       .mock(LoadingController, loadingCtrl)
-      .mock(AuthClientService, authClient)
       .mock(Router, router);
   });
 
@@ -75,12 +66,5 @@ describe('LoginPage', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  it('should remove current user', async () => {
-    const auth = TestBed.inject(AuthService) as SpyObj<AuthService>;
-    component.switchUser();
-    expect(component.username).toEqual('');
-    expect(auth.removeRememberedUsername).toHaveBeenCalledOnceWith();
   });
 });

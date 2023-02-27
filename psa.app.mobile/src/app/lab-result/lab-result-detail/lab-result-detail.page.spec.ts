@@ -16,41 +16,41 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 import { LabResultDetailPage } from './lab-result-detail.page';
 import { SampleTrackingClientService } from '../sample-tracking-client.service';
-import { AuthService } from '../../auth/auth.service';
-import { User } from '../../auth/auth.model';
+import { CurrentUser } from '../../auth/current-user.service';
 import SpyObj = jasmine.SpyObj;
 
 describe('LabResultDetailPage', () => {
   let component: LabResultDetailPage;
   let fixture: ComponentFixture<LabResultDetailPage>;
 
-  let sampleTrackingClient: SpyObj<SampleTrackingClientService>;
-  let auth: SpyObj<AuthService>;
   let activatedRoute;
+  let sampleTrackingClient: SpyObj<SampleTrackingClientService>;
+  let currentUser: SpyObj<CurrentUser>;
 
   const labResultHtml: string = 'this is a <b>lab result</b>';
 
   beforeEach(() => {
+    activatedRoute = {
+      snapshot: { paramMap: convertToParamMap({ labResultId: '1234' }) },
+    };
     sampleTrackingClient = jasmine.createSpyObj('SampleTrackingClientService', [
       'getLabResultForUser',
     ]);
     sampleTrackingClient.getLabResultForUser.and.resolveTo(labResultHtml);
-    auth = jasmine.createSpyObj('AuthService', ['getCurrentUser']);
-    auth.getCurrentUser.and.returnValue({ username: 'Test-1234' } as User);
-    activatedRoute = {
-      snapshot: { paramMap: convertToParamMap({ labResultId: '1234' }) },
-    };
+    currentUser = jasmine.createSpyObj('CurrentUser', [], {
+      username: 'Test-1234',
+    });
 
     TestBed.configureTestingModule({
       declarations: [LabResultDetailPage],
       imports: [IonicModule.forRoot()],
       providers: [
+        { provide: ActivatedRoute, useValue: activatedRoute },
         {
           provide: SampleTrackingClientService,
           useValue: sampleTrackingClient,
         },
-        { provide: AuthService, useValue: auth },
-        { provide: ActivatedRoute, useValue: activatedRoute },
+        { provide: CurrentUser, useValue: currentUser },
       ],
     }).compileComponents();
 

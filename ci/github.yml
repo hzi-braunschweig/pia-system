@@ -1,4 +1,12 @@
+include:
+  - local: ci/rules.yml
+  - local: ci/k8s.yml
+
 mirror-github:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   image:
     name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-git-mirror:$IMAGE_ID
     entrypoint: ['/bin/sh', '-c']
@@ -29,9 +37,5 @@ mirror-github:
     paths:
       - pia-system-github/github.env
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
-      when: never
     - if: $CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+/
   resource_group: mirror-github

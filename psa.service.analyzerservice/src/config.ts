@@ -18,7 +18,7 @@ const SSL_CERTS: SslCerts = {
 };
 
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS),
+  public: GlobalConfig.getPublic(SSL_CERTS, 'analyzerservice'),
   database: GlobalConfig.getQPia(SSL_CERTS),
   isTestMode: ConfigUtils.getEnvVariable('IS_TEST_MODE', 'false') === 'true',
   timeZone: GlobalConfig.timeZone,

@@ -7,28 +7,25 @@
 import { Component, OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
-
-import { AuthService } from '../auth/auth.service';
-import { User } from '../auth/auth.model';
 import { ToastPresenterService } from '../shared/services/toast-presenter/toast-presenter.service';
 import { ContactClientService } from './contact-client.service';
 import { StudyContact } from './contact.model';
 import { MaterialClientService } from './material-client.service';
 import { ComplianceService } from '../compliance/compliance-service/compliance.service';
 import { ComplianceType } from '../compliance/compliance.model';
+import { CurrentUser } from '../auth/current-user.service';
 
 @Component({
   selector: 'app-contact',
   templateUrl: './contact.page.html',
 })
 export class ContactPage implements OnInit {
-  public currentUser: User = this.auth.getCurrentUser();
   public hasSamplesCompliance: boolean;
 
   public addresses: StudyContact[] = null;
 
   constructor(
-    private auth: AuthService,
+    private currentUser: CurrentUser,
     private contactClient: ContactClientService,
     private materialClient: MaterialClientService,
     private alertCtrl: AlertController,

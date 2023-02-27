@@ -7,17 +7,7 @@
 import { AnswerType } from './answerOption';
 import { ConditionLink, ConditionOperand, ConditionType } from './condition';
 
-export enum CodebookBoolean {
-  true = 'T',
-  false = 'F',
-}
-
 export interface CodebookDbRow {
-  questionnaire_id: number;
-  questionnaire_version: number;
-  questionnaire_study_id: string;
-  questionnaire_name: string;
-  questionnaire_no_questions: 1;
   answeroption_variable_name: string;
   answeroption_text: string;
   question_id: number;
@@ -26,7 +16,6 @@ export interface CodebookDbRow {
   answeroption_position: number;
   answeroption_values: string[];
   values_code: number[];
-  no_questions: number;
   question_text: string;
   answer_type_id: AnswerType;
   restriction_min: number;

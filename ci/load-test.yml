@@ -1,3 +1,16 @@
+.prepare-k6:
+  stage: performance
+  image:
+    name: grafana/k6:0.39.0-47-gf2684ad9@sha256:a304b9459f1745b08c8990754f1cbaa995aa4ded81241905a15491ddeacf07ad
+    entrypoint: ['']
+  variables:
+    GIT_DEPTH: '1'
+  needs: ['load-test-users-fixture']
+  artifacts:
+    paths:
+      - psa.test.load/*.csv
+    when: always
+
 generate-load-test-data:
   stage: performance
   image: node:14.19.0-buster-slim@sha256:9a5460581050ca9f106b2908d34450a9304a84eeee5d50ea1ce6fca40593b5b7
@@ -14,10 +27,12 @@ generate-load-test-data:
     - 'echo "STAGE = $LOAD_TEST_STAGES"'
     - cd psa.test.data
     - npm install
-    - npm start -- seed -u ${SYSADMIN_USER} -p ${SYSADMIN_PASSWORD} -ku ${KEYCLOAK_USER} -kp ${KEYCLOAK_PASSWORD} -h $LOAD_TEST_HOST --study-prefix LOADTEST --studies-count 4 --probands-count 500
+    - npm start -- seed -u ${SYSADMIN_USER} -p ${SYSADMIN_PASSWORD} -ku ${KEYCLOAK_USER} -kp ${KEYCLOAK_PASSWORD} -h ${LOAD_TEST_HOST} --study-prefix LOADTEST --studies-count 4 --questionnaires-count 4 --probands-count 500 -sa -ci
   artifacts:
     paths:
       - psa.test.data/probands.json
+      - psa.test.data/professionals.json
+    expire_in: 30 days
   rules:
     - if: $CI_SCHEDULED_TASK == "generate_load_test_data"
 
@@ -27,35 +42,41 @@ load-test-users-fixture:
     name: alpine/curl:3.14@sha256:c64976d53728ca1b4918a49257845af27e343c4a79090788f83afe9f3e800965
     entrypoint: ['']
   script:
-    - 'curl --location --output probands.json --header "JOB-TOKEN: $CI_JOB_TOKEN" "$CI_SERVER_URL/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_COMMIT_REF_NAME/raw/psa.test.data/probands.json?job=generate-load-test-data"'
+    - 'curl --location --output probands.json --header "PRIVATE-TOKEN: $CI_READ_TOKEN" "$CI_SERVER_URL/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_COMMIT_REF_NAME/raw/psa.test.data/probands.json?job=generate-load-test-data"'
+    - 'curl --location --output professionals.json --header "PRIVATE-TOKEN: $CI_READ_TOKEN" "$CI_SERVER_URL/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/$CI_COMMIT_REF_NAME/raw/psa.test.data/professionals.json?job=generate-load-test-data"'
   artifacts:
     paths:
       - probands.json
+      - professionals.json
   rules:
-    - if: $CI_SCHEDULED_TASK == "load_test"
+    - if: $CI_SCHEDULED_TASK == "probands_load_test" || $CI_SCHEDULED_TASK == "export_performance_test"
 
-load-test:
-  stage: performance
-  image:
-    name: grafana/k6:0.39.0-47-gf2684ad9@sha256:a304b9459f1745b08c8990754f1cbaa995aa4ded81241905a15491ddeacf07ad
-    entrypoint: ['']
-  variables:
-    GIT_DEPTH: '1'
-  needs: ['load-test-users-fixture']
+probands-load-test:
+  extends: .prepare-k6
   script:
     - export URL=https://$LOAD_TEST_HOST
     - export STAGES=$LOAD_TEST_STAGES
     - export USERS_FIXTURE=../probands.json
-    - 'echo "URL = $URL"'
-    - 'echo "STAGES = $STAGES"'
-    - 'echo "USERS_FIXTURE = $USERS_FIXTURE"'
+    - export PROFESSIONALS_FIXTURE=../professionals.json
     - cd psa.test.load
-    - k6 run --summary-export=load-performance.json --out csv=results__01_login-and-show-questionnaires.csv ./scenarios/01_login-and-show-questionnaires.js
+    - k6 run --summary-export=01_login-and-show-questionnaires.json --out csv=results_01_login-and-show-questionnaires.csv ./scenarios/01_login-and-show-questionnaires.js
   artifacts:
     reports:
-      performance: psa.test.load/load-performance.json
-    paths:
-      - psa.test.load/*.csv
-    when: always
+      performance: psa.test.load/01_login-and-show-questionnaires.json
   rules:
-    - if: $CI_SCHEDULED_TASK == "load_test"
+    - if: $CI_SCHEDULED_TASK == "probands_load_test"
+
+export-performance-test:
+  extends: .prepare-k6
+  script:
+    - export URL=https://$LOAD_TEST_HOST
+    - export STAGES=$LOAD_TEST_STAGES
+    - export USERS_FIXTURE=../probands.json
+    - export PROFESSIONALS_FIXTURE=../professionals.json
+    - cd psa.test.load
+    - k6 run --summary-export=02_answers-export.json --out csv=results_02_answers-export.csv ./scenarios/02_answers-export.js
+  artifacts:
+    reports:
+      performance: psa.test.load/02_answers-export.json
+  rules:
+    - if: $CI_SCHEDULED_TASK == "export_performance_test"

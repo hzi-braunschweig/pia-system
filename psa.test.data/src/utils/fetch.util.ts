@@ -15,18 +15,23 @@ const httpsAgent = new https.Agent({
 
 export default async function fetch(
   url: RequestInfo,
-  init: RequestInit
+  init: RequestInit,
+  verbose = false
 ): Promise<Response | undefined> {
-  const logPrefix = `${chalk.bold(init.method?.toUpperCase())} ${String(url)}`;
   const response = await nodeFetch(url, { ...init, agent: httpsAgent });
-  console.log(
-    logPrefix,
-    getColoredStatusText(response.status, response.statusText)
-  );
+  const logPrefix = `${chalk.bold(init.method?.toUpperCase())} ${String(url)}`;
+
+  if (verbose) {
+    console.log(
+      logPrefix,
+      getColoredStatusText(response.status, response.statusText)
+    );
+  }
 
   if (response.status > 300) {
     throw new Error(
-      `${response.status} ${response.statusText}: ${await response.text()}`
+      `${logPrefix} ${response.status} 
+      ${response.statusText}: ${await response.text()}`
     );
   }
 

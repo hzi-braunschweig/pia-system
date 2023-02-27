@@ -13,20 +13,18 @@ import { LabResultListPage } from './lab-result-list.page';
 import { AuthService } from '../../auth/auth.service';
 import { SampleTrackingClientService } from '../sample-tracking-client.service';
 import SpyObj = jasmine.SpyObj;
+import { CurrentUser } from '../../auth/current-user.service';
 
 describe('LabResultListPage', () => {
   let component: LabResultListPage;
   let fixture: ComponentFixture<LabResultListPage>;
 
-  let auth: SpyObj<AuthService>;
+  let currentUser: SpyObj<CurrentUser>;
   let sampleTrackingClient: SpyObj<SampleTrackingClientService>;
 
   beforeEach(() => {
-    auth = jasmine.createSpyObj('AuthService', ['getCurrentUser']);
-    auth.getCurrentUser.and.returnValue({
+    currentUser = jasmine.createSpyObj('CurrentUser', [], {
       username: 'Test-1234',
-      role: 'Proband',
-      study: 'Teststudy',
     });
     sampleTrackingClient = jasmine.createSpyObj('SampleTrackingClientService', [
       'getUserLabResults',
@@ -48,7 +46,7 @@ describe('LabResultListPage', () => {
       declarations: [LabResultListPage, MockPipe(TranslatePipe)],
       imports: [IonicModule.forRoot()],
       providers: [
-        { provide: AuthService, useValue: auth },
+        { provide: CurrentUser, useValue: currentUser },
         {
           provide: SampleTrackingClientService,
           useValue: sampleTrackingClient,

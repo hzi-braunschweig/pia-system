@@ -47,7 +47,7 @@ describe('Example Pipelines', () => {
     await PdfGenerator.closeBrowser();
   });
 
-  const generatePdfTestTimeout = 10000;
+  const generatePdfTestTimeout = 20000;
   it('should create a pdf', async () => {
     const pdf = await new MarkdownDocument(
       '# Hello\n<pia-my-custom-tag></pia-my-custom-tag>\nHallo _italic_ World'
@@ -93,6 +93,7 @@ Hallo <em>italic</em> World</p>
     expect(segments.length).to.equal(NUMBER_OF_SEGMENTS);
   });
 
+  const segmentComplianceTextTestTimeout = 10000;
   it('should segment compliance text', async () => {
     const NUMBER_OF_SEGMENTS = 8;
     const segments = await new MarkdownDocument(
@@ -115,5 +116,5 @@ Hallo <em>italic</em> World</p>
       .pipe(new DomSegmenter()).segments;
     expect(segments).to.be.an.instanceOf(Array);
     expect(segments.length).to.equal(NUMBER_OF_SEGMENTS);
-  });
+  }).timeout(segmentComplianceTextTestTimeout);
 });

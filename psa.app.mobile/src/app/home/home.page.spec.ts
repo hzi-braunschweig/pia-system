@@ -17,17 +17,20 @@ import { QuestionnaireClientService } from '../questionnaire/questionnaire-clien
 import { HomePageModule } from './home.module';
 import { AuthService } from '../auth/auth.service';
 import SpyObj = jasmine.SpyObj;
+import { CurrentUser } from '../auth/current-user.service';
 
 describe('HomePage', () => {
   let component: HomePage;
   let fixture: ComponentFixture<HomePage>;
 
-  let auth: SpyObj<AuthService>;
   let questionnaireClient: SpyObj<QuestionnaireClientService>;
+  let currentUser: SpyObj<CurrentUser>;
 
   beforeEach(async () => {
     // Provider and Services
-    auth = jasmine.createSpyObj<AuthService>('AuthService', ['getCurrentUser']);
+    currentUser = jasmine.createSpyObj<CurrentUser>('CurrentUser', [], {
+      study: 'Teststudy',
+    });
     questionnaireClient = jasmine.createSpyObj<QuestionnaireClientService>(
       'QuestionnaireClientService',
       ['getStudyWelcomeText']
@@ -35,17 +38,12 @@ describe('HomePage', () => {
 
     // Build Base Module
     await MockBuilder(HomePage, HomePageModule)
-      .mock(AuthService, auth)
-      .mock(QuestionnaireClientService, questionnaireClient);
+      .mock(QuestionnaireClientService, questionnaireClient)
+      .mock(CurrentUser, currentUser);
   });
 
   beforeEach(fakeAsync(() => {
     // Setup mocks before creating component
-    auth.getCurrentUser.and.returnValue({
-      username: 'TEST-1234',
-      role: 'Proband',
-      study: 'Teststudy',
-    });
     questionnaireClient.getStudyWelcomeText.and.resolveTo({
       study_id: 'Teststudy',
       welcome_text: 'Welcome!',

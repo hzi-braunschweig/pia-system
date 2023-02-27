@@ -15,6 +15,11 @@ class CsvSanatizer {
   static removeMaliciousChars(string) {
     const csvInjectionChars = ['=', '+', '-', '@'];
 
+    // we can directly return the string if it is a negative number
+    if (string.match(/^-\d+$/)) {
+      return string;
+    }
+
     if (csvInjectionChars.includes(string.charAt(0))) {
       return CsvSanatizer.removeMaliciousChars(string.substring(1));
     } else {

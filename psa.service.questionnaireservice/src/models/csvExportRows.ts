@@ -5,9 +5,23 @@
  */
 
 import { ConditionLink } from './condition';
-import { CodebookBoolean } from './codebook';
+import { CycleUnit } from './questionnaire';
 
-export interface CsvAnswerRow {
+export enum ExportBoolean {
+  true = 'T',
+  false = 'F',
+}
+
+export enum AnswerStatus {
+  PendingAnswer = 'pending_answer',
+  ExpiredAnswer = 'expired_answer',
+  LatestStudyAssistantAnswer = 'latest_study_assistant_answer',
+  InProgressAnswer = 'in_progress_answer',
+  ModifiableParticipantAnswer = 'modifiable_participant_answer',
+  FinalParticipantAnswer = 'final_participant_answer',
+}
+
+export interface CsvLegacyAnswerRow {
   Antwort: string;
   Proband: string;
   IDS: string;
@@ -16,6 +30,18 @@ export interface CsvAnswerRow {
   Kodierung_Wert: string | string[];
   Kodierung_Code: string | string[];
   Frage: string;
+}
+
+export interface CsvAnswerRow extends Record<string, string | number | null> {
+  participant: string | null;
+  is_test_participant: ExportBoolean | null;
+  questionnaire_name: string | null;
+  questionnaire_id: number | null;
+  questionnaire_version: number | null;
+  questionnaire_cycle: number | null;
+  questionnaire_date_of_issue: string | null;
+  answer_date: string | null;
+  answer_status: AnswerStatus | null;
 }
 
 export interface CsvLabResultObservationRow {
@@ -76,8 +102,8 @@ export interface CsvCodebookRow extends Record<string, unknown> {
   answer_category_code: number | string | null;
   valid_min: string | null;
   valid_max: string | null;
-  answer_required: CodebookBoolean | null;
-  condition_question: CodebookBoolean | null;
+  answer_required: ExportBoolean | null;
+  condition_question: ExportBoolean | null;
   condition_question_type: string | null;
   condition_question_questionnaire_id: number | null;
   condition_question_questionnaire_version: number | null;
@@ -85,4 +111,40 @@ export interface CsvCodebookRow extends Record<string, unknown> {
   condition_question_operand: string | null;
   condition_question_answer_value: string | null;
   condition_question_link: ConditionLink | null;
+}
+
+export interface CsvQuestionnaireRow {
+  questionnaire_name: string;
+  questionnaire_id: number;
+  questionnaire_version: number;
+  questionnaire_version_start: string;
+  questionnaire_version_end: string | null;
+  questionnaire_type: string | null;
+  cycle_unit: CycleUnit | null;
+  cycle_amount: number | null;
+  cycle_per_day: number | null;
+  cycle_first_at: number | null;
+  activate_at_date: string | null;
+  activate_after_days: number;
+  deactivate_after_days: number;
+  expires_after_days: number;
+  non_modifiable_after_days: number;
+  notification_tries: number;
+  notification_title: string;
+  notification_body_new: string;
+  notification_body_in_progress: string;
+  compliance_samples_needed: ExportBoolean;
+  visibility: string | null;
+  despite_end_signal: ExportBoolean;
+  deactivated: ExportBoolean;
+  deactivated_at: string | null;
+  condition_questionnaire: ExportBoolean;
+  condition_questionnaire_name: string | null;
+  condition_questionnaire_id: number | null;
+  condition_questionnaire_version: number | null;
+  condition_questionnaire_question_id: string | null;
+  condition_questionnaire_question_column_name: string | null;
+  condition_questionnaire_question_operand: string | null;
+  condition_questionnaire_question_answer_value: string | null;
+  condition_questionnaire_question_link: ConditionLink | null;
 }

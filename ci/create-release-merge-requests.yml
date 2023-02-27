@@ -1,12 +1,17 @@
+include:
+  - local: ci/k8s.yml
+  - local: ci/rules.yml
+
 # create merge requests to master and develop when a tag is created
 merge-requests:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .no-cpu-request
   stage: push
   image: curlimages/curl@sha256:faaba66e89c87fd3fb51336857142ee6ce78fa8d8f023a5713d2bf4957f1aca8
   needs: []
   rules:
     - if: $CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+/
-    - if: $CI_SCHEDULED_TASK == "load_test"
-      when: never
   script:
     - PROJECT_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}"
     # create a new branch to merge from release to develop

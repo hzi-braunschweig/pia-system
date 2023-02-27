@@ -1,29 +1,28 @@
+include:
+  - local: ci/rules.yml
+  - local: ci/k8s.yml
+
 npm-install:
   stage: prepare
-  image: docker:20.10.12@sha256:a729cce205a05b0b86dc8dca87823efaffc3f74979fe7dc86a707c2fbf631b61
+  image: snickch/buildx@sha256:71060c230c8c23e1525c89389ba18a4342a1923c29d7b76663ae41a6062c17b6
+  variables:
+    DOCKER_HOST: null
+  before_script:
+    - docker buildx create --name buildkitd --driver remote $BUILDKITD_ADDRESS
+    - docker buildx use buildkitd
+    - docker buildx install
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   script:
+    # generate the bake files
+    - ./psa.utils.ci-create-bake-file/npm-install.sh > npm-install.hcl
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
-    - >
-      for JOB in $JOBS_INSTALL; do
-        echo Build Test Image $JOB
-        echo -------------------
-        docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB-npm-install:$IMAGE_ID --target=npm-install --build-arg DIR=$JOB -f $JOB/Dockerfile .
-        echo -------------------
-      done
-    - >
-      for JOB in $JOBS_INSTALL; do
-        echo Push Test Image $JOB
-        echo -------------------
-        docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB-npm-install:$IMAGE_ID
-        echo -------------------
-      done
+    - docker buildx bake --push -f npm-install.hcl
   tags:
     - docker
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
-      when: never
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH =~ /^develop/

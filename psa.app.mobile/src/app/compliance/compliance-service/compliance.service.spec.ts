@@ -16,12 +16,12 @@ import { createComplianceDataResponse } from '../compliance.model.spec';
 import { User } from '../../auth/auth.model';
 import SpyObj = jasmine.SpyObj;
 import createSpy = jasmine.createSpy;
+import { CurrentUser } from '../../auth/current-user.service';
 
 describe('ComplianceService', () => {
   let service: ComplianceService;
   let complianceClient: SpyObj<ComplianceClientService>;
-  let auth: SpyObj<AuthService>;
-  let currentUser$: BehaviorSubject<User>;
+  let currentUser: SpyObj<CurrentUser>;
 
   beforeEach(async () => {
     // Provider and Services
@@ -33,51 +33,19 @@ describe('ComplianceService', () => {
         'getInternalComplianceActive',
       ]
     );
-    currentUser$ = new BehaviorSubject<User>(null);
-    auth = jasmine.createSpyObj<AuthService>(
-      'AuthService',
-      ['getCurrentUser'],
-      {
-        currentUser$: currentUser$.asObservable(),
-      }
-    );
+    currentUser = jasmine.createSpyObj<CurrentUser>('CurrentUser', [], {
+      study: 'study',
+    });
 
     // Build Base Module
     await MockBuilder(ComplianceService)
       .mock(ComplianceClientService, complianceClient)
-      .mock(AuthService, auth);
+      .mock(CurrentUser, currentUser);
   });
 
   beforeEach(() => {
     // Create service
     service = TestBed.inject(ComplianceService);
-  });
-
-  describe('changing user subscription', () => {
-    it('should clear the cache if a user logs out', fakeAsync(() => {
-      tick();
-
-      currentUser$.next({
-        username: 'TEST-0001',
-        role: 'Proband',
-        study: 'teststudy',
-      });
-      tick();
-      complianceClient.getComplianceAgreementForCurrentUser.and.resolveTo(
-        createComplianceDataResponse()
-      );
-      service.getComplianceAgreementForCurrentUser();
-      tick();
-      expect(
-        complianceClient.getComplianceAgreementForCurrentUser
-      ).toHaveBeenCalled();
-      complianceClient.getComplianceAgreementForCurrentUser.calls.reset();
-      service.getComplianceAgreementForCurrentUser();
-      tick();
-      expect(
-        complianceClient.getComplianceAgreementForCurrentUser
-      ).not.toHaveBeenCalled();
-    }));
   });
 
   describe('userHasCompliances()', () => {

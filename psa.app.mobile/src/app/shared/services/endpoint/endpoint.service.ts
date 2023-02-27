@@ -5,11 +5,11 @@
  */
 
 import { Injectable } from '@angular/core';
-
-import { backendMapping } from '../../../backend-mapping';
-import { compare } from 'compare-versions';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
+import { compare } from 'compare-versions';
+
+import { backendMapping } from '../../../backend-mapping';
 
 interface BackendMappingEntry {
   prefix: string;
@@ -23,13 +23,19 @@ interface EndpointMetaData {
   minimalAppVersion: string;
 }
 
+interface Endpoint {
+  url: string;
+  isCustom: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class EndpointService {
-  private static readonly LOCAL_STORAGE_KEY = 'customBackendUrl';
+  private static readonly LOCAL_STORAGE_KEY = 'latestEndpoint';
 
-  private endpointUrl: string | null = this.getCustomEndpoint();
+  private _endpointUrl: string | null = null;
+  private _isCustomEndpoint: boolean = false;
 
   private static validateUrl(url: string): string | null {
     if (url && url.endsWith('/')) {
@@ -38,14 +44,27 @@ export class EndpointService {
     return url || null;
   }
 
-  constructor(private http: HttpClient) {}
-
-  getUrl(): string | null {
-    return this.endpointUrl;
+  constructor(private readonly http: HttpClient) {
+    const endpoint = this.getLatestEndpoint();
+    this._endpointUrl = endpoint?.url;
+    this._isCustomEndpoint = endpoint?.isCustom;
+    console.log('EndpointService: endpoint set', endpoint);
   }
 
-  setEndpointForUser(username: string): boolean {
-    this.removeCustomEndpoint();
+  public getUrl(): string | null {
+    return this._endpointUrl;
+  }
+
+  public isCustomEndpoint(): boolean {
+    return this._isCustomEndpoint;
+  }
+
+  public getCustomEndpointUrl(): string | null {
+    return this._isCustomEndpoint ? this._endpointUrl : null;
+  }
+
+  public setEndpointForUser(username: string): boolean {
+    this.removeLatestEndpoint();
 
     const mapping: BackendMappingEntry = backendMapping.find(
       (entry) =>
@@ -56,38 +75,34 @@ export class EndpointService {
     if (!mapping) {
       return false;
     }
-    this.endpointUrl = mapping.url;
+    this.setEndpoint(mapping.url, false);
     return true;
   }
 
-  getCustomEndpoint(): string {
-    return localStorage.getItem(EndpointService.LOCAL_STORAGE_KEY);
-  }
+  public setCustomEndpoint(endpointUrl: string): boolean {
+    this.removeLatestEndpoint();
 
-  setCustomEndpoint(endpointUrl: string): boolean {
     const url = EndpointService.validateUrl(endpointUrl);
     if (!url) {
       return false;
     }
-    this.endpointUrl = url;
-    localStorage.setItem(EndpointService.LOCAL_STORAGE_KEY, this.endpointUrl);
+    this.setEndpoint(url, true);
     return true;
   }
 
-  removeCustomEndpoint(): void {
-    this.endpointUrl = null;
+  public removeLatestEndpoint(): void {
+    this._endpointUrl = null;
+    this._isCustomEndpoint = false;
     localStorage.removeItem(EndpointService.LOCAL_STORAGE_KEY);
-  }
-
-  isCustomEndpoint(): boolean {
-    return !!this.getCustomEndpoint();
   }
 
   /**
    * Endpoint is only compatible if its minimal app version is
    * lower or equal to the current app version.
    */
-  async isEndpointCompatible(currentAppVersion: string): Promise<boolean> {
+  public async isEndpointCompatible(
+    currentAppVersion: string
+  ): Promise<boolean> {
     try {
       const minimalAppVersion = await this.getMinimalAppVersion();
       return compare(minimalAppVersion, currentAppVersion, '<=');
@@ -100,9 +115,24 @@ export class EndpointService {
     }
   }
 
+  private getLatestEndpoint(): Endpoint {
+    return JSON.parse(localStorage.getItem(EndpointService.LOCAL_STORAGE_KEY));
+  }
+
+  private setEndpoint(url: string, isCustom: boolean): void {
+    this._endpointUrl = url;
+    this._isCustomEndpoint = isCustom;
+
+    const endpoint: Endpoint = { url, isCustom };
+    localStorage.setItem(
+      EndpointService.LOCAL_STORAGE_KEY,
+      JSON.stringify(endpoint)
+    );
+  }
+
   private async getMinimalAppVersion(): Promise<string> {
     return await this.http
-      .get<EndpointMetaData>(`${this.endpointUrl}/api/v1/`)
+      .get<EndpointMetaData>(`${this._endpointUrl}/api/v1/`)
       .pipe(map((endpointMetaData) => endpointMetaData.minimalAppVersion))
       .toPromise();
   }

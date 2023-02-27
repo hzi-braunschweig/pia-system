@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@hapi/boom": "^10.0.0",
-    "@hapi/hapi": "^21.0.0",
+    "@hapi/hapi": "^21.1.0",
     "@pia/lib-messagequeue": "file:../psa.lib.messagequeue",
     "@pia/lib-service-core": "file:../psa.lib.service-core",
     "date-fns": "^2.29.3",
@@ -24,7 +24,6 @@
   "devDependencies": {
     "@pia/eslint-config": "file:../psa.eslint-config",
     "@types/chai": "^4.3.4",
-    "@types/hapi__hapi": "^20.0.13",
     "@types/mocha": "^10.0.0",
     "@types/node": "^14.18.12",
     "@types/node-schedule": "^2.1.0",

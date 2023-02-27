@@ -9,19 +9,12 @@ import { KeycloakEventType, KeycloakService } from 'keycloak-angular';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { EndpointService } from '../shared/services/endpoint/endpoint.service';
-import { firstValueFrom } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { of } from 'rxjs/internal/observable/of';
-import {
-  InAppBrowser,
-  InAppBrowserEvent,
-  InAppBrowserObject,
-  InAppBrowserOptions,
-} from '@awesome-cordova-plugins/in-app-browser/ngx';
-import { AuthService } from './auth.service';
+import { InAppBrowser } from '@awesome-cordova-plugins/in-app-browser/ngx';
 import { LoginFailedError } from './errors/login-failed-error';
-import { NoErrorToastHeader } from '../shared/interceptors/http-error-interceptor.service';
 import { TranslateService } from '@ngx-translate/core';
+import { CurrentUser } from './current-user.service';
+import { PiaKeycloakAdapter } from './keycloak-adapter/keycloak-adapter';
+import { Platform } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root',
@@ -38,86 +31,94 @@ export class KeycloakClientService {
     private http: HttpClient,
     private endpoint: EndpointService,
     private inAppBrowser: InAppBrowser,
-    private authService: AuthService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private platform: Platform,
+    private currentUser: CurrentUser
   ) {}
 
-  public async initialize() {
-    if (!this._hasBeenInitialized) {
-      await this.keycloakService.init({
-        config: {
-          ...environment.authServer,
-          url: this.getApiUrl(),
-        },
-        initOptions: {
-          pkceMethod: 'S256',
-          checkLoginIframe: false,
-        },
-        shouldAddToken: (request) => {
-          const noTokenUrls = [
-            this.endpoint.getUrl() + '/api/v1/', // bearer will be rejected by CORS
-          ];
-
-          return !noTokenUrls.includes(request.url);
-        },
-      });
-
-      this.authService.onBeforeLogout(() => this.logout());
-
-      this.keycloakService.keycloakEvents$.subscribe(async (e) => {
-        if (e.type === KeycloakEventType.OnTokenExpired) {
-          await this.keycloakService.updateToken();
-        }
-
-        if (e.type === KeycloakEventType.OnAuthRefreshError) {
-          await this.authService.logout();
-        }
-
-        if (e.type === KeycloakEventType.OnAuthRefreshSuccess) {
-          this.authService.handleKeycloakToken(
-            await this.keycloakService.getToken()
-          );
-        }
-      });
-
-      this._hasBeenInitialized = true;
+  public async initialize(): Promise<void> {
+    if (this._hasBeenInitialized) {
+      return;
     }
+
+    await this.platform.ready();
+
+    const apiUrl = this.endpoint.getUrl() + '/api/v1/auth/';
+
+    this.keycloakService.keycloakEvents$.subscribe(async (e) => {
+      console.log('received keycloak event:', KeycloakEventType[e.type]);
+
+      if (e.type === KeycloakEventType.OnTokenExpired) {
+        await this.keycloakService.updateToken();
+      }
+
+      if (e.type === KeycloakEventType.OnAuthRefreshError) {
+        await this.logout();
+      }
+
+      if (e.type === KeycloakEventType.OnAuthRefreshSuccess) {
+        this.currentUser.init(await this.keycloakService.getToken());
+      }
+    });
+
+    await this.keycloakService.init({
+      config: {
+        ...environment.authServer,
+        url: apiUrl,
+      },
+      initOptions: {
+        adapter: new PiaKeycloakAdapter(
+          this.keycloakService,
+          this.inAppBrowser,
+          this.translate,
+          this.http,
+          apiUrl + 'realms/' + environment.authServer.realm
+        ),
+        pkceMethod: 'S256',
+        checkLoginIframe: false,
+      },
+      shouldAddToken: (request) => {
+        const noTokenUrls = [
+          this.endpoint.getUrl() + '/api/v1/', // bearer will be rejected by CORS
+        ];
+
+        return !noTokenUrls.includes(request.url);
+      },
+    });
+
+    this._hasBeenInitialized = true;
   }
 
-  public async isCompatible(): Promise<boolean> {
-    return firstValueFrom(
-      this.http
-        .get(this.getApiUrl() + 'realms/' + environment.authServer.realm, {
-          observe: 'response',
-          headers: {
-            [NoErrorToastHeader]: '',
-          },
-        })
-        .pipe(
-          map((res) => res.status === 200),
-          catchError(() => of(false))
-        )
+  public async isLoggedIn(): Promise<boolean> {
+    return (
+      this._hasBeenInitialized &&
+      (await this.keycloakService.isLoggedIn()) &&
+      !this.keycloakService.isTokenExpired()
     );
   }
 
   public async login(
-    username: string,
-    locale: string,
-    hidden = false
+    hidden: boolean,
+    username: string = '',
+    locale: string = null
   ): Promise<void> {
+    if (!this._hasBeenInitialized) {
+      throw new LoginFailedError(
+        'KeycloakClientService has not been initialized'
+      );
+    }
+
     try {
-      await this.initialize();
       await this.keycloakService.login({
         loginHint: username,
         locale,
         cordovaOptions: {
-          ...this.getInAppBrowserToolbarOptions(),
           ...(hidden ? { hidden: 'yes' } : {}),
         },
       });
 
       const token = await this.keycloakService.getToken();
-      this.authService.handleKeycloakToken(token);
+      this.currentUser.init(token);
     } catch (e) {
       if (e === undefined) {
         throw new LoginFailedError();
@@ -128,100 +129,16 @@ export class KeycloakClientService {
   }
 
   public async openAccountManagement(): Promise<void> {
-    // We cannot style the toolbar by using keycloak.js to open account management.
-    // The logic and configuration is similar the original keycloak.js implementation.
-    const accountUrl = this.keycloakService
-      .getKeycloakInstance()
-      .createAccountUrl();
-
-    const browser = await this.getInAppBrowser(accountUrl, {
-      ...this.getInAppBrowserToolbarOptions(),
-      location: 'no',
-      toolbar: 'no',
-    });
-
-    browser.on('loadstart').subscribe(this.getLoadStartCallback(browser));
-    browser.show();
+    await this.keycloakService.getKeycloakInstance().accountManagement();
   }
 
   public async logout(): Promise<void> {
-    await this.initialize();
-    // Because of an inappbrowser bug, the keycloak adapters logout method is not working.
-    // We wrote our own logic to open/close the inappbrowser.
-    // @see https://github.com/apache/cordova-plugin-inappbrowser/issues/649
-    // return this.keycloakService.logout();
+    if (!this._hasBeenInitialized) {
+      await this.initialize();
+    }
 
-    const browser = await this.getLogoutInAppBrowser();
+    await this.keycloakService.logout();
 
-    const promise = new Promise<void>((resolve, reject) => {
-      browser.on('loadstart').subscribe(this.getLoadStartCallback(browser));
-      browser.on('loaderror').subscribe((event) => {
-        // Doing live reload on an existing login can result in an empty event url
-        if (event.url === '' || event.url.indexOf('http://localhost') === 0) {
-          this.keycloakService.clearToken();
-          browser.close();
-          resolve();
-        } else {
-          browser.close();
-          reject();
-        }
-      });
-    });
-
-    browser.hide();
-
-    return promise;
-  }
-
-  private getApiUrl() {
-    return this.endpoint.getUrl() + '/api/v1/auth/';
-  }
-
-  private getLogoutInAppBrowser(): Promise<InAppBrowserObject> {
-    let logoutUrl = this.keycloakService
-      .getKeycloakInstance()
-      .createLogoutUrl();
-
-    return this.getInAppBrowser(logoutUrl, {
-      location: 'no',
-      hidden: 'yes',
-      ...this.getInAppBrowserToolbarOptions(),
-    });
-  }
-
-  private getInAppBrowser(
-    url: string,
-    options?: InAppBrowserOptions
-  ): Promise<InAppBrowserObject> {
-    return new Promise<InAppBrowserObject>((resolve) => {
-      document.addEventListener(
-        'deviceready',
-        () => {
-          const browser = this.inAppBrowser.create(url, '_blank', options);
-          resolve(browser);
-        },
-        false
-      );
-    });
-  }
-
-  private getLoadStartCallback(
-    browser: InAppBrowserObject
-  ): (event: InAppBrowserEvent) => void {
-    return (event) => {
-      if (event.url.indexOf('http://localhost') === 0) {
-        browser.close();
-      }
-    };
-  }
-
-  private getInAppBrowserToolbarOptions(): Record<string, string> {
-    return {
-      closebuttoncaption: this.translate.instant('GENERAL.GO_BACK'),
-      closebuttoncolor: '#ffffff',
-      toolbarcolor: '#599118',
-      hidenavigationbuttons: 'yes',
-      toolbarposition: 'top',
-    };
+    this.endpoint.removeLatestEndpoint();
   }
 }

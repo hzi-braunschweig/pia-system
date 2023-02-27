@@ -29,26 +29,25 @@ import {
   TranslateService,
 } from '@ngx-translate/core';
 import { BehaviorSubject } from 'rxjs';
-import { MockPipe } from 'ng-mocks';
+import { MockPipe, MockProvider } from 'ng-mocks';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
 import SpyObj = jasmine.SpyObj;
+import { CurrentUser } from '../../../auth/current-user.service';
 
 describe('DeleteAccountModalComponent', () => {
   let component: DeleteAccountModalComponent;
   let fixture: ComponentFixture<DeleteAccountModalComponent>;
-  let authService: SpyObj<AuthService>;
+  let auth: SpyObj<AuthService>;
   let accountClientService: AccountClientService;
   let deleteAccountModalService: DeleteAccountModalService;
   let alertCtrl: SpyObj<AlertController>;
   let loadingCtrl: SpyObj<LoadingController>;
+  let currentUser: SpyObj<CurrentUser>;
   let alertOkHandler: (value) => void;
 
   beforeEach(async () => {
-    authService = jasmine.createSpyObj<AuthService>('AuthService', [
-      'getCurrentUser',
-      'logout',
-    ]);
-    authService.logout.and.resolveTo();
+    auth = jasmine.createSpyObj<AuthService>('AuthService', ['logout']);
+    auth.logout.and.resolveTo();
 
     const translate = jasmine.createSpyObj('TranslateService', [
       'get',
@@ -82,20 +81,19 @@ describe('DeleteAccountModalComponent', () => {
       } as unknown as HTMLIonLoadingElement);
     });
 
+    currentUser = jasmine.createSpyObj<CurrentUser>('CurrentUser', [], {
+      username: 'test-1',
+    });
+
     await TestBed.configureTestingModule({
       declarations: [DeleteAccountModalComponent, MockPipe(TranslatePipe)],
       imports: [HttpClientTestingModule, IonicModule, TranslateModule],
       providers: [
-        {
-          provide: TranslateService,
-          useValue: translate,
-        },
-        {
-          provide: AlertController,
-          useValue: alertCtrl,
-        },
-        { provide: LoadingController, useValue: loadingCtrl },
-        { provide: AuthService, useValue: authService },
+        MockProvider(TranslateService, translate),
+        MockProvider(AlertController, alertCtrl),
+        MockProvider(LoadingController, loadingCtrl),
+        MockProvider(AuthService, auth),
+        MockProvider(CurrentUser, currentUser),
       ],
     }).compileComponents();
   });
@@ -122,10 +120,6 @@ describe('DeleteAccountModalComponent', () => {
     let presentErrorAlertSpy: jasmine.Spy;
 
     beforeEach(() => {
-      authService.getCurrentUser.and.returnValue({
-        username: expectedUsername,
-      } as User);
-
       deleteAccountSpy = spyOn(
         accountClientService,
         'deleteAccount'
@@ -179,7 +173,7 @@ describe('DeleteAccountModalComponent', () => {
       alertOkHandler(null);
       tick();
 
-      expect(authService.logout).toHaveBeenCalledTimes(1);
+      expect(auth.logout).toHaveBeenCalledTimes(1);
     }));
 
     it('should show an error alert when deletion failed', fakeAsync(() => {

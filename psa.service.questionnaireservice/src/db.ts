@@ -29,6 +29,7 @@ import { Answer } from './entities/answer';
 import util from 'util';
 import { ConnectionOptions } from 'typeorm/connection/ConnectionOptions';
 import { RenameLabelToVariableName1668436755983 } from './migrations/1668436755983-RenameLabelToVariableName';
+import { UserFile } from './entities/userFile';
 
 const pgp = pgPromise({ capSQL: true, noLocking: config.isTestMode });
 
@@ -65,6 +66,7 @@ const typeOrmOptions: ConnectionOptions = {
     AnswerOption,
     Condition,
     Answer,
+    UserFile,
   ],
   namingStrategy: new SnakeNamingStrategyWithPlural(),
   synchronize: false,
@@ -89,7 +91,8 @@ export async function connectDatabase(
   for (let i = 0; i <= retryCount; i++) {
     try {
       return await createConnection(typeOrmOptions);
-    } catch (_e) {
+    } catch (err) {
+      console.log(err);
       console.log(
         `Database is not yet available. Waiting for ${delay} ms before next retry.`
       );

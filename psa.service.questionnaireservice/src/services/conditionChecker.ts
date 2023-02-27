@@ -20,7 +20,7 @@ export class ConditionChecker {
    * Returns true if the value of answer meets the condition, false otherwise
    */
   public static isConditionMet(
-    answer: Answer | AnswerDto | undefined,
+    answer: Answer | AnswerDto | { value: string } | undefined,
     condition: Condition | ConditionDto,
     type: AnswerType
   ): boolean {

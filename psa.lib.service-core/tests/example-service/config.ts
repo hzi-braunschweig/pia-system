@@ -13,8 +13,8 @@ const dummySslCerts = {
 };
 
 const conf = {
-  public: GlobalConfig.getPublic(dummySslCerts),
-  internal: GlobalConfig.internal,
+  public: GlobalConfig.getPublic(dummySslCerts, 'exampleservice'),
+  internal: GlobalConfig.getInternal('exampleservice'),
   database: GlobalConfig.getQPia(dummySslCerts),
   services: {
     loggingservice: GlobalConfig.loggingservice,

@@ -59,6 +59,28 @@ export class QuestionnaireClient {
     return (await response.json()).questionnaireInstances;
   }
 
+  async releaseQuestionnaireInstance(
+    id: number,
+    probandToken: AuthToken
+  ): Promise<void> {
+    const response = await fetch(
+      `${this.baseUrl}/questionnaire/questionnaireInstances/${id}`,
+      {
+        method: 'put',
+        body: JSON.stringify({
+          status: 'in_progress',
+          progress: 80,
+          release_version: 1,
+        }),
+        headers: {
+          Authorization: probandToken,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    assert(response);
+  }
+
   async createAnswers(
     questionnaireInstanceId: number,
     answers: Answers,

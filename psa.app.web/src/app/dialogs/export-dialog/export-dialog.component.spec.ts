@@ -41,7 +41,7 @@ import {
   QuestionnaireListResponse,
 } from '../../psa.app.core/models/questionnaire';
 import { By } from '@angular/platform-browser';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
 import { createProband } from '../../psa.app.core/models/instance.helper.spec';
 import { ProbandService } from '../../psa.app.core/providers/proband-service/proband.service';
@@ -74,7 +74,10 @@ describe('DialogExportDataComponent', () => {
   beforeEach(async () => {
     dialogRef = jasmine.createSpyObj('MatDialogRef', ['close']);
     probandService = jasmine.createSpyObj('ProbandService', ['getProbands']);
-    alertService = jasmine.createSpyObj('AlertService', ['error']);
+    alertService = jasmine.createSpyObj('AlertService', [
+      'error',
+      'errorObject',
+    ]);
     questionnaireService = jasmine.createSpyObj('QuestionnaireService', [
       'getExportData',
       'getQuestionnaires',
@@ -202,7 +205,7 @@ describe('DialogExportDataComponent', () => {
         component.form.get('questionnaires').setValue(null);
         component.form
           .get('exports')
-          .setValue([false, true, false, false, false]);
+          .setValue([false, false, true, false, false, false, false]);
         tick();
         fixture.detectChanges();
         expect(component.form.valid).toBeFalsy();
@@ -234,7 +237,21 @@ describe('DialogExportDataComponent', () => {
       component.form.get('questionnaires').setValue(['Testfragebogen1']);
       component.form
         .get('exports')
-        .setValue([false, true, false, false, false]);
+        .setValue([false, false, true, false, false, false, false]);
+      tick();
+      fixture.detectChanges();
+      expect(component.form.get('probands').enabled).toBeFalsy();
+      component.submit();
+      expect(questionnaireService.getExportData).toHaveBeenCalledTimes(1);
+    }));
+
+    it('should be disabled when only codebook and questionnaires export has been selected', fakeAsync(() => {
+      expect(component.form.get('probands').enabled).toBeFalsy();
+      component.form.get('study_name').setValue('Teststudie2');
+      component.form.get('questionnaires').setValue(['Testfragebogen1']);
+      component.form
+        .get('exports')
+        .setValue([false, false, true, true, false, false, false]);
       tick();
       fixture.detectChanges();
       expect(component.form.get('probands').enabled).toBeFalsy();
@@ -256,8 +273,10 @@ describe('DialogExportDataComponent', () => {
         questionnaires: ['Testfragebogen1'],
         probands: ['Testproband1'],
         exports: [
+          'legacy_answers',
           'answers',
           'codebook',
+          'questionnaires',
           'labresults',
           'samples',
           'bloodsamples',
@@ -280,14 +299,30 @@ describe('DialogExportDataComponent', () => {
         questionnaires: ['Testfragebogen4'],
         probands: ['Testproband2', 'Testproband3'],
         exports: [
+          'legacy_answers',
           'answers',
           'codebook',
+          'questionnaires',
           'labresults',
           'samples',
           'bloodsamples',
           'settings',
         ],
       });
+    }));
+
+    it('should show an error if export data download failed', fakeAsync(() => {
+      questionnaireService.getExportData.and.returnValue(
+        throwError('some error')
+      );
+      probandService.getProbands.and.resolveTo([proband2, proband3]);
+      component.form.get('study_name').setValue('Teststudie2');
+      component.form.get('questionnaires').setValue(['Testfragebogen4']);
+      component.form.get('probands').setValue('allProbandsCheckbox');
+      tick();
+      component.submit();
+      expect(alertService.errorObject).toHaveBeenCalled();
+      expect(component.isLoading).toBeFalsy();
     }));
 
     it('should do nothing if form is invalid', () => {

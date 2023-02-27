@@ -751,6 +751,15 @@
                 </mat-select>
               </mat-form-field>
 
+              <mat-error
+                *ngIf="
+                  selectedStudy === null && selectedConditionType === 'external'
+                "
+              >
+                {{
+                  'QUESTIONNAIRE_FORSCHER.CONDITION_SELECT_STUDY' | translate
+                }}
+              </mat-error>
               <div *ngIf="needToSentQuestionnaire">
                 <span>
                   {{
@@ -760,7 +769,11 @@
                 >
               </div>
 
-              <mat-form-field *ngIf="selectedConditionType != undefined">
+              <mat-form-field
+                *ngIf="
+                  selectedConditionType != undefined && selectedStudy != null
+                "
+              >
                 <mat-select
                   disableOptionCentering
                   placeholder="{{
@@ -780,16 +793,20 @@
                         questionnaireIndex
                       )
                     "
-                    [title]="
-                      questionnaire.name + ' (' + questionnaire.version + ')'
-                    "
                   >
-                    {{ questionnaire.name }} ({{ questionnaire.version }})
+                    {{ questionnaire.name }} v{{ questionnaire.version }} ({{
+                      questionnaire.id
+                    }})
                   </mat-option>
                 </mat-select>
               </mat-form-field>
 
-              <mat-form-field *ngIf="selectedQuestionnaireIndex != undefined">
+              <mat-form-field
+                *ngIf="
+                  questionnairesForConditionQuestionnaire &&
+                  selectedQuestionnaireIndex != undefined
+                "
+              >
                 <mat-select
                   disableOptionCentering
                   placeholder="{{
@@ -1191,8 +1208,8 @@
                               question.controls.variable_name
                             )
                           "
-                          >warning</mat-icon
-                        >
+                          >warning
+                        </mat-icon>
                       </mat-form-field>
                       <mat-card
                         data-e2e="question-variable-name-warning-text"
@@ -1292,11 +1309,11 @@
                       fxLayout="row"
                       fxLayoutAlign="space-between start"
                     >
-                      <span flex
-                        >{{ 'QUESTIONNAIRE_FORSCHER.CONDITION' | translate }}
+                      <span>
+                        {{ 'QUESTIONNAIRE_FORSCHER.CONDITION' | translate }}
                       </span>
                       <span
-                        flex
+                        class="condition-warning"
                         *ngIf="
                           myForm.dirty &&
                           question.controls['condition'].controls[
@@ -1308,10 +1325,24 @@
                           'QUESTIONNAIRE_FORSCHER.CONDITION_MESSAGE' | translate
                         }}
                       </span>
+                      <span
+                        class="condition-warning"
+                        *ngIf="
+                          selectedStudy === null &&
+                          question.controls['condition'].controls[
+                            'condition_type'
+                          ].value === 'external'
+                        "
+                      >
+                        {{
+                          'QUESTIONNAIRE_FORSCHER.CONDITION_SELECT_STUDY'
+                            | translate
+                        }}
+                      </span>
                       <button
                         type="button"
                         mat-icon-button
-                        (click)="removeQuestionCondition(i)"
+                        (click)="removeQuestionConditionByIndex(i)"
                       >
                         <mat-icon>clear</mat-icon>
                       </button>
@@ -1372,6 +1403,7 @@
 
                         <mat-grid-tile
                           *ngIf="
+                            selectedStudy != null &&
                             question.controls['tmp_for_condition'].controls[
                               'selectedConditionTypeQuestion'
                             ].value != undefined
@@ -1405,16 +1437,11 @@
                                     questionnaireIndex
                                   )
                                 "
-                                [title]="
-                                  questionnaire.name +
-                                  ' (' +
-                                  questionnaire.version +
-                                  ')'
-                                "
                               >
-                                {{ questionnaire.name }} ({{
+                                {{ questionnaire.name }} v{{
                                   questionnaire.version
-                                }})
+                                }}
+                                ({{ questionnaire.id }})
                               </mat-option>
                             </mat-select>
                           </mat-form-field>
@@ -1872,7 +1899,7 @@
                               </div>
                             </div>
                             <div
-                              class="answer-option__condition-warning"
+                              class="condition-warning"
                               *ngIf="
                                 answer.controls['is_condition_target'].value ==
                                 true
@@ -2001,7 +2028,7 @@
                                   }}
                                 </span>
                                 <span
-                                  class="answer-option__condition-warning"
+                                  class="condition-warning"
                                   *ngIf="
                                     myForm.dirty &&
                                     answer.controls['condition'].controls[
@@ -2014,10 +2041,26 @@
                                       | translate
                                   }}
                                 </span>
+                                <span
+                                  class="condition-warning"
+                                  *ngIf="
+                                    selectedStudy === null &&
+                                    answer.controls['condition'].controls[
+                                      'condition_type'
+                                    ].value === 'external'
+                                  "
+                                >
+                                  {{
+                                    'QUESTIONNAIRE_FORSCHER.CONDITION_SELECT_STUDY'
+                                      | translate
+                                  }}
+                                </span>
                                 <button
                                   type="button"
                                   mat-icon-button
-                                  (click)="removeAnswerOptionCondition(i, j)"
+                                  (click)="
+                                    removeAnswerOptionConditionByIndex(i, j)
+                                  "
                                 >
                                   <mat-icon>clear</mat-icon>
                                 </button>
@@ -2080,6 +2123,7 @@
 
                                   <mat-grid-tile
                                     *ngIf="
+                                      selectedStudy !== null &&
                                       answer.controls['tmp_for_condition']
                                         .controls[
                                         'selectedConditionTypeAnswerOption'
@@ -2116,16 +2160,11 @@
                                               questionnaireIndex
                                             )
                                           "
-                                          [title]="
-                                            questionnaire.name +
-                                            ' (' +
-                                            questionnaire.version +
-                                            ')'
-                                          "
                                         >
-                                          {{ questionnaire.name }} ({{
+                                          {{ questionnaire.name }} v{{
                                             questionnaire.version
-                                          }})
+                                          }}
+                                          ({{ questionnaire.id }})
                                         </mat-option>
                                       </mat-select>
                                     </mat-form-field>
@@ -2769,8 +2808,8 @@
                                         answer.controls.variable_name
                                       )
                                     "
-                                    >warning</mat-icon
-                                  >
+                                    >warning
+                                  </mat-icon>
                                 </mat-form-field>
                                 <mat-card
                                   data-e2e="answer-option-variable-name-warning-text"

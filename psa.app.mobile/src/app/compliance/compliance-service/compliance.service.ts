@@ -13,7 +13,7 @@ import {
   ComplianceType,
 } from '../compliance.model';
 import { ComplianceClientService } from '../compliance-client/compliance-client.service';
-import { AuthService } from '../../auth/auth.service';
+import { CurrentUser } from '../../auth/current-user.service';
 
 @Injectable({
   providedIn: 'root',
@@ -29,23 +29,10 @@ export class ComplianceService {
     this.complianceDataChangesSubject.asObservable();
   private cachedIsInternalComplianceActive: boolean = undefined;
 
-  private studyName: string;
-
   constructor(
-    private auth: AuthService,
-    private complianceClient: ComplianceClientService
-  ) {
-    this.auth.currentUser$.subscribe((user) => {
-      // on user change clear cache
-      this.complianceDataCache = null;
-      this.cachedIsInternalComplianceActive = undefined;
-      if (user) {
-        this.studyName = user.study;
-      } else {
-        this.studyName = null;
-      }
-    });
-  }
+    private complianceClient: ComplianceClientService,
+    private currentUser: CurrentUser
+  ) {}
 
   /**
    * Checks for all compliance in the given array, whether there is on unfulfilled compliance.
@@ -109,7 +96,7 @@ export class ComplianceService {
     if (!this.complianceDataCache) {
       this.complianceDataCache =
         await this.complianceClient.getComplianceAgreementForCurrentUser(
-          this.studyName
+          this.currentUser.study
         );
     }
     return this.complianceDataCache;
@@ -120,7 +107,7 @@ export class ComplianceService {
   ): Promise<ComplianceDataResponse> {
     this.complianceDataCache =
       await this.complianceClient.createComplianceAgreementForCurrentUser(
-        this.studyName,
+        this.currentUser.study,
         complianceData
       );
     this.complianceDataChangesSubject.next();
@@ -141,12 +128,16 @@ export class ComplianceService {
   async isInternalComplianceActive(): Promise<boolean> {
     if (this.cachedIsInternalComplianceActive === undefined) {
       this.cachedIsInternalComplianceActive =
-        await this.complianceClient.getInternalComplianceActive(this.studyName);
+        await this.complianceClient.getInternalComplianceActive(
+          this.currentUser.study
+        );
     }
     return this.cachedIsInternalComplianceActive;
   }
 
   async isInternalComplianceNeeded(): Promise<boolean> {
-    return await this.complianceClient.getComplianceNeeded(this.studyName);
+    return await this.complianceClient.getComplianceNeeded(
+      this.currentUser.study
+    );
   }
 }

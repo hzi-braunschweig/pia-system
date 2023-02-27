@@ -6,7 +6,7 @@
 
 import { Component, OnInit } from '@angular/core';
 
-import { AuthService } from '../../auth/auth.service';
+import { CurrentUser } from '../../auth/current-user.service';
 import { SampleTrackingClientService } from '../sample-tracking-client.service';
 import { LabResult } from '../lab-result.model';
 
@@ -18,7 +18,7 @@ export class LabResultListPage implements OnInit {
   labResults: LabResult[] = null;
 
   constructor(
-    private auth: AuthService,
+    private currentUser: CurrentUser,
     private sampleTrackingClient: SampleTrackingClientService
   ) {}
 
@@ -33,7 +33,7 @@ export class LabResultListPage implements OnInit {
   private async fetchLabResults() {
     try {
       const labResults = await this.sampleTrackingClient.getUserLabResults(
-        this.auth.getCurrentUser().username
+        this.currentUser.username
       );
       this.labResults = labResults.filter((result) => result.status !== 'new');
     } catch (error) {

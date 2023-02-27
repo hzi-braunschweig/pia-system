@@ -1,34 +1,34 @@
+include:
+  - local: ci/rules.yml
+  - local: ci/k8s.yml
+
 build-docker:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .no-cpu-request
   stage: prepare
-  image: docker:20.10.12@sha256:a729cce205a05b0b86dc8dca87823efaffc3f74979fe7dc86a707c2fbf631b61
+  image: snickch/buildx@sha256:71060c230c8c23e1525c89389ba18a4342a1923c29d7b76663ae41a6062c17b6
   # downloads may fail
   retry: 2
-  script:
-    # generate the secrets
-    - docker build --build-arg AUTH_KEY_SIZE=2048 --build-arg CA_KEY_SIZE=2048 --build-arg SERVICE_KEY_SIZE=2048 --build-arg CA_VALIDITY_DAYS=36500 --build-arg SERVICE_VALIDITY_DAYS=36500 -o secrets psa.utils.scripts/generate-secrets/
-    - sh -c "docker login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
-    - >
-      for JOB in $JOBS_DOCKER; do
-        echo Build $JOB
-        echo -------------------
-        docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID --build-arg DIR=$JOB --build-arg VERSION_INFO_PIPELINE_ID=$IMAGE_ID --build-arg VERSION_INFO_GIT_HASH=$CI_COMMIT_SHA --build-arg VERSION_INFO_GIT_REF=$CI_COMMIT_REF_SLUG -f $JOB/Dockerfile .
-        docker build -t $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID-with-faked-secrets --build-arg BASE=$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID -f psa.utils.scripts/secrets-dockerfile/Dockerfile .
-        echo -------------------
-      done
-    - >
-      for JOB in $JOBS_DOCKER; do
-        echo Push $JOB
-        echo -------------------
-        docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID
-        docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID-with-faked-secrets
-        echo -------------------
-      done
+  variables:
+    DOCKER_HOST: null
+  before_script:
+    - docker buildx create --name buildkitd --driver remote $BUILDKITD_ADDRESS
+    - docker buildx use buildkitd
+    - docker buildx install
   tags:
     - docker
+  script:
+    # generate the bake files
+    - ./psa.utils.ci-create-bake-file/docker.sh > bake.hcl
+    - ./psa.utils.ci-create-bake-file/docker-with-faked-secrets.sh > bake-with-faked-secrets.hcl
+    # generate the secrets
+    - docker build --build-arg AUTH_KEY_SIZE=2048 --build-arg CA_KEY_SIZE=2048 --build-arg SERVICE_KEY_SIZE=2048 --build-arg CA_VALIDITY_DAYS=36500 --build-arg SERVICE_VALIDITY_DAYS=36500 -o secrets psa.utils.scripts/generate-secrets/
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker buildx bake --push -f bake.hcl
+    - docker buildx bake --push -f bake-with-faked-secrets.hcl
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
-      when: never
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH =~ /^develop/
@@ -38,34 +38,25 @@ build-docker:
       - secrets
 
 push-branch-images:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   stage: push
-  image: docker:20.10.12@sha256:a729cce205a05b0b86dc8dca87823efaffc3f74979fe7dc86a707c2fbf631b61
+  image: quay.io/containers/skopeo:v1.10.0
   variables:
     GIT_STRATEGY: none
+    DOCKER_HOST: null
   dependencies: []
   needs:
     - job: accumulate-coverage
   script:
-    - sh -c "docker login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
+    - sh -c "skopeo login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
     - >
       for JOB in $JOBS_DOCKER; do
-        docker pull $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID
+        skopeo copy docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$CI_COMMIT_REF_SLUG
       done
-    - >
-      for JOB in $JOBS_DOCKER; do
-        docker tag $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$CI_COMMIT_REF_SLUG
-      done
-    - >
-      for JOB in $JOBS_DOCKER; do
-        docker push $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$CI_COMMIT_REF_SLUG
-      done
-  tags:
-    - docker
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
-      when: never
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH =~ /^develop/

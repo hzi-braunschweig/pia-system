@@ -17,5 +17,5 @@ export abstract class AbstractExportFeature implements ExportFeature {
     protected readonly probandPseudonyms: string[]
   ) {}
 
-  public abstract apply(): Promise<void>;
+  public abstract apply(): Promise<void | void[]>;
 }

@@ -15,6 +15,10 @@ coverage
 test-results_scenario-*.csv
 load-performance.json
 
+# Generated test fixtures
+probands-*.json
+professionals-*.json
+
 # IDEs and editors
 .idea
 .project

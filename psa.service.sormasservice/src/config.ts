@@ -26,7 +26,7 @@ if (fixedSormasServer.endsWith('/')) {
 }
 
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS),
+  public: GlobalConfig.getPublic(SSL_CERTS, 'sormasservice'),
   database: {
     host: ConfigUtils.getEnvVariable('DB_SORMAS_HOST'),
     port: Number(ConfigUtils.getEnvVariable('DB_SORMAS_PORT')),

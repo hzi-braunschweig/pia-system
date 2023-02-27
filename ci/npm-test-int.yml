@@ -1,7 +1,14 @@
+include: ci/rules.yml
+
 int:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
   stage: test
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$FOLDER-npm-install:$IMAGE_ID
   script:
+    # when https://gitlab.com/gitlab-org/gitlab-runner/-/issues/27215 is done we can get rid of the sleep
+    - sleep 10
     - mkdir -p $FOLDER/tests/
     - cp -r secrets/* $FOLDER
     - ln -s $NODE_PATH $FOLDER/node_modules
@@ -21,10 +28,6 @@ int:
       - FOLDER: !reference [.modules, array, int]
 
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
-      when: never
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH =~ /^develop/
@@ -34,37 +37,46 @@ int:
     DB_LOG_PASSWORD: log
     DB_LOG_DB: pia_database
     DB_LOG_HOST: databaseservice
-    DB_LOG_PORT: '5432'
+    DB_LOG_PORT: '5433'
 
     DB_SORMAS_USER: sormasservice
     DB_SORMAS_PASSWORD: sormas
     DB_SORMAS_DB: pia_database
     DB_SORMAS_HOST: databaseservice
-    DB_SORMAS_PORT: '5432'
+    DB_SORMAS_PORT: '5433'
 
     DB_PERSONALDATA_USER: personaldataservice
     DB_PERSONALDATA_PASSWORD: personaldata
     DB_PERSONALDATA_DB: pia_database
     DB_PERSONALDATA_HOST: ipiaservice
-    DB_PERSONALDATA_PORT: '5432'
+    DB_PERSONALDATA_PORT: '5434'
 
     DB_AUTHSERVER_USER: authserver
     DB_AUTHSERVER_PASSWORD: authserver
     DB_AUTHSERVER_DB: pia_database
     DB_AUTHSERVER_HOST: ipiaservice
-    DB_AUTHSERVER_PORT: '5432'
+    DB_AUTHSERVER_PORT: '5434'
 
     QPIA_USER: superuser
     QPIA_PASSWORD: superpassword
     QPIA_DB: pia_database
     QPIA_HOST: databaseservice
-    QPIA_PORT: '5432'
+    QPIA_PORT: '5433'
+    QPIA_INTERNAL_PORT: '5433'
+
+    IPIA_USER: superuser
+    IPIA_PASSWORD: superpassword
+    IPIA_DB: pia_database
+    IPIA_HOST: ipiaservice
+    IPIA_PORT: '5434'
+    IPIA_INTERNAL_PORT: '5434'
 
     EWPIA_USER: superuser
     EWPIA_PASSWORD: superpassword
     EWPIA_DB: pia_database
     EWPIA_HOST: ewpiaservice
-    EWPIA_PORT: '5432'
+    EWPIA_PORT: '5435'
+    EWPIA_INTERNAL_PORT: '5435'
 
     POSTGRES_USER: $QPIA_USER
     POSTGRES_PASSWORD: $QPIA_PASSWORD

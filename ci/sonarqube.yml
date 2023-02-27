@@ -1,4 +1,12 @@
+include:
+  - local: ci/rules.yml
+  - local: ci/k8s.yml
+
 check-sonarqube:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   stage: push
   image:
     name: sonarsource/sonar-scanner-cli:4.7@sha256:d94a8fc33800f3d3330154768d6527984e9caeff969001018d2e5a9d82155b67
@@ -9,6 +17,9 @@ check-sonarqube:
   variables:
     SONAR_USER_HOME: '${CI_PROJECT_DIR}/.sonar' # Defines the location of the analysis task cache
     GIT_DEPTH: '0' # Tells git to fetch all the branches of the project, required by the analysis task
+
+    KUBERNETES_MEMORY_REQUEST: 4Gi
+    KUBERNETES_MEMORY_LIMIT: 4Gi
   cache:
     key: '${CI_JOB_NAME}'
     paths:
@@ -19,10 +30,6 @@ check-sonarqube:
     - sonar-scanner -Dsonar.qualitygate.wait=true
   rules:
     - if: $SONAR_TOKEN == null
-      when: never
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
       when: never
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_BRANCH =~ /^develop/

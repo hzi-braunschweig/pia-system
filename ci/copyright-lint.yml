@@ -1,9 +1,16 @@
+include:
+  - local: ci/k8s.yml
+  - local: ci/rules.yml
+
 copyright-lint:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
+    - .no-cpu-request
   stage: test
   image:
     name: fsfe/reuse@sha256:ffca192d7ac78d57fae120e52f374701be5fa001dae1498aac84b4b076b76285
     entrypoint: ['/bin/sh', '-c']
-
   script:
     - rm -rf psa.lib.auth-server-client/dist
     - rm -rf psa.lib.hapi-i18n-plugin/dist
@@ -56,12 +63,9 @@ copyright-lint:
     - find . -name "sql_vacuum_full" -type f -delete
     - find . -name "complexity.py" -type f -delete
     - find . -name "template.dockerfile" -type f -delete
+    - find . -name ".nsprc" -type f -delete
     - reuse lint
   rules:
-    - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
-      when: never
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
     - if: $CI_COMMIT_BRANCH =~ /^develop/

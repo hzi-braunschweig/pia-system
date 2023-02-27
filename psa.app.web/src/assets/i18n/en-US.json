@@ -323,6 +323,7 @@
     "QUESTIONNAIRE_CONDITION_SET": "Set condition",
     "QUESTIONNAIRE_CONDITION_REMOVE": "Remove condition",
     "EXPORT_ANSWERS": "Answers",
+    "EXPORT_ANSWERS_IMPROVED": "Answers - improved export",
     "EXPORT_CODEBOOK": "Codebook",
     "EXPORT_LABRESULTS": "Lab results",
     "EXPORT_UNASSIGNED_LABRESULTS": "Unassigned lab results",
@@ -348,7 +349,8 @@
     "FILE_INPUT_TYPES_HINT": "Only PDF and CSV files can be uploaded.",
     "IMAGE_INPUT_TYPES_HINT": "Only PNG and JPEG files can be uploaded.",
     "DEACTIVATION_HINT": "This questionnaire was deactivated and cannot be changed.",
-    "DEACTIVATION_CONFIRMATION_HINT": "<p>Hinweis: Bei Deaktivierung des Fragebogens wird dieser Teilnehmenden nicht mehr angezeigt. Die bereits bestehenden Antworten bleiben erhalten. Nach Deaktivierung kann der Fragebogen <strong>nicht</strong> wieder aktiviert werden. Sind Sie sicher, dass Sie den Fragebogen deaktivieren wollen?</p>"
+    "DEACTIVATION_CONFIRMATION_HINT": "<p>Hinweis: Bei Deaktivierung des Fragebogens wird dieser Teilnehmenden nicht mehr angezeigt. Die bereits bestehenden Antworten bleiben erhalten. Nach Deaktivierung kann der Fragebogen <strong>nicht</strong> wieder aktiviert werden. Sind Sie sicher, dass Sie den Fragebogen deaktivieren wollen?</p>",
+    "WARNING_STUDY_CHANGE": "Dieser Fragebogen enthält Bedingungen auf externe Fragebögen der gleichen Studie. Mit dem Ändern der Studie gehen diese Bedingungen verloren. Sind Sie sicher, dass Sie die Studie ändern wollen?"
   },
   "QUESTIONNAIRES_FORSCHER": {
     "VERSION": "Version",

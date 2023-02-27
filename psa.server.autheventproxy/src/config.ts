@@ -30,7 +30,7 @@ const SSL_CERTS: SslCerts = {
 };
 
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS),
+  public: GlobalConfig.getPublic(SSL_CERTS, 'autheventproxy'),
   servers: {
     messageQueue: GlobalConfig.getMessageQueue('autheventproxy'),
     authserver: {

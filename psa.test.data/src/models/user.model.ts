@@ -21,10 +21,15 @@ export type ProfessionalRole =
   | 'EinwilligungsManager'
   | 'Untersuchungsteam';
 
+export interface StudyAccess {
+  study_id: string;
+  access_level: StudyAccessLevel;
+}
+
 export interface ProfessionalUser {
   username: string;
   role: ProfessionalRole;
-  study_accesses?: { study_id: string; access_level: StudyAccessLevel }[];
+  study_accesses?: StudyAccess[];
   compliance_labresults?: boolean;
 }
 

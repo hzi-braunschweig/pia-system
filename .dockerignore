@@ -16,7 +16,6 @@ psa.lib.templatepipeline/.local-chromium
 **/node_modules
 **/Dockerfile
 **/.dockerignore
-**/README.md
 **/LICENSE.md
 **/.incremental
 

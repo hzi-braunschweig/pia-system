@@ -1,9 +1,11 @@
 include: ci/rules.yml
 
 java-test-unit:
-  extends: .job-exclude-scheduled-pipelines
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .job-exclude-update-third-party-licenses
   stage: test
-  image: maven:3.8.6-jdk-11
+  image: maven:3.8.6-jdk-11@sha256:805f366910aea2a91ed263654d23df58bd239f218b2f9562ff51305be81fa215
   variables:
     ARTIFACT_DIR_NAME: test-artifacts
   script:

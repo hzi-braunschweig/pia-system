@@ -17,7 +17,6 @@ import {
   Study,
   StudyWelcomeText,
 } from './questionnaire.model';
-import { StudyAccess } from '../auth/auth.model';
 import { EndpointService } from '../shared/services/endpoint/endpoint.service';
 
 @Injectable({
@@ -115,19 +114,6 @@ export class QuestionnaireClientService {
 
   getStudyAddresses(): Promise<any> {
     return this.http.get(this.getApiUrl() + 'studies/addresses').toPromise();
-  }
-
-  putStudyAccess(
-    username: string,
-    putData: object,
-    studyName: string
-  ): Promise<StudyAccess> {
-    return this.http
-      .put<StudyAccess>(
-        this.getApiUrl() + 'studies/' + studyName + '/accesses/' + username,
-        putData
-      )
-      .toPromise();
   }
 
   getQuestionnaireInstanceQueues(

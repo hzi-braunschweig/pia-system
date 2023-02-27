@@ -1,6 +1,11 @@
+include:
+  - local: ci/k8s.yml
+  - local: ci/rules.yml
+
 collect-licenses:
   stage: generate
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-thirdparty-license-collector:$IMAGE_ID
+  extends: .no-cpu-request
   cache:
     paths:
       - .npm/
@@ -39,5 +44,3 @@ collect-licenses:
       artifacts: false
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
-      when: never

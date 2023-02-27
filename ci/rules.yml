@@ -1,6 +1,11 @@
-.job-exclude-scheduled-pipelines:
+.job-exclude-schedules-pipelines:
+  rules:
+    - if: $CI_SCHEDULED_TASK == "probands_load_test" || CI_SCHEDULED_TASK == "export_performance_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
+      when: never
+    - if: $CI_SCHEDULED_TASK == "renovate"
+      when: never
+
+.job-exclude-update-third-party-licenses:
   rules:
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
-      when: never
-    - if: $CI_SCHEDULED_TASK == "load_test" || $CI_SCHEDULED_TASK == "generate_load_test_data"
       when: never

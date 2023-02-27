@@ -24,100 +24,25 @@ import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
 import { Market } from '@awesome-cordova-plugins/market/ngx';
 import { Router } from '@angular/router';
-import { KeycloakClientService } from '../keycloak-client.service';
 import { LocaleService } from '../../shared/services/locale/locale.service';
+import { ToastPresenterService } from '../../shared/services/toast-presenter/toast-presenter.service';
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
-
-function toggleCheckbox(fixture: ComponentFixture<LoginUsernameComponent>) {
-  const valueBefore: boolean = fixture.componentInstance.form.value.rememberMe;
-  const rememberCheckBox: HTMLIonCheckboxElement =
-    fixture.nativeElement.querySelector('[data-unit="checkbox-remember-me"]');
-  rememberCheckBox.checked = true;
-  rememberCheckBox.dispatchEvent(new Event('ionChange'));
-  fixture.detectChanges();
-  expect(fixture.componentInstance.form.value.rememberMe).toEqual(!valueBefore);
-}
-
-function enterUsername(
-  fixture: ComponentFixture<LoginUsernameComponent>,
-  username: string
-) {
-  const usernameInput: HTMLIonInputElement =
-    fixture.nativeElement.querySelector('[data-unit="input-username"]');
-  usernameInput.value = username;
-  usernameInput.dispatchEvent(new Event('ionChange'));
-  fixture.detectChanges();
-  expect(fixture.componentInstance.form.value.username).toEqual(username);
-}
-
-function clickNextButton(fixture: ComponentFixture<LoginUsernameComponent>) {
-  const nextButton: HTMLIonButtonElement = fixture.nativeElement.querySelector(
-    '[data-unit="next-button"]'
-  );
-  expect(nextButton.textContent).toContain('LOGIN.NEXT');
-  expect(nextButton.disabled).toBeFalse();
-  expect(fixture.componentInstance.form.valid).toBeTrue();
-  nextButton.click(); // not causing to submit in tests, therefore:
-  const formElement: HTMLFormElement =
-    fixture.nativeElement.querySelector('form');
-  formElement.dispatchEvent(new Event('ngSubmit'));
-  fixture.detectChanges();
-}
-
-function clickShowUrlButton(fixture: ComponentFixture<LoginUsernameComponent>) {
-  expect(
-    fixture.componentInstance.form.get('customEndpointUrl').disabled
-  ).toBeTrue();
-  const showUrlButton: HTMLIonButtonElement =
-    fixture.nativeElement.querySelector('[data-unit="button-url-show"]');
-  showUrlButton.click();
-  fixture.detectChanges();
-  expect(
-    fixture.componentInstance.form.get('customEndpointUrl').disabled
-  ).toBeFalse();
-}
-
-function clickHideUrlButton(fixture: ComponentFixture<LoginUsernameComponent>) {
-  expect(
-    fixture.componentInstance.form.get('customEndpointUrl').disabled
-  ).toBeFalse();
-  const hideUrlButton: HTMLIonButtonElement =
-    fixture.nativeElement.querySelector('[data-unit="button-url-hide"]');
-  hideUrlButton.click();
-  fixture.detectChanges();
-  expect(
-    fixture.componentInstance.form.get('customEndpointUrl').disabled
-  ).toBeTrue();
-}
-
-function enterCustomEndpointUrl(
-  fixture: ComponentFixture<LoginUsernameComponent>,
-  url: string
-) {
-  const urlInput: HTMLIonInputElement = fixture.nativeElement.querySelector(
-    '[data-unit="input-custom-url"]'
-  );
-  urlInput.value = url;
-  urlInput.dispatchEvent(new Event('ionChange'));
-  fixture.detectChanges();
-  expect(fixture.componentInstance.form.value.customEndpointUrl).toEqual(url);
-}
 
 describe('LoginUsernameComponent', () => {
   let component: LoginUsernameComponent;
   let fixture: ComponentFixture<LoginUsernameComponent>;
 
-  let auth: SpyObj<AuthService>;
+  let localeService: SpyObj<LocaleService>;
+  let endpoint: SpyObj<EndpointService>;
   let platform: SpyObj<Platform>;
   let appVersion: SpyObj<AppVersion>;
   let market: SpyObj<Market>;
-  let endpoint: SpyObj<EndpointService>;
+  let loadingCtrl: SpyObj<LoadingController>;
+  let auth: SpyObj<AuthService>;
+  let toastPresenter: SpyObj<ToastPresenterService>;
   let alertCtrl: SpyObj<AlertController>;
   let alertElementSpy: SpyObj<HTMLIonAlertElement>;
-  let loadingCtrl: SpyObj<LoadingController>;
-  let keycloakClient: SpyObj<KeycloakClientService>;
-  let localeService: SpyObj<LocaleService>;
   let router: SpyObj<Router>;
   let menuCtrl: SpyObj<MenuController>;
 
@@ -129,9 +54,9 @@ describe('LoginUsernameComponent', () => {
       .mock(TranslateService, { instant: (x) => x })
       .mock(Platform)
       .mock(Router)
-      .mock(KeycloakClientService)
       .mock(LocaleService)
       .mock(MenuController)
+      .mock(ToastPresenterService)
   );
 
   beforeEach(
@@ -148,10 +73,9 @@ describe('LoginUsernameComponent', () => {
       router = TestBed.inject(Router) as SpyObj<Router>;
       menuCtrl = TestBed.inject(MenuController) as SpyObj<MenuController>;
       localeService = TestBed.inject(LocaleService) as SpyObj<LocaleService>;
-      keycloakClient = TestBed.inject(
-        KeycloakClientService
-      ) as SpyObj<KeycloakClientService>;
-
+      toastPresenter = TestBed.inject(
+        ToastPresenterService
+      ) as SpyObj<ToastPresenterService>;
       endpoint = TestBed.inject(EndpointService) as SpyObj<EndpointService>;
       endpoint.isCustomEndpoint.and.returnValue(false);
       endpoint.setEndpointForUser.and.returnValue(true);
@@ -191,7 +115,7 @@ describe('LoginUsernameComponent', () => {
   );
 
   it(
-    'should change the endpoint and send a event for a updated username on submit',
+    'should change the endpoint for a updated username on submit',
     waitForAsync(async () => {
       // Arrange
       const username = 'TEST-1234567890';
@@ -201,7 +125,6 @@ describe('LoginUsernameComponent', () => {
       fixture.detectChanges();
 
       const submitSpy = spyOn(component, 'onSubmit').and.callThrough();
-      const usernameP = component.usernameChange.toPromise();
 
       // Act
       enterUsername(fixture, username);
@@ -210,29 +133,7 @@ describe('LoginUsernameComponent', () => {
 
       // Assert
       expect(submitSpy).toHaveBeenCalledTimes(1);
-      expect(await usernameP).toEqual('TEST-1234567890');
       expect(endpoint.setEndpointForUser).toHaveBeenCalledTimes(1);
-    })
-  );
-
-  it(
-    'should save the username on submit if remember checkbox was clicked',
-    waitForAsync(async () => {
-      // Arrange
-      const username = 'TEST-1234567890';
-
-      fixture = TestBed.createComponent(LoginUsernameComponent);
-      component = fixture.componentInstance;
-      fixture.detectChanges();
-
-      // Act
-      enterUsername(fixture, username);
-      toggleCheckbox(fixture);
-      clickNextButton(fixture);
-      await fixture.whenStable();
-
-      // Assert
-      expect(auth.setRememberedUsername).toHaveBeenCalledOnceWith(username);
     })
   );
 
@@ -298,7 +199,6 @@ describe('LoginUsernameComponent', () => {
       platform.is.and.returnValue(true);
       appVersion.getVersionNumber.and.resolveTo('1.0.0');
       endpoint.isEndpointCompatible.and.resolveTo(false);
-      component.usernameChange.subscribe(() => expect(true).toBeFalse());
 
       // Act
       enterUsername(fixture, username);
@@ -334,34 +234,18 @@ describe('LoginUsernameComponent', () => {
     });
 
     it('should use keycloak login if compatible', async () => {
-      keycloakClient.isCompatible.and.resolveTo(true);
-
       await component.onSubmit();
 
-      expect(keycloakClient.login).toHaveBeenCalledOnceWith(username, 'de-DE');
+      expect(auth.loginWithUsername).toHaveBeenCalledOnceWith(
+        username,
+        'de-DE'
+      );
       expect(router.navigate).toHaveBeenCalledOnceWith(['home']);
       expect(menuCtrl.enable).toHaveBeenCalledOnceWith(true);
     });
 
-    it('should fallback to legacy login', async () => {
-      keycloakClient.isCompatible.and.resolveTo(false);
-
-      component.usernameChange.subscribe((u) => {
-        expect(u).toEqual(username);
-      });
-
-      await component.onSubmit();
-
-      expect(keycloakClient.initialize).not.toHaveBeenCalled();
-      expect(keycloakClient.login).not.toHaveBeenCalled();
-      expect(router.navigate).not.toHaveBeenCalled();
-      expect(menuCtrl.enable).not.toHaveBeenCalled();
-    });
-
     it('should show an error when login failed', async () => {
-      keycloakClient.isCompatible.and.resolveTo(true);
-
-      keycloakClient.login.and.rejectWith(new Error('some error'));
+      auth.loginWithUsername.and.rejectWith(new Error('some error'));
 
       await component.onSubmit();
 
@@ -369,13 +253,79 @@ describe('LoginUsernameComponent', () => {
     });
 
     it('should not show an error when login failed due to user closing the in app browser', async () => {
-      keycloakClient.isCompatible.and.resolveTo(true);
-
-      keycloakClient.login.and.rejectWith({ reason: 'closed_by_user' });
+      auth.loginWithUsername.and.rejectWith({ message: 'closed_by_user' });
 
       await component.onSubmit();
 
       expect(alertElementSpy.present).not.toHaveBeenCalled();
     });
   });
+
+  function enterUsername(
+    fixture: ComponentFixture<LoginUsernameComponent>,
+    username: string
+  ) {
+    const usernameInput: HTMLIonInputElement =
+      fixture.nativeElement.querySelector('[data-unit="input-username"]');
+    usernameInput.value = username;
+    usernameInput.dispatchEvent(new Event('ionChange'));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.form.value.username).toEqual(username);
+  }
+
+  function clickNextButton(fixture: ComponentFixture<LoginUsernameComponent>) {
+    const nextButton: HTMLIonButtonElement =
+      fixture.nativeElement.querySelector('[data-unit="next-button"]');
+    expect(nextButton.textContent).toContain('LOGIN.NEXT');
+    expect(nextButton.disabled).toBeFalse();
+    expect(fixture.componentInstance.form.valid).toBeTrue();
+    nextButton.click(); // not causing to submit in tests, therefore:
+    const formElement: HTMLFormElement =
+      fixture.nativeElement.querySelector('form');
+    formElement.dispatchEvent(new Event('ngSubmit'));
+    fixture.detectChanges();
+  }
+
+  function clickShowUrlButton(
+    fixture: ComponentFixture<LoginUsernameComponent>
+  ) {
+    expect(
+      fixture.componentInstance.form.get('customEndpointUrl').disabled
+    ).toBeTrue();
+    const showUrlButton: HTMLIonButtonElement =
+      fixture.nativeElement.querySelector('[data-unit="button-url-show"]');
+    showUrlButton.click();
+    fixture.detectChanges();
+    expect(
+      fixture.componentInstance.form.get('customEndpointUrl').disabled
+    ).toBeFalse();
+  }
+
+  function clickHideUrlButton(
+    fixture: ComponentFixture<LoginUsernameComponent>
+  ) {
+    expect(
+      fixture.componentInstance.form.get('customEndpointUrl').disabled
+    ).toBeFalse();
+    const hideUrlButton: HTMLIonButtonElement =
+      fixture.nativeElement.querySelector('[data-unit="button-url-hide"]');
+    hideUrlButton.click();
+    fixture.detectChanges();
+    expect(
+      fixture.componentInstance.form.get('customEndpointUrl').disabled
+    ).toBeTrue();
+  }
+
+  function enterCustomEndpointUrl(
+    fixture: ComponentFixture<LoginUsernameComponent>,
+    url: string
+  ) {
+    const urlInput: HTMLIonInputElement = fixture.nativeElement.querySelector(
+      '[data-unit="input-custom-url"]'
+    );
+    urlInput.value = url;
+    urlInput.dispatchEvent(new Event('ionChange'));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.form.value.customEndpointUrl).toEqual(url);
+  }
 });

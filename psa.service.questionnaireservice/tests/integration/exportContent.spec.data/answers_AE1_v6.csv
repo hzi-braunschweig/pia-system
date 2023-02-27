@@ -1,0 +1,7 @@
+participant;is_test_participant;questionnaire_name;questionnaire_id;questionnaire_version;questionnaire_cycle;questionnaire_date_of_issue;answer_date;answer_status;100000_AE1_Einzelauswahl;100000_AE1_Text
+answ-01;F;AE1 Answer Export;100000;6;1;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;0;-8888
+answ-02;T;AE1 Answer Export;100000;6;1;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;-8888;-8888
+answ-01;F;AE1 Answer Export;100000;6;2;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;1;-9999
+answ-02;T;AE1 Answer Export;100000;6;2;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;-8888;-8888
+answ-01;F;AE1 Answer Export;100000;6;3;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;1;Text
+answ-02;T;AE1 Answer Export;100000;6;3;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;-8888;-8888

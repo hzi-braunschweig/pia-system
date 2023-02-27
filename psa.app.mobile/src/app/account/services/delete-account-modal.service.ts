@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 import { Injectable } from '@angular/core';
-import { AuthService } from '../../auth/auth.service';
 import { AccountClientService } from './account-client.service';
 import { QuestionnaireClientService } from '../../questionnaire/questionnaire-client.service';
 import { ModalController } from '@ionic/angular';
@@ -12,13 +11,14 @@ import { KeepStudyAnswersModalComponent } from '../components/keep-study-answers
 import { DeleteAccountModalComponent } from '../components/delete-account-modal/delete-account-modal.component';
 import { DeletionType } from './deletion-type.enum';
 import { CannotDetermineDeletionTypeError } from './cannot-determine-deletion-type.error';
+import { CurrentUser } from '../../auth/current-user.service';
 
 @Injectable({ providedIn: 'root' })
 export class DeleteAccountModalService {
   private keepStudyAnswers: boolean = null;
 
   constructor(
-    private authService: AuthService,
+    private currentUser: CurrentUser,
     private accountClientService: AccountClientService,
     private questionnaireClientService: QuestionnaireClientService,
     private modalController: ModalController
@@ -48,8 +48,9 @@ export class DeleteAccountModalService {
   }
 
   public async showDeleteAccountModal(): Promise<void> {
-    const { study: studyName } = this.authService.getCurrentUser();
-    const study = await this.questionnaireClientService.getStudy(studyName);
+    const study = await this.questionnaireClientService.getStudy(
+      this.currentUser.study
+    );
 
     if (study.has_partial_opposition && this.keepStudyAnswers === null) {
       const keepStudyAnswersModal = await this.modalController.create({

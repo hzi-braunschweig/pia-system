@@ -11,6 +11,9 @@ stages:
 
 default:
   interruptible: true
+  retry:
+    max: 2
+    when: runner_system_failure
 
 variables:
   DOCKER_BUILDKIT: '1'
@@ -21,6 +24,21 @@ variables:
   JOBS_DOCKER: !reference [.modules, list, docker]
   JOBS_INSTALL: !reference [.modules, list, install]
   JOBS_LINT: !reference [.modules, list, lint]
+
+  KUBERNETES_CPU_REQUEST: '1'
+  KUBERNETES_CPU_LIMIT: '2'
+  KUBERNETES_MEMORY_REQUEST: 1Gi
+  KUBERNETES_MEMORY_LIMIT: 1Gi
+
+  KUBERNETES_HELPER_CPU_REQUEST: '0.1'
+  KUBERNETES_HELPER_CPU_LIMIT: '1'
+  KUBERNETES_HELPER_MEMORY_REQUEST: 256Mi
+  KUBERNETES_HELPER_MEMORY_LIMIT: 256Mi
+
+  KUBERNETES_SERVICE_CPU_REQUEST: '0.1'
+  KUBERNETES_SERVICE_CPU_LIMIT: '2'
+  KUBERNETES_SERVICE_MEMORY_REQUEST: 512Mi
+  KUBERNETES_SERVICE_MEMORY_LIMIT: 512Mi
 
 include:
   - /ci/ionic.yml

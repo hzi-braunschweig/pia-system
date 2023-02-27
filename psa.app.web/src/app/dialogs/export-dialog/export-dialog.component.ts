@@ -51,23 +51,38 @@ export class DialogExportDataComponent implements OnInit {
   exportCheckboxes = [
     {
       name: 'QUESTIONNAIRE_FORSCHER.EXPORT_ANSWERS',
+      value: 'legacy_answers',
+      requiresProbandSelection: true,
+    },
+    {
+      name: 'QUESTIONNAIRE_FORSCHER.EXPORT_ANSWERS_IMPROVED',
       value: 'answers',
+      requiresProbandSelection: true,
     },
     {
       name: 'QUESTIONNAIRE_FORSCHER.EXPORT_CODEBOOK',
       value: 'codebook',
+      requiresProbandSelection: false,
+    },
+    {
+      name: 'QUESTIONNAIRE_FORSCHER.EXPORT_QUESTIONNAIRE',
+      value: 'questionnaires',
+      requiresProbandSelection: false,
     },
     {
       name: 'QUESTIONNAIRE_FORSCHER.EXPORT_LABRESULTS',
       value: 'labresults',
+      requiresProbandSelection: true,
     },
     {
       name: 'QUESTIONNAIRE_FORSCHER.EXPORT_SAMPLES',
       value: 'samples,bloodsamples',
+      requiresProbandSelection: true,
     },
     {
       name: 'QUESTIONNAIRE_FORSCHER.EXPORT_SETTINGS',
       value: 'settings',
+      requiresProbandSelection: true,
     },
   ];
 
@@ -124,14 +139,14 @@ export class DialogExportDataComponent implements OnInit {
 
     const exportRequestData = this.form.getRawValue();
 
-    if (this.isOnlyCodebookSelected(exportRequestData.exports)) {
-      exportRequestData.probands = [];
-    } else {
+    if (this.isProbandSelectionRequired(this.form)) {
       if (exportRequestData.probands === 'allProbandsCheckbox') {
         exportRequestData.probands = this.allProbandsOfSelectedStudy;
       } else if (typeof exportRequestData.probands === 'string') {
         exportRequestData.probands = [this.form.get('probands').value];
       }
+    } else {
+      exportRequestData.probands = [];
     }
 
     // we allow an export checkbox to set multiple exports, separated by comma
@@ -147,14 +162,20 @@ export class DialogExportDataComponent implements OnInit {
   }
 
   saveExportFile(responseStream: Observable<HttpEvent<Blob>>): void {
-    responseStream.subscribe(async (response: HttpResponse<Blob>) => {
-      const downloadLink = document.createElement('a');
-      downloadLink.href = window.URL.createObjectURL(response.body);
-      downloadLink.setAttribute('download', 'export.zip');
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
+    responseStream.subscribe({
+      next: async (response: HttpResponse<Blob>) => {
+        const downloadLink = document.createElement('a');
+        downloadLink.href = window.URL.createObjectURL(response.body);
+        downloadLink.setAttribute('download', 'export.zip');
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
 
-      this.isLoading = false;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.alertService.errorObject(error);
+        this.isLoading = false;
+      },
     });
   }
 
@@ -255,7 +276,7 @@ export class DialogExportDataComponent implements OnInit {
       this.form.get('questionnaires').setValue([]);
       this.form.get('questionnaires').enable();
       this.form.get('probands').setValue([]);
-      if (!this.isOnlyCodebookSelected()) {
+      if (this.isProbandSelectionRequired()) {
         this.form.get('probands').enable();
       }
     });
@@ -264,10 +285,10 @@ export class DialogExportDataComponent implements OnInit {
   private controlProbandSelectionOnExportsChange(): void {
     this.form.get('exports').valueChanges.subscribe((value) => {
       const exports = this.mapSelectedExportValuesToStrings(value);
-      if (this.isOnlyCodebookSelected(exports)) {
-        this.form.get('probands').disable();
-      } else if (this.form.get('study_name').value) {
+      if (this.isProbandSelectionRequired(exports)) {
         this.form.get('probands').enable();
+      } else if (this.form.get('study_name').value) {
+        this.form.get('probands').disable();
       }
     });
   }
@@ -300,7 +321,7 @@ export class DialogExportDataComponent implements OnInit {
   private validateProbands(control: AbstractControl): {
     emptyProbands: boolean;
   } {
-    if (this.isOnlyCodebookSelected(control)) {
+    if (!this.isProbandSelectionRequired(control)) {
       return null;
     }
 
@@ -327,16 +348,24 @@ export class DialogExportDataComponent implements OnInit {
       .filter((value) => value !== null);
   }
 
-  private isOnlyCodebookSelected(
+  private isProbandSelectionRequired(
     exports?: string[] | AbstractControl
   ): boolean {
+    let selectedExports: string[];
+
     if (!exports) {
-      exports = this.getExports();
+      selectedExports = this.getExports();
     } else if (exports instanceof AbstractControl) {
-      exports = this.getExports(exports);
+      selectedExports = this.getExports(exports);
+    } else {
+      selectedExports = exports;
     }
 
-    return exports.length === 1 && exports.includes('codebook');
+    return selectedExports.some(
+      (selectedValue) =>
+        this.exportCheckboxes.find((entry) => entry.value === selectedValue)
+          ?.requiresProbandSelection
+    );
   }
 
   private sortStudyQuestionnaire(
