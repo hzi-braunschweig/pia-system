@@ -89,4 +89,4 @@ ENV INTERNAL_PORT=5000
 EXPOSE 4000
 
 CMD npm start
-HEALTHCHECK CMD curl -k $PROTOCOL://localhost:$PORT/metrics | grep "^up 1"
+HEALTHCHECK CMD curl --max-time 10 -k $PROTOCOL://localhost:$PORT/metrics | grep "^up 1"

@@ -12,7 +12,7 @@ import {
   defaultPublicRoutesPaths,
 } from '@pia/lib-service-core';
 import packageJson from '../package.json';
-import { connectDatabase, db } from './db';
+import { connectDatabase, db, getExportPoolConnection } from './db';
 import { config } from './config';
 import { getConnection } from 'typeorm';
 import { messageQueueService } from './services/messageQueueService';
@@ -38,6 +38,7 @@ export class Server {
         healthcheck: async () => {
           await db.one('SELECT 1;');
           await getConnection().query('SELECT 1');
+          await getExportPoolConnection().query('SELECT 1');
           return messageQueueService.isConnected();
         },
       },

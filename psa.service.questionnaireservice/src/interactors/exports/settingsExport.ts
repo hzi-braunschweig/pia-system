@@ -5,14 +5,13 @@
  */
 
 import { AbstractExportFeature } from './abstractExportFeature';
-import * as pgHelper from '../../services/postgresqlHelper';
 import { Readable } from 'stream';
 import { CsvService } from '../../services/csvService';
 import { SettingsTransform } from '../../services/csvTransformStreams/settingsTransform';
 
 export class SettingsExport extends AbstractExportFeature {
   public async apply(): Promise<void> {
-    const settingsStream: Readable = pgHelper.streamSettings(
+    const settingsStream: Readable = await this.getSettingsStream(
       this.probandPseudonyms
     );
     const transformStream = new SettingsTransform();
@@ -22,5 +21,21 @@ export class SettingsExport extends AbstractExportFeature {
     });
 
     return Promise.resolve();
+  }
+
+  private async getSettingsStream(probands: string[]): Promise<Readable> {
+    return await this.dbPool.manager
+      .createQueryBuilder()
+      .from('probands', 'p')
+      .select([
+        'p.pseudonym',
+        'p.compliance_labresults',
+        'p.compliance_samples',
+        'p.compliance_bloodsamples',
+        'p.is_test_proband',
+        'p.ids',
+      ])
+      .where('p.pseudonym IN (:...probands)', { probands })
+      .stream();
   }
 }

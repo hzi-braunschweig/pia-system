@@ -6,7 +6,6 @@
 
 import { AbstractExportFeature } from './abstractExportFeature';
 import { CsvService } from '../../services/csvService';
-import { getRepository } from 'typeorm';
 import { Questionnaire } from '../../entities/questionnaire';
 import { CodebookTransform } from '../../services/csvTransformStreams/codebookTransform';
 import { ExportUtilities } from '../../services/exportUtilities';
@@ -24,7 +23,8 @@ export class CodebookExport extends AbstractExportFeature {
         ' AND (q.id, q.version) IN (' + questionnaireWhere + ')';
     }
 
-    const questionnaires = (await getRepository(Questionnaire)
+    const questionnaires = (await this.dbPool
+      .getRepository(Questionnaire)
       .createQueryBuilder('q')
       .select([
         'q.id id',
@@ -39,7 +39,8 @@ export class CodebookExport extends AbstractExportFeature {
       .execute()) as ConditionalQuestionnaireInfo[];
 
     for (const questionnaire of questionnaires) {
-      const questionnaireStream = await getRepository(Questionnaire)
+      const questionnaireStream = await this.dbPool
+        .getRepository(Questionnaire)
         .createQueryBuilder('questionnaire')
         .select([
           'questionnaire.id',

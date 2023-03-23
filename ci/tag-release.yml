@@ -46,3 +46,34 @@ tag-release:
   environment:
     name: release-images
     url: https://$CI_REGISTRY/
+
+# if somethings goes wrong with the release tagging (e.g. with the connectivity to the registry)
+# we need a way to remove those tags
+# this job can only be triggerd by creating the pipeline manually with the required variables
+untag-failed-release:
+  extends:
+    - .no-cpu-request
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-release-image:$IMAGE_ID
+  stage: release
+  variables:
+    GIT_STRATEGY: none
+  dependencies: []
+  needs:
+    - build-docker
+  script:
+    - sh -c "skopeo login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
+    # the token is owned by piatodo@helmholtz-hzi.de
+    - sh -c "skopeo login -u '$CI_RELEASE_REGISTRY_USER' -p '$CI_RELEASE_REGISTRY_PASSWORD' '$CI_RELEASE_REGISTRY'"
+    - export TARGET_TAG=$UNTAG_FAILED_RELEASE
+    - >
+      for JOB in $JOBS_DOCKER; do
+        skopeo delete docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG || true
+      done
+    - >
+      for JOB in $JOBS_DOCKER; do
+        skopeo delete docker://$CI_RELEASE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG || true
+      done
+  rules:
+    - if: $UNTAG_FAILED_RELEASE
+      when: manual
+    - when: never

@@ -5,14 +5,13 @@
  */
 
 import { AbstractExportFeature } from './abstractExportFeature';
-import * as pgHelper from '../../services/postgresqlHelper';
 import { Readable } from 'stream';
 import { CsvService } from '../../services/csvService';
 import { BloodSampleTransform } from '../../services/csvTransformStreams/bloodSampleTransform';
 
 export class BloodSamplesExport extends AbstractExportFeature {
   public async apply(): Promise<void> {
-    const bloodSamplesStream: Readable = pgHelper.streamBloodSamples(
+    const bloodSamplesStream: Readable = await this.getBloodSamplesStream(
       this.probandPseudonyms
     );
     const transformStream = new BloodSampleTransform();
@@ -25,5 +24,23 @@ export class BloodSamplesExport extends AbstractExportFeature {
     );
 
     return Promise.resolve();
+  }
+
+  private async getBloodSamplesStream(probands: string[]): Promise<Readable> {
+    return this.dbPool.manager
+      .createQueryBuilder()
+      .from('blood_samples', 'bs')
+      .select([
+        'bs.sample_id',
+        'bs.user_id',
+        'bs.remark',
+        'bs.blood_sample_carried_out',
+        'p.ids',
+      ])
+      .leftJoin('probands', 'p', 'bs.user_id = p.pseudonym')
+      .where('bs.user_id IN (:...probands)', { probands })
+      .orderBy('bs.user_id')
+      .addOrderBy('bs.sample_id')
+      .stream();
   }
 }

@@ -88,16 +88,19 @@ export class ExportInteractor {
       )
       .map(async (exportInstance) => exportInstance.apply());
 
-    await Promise.all(exportPromises);
-
-    archive
-      .finalize()
-      .then(() => {
-        console.log('Zip for export without files was finalized');
-      })
-      .catch((err: unknown) => {
-        console.log('Finalizing the zip without files was not possible:', err);
-      });
+    void Promise.all(exportPromises).then(() => {
+      archive
+        .finalize()
+        .then(() => {
+          console.log('Zip for export without files was finalized');
+        })
+        .catch((err: unknown) => {
+          console.log(
+            'Finalizing the zip without files was not possible:',
+            err
+          );
+        });
+    });
 
     return archive;
   }

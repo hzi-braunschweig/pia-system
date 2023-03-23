@@ -10,7 +10,6 @@ import {
   DateFormat,
   ExportUtilities,
 } from '../../services/exportUtilities';
-import { getRepository } from 'typeorm';
 import { Questionnaire } from '../../entities/questionnaire';
 import { QuestionnaireMetaInfoRow } from '../../models/export/questionnaireMetaInfoRow';
 import { AnswersTransform } from '../../services/csvTransformStreams/answersTransform';
@@ -66,7 +65,8 @@ export class AnswersExport extends AbstractExportFeature {
       questionnaireWhere = `AND (q.id, q.version) IN (${questionnaireWhere})`;
     }
 
-    return (await getRepository(Questionnaire)
+    return (await this.dbPool
+      .getRepository(Questionnaire)
       .createQueryBuilder('q')
       .select(['q.id id', 'q.name "name"', 'q.version "version"'])
       .where(
@@ -106,7 +106,8 @@ export class AnswersExport extends AbstractExportFeature {
 
         const ids = Array.from(transformStream.fileIds.values());
 
-        getRepository(UserFile)
+        this.dbPool
+          .getRepository(UserFile)
           .createQueryBuilder()
           .select(['id', 'file_name', 'file'])
           .where('id IN (:...ids)', { ids })
@@ -150,7 +151,8 @@ export class AnswersExport extends AbstractExportFeature {
   private async getAnswersStream(
     questionnaire: QuestionnaireInfo
   ): Promise<ReadStream> {
-    return await getRepository(QuestionnaireInstance)
+    return await this.dbPool
+      .getRepository(QuestionnaireInstance)
       .createQueryBuilder('qi')
       .select([
         'qi.id instance_id',
@@ -214,9 +216,8 @@ export class AnswersExport extends AbstractExportFeature {
   private async getQuestionnaireMetaInfo(
     questionnaire: QuestionnaireInfo
   ): Promise<ExportMetaInfo> {
-    const metaInfoResult: QuestionnaireMetaInfoRow[] = (await getRepository(
-      Questionnaire
-    )
+    const metaInfoResult: QuestionnaireMetaInfoRow[] = (await this.dbPool
+      .getRepository(Questionnaire)
       .createQueryBuilder('questionnaire')
       .select([
         'questionnaire.id questionnaire_id',

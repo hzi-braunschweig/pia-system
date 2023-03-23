@@ -7,7 +7,6 @@
 import { AbstractExportFeature } from './abstractExportFeature';
 import { CsvService } from '../../services/csvService';
 import { DateFormat, ExportUtilities } from '../../services/exportUtilities';
-import { getRepository } from 'typeorm';
 import { Questionnaire } from '../../entities/questionnaire';
 import { QuestionnaireSettingsTransform } from '../../services/csvTransformStreams/questionnaireSettingsTransform';
 
@@ -22,7 +21,8 @@ export class QuestionnaireSettingsExport extends AbstractExportFeature {
       questionnaireWhere = `(q1.id, q1.version) IN (${questionnaireWhere})`;
     }
 
-    const questionnaireStream = await getRepository(Questionnaire)
+    const questionnaireStream = await this.dbPool
+      .getRepository(Questionnaire)
       .createQueryBuilder('q1')
       .select([
         'q1.id as id',

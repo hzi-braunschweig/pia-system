@@ -8,7 +8,7 @@ import 'reflect-metadata';
 import {
   Connection,
   ConnectionNotFoundError,
-  createConnection,
+  createConnections,
   getConnection,
 } from 'typeorm';
 import { config } from './config';
@@ -32,8 +32,13 @@ import { RenameLabelToVariableName1668436755983 } from './migrations/16684367559
 import { UserFile } from './entities/userFile';
 
 const pgp = pgPromise({ capSQL: true, noLocking: config.isTestMode });
+// eslint-disable-next-line @typescript-eslint/no-magic-numbers
+const defaultStatementTimeout = 60 * 60 * 1000; // 1 hour
 
-export const db: IDatabase<unknown> = pgp(config.database);
+export const db: IDatabase<unknown> = pgp({
+  ...config.database,
+  statement_timeout: defaultStatementTimeout,
+});
 export const runTransaction: TransactionRunnerFn = createTransactionRunner(db);
 export const getDbTransactionFromOptionsOrDbConnection: DbConnectionGetterFn =
   RepositoryHelper.createDbConnectionGetter(db);
@@ -50,6 +55,12 @@ export class SnakeNamingStrategyWithPlural extends SnakeNamingStrategy {
     } else return snakeName + 's';
   }
 }
+
+const exportPoolConnectionName = 'export-pool';
+
+export const getExportPoolConnection = (): Connection => {
+  return getConnection(exportPoolConnectionName);
+};
 
 const typeOrmOptions: ConnectionOptions = {
   type: 'postgres',
@@ -78,19 +89,36 @@ const typeOrmOptions: ConnectionOptions = {
 export async function connectDatabase(
   retryCount = 24,
   delay = 1000
-): Promise<Connection> {
+): Promise<Connection[]> {
   const sleep = util.promisify(setTimeout);
   if (retryCount <= 0) throw new Error('retryCount must be greater than 0');
   // try to get existing connection
   try {
-    return getConnection();
+    return [getConnection(), getExportPoolConnection()];
   } catch (e) {
     if (!(e instanceof ConnectionNotFoundError)) throw e;
   }
   // if no connection found try to connect
   for (let i = 0; i <= retryCount; i++) {
     try {
-      return await createConnection(typeOrmOptions);
+      return await createConnections([
+        {
+          ...typeOrmOptions,
+          name: 'default',
+          extra: {
+            poolSize: 10,
+            options: `-c statement_timeout=${defaultStatementTimeout}ms`,
+          },
+        },
+        {
+          ...typeOrmOptions,
+          name: exportPoolConnectionName,
+          extra: {
+            poolSize: 50,
+            options: `-c statement_timeout=${defaultStatementTimeout}ms`,
+          },
+        },
+      ]);
     } catch (err) {
       console.log(err);
       console.log(

@@ -7,8 +7,11 @@
 import { Archiver } from 'archiver';
 import { ExportFeature } from './exportFeature';
 import { ExportOptions } from '../exportInteractor';
+import { getExportPoolConnection } from '../../db';
 
 export abstract class AbstractExportFeature implements ExportFeature {
+  protected dbPool = getExportPoolConnection();
+
   public constructor(
     protected readonly startDate: Date,
     protected readonly endDate: Date,
