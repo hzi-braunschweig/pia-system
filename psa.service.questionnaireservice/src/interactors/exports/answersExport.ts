@@ -27,8 +27,7 @@ const SAMPLE_COLUMNS_COUNT = 2;
 const BASE64_ENCODING_MARK = ';base64,';
 
 export class AnswersExport extends AbstractExportFeature {
-  public async apply(): Promise<void[]> {
-    const filePromises: Promise<void>[] = [];
+  public async apply(): Promise<void> {
     const questionnaires = await this.getQuestionnaires();
 
     for (const questionnaire of questionnaires) {
@@ -49,10 +48,8 @@ export class AnswersExport extends AbstractExportFeature {
         name: `answers/answers_${questionnaireName}_v${questionnaire.version}_${questionnaire.id}_${date}.csv`,
       });
 
-      filePromises.push(this.attachFilesToZip(transformStream));
+      await this.attachFilesToZip(transformStream);
     }
-
-    return Promise.all(filePromises);
   }
 
   private async getQuestionnaires(): Promise<QuestionnaireInfo[]> {

@@ -6,12 +6,17 @@
 
 import Boom from '@hapi/boom';
 import archiver, { Archiver } from 'archiver';
-import { AccessToken, assertStudyAccess } from '@pia/lib-service-core';
+import {
+  AccessToken,
+  assertStudyAccess,
+  asyncForEach,
+} from '@pia/lib-service-core';
 import { userserviceClient } from '../clients/userserviceClient';
 import {
   availableExportFeatures,
   AvailableExportKeys,
 } from './exports/availableExportFeatures';
+import { ExportFeature } from './exports/exportFeature';
 
 export interface ExportOptions {
   start_date: Date | null;
@@ -76,7 +81,7 @@ export class ExportInteractor {
 
     const archive = archiver('zip');
 
-    const exportPromises = options.exports
+    const exportInstances = options.exports
       .concat('readme')
       .filter((key) => availableExportFeatures.has(key))
       .map((key) => availableExportFeatures.get(key))
@@ -85,23 +90,26 @@ export class ExportInteractor {
           // We filter all non-existent keys, so we certainly know what the value will be at this point.
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           new exportClass!(startDate, endDate, options, archive, probands)
-      )
-      .map(async (exportInstance) => exportInstance.apply());
+      );
 
-    void Promise.all(exportPromises).then(() => {
-      archive
-        .finalize()
-        .then(() => {
-          console.log('Zip for export without files was finalized');
-        })
-        .catch((err: unknown) => {
-          console.log(
-            'Finalizing the zip without files was not possible:',
-            err
-          );
-        });
-    });
+    void ExportInteractor.streamExportsToArchive(exportInstances, archive);
 
     return archive;
+  }
+
+  private static async streamExportsToArchive(
+    exportInstances: ExportFeature[],
+    archive: Archiver
+  ): Promise<void> {
+    try {
+      await asyncForEach(exportInstances, async (exportInstance) => {
+        await exportInstance.apply();
+      });
+      await archive.finalize();
+      console.log('Zip for export was finalized');
+    } catch (err) {
+      archive.emit('error', err);
+      console.error('Error during export:', err);
+    }
   }
 }

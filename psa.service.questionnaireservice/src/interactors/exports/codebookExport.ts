@@ -10,6 +10,7 @@ import { Questionnaire } from '../../entities/questionnaire';
 import { CodebookTransform } from '../../services/csvTransformStreams/codebookTransform';
 import { ExportUtilities } from '../../services/exportUtilities';
 import { ConditionalQuestionnaireInfo } from '../../models/questionnaireInfo';
+import { promisifyStream } from '../../helpers/promisifyStream';
 
 export class CodebookExport extends AbstractExportFeature {
   public async apply(): Promise<void> {
@@ -156,6 +157,8 @@ export class CodebookExport extends AbstractExportFeature {
           name: `codebook_${studyName}_${questionnaireName}_v${questionnaire.version}.csv`,
         }
       );
+
+      await promisifyStream(questionnaireStream);
     }
   }
 }
