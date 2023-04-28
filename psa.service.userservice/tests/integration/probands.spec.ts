@@ -13,6 +13,7 @@ import { StatusCodes } from 'http-status-codes';
 import {
   MessageQueueClient,
   MessageQueueTestUtils,
+  MessageQueueTopic,
 } from '@pia/lib-messagequeue';
 import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 import { Server } from '../../src/server';
@@ -62,16 +63,18 @@ const pmHeader = AuthTokenMockBuilder.createAuthHeader({
 
 const apiAddress = `http://localhost:${config.public.port}`;
 
-describe('/admin/studies/{studyName}/probands', () => {
+describe('/admin/studies/{studyName}/probands|probandsIDS', () => {
   const testSandbox = createSandbox();
   const suiteSandbox = sinon.createSandbox();
 
   const mqc = new MessageQueueClient(config.servers.messageQueue);
+  let probandCreatedMessages: unknown[] = [];
 
   before(async function () {
     await Server.init();
     await mqc.connect(true);
-    await mqc.createConsumer('proband.created', async () => {
+    await mqc.createConsumer('proband.created', async (message: unknown) => {
+      probandCreatedMessages.push(message);
       return Promise.resolve();
     });
   });
@@ -83,6 +86,7 @@ describe('/admin/studies/{studyName}/probands', () => {
   });
 
   beforeEach(async function () {
+    probandCreatedMessages = [];
     AuthServerMock.probandRealm().returnValid();
     AuthServerMock.adminRealm().returnValid();
     await setup();
@@ -491,6 +495,27 @@ describe('/admin/studies/{studyName}/probands', () => {
         .set(investigatorHeader)
         .send(createIDSProbandRequest());
       expect(result, result.text).to.have.status(StatusCodes.NO_CONTENT);
+    });
+
+    it('should send pseudonym in lower case', async function () {
+      const studyName = 'QTestStudy1';
+
+      const probandCreated =
+        MessageQueueTestUtils.injectMessageProcessedAwaiter(
+          mqc,
+          MessageQueueTopic.PROBAND_CREATED,
+          testSandbox
+        );
+
+      const result = await chai
+        .request(apiAddress)
+        .post(`/admin/studies/${studyName}/probandsIDS`)
+        .set(investigatorHeader)
+        .send(createIDSProbandRequest({ ids: 'IDS-123' }));
+
+      await probandCreated;
+      expect(result, result.text).to.have.status(StatusCodes.NO_CONTENT);
+      expect(probandCreatedMessages).to.deep.equal([{ pseudonym: 'ids-123' }]);
     });
   });
 });

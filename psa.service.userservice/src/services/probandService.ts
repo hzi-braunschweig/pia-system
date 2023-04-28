@@ -116,8 +116,10 @@ export class ProbandService {
         throw new IdsAlreadyExistsError('The ids is already assigned');
       }
 
+      const pseudonym = ids.toLowerCase();
+
       const newProband = probandRepo.create({
-        pseudonym: ids.toLowerCase(),
+        pseudonym,
         ids: ids,
         status: ProbandStatus.ACTIVE,
         complianceContact: false,
@@ -134,7 +136,7 @@ export class ProbandService {
         throw new ProbandSaveError('could not create the proband', e);
       });
 
-      await messageQueueService.sendProbandCreated(ids);
+      await messageQueueService.sendProbandCreated(pseudonym);
     });
   }
 
