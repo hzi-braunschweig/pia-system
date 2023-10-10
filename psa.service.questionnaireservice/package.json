@@ -6,13 +6,14 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "start": "node --experimental-modules --insecure-http-parser --max-old-space-size=4096 src/index.js",
+    "pretest.int": "touch resources/README.pdf",
     "test.int": "TZ=Europe/Berlin TS_NODE_PROJECT=tests/tsconfig.json DOTENV_CONFIG_PATH=tests/test.env nyc mocha -r '../psa.utils.scripts/test.int/setup.hook' 'tests/integration/**/*.spec.ts' --timeout 30000",
     "test.unit": "IGNORE_MISSING_CONFIG=1 IS_TEST_MODE=true nyc mocha 'src/**/*.spec.{js,ts}' --timeout 5000",
     "lint": "eslint ."
   },
   "dependencies": {
     "@hapi/boom": "^10.0.0",
-    "@hapi/hapi": "^21.1.0",
+    "@hapi/hapi": "~21.1.0",
     "@pia-system/lib-http-clients-internal": "file:../psa.lib.http-clients-internal",
     "@pia/lib-messagequeue": "file:../psa.lib.messagequeue",
     "@pia/lib-service-core": "file:../psa.lib.service-core",
@@ -42,7 +43,7 @@
     "@types/csv-parse": "^1.2.2",
     "@types/jsonwebtoken": "^8.5.9",
     "@types/mocha": "^10.0.0",
-    "@types/node": "^14.17.34",
+    "@types/node": "^20.0.3",
     "@types/node-fetch": "^2.6.2",
     "@types/remove-markdown": "^0.3.1",
     "@types/sinon-chai": "^3.2.9",

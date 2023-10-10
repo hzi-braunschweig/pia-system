@@ -33,6 +33,7 @@ import { AccountNotFound } from '../errors';
 import { ProbandAccountService } from '../services/probandAccountService';
 import { ProfessionalRole } from '../models/role';
 import { getArrayIntersection } from '../helpers/arrayIntersection';
+import { messageQueueService } from '../services/messageQueueService';
 
 export class PendingDeletionsInteractor {
   /**
@@ -451,6 +452,8 @@ export class PendingDeletionsInteractor {
           }
           await ProfessionalAccountService.deleteStudy(pendingDeletion.for_id);
           await ProbandAccountService.deleteStudy(pendingDeletion.for_id);
+
+          await messageQueueService.sendStudyDeleted(pendingDeletion.for_id);
           break;
         }
       }

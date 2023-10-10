@@ -1,0 +1,41 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
+
+<div class="jumbotron">
+  <app-study-select
+    class="margin-right-15"
+    [formControl]="selectedStudy"
+  ></app-study-select>
+
+  <ng-container *ngIf="selectedStudy.value">
+    <button
+      mat-raised-button
+      color="primary"
+      class="margin-left-15"
+      [routerLink]="['edit']"
+    >
+      <mat-icon inline="true">add</mat-icon>
+      {{ 'FEEDBACK_STATISTICS.CREATE_NEW' | translate }}
+    </button>
+
+    <span *appNgLet="feedbackStatistics$ | async as feedbackStatistics">
+      <app-feedback-statistic
+        *ngFor="let fs of feedbackStatistics"
+        [feedbackStatisticDto]="fs"
+        [isEditable]="true"
+        (remove)="deleteFeedbackStatistic($event)"
+      ></app-feedback-statistic>
+
+      <mat-card *ngIf="feedbackStatistics?.length === 0">
+        <mat-card-content>
+          <p>{{ 'FEEDBACK_STATISTICS.NO_CHARTS' | translate }}</p>
+        </mat-card-content>
+      </mat-card>
+    </span>
+  </ng-container>
+</div>

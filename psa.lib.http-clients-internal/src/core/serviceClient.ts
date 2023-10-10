@@ -10,7 +10,7 @@ import { HttpClient } from './httpClient';
 export abstract class ServiceClient {
   protected httpClient = new HttpClient(this.serviceUrl);
 
-  public constructor(private readonly serviceUrl: string) {}
+  public constructor(protected readonly serviceUrl: string) {}
 
   public async waitForService(retryCount = 24, delay = 5000): Promise<void> {
     const sleep = util.promisify(setTimeout);

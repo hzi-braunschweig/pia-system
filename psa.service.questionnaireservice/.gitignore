@@ -31,3 +31,6 @@ tests/private.key
 
 # Build
 dist/
+
+resources/README.pdf
+

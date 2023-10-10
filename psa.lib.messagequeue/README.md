@@ -63,16 +63,19 @@ Currently in use:
 
 ### Existing topics
 
-| Topic name                        | Description                                                                            |
-| --------------------------------- | -------------------------------------------------------------------------------------- |
-| `proband.created`                 | Published when a proband was created                                                   |
-| `proband.deleted`                 | Published when a proband's data were fully deleted                                     |
-| `proband.deactivated`             | Published when a proband was deactivated and should not receive any new questionnaires |
-| `proband.logged_in`               | Published when a proband logged in                                                     |
-| `proband.registered`              | Published when a proband registered                                                    |
-| `proband.email_verified`          | Published when a proband successfully verified its email after registration            |
-| `compliance.created`              | Published when a compliance was filled out by a proband                                |
-| `questionnaire_instance.released` | Published when a questionnaire instance moves to any "released[...]" status            |
+| Topic name                                | Description                                                                            |
+| ----------------------------------------- | -------------------------------------------------------------------------------------- |
+| `proband.created`                         | Published when a proband was created                                                   |
+| `proband.deleted`                         | Published when a proband's data were fully deleted                                     |
+| `proband.deactivated`                     | Published when a proband was deactivated and should not receive any new questionnaires |
+| `proband.logged_in`                       | Published when a proband logged in                                                     |
+| `proband.registered`                      | Published when a proband registered                                                    |
+| `proband.email_verified`                  | Published when a proband successfully verified its email after registration            |
+| `compliance.created`                      | Published when a compliance was filled out by a proband                                |
+| `questionnaire_instance.released`         | Published when a questionnaire instance moves to any "released[...]" status            |
+| `study.deleted`                           | Published when a study was deleted                                                     |
+| `feedbackstatistic_configuration.updated` | Published when a feedbackstatistic configuration got created or updated                |
+| `feedbackstatistic.outdated`              | Published when feedbackstatistic data should be recalculated                           |
 
 ## Example
 

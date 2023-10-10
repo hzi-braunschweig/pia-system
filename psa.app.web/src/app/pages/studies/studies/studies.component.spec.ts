@@ -19,14 +19,17 @@ import {
   convertToParamMap,
   ParamMap,
 } from '@angular/router';
-import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
+import { MatLegacyPaginatorModule as MatPaginatorModule } from '@angular/material/legacy-paginator';
 import { MatSortModule } from '@angular/material/sort';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
 import { createStudy } from '../../../psa.app.core/models/instance.helper.spec';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { NEVER, Subject } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SpecificHttpError } from '../../../psa.app.core/models/specificHttpError';

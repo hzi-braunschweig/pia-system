@@ -1,44 +1,45 @@
 .modules:
   list:
     docker: psa.app.mobile psa.app.web psa.database psa.database.ewpia
-      psa.database.ipia psa.lib.auth-server-client psa.lib.hapi-i18n-plugin
+      psa.database.ipia psa.lib.auth-server-client psa.lib.charts psa.lib.hapi-i18n-plugin
       psa.lib.http-clients-internal psa.lib.licensecollector
       psa.lib.messagequeue psa.lib.service-core psa.lib.templatepipeline
       psa.server.apigateway psa.server.auth psa.server.autheventproxy
       psa.server.mailserver psa.server.messagequeue psa.server.sftpserver
       psa.service.analyzerservice psa.service.complianceservice
-      psa.service.loggingservice psa.service.modysservice
-      psa.service.notificationservice psa.service.personaldataservice
-      psa.service.questionnaireservice psa.service.sampletrackingservice
-      psa.service.sormasservice psa.service.userservice psa.test.data
-      psa.utils.ci-analyze-secret-report psa.utils.ci-git-mirror
-      psa.utils.ci-release-image psa.utils.ci-thirdparty-license-collector
-      psa.utils.ci-awx-cli
-      psa.utils.codeformatter psa.utils.coverage psa.utils.deploymentservice
-      psa.utils.e2e-runner psa.utils.log-sink psa.utils.metrics
-      psa.utils.repo-tool
+      psa.service.feedbackstatisticservice psa.service.loggingservice
+      psa.service.modysservice psa.service.notificationservice
+      psa.service.personaldataservice psa.service.questionnaireservice
+      psa.service.sampletrackingservice psa.service.sormasservice
+      psa.service.userservice psa.test.data psa.utils.ci-analyze-secret-report
+      psa.utils.ci-awx-cli psa.utils.ci-git-mirror psa.utils.ci-release-image
+      psa.utils.ci-thirdparty-license-collector psa.utils.codeformatter
+      psa.utils.coverage psa.utils.deploymentservice psa.utils.e2e-runner
+      psa.utils.log-sink psa.utils.metrics psa.utils.repo-tool
     lint: psa.app.mobile psa.app.web psa.lib.auth-server-client
-      psa.lib.hapi-i18n-plugin psa.lib.http-clients-internal
+      psa.lib.hapi-i18n-plugin psa.lib.charts psa.lib.http-clients-internal
       psa.lib.licensecollector psa.lib.messagequeue psa.lib.service-core
       psa.lib.templatepipeline psa.server.apigateway psa.server.autheventproxy
       psa.service.analyzerservice psa.service.complianceservice
-      psa.service.loggingservice psa.service.modysservice
-      psa.service.notificationservice psa.service.personaldataservice
-      psa.service.questionnaireservice psa.service.sampletrackingservice
-      psa.service.sormasservice psa.service.userservice psa.test.data
-      psa.utils.deploymentservice psa.utils.repo-tool
+      psa.service.feedbackstatisticservice psa.service.loggingservice
+      psa.service.modysservice psa.service.notificationservice
+      psa.service.personaldataservice psa.service.questionnaireservice
+      psa.service.sampletrackingservice psa.service.sormasservice
+      psa.service.userservice psa.test.data psa.utils.deploymentservice
+      psa.utils.repo-tool
     install: psa.app.mobile psa.app.web psa.lib.auth-server-client
-      psa.lib.hapi-i18n-plugin psa.lib.http-clients-internal
+      psa.lib.charts psa.lib.hapi-i18n-plugin psa.lib.http-clients-internal
       psa.lib.licensecollector psa.lib.messagequeue psa.lib.service-core
       psa.lib.templatepipeline psa.server.apigateway psa.server.autheventproxy
       psa.service.analyzerservice psa.service.complianceservice
-      psa.service.loggingservice psa.service.modysservice
-      psa.service.notificationservice psa.service.personaldataservice
-      psa.service.questionnaireservice psa.service.sampletrackingservice
-      psa.service.sormasservice psa.service.userservice psa.test.data
-      psa.utils.deploymentservice psa.utils.repo-tool
+      psa.service.feedbackstatisticservice psa.service.loggingservice
+      psa.service.modysservice psa.service.notificationservice
+      psa.service.personaldataservice psa.service.questionnaireservice
+      psa.service.sampletrackingservice psa.service.sormasservice
+      psa.service.userservice psa.test.data psa.utils.deploymentservice
+      psa.utils.repo-tool
     unit: psa.app.mobile psa.app.web psa.lib.auth-server-client
-      psa.lib.hapi-i18n-plugin psa.lib.http-clients-internal
+      psa.lib.charts psa.lib.hapi-i18n-plugin psa.lib.http-clients-internal
       psa.lib.licensecollector psa.lib.service-core psa.lib.templatepipeline
       psa.server.apigateway psa.service.analyzerservice
       psa.service.complianceservice psa.service.modysservice
@@ -47,10 +48,11 @@
       psa.utils.deploymentservice
     int: psa.lib.messagequeue psa.lib.service-core psa.server.autheventproxy
       psa.service.analyzerservice psa.service.complianceservice
-      psa.service.loggingservice psa.service.modysservice
-      psa.service.notificationservice psa.service.personaldataservice
-      psa.service.questionnaireservice psa.service.sampletrackingservice
-      psa.service.sormasservice psa.service.userservice
+      psa.service.feedbackstatisticservice psa.service.loggingservice
+      psa.service.modysservice psa.service.notificationservice
+      psa.service.personaldataservice psa.service.questionnaireservice
+      psa.service.sampletrackingservice psa.service.sormasservice
+      psa.service.userservice
   array:
     int:
       - psa.lib.messagequeue
@@ -58,6 +60,7 @@
       - psa.server.autheventproxy
       - psa.service.analyzerservice
       - psa.service.complianceservice
+      - psa.service.feedbackstatisticservice
       - psa.service.loggingservice
       - psa.service.modysservice
       - psa.service.notificationservice
@@ -73,10 +76,13 @@
       - forscher1
       - forscher2
       - forscher3
+      - forscher4
+      - forscher5
     unit:
       - psa.app.mobile
       - psa.app.web
       - psa.lib.auth-server-client
+      - psa.lib.charts
       - psa.lib.hapi-i18n-plugin
       - psa.lib.http-clients-internal
       - psa.lib.licensecollector
@@ -95,6 +101,7 @@
       - psa.app.mobile
       - psa.app.web
       - psa.lib.auth-server-client
+      - psa.lib.charts
       - psa.lib.hapi-i18n-plugin
       - psa.lib.http-clients-internal
       - psa.lib.licensecollector
@@ -105,6 +112,7 @@
       - psa.server.autheventproxy
       - psa.service.analyzerservice
       - psa.service.complianceservice
+      - psa.service.feedbackstatisticservice
       - psa.service.loggingservice
       - psa.service.modysservice
       - psa.service.notificationservice

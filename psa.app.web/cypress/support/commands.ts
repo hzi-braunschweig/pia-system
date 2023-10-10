@@ -13,6 +13,7 @@ import {
   ProbandOrigin,
 } from '../../src/app/psa.app.core/models/proband';
 import Chainable = Cypress.Chainable;
+import { Study } from './study.commands';
 
 const short = require('short-uuid');
 const translator = short();
@@ -153,7 +154,24 @@ export function generateRandomProbandForStudy(): CreateProbandRequest {
   };
 }
 
-export function generateRandomStudy(): any {
+export function generateRandomProbandForStudyWithComplicances(): CreateProbandRequest {
+  return {
+    ...generateRandomProbandForStudy(),
+    complianceBloodsamples: true,
+    complianceLabresults: true,
+    complianceSamples: true,
+  };
+}
+
+export type RandomStudy = Study & {
+  has_rna_samples: boolean;
+  sample_prefix: string;
+  sample_suffix_length: null;
+  pseudonym_prefix: string;
+  pseudonym_suffix_length: string;
+};
+
+export function generateRandomStudy(): RandomStudy {
   return {
     name: `e2e-teststudy-${translator.new()}`,
     description: 'Random study for random proband',

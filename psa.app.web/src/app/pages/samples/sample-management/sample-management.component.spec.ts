@@ -6,7 +6,7 @@
 
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 import { AppModule } from '../../../app.module';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { SampleManagementComponent } from './sample-management.component';
 import { CurrentUser } from '../../../_services/current-user.service';
@@ -22,9 +22,9 @@ import {
   createPersonalData,
   createProband,
 } from '../../../psa.app.core/models/instance.helper.spec';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
+import { MatLegacyPaginatorModule as MatPaginatorModule } from '@angular/material/legacy-paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { FormControl } from '@angular/forms';
 import SpyObj = jasmine.SpyObj;

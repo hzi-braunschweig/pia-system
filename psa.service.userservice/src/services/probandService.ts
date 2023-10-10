@@ -416,7 +416,7 @@ export class ProbandService {
 
     await ProbandAccountService.deleteProbandAccount(pseudonym, false);
 
-    await messageQueueService.sendProbandDelete(pseudonym, deletionType);
+    await messageQueueService.sendProbandDeleted(pseudonym, deletionType);
   }
 
   private static async generatePseudonym(study: Study): Promise<string> {

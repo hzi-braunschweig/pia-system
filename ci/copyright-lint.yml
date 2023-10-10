@@ -13,6 +13,7 @@ copyright-lint:
     entrypoint: ['/bin/sh', '-c']
   script:
     - rm -rf psa.lib.auth-server-client/dist
+    - rm -rf psa.lib.charts/dist
     - rm -rf psa.lib.hapi-i18n-plugin/dist
     - rm -rf psa.lib.http-clients-internal/dist
     - rm -rf psa.lib.licensecollector/dist
@@ -64,6 +65,7 @@ copyright-lint:
     - find . -name "complexity.py" -type f -delete
     - find . -name "template.dockerfile" -type f -delete
     - find . -name ".nsprc" -type f -delete
+    - find . -name "CITATION.cff" -type f -delete
     - reuse lint
   rules:
     - if: $CI_MERGE_REQUEST_IID

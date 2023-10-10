@@ -44,7 +44,9 @@ push-branch-images:
     - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   stage: push
-  image: quay.io/containers/skopeo:v1.10.0
+  image:
+    name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-release-image:$IMAGE_ID
+    entrypoint: ['']
   variables:
     GIT_STRATEGY: none
     DOCKER_HOST: null

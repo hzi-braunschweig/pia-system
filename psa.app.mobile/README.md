@@ -160,7 +160,7 @@ When running with livereload, the initial state will be brought back to the `con
 Any change which was made in between will be lost!
 
 Also, Cordova will parse the `config.xml` (and the referenced `network_security_config.xml`) and will make adjustments to it
-based on its content. This will also add entries with IP-Adresses which where read from the `network_security_config.xml`.
+based on its content. This will also add entries with IPs which where read from the `network_security_config.xml`.
 **These changes should not be committed to the Git repo**! Keep it out of Git!
 
 ### iOS app cannot be built by cordova

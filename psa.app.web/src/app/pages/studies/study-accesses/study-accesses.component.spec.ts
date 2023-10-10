@@ -18,7 +18,7 @@ import {
   createStudy,
 } from '../../../psa.app.core/models/instance.helper.spec';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatLegacyPaginatorModule as MatPaginatorModule } from '@angular/material/legacy-paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { AlertService } from '../../../_services/alert.service';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';

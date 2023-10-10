@@ -13,7 +13,10 @@ import {
   OnInit,
   ViewChild,
 } from '@angular/core';
-import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
+import {
+  MatLegacyPaginator as MatPaginator,
+  MatLegacyPaginatorIntl as MatPaginatorIntl,
+} from '@angular/material/legacy-paginator';
 import { MatSort } from '@angular/material/sort';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../../_services/alert.service';

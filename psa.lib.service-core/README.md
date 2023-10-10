@@ -21,7 +21,7 @@ npm install @pia/lib-service-core@file:../psa.lib.service-core
 For the CI to be able to build the dependent service with this package, you need to add it to the corresponding Docker container:
 
 ```Dockerfile
-FROM node:14.16.1-alpine AS base
+FROM node:20.3.0-alpine AS base
 
 ...
 
@@ -30,7 +30,7 @@ COPY $DIR/package*.json ./
 #copy dependencies' package.json
 COPY --chown=node:node psa.lib.service-core/package.json ../psa.lib.service-core/
 
-RUN npm ci --production
+RUN npm ci --omit=dev
 #copy dependencies' source
 COPY --chown=node:node psa.lib.service-core/dist ../psa.lib.service-core/dist
 

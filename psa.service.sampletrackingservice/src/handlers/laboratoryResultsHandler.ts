@@ -5,13 +5,15 @@
  */
 
 import { LaboratoryResultsInteractor } from '../interactors/laboratoryResultsInteractor';
-import * as laboratoryResultTemplateService from '../services/laboratoryResultTemplateService';
 import { TemplatePipelineService } from '../services/templatePipelineService';
 
 import { Request } from '@hapi/hapi';
 import { AccessToken } from '@pia/lib-service-core';
 import { LabResult } from '../models/LabResult';
 import { handleError } from '../handleError';
+import { LabResultTemplateService } from '../services/labResultTemplateService';
+import { userserviceClient } from '../clients/userserviceClient';
+import { badRequest } from '@hapi/boom';
 
 export class LaboratoryResultsHandler {
   public static async getAllResults(
@@ -28,16 +30,22 @@ export class LaboratoryResultsHandler {
     this: void,
     request: Request
   ): Promise<unknown> {
+    const pseudonym = request.params['pseudonym'] as string;
     const labResult = await LaboratoryResultsInteractor.getOneLaboratoryResult(
       request.auth.credentials as AccessToken,
-      request.params['pseudonym'] as string,
+      pseudonym,
       request.params['resultId'] as string
     ).catch(handleError);
 
     if (request.headers['accept'] === 'text/html') {
+      const study = await userserviceClient.getStudyOfProband(pseudonym);
+      if (!study) {
+        throw badRequest('proband has no study');
+      }
+
       return TemplatePipelineService.generateLaboratoryResult(
         labResult,
-        laboratoryResultTemplateService.getTemplate()
+        await LabResultTemplateService.getTemplate(study)
       );
     } else {
       return labResult;

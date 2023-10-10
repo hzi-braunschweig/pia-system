@@ -26,10 +26,12 @@ export class SftpAllFilesDownloadStream extends Readable {
   }
 
   /**
-   * The initialization before starting the reading (automatically called from node v15):
+   * The initialization before starting the reading:
    * Connecting to sftp server and creating the file path iterator.
    */
-  public async _construct(): Promise<void> {
+  public async _construct(
+    callback: (error?: Error | null | undefined) => void
+  ): Promise<void> {
     console.log(SftpAllFilesDownloadStream.TAG, 'Initialize download stream');
     try {
       console.log(
@@ -42,9 +44,11 @@ export class SftpAllFilesDownloadStream extends Readable {
       console.log(SftpAllFilesDownloadStream.TAG, 'Connection established.');
       this.filePaths = this.getFilePaths();
       this.initialized = true;
+      callback();
     } catch (err) {
       console.log(SftpAllFilesDownloadStream.TAG, 'Connect failed', err);
       this.destroy(err as Error);
+      callback(err as Error);
     }
   }
 
@@ -70,9 +74,6 @@ export class SftpAllFilesDownloadStream extends Readable {
    * One reading cycle, that downloads a file and pushes its content to the stream
    */
   public async _read(): Promise<void> {
-    if (!this.initialized) {
-      await this._construct();
-    }
     if (!this.filePaths) {
       console.log(SftpAllFilesDownloadStream.TAG, 'Nothing to download.');
       this.push(null);

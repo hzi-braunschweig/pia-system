@@ -622,6 +622,48 @@ services:
     networks:
       pia:
 
+  feedbackstatisticservice:
+    image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.service.feedbackstatisticservice:${PIA_DOCKER_TAG}
+    restart: unless-stopped
+    extra_hosts: *default-extra_hosts
+    environment:
+      - INTERNAL_PROTOCOL=${INTERNAL_PROTOCOL}
+      - METRICS_IP_WHITELIST=${METRICS_IP_WHITELIST}
+      - DB_FEEDBACKSTATISTIC_HOST=${DB_FEEDBACKSTATISTIC_HOST}
+      - DB_FEEDBACKSTATISTIC_PORT=${DB_FEEDBACKSTATISTIC_PORT}
+      - DB_FEEDBACKSTATISTIC_USER=${DB_FEEDBACKSTATISTIC_USER}
+      - DB_FEEDBACKSTATISTIC_PASSWORD=${DB_FEEDBACKSTATISTIC_PASSWORD}
+      - DB_FEEDBACKSTATISTIC_DB=${DB_FEEDBACKSTATISTIC_DB}
+      - QUESTIONNAIRESERVICE_HOST=${QUESTIONNAIRESERVICE_HOST}
+      - QUESTIONNAIRESERVICE_INTERNAL_PORT=${QUESTIONNAIRESERVICE_INTERNAL_PORT}
+      - USERSERVICE_HOST=${USERSERVICE_HOST}
+      - USERSERVICE_INTERNAL_PORT=${USERSERVICE_INTERNAL_PORT}
+      - AUTHSERVER_PORT=${AUTHSERVER_PORT}
+      - AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET}
+      - AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET=${AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET}
+      - MESSAGEQUEUE_HOST=${MESSAGEQUEUE_HOST}
+      - MESSAGEQUEUE_PORT=${MESSAGEQUEUE_PORT}
+      - MESSAGEQUEUE_APP_PASSWORD=${MESSAGEQUEUE_APP_PASSWORD}
+      - MESSAGEQUEUE_APP_USER=${MESSAGEQUEUE_APP_USER}
+{% if pia_local_development %}
+    build:
+      context: "../../../"
+      dockerfile: psa.service.feedbackstatisticservice/Dockerfile
+      args:
+        DIR: psa.service.feedbackstatisticservice
+{% endif %}
+    container_name: feedbackstatisticservice
+    depends_on:
+      - databaseservice
+    ports:
+      - "${FEEDBACKSTATISTICSERVICE_PORT_EXPOSED}:4000"
+      - "${FEEDBACKSTATISTICSERVICE_INTERNAL_PORT_EXPOSED}:5000"
+    volumes:
+      - ${SSL_DIRECTORY}/feedbackstatisticservice:/usr/src/node-app/ssl
+    logging: *default-logging
+    networks:
+      pia:
+
   databaseservice:
     image: ${PIA_DOCKER_REGISTRY}/${PIA_DOCKER_IMAGE_PREFIX}/psa.database:${PIA_DOCKER_TAG}
     restart: unless-stopped
@@ -638,6 +680,8 @@ services:
       - DB_LOG_PASSWORD=${DB_LOG_PASSWORD}
       - DB_SORMAS_USER=${DB_SORMAS_USER}
       - DB_SORMAS_PASSWORD=${DB_SORMAS_PASSWORD}
+      - DB_FEEDBACKSTATISTIC_USER=${DB_FEEDBACKSTATISTIC_USER}
+      - DB_FEEDBACKSTATISTIC_PASSWORD=${DB_FEEDBACKSTATISTIC_PASSWORD}
 {% if pia_local_development %}
     build:
       context: "../../../"
@@ -870,6 +914,7 @@ services:
       - ANALYZERSERVICE_PORT=${ANALYZERSERVICE_PORT}
       - SORMASSERVICE_PORT=${SORMASSERVICE_PORT}
       - DEPLOYMENTSERVICE_PORT=${DEPLOYMENTSERVICE_PORT}
+      - FEEDBACKSTATISTICSERVICE_PORT=${FEEDBACKSTATISTICSERVICE_PORT}
       - AUTHSERVER_PORT=${AUTHSERVER_PORT}
       # the CA certificate that is used for checks against the communication to the internal services
       - SSL_CA=/etc/ssl/ca.cert
@@ -947,6 +992,7 @@ services:
       - LOGGINGSERVICE_PORT=${LOGGINGSERVICE_PORT}
       - AUTHEVENTPROXY_PORT=${AUTHEVENTPROXY_PORT}
       - AUTHSERVER_PORT=${AUTHSERVER_PORT}
+      - FEEDBACKSTATISTIC_PORT=${FEEDBACKSTATISTIC_PORT}
 {% if pia_local_development %}
     build:
       context: "../../../"

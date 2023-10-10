@@ -1,4 +1,4 @@
-export declare type ResponseType = 'json' | 'text';
+export type ResponseType = 'json' | 'text';
 export interface RequestOptions {
     responseType?: ResponseType;
     returnNullWhenNotFound?: boolean;

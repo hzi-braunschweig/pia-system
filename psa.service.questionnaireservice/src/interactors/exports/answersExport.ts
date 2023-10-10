@@ -187,12 +187,23 @@ export class AnswersExport extends AbstractExportFeature {
           probands: this.probandPseudonyms,
         }
       )
+      /**
+       * The join collecting all answers has to handle questionnaire instances
+       * where the release_version is 0, due to old data being written differently.
+       * For newer data, qi.release_version should always match the answers versioning.
+       */
       .leftJoin(
         'answers',
         'answer',
         `
       answer.questionnaire_instance_id = qi.id AND  
-      answer.versioning = qi.release_version AND 
+      (
+        answer.versioning = qi.release_version OR 
+        (
+          answer.versioning = 1 AND qi.status = 'released_once' AND qi.release_version = 0 OR 
+          answer.versioning = 2 AND qi.status = 'released_twice' AND qi.release_version = 0
+        )
+      ) AND 
       qi.status IN ('released_twice','released_once', 'released')
       `
       )

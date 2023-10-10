@@ -1,6 +1,7 @@
 {
   "extends": "@pia/lib-service-core",
   "compilerOptions": {
+    "experimentalDecorators": true,
     // ONLY_FOR_JS:
     "allowJs": true
   }

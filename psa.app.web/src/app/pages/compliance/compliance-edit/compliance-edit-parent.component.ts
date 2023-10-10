@@ -6,7 +6,7 @@
 
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
 import { AlertService } from '../../../_services/alert.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import {
   ComplianceDataRequest,
   ComplianceDataResponse,

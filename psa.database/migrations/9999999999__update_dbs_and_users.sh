@@ -26,6 +26,11 @@ COMMANDS+="ALTER USER $DB_SORMAS_USER WITH ENCRYPTED PASSWORD '$DB_SORMAS_PASSWO
 COMMANDS+="GRANT sormasservice_role to $DB_SORMAS_USER;\n"
 COMMANDS+="ALTER ROLE $DB_SORMAS_USER SET search_path TO sormasservice;\n"
 
+# create user for feedbackstatisticservice schema
+COMMANDS+="SELECT 'CREATE USER $DB_FEEDBACKSTATISTIC_USER' WHERE NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$DB_FEEDBACKSTATISTIC_USER') \gexec\n"
+COMMANDS+="ALTER USER $DB_FEEDBACKSTATISTIC_USER WITH ENCRYPTED PASSWORD '$DB_FEEDBACKSTATISTIC_PASSWORD';\n"
+COMMANDS+="GRANT feedbackstatisticservice_role to $DB_FEEDBACKSTATISTIC_USER;\n"
+COMMANDS+="ALTER ROLE $DB_FEEDBACKSTATISTIC_USER SET search_path TO feedbackstatisticservice;\n"
 
 # update the search_path for the superuser
 # "public" should be the primary search path!

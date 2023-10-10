@@ -1,4 +1,4 @@
-FROM node:14.19.0-alpine@sha256:9a2aa545388a135b496bd55cef2be920b96c4526c99c140170e05a8de3fce653 AS base
+FROM node:20.3.0-alpine@sha256:2d5e8a8a51bc341fd5f2eed6d91455c3a3d147e91a14298fc564b5dc519c1666 AS base
 RUN apk --update --no-cache add curl tzdata
 
 USER node
@@ -26,11 +26,24 @@ USER root
 RUN apk --update --no-cache add g++ make python3
 USER node
 
+### workaround for npm 9 until we move to package registry
+### execute install in the local dependency folders
+WORKDIR /usr/src/psa.lib.service-core
+RUN npm ci
+WORKDIR /usr/src/psa.lib.messagequeue
+RUN npm ci
+WORKDIR /usr/src/psa.lib.hapi-i18n-plugin
+RUN npm ci
+WORKDIR /usr/src/psa.lib.http-clients-internal
+RUN npm ci
+WORKDIR /usr/src/node-app/
+###
+
 ################################################################
 
 FROM install-npm-build-dependencies AS install-production
 
-RUN npm ci --production
+RUN npm ci --omit=dev
 
 ################################################################
 
@@ -38,6 +51,13 @@ FROM install-npm-build-dependencies AS install
 
 #copy dev dependencies' package.json
 COPY --chown=node:node psa.eslint-config/package*.json ../psa.eslint-config/
+
+### workaround for npm 9 until we move to package registry
+### execute install in the local dependency folders
+WORKDIR /usr/src/psa.eslint-config
+RUN npm ci
+WORKDIR /usr/src/node-app/
+###
 
 RUN npm ci
 
@@ -90,6 +110,11 @@ ENV NODE_EXTRA_CA_CERTS=./ssl/ca.cert
 ENV PROTOCOL=https
 ENV PORT=4000
 ENV INTERNAL_PORT=5000
+
+# since Node v15 UnhandledPromiseRejection will throw errors by default
+# this line can be removed if all rejected promises are handled
+ENV NODE_OPTIONS=--unhandled-rejections=warn
+
 EXPOSE 4000
 
 CMD npm start

@@ -9,8 +9,12 @@ import {
   QuestionnaireInstanceInternalDto,
   QuestionnaireInstanceWithQuestionnaireInternalDto,
 } from '../dtos/questionnaireInstance';
-import { AnswerInternalDto } from '../dtos/answer';
+import { AnswerInternalDto, AnswersFilterInternalDto } from '../dtos/answer';
 import { QuestionnaireInternalDto } from '../dtos/questionnaire';
+import { HttpClient } from '../core/httpClient';
+import { StatusCodes } from 'http-status-codes';
+import Boom from '@hapi/boom';
+import { JsonChunksParserTransform } from '../core/jsonChunksParserTransform';
 
 export class QuestionnaireserviceClient extends ServiceClient {
   private static convertQuestionnaireInstanceDates<
@@ -47,6 +51,15 @@ export class QuestionnaireserviceClient extends ServiceClient {
       createdAt: questionnaire.createdAt && new Date(questionnaire.createdAt),
       updatedAt: questionnaire.updatedAt && new Date(questionnaire.updatedAt),
     };
+  }
+
+  public async getQuestionnaire(
+    id: number,
+    version: number
+  ): Promise<QuestionnaireInternalDto> {
+    return await this.httpClient.get<QuestionnaireInternalDto>(
+      `/questionnaire/${id.toString()}/${version.toString()}`
+    );
   }
 
   /**
@@ -95,5 +108,55 @@ export class QuestionnaireserviceClient extends ServiceClient {
     return await this.httpClient.get<AnswerInternalDto[]>(
       `/questionnaire/questionnaireInstances/${id.toString()}/answers`
     );
+  }
+
+  public async getQuestionnaireAnswers(
+    id: number,
+    filter: AnswersFilterInternalDto
+  ): Promise<NodeJS.ReadableStream> {
+    const params = new URLSearchParams();
+    if (filter.status) {
+      filter.status.forEach((status) => params.append('status', status));
+    }
+    if (filter.minDateOfIssue) {
+      params.append('minDateOfIssue', filter.minDateOfIssue.toISOString());
+    }
+    if (filter.maxDateOfIssue) {
+      params.append('maxDateOfIssue', filter.maxDateOfIssue.toISOString());
+    }
+    if (filter.answerOptions && filter.answerOptions.length > 0) {
+      filter.answerOptions
+        .map((a) => a.id)
+        .filter(Boolean)
+        .forEach((answerOptionId) =>
+          params.append('answerOptionIds', answerOptionId!.toString())
+        );
+
+      filter.answerOptions
+        .map((a) => a.variableName)
+        .filter(Boolean)
+        .forEach((variableName) =>
+          params.append('answerOptionVariableNames', variableName!.toString())
+        );
+    }
+
+    const url = `${
+      this.serviceUrl
+    }/questionnaire/${id.toString()}/answers?${params.toString()}`;
+
+    const res = await HttpClient.fetch(url);
+
+    if (!res.ok) {
+      if (res.status === StatusCodes.NOT_FOUND) {
+        throw Boom.notFound(`GET ${url} received a 404 Not Found`);
+      }
+      throw Boom.internal(
+        `GET ${url} received an Error`,
+        await res.text(),
+        res.status
+      );
+    }
+
+    return res.body.pipe(new JsonChunksParserTransform());
   }
 }

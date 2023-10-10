@@ -7,13 +7,14 @@
 import { ComplianceManagerComponent } from './compliance-manager.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA, Pipe, PipeTransform } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogViewComplianceComponent } from '../compliance-view-dialog/dialog-view-compliance.component';
 import { AlertService } from '../../../_services/alert.service';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { HttpClientModule } from '@angular/common/http';
-import { AuthenticationManager } from '../../../_services/authentication-manager.service';
-import { MockModule } from 'ng-mocks';
+import { MockModule, MockProvider } from 'ng-mocks';
+import { ComplianceService } from '../../../psa.app.core/providers/compliance-service/compliance-service';
+import SpyObj = jasmine.SpyObj;
 
 @Pipe({ name: 'translate' })
 class MockTranslatePipe implements PipeTransform {
@@ -27,22 +28,26 @@ describe('ComplianceManagerComponent', () => {
   let fixture: ComponentFixture<ComplianceManagerComponent>;
 
   let dialog: MatDialog;
-  let alertService: AlertService;
-  let userService: UserService;
-  const authManager = { currentRole: 'EinwilligungsManager' };
+  let complianceService: SpyObj<ComplianceService>;
+  let alertService: SpyObj<AlertService>;
+  let userService: SpyObj<UserService>;
 
   beforeEach(() => {
     dialog = jasmine.createSpyObj('MatDialog', ['open']);
+    complianceService = jasmine.createSpyObj('ComplianceService', [
+      'getAllCompliancesForProfessional',
+    ]);
+    complianceService.getAllCompliancesForProfessional.and.resolveTo([]);
     alertService = jasmine.createSpyObj('AlertService', ['errorObject']);
     userService = jasmine.createSpyObj('UserService', ['getStudies']);
 
     TestBed.configureTestingModule({
       declarations: [ComplianceManagerComponent, MockTranslatePipe],
       providers: [
-        { provide: MatDialog, useValue: dialog },
-        { provide: AlertService, useValue: alertService },
-        { provide: UserService, useValue: userService },
-        { provide: AuthenticationManager, useValue: authManager },
+        MockProvider(MatDialog, dialog),
+        MockProvider(ComplianceService, complianceService),
+        MockProvider(AlertService, alertService),
+        MockProvider(UserService, userService),
       ],
       imports: [MockModule(HttpClientModule)],
       schemas: [NO_ERRORS_SCHEMA],

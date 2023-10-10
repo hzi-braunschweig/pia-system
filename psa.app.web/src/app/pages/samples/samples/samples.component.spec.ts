@@ -12,7 +12,10 @@
 
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 import { AppModule } from '../../../app.module';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { SamplesComponent } from './samples.component';
 import { CurrentUser } from '../../../_services/current-user.service';

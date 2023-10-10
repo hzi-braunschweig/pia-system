@@ -1,5 +1,5 @@
-export declare type ProfessionalRole = 'Forscher' | 'ProbandenManager' | 'EinwilligungsManager' | 'Untersuchungsteam';
-export declare type Role = ProfessionalRole | 'Proband';
+export type ProfessionalRole = 'Forscher' | 'ProbandenManager' | 'EinwilligungsManager' | 'Untersuchungsteam';
+export type Role = ProfessionalRole | 'Proband';
 export interface CreateAccountRequestInternalDto {
     username: string;
     password: string;

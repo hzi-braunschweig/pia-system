@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@hapi/boom": "^10.0.0",
-    "@hapi/hapi": "^21.1.0",
+    "@hapi/hapi": "~21.1.0",
     "@pia-system/lib-http-clients-internal": "file:../psa.lib.http-clients-internal",
     "@pia/lib-messagequeue": "file:../psa.lib.messagequeue",
     "@pia/lib-service-core": "file:../psa.lib.service-core",
@@ -32,7 +32,7 @@
     "@types/chai": "^4.3.4",
     "@types/cron": "^2.0.0",
     "@types/mocha": "^10.0.0",
-    "@types/node": "^14.18.12",
+    "@types/node": "^20.0.3",
     "@types/node-schedule": "^2.1.0",
     "@types/sinon": "^10.0.13",
     "@types/sinon-chai": "^3.2.9",

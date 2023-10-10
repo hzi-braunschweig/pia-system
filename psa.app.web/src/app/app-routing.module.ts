@@ -345,12 +345,21 @@ const routes: Routes = [
     data: { authorizedRoles: ['ProbandenManager'] },
     pathMatch: 'full',
   },
+  {
+    path: 'feedback-statistics',
+    canActivate: [AuthGuard],
+    data: { authorizedRoles: ['Forscher', 'Proband'] },
+    loadChildren: () =>
+      import('./pages/feedback-statistics/feedback-statistics.module').then(
+        (m) => m.FeedbackStatisticsModule
+      ),
+  },
   // Otherwise redirect to home
   { path: '**', redirectTo: 'home', pathMatch: 'full' },
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { relativeLinkResolution: 'legacy' })],
+  imports: [RouterModule.forRoot(routes, {})],
   exports: [RouterModule],
 })
 export class AppRoutingModule {}

@@ -1,0 +1,33 @@
+# psa.server.messagequeue
+
+The message queue server is using the RabbitMQ server with the management plugin enabled.
+
+## Management Plugin
+
+The management plugin can be used to manage and monitor a RabbitMQ server instance.
+
+### Connecting to the Management plugin
+
+By default the port of the management service is not forwarded. You can start a local docker container forwarding the port with
+
+```
+docker run -d -p 15672:15672 registry.gitlab.com/pia-eresearch-system/pia/psa.server.messagequeue
+```
+
+Alternatively, you can find out the ip-address of a running container and connect directly to it:
+
+```
+docker inspect messagequeue |grep IPAddress
+```
+
+where `messagequeue` is the name of the container.
+
+A graphical user interface is provided on `http://{hostname}:15672`. Alternatively, a CLI tool can be downloaded from `http://{hostname}:15672/cli/rabbitmqadmin`. The CLI tool can be started by the command
+`python rabbitmqadmin --help`.
+The default login data is `admin` and `password`.
+
+### Using the GUI
+
+The management plugin GUI can be usded to view and manage queues, exchanges, connections, and other aspects of the RabbitMQ instance. E.g., the messages in a queue can be listed in the `Queues` tab. Consuming the messages from the queue is destructive. If the message should not be removed from the queue, the Ack Mode `Nack message requeue true` should be selected. The message will be put back into the queue in place, but the attribute `redelivered` will be set.
+
+To move messages from one queue to another, the `shovel plugin` can be used, e.g. to requeue messages from a dead letter queue.

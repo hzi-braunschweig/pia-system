@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: 'If you use/reference this software, please cite it as below.'
+authors:
+  - family-names: Castell
+    given-names: Stefanie
+    orcid: https://orcid.org/0000-0003-1762-8462
+    affiliation: 'Department for Epidemiology, Helmholtz-Centre for Infection Research, Brunswick, Germany'
+
+  - family-names: Heise
+    given-names: Jana-Kristin
+    affiliation: 'Department for Epidemiology, Helmholtz-Centre for Infection Research, Brunswick, Germany'
+
+  - family-names: Weber
+    given-names: Lars
+    orcid: https://orcid.org/0009-0008-6133-0851
+    affiliation: 'inqode Software Solutions GmbH'
+
+  - family-names: Dietsch
+    given-names: Leon
+    affiliation: 'Freelancer, Germany'
+
+  - family-names: Wangler
+    given-names: Thomas
+    affiliation: 'Freelancer, Germany'
+
+title: 'eResearch System: Prospective Monitoring and Management - App (PIA)'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.6389565
+repository-code: 'https://gitlab.com/pia-eresearch-system/pia'
+url: 'https://info-pia.de/'
+keywords:
+  - Digital Epidemiology
+  - Digital Infrastructure for Cohort Studies
+  - eResearch System
+  - eHealth
+  - mHealth
+  - survey
+  - biosample management
+license: AGPL-3.0

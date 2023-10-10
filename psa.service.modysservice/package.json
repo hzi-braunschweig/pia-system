@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@hapi/boom": "^10.0.0",
-    "@hapi/hapi": "^21.1.0",
+    "@hapi/hapi": "~21.1.0",
     "@pia-system/lib-http-clients-internal": "file:../psa.lib.http-clients-internal",
     "@pia/lib-service-core": "file:../psa.lib.service-core",
     "http-status-codes": "^2.2.0",
@@ -24,7 +24,7 @@
     "@types/chai": "^4.3.4",
     "@types/chai-as-promised": "^7.1.5",
     "@types/mocha": "^10.0.0",
-    "@types/node": "^14.18.12",
+    "@types/node": "^20.3.3",
     "@types/node-fetch": "^2.6.2",
     "@types/node-schedule": "^2.1.0",
     "@types/sinon": "^10.0.13",

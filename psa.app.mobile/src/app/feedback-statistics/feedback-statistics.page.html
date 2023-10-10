@@ -1,0 +1,20 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<app-header [title]="'FEEDBACK_STATISTICS.TITLE' | translate"></app-header>
+
+<ion-content color="primary-light">
+  <app-feedback-statistic
+    data-unit="feedback-statistic"
+    *ngFor="let fs of feedbackStatistics | async"
+    [feedbackStatisticDto]="fs"
+  ></app-feedback-statistic>
+  <ion-card *ngIf="(feedbackStatistics | async)?.length === 0">
+    <ion-card-content data-unit="message-no-charts">
+      <p>{{ 'FEEDBACK_STATISTICS.NO_CHARTS' | translate }}</p>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

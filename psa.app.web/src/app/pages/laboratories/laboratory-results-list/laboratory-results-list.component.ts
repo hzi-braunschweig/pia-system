@@ -5,9 +5,12 @@
  */
 
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
+import {
+  MatLegacyPaginator as MatPaginator,
+  MatLegacyPaginatorIntl as MatPaginatorIntl,
+} from '@angular/material/legacy-paginator';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { LabResult } from '../../../psa.app.core/models/labresult';
 import { Router } from '@angular/router';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';

@@ -14,3 +14,7 @@ WHERE pseudonym LIKE 'qtest%';
 DELETE
 FROM studies
 WHERE name LIKE 'QTest%';
+
+DELETE
+FROM lab_result_templates
+WHERE study LIKE 'QTest%';

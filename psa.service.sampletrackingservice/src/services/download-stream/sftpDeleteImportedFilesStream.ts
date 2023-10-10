@@ -21,10 +21,12 @@ export class SftpDeleteImportedFilesStream extends Writable {
   }
 
   /**
-   * The initialization before starting the reading (automatically called from node v15):
+   * The initialization before starting the reading:
    * Connecting to sftp server.
    */
-  public async _construct(): Promise<void> {
+  public async _construct(
+    callback: (error?: Error | null | undefined) => void
+  ): Promise<void> {
     console.log(
       SftpDeleteImportedFilesStream.TAG,
       'Initialize deletion stream'
@@ -39,8 +41,10 @@ export class SftpDeleteImportedFilesStream extends Writable {
       await this.client.connect(this.sftpConfig);
       console.log(SftpDeleteImportedFilesStream.TAG, 'Connection established.');
       this.initialized = true;
+      callback();
     } catch (err) {
       this.destroy(err as Error);
+      callback(err as Error);
     }
   }
 
@@ -67,9 +71,6 @@ export class SftpDeleteImportedFilesStream extends Writable {
     _encoding: BufferEncoding,
     callback: (error?: Error | null) => void
   ): Promise<void> {
-    if (!this.initialized) {
-      await this._construct();
-    }
     // for now only delete files with lab results of samples that are assigned to a user.
     if (
       file.success === 'imported_for_existing_sample' ||

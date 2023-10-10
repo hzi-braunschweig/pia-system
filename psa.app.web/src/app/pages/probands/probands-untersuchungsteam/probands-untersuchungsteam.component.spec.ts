@@ -7,7 +7,10 @@
 import { ComponentFixture, fakeAsync, tick } from '@angular/core/testing';
 import { ProbandsUntersuchungsteamComponent } from './probands-untersuchungsteam.component';
 import { Router } from '@angular/router';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { By } from '@angular/platform-browser';
 import { MockBuilder, MockRender } from 'ng-mocks';
 import { Subject } from 'rxjs';

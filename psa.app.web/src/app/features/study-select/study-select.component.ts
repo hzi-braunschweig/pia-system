@@ -9,11 +9,16 @@ import {
   ControlValueAccessor,
   FormControl,
   NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { CurrentUser } from '../../_services/current-user.service';
 import { filter, startWith } from 'rxjs/operators';
+import { MatSelectSearchModule } from '../mat-select-search/mat-select-search.module';
+import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
+import { TranslateModule } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
 
 const STUDY_SELECT_VALUE_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -22,9 +27,17 @@ const STUDY_SELECT_VALUE_ACCESSOR = {
 };
 
 @Component({
+  standalone: true,
   selector: 'app-study-select',
   templateUrl: './study-select.component.html',
   providers: [STUDY_SELECT_VALUE_ACCESSOR],
+  imports: [
+    CommonModule,
+    MatSelectSearchModule,
+    MatSelectModule,
+    ReactiveFormsModule,
+    TranslateModule,
+  ],
 })
 export class StudySelectComponent
   implements ControlValueAccessor, OnInit, OnDestroy

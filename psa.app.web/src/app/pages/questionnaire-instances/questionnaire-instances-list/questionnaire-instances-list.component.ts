@@ -5,7 +5,10 @@
  */
 
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
+import {
+  MatLegacyPaginator as MatPaginator,
+  MatLegacyPaginatorIntl as MatPaginatorIntl,
+} from '@angular/material/legacy-paginator';
 import { MatSort } from '@angular/material/sort';
 import { Router } from '@angular/router';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
@@ -14,7 +17,7 @@ import {
   QuestionnaireInstance,
   QuestionnaireStatus,
 } from '../../../psa.app.core/models/questionnaireInstance';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 
 @Component({
   selector: 'app-questionnaire-instances-list',

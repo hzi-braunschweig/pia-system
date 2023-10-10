@@ -1,4 +1,4 @@
-FROM node:14.19.0-alpine@sha256:9a2aa545388a135b496bd55cef2be920b96c4526c99c140170e05a8de3fce653 AS base
+FROM node:20.3.0-alpine@sha256:2d5e8a8a51bc341fd5f2eed6d91455c3a3d147e91a14298fc564b5dc519c1666 AS base
 
 WORKDIR /usr/src/node-app/
 
@@ -7,7 +7,14 @@ COPY $DIR/package*.json ./
 #copy dependencies' package.json
 COPY --chown=node:node psa.lib.service-core/package*.json ../psa.lib.service-core/
 
-RUN npm ci --production
+### workaround for npm 9 until we move to package registry
+### execute install in the local dependency folders
+WORKDIR /usr/src/psa.lib.service-core
+RUN npm ci
+WORKDIR /usr/src/node-app/
+###
+
+RUN npm ci --omit=dev
 #copy dependencies' source
 COPY --chown=node:node psa.lib.service-core/dist ../psa.lib.service-core/dist
 
@@ -16,7 +23,15 @@ COPY --chown=node:node psa.lib.service-core/dist ../psa.lib.service-core/dist
 FROM base AS install
 
 #copy dev dependencies' package.json
+
 COPY --chown=node:node psa.eslint-config/package*.json ../psa.eslint-config/
+
+### workaround for npm 9 until we move to package registry
+### execute install in the local dependency folders
+WORKDIR /usr/src/psa.eslint-config
+RUN npm ci
+WORKDIR /usr/src/node-app/
+###
 
 RUN npm ci
 
@@ -51,6 +66,10 @@ COPY --from=build /usr/src/node-app/dist/src/ ./src/
 
 # for colored log output
 ENV FORCE_COLOR=1
+
+# since Node v15 UnhandledPromiseRejection will throw errors by default
+# this line can be removed if all rejected promises are handled
+ENV NODE_OPTIONS=--unhandled-rejections=warn
 
 # required for gitlab ci to notice that the service is running
 EXPOSE 80

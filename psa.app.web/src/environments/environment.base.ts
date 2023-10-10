@@ -19,6 +19,7 @@ export interface Environment extends BaseEnvironment {
   defaultLanguage: string;
   isSormasEnabled: boolean;
   isDevelopmentSystem: boolean;
+  isE2ETestSystem: boolean;
   authserver: KeycloakConfig;
 }
 

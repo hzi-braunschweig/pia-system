@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { MatSort } from '@angular/material/sort';
 import { QuestionnaireInstance } from '../../app/psa.app.core/models/questionnaireInstance';
 import { DataSource } from '@angular/cdk/collections';

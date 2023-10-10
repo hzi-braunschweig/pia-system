@@ -6,6 +6,7 @@
 
 import * as util from 'util';
 import * as sinon from 'sinon';
+import { SinonStubbedInstance } from 'sinon';
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import sinonChai from 'sinon-chai';
@@ -23,8 +24,8 @@ import {
 import { config } from '../../src/config';
 import { ProbandDeletionType } from '../../src/services/probandService';
 import { ProbandStatus } from '../../src/models/probandStatus';
-import { SinonStubbedInstance } from 'sinon';
 import { probandAuthClient } from '../../src/clients/authServerClient';
+import { MessageQueueTopic } from '@pia/lib-messagequeue';
 
 chai.use(chaiHttp);
 chai.use(sinonChai);
@@ -148,7 +149,7 @@ describe('Internal: delete proband data', () => {
       let pseudonym: string | undefined;
       let deletionType: ProbandDeletionType | undefined;
       await messageQueueService.createConsumer(
-        'proband.deleted',
+        MessageQueueTopic.PROBAND_DELETED,
         async (message: {
           pseudonym: string;
           deletionType: ProbandDeletionType;

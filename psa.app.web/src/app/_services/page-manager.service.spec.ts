@@ -12,6 +12,7 @@ import { MockProvider } from 'ng-mocks';
 import { Subject } from 'rxjs';
 import { Role } from '../psa.app.core/models/user';
 import SpyObj = jasmine.SpyObj;
+import { FeedbackStatisticsService } from '../pages/feedback-statistics/feedback-statistics.service';
 
 describe('PageManager', () => {
   let service: PageManager;
@@ -19,6 +20,7 @@ describe('PageManager', () => {
   let user: SpyObj<CurrentUser>;
   let complianceManager: SpyObj<ComplianceManager>;
   let complianceChangeSubject: Subject<void>;
+  let feedbackStatisticsService: SpyObj<FeedbackStatisticsService>;
 
   beforeEach(() => {
     user = jasmine.createSpyObj<CurrentUser>('CurrentUser', [
@@ -34,11 +36,20 @@ describe('PageManager', () => {
       }
     );
 
+    feedbackStatisticsService = jasmine.createSpyObj<FeedbackStatisticsService>(
+      'FeedbackStatisticsService',
+      ['hasFeedbackStatisticsForProband']
+    );
+    feedbackStatisticsService.hasFeedbackStatisticsForProband.and.resolveTo(
+      true
+    );
+
     TestBed.configureTestingModule({
       providers: [
         PageManager,
         MockProvider(CurrentUser, user),
         MockProvider(ComplianceManager, complianceManager),
+        MockProvider(FeedbackStatisticsService, feedbackStatisticsService),
       ],
     });
   });
@@ -87,6 +98,11 @@ describe('PageManager', () => {
           name: 'SIDENAV.COMPLIANCE',
           path: ['compliance/setup'],
           subpaths: ['compliance/'],
+        },
+        {
+          name: 'SIDENAV.FEEDBACK_STATISTICS',
+          path: ['feedback-statistics'],
+          subpaths: ['feedback-statistics/', 'feedback-statistics/edit'],
         },
       ]);
     }));
@@ -264,6 +280,11 @@ describe('PageManager', () => {
           subpaths: ['laboratory-results'],
         },
         {
+          name: 'SIDENAV.FEEDBACK_STATISTICS',
+          path: ['feedback-statistics'],
+          subpaths: ['feedback-statistics/'],
+        },
+        {
           name: 'SIDENAV.COMPLIANCE',
           path: ['compliance/agree'],
           subpaths: ['compliance/'],
@@ -302,6 +323,11 @@ describe('PageManager', () => {
           name: 'SIDENAV.QUESTIONNAIRES',
           path: ['questionnaires/user'],
           subpaths: ['questionnaires/', 'questionnaire/'],
+        },
+        {
+          name: 'SIDENAV.FEEDBACK_STATISTICS',
+          path: ['feedback-statistics'],
+          subpaths: ['feedback-statistics/'],
         },
         {
           name: 'SIDENAV.SETTINGS',
@@ -359,6 +385,11 @@ describe('PageManager', () => {
           subpaths: ['questionnaires/', 'questionnaire/'],
         },
         {
+          name: 'SIDENAV.FEEDBACK_STATISTICS',
+          path: ['feedback-statistics'],
+          subpaths: ['feedback-statistics/'],
+        },
+        {
           name: 'SIDENAV.SETTINGS',
           path: ['settings'],
           subpaths: ['settings'],
@@ -380,6 +411,11 @@ describe('PageManager', () => {
           name: 'SIDENAV.LABORATORY_RESULTS',
           path: ['laboratory-results'],
           subpaths: ['laboratory-results'],
+        },
+        {
+          name: 'SIDENAV.FEEDBACK_STATISTICS',
+          path: ['feedback-statistics'],
+          subpaths: ['feedback-statistics/'],
         },
         {
           name: 'SIDENAV.COMPLIANCE',

@@ -49,11 +49,14 @@ VALUES
     -- AE1 v4 - testing conditions on questions --------------------------------------------------------
     (100000, 4, 'Answers Export', 'AE1 Answer Export', 1, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, FALSE,
      1, 1, '2021-06-08', 'for_probands', 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
-    -- AE1 v5 - testing conditions on answer options -----------------------------------------------------------------
+    -- AE1 v5 - testing conditions on answer options -------------------------------------------------------------------
     (100000, 5, 'Answers Export', 'AE1 Answer Export', 1, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, FALSE,
      1, 1, '2021-06-08', 'for_probands', 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
-    -- AE1 v6 - testing conditions on answer options -----------------------------------------------------------------
+    -- AE1 v6 - testing conditions on answer options -------------------------------------------------------------------
     (100000, 6, 'Answers Export', 'AE1 Answer Export', 1, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, FALSE,
+     1, 1, '2021-06-08', 'for_probands', 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
+    -- AE1 v7 - testing exporting answers submitted via older mobile app -----------------------------------------------
+    (100000, 7, 'Answers Export', 'AE1 Answer Export', 1, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, FALSE,
      1, 1, '2021-06-08', 'for_probands', 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
     -- AE2 v1 - testing if questionnaire versions without instances will not lead to empty exports ---------------------
     (200000, 1, 'Answers Export', 'AE2 Export without instance', 1, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, FALSE,
@@ -81,6 +84,8 @@ VALUES
     (151000, 100000, 'Answer options to show or hide the following', 2, TRUE, 'conditional_answer_options', 5),
     -- v6 conditions on questions and answer options
     (161000, 100000, 'Cascading conditions on questions and answer options', 2, TRUE, 'conditional_questions_answer_options', 6),
+    -- v7 exporting answers for old mobile app answers
+    (171000, 100000, 'Exporting old mobile app answers', 2, TRUE, 'old_mobile_app_answers', 7),
     -- 2 v1
     (211000, 200000, 'Question', 1, FALSE, '', 1),
     -- 2 v2
@@ -169,6 +174,10 @@ VALUES
     (161001, 161000, 'Einzelauswahl', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE,
      'Einzelauswahl'),
     (161002, 161000, 'Text', 4, '{}', '{}', '{}', 2, FALSE, NULL, NULL, FALSE, 'Text'),
+    -- AE - v7 -------------------------------------------------------------------------------------------------------
+    (171001, 171000, 'Einzelauswahl', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE,
+     'Einzelauswahl'),
+    (171002, 171000, 'Text', 4, '{}', '{}', '{}', 2, FALSE, NULL, NULL, FALSE, 'Text'),
     -- AE2
     -- v1
     (211001, 211000, 'Einzelauswahl?', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE, ''),
@@ -332,6 +341,19 @@ VALUES
     (160203, 'Answers Export', 100000, 'For Probands', 'answ-02', '2022-12-07 07:00:00.000000',
      '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 3,
      'released_twice', FALSE, 0, 2, 6),
+    -- AE1 v7 --------------------------------------------------------------------------------
+    -- answ-01 - released once, without unreleased changes
+    (170101, 'Answers Export', 100000, 'For Probands', 'answ-01', '2022-12-07 07:00:00.000000',
+     '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 1,
+     'released_once', FALSE, 0, 0, 7),
+    -- answ-01 - released once, with unreleased changes
+    (170102, 'Answers Export', 100000, 'For Probands', 'answ-01', '2022-12-07 07:00:00.000000',
+     '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 2,
+     'released_once', FALSE, 0, 0, 7),
+    -- answ-01 - released twice
+    (170103, 'Answers Export', 100000, 'For Probands', 'answ-01', '2022-12-07 07:00:00.000000',
+     '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 3,
+     'released_twice', FALSE, 0, 0, 7),
     -- AE2 v1 --------------------------------------------------------------------------------
     (220101, 'Answers Export', 200000, 'For Probands', 'answ-99', '2022-12-07 07:00:00.000000',
      '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 1,
@@ -340,6 +362,7 @@ VALUES
     (220102, 'Answers Export', 200000, 'For Probands', 'answ-01', '2022-12-07 07:00:00.000000',
     null, null, 1,
     'active', FALSE, 0, 2, 2)
+    -- AE3 v1 --------------------------------------------------------------------------------
 ;
 
 -- id: 9[user id postfix]{2}[consecutive number]{2}
@@ -485,7 +508,7 @@ VALUES
     (120101, 121000, 121002, 2, 'Nein', NULL, NULL),
     (120101, 121000, 121003, 2, '49', NULL, NULL),
     (120101, 121000, 121004, 2, 'Freitext', NULL, NULL),
-    (120101, 121000, 121005, 2, '2021-10-12T00:13:14.150Z', NULL, NULL),
+    (120101, 121000, 121005, 2, 'invalid-date', NULL, NULL), -- not parsable date --> should be exported as missing 
     (120101, 121000, 121006, 2, 'Ja', NULL, NULL),
     (120101, 121000, 121007, 2, '', NULL, NULL),
     (120101, 121000, 121008, 2, 'ANSW-1234567890', NULL, NULL),
@@ -659,6 +682,22 @@ VALUES
     (160202, 161000, 161002, 2, '', NULL, NULL),
     -- cycle 3
     (160203, 161000, 161001, 2, 'Ja', NULL, NULL),
-    (160203, 161000, 161002, 2, 'Text', NULL, NULL)
+    (160203, 161000, 161002, 2, 'Text', NULL, NULL),
+    -- v7 answ-1 --------------------------------------------------------------------------------------------------------
+    -- cycle 1
+    (170101, 171000, 171001, 1, 'Ja', NULL, NULL),
+    (170101, 171000, 171002, 1, 'first release', NULL, NULL),
+    (170101, 171000, 171001, 2, 'Nein', NULL, NULL),
+    (170101, 171000, 171002, 2, 'this should not be exported', NULL, NULL),
+    -- cycle 2
+    (170102, 171000, 171001, 1, 'Ja', NULL, NULL),
+    (170102, 171000, 171002, 1, 'first release with unreleased changes', NULL, NULL),
+    (170102, 171000, 171001, 2, 'Nein', NULL, NULL),
+    (170102, 171000, 171002, 2, 'this should not be exported, as it has not been released twice', NULL, NULL),
+    -- cycle 3
+    (170103, 171000, 171001, 1, 'Nein', NULL, NULL),
+    (170103, 171000, 171002, 1, 'this should not be exported', NULL, NULL),
+    (170103, 171000, 171001, 2, 'Ja', NULL, NULL),
+    (170103, 171000, 171002, 2, 'second release', NULL, NULL)
 
 ;

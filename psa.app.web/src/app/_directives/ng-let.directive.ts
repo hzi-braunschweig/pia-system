@@ -12,6 +12,7 @@ interface NgLetContext {
 }
 
 @Directive({
+  standalone: true,
   selector: '[appNgLet]',
 })
 export class NgLetDirective {

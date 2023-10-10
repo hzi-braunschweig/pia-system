@@ -1,4 +1,4 @@
-FROM node:14.19.0-alpine@sha256:9a2aa545388a135b496bd55cef2be920b96c4526c99c140170e05a8de3fce653 AS base
+FROM node:20.3.0-alpine@sha256:2d5e8a8a51bc341fd5f2eed6d91455c3a3d147e91a14298fc564b5dc519c1666 AS base
 
 FROM base AS npm-install
 RUN apk --update --no-cache add curl tzdata
@@ -17,6 +17,14 @@ COPY $DIR/package*.json ./
 #copy dev dependencies
 COPY psa.lib.licensecollector/package*.json ../psa.lib.licensecollector/
 COPY psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
+COPY psa.lib.charts/dist ../psa.lib.charts/dist
+
+### workaround for npm 9 until we move to package registry
+### execute install in the local dependency folders
+WORKDIR /usr/src/psa.lib.licensecollector
+RUN npm ci
+WORKDIR /usr/src/node-app/
+###
 
 RUN npm ci
 
@@ -39,6 +47,16 @@ COPY $DIR/package*.json ./
 #copy dev dependencies
 COPY --chown=node psa.lib.licensecollector/package*.json ../psa.lib.licensecollector/
 COPY --chown=node psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
+COPY --chown=node psa.lib.charts/dist ../psa.lib.charts/dist
+
+
+### workaround for npm 9 until we move to package registry
+### execute install in the local dependency folders
+WORKDIR /usr/src/psa.lib.licensecollector
+RUN npm ci
+WORKDIR /usr/src/node-app/
+###
+
 
 RUN npm ci
 

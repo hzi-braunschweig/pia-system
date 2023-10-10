@@ -5,8 +5,11 @@
  */
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import {
+  MatLegacyPaginator as MatPaginator,
+  MatLegacyPaginatorIntl as MatPaginatorIntl,
+} from '@angular/material/legacy-paginator';
 import { MatSort } from '@angular/material/sort';
 import { AlertService } from '../../../_services/alert.service';
 import { ActivatedRoute } from '@angular/router';
@@ -24,7 +27,7 @@ import {
 } from '../../../dialogs/user-edit-dialog/user-edit-dialog';
 import { Study } from '../../../psa.app.core/models/study';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { AccessLevel } from '../../../psa.app.core/models/studyAccess';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 

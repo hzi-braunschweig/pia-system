@@ -7,7 +7,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { DialogViewComplianceComponent } from './dialog-view-compliance.component';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { ComplianceService } from '../../../psa.app.core/providers/compliance-service/compliance-service';
 import { ComplianceDataResponse } from '../../../psa.app.core/models/compliance';
 import { MockModule } from 'ng-mocks';

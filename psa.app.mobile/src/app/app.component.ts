@@ -143,6 +143,12 @@ export class AppComponent {
         isShown: true,
       },
       {
+        title: 'APP.MENU.STATISTICS',
+        url: '/feedback-statistics',
+        icon: 'bar-chart',
+        isShown: true,
+      },
+      {
         title: 'APP.MENU.LAB_RESULTS',
         url: '/lab-result',
         icon: 'flask',

@@ -5,14 +5,14 @@
  */
 
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import {
   DialogViewComplianceComponent,
   DialogViewComplianceComponentData,
 } from '../compliance-view-dialog/dialog-view-compliance.component';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { AlertService } from '../../../_services/alert.service';
 import { ProbandsListEntryActionConfig } from '../../../features/probands-list/probands-list.component';
 import { ComplianceAgreement } from '../../../psa.app.core/models/compliance';

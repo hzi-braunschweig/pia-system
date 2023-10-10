@@ -22,14 +22,19 @@ export interface Message {
   pseudonym: string;
 }
 
+export interface StudyDeletedMessage {
+  studyName: string;
+}
+
 export class MessageQueueService extends MessageQueueClient {
-  private probandDelete?: Producer<ProbandDeletedMessage>;
+  private probandDeleted?: Producer<ProbandDeletedMessage>;
   private probandDeactivated?: Producer<Message>;
   private probandCreated?: Producer<Message>;
+  private studyDeleted?: Producer<StudyDeletedMessage>;
 
   public async connect(): Promise<void> {
     await super.connect();
-    this.probandDelete = await this.createProducer<ProbandDeletedMessage>(
+    this.probandDeleted = await this.createProducer<ProbandDeletedMessage>(
       MessageQueueTopic.PROBAND_DELETED
     );
     this.probandDeactivated = await this.createProducer<Message>(
@@ -37,6 +42,9 @@ export class MessageQueueService extends MessageQueueClient {
     );
     this.probandCreated = await this.createProducer<Message>(
       MessageQueueTopic.PROBAND_CREATED
+    );
+    this.studyDeleted = await this.createProducer<StudyDeletedMessage>(
+      MessageQueueTopic.STUDY_DELETED
     );
 
     await this.createConsumer(
@@ -58,14 +66,14 @@ export class MessageQueueService extends MessageQueueClient {
     await StudyService.sendWelcomeMail(pseudonym, email);
   }
 
-  public async sendProbandDelete(
+  public async sendProbandDeleted(
     pseudonym: string,
     deletionType: ProbandDeletionType
   ): Promise<void> {
-    if (!this.probandDelete) {
+    if (!this.probandDeleted) {
       throw new Error('not connected to messagequeue');
     }
-    await this.probandDelete.publish({
+    await this.probandDeleted.publish({
       pseudonym,
       deletionType,
     });
@@ -86,6 +94,15 @@ export class MessageQueueService extends MessageQueueClient {
     }
     await this.probandDeactivated.publish({
       pseudonym,
+    });
+  }
+
+  public async sendStudyDeleted(studyName: string): Promise<void> {
+    if (!this.studyDeleted) {
+      throw new Error('not connected to messagequeue');
+    }
+    await this.studyDeleted.publish({
+      studyName,
     });
   }
 }

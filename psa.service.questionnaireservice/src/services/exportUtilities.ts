@@ -9,6 +9,7 @@ import * as normalize from 'normalize-diacritics';
 import path from 'path';
 import formatInTimeZone from 'date-fns-tz/formatInTimeZone';
 import { ExportBoolean } from '../models/csvExportRows';
+import { format } from 'date-fns-tz';
 
 export interface AnswerPosition {
   questionPosition?: number;
@@ -180,6 +181,24 @@ export class ExportUtilities {
 
   public static formatDate(date: Date, dateFormat: DateFormat): string {
     return formatInTimeZone(date, 'UTC', dateFormat);
+  }
+
+  public static formatDateStringWithoutTimeZone(
+    dateString: string,
+    dateFormat: DateFormat
+  ): string {
+    // dates are in the format: 'Thu Sep 14 2023 00:00:00 GMT+0200 (Central European Summer Time)'
+    // the regex is used to strip the timezone because otherwise the date can change
+    // depending on the timezone of the server (can be +/- 1 day)
+    const regex = /^.*\d\d:\d\d:\d\d/;
+    const match = regex.exec(dateString);
+
+    if (match?.[0]) {
+      const parsedDate = this.convertStringToDateObject(match[0]);
+      return format(parsedDate, dateFormat);
+    }
+
+    return format(this.convertStringToDateObject(dateString), dateFormat);
   }
 
   /**

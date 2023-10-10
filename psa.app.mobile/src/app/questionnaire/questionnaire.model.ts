@@ -64,6 +64,7 @@ export interface Answer {
   question_id: number;
   answer_option_id: number;
   value: string;
+  versioning?: number;
 }
 
 export enum AnswerType {
@@ -142,4 +143,10 @@ export interface StudyWelcomeText {
   study_id: string;
   welcome_text: string;
   language: string;
+}
+
+export interface AnswerPostRequest {
+  answers: Answer[];
+  version: number;
+  date_of_release?: Date;
 }

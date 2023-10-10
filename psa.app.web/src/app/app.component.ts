@@ -9,7 +9,7 @@ import { FCMService } from './_services/fcm.service';
 import { MediaChange, MediaObserver } from '@angular/flex-layout';
 import { LocaleService } from './_services/locale.service';
 import { environment } from '../environments/environment';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { TranslateService } from '@ngx-translate/core';
 import { first } from 'rxjs/operators';
 
@@ -38,7 +38,7 @@ export class AppComponent implements OnInit {
         this.isLtMd = mediaChanges.some((change) => change.mqAlias === 'lt-md');
       });
 
-    if (environment.isDevelopmentSystem) {
+    if (environment.isDevelopmentSystem && !environment.isE2ETestSystem) {
       console.warn('we are running on a development system!');
       this.translate
         .get('SYSTEM.IS_DEVELOPMENT_SYSTEM')

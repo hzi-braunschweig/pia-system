@@ -11,7 +11,7 @@ RUN mvn clean package -Dmaven.test.skip=true
 
 ################################################################
 
-FROM node:14.19.0-alpine@sha256:9a2aa545388a135b496bd55cef2be920b96c4526c99c140170e05a8de3fce653 as theme-builder
+FROM node:20.3.0-alpine@sha256:2d5e8a8a51bc341fd5f2eed6d91455c3a3d147e91a14298fc564b5dc519c1666 as theme-builder
 
 ARG DIR=.
 

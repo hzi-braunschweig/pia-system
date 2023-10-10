@@ -30,6 +30,7 @@ export interface ProbandInternalDto {
   accountStatus: AccountStatus;
   status: ProbandStatus;
   ids: string | null;
+  isTestProband: boolean;
 }
 
 export type ProbandRequestInternalDto = Omit<

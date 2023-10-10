@@ -11,5 +11,8 @@ var MessageQueueTopic;
     MessageQueueTopic["PROBAND_EMAIL_VERIFIED"] = "proband.email_verified";
     MessageQueueTopic["COMPLIANCE_CREATED"] = "compliance.created";
     MessageQueueTopic["QUESTIONNAIRE_INSTANCE_RELEASED"] = "questionnaire_instance.released";
+    MessageQueueTopic["FEEDBACKSTATISTIC_CONFIGURATION_UPDATED"] = "feedbackstatistic_configuration.updated";
+    MessageQueueTopic["FEEDBACKSTATISTIC_OUTDATED"] = "feedbackstatistic.outdated";
+    MessageQueueTopic["STUDY_DELETED"] = "study.deleted";
 })(MessageQueueTopic = exports.MessageQueueTopic || (exports.MessageQueueTopic = {}));
 //# sourceMappingURL=messageQueueTopics.js.map

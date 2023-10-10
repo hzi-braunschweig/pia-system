@@ -138,13 +138,16 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     const app = fixture.nativeElement;
     const menuItems = app.querySelectorAll('#menu-content ion-label');
-    expect(menuItems.length).toEqual(6);
-    expect(menuItems[0].textContent).toContain('APP.MENU.HOME');
-    expect(menuItems[1].textContent).toContain('APP.MENU.QUESTIONNAIRES');
-    expect(menuItems[2].textContent).toContain('APP.MENU.LAB_RESULTS');
-    expect(menuItems[3].textContent).toContain('APP.MENU.COMPLIANCES');
-    expect(menuItems[4].textContent).toContain('APP.MENU.SETTINGS');
-    expect(menuItems[5].textContent).toContain('APP.MENU.CONTACT');
+    console.log([...menuItems].map((item) => item.textContent));
+    expect([...menuItems].map((item) => item.textContent)).toEqual([
+      'APP.MENU.HOME',
+      'APP.MENU.QUESTIONNAIRES',
+      'APP.MENU.STATISTICS',
+      'APP.MENU.LAB_RESULTS',
+      'APP.MENU.COMPLIANCES',
+      'APP.MENU.SETTINGS',
+      'APP.MENU.CONTACT',
+    ]);
   }));
 
   it('should have urls', fakeAsync(() => {
@@ -152,26 +155,19 @@ describe('AppComponent', () => {
     tick();
     fixture.detectChanges();
     const app = fixture.nativeElement;
-    const menuItems = app.querySelectorAll('#menu-content ion-item');
-    expect(menuItems.length).toEqual(6);
-    expect(menuItems[0].getAttribute('ng-reflect-router-link')).toEqual(
-      '/home'
-    );
-    expect(menuItems[1].getAttribute('ng-reflect-router-link')).toEqual(
-      '/questionnaire'
-    );
-    expect(menuItems[2].getAttribute('ng-reflect-router-link')).toEqual(
-      '/lab-result'
-    );
-    expect(menuItems[3].getAttribute('ng-reflect-router-link')).toEqual(
-      '/compliance'
-    );
-    expect(menuItems[4].getAttribute('ng-reflect-router-link')).toEqual(
-      '/settings'
-    );
-    expect(menuItems[5].getAttribute('ng-reflect-router-link')).toEqual(
-      '/contact'
-    );
+    const menuItems: any[] = app.querySelectorAll('#menu-content ion-item');
+
+    expect(
+      [...menuItems].map((item) => item.getAttribute('ng-reflect-router-link'))
+    ).toEqual([
+      '/home',
+      '/questionnaire',
+      '/feedback-statistics',
+      '/lab-result',
+      '/compliance',
+      '/settings',
+      '/contact',
+    ]);
   }));
 
   describe('onLogout()', () => {

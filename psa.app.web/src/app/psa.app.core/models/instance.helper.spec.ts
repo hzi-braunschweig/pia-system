@@ -18,6 +18,8 @@ import { BloodSample, LabResult } from './labresult';
 import { ProfessionalAccount } from './professionalAccount';
 import { Condition, Questionnaire } from './questionnaire';
 import { Question } from './question';
+import { AnswerOption } from './answerOption';
+import { AnswerType } from './answerType';
 
 export function createStudy(overwrite: Partial<Study> = {}): Study {
   return {
@@ -304,6 +306,98 @@ export function createQuestionnaire(
     condition: null,
     condition_error: null,
     condition_postview: null,
+    ...overwrite,
+  };
+}
+
+export function createQuestion(overwrite: Partial<Question> = {}): Question {
+  return {
+    id: 4321,
+    questionnaire_id: 1,
+    text: 'some intro text (dat=-5)',
+    variable_name: 'some label',
+    position: 1,
+    is_mandatory: true,
+    jump_step: 1,
+    answer_options: createAnswerOptions(),
+    condition: null,
+    condition_error: null,
+    ...overwrite,
+  };
+}
+
+export function createAnswerOptions(): AnswerOption[] {
+  return [
+    createAnswerOption({
+      id: 1,
+      answer_type_id: AnswerType.Text,
+      variable_name: 'symptomsComments',
+    }),
+    createAnswerOption({
+      id: 2,
+      answer_type_id: AnswerType.Number,
+      variable_name: 'weight',
+    }),
+    createAnswerOption({
+      id: 3,
+      answer_type_id: AnswerType.Number,
+      is_decimal: true,
+      variable_name: 'temperature',
+    }),
+    createAnswerOption({
+      id: 4,
+      answer_type_id: AnswerType.Date,
+      variable_name: 'onsetDate',
+    }),
+    createAnswerOption({
+      id: 5,
+      answer_type_id: AnswerType.SingleSelect,
+      variable_name: 'lesionsArms',
+      values: ['Yes', 'No'],
+      values_code: [1, 0],
+    }),
+    createAnswerOption({
+      id: 6,
+      answer_type_id: AnswerType.SingleSelect,
+      variable_name: 'lesionsFace',
+      values: ['Yes', 'No'],
+      values_code: [1, 0],
+    }),
+    createAnswerOption({
+      id: 7,
+      answer_type_id: AnswerType.MultiSelect,
+      variable_name: 'temperatureSource',
+      values: ['Infrared', 'Oral', 'Axillary', 'Rectal'],
+      values_code: [1, 2, 3, 4],
+    }),
+    createAnswerOption({
+      id: 8,
+      answer_type_id: AnswerType.Timestamp,
+      variable_name: 'onsetTimestamp',
+    }),
+  ];
+}
+
+export function createAnswerOption(
+  overwrite: Partial<AnswerOption> = {}
+): AnswerOption {
+  return {
+    id: 222,
+    text: 'some question',
+    variable_name: null,
+    position: overwrite.id ?? 1,
+    question_id: 4321,
+    answer_type_id: AnswerType.Text,
+    answer_value: null,
+    is_condition_target: false,
+    restriction_min: null,
+    restriction_max: null,
+    is_decimal: false,
+    condition: null,
+    condition_error: null,
+    is_notable: null,
+    values: [],
+    values_code: [],
     ...overwrite,
   };
 }

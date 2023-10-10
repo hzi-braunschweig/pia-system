@@ -8,6 +8,7 @@ import {
   Component,
   ElementRef,
   forwardRef,
+  Input,
   OnDestroy,
   ViewChild,
 } from '@angular/core';
@@ -15,8 +16,12 @@ import {
   ControlValueAccessor,
   FormControl,
   NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
 } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { MatSelectSearchModule } from '../mat-select-search/mat-select-search.module';
+import { MarkdownModule } from 'ngx-markdown';
+import { TranslateModule } from '@ngx-translate/core';
 
 const MARKDOWN_EDITOR_VALUE_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -25,14 +30,24 @@ const MARKDOWN_EDITOR_VALUE_ACCESSOR = {
 };
 
 @Component({
+  standalone: true,
   selector: 'app-markdown-editor',
   templateUrl: './markdown-editor.component.html',
   styleUrls: ['./markdown-editor.component.scss'],
   providers: [MARKDOWN_EDITOR_VALUE_ACCESSOR],
+  imports: [
+    MatSelectSearchModule,
+    ReactiveFormsModule,
+    MarkdownModule,
+    TranslateModule,
+  ],
 })
 export class MarkdownEditorComponent
   implements ControlValueAccessor, OnDestroy
 {
+  @Input()
+  public label = 'GENERAL.MARKDOWN_TEXT_INPUT';
+
   public text = new FormControl('');
 
   @ViewChild('markdownTextarea', { static: false, read: ElementRef })

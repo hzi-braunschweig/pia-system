@@ -1,0 +1,21 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
+
+<div class="jumbotron">
+  <app-feedback-statistic
+    *ngFor="let fs of feedbackStatistics | async"
+    [feedbackStatisticDto]="fs"
+    [isEditable]="false"
+  ></app-feedback-statistic>
+
+  <mat-card *ngIf="(feedbackStatistics | async)?.length === 0">
+    <mat-card-content>
+      <p>{{ 'FEEDBACK_STATISTICS.NO_CHARTS' | translate }}</p>
+    </mat-card-content>
+  </mat-card>
+</div>

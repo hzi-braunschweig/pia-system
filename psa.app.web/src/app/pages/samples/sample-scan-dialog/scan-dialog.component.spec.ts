@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 

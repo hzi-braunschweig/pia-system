@@ -1,4 +1,4 @@
-export declare type SystemLogRequestInternalDto = Omit<SystemLogInternalDto, 'timestamp'>;
+export type SystemLogRequestInternalDto = Omit<SystemLogInternalDto, 'timestamp'>;
 export interface SystemLogInternalDto {
     requestedBy: string;
     requestedFor: string;

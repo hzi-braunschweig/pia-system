@@ -47,6 +47,12 @@ e2e:
     DB_SORMAS_HOST: databaseservice
     DB_SORMAS_PORT: '5433'
 
+    DB_FEEDBACKSTATISTIC_USER: feedbackstatisticservice
+    DB_FEEDBACKSTATISTIC_PASSWORD: feedbackstatistic
+    DB_FEEDBACKSTATISTIC_DB: pia_database
+    DB_FEEDBACKSTATISTIC_HOST: databaseservice
+    DB_FEEDBACKSTATISTIC_PORT: '5433'
+
     DB_PERSONALDATA_USER: personaldataservice
     DB_PERSONALDATA_PASSWORD: personaldata
     DB_PERSONALDATA_DB: pia_database
@@ -145,10 +151,12 @@ e2e:
     SAMPLETRACKINGSERVICE_INTERNAL_PORT: 5006
     SAMPLETRACKINGSERVICE_PORT: 4006
     AUTHEVENTPROXY_HOST: autheventproxy
-    AUTHEVENTPROXY_PORT: 4015
+    AUTHEVENTPROXY_PORT: 4100
     ANALYZERSERVICE_HOST: analyzerservice
     ANALYZERSERVICE_PORT: 4012
     ANALYZERSERVICE_INTERNAL_PORT: 4012
+    FEEDBACKSTATISTICSERVICE_HOST: feedbackstatisticservice
+    FEEDBACKSTATISTICSERVICE_PORT: 4015
 
     PIA_ON_SORMAS_USER: user
     PIA_ON_SORMAS_PASSWORD: password
@@ -195,6 +203,7 @@ e2e:
     ENABLE_DB_EXPORT: 'true'
 
     IS_DEVELOPMENT_SYSTEM: 'true'
+    IS_E2E_TEST_SYSTEM: 'true'
     IS_DIRECT_ACCESS_GRANT_ENABLED: 'true'
 
     EXTERNAL_PROTOCOL: 'https'
@@ -216,6 +225,8 @@ e2e:
     # kc needs a lot of memory
     KUBERNETES_SERVICE_MEMORY_REQUEST: 256Mi
     KUBERNETES_SERVICE_MEMORY_LIMIT: 768Mi
+
+    DEFAULT_LANGUAGE: de-DE
   services:
     - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.sftpserver:$IMAGE_ID-with-faked-secrets
       alias: sftpserver
@@ -264,6 +275,9 @@ e2e:
     - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.notificationservice:$IMAGE_ID-with-faked-secrets
       alias: notificationservice
 
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.feedbackstatisticservice:$IMAGE_ID-with-faked-secrets
+      alias: feedbackstatisticservice
+
     - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.messagequeue:$IMAGE_ID-with-faked-secrets
       alias: messagequeue
 
@@ -278,25 +292,5 @@ e2e:
     - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME !~ /^renovate/
       when: manual
     # run e2e tests for renovate automatically
-    - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^renovate/
-    - if: $CI_COMMIT_BRANCH =~ /^release/
-
-e2e-upload:
-  extends:
-    - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
-  stage: test
-  image:
-    name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.e2e-runner:$IMAGE_ID
-    entrypoint: ['/bin/bash', '-c']
-  script:
-    - ./psa.utils.scripts/e2e-webdav-upload/upload.sh
-  needs:
-    - job: e2e
-      artifacts: true
-  rules:
-    - if: $WEBDAV_UPLOAD_URL == null
-      when: never
-    - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME !~ /^renovate/
     - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^renovate/
     - if: $CI_COMMIT_BRANCH =~ /^release/

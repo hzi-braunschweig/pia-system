@@ -1,0 +1,4 @@
+participant;is_test_participant;questionnaire_name;questionnaire_id;questionnaire_version;questionnaire_cycle;questionnaire_date_of_issue;answer_date;answer_status;100000_AE1_Einzelauswahl;100000_AE1_Text
+answ-01;F;AE1 Answer Export;100000;7;1;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;modifiable_participant_answer;1;first release
+answ-01;F;AE1 Answer Export;100000;7;2;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;modifiable_participant_answer;1;first release with unreleased changes
+answ-01;F;AE1 Answer Export;100000;7;3;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;1;second release

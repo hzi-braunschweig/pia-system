@@ -5,12 +5,19 @@
  */
 
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialogModule,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
+import { TranslateModule } from '@ngx-translate/core';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
-  selector: 'dialog-delete',
+  standalone: true,
+  selector: 'app-dialog-delete',
   template: `
-    <mat-dialog-content style="	text-align: left">{{
+    <mat-dialog-content style="text-align: left">{{
       'DIALOG.DELETE' | translate: data
     }}</mat-dialog-content>
     <hr />
@@ -29,6 +36,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
       </button>
     </mat-dialog-actions>
   `,
+  imports: [MatLegacyDialogModule, TranslateModule, MatButtonModule],
 })
 export class DialogDeleteComponent {
   constructor(

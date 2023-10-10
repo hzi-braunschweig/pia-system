@@ -46,7 +46,7 @@ export class ComplianceManager {
   }
 
   /**
-   * Checks for all compliance in the given array, whether there is on unfulfilled compliance.
+   * Checks for all compliance in the given array, whether there is an unfulfilled compliance.
    * If not, everything is okay and it returns true, even if the array is empty.
    * @param compliances an array of compliance types that must be fulfilled
    */

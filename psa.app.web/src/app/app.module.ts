@@ -87,10 +87,8 @@ import { QuestionnaireService } from './psa.app.core/providers/questionnaire-ser
 import { AlertComponent } from './_directives/alert.component';
 import { AppDateAdapter } from './_helpers/date-adapter';
 import { DialogChangeComplianceComponent } from './_helpers/dialog-change-compliance';
-import { DialogDeleteComponent } from './_helpers/dialog-delete';
 import { DialogDeletePartnerComponent } from './_helpers/dialog-delete-partner';
 import { DialogInfoComponent } from './_helpers/dialog-info';
-import { DialogOkCancelComponent } from './_helpers/dialog-ok-cancel';
 import { DialogPopUpComponent } from './_helpers/dialog-pop-up';
 import { ScanSampleComponent } from './_helpers/dialog-scan-sample';
 import { DialogUserDataComponent } from './_helpers/dialog-user-data';
@@ -161,6 +159,10 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
 import { MarkdownEditorComponent } from './features/markdown-editor/markdown-editor.component';
 import { DialogMarkdownEditorComponent } from './dialogs/dialog-markdown-editor/dialog-markdown-editor.component';
 import { DialogMarkdownMailEditorComponent } from './dialogs/dialog-markdown-mail-editor/dialog-markdown-mail-editor.component';
+import { DialogMarkdownLabresultEditorComponent } from './dialogs/dialog-markdown-labresult-editor/dialog-markdown-labresult-editor.component';
+import { ChartsModule } from '@pia-system/charts';
+import { DialogDeleteComponent } from './_helpers/dialog-delete';
+import { DialogOkCancelComponent } from './_helpers/dialog-ok-cancel';
 
 // === LOCALE ===
 // Setup ngx-translate
@@ -203,6 +205,13 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     AngularFireMessagingModule,
     KeycloakAngularModule,
     ClipboardModule,
+    StudySelectComponent,
+    MarkdownEditorComponent,
+    NgLetDirective,
+    ChartsModule.forRoot(),
+    DialogDeleteComponent,
+    DialogOkCancelComponent,
+    DialogInfoComponent,
   ],
   declarations: [
     AccessLevelPipe,
@@ -214,7 +223,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     HomeComponent,
     SideNavigationComponent,
     DialogPopUpComponent,
-    DialogDeleteComponent,
     DialogDeletePartnerComponent,
     DialogChangeComplianceComponent,
     DialogChangeStudyComponent,
@@ -232,13 +240,12 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     DialogNewUserComponent,
     DialogNewPlannedProbandsComponent,
     DialogYesNoComponent,
-    DialogOkCancelComponent,
-    DialogInfoComponent,
     DialogDeleteAccountHealthDataPermissionComponent,
     DialogDeleteAccountConfirmationComponent,
     DialogDeleteAccountSuccessComponent,
     DialogMarkdownEditorComponent,
     DialogMarkdownMailEditorComponent,
+    DialogMarkdownLabresultEditorComponent,
     QuestionnairesResearcherComponent,
     QuestionnaireResearcherComponent,
     QuestionProbandComponent,
@@ -296,9 +303,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     RegistrationComponent,
     StudyProfessionalSummaryComponent,
     StudyComponent,
-    StudySelectComponent,
-    NgLetDirective,
-    MarkdownEditorComponent,
   ],
   providers: [
     {

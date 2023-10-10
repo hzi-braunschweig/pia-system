@@ -15,6 +15,7 @@ pia_db_authserver_password: password
 pia_qpia_password: password
 pia_db_log_password: password
 pia_db_sormas_password: password
+pia_db_feedbackstatistic_password: password
 pia_authserver_admin_password: admin
 
 pia_qpia_ip: 172.17.0.1

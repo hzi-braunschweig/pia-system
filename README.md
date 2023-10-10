@@ -50,7 +50,7 @@ Please make sure to add `pia-app` to your hosts file, pointing to `127.0.0.1`.
 To add the first admin user, you can use the following command:
 
 ```bash
-docker exec authserver /add-sysadmin.sh --email test@example.com --password TestPassword
+docker exec authserver /add-sysadmin.sh --email test@example.com --password TestPassword1+
 ```
 
 Please note, that the password needs to meet to the following password policy:
@@ -108,7 +108,7 @@ COPY $DIR/package-lock.json package-lock.json
 #copy dependencies
 COPY psa.lib.code-sharing-example/ ../psa.lib.code-sharing-example
 
-RUN npm ci --production
+RUN npm ci --omit=dev
 ```
 
 After that [`psa.utils.repo-tool generate`](./psa.utils.repo-tool) has to be executed to update the generated [dockerfiles](./psa.utils.repo-tool/generated/).
@@ -156,3 +156,8 @@ Distributed under the AGPL-3.0 license. See [LICENSE](./LICENSE.md) for more inf
 [PiaPost@helmholtz-hzi.de](mailto:PiaPost@helmholtz-hzi.de)
 
 ![HZI](psa.app.web/src/assets/images/hzi_logo.jpg)
+
+## Contributing
+
+Contributions are welcome.
+Please fork [the gitlab repository](https://gitlab.com/pia-eresearch-system/pia).

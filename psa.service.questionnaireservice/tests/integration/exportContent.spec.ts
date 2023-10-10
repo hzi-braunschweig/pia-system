@@ -248,6 +248,7 @@ describe('/export content should match the expected csv', function () {
       v4: CsvAnswerRow[];
       v5: CsvAnswerRow[];
       v6: CsvAnswerRow[];
+      v7: CsvAnswerRow[];
     };
     let expectedAnswersRows: {
       v1: CsvAnswerRow[];
@@ -256,6 +257,7 @@ describe('/export content should match the expected csv', function () {
       v4: CsvAnswerRow[];
       v5: CsvAnswerRow[];
       v6: CsvAnswerRow[];
+      v7: CsvAnswerRow[];
     };
 
     before(async () => {
@@ -266,6 +268,7 @@ describe('/export content should match the expected csv', function () {
         { id: 100000, version: 4 },
         { id: 100000, version: 5 },
         { id: 100000, version: 6 },
+        { id: 100000, version: 7 },
         { id: 200000, version: 1 },
         { id: 200000, version: 2 },
       ];
@@ -301,6 +304,7 @@ describe('/export content should match the expected csv', function () {
         v4: await loadReceivedCsv<CsvAnswerRow>(answersCsv[3]),
         v5: await loadReceivedCsv<CsvAnswerRow>(answersCsv[4]),
         v6: await loadReceivedCsv<CsvAnswerRow>(answersCsv[5]),
+        v7: await loadReceivedCsv<CsvAnswerRow>(answersCsv[6]),
       };
 
       expectedAnswersRows = {
@@ -310,6 +314,7 @@ describe('/export content should match the expected csv', function () {
         v4: await loadFixtureCsv<CsvAnswerRow>('answers_AE1_v4.csv'),
         v5: await loadFixtureCsv<CsvAnswerRow>('answers_AE1_v5.csv'),
         v6: await loadFixtureCsv<CsvAnswerRow>('answers_AE1_v6.csv'),
+        v7: await loadFixtureCsv<CsvAnswerRow>('answers_AE1_v7.csv'),
       };
     });
 
@@ -369,6 +374,10 @@ describe('/export content should match the expected csv', function () {
 
     it('should match fixture csv for AE1 v6', () => {
       expect(receivedAnswersRows.v6).to.deep.equal(expectedAnswersRows.v6);
+    });
+
+    it('should match fixture csv for AE1 v7', () => {
+      expect(receivedAnswersRows.v7).to.deep.equal(expectedAnswersRows.v7);
     });
   });
 
@@ -466,13 +475,9 @@ describe('/export content should match the expected csv', function () {
     });
   });
 
-  describe('README.md', () => {
-    it('should be present', async () => {
-      const zipObject = expectAndReturnReadmeFile(responseZips.files);
-
-      expect(await zipObject.async('string')).to.contain(
-        '# PIA Research Data Export'
-      );
+  describe('README.pdf', () => {
+    it('should be present', () => {
+      expectReadmeFile(responseZips.files);
     });
   });
 });
@@ -534,6 +539,7 @@ function expectAndReturnAnswerCsvFile(
     /answers\/answers_AE1-Answer-Export_v4_100000_(\d{4}-\d{2}-\d{2}T\d{2}\d{2})/,
     /answers\/answers_AE1-Answer-Export_v5_100000_(\d{4}-\d{2}-\d{2}T\d{2}\d{2})/,
     /answers\/answers_AE1-Answer-Export_v6_100000_(\d{4}-\d{2}-\d{2}T\d{2}\d{2})/,
+    /answers\/answers_AE1-Answer-Export_v7_100000_(\d{4}-\d{2}-\d{2}T\d{2}\d{2})/,
   ];
 
   const zips = filesRegex.map((regex) => findFileByRegex(files, regex));
@@ -576,10 +582,8 @@ function expectAndReturnSettingsCsvFile(
   return expectAndReturnFile('settings.csv', files);
 }
 
-function expectAndReturnReadmeFile(
-  files: Record<string, JSZipObject>
-): JSZipObject {
-  return expectAndReturnFile('README.md', files);
+function expectReadmeFile(files: Record<string, JSZipObject>): void {
+  expectAndReturnFile('README.pdf', files);
 }
 
 function expectAndReturnCodebookFiles(

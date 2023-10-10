@@ -7,12 +7,9 @@
 import { config } from '../config';
 import { PersonalDataMapperStream } from './modysImportStreams/personalDataMapperStream';
 import { PersonalDataUpdateStream } from './modysImportStreams/personalDataUpdateStream';
-import stream from 'stream';
-import { promisify } from 'util';
 import { FetchModysDataStream } from './modysImportStreams/fetchModysDataStream';
 import { getStudysPseudonymsReadable } from './modysImportStreams/studysPseudonymsStream';
-
-const pipeline = promisify(stream.pipeline);
+import { pipeline } from 'stream/promises';
 
 export class ModysImportService {
   /**

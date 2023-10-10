@@ -43,6 +43,7 @@ RUN FILE_NAME=metrics CN=metricsproxy ./create_cert.sh
 RUN FILE_NAME=api CN=apigateway ./create_cert.sh
 RUN FILE_NAME=authserver CN=authserver ./create_cert.sh
 RUN FILE_NAME=aep CN=autheventproxy ./create_cert.sh
+RUN FILE_NAME=fs CN=feedbackstatisticservice ./create_cert.sh
 
 # create chain certificate for web
 RUN cat web.cert ca.cert > chain.cert

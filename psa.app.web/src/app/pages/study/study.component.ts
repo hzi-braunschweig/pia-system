@@ -11,7 +11,7 @@ import { from, merge, mergeMap, Observable, of, Subject, tap } from 'rxjs';
 import { filter, first, map, pluck } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StudyChangeService } from '../studies/study-change.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import {
   DialogMarkdownEditorComponent,
   DialogMarkdownEditorData,
@@ -23,6 +23,8 @@ import {
   DialogMarkdownMailEditorData,
   DialogMarkdownMailEditorResponse,
 } from '../../dialogs/dialog-markdown-mail-editor/dialog-markdown-mail-editor.component';
+import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
+import { DialogMarkdownLabresultEditorComponent } from 'src/app/dialogs/dialog-markdown-labresult-editor/dialog-markdown-labresult-editor.component';
 
 @Component({
   selector: 'app-home-professional',
@@ -37,6 +39,7 @@ export class StudyComponent {
 
   constructor(
     private readonly userService: UserService,
+    private readonly sampleTrackingService: SampleTrackingService,
     private readonly studyChangeService: StudyChangeService,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
@@ -150,6 +153,53 @@ export class StudyComponent {
             width: '300px',
             data: {
               content: 'STUDY.WELCOME_TEXT_PUBLISHED_SUCCESSFULLY',
+              isSuccess: true,
+            },
+          });
+        },
+        error: (err) => this.alertService.errorObject(err),
+      });
+  }
+
+  public editLabResultTemplateText(): void {
+    from(
+      this.sampleTrackingService.getLabResultTemplate(this.selectedStudyName)
+    )
+      .pipe(
+        map((result) => result?.markdownText ?? ''),
+        mergeMap((markdownText) =>
+          this.dialog
+            .open<
+              DialogMarkdownLabresultEditorComponent,
+              DialogMarkdownEditorData,
+              string
+            >(DialogMarkdownLabresultEditorComponent, {
+              width: '1300px',
+              data: {
+                dialogTitle: 'STUDY.EDIT_LABRESULT_TEMPLATE_TEXT',
+                initialText: markdownText,
+              },
+            })
+            .afterClosed()
+        ),
+        filter(
+          (markdownText) => markdownText !== null && markdownText !== undefined
+        ),
+        mergeMap((markdownText) =>
+          from(
+            this.sampleTrackingService.updateLabResultTemplate(
+              this.selectedStudyName,
+              { markdownText }
+            )
+          )
+        )
+      )
+      .subscribe({
+        next: () => {
+          this.dialog.open(DialogPopUpComponent, {
+            width: '300px',
+            data: {
+              content: 'STUDY.LABRESULT_TEMPLATE_TEXT_PUBLISHED_SUCCESSFULLY',
               isSuccess: true,
             },
           });

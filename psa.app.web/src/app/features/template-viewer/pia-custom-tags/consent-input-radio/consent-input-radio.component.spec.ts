@@ -14,7 +14,7 @@ import {
 import { ConsentInputRadioComponent } from './consent-input-radio.component';
 import { MockModule } from 'ng-mocks';
 import { TranslateModule } from '@ngx-translate/core';
-import { MatRadioModule } from '@angular/material/radio';
+import { MatLegacyRadioModule as MatRadioModule } from '@angular/material/legacy-radio';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { SegmentType } from '../../../../psa.app.core/models/Segments';
 

@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@hapi/accept": "^6.0.0",
-    "@hapi/hapi": "^21.1.0",
+    "@hapi/hapi": "~21.1.0",
     "i18n": "^0.15.1"
   },
   "devDependencies": {
@@ -23,7 +23,7 @@
     "@types/hapi__accept": "^5.0.1",
     "@types/i18n": "^0.13.5",
     "@types/mocha": "^10.0.0",
-    "@types/node": "^14.17.34",
+    "@types/node": "^20.0.3",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "@typescript-eslint/parser": "^5.43.0",
     "chai": "^4.3.7",

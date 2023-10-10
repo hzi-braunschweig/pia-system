@@ -150,3 +150,11 @@ export function changeStudy(
       });
   });
 }
+
+export function selectStudy(studyName: string) {
+  cy.get('[data-e2e="e2e-sidenav-content"]').click();
+  cy.get('[data-e2e="e2e-sidenav-content"]').contains('Studien').click();
+
+  cy.get('[data-e2e="e2e-study-select"]').click();
+  cy.get('[data-e2e="e2e-study-option"]').contains(studyName).click();
+}

@@ -8,6 +8,8 @@ import { Injectable } from '@angular/core';
 import { BloodSample, LabResult } from '../../models/labresult';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Questionnaire } from '../../models/questionnaire';
+import { LabResultTemplate } from '../../models/labresultTemplate';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class SampleTrackingService {
@@ -15,15 +17,35 @@ export class SampleTrackingService {
 
   constructor(private http: HttpClient) {}
 
+  async getLabResultTemplate(studyName: string): Promise<LabResultTemplate> {
+    return firstValueFrom(
+      this.http.get<LabResultTemplate>(
+        this.apiUrl + `studies/${studyName}/labResultTemplate`
+      )
+    );
+  }
+
+  async updateLabResultTemplate(
+    studyName: string,
+    labResultTemplate: LabResultTemplate
+  ) {
+    return firstValueFrom(
+      this.http.put<LabResultTemplate>(
+        this.apiUrl + `studies/${studyName}/labResultTemplate`,
+        labResultTemplate
+      )
+    );
+  }
+
   /**
    * Return a list with laboratory results for proband
    * @param  id Proband Id
    * @return list with laboratory results
    */
   async getAllLabResultsForUser(id): Promise<LabResult[]> {
-    return this.http
-      .get<LabResult[]>(this.apiUrl + `probands/${id}/labResults`)
-      .toPromise();
+    return firstValueFrom(
+      this.http.get<LabResult[]>(this.apiUrl + `probands/${id}/labResults`)
+    );
   }
 
   /**
@@ -32,9 +54,9 @@ export class SampleTrackingService {
    * @return list with laboratory results
    */
   getLabResultsForSampleID(sampleID): Promise<LabResult> {
-    return this.http
-      .get<LabResult>(this.apiUrl + `labResults/${sampleID}`)
-      .toPromise();
+    return firstValueFrom(
+      this.http.get<LabResult>(this.apiUrl + `labResults/${sampleID}`)
+    );
   }
 
   /**
@@ -47,12 +69,12 @@ export class SampleTrackingService {
     const headers = new HttpHeaders({
       Accept: 'text/html',
     });
-    return this.http
-      .get(this.apiUrl + `probands/${userID}/labResults/${resultID}`, {
+    return firstValueFrom(
+      this.http.get(this.apiUrl + `probands/${userID}/labResults/${resultID}`, {
         headers,
         responseType: 'text',
       })
-      .toPromise();
+    );
   }
 
   /**
@@ -72,12 +94,12 @@ export class SampleTrackingService {
       status?: string;
     }
   ): Promise<LabResult> {
-    return this.http
-      .put<LabResult>(
+    return firstValueFrom(
+      this.http.put<LabResult>(
         this.apiUrl + `probands/${probandID}/labResults/${resultID}`,
         newData
       )
-      .toPromise();
+    );
   }
 
   /**
@@ -86,12 +108,12 @@ export class SampleTrackingService {
    * @param labResult The laboratory result
    */
   postLabResult(probandID: string, labResult): Promise<LabResult> {
-    return this.http
-      .post<LabResult>(
+    return firstValueFrom(
+      this.http.post<LabResult>(
         this.apiUrl + `probands/${probandID}/labResults`,
         labResult
       )
-      .toPromise();
+    );
   }
 
   /**
@@ -100,9 +122,11 @@ export class SampleTrackingService {
    * @return list with blood samples
    */
   getAllBloodSamplesForUser(probandID): Promise<BloodSample[]> {
-    return this.http
-      .get<BloodSample[]>(this.apiUrl + `probands/${probandID}/bloodSamples`)
-      .toPromise();
+    return firstValueFrom(
+      this.http.get<BloodSample[]>(
+        this.apiUrl + `probands/${probandID}/bloodSamples`
+      )
+    );
   }
 
   /**
@@ -111,9 +135,9 @@ export class SampleTrackingService {
    * @return list with blood samples
    */
   getBloodSamplesForBloodSampleID(sampleID): Promise<LabResult[]> {
-    return this.http
-      .get<LabResult[]>(this.apiUrl + `bloodResult/${sampleID}`)
-      .toPromise();
+    return firstValueFrom(
+      this.http.get<LabResult[]>(this.apiUrl + `bloodResult/${sampleID}`)
+    );
   }
 
   /**
@@ -127,12 +151,12 @@ export class SampleTrackingService {
     sampleID: string,
     newData: { remark?: string; blood_sample_carried_out?: boolean }
   ): Promise<object> {
-    return this.http
-      .put(
+    return firstValueFrom(
+      this.http.put(
         this.apiUrl + `probands/${probandID}/bloodSamples/${sampleID}`,
         newData
       )
-      .toPromise();
+    );
   }
 
   /**
@@ -141,9 +165,12 @@ export class SampleTrackingService {
    * @param bloodSample The blood sample
    */
   postBloodSample(probandID: string, bloodSample): Promise<object> {
-    return this.http
-      .post(this.apiUrl + `probands/${probandID}/bloodSamples`, bloodSample)
-      .toPromise();
+    return firstValueFrom(
+      this.http.post(
+        this.apiUrl + `probands/${probandID}/bloodSamples`,
+        bloodSample
+      )
+    );
   }
 
   /**
@@ -169,11 +196,11 @@ export class SampleTrackingService {
   public async requestMaterialForProband(
     pseudonym: string
   ): Promise<Questionnaire> {
-    return this.http
-      .post<Questionnaire>(
-        this.apiUrl + 'probands/' + pseudonym + '/needsMaterial',
+    return firstValueFrom(
+      this.http.post<Questionnaire>(
+        `${this.apiUrl}probands/${pseudonym}/needsMaterial`,
         {}
       )
-      .toPromise();
+    );
   }
 }

@@ -13,4 +13,7 @@ export enum MessageQueueTopic {
   PROBAND_EMAIL_VERIFIED = 'proband.email_verified', //	Published when a proband successfully verified its email after registration
   COMPLIANCE_CREATED = 'compliance.created', //	Published when a compliance was filled out by a proband
   QUESTIONNAIRE_INSTANCE_RELEASED = 'questionnaire_instance.released', //	Published when a questionnaire instance moves to any "released[...]" status
+  FEEDBACKSTATISTIC_CONFIGURATION_UPDATED = 'feedbackstatistic_configuration.updated', // Published when a feedbackstatistic configuration got created or updated
+  FEEDBACKSTATISTIC_OUTDATED = 'feedbackstatistic.outdated', // Published when feedbackstatistic data should be recalculated
+  STUDY_DELETED = 'study.deleted', // Published when a study was deleted
 }

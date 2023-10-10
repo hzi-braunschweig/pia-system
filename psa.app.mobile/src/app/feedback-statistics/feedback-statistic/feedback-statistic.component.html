@@ -1,0 +1,63 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<ion-card>
+  <ion-card-header>
+    <ion-card-title data-unit="title">{{
+      feedbackStatisticDto?.title
+    }}</ion-card-title>
+    <ion-card-subtitle>
+      {{ interval?.start | date }} - {{ interval?.end | date }}
+    </ion-card-subtitle>
+  </ion-card-header>
+  <ion-card-content>
+    <div *ngIf="feedbackStatisticDto?.status === 'has_data'">
+      <pia-feedback-statistic-bar-chart
+        [feedbackStatistic]="chartFeedbackStatistic"
+        [interval]="interval"
+      ></pia-feedback-statistic-bar-chart>
+
+      <figcaption>
+        {{
+          'FEEDBACK_STATISTICS.CAPTION'
+            | translate: { updatedAt: feedbackStatisticDto.updatedAt | date }
+        }}
+      </figcaption>
+
+      <ion-range
+        class="range-selection"
+        [dualKnobs]="true"
+        [value]="rangeSelection"
+        [ticks]="true"
+        [snaps]="true"
+        [min]="range.min"
+        [max]="range.max"
+        [pin]="true"
+        [pinFormatter]="pinFormatter.bind(this)"
+        (ionKnobMoveEnd)="selectChartInterval($event)"
+      ></ion-range>
+    </div>
+
+    <div
+      class="message-no-data"
+      data-unit="message-no-data"
+      *ngIf="feedbackStatisticDto?.status !== 'has_data'"
+    >
+      <p>{{ 'FEEDBACK_STATISTICS.NO_DATA' | translate }}</p>
+    </div>
+
+    <div
+      class="description"
+      data-unit="description"
+      [ngClass]="{ show: showDescription }"
+      [innerHTML]="feedbackStatisticDto?.description | markdown"
+    ></div>
+  </ion-card-content>
+  <ion-button fill="clear" (click)="showDescription = !showDescription">{{
+    (showDescription ? 'GENERAL.CLOSE' : 'FEEDBACK_STATISTICS.READ_MORE')
+      | translate
+  }}</ion-button>
+</ion-card>

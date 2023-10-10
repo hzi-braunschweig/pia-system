@@ -10,6 +10,7 @@ import { pluck } from 'rxjs/operators';
 
 import {
   Answer,
+  AnswerPostRequest,
   FileDto,
   QuestionnaireInstance,
   QuestionnaireInstanceQueue,
@@ -81,7 +82,7 @@ export class QuestionnaireClientService {
 
   postAnswers(
     questionnaireInstanceId: number,
-    answers: Answer[]
+    data: AnswerPostRequest
   ): Promise<Answer[]> {
     return this.http
       .post<Answer[]>(
@@ -89,7 +90,7 @@ export class QuestionnaireClientService {
           'questionnaireInstances/' +
           questionnaireInstanceId +
           '/answers',
-        { answers }
+        data
       )
       .toPromise();
   }

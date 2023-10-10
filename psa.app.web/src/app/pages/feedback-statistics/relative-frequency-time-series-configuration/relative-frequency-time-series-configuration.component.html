@@ -1,0 +1,341 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<mat-card>
+  <mat-card-title>
+    <mat-icon inline="true">bar_chart</mat-icon>
+    {{
+      'FEEDBACK_STATISTICS.RELATIVE_FREQUENCY_TIME_SERIES' | translate
+    }}</mat-card-title
+  >
+  <mat-card-content>
+    <form [formGroup]="form" class="grid-container-2cols">
+      <h2 class="grid-item-100">
+        {{ 'FEEDBACK_STATISTICS.CALCULATION_BASIS' | translate }}
+      </h2>
+      <app-hint class="grid-item-100">
+        {{ 'FEEDBACK_STATISTICS.DENOMINATOR_GENERAL_HINT' | translate }}
+      </app-hint>
+
+      <h3 class="grid-item-100">
+        {{ 'FEEDBACK_STATISTICS.DENOMINATOR' | translate }}
+      </h3>
+
+      <ng-container
+        formGroupName="comparativeValues"
+        *ngIf="
+          selectableQuestionnaires$ | async as selectableQuestionnaires;
+          else studyHint
+        "
+      >
+        <mat-form-field class="grid-item-50">
+          <mat-select
+            disableOptionCentering
+            placeholder="{{ 'FEEDBACK_STATISTICS.QUESTIONNAIRE' | translate }}"
+            formControlName="questionnaire"
+            data-e2e="e2e-questionnaire-select"
+            data-unit="questionnaire-select"
+            [compareWith]="formService.isSameQuestionnaireValue"
+          >
+            <mat-select-search
+              [formControl]="questionnaireFilterCtrl"
+            ></mat-select-search>
+            <mat-option
+              *ngFor="let questionnaire of selectableQuestionnaires"
+              [value]="{ id: questionnaire.id, version: questionnaire.version }"
+              [title]="questionnaire.name + ' (' + questionnaire.version + ')'"
+            >
+              {{ questionnaire.name }} ({{ questionnaire.version }})
+            </mat-option>
+          </mat-select>
+
+          <mat-error
+            *ngIf="
+              form.controls.comparativeValues.controls.questionnaire.hasError(
+                'required'
+              )
+            "
+          >
+            {{ 'FEEDBACK_STATISTICS.QUESTIONNAIRE_REQUIRED_ERROR' | translate }}
+          </mat-error>
+        </mat-form-field>
+
+        <app-hint class="grid-item-50">{{
+          'FEEDBACK_STATISTICS.QUESTIONNAIRE_CYCLE_HINT' | translate
+        }}</app-hint>
+
+        <ng-container formGroupName="answerOptionValueCodes">
+          <mat-form-field class="grid-item-50">
+            <mat-select
+              disableOptionCentering
+              placeholder="{{ 'FEEDBACK_STATISTICS.QUESTION' | translate }}"
+              formControlName="id"
+              data-e2e="e2e-answer-select"
+              data-unit="answer-option-select"
+            >
+              <mat-select-search
+                [formControl]="answerOptionFilterCtrl"
+              ></mat-select-search>
+              <mat-option
+                *ngFor="let answerOption of selectableAnswerOptions$ | async"
+                [value]="answerOption.id"
+                [title]="
+                  answerOption.text + ' (' + answerOption.variable_name + ')'
+                "
+              >
+                {{ answerOption.text }} ({{ answerOption.variable_name }})
+              </mat-option>
+            </mat-select>
+
+            <mat-error
+              *ngIf="
+                form.controls.comparativeValues.controls.answerOptionValueCodes.controls.id.hasError(
+                  'required'
+                )
+              "
+            >
+              {{ 'FEEDBACK_STATISTICS.QUESTION_REQUIRED_ERROR' | translate }}
+            </mat-error>
+          </mat-form-field>
+
+          <div class="grid-item-50">
+            <app-hint>{{
+              'FEEDBACK_STATISTICS.DENOMINATOR_ANSWER_TYPE_HINT' | translate
+            }}</app-hint>
+            <app-hint>{{
+              'FEEDBACK_STATISTICS.QUESTION_HINT' | translate
+            }}</app-hint>
+          </div>
+
+          <mat-form-field class="grid-item-50">
+            <mat-select
+              disableOptionCentering
+              multiple="true"
+              placeholder="{{
+                'FEEDBACK_STATISTICS.ANSWER_OPTION' | translate
+              }}"
+              formControlName="valueCodes"
+              data-e2e="e2e-questionnaire-select"
+              data-unit="value-codes-select"
+            >
+              <mat-option
+                *ngFor="let value of selectableAnswerOptionValues$ | async"
+                [value]="value.code"
+                [title]="value.text + ' (' + value.code + ')'"
+              >
+                {{ value.text }} ({{ value.code }})
+              </mat-option>
+            </mat-select>
+
+            <mat-error>
+              {{
+                'FEEDBACK_STATISTICS.ANSWER_OPTION_MIN_ONE_ERROR' | translate
+              }}
+            </mat-error>
+          </mat-form-field>
+
+          <span class="grid-item-50">
+            <app-hint>{{
+              'FEEDBACK_STATISTICS.ANSWER_OPTION_GENERAL_HINT' | translate
+            }}</app-hint>
+            <app-hint
+              *ngIf="(selectedAnswerOption$ | async)?.answer_type_id === 2"
+              >{{
+                'FEEDBACK_STATISTICS.ANSWER_OPTION_MULTIPLE_CHOICE_HINT'
+                  | translate
+              }}</app-hint
+            >
+          </span>
+        </ng-container>
+      </ng-container>
+
+      <ng-template #studyHint>
+        <app-hint>{{
+          'FEEDBACK_STATISTICS.SELECT_STUDY_HINT' | translate
+        }}</app-hint>
+      </ng-template>
+
+      <h3 class="grid-item-100">
+        {{ 'FEEDBACK_STATISTICS.NUMERATOR' | translate }}
+      </h3>
+
+      <app-hint class="grid-item-100">{{
+        'FEEDBACK_STATISTICS.TIME_SERIES_HINT' | translate
+      }}</app-hint>
+
+      <span
+        *ngIf="selectedQuestionnaire$ | async as questionnaire"
+        class="grid-item-100"
+      >
+        <app-time-series-item
+          *ngFor="
+            let timeSeriesForm of form.controls.timeSeries.controls;
+            let i = index
+          "
+          [index]="i"
+          [form]="timeSeriesForm"
+          [selectedQuestionnaire]="questionnaire"
+          [selectableColors]="selectableColors$ | async"
+          (remove)="removeTimeSeries(i)"
+        ></app-time-series-item>
+
+        <button
+          type="button"
+          mat-raised-button
+          color="primary"
+          class="margin-top-15"
+          (click)="addTimeSeries()"
+          *ngIf="form.controls.timeSeries.length <= maxTimeSeriesCount"
+        >
+          <mat-icon inline="true">add</mat-icon>
+          {{ 'FEEDBACK_STATISTICS.ADD_TIME_SERIES' | translate }}
+        </button>
+      </span>
+
+      <h3 class="grid-item-100">
+        {{ 'FEEDBACK_STATISTICS.INTERVAL_SHIFT' | translate }}
+      </h3>
+      <ng-container formGroupName="intervalShift">
+        <mat-form-field class="grid-item-50">
+          <input
+            matInput
+            type="number"
+            formControlName="amount"
+            placeholder="{{
+              'FEEDBACK_STATISTICS.INTERVAL_SHIFT_AMOUNT' | translate
+            }}"
+            data-e2e="e2e-interval-shift"
+          />
+
+          <mat-error
+            *ngIf="
+              form.controls.intervalShift.controls.amount.hasError('required')
+            "
+          >
+            {{
+              'FEEDBACK_STATISTICS.INTERVAL_SHIFT_AMOUNT_REQUIRED_ERROR'
+                | translate
+            }}
+          </mat-error>
+          <mat-error
+            *ngIf="
+              form.controls.intervalShift.controls.amount.hasError('pattern')
+            "
+          >
+            {{
+              'FEEDBACK_STATISTICS.INTERVAL_SHIFT_ONLY_INTEGERS_ERROR'
+                | translate
+            }}
+          </mat-error>
+        </mat-form-field>
+
+        <app-hint class="grid-item-50 grid-item-rows-2">
+          {{ 'FEEDBACK_STATISTICS.INTERVAL_SHIFT_HINT' | translate }}
+        </app-hint>
+
+        <mat-form-field class="grid-item-50">
+          <mat-select
+            disableOptionCentering
+            placeholder="{{
+              'FEEDBACK_STATISTICS.INTERVAL_SHIFT_UNIT' | translate
+            }}"
+            formControlName="unit"
+            data-e2e="e2e-interval-shift-unit-select"
+          >
+            <mat-option
+              *ngFor="let unit of selectableIntervalShiftUnits"
+              [value]="unit.value"
+            >
+              {{ unit.viewValue | translate }}
+            </mat-option>
+          </mat-select>
+
+          <mat-error
+            *ngIf="
+              form.controls.intervalShift.controls.unit.hasError('required')
+            "
+          >
+            {{
+              'FEEDBACK_STATISTICS.INTERVAL_SHIFT_UNIT_REQUIRED_ERROR'
+                | translate
+            }}
+          </mat-error>
+        </mat-form-field>
+      </ng-container>
+
+      <h3 class="grid-item-100">
+        {{ 'FEEDBACK_STATISTICS.TIME_RANGE' | translate }}
+      </h3>
+
+      <ng-container formGroupName="timeRange">
+        <mat-form-field class="grid-item-50">
+          <mat-label>{{
+            'FEEDBACK_STATISTICS.TIME_RANGE_START' | translate
+          }}</mat-label>
+          <input
+            matInput
+            formControlName="startDate"
+            [matDatepicker]="startDatePicker"
+          />
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="startDatePicker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #startDatePicker></mat-datepicker>
+          <mat-hint>DD.MM.YY</mat-hint>
+
+          <mat-error
+            *ngIf="
+              form.controls.timeRange.controls.startDate.hasError('required')
+            "
+            >{{
+              'FEEDBACK_STATISTICS.TIME_RANGE_START_DATE_REQUIRED_ERROR'
+                | translate
+            }}</mat-error
+          >
+        </mat-form-field>
+
+        <app-hint class="grid-item-50 grid-item-rows-2">
+          {{ 'FEEDBACK_STATISTICS.TIME_RANGE_START_HINT' | translate }}
+        </app-hint>
+
+        <mat-checkbox
+          [formControl]="isEndDateDisabledCtrl"
+          class="grid-item-100"
+        >
+          {{ 'FEEDBACK_STATISTICS.TIME_RANGE_IS_END_DATE_ENABLED' | translate }}
+        </mat-checkbox>
+
+        <mat-form-field class="grid-item-50">
+          <mat-label>{{
+            'FEEDBACK_STATISTICS.TIME_RANGE_END' | translate
+          }}</mat-label>
+          <input
+            matInput
+            formControlName="endDate"
+            [matDatepicker]="endDatePicker"
+          />
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="endDatePicker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #endDatePicker></mat-datepicker>
+          <mat-hint>DD.MM.YY</mat-hint>
+
+          <mat-error
+            *ngIf="
+              form.controls.timeRange.controls.endDate.hasError('required')
+            "
+            >{{
+              'FEEDBACK_STATISTICS.TIME_RANGE_END_DATE_REQUIRED_ERROR'
+                | translate
+            }}</mat-error
+          >
+        </mat-form-field>
+      </ng-container>
+    </form>
+  </mat-card-content>
+</mat-card>

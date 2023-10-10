@@ -71,6 +71,7 @@ export interface ServiceConfig {
         loggingservice?: HttpConnection;
         personaldataservice?: HttpConnection;
         userservice?: HttpConnection;
+        questionnaireservice?: HttpConnection;
     };
     servers?: {
         mailserver?: MailserverConnection;

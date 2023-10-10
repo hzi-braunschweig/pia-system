@@ -17,7 +17,10 @@ import { UserService } from '../../../psa.app.core/providers/user-service/user.s
 import { fakeAsync, tick } from '@angular/core/testing';
 import { QuestionnaireResearcherComponent } from './questionnaire-researcher.component';
 import { TranslateService } from '@ngx-translate/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { MediaObserver } from '@angular/flex-layout';
 import { AlertService } from '../../../_services/alert.service';
 import {

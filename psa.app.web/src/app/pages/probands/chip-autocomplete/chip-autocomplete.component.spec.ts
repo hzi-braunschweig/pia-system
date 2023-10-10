@@ -9,20 +9,23 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChipAutocompleteComponent } from './chip-autocomplete.component';
 import { Component } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
+import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
+import { MatLegacyAutocompleteModule as MatAutocompleteModule } from '@angular/material/legacy-autocomplete';
+import {
+  MatLegacyChipInputEvent as MatChipInputEvent,
+  MatLegacyChipsModule as MatChipsModule,
+} from '@angular/material/legacy-chips';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MockPipe } from 'ng-mocks';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatIconModule } from '@angular/material/icon';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { MatInputHarness } from '@angular/material/input/testing';
-import { MatAutocompleteHarness } from '@angular/material/autocomplete/testing';
-import { MatChipHarness } from '@angular/material/chips/testing';
-import { MatFormFieldHarness } from '@angular/material/form-field/testing';
+import { MatLegacyInputHarness as MatInputHarness } from '@angular/material/legacy-input/testing';
+import { MatLegacyAutocompleteHarness as MatAutocompleteHarness } from '@angular/material/legacy-autocomplete/testing';
+import { MatLegacyChipHarness as MatChipHarness } from '@angular/material/legacy-chips/testing';
+import { MatLegacyFormFieldHarness as MatFormFieldHarness } from '@angular/material/legacy-form-field/testing';
 import { By } from '@angular/platform-browser';
 
 @Component({

@@ -1,0 +1,32 @@
+/*!
+ * SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+pia-feedback-statistic-bar-chart {
+  height: 350px;
+}
+
+.align-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slider-value {
+  margin: 15px 20px 5px 20px;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+mat-slider {
+  margin-top: 15px;
+  width: 80%;
+  max-width: 500px;
+}
+
+figcaption {
+  margin: 15px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.54);
+}

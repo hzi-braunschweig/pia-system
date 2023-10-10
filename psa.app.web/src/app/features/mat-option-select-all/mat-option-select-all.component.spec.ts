@@ -8,7 +8,7 @@ import { MatOptionSelectAllComponent } from './mat-option-select-all.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl } from '@angular/forms';
 import { MatPseudoCheckbox } from '@angular/material/core';
-import { MatSelect } from '@angular/material/select';
+import { MatLegacySelect as MatSelect } from '@angular/material/legacy-select';
 import { MockComponent } from 'ng-mocks';
 import { NEVER } from 'rxjs';
 import { By } from '@angular/platform-browser';

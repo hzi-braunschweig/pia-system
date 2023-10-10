@@ -6,8 +6,8 @@ export declare enum ConditionType {
     INTERNAL_LAST = "internal_last",
     EXTERNAL = "external"
 }
-export declare type ConditionOperand = '<' | '>' | '<=' | '>=' | '==' | '\\=';
-export declare type ConditionLink = 'AND' | 'OR' | 'XOR';
+export type ConditionOperand = '<' | '>' | '<=' | '>=' | '==' | '\\=';
+export type ConditionLink = 'AND' | 'OR' | 'XOR';
 export interface ConditionInternalDto {
     id: number;
     type: ConditionType | null;

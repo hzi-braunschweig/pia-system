@@ -12,11 +12,9 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CurrentUser } from '../../_services/current-user.service';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { MatSelectHarness } from '@angular/material/select/testing';
-import { MatSelectModule } from '@angular/material/select';
-import { MockPipe, MockProvider } from 'ng-mocks';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { TranslatePipe } from '@ngx-translate/core';
+import { MatLegacySelectHarness as MatSelectHarness } from '@angular/material/legacy-select/testing';
+import { MockModule, MockProvider } from 'ng-mocks';
+import { TranslateModule } from '@ngx-translate/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 @Component({
@@ -77,18 +75,18 @@ describe('StudySelectComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [
+        StudySelectComponent,
         ReactiveFormsModule,
-        MatFormFieldModule,
-        MatSelectModule,
         NoopAnimationsModule,
       ],
-      declarations: [
-        StudySelectComponent,
-        TestStudySelectComponent,
-        MockPipe(TranslatePipe, (value) => value),
-      ],
+      declarations: [TestStudySelectComponent],
       providers: [MockProvider(CurrentUser, currentUser)],
-    }).compileComponents();
+    })
+      .overrideComponent(StudySelectComponent, {
+        remove: { imports: [TranslateModule] },
+        add: { imports: [MockModule(TranslateModule)] },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(TestStudySelectComponent);
     component = fixture.componentInstance;

@@ -4,15 +4,16 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import compileMarkdownFilter from '../filters/compileMarkdownFilter';
-import parsePlaceholdersFilter from '../filters/parsePlaceholdersFilter';
-import compileTemplatesFilter from '../filters/compileTemplatesFilter';
-import aggregateHtmlFilter from '../filters/aggregateHtmlFilter';
-import generateTemplatesFilter from '../filters/generateTemplatesFilter';
-import TemplateSegmentTypes from '../filters/templateSegmentTypes';
-import mapLaboratoryResult from './mapLaboratoryResult';
+import { compileMarkdownFilter } from '../filters/compileMarkdownFilter';
+import { parsePlaceholdersFilter } from '../filters/parsePlaceholdersFilter';
+import { compileTemplatesFilter } from '../filters/compileTemplatesFilter';
+import { aggregateHtmlFilter } from '../filters/aggregateHtmlFilter';
+import { generateTemplatesFilter } from '../filters/generateTemplatesFilter';
+import { TEMPLATE_SEGMENT_TYPES } from '../filters/templateSegmentTypes';
+import { mapLaboratoryResult } from './mapLaboratoryResult';
 import { LabResult } from '../models/LabResult';
 import { assert } from 'ts-essentials';
+import { PipelineDocument } from '../filters/model/pipelineDocument';
 
 /**
  * Generates labresult documents based on Markdown templates
@@ -29,7 +30,7 @@ export class TemplatePipelineService {
       entity: mapLaboratoryResult(labResult),
       segments: [
         {
-          type: TemplateSegmentTypes.MARKDOWN_TEMPLATE,
+          type: TEMPLATE_SEGMENT_TYPES.MARKDOWN_TEMPLATE,
           content: template,
         },
       ],
@@ -45,7 +46,9 @@ export class TemplatePipelineService {
   /**
    * applies given TemplateSegmentFilters to a TemplatePipelineDocument
    */
-  private static templatePipeline<T>(templatePipelineDocument: T): T {
+  private static templatePipeline(
+    templatePipelineDocument: PipelineDocument
+  ): PipelineDocument {
     const steps = [
       compileMarkdownFilter, // [MARKDOWN_TEMPLATE] -> [HTML_TEMPLATE]
       parsePlaceholdersFilter, // [HTML_TEMPLATE] -> [HTML_TEMPLATE, PLACEHOLDER, ...]
@@ -55,7 +58,7 @@ export class TemplatePipelineService {
     ];
 
     return steps.reduce(
-      (document, filter) => filter(document) as T,
+      (document, filter) => filter(document),
       templatePipelineDocument
     );
   }

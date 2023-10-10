@@ -62,6 +62,7 @@
           *ngIf="element.status === 'analyzed'"
           mat-icon-button
           (click)="onLaboratoryResultItemClicked(element.id)"
+          data-e2e="laboratory-results-details"
         >
           <mat-icon>details</mat-icon>
         </button>

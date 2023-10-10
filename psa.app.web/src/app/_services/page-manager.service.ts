@@ -10,6 +10,7 @@ import { ComplianceManager } from './compliance-manager.service';
 import { ComplianceType } from '../psa.app.core/models/compliance';
 import { CurrentUser } from './current-user.service';
 import { mergeMap } from 'rxjs/operators';
+import { FeedbackStatisticsService } from '../pages/feedback-statistics/feedback-statistics.service';
 
 export interface Page {
   name: string;
@@ -25,7 +26,8 @@ export class PageManager {
 
   constructor(
     private user: CurrentUser,
-    private complianceManager: ComplianceManager
+    private complianceManager: ComplianceManager,
+    private feedbackStatisticsService: FeedbackStatisticsService
   ) {
     this.navPages$ = merge(
       from(this.getNavigationPagesForCurrentUser()),
@@ -69,6 +71,11 @@ export class PageManager {
           name: 'SIDENAV.COMPLIANCE',
           path: ['compliance/setup'],
           subpaths: ['compliance/'],
+        },
+        {
+          name: 'SIDENAV.FEEDBACK_STATISTICS',
+          path: ['feedback-statistics'],
+          subpaths: ['feedback-statistics/', 'feedback-statistics/edit'],
         },
       ];
     } else if (this.user.hasRole('Untersuchungsteam')) {
@@ -172,18 +179,56 @@ export class PageManager {
         path: ['questionnaires/user'],
         subpaths: ['questionnaires/', 'questionnaire/'],
       });
-      if (
-        await this.complianceManager.userHasCompliances([
+
+      let userHasCompliances = false;
+      try {
+        userHasCompliances = await this.complianceManager.userHasCompliances([
           ComplianceType.LABRESULTS,
-        ])
-      ) {
+        ]);
+      } catch (e) {
+        console.error(
+          'Could not get userHasCompliances from complianceManager. Tab LABORATORY_RESULTS will be hidden. ',
+          e
+        );
+      }
+      if (userHasCompliances) {
         pages.push({
           name: 'SIDENAV.LABORATORY_RESULTS',
           path: ['laboratory-results'],
           subpaths: ['laboratory-results'],
         });
       }
-      if (await this.complianceManager.isInternalComplianceActive()) {
+
+      let hasFeedbackStatisticsForProband = false;
+      try {
+        hasFeedbackStatisticsForProband =
+          await this.feedbackStatisticsService.hasFeedbackStatisticsForProband();
+      } catch (e) {
+        console.error(
+          'Could not get hasFeedbackStatisticsForProband from feedbackStatisticsService. Tab FEEDBACK_STATISTICS will be hidden. ',
+          e
+        );
+      }
+      if (hasFeedbackStatisticsForProband) {
+        pages.push({
+          name: 'SIDENAV.FEEDBACK_STATISTICS',
+          path: ['feedback-statistics'],
+          subpaths: ['feedback-statistics/'],
+        });
+      }
+
+      let isInternalComplianceActive = false;
+      try {
+        isInternalComplianceActive =
+          await this.complianceManager.isInternalComplianceActive();
+      } catch (e) {
+        console.error(
+          'Could not get isInternalComplianceActive from complianceManager. Tab COMPLIANCE will be hidden. ',
+          e
+        );
+      }
+
+      if (isInternalComplianceActive) {
         pages.push({
           name: 'SIDENAV.COMPLIANCE',
           path: ['compliance/agree'],

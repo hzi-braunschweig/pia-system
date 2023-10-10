@@ -9,18 +9,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MarkdownEditorComponent } from './markdown-editor.component';
 import { Component, ViewChild } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { MockComponent, MockPipe } from 'ng-mocks';
-import { MarkdownComponent } from 'ngx-markdown';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
+import { MockModule } from 'ng-mocks';
+import { MarkdownModule } from 'ngx-markdown';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatInputModule } from '@angular/material/input';
-import { TranslatePipe } from '@ngx-translate/core';
-import { By } from '@angular/platform-browser';
+import { TranslateModule } from '@ngx-translate/core';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { MatSelectHarness } from '@angular/material/select/testing';
-import { MatInputHarness } from '@angular/material/input/testing';
+import { MatLegacyInputHarness as MatInputHarness } from '@angular/material/legacy-input/testing';
 
 @Component({
   selector: 'app-test-markdown-editor',
@@ -43,18 +38,19 @@ describe('MarkdownEditorComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
+        MarkdownEditorComponent,
         ReactiveFormsModule,
-        MatFormFieldModule,
-        MatInputModule,
         NoopAnimationsModule,
       ],
-      declarations: [
-        TestMarkdownEditorComponent,
-        MarkdownEditorComponent,
-        MockComponent(MarkdownComponent),
-        MockPipe(TranslatePipe, (value) => value),
-      ],
-    }).compileComponents();
+      declarations: [TestMarkdownEditorComponent],
+    })
+      .overrideComponent(MarkdownEditorComponent, {
+        remove: { imports: [MarkdownModule, TranslateModule] },
+        add: {
+          imports: [MockModule(MarkdownModule), MockModule(TranslateModule)],
+        },
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(TestMarkdownEditorComponent);
     component = fixture.componentInstance;

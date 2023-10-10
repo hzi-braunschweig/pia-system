@@ -9,14 +9,14 @@ import { AppModule } from 'src/app/app.module';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { ProbandsPersonalInfoComponent } from './probands-personal-info.component';
 import { ActivatedRoute } from '@angular/router';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatLegacyPaginatorModule as MatPaginatorModule } from '@angular/material/legacy-paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { PersonalDataService } from '../../../psa.app.core/providers/personaldata-service/personaldata-service';
 import { ProbandService } from '../../../psa.app.core/providers/proband-service/proband.service';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
 import {
   createPendingComplianceChange,
   createPendingPersonalDataDeletion,
@@ -26,7 +26,10 @@ import {
   createStudy,
 } from '../../../psa.app.core/models/instance.helper.spec';
 import { AlertService } from '../../../_services/alert.service';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { Subject } from 'rxjs';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
 import { DialogDeletePartnerComponent } from '../../../_helpers/dialog-delete-partner';

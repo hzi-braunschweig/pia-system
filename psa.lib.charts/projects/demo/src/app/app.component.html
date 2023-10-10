@@ -1,0 +1,34 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<h1>Charts Demo</h1>
+<hr />
+<div class="grid">
+  <div>
+    <h2>Feedback statistic</h2>
+    <pia-feedback-statistic-bar-chart
+      class="chart"
+      [feedbackStatistic]="feedbackStatistic"
+    ></pia-feedback-statistic-bar-chart>
+  </div>
+  <div>
+    <h2>Selected interval</h2>
+    <pia-feedback-statistic-bar-chart
+      class="chart"
+      [feedbackStatistic]="feedbackStatistic"
+      [interval]="selectedInterval"
+    ></pia-feedback-statistic-bar-chart>
+  </div>
+  <button (click)="selectInterval()">Switch interval</button>
+  <div>
+    <h2>Bar Chart</h2>
+    <pia-chart class="chart" [config]="barChart"></pia-chart>
+  </div>
+  <div>
+    <h2>Line Chart</h2>
+    <pia-chart class="chart" [config]="lineChart"></pia-chart>
+  </div>
+</div>

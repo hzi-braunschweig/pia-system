@@ -8,7 +8,10 @@ import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { StudyChangeService } from './study-change.service';
 import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { Subject } from 'rxjs';
 import { MockProvider } from 'ng-mocks';
 import SpyObj = jasmine.SpyObj;

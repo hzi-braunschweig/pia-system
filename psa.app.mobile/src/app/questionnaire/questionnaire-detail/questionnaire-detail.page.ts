@@ -70,11 +70,13 @@ export class QuestionnaireDetailPage
 
   slidesOptions = { autoHeight: true };
 
-  private statusWhenItWasLoaded = 'open';
   statusChangesSubscription: Subscription;
+  answerVersionFromServer: number;
 
   AnswerType = AnswerType;
   QuestionnaireAnswerValidationErrors = QuestionnaireAnswerValidators.Errors;
+
+  private statusWhenItWasLoaded = 'open';
 
   constructor(
     private questionnnaireClient: QuestionnaireClientService,
@@ -99,7 +101,9 @@ export class QuestionnaireDetailPage
   }
 
   async ionViewWillLeave() {
-    await this.save();
+    if (this.form.dirty) {
+      await this.save();
+    }
   }
 
   async save(leave: boolean = false) {
@@ -256,6 +260,8 @@ export class QuestionnaireDetailPage
       const answers = await this.questionnnaireClient.getAnswers(
         questionnaireInstanceId
       );
+      this.answerVersionFromServer = answers[0]?.versioning ?? 0;
+
       this.form = await this.questionnaireForm.createQuestionnaireAnswersForm(
         this.questionnaireInstance.questionnaire.questions,
         answers,
@@ -389,8 +395,17 @@ export class QuestionnaireDetailPage
     try {
       await this.questionnnaireClient.postAnswers(
         this.questionnaireInstance.id,
-        answers
+        {
+          answers,
+          version: this.getAnswerVersion(
+            this.questionnaireInstance.status,
+            this.answerVersionFromServer,
+            this.questionnaireInstance.release_version
+          ),
+        }
       );
+
+      this.form.markAsPristine();
     } catch (err) {
       if (
         err.error.statusCode === 400 &&
@@ -409,10 +424,20 @@ export class QuestionnaireDetailPage
   private async updateQuestionnaireInstance(status?: QuestionnaireStatus) {
     const progress = this.calculateProgress();
     let data;
+
     if (status) {
       data = { progress, status };
     } else {
       data = { progress };
+    }
+
+    switch (status) {
+      case 'released_once':
+        data.release_version = 1;
+        break;
+      case 'released_twice':
+        data.release_version = 2;
+        break;
     }
 
     try {
@@ -566,5 +591,30 @@ export class QuestionnaireDetailPage
 
   private timeout(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  private getAnswerVersion(
+    questionnaire_instance_status: string,
+    answerVersionFromServer: number,
+    release_version: number
+  ): number | undefined {
+    let version: number | undefined;
+    switch (questionnaire_instance_status) {
+      case 'active':
+      case 'in_progress':
+        version = answerVersionFromServer !== 0 ? answerVersionFromServer : 1;
+        break;
+      case 'released_once':
+      case 'released':
+        if (release_version === answerVersionFromServer) {
+          version = answerVersionFromServer + 1;
+        } else {
+          version = answerVersionFromServer !== 0 ? answerVersionFromServer : 1;
+        }
+        break;
+      default:
+        break;
+    }
+    return version;
   }
 }

@@ -7,7 +7,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { TranslateService } from '@ngx-translate/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogPopUpComponent } from '../../../../../_helpers/dialog-pop-up';
 
 @Component({

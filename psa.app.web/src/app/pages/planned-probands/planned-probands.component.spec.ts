@@ -5,14 +5,14 @@
  */
 
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { AppModule } from '../../app.module';
 import { PlannedProbandsComponent } from './planned-probands.component';
 import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
 import { DataService } from '../../_services/data.service';
 import SpyObj = jasmine.SpyObj;
-import { MatPaginator } from '@angular/material/paginator';
+import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
 import { MatSort } from '@angular/material/sort';
 
 describe('PlannedProbandsComponent', () => {

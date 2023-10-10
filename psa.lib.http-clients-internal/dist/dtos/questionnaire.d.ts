@@ -1,7 +1,8 @@
 import { QuestionInternalDto } from './question';
 import { ConditionInternalDto } from './condition';
-export declare type QuestionnaireType = 'for_probands' | 'for_research_team';
-export declare type CycleUnit = 'once' | 'day' | 'week' | 'month' | 'hour' | 'spontan';
+export type QuestionnaireType = 'for_probands' | 'for_research_team';
+export type CycleUnit = 'once' | 'day' | 'week' | 'month' | 'hour' | 'spontan';
+export type Weekday = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 export interface QuestionnaireInternalDto {
     id: number;
     version: number;
@@ -16,7 +17,7 @@ export interface QuestionnaireInternalDto {
     notificationTitle: string;
     notificationBodyNew: string;
     notificationBodyInProgress: string;
-    notificationWeekday: string | null;
+    notificationWeekday: Weekday | null;
     notificationInterval: number | null;
     notificationIntervalUnit: string | null;
     activateAtDate: Date | null;

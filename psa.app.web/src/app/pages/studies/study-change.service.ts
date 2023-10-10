@@ -8,7 +8,7 @@ import { Injectable } from '@angular/core';
 import { DialogChangeStudyComponent } from '../../dialogs/dialog-change-study/dialog-change-study.component';
 import { catchError, filter, mapTo, mergeMap } from 'rxjs/operators';
 import { Study } from '../../psa.app.core/models/study';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogYesNoComponent } from '../../_helpers/dialog-yes-no';
 import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
 import { from, Observable } from 'rxjs';

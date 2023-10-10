@@ -37,6 +37,9 @@ export class StudyProfessionalSummaryComponent {
   @Output()
   public editWelcomeText = new EventEmitter();
 
+  @Output()
+  editLabResultTemplateText = new EventEmitter();
+
   constructor(public currentUser: CurrentUser) {}
 
   public mapStudyStatusToCssClass(status: StudyStatus): string {

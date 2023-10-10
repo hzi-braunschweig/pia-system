@@ -15,24 +15,29 @@ import { StudyComponent } from './study.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 import { StudyChangeService } from '../studies/study-change.service';
-import { MockComponent, MockProvider } from 'ng-mocks';
+import { MockComponent, MockDirective, MockProvider } from 'ng-mocks';
 import { createStudy } from '../../psa.app.core/models/instance.helper.spec';
 import { of, Subject } from 'rxjs';
 import { NgLetDirective } from '../../_directives/ng-let.directive';
 import { LoadingSpinnerComponent } from '../../features/loading-spinner/loading-spinner.component';
 import { StudySelectComponent } from '../../features/study-select/study-select.component';
 import { StudyProfessionalSummaryComponent } from './study-professional-summary/study-professional-summary.component';
-import { MatCardModule } from '@angular/material/card';
+import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
 import { FormsModule } from '@angular/forms';
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { AlertService } from '../../_services/alert.service';
 import { StudyWelcomeText } from '../../psa.app.core/models/studyWelcomeText';
 import { DialogMarkdownEditorComponent } from '../../dialogs/dialog-markdown-editor/dialog-markdown-editor.component';
 import { DialogPopUpComponent } from '../../_helpers/dialog-pop-up';
+import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
+import { DialogMarkdownLabresultEditorComponent } from 'src/app/dialogs/dialog-markdown-labresult-editor/dialog-markdown-labresult-editor.component';
 
-describe('HomeProfessionalComponent', () => {
+describe('StudyComponent', () => {
   let component: StudyComponent;
   let fixture: ComponentFixture<StudyComponent>;
 
@@ -42,6 +47,7 @@ describe('HomeProfessionalComponent', () => {
   let router: SpyObj<Router>;
   let dialog: SpyObj<MatDialog>;
   let alertService: SpyObj<AlertService>;
+  let sampleTrackingService: SpyObj<SampleTrackingService>;
 
   let studyChangeSubject: Subject<true>;
   let afterClosedSubject: Subject<string>;
@@ -57,6 +63,15 @@ describe('HomeProfessionalComponent', () => {
       welcome_text: 'some existing text',
     } as StudyWelcomeText);
     userService.putStudyWelcomeText.and.resolveTo();
+
+    sampleTrackingService = createSpyObj<SampleTrackingService>(
+      'sampleTrackingService',
+      ['getLabResultTemplate', 'updateLabResultTemplate']
+    );
+    sampleTrackingService.getLabResultTemplate.and.resolveTo({
+      markdownText: 'some existing text',
+    });
+    sampleTrackingService.updateLabResultTemplate.and.resolveTo();
 
     studyChangeSubject = new Subject<true>();
     studyChangeService = createSpyObj<StudyChangeService>(
@@ -93,12 +108,15 @@ describe('HomeProfessionalComponent', () => {
     alertService = createSpyObj<AlertService>('AlertService', ['errorObject']);
 
     await TestBed.configureTestingModule({
-      imports: [MatCardModule, FormsModule],
+      imports: [
+        MatCardModule,
+        FormsModule,
+        MockComponent(StudySelectComponent),
+        MockDirective(NgLetDirective),
+      ],
       declarations: [
         StudyComponent,
-        NgLetDirective,
         MockComponent(LoadingSpinnerComponent),
-        MockComponent(StudySelectComponent),
         MockComponent(StudyProfessionalSummaryComponent),
       ],
       providers: [
@@ -108,6 +126,7 @@ describe('HomeProfessionalComponent', () => {
         MockProvider(Router, router),
         MockProvider(MatDialog, dialog),
         MockProvider(AlertService, alertService),
+        MockProvider(SampleTrackingService, sampleTrackingService),
       ],
     }).compileComponents();
 
@@ -252,6 +271,85 @@ describe('HomeProfessionalComponent', () => {
 
       // Act
       component.editWelcomeText();
+      tick();
+      afterClosedSubject.error(new Error('some new text'));
+      tick();
+
+      // Assert
+      expect(alertService.errorObject).toHaveBeenCalledOnceWith(
+        new Error('some new text')
+      );
+    }));
+  });
+
+  describe('editLabResultTemplateText()', () => {
+    it('should open the editor dialog with the current lab result template text', fakeAsync(() => {
+      // Arrange
+
+      // Act
+      component.editLabResultTemplateText();
+      tick();
+
+      // Assert
+      expect(
+        sampleTrackingService.getLabResultTemplate
+      ).toHaveBeenCalledOnceWith('Teststudy');
+      expect(dialog.open).toHaveBeenCalledOnceWith(
+        DialogMarkdownLabresultEditorComponent,
+        {
+          width: '1300px',
+          data: {
+            dialogTitle: 'STUDY.EDIT_LABRESULT_TEMPLATE_TEXT',
+            initialText: 'some existing text',
+          },
+        }
+      );
+    }));
+
+    it('should update the lab result template text if a change was returned', fakeAsync(() => {
+      // Arrange
+
+      // Act
+      component.editLabResultTemplateText();
+      tick();
+      afterClosedSubject.next('some new text');
+      tick();
+
+      // Assert
+      expect(
+        sampleTrackingService.updateLabResultTemplate
+      ).toHaveBeenCalledOnceWith('Teststudy', {
+        markdownText: 'some new text',
+      });
+    }));
+
+    it('should show a success dialog after updating the text', fakeAsync(() => {
+      // Arrange
+
+      // Act
+      component.editLabResultTemplateText();
+      tick();
+      afterClosedSubject.next('some new text');
+      tick();
+
+      // Assert
+      expect(dialog.open).toHaveBeenCalledWith(DialogPopUpComponent, {
+        width: '300px',
+        data: {
+          content: 'STUDY.LABRESULT_TEMPLATE_TEXT_PUBLISHED_SUCCESSFULLY',
+          isSuccess: true,
+        },
+      });
+    }));
+
+    it('should show an error alert if an error occurs', fakeAsync(() => {
+      // Arrange
+      sampleTrackingService.updateLabResultTemplate.and.rejectWith(
+        'some error'
+      );
+
+      // Act
+      component.editLabResultTemplateText();
       tick();
       afterClosedSubject.error(new Error('some new text'));
       tick();

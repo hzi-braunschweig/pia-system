@@ -14,7 +14,7 @@ import {
 import { ConsentInputTextComponent } from './consent-input-text.component';
 import { MockModule } from 'ng-mocks';
 import { TranslateModule } from '@ngx-translate/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { SegmentType } from '../../../../psa.app.core/models/Segments';
 

@@ -45,6 +45,12 @@ int:
     DB_SORMAS_HOST: databaseservice
     DB_SORMAS_PORT: '5433'
 
+    DB_FEEDBACKSTATISTIC_USER: feedbackstatisticservice
+    DB_FEEDBACKSTATISTIC_PASSWORD: feedbackstatistic
+    DB_FEEDBACKSTATISTIC_DB: pia_database
+    DB_FEEDBACKSTATISTIC_HOST: databaseservice
+    DB_FEEDBACKSTATISTIC_PORT: '5433'
+
     DB_PERSONALDATA_USER: personaldataservice
     DB_PERSONALDATA_PASSWORD: personaldata
     DB_PERSONALDATA_DB: pia_database

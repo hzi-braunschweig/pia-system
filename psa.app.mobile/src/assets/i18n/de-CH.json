@@ -29,7 +29,8 @@
       "LAB_RESULTS": "Laborergebnisse",
       "COMPLIANCES": "Einwilligungen",
       "SETTINGS": "Einstellungen",
-      "CONTACT": "Kontakt"
+      "CONTACT": "Kontakt",
+      "STATISTICS": "Statistiken"
     },
     "TOAST_MSG_NO_INTERNET": "Die Anfrage konnte nicht bearbeitet werden. Bitte überprüfen Sie Ihre Internetverbindung.",
     "TOAST_MSG_UNKNOWN_ERROR": "Die Anfrage konnte nicht bearbeitet werden. Ein unbekannter Fehler ist aufgetreten.",
@@ -134,5 +135,24 @@
     "BUTTON_ALLOW": "Ja, ermöglichen",
     "BUTTON_DENY": "Nein, alles löschen",
     "BUTTON_LOGOUT": "Zur Anmeldung"
+  },
+  "FEEDBACK_STATISTICS": {
+    "TITLE": "Statistiken",
+    "READ_MORE": "Weiterlesen",
+    "NO_CHARTS": "Es sind noch keine Statistiken verfügbar. Schauen Sie zu einem späteren Zeitpunkt noch einmal vorbei.",
+    "NO_DATA": "Die Grafik ist noch nicht verfügbar. Schauen Sie zu einem späteren Zeitpunkt noch einmal vorbei."
+  },
+  "CHARTS": {
+    "FEEDBACK_STATISTIC": {
+      "RELATIVE_FREQUENCY": "Relative Häufigkeit",
+      "DAY": "Tag",
+      "WEEK": "Woche",
+      "MONTH": "Monat",
+      "YEAR": "Jahr",
+      "DAYS": "Tage",
+      "WEEKS": "Wochen",
+      "MONTHS": "Monate",
+      "YEARS": "Jahre"
+    }
   }
 }

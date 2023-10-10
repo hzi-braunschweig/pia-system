@@ -15,7 +15,6 @@ import { ProbandExternalId } from '../../models/probandExternalId';
 
 export class FetchModysDataStream extends Transform {
   private readonly modysClient = new ModysClient(this.modysConfig);
-  private initialized = false;
 
   public constructor(private readonly modysConfig: ModysConfig) {
     /** readableHighWaterMark is the limit for the buffer of the output that controls the concurrency
@@ -30,11 +29,13 @@ export class FetchModysDataStream extends Transform {
   }
 
   /**
-   * The initialization before starting the reading (automatically called from node v15)
+   * The initialization before starting the reading
    */
-  public _construct(): void {
+  public _construct(
+    callback: (error?: Error | null | undefined) => void
+  ): void {
     console.log('MODYS Import: fetching probands from MODYS...');
-    this.initialized = true;
+    callback();
   }
 
   public _transform(
@@ -42,9 +43,6 @@ export class FetchModysDataStream extends Transform {
     _encoding: BufferEncoding,
     callback: TransformCallback
   ): void {
-    if (!this.initialized) {
-      this._construct();
-    }
     this.push(this.getModysProband(proband));
     return callback();
   }

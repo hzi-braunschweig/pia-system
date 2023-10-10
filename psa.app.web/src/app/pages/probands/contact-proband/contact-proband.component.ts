@@ -6,7 +6,7 @@
 
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
 import { NotificationService } from '../../../psa.app.core/providers/notification-service/notification-service';
 import { ActivatedRoute } from '@angular/router';

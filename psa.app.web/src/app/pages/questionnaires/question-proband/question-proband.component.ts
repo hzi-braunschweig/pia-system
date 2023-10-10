@@ -42,7 +42,7 @@ import {
   MAT_DATE_FORMATS,
   MAT_DATE_LOCALE,
 } from '@angular/material/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import {
   APP_DATE_FORMATS,
   AppDateAdapter,
@@ -65,7 +65,7 @@ import { AnswerType } from '../../../psa.app.core/models/answerType';
 import { QuestionnaireInstance } from '../../../psa.app.core/models/questionnaireInstance';
 import { Proband } from '../../../psa.app.core/models/proband';
 import { CurrentUser } from '../../../_services/current-user.service';
-import { MatRadioButton } from '@angular/material/radio';
+import { MatLegacyRadioButton as MatRadioButton } from '@angular/material/legacy-radio';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { addDays, format, isAfter } from 'date-fns';
 
@@ -2174,30 +2174,5 @@ export class QuestionProbandComponent
       'value'
     );
     answerValue.setValue($event);
-  }
-
-  public getAnswerVersion(
-    questionnaire_instance_status: string,
-    answerVersionFromServer: number,
-    release_version: number
-  ): string | undefined {
-    let version;
-    switch (questionnaire_instance_status) {
-      case 'active':
-      case 'in_progress':
-        version = answerVersionFromServer !== 0 ? answerVersionFromServer : 1;
-        break;
-      case 'released_once':
-      case 'released':
-        if (release_version === answerVersionFromServer) {
-          version = answerVersionFromServer + 1;
-        } else {
-          version = answerVersionFromServer !== 0 ? answerVersionFromServer : 1;
-        }
-        break;
-      default:
-        break;
-    }
-    return version;
   }
 }

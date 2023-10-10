@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@hapi/boom": "^10.0.0",
-    "@hapi/hapi": "^21.1.0",
+    "@hapi/hapi": "~21.1.0",
     "@pia-system/lib-http-clients-internal": "file:../psa.lib.http-clients-internal",
     "@pia/lib-hapi-i18n-plugin": "file:../psa.lib.hapi-i18n-plugin",
     "@pia/lib-messagequeue": "file:../psa.lib.messagequeue",
@@ -36,7 +36,7 @@
     "@types/i18n": "^0.13.5",
     "@types/jsonwebtoken": "^8.5.9",
     "@types/mocha": "^10.0.0",
-    "@types/node": "^14.18.12",
+    "@types/node": "^20.0.3",
     "@types/node-fetch": "^2.6.2",
     "@types/sinon": "^10.0.13",
     "@types/sinon-chai": "^3.2.9",

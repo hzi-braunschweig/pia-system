@@ -84,6 +84,7 @@ const typeOrmOptions: ConnectionOptions = {
   migrationsRun: true,
   migrations: [RenameLabelToVariableName1668436755983],
   logging: false,
+  extra: { poolSize: 100 },
 };
 
 export async function connectDatabase(

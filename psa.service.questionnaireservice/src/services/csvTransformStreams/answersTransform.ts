@@ -146,6 +146,16 @@ export class AnswersTransform extends CsvTransform<
         );
         return null;
       case AnswerType.Date:
+        try {
+          return ExportUtilities.formatDateStringWithoutTimeZone(
+            answer.value,
+            DateFormat.Date
+          );
+        } catch (e) {
+          console.error('Could not parse the date', answer.value);
+          console.error('Error: ', e);
+          return null;
+        }
       case AnswerType.Timestamp:
         try {
           return ExportUtilities.formatDateString(answer.value, DateFormat.ISO);

@@ -1,0 +1,115 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<mat-card>
+  <mat-card-title>
+    <mat-spinner
+      diameter="18"
+      style="display: inline-block"
+      *ngIf="feedbackStatisticDto?.status === 'pending'"
+    ></mat-spinner>
+    {{ feedbackStatisticDto?.title }}
+  </mat-card-title>
+  <mat-card-subtitle *ngIf="interval">
+    {{ interval.start | date }} - {{ interval.end | date }}
+  </mat-card-subtitle>
+  <mat-card-content>
+    <div *ngIf="feedbackStatisticDto?.status === 'has_data'">
+      <pia-feedback-statistic-bar-chart
+        [feedbackStatistic]="chartFeedbackStatistic"
+        [interval]="interval"
+      ></pia-feedback-statistic-bar-chart>
+
+      <figcaption class="align-center">
+        {{
+          'FEEDBACK_STATISTICS.CAPTION'
+            | translate: { updatedAt: feedbackStatisticDto.updatedAt | date }
+        }}
+      </figcaption>
+
+      <div class="align-center">
+        <span class="slider-value">{{
+          chartFeedbackStatistic?.intervals[0][0] | date
+        }}</span>
+        <mat-slider
+          color="primary"
+          [min]="range.min"
+          [max]="range.max"
+          [displayWith]="getLabelFormatter()"
+          step="1"
+          value="3"
+          discrete
+          showTickMarks
+        >
+          <input
+            matSliderStartThumb
+            [formControl]="rangeSelection.controls.lower"
+          />
+          <input
+            matSliderEndThumb
+            [formControl]="rangeSelection.controls.upper"
+          />
+        </mat-slider>
+        <span class="slider-value">{{
+          chartFeedbackStatistic?.intervals[
+            chartFeedbackStatistic?.intervals.length - 1
+          ][1] | date
+        }}</span>
+      </div>
+      <div class="align-center">
+        {{ 'FEEDBACK_STATISTICS.DISPLAYED_TIME_RANGE_LABEL' | translate }}
+      </div>
+    </div>
+
+    <app-hint
+      data-unit="status-message-pending"
+      *ngIf="feedbackStatisticDto?.status === 'pending'"
+    >
+      {{ 'FEEDBACK_STATISTICS.PENDING' | translate }}
+    </app-hint>
+
+    <app-hint
+      data-unit="status-message-insufficient-data"
+      *ngIf="feedbackStatisticDto?.status === 'insufficient_data'"
+    >
+      {{ 'FEEDBACK_STATISTICS.INSUFFICIENT_DATA' | translate }}
+    </app-hint>
+
+    <app-hint
+      data-unit="status-message-error"
+      *ngIf="feedbackStatisticDto?.status === 'error'"
+    >
+      {{ 'FEEDBACK_STATISTICS.ERROR' | translate }}
+    </app-hint>
+
+    <div
+      class="description"
+      data-unit="description"
+      [ngClass]="{ show: showDescription }"
+      [innerHTML]="feedbackStatisticDto?.description | markdown"
+    ></div>
+  </mat-card-content>
+  <mat-card-actions *ngIf="isEditable">
+    <button
+      mat-button
+      color="primary"
+      [disabled]="feedbackStatisticDto?.status === 'pending'"
+      [routerLink]="['edit', feedbackStatisticDto?.configurationId]"
+    >
+      <mat-icon inline="true">edit</mat-icon>
+      {{ 'FEEDBACK_STATISTICS.EDIT' | translate }}
+    </button>
+    <button
+      mat-button
+      color="primary"
+      [disabled]="feedbackStatisticDto?.status === 'pending'"
+      (click)="remove.emit(feedbackStatisticDto?.configurationId)"
+    >
+      <mat-icon inline="true">delete</mat-icon>
+      {{ 'FEEDBACK_STATISTICS.DELETE' | translate }}
+    </button>
+  </mat-card-actions>
+</mat-card>

@@ -10,17 +10,17 @@ import { StudyProfessionalSummaryComponent } from './study-professional-summary.
 import { CurrentUser } from '../../../_services/current-user.service';
 import { MockDirective, MockPipe, MockProvider } from 'ng-mocks';
 import { createStudy } from '../../../psa.app.core/models/instance.helper.spec';
-import { MatCardHarness } from '@angular/material/card/testing';
+import { MatLegacyCardHarness as MatCardHarness } from '@angular/material/legacy-card/testing';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { MatCardModule } from '@angular/material/card';
+import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatButtonModule } from '@angular/material/button';
+import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
 import { TranslatePipe } from '@ngx-translate/core';
 import { StudyStatusPipe } from '../../../pipes/study-status.pipe';
-import { MatButtonHarness } from '@angular/material/button/testing';
+import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
 import { By } from '@angular/platform-browser';
-import { MatTooltip } from '@angular/material/tooltip';
+import { MatLegacyTooltip as MatTooltip } from '@angular/material/legacy-tooltip';
 import { CdkCopyToClipboard } from '@angular/cdk/clipboard';
 import { NgLetDirective } from '../../../_directives/ng-let.directive';
 import { MatIconModule } from '@angular/material/icon';
@@ -47,11 +47,11 @@ describe('StudyProfessionalSummaryComponent', () => {
         MatDividerModule,
         MatButtonModule,
         MatIconModule,
+        NgLetDirective,
       ],
       declarations: [
         StudyProfessionalSummaryComponent,
         StudyStatusPipe,
-        NgLetDirective,
         MockDirective(MatTooltip),
         MockDirective(CdkCopyToClipboard),
         MockPipe(TranslatePipe, (value) => value),

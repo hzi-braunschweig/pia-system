@@ -40,3 +40,7 @@ VALUES (9999991, 'TEST-12345', 12345, 'Adenovirus-PCR (resp.)', NULL, 'This is a
        (9999996, 'TEST-12347', 12345, 'Adenovirus-PCR (resp.)', NULL, 'This is a simple comment',
         '2000-02-06T00:00+01:00', '2021-01-07T17:53+01:00', '2021-01-07T17:53+01:00', 'cool lab',
         NULL, 'negativ', 'unit', NULL, NULL);
+
+
+INSERT INTO lab_result_templates (id, study, markdown_text)
+VALUES (9999991, 'QTestStudy', 'setup markdown');

@@ -15,6 +15,7 @@ import {
   GenericFieldDescription,
 } from '../../models/compliance';
 import { TemplateSegment } from '../../models/Segments';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -102,14 +103,13 @@ export class ComplianceService {
     studyName: string,
     pseudonym: string
   ): Promise<ComplianceDataResponse> {
-    return this.http
-      .get<ComplianceDataResponse>(
+    return firstValueFrom(
+      this.http.get<ComplianceDataResponse>(
         `${this.apiUrl}${studyName}/agree/${pseudonym}`
       )
-      .toPromise()
-      .then((data: ComplianceDataResponse) => {
-        return this.formatComplianceResponseDates(data);
-      });
+    ).then((data: ComplianceDataResponse) => {
+      return this.formatComplianceResponseDates(data);
+    });
   }
 
   /**

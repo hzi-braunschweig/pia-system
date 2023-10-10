@@ -69,6 +69,33 @@ export interface FullAnswer {
   ids: string | null;
 }
 
+export interface AnswerData {
+  questionnaire_id: number;
+  questionnaire_instance_id: number;
+  questionnaire_instance_date_of_issue: Date;
+  answer_option_id: number;
+  answer_option_variable_name: string | null;
+  values: number[];
+  answer_version: number;
+}
+
+export interface AnswerDataDto {
+  questionnaireId: number;
+  questionnaireInstanceId: number;
+  questionnaireInstanceDateOfIssue: string;
+  answerOptionId: number;
+  answerOptionVariableName: string | null;
+  values: number[];
+}
+
+export interface AnswerDataFilter {
+  status?: QuestionnaireInstanceStatus[];
+  minDateOfIssue?: Date;
+  maxDateOfIssue?: Date;
+  answerOptionIds?: number[];
+  answerOptionVariableNames?: string[];
+}
+
 export interface AnswerExportAnswer {
   question_id: number;
   answer_option_id: number;

@@ -8,7 +8,7 @@ npm-audit:
     - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   stage: prepare
-  image: node:14.19.0-buster-slim@sha256:9a5460581050ca9f106b2908d34450a9304a84eeee5d50ea1ce6fca40593b5b7
+  image: node:20.3.0-buster-slim@sha256:a0f92f6970cb1fd5e9b6039a8f428616a9b9ed3633360c6b84dcc6aa5c7d5723
   script:
     - npm install -g better-npm-audit
     - >

@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import chai from 'chai';
 import chaiHttp from 'chai-http';
 import sinon from 'sinon';
@@ -21,6 +23,8 @@ import { HttpClient } from '@pia-system/lib-http-clients-internal';
 import { cleanup, setup } from './laboratoryResult.spec.data/setup.helper';
 import { LabResultImportHelper } from '../../src/services/labResultImportHelper';
 import { assert } from 'ts-essentials';
+import { getRepository } from 'typeorm';
+import { LabResultTemplate } from '../../src/entities/labResultTemplate';
 
 chai.use(chaiHttp);
 const expect = chai.expect;
@@ -39,6 +43,11 @@ const forscherHeader1 = AuthTokenMockBuilder.createAuthHeader({
   roles: ['Forscher'],
   username: 'qtest-forscher1',
   studies: ['QTestStudy'],
+});
+const forscherHeader2 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['Forscher'],
+  username: 'qtest-forscher1',
+  studies: [],
 });
 const utHeader = AuthTokenMockBuilder.createAuthHeader({
   roles: ['Untersuchungsteam'],
@@ -594,6 +603,54 @@ describe('/admin/probands/{pseudonym}/labResults', () => {
     });
   });
 
+  describe('GET /admin/studies/{studyName}/labResultTemplate', () => {
+    const route = '/admin/studies/QTestStudy/labResultTemplate';
+
+    before(async () => {
+      await setup();
+    });
+    after(async function () {
+      await cleanup();
+    });
+
+    it('should return http 403 if a Proband tries', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .get(route)
+        .set(probandHeader1);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return http 403 if a pm tries', async () => {
+      const result = await chai.request(apiAddress).get(route).set(pmHeader);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return http 200 and the corresponding template if a Forscher tries', async () => {
+      const result1 = await chai
+        .request(apiAddress)
+        .get(route)
+        .set(forscherHeader1);
+      expect(result1).to.have.status(StatusCodes.OK);
+
+      expect(result1.body).to.deep.equal({ markdownText: 'setup markdown' });
+    });
+
+    it('should return http 200 and a default template if a Forscher tries and no template for the study is stored in the db', async () => {
+      await getRepository(LabResultTemplate).delete({ study: 'QTestStudy' });
+
+      const result1 = await chai
+        .request(apiAddress)
+        .get(route)
+        .set(forscherHeader1);
+      expect(result1).to.have.status(StatusCodes.OK);
+
+      const markdownText = result1.body.markdownText;
+
+      expect(markdownText).to.include('Institut für Virologie');
+    });
+  });
+
   describe('POST /admin/probands/id/labResults', () => {
     const validLabResult = {
       sample_id: 'TEST-1134567891',
@@ -937,6 +994,95 @@ describe('/admin/probands/{pseudonym}/labResults', () => {
         .set(pmHeader)
         .send({ status: 'sampled' });
       expect(result1).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+  });
+
+  describe('PUT /admin/studies/{studyName}/labResultTemplate', () => {
+    const validLabResultTemplate = {
+      markdownText: 'Test template',
+    };
+
+    const validLabResultTemplate2 = {
+      markdownText: 'Test template 2',
+    };
+
+    const invalidLabResultTemplate = {
+      invalidAttribute: 'Test',
+    };
+
+    const route = '/admin/studies/QTestStudy/labResultTemplate';
+
+    before(async () => {
+      await setup();
+    });
+    after(async function () {
+      await cleanup();
+    });
+
+    it('should return http 403 if a Proband tries', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .put(route)
+        .set(probandHeader1)
+        .send(validLabResultTemplate);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return http 403 if a pm tries', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .put(route)
+        .set(pmHeader)
+        .send(validLabResultTemplate);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return http 403 if a Forscher tries but is not approved for the study', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .put(route)
+        .set(forscherHeader2)
+        .send(validLabResultTemplate);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return http 400 if a Forscher tries but data is invalid', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .put(route)
+        .set(forscherHeader1)
+        .send(invalidLabResultTemplate);
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return http 200 if a Forscher tries with valid data', async () => {
+      const result1 = await chai
+        .request(apiAddress)
+        .put(route)
+        .set(forscherHeader1)
+        .send(validLabResultTemplate);
+      expect(result1).to.have.status(StatusCodes.OK);
+    });
+
+    it('should return http 200 if a Forscher tries with valid data and update the template', async () => {
+      const result1 = await chai
+        .request(apiAddress)
+        .put(route)
+        .set(forscherHeader1)
+        .send(validLabResultTemplate2);
+      expect(result1).to.have.status(StatusCodes.OK);
+
+      AuthServerMock.adminRealm().returnValid();
+
+      const result2 = await chai
+        .request(apiAddress)
+        .get(route)
+        .set(forscherHeader1);
+
+      console.log(result2);
+      expect(result2).to.have.status(StatusCodes.OK);
+
+      expect(result2.body).to.deep.equal(validLabResultTemplate2);
     });
   });
 });

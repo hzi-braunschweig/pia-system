@@ -272,6 +272,15 @@ pia_services:
       ipia: true,
     }
   - {
+      fullName: feedbackstatisticservice,
+      variableName: FEEDBACKSTATISTICSERVICE,
+      portOffset: 15,
+      name: 'fs',
+      qpia: true,
+      ewpia: false,
+      ipia: false,
+    }
+  - {
       fullName: deploymentservice,
       variableName: DEPLOYMENTSERVICE,
       portOffset: 20,

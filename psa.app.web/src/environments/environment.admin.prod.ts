@@ -16,6 +16,8 @@ export const environment: Environment = {
   isDevelopmentSystem:
     '${IS_DEVELOPMENT_SYSTEM}' &&
     '${IS_DEVELOPMENT_SYSTEM}'.toLowerCase() !== 'false',
+  isE2ETestSystem:
+    '${IS_E2E_Test_SYSTEM}' && '${IS_E2E_Test_SYSTEM}'.toLowerCase() === 'true',
   authserver: {
     url: window.location.origin + '/api/v1/auth',
     realm: 'pia-admin-realm',

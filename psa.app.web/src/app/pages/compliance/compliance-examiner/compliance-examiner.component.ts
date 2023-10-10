@@ -5,7 +5,7 @@
  */
 
 import { Component } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogEditComplianceComponent } from '../compliance-edit-dialog/dialog-edit-compliance.component';
 import { Proband } from '../../../psa.app.core/models/proband';
 

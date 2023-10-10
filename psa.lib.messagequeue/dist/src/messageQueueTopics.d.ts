@@ -6,5 +6,8 @@ export declare enum MessageQueueTopic {
     PROBAND_REGISTERED = "proband.registered",
     PROBAND_EMAIL_VERIFIED = "proband.email_verified",
     COMPLIANCE_CREATED = "compliance.created",
-    QUESTIONNAIRE_INSTANCE_RELEASED = "questionnaire_instance.released"
+    QUESTIONNAIRE_INSTANCE_RELEASED = "questionnaire_instance.released",
+    FEEDBACKSTATISTIC_CONFIGURATION_UPDATED = "feedbackstatistic_configuration.updated",
+    FEEDBACKSTATISTIC_OUTDATED = "feedbackstatistic.outdated",
+    STUDY_DELETED = "study.deleted"
 }

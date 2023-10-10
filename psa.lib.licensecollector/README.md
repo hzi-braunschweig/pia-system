@@ -14,7 +14,7 @@ npm install @pia-system/licensecollector@file:../psa.lib.licensecollector
 For the CI to be able to build the dependent project with this package, you need to add it to the corresponding Docker container:
 
 ```Dockerfile
-FROM node:14.16.1-alpine AS base
+FROM node:20.3.0-alpine AS base
 
 ...
 
@@ -23,7 +23,7 @@ COPY $DIR/package*.json ./
 #copy dependencies' package.json
 COPY --chown=node:node psa.lib.licensecollector/package.json ../psa.lib.licensecollector/
 
-RUN npm ci --production
+RUN npm ci --omit=dev
 #copy dependencies' source
 COPY --chown=node:node psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
 ```

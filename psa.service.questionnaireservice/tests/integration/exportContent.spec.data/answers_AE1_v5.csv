@@ -1,12 +1,12 @@
 participant;is_test_participant;questionnaire_name;questionnaire_id;questionnaire_version;questionnaire_cycle;questionnaire_date_of_issue;answer_date;answer_status;100000_AE1_Text;100000_AE1_Datum;100000_AE1_Zahlen;100000_AE1_Mehrfachauswahl_Nope;100000_AE1_Mehrfachauswahl_That;100000_AE1_Mehrfachauswahl_This;100000_AE1_Einzelauswahl;100000_AE1_Text2;100000_AE1_External
 answ-01;F;AE1 Answer Export;100000;5;1;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;-9999;-8888;-8888;-8888;-8888;-8888;-8888;-8888;Some Text
-answ-02;T;AE1 Answer Export;100000;5;1;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10T23:00:00+00:00;100;-7777;1;1;1;Text;-8888
+answ-02;T;AE1 Answer Export;100000;5;1;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10;100;-7777;1;1;1;Text;-8888
 answ-01;F;AE1 Answer Export;100000;5;2;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Wrong;-8888;-8888;-8888;-8888;-8888;-8888;-8888;Some Text
-answ-02;T;AE1 Answer Export;100000;5;2;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10T23:00:00+00:00;100;-7777;1;1;1;Wrong Text;-8888
+answ-02;T;AE1 Answer Export;100000;5;2;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10;100;-7777;1;1;1;Wrong Text;-8888
 answ-01;F;AE1 Answer Export;100000;5;3;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;-9999;-8888;-8888;-8888;-8888;-8888;-8888;Some Text
-answ-01;F;AE1 Answer Export;100000;5;4;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-09T23:00:00+00:00;-8888;-8888;-8888;-8888;-8888;-8888;Some Text
-answ-01;F;AE1 Answer Export;100000;5;5;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10T23:00:00+00:00;99;-8888;-8888;-8888;-8888;-8888;Some Text
-answ-01;F;AE1 Answer Export;100000;5;6;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10T23:00:00+00:00;100;1;-7777;-7777;-8888;-8888;Some Text
-answ-01;F;AE1 Answer Export;100000;5;7;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10T23:00:00+00:00;100;-7777;1;1;0;-8888;Some Text
-answ-01;F;AE1 Answer Export;100000;5;8;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10T23:00:00+00:00;100;-7777;1;1;1;-9999;Some Text
-answ-01;F;AE1 Answer Export;100000;5;9;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10T23:00:00+00:00;100;-7777;1;1;1;Text;Some Text
+answ-01;F;AE1 Answer Export;100000;5;4;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-09;-8888;-8888;-8888;-8888;-8888;-8888;Some Text
+answ-01;F;AE1 Answer Export;100000;5;5;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10;99;-8888;-8888;-8888;-8888;-8888;Some Text
+answ-01;F;AE1 Answer Export;100000;5;6;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10;100;1;-7777;-7777;-8888;-8888;Some Text
+answ-01;F;AE1 Answer Export;100000;5;7;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10;100;-7777;1;1;0;-8888;Some Text
+answ-01;F;AE1 Answer Export;100000;5;8;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10;100;-7777;1;1;1;-9999;Some Text
+answ-01;F;AE1 Answer Export;100000;5;9;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Right;2022-12-10;100;-7777;1;1;1;Text;Some Text

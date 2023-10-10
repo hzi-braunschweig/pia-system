@@ -21,9 +21,13 @@ __exportStar(require("./clients/questionnaireserviceClient"), exports);
 __exportStar(require("./clients/userserviceClient"), exports);
 __exportStar(require("./core/httpClient"), exports);
 __exportStar(require("./core/serviceClient"), exports);
+__exportStar(require("./dtos/answer"), exports);
 __exportStar(require("./dtos/personalData"), exports);
 __exportStar(require("./dtos/proband"), exports);
 __exportStar(require("./dtos/systemLog"), exports);
 __exportStar(require("./dtos/user"), exports);
+__exportStar(require("./dtos/answerOption"), exports);
+__exportStar(require("./dtos/question"), exports);
+__exportStar(require("./dtos/questionnaire"), exports);
 __exportStar(require("./dtos/questionnaireInstance"), exports);
 //# sourceMappingURL=index.js.map

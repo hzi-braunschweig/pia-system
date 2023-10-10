@@ -11,9 +11,9 @@ import { AbstractExportFeature } from './abstractExportFeature';
 export class ReadmeExport extends AbstractExportFeature {
   public async apply(): Promise<void> {
     this.archive.append(
-      createReadStream(path.join('resources', 'README.md'), 'utf8'),
+      createReadStream(path.join('resources', 'README.pdf')),
       {
-        name: 'README.md',
+        name: 'README.pdf',
       }
     );
 

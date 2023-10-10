@@ -43,3 +43,8 @@ location /autheventproxy/metrics {
     set $service_autheventproxy autheventproxy;
     proxy_pass ${PROTOCOL}://${service_autheventproxy}:$AUTHEVENTPROXY_PORT/metrics;
 }
+location /feedbackstatistic/metrics {
+    resolver 127.0.0.11 valid=1m;
+    set $service_feedbackstatistic feedbackstatistic;
+    proxy_pass ${PROTOCOL}://${service_feedbackstatistic}:$FEEDBACKSTATISTIC_PORT/metrics;
+}

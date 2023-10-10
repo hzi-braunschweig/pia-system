@@ -7,6 +7,7 @@ import { Injectable } from '@angular/core';
 import { knownPrimaryRoles, Role, User } from '../psa.app.core/models/user';
 import { KeycloakService } from 'keycloak-angular';
 import { JwtService } from './jwt.service';
+import { environment } from '../../environments/environment';
 
 @Injectable()
 export class CurrentUser implements User {
@@ -46,7 +47,7 @@ export class CurrentUser implements User {
       this.username = payload.username;
       this.studies = payload.studies;
       this.role = CurrentUser.getPrimaryRole(payload.realm_access.roles);
-      this.locale = payload.locale;
+      this.locale = payload.locale ?? environment.defaultLanguage;
 
       return true;
     } catch (err) {

@@ -1,0 +1,67 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<mat-card>
+  <mat-card-title>
+    <mat-icon inline="true">tune</mat-icon>
+    {{ 'FEEDBACK_STATISTICS.GENERAL_SETTINGS' | translate }}
+  </mat-card-title>
+  <mat-card-content>
+    <form [formGroup]="form" class="grid-container-2cols">
+      <mat-form-field class="grid-item-100 headline-text-input">
+        <mat-label>{{ 'FEEDBACK_STATISTICS.TITLE' | translate }}</mat-label>
+        <input
+          matInput
+          type="text"
+          formControlName="title"
+          data-unit="title-input"
+        />
+        <mat-hint
+          >{{ form.controls.title.value?.length ?? 0 }} /
+          {{ feedbackStatisticTitleMaxLength }}</mat-hint
+        >
+
+        <mat-error *ngIf="form.controls.title.hasError('required')">
+          {{ 'FEEDBACK_STATISTICS.TITLE_REQUIRED_ERROR' | translate }}
+        </mat-error>
+        <mat-error *ngIf="form.controls.title.hasError('maxlength')">
+          {{
+            'FEEDBACK_STATISTICS.TITLE_MAX_LENGTH_ERROR'
+              | translate: { maxLength: feedbackStatisticTitleMaxLength }
+          }}
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="grid-item-50">
+        <mat-label>{{
+          'FEEDBACK_STATISTICS.VISIBILITY' | translate
+        }}</mat-label>
+        <mat-select formControlName="visibility" data-unit="visibility-select">
+          <mat-option
+            [value]="option.value"
+            [data-unit]="'visibility-select-' + option.value"
+            *ngFor="let option of visibilityOptions"
+            >{{ option.viewValue | translate }}</mat-option
+          >
+        </mat-select>
+
+        <mat-error *ngIf="form.controls.visibility.hasError('required')">
+          {{ 'FEEDBACK_STATISTICS.VISIBILITY_REQUIRED_ERROR' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <app-hint class="grid-item-100">
+        {{ 'FEEDBACK_STATISTICS.DESCRIPTION_HINT' | translate }}
+      </app-hint>
+
+      <app-markdown-editor
+        class="grid-item-100"
+        label="FEEDBACK_STATISTICS.DESCRIPTION"
+        formControlName="description"
+      ></app-markdown-editor>
+    </form>
+  </mat-card-content>
+</mat-card>

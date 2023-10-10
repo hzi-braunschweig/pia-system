@@ -17,12 +17,12 @@ import {
   createPersonalData,
   createProbandToContact,
 } from '../../psa.app.core/models/instance.helper.spec';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatLegacyPaginatorModule as MatPaginatorModule } from '@angular/material/legacy-paginator';
 import { MatSortModule } from '@angular/material/sort';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Router } from '@angular/router';
 import SpyObj = jasmine.SpyObj;
-import { MatCardModule } from '@angular/material/card';
+import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
 
 describe('ProbandsToContactComponent', () => {
   let fixture: MockedComponentFixture;

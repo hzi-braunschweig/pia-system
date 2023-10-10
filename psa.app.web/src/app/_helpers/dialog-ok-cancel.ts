@@ -5,8 +5,13 @@
  */
 
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { TranslateService } from '@ngx-translate/core';
+import {
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialogModule,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 
 export interface DialogOkCancelComponentData {
   q?: string;
@@ -16,6 +21,7 @@ export type DialogOkCancelComponentReturn = 'ok';
 
 @Component({
   selector: 'dialog-ok-cancel',
+  standalone: true,
   template: `
     <h1 mat-dialog-title style=" display: flex; justify-content: center; ">
       {{ data.q | translate }}
@@ -38,6 +44,7 @@ export type DialogOkCancelComponentReturn = 'ok';
       </button>
     </mat-dialog-actions>
   `,
+  imports: [TranslateModule, MatLegacyDialogModule, MatLegacyButtonModule],
 })
 export class DialogOkCancelComponent {
   constructor(

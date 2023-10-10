@@ -61,6 +61,13 @@ const routes: Routes = [
     path: 'auth',
     loadChildren: () => import('./auth/auth.module').then((m) => m.AuthModule),
   },
+  {
+    path: 'feedback-statistics',
+    loadChildren: () =>
+      import('./feedback-statistics/feedback-statistics.module').then(
+        (m) => m.FeedbackStatisticsPageModule
+      ),
+  },
 ];
 
 @NgModule({

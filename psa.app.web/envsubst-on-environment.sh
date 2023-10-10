@@ -9,6 +9,6 @@
 # then updates the main.js.gz
 mainFileNameProbandApp="$(ls /usr/share/nginx/html/main*.js)"
 mainFileNameAdminApp="$(ls /usr/share/nginx/html/admin/main*.js)"
-envsubst "\$IS_DEVELOPMENT_SYSTEM \$DEFAULT_LANGUAGE \$IS_SORMAS_ENABLED" < /usr/share/nginx/template/main.js.template > "${mainFileNameProbandApp}"
-envsubst "\$IS_DEVELOPMENT_SYSTEM \$DEFAULT_LANGUAGE \$IS_SORMAS_ENABLED" < /usr/share/nginx/template/admin/main.js.template > "${mainFileNameAdminApp}"
+envsubst "\$IS_DEVELOPMENT_SYSTEM \$IS_E2E_TEST_SYSTEM \$DEFAULT_LANGUAGE \$IS_SORMAS_ENABLED" < /usr/share/nginx/template/main.js.template > "${mainFileNameProbandApp}"
+envsubst "\$IS_DEVELOPMENT_SYSTEM \$IS_E2E_TEST_SYSTEM \$DEFAULT_LANGUAGE \$IS_SORMAS_ENABLED" < /usr/share/nginx/template/admin/main.js.template > "${mainFileNameAdminApp}"
 gzip -f -k "${mainFileNameProbandApp}" "${mainFileNameAdminApp}"

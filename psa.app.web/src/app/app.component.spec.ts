@@ -11,7 +11,7 @@ import {
   tick,
 } from '@angular/core/testing';
 import { MediaChange, MediaObserver } from '@angular/flex-layout';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { TranslateService } from '@ngx-translate/core';
 import { MockBuilder } from 'ng-mocks';
 import { of } from 'rxjs';

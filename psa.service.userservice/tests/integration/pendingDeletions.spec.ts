@@ -8,6 +8,7 @@ import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import sinonChai from 'sinon-chai';
 import * as sinon from 'sinon';
+import { SinonStubbedInstance } from 'sinon';
 import fetchMocker from 'fetch-mock';
 import { StatusCodes } from 'http-status-codes';
 import { Users } from '@keycloak/keycloak-admin-client/lib/resources/users';
@@ -30,7 +31,6 @@ import {
   PendingStudyDeletionDto,
 } from '../../src/models/pendingDeletion';
 import { config } from '../../src/config';
-import { SinonStubbedInstance } from 'sinon';
 import {
   adminAuthClient,
   probandAuthClient,
@@ -39,6 +39,9 @@ import {
   mockGetProbandAccount,
   mockGetProfessionalAccount,
 } from './accountServiceRequestMock.helper.spec';
+import { messageQueueService } from '../../src/services/messageQueueService';
+import { MessageQueueTopic } from '@pia/lib-messagequeue';
+import util from 'util';
 
 interface LabResult {
   id: string;
@@ -128,6 +131,9 @@ const pmHeader4 = AuthTokenMockBuilder.createAuthHeader({
   username: 'pm4@apitest.de',
   studies: ['ApiTestStudie2', 'ApiTestStudie3'],
 });
+
+const delay = util.promisify(setTimeout);
+const DELAY_TIME = 10;
 
 describe('/admin/pendingDeletions', function () {
   before(async function () {
@@ -1683,6 +1689,33 @@ describe('/admin/pendingDeletions', function () {
         expect(study.pm_email).to.equal(null);
         expect(study.hub_email).to.equal(null);
         expect(study.status).to.equal('deleted');
+      });
+
+      it('should send the "study.deleted" message', async () => {
+        // Arrange
+        let studyName: string;
+        await messageQueueService.createConsumer(
+          MessageQueueTopic.STUDY_DELETED,
+          async (message: { studyName: string }) => {
+            studyName = message.studyName;
+            return Promise.resolve();
+          }
+        );
+
+        // Act
+        const result: Response<PendingStudyDeletionDto> = await chai
+          .request(apiAddress)
+          .put('/admin/pendingdeletions/1234565')
+          .set(sysadminHeader2)
+          .send({});
+
+        // Assert
+        expect(result).to.have.status(StatusCodes.NO_CONTENT);
+
+        while (studyName !== 'ApiTestStudie1') {
+          await delay(DELAY_TIME);
+        }
+        expect(studyName).to.equal('ApiTestStudie1');
       });
     });
   });

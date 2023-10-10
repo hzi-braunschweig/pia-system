@@ -186,6 +186,25 @@ const routes: ProxyRoute[] = [
   },
 
   {
+    path: publicApiPath + 'feedbackstatistic/',
+    upstream: {
+      host: 'feedbackstatisticservice',
+      protocol: getProtocol(),
+      path: '/',
+      port: ConfigUtils.getEnvVariableInt('FEEDBACKSTATISTICSERVICE_PORT'),
+    },
+  },
+  {
+    path: adminApiPath + 'feedbackstatistic/',
+    upstream: {
+      host: 'feedbackstatisticservice',
+      path: adminUpstreamPath,
+      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('FEEDBACKSTATISTICSERVICE_PORT'),
+    },
+  },
+
+  {
     path: publicApiPath + 'auth/',
     upstream: {
       host: 'authserver',

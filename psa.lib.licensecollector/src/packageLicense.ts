@@ -32,6 +32,8 @@ export class PackageLicense {
     'CC0 1.0 Universal',
     // MPL-2.0
     'Mozilla Public License, version 2.0',
+    // EPL-2.0
+    'Eclipse Public License - v 2.0',
   ];
 
   public constructor(

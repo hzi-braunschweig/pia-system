@@ -1,4 +1,5 @@
-FROM node:14.19.0-alpine@sha256:9a2aa545388a135b496bd55cef2be920b96c4526c99c140170e05a8de3fce653 AS base
+# Appflow currently only supports until node v18 (https://ionic.io/docs/appflow/build-stacks)
+FROM node:18.16.1-alpine@sha256:bf6c61feabc1a1bd565065016abe77fa378500ec75efa67f5b04e5e5c4d447cd AS base
 
 FROM base AS npm-install
 RUN apk --update --no-cache add curl tzdata
@@ -15,9 +16,17 @@ WORKDIR /usr/src/node-app/
 ARG DIR=.
 COPY $DIR/package*.json ./
 # copy dev dependencies
-COPY psa.lib.licensecollector/package.json ../psa.lib.licensecollector/
+COPY psa.lib.licensecollector/package*.json ../psa.lib.licensecollector/
 COPY psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
 COPY psa.eslint-config/ ../psa.eslint-config/
+COPY psa.lib.charts/dist ../psa.lib.charts/dist
+
+### workaround for npm 9 until we move to package registry
+### execute install in the local dependency folders
+WORKDIR /usr/src/psa.lib.licensecollector
+RUN npm ci
+WORKDIR /usr/src/node-app/
+###
 
 RUN npm ci
 
@@ -42,9 +51,17 @@ WORKDIR /usr/src/node-app/
 ARG DIR=.
 COPY $DIR/package*.json ./
 # copy dev dependencies
-COPY --chown=node psa.lib.licensecollector/package.json ../psa.lib.licensecollector/
+COPY --chown=node psa.lib.licensecollector/package*.json ../psa.lib.licensecollector/
 COPY --chown=node psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
 COPY --chown=node psa.eslint-config/ ../psa.eslint-config/
+COPY --chown=node psa.lib.charts/dist ../psa.lib.charts/dist
+
+### workaround for npm 9 until we move to package registry
+### execute install in the local dependency folders
+WORKDIR /usr/src/psa.lib.licensecollector
+RUN npm ci
+WORKDIR /usr/src/node-app/
+###
 
 RUN npm ci
 

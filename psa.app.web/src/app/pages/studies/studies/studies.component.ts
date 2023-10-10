@@ -5,7 +5,10 @@
  */
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
+import {
+  MatLegacyPaginator as MatPaginator,
+  MatLegacyPaginatorIntl as MatPaginatorIntl,
+} from '@angular/material/legacy-paginator';
 import { MatSort } from '@angular/material/sort';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
@@ -13,7 +16,10 @@ import { AlertService } from '../../../_services/alert.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Study } from '../../../psa.app.core/models/study';
 import { DialogDeleteComponent } from '../../../_helpers/dialog-delete';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import {
   DialogPopUpComponent,
   DialogPopUpData,
@@ -25,7 +31,7 @@ import {
   DialogDeletePartnerResult,
 } from '../../../_helpers/dialog-delete-partner';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { FormControl } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CurrentUser } from '../../../_services/current-user.service';

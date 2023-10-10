@@ -6,6 +6,7 @@
 import { Injectable } from '@angular/core';
 import { AccessToken, User } from './auth.model';
 import { JwtService } from './jwt.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -24,6 +25,6 @@ export class CurrentUser implements User {
     const payload = this.jwt.decodeToken<AccessToken>(token);
     this.username = payload.username;
     this.study = payload.studies[0];
-    this.locale = payload.locale;
+    this.locale = payload.locale ?? environment.locale;
   }
 }

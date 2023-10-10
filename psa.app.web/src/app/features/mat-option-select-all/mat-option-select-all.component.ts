@@ -6,7 +6,7 @@
 
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { MatPseudoCheckboxState } from '@angular/material/core';
-import { MatSelect } from '@angular/material/select';
+import { MatLegacySelect as MatSelect } from '@angular/material/legacy-select';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 

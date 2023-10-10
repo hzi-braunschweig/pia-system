@@ -1,0 +1,167 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<mat-card class="time-series-card">
+  <mat-card-subtitle>
+    {{ 'FEEDBACK_STATISTICS.TIME_SERIES' | translate }} {{ index + 1 }}
+  </mat-card-subtitle>
+  <mat-card-content>
+    <div class="grid-container-10cols">
+      <!-- Color Select -->
+      <mat-form-field class="grid-item-10 color-select">
+        <mat-select
+          [formControl]="form.controls.color"
+          placeholder="{{ 'FEEDBACK_STATISTICS.COLOR' | translate }}"
+        >
+          <mat-select-trigger>
+            <span
+              class="color-option-field color-option-field-trigger"
+              [style]="'background-color: ' + form.get('color').value + ';'"
+            ></span>
+          </mat-select-trigger>
+          <mat-option
+            *ngFor="let color of selectableAndSelectedColors()"
+            [value]="color"
+            class="color-option"
+          >
+            <span
+              class="color-option-field"
+              [style]="'background-color: ' + color + ';'"
+            ></span>
+          </mat-option>
+        </mat-select>
+
+        <mat-error *ngIf="form.controls.color.hasError('required')">
+          {{ 'FEEDBACK_STATISTICS.COLOR_REQUIRED_ERROR' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Legend Label -->
+      <mat-form-field class="grid-item-90">
+        <input
+          type="text"
+          matInput
+          placeholder="{{ 'FEEDBACK_STATISTICS.LEGEND_LABEL' | translate }}"
+          [formControl]="form.controls.label"
+        />
+
+        <mat-hint>
+          {{ form.controls.label.value?.length ?? 0 }} /
+          {{ timeSeriesLabelMaxLength }}
+        </mat-hint>
+
+        <mat-error *ngIf="form.controls.label.hasError('required')">
+          {{ 'FEEDBACK_STATISTICS.LEGEND_LABEL_REQUIRED_ERROR' | translate }}
+        </mat-error>
+        <mat-error *ngIf="form.controls.label.hasError('maxlength')">
+          {{
+            'FEEDBACK_STATISTICS.LEGEND_LABEL_MAX_LENGTH_ERROR'
+              | translate: { maxLength: timeSeriesLabelMaxLength }
+          }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Questionnaire Select -->
+      <mat-form-field class="grid-item-20">
+        <mat-select
+          disableOptionCentering
+          placeholder="{{ 'FEEDBACK_STATISTICS.QUESTIONNAIRE' | translate }}"
+          [formControl]="form.controls.questionnaire"
+          [compareWith]="formService.isSameQuestionnaireValue"
+          data-unit="questionnaire-select"
+        >
+          <mat-option
+            *ngIf="selectedQuestionnaire"
+            [value]="{
+              id: selectedQuestionnaire.id,
+              version: selectedQuestionnaire.version
+            }"
+            [title]="
+              selectedQuestionnaire.name +
+              ' (' +
+              selectedQuestionnaire.version +
+              ')'
+            "
+          >
+            {{ selectedQuestionnaire.name }} ({{
+              selectedQuestionnaire.version
+            }})
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Answer Option Select -->
+      <mat-form-field class="grid-item-40">
+        <mat-select
+          disableOptionCentering
+          placeholder="{{ 'FEEDBACK_STATISTICS.QUESTION' | translate }}"
+          [formControl]="form.controls.answerOptionValueCodes.controls.id"
+          data-e2e="e2e-answer-select"
+          data-unit="answer-option-select"
+        >
+          <mat-select-search
+            [formControl]="answerOptionFilterCtrl"
+          ></mat-select-search>
+          <mat-option
+            *ngFor="let answerOption of selectableAnswerOptions"
+            [value]="answerOption.id"
+            [title]="
+              answerOption.text + ' (' + answerOption.variable_name + ')'
+            "
+          >
+            {{ answerOption.text }} ({{ answerOption.variable_name }})
+          </mat-option>
+        </mat-select>
+
+        <mat-error
+          *ngIf="
+            form.controls.answerOptionValueCodes.controls.id.hasError(
+              'required'
+            )
+          "
+        >
+          {{ 'FEEDBACK_STATISTICS.QUESTION_REQUIRED_ERROR' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Answer Option Values Select -->
+      <mat-form-field class="grid-item-40">
+        <mat-select
+          disableOptionCentering
+          multiple="true"
+          placeholder="{{ 'FEEDBACK_STATISTICS.ANSWER_OPTION' | translate }}"
+          [formControl]="
+            form.controls.answerOptionValueCodes.controls.valueCodes
+          "
+          data-e2e="e2e-questionnaire-select"
+          data-unit="value-codes-select"
+        >
+          <mat-option
+            *ngFor="let value of selectableAnswerOptionValues"
+            [value]="value.code"
+            [title]="value.text + ' (' + value.code + ')'"
+          >
+            {{ value.text }} ({{ value.code }})
+          </mat-option>
+        </mat-select>
+
+        <mat-error>
+          {{ 'FEEDBACK_STATISTICS.ANSWER_OPTION_MIN_ONE_ERROR' | translate }}
+        </mat-error>
+      </mat-form-field>
+
+      <app-hint class="grid-item-100">{{
+        'FEEDBACK_STATISTICS.NUMERATOR_ANSWER_TYPE_HINT' | translate
+      }}</app-hint>
+    </div>
+  </mat-card-content>
+  <mat-card-actions>
+    <button type="button" mat-button (click)="remove.emit()">
+      <mat-icon inline="true">delete</mat-icon>
+      {{ 'FEEDBACK_STATISTICS.REMOVE_TIME_SERIES' | translate }}
+    </button>
+  </mat-card-actions>
+</mat-card>

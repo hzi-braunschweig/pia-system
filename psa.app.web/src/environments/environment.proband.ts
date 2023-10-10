@@ -21,6 +21,7 @@ export const environment: Environment = {
   defaultLanguage: 'en-US',
   isSormasEnabled: true,
   isDevelopmentSystem: true,
+  isE2ETestSystem: false,
   authserver: {
     url: `${window.location.protocol}//pia-app/api/v1/auth`,
     realm: 'pia-proband-realm',

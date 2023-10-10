@@ -21,14 +21,20 @@ Questionnaire service is installed and started in a docker container.
 Use `start.sh` to automatically build and start the questionnaire service in a docker container
 
 ```
-cd pia-ansible/src
+cd pia-ansible/local
 ./start.sh start questionnaireservice
 ```
 
 ### Test
 
 - Install dependencies `npm install`
-- Run integration tests `npm run test.int`
+- Run integration tests `npm run test.int`. Possibly ipv6 has to be disabled to run the integration tests:
+
+```
+  sysctl -w net.ipv6.conf.all.disable_ipv6=1
+  sysctl -w net.ipv6.conf.default.disable_ipv6=1
+```
+
 - Run unit tests `npm run test.unit`
 
 ## Docs and Debug

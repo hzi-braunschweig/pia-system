@@ -19,7 +19,8 @@
     "lib": ["es2020", "dom", "dom.iterable"],
     "paths": {
       "swiper_angular": ["node_modules/swiper/angular"]
-    }
+    },
+    "useDefineForClassFields": false
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

@@ -5,7 +5,10 @@
  */
 
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { fakeAsync, tick } from '@angular/core/testing';
 import {
   DialogChangeStudyComponent,

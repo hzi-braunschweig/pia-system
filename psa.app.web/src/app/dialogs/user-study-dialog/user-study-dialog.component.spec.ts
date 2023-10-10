@@ -13,10 +13,10 @@ import {
   DialogUserStudyAccessComponentReturn,
 } from './user-study-dialog';
 import {
-  MAT_DIALOG_DATA,
-  MatDialog,
-  MatDialogRef,
-} from '@angular/material/dialog';
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { createProfessionalAccount } from '../../psa.app.core/models/instance.helper.spec';
 import { AlertService } from '../../_services/alert.service';
 import { first } from 'rxjs/operators';

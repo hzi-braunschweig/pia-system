@@ -27,6 +27,7 @@ export class LicenseCollector {
     'CC-BY-3.0',
     'CC-BY-4.0',
     'CC0-1.0',
+    'EPL-2.0',
     'ISC',
     'MIT',
     'MPL-2.0',

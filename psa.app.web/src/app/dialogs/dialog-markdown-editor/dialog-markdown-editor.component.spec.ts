@@ -9,15 +9,23 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DialogMarkdownEditorComponent } from './dialog-markdown-editor.component';
 import { MockComponent, MockPipe, MockProvider } from 'ng-mocks';
 import {
-  MAT_DIALOG_DATA,
-  MatDialogModule,
-  MatDialogRef,
-} from '@angular/material/dialog';
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialogModule as MatDialogModule,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
 import { MarkdownEditorComponent } from '../../features/markdown-editor/markdown-editor.component';
 import { By } from '@angular/platform-browser';
 import { TranslatePipe } from '@ngx-translate/core';
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({ name: 'translate' })
+class MockTranslatePipe implements PipeTransform {
+  transform(value: string): string {
+    return value;
+  }
+}
 
 describe('DialogMarkdownEditorComponent', () => {
   let component: DialogMarkdownEditorComponent;
@@ -32,12 +40,8 @@ describe('DialogMarkdownEditorComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [MatDialogModule],
-      declarations: [
-        DialogMarkdownEditorComponent,
-        MockComponent(MarkdownEditorComponent),
-        MockPipe(TranslatePipe, (value) => value),
-      ],
+      imports: [MatDialogModule, MockComponent(MarkdownEditorComponent)],
+      declarations: [DialogMarkdownEditorComponent, MockTranslatePipe],
       providers: [
         MockProvider(MAT_DIALOG_DATA, {
           dialogTitle: 'STUDY.EDIT_WELCOME_TEXT',
