@@ -16,12 +16,19 @@ export class IssueDatesCalculator {
   private static readonly DEFAULT_TIME_MS = 0;
 
   public static getFromQuestionnaireSettings(
-    questionnaire: QuestionnaireSettings
+    questionnaire: QuestionnaireSettings,
+    firstQuestionnaireVersionCreatedAt: Date | null
   ): Date[] {
-    return this.getIssueDates(questionnaire);
+    return this.getIssueDates(
+      questionnaire,
+      firstQuestionnaireVersionCreatedAt
+    );
   }
 
-  private static getIssueDates(questionnaire: QuestionnaireSettings): Date[] {
+  private static getIssueDates(
+    questionnaire: QuestionnaireSettings,
+    firstQuestionnaireVersionCreatedAt: Date | null
+  ): Date[] {
     const offsetDays = questionnaire.activateAfterDays;
     const durationDays = questionnaire.deactivateAfterDays;
     const cycleAmount = questionnaire.cycleAmount;
@@ -29,6 +36,7 @@ export class IssueDatesCalculator {
     const cyclePerDay = questionnaire.cyclePerDay ?? this.HOURS_PER_DAY;
     const cycleFirstHour = questionnaire.cycleFirstHour ?? 0;
     const notificationWeekday = questionnaire.notificationWeekday;
+    const createdAt = firstQuestionnaireVersionCreatedAt ?? new Date();
     const datesResult = [];
 
     if (
@@ -40,7 +48,7 @@ export class IssueDatesCalculator {
       throw new Error('Unsupported cycle');
     }
 
-    let startDate = new Date(questionnaire.createdAt ?? new Date());
+    let startDate = new Date(createdAt);
     // Set the hour of the QI to the hour configured in questionnaire or the default notification time
     startDate.setHours(0, 0, 0, 0);
     if (cycleUnit === 'hour') {

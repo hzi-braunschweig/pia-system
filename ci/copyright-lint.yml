@@ -5,11 +5,10 @@ include:
 copyright-lint:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   stage: test
   image:
-    name: fsfe/reuse@sha256:ffca192d7ac78d57fae120e52f374701be5fa001dae1498aac84b4b076b76285
+    name: fsfe/reuse@sha256:888418362aa2a8ebea12d8dbfb41fa8eeabd0c423f42df7e3968af4cbb8d2ef1
     entrypoint: ['/bin/sh', '-c']
   script:
     - rm -rf psa.lib.auth-server-client/dist

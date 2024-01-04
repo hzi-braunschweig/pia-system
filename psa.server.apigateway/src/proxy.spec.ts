@@ -143,7 +143,6 @@ describe('Proxy', () => {
         path: '/',
         upstream: {
           host: 'localhost',
-          serviceName: 'localhost',
           port: 1,
           path: '/',
           protocol: 'http',
@@ -161,7 +160,6 @@ describe('Proxy', () => {
         path: '/',
         upstream: {
           host: 'localhost',
-          serviceName: 'localhost',
           port: dummy.getPort(),
           path: '/',
           protocol: 'http',
@@ -179,7 +177,6 @@ describe('Proxy', () => {
         path: '/test/',
         upstream: {
           host: 'localhost',
-          serviceName: 'localhost',
           port: dummy.getPort(),
           path: '/test/',
           protocol: 'http',
@@ -189,7 +186,6 @@ describe('Proxy', () => {
         path: '/api/v1/test/',
         upstream: {
           host: 'localhost',
-          serviceName: 'localhost',
           port: dummy.getPort(),
           path: '/test/',
           protocol: 'http',
@@ -199,7 +195,6 @@ describe('Proxy', () => {
         path: '/admin/test/',
         upstream: {
           host: 'localhost',
-          serviceName: 'localhost',
           port: dummy.getPort(),
           path: '/test/',
           protocol: 'http',
@@ -219,7 +214,6 @@ describe('Proxy', () => {
         path: '/test/',
         upstream: {
           host: 'localhost',
-          serviceName: 'localhost',
           port: dummy.getPort(),
           path: '/test/',
           protocol: 'http',
@@ -229,7 +223,6 @@ describe('Proxy', () => {
         path: '/api/v1/test/',
         upstream: {
           host: 'localhost',
-          serviceName: 'localhost',
           port: dummy.getPort(),
           path: '/test/',
           protocol: 'http',
@@ -239,7 +232,6 @@ describe('Proxy', () => {
         path: '/admin/test/',
         upstream: {
           host: 'localhost',
-          serviceName: 'localhost',
           port: dummy.getPort(),
           path: '/test/',
           protocol: 'http',
@@ -260,7 +252,6 @@ describe('Proxy', () => {
           path: '/test/',
           upstream: {
             host: 'localhost',
-            serviceName: 'localhost',
             port: dummy.getPort(),
             path: '/test/',
             protocol: 'http',
@@ -281,7 +272,6 @@ describe('Proxy', () => {
           path: '/',
           upstream: {
             host: 'localhost',
-            serviceName: 'localhost',
             port: dummy.getPort(),
             path: '/',
             protocol: 'http',
@@ -303,7 +293,6 @@ describe('Proxy', () => {
           path: '/',
           upstream: {
             host: 'localhost',
-            serviceName: 'localhost',
             port: dummy.getPort(),
             path: '/',
             protocol: 'http',
@@ -325,7 +314,6 @@ describe('Proxy', () => {
           path: '/',
           upstream: {
             host: 'localhost',
-            serviceName: 'localhost',
             port: dummy.getPort(),
             path: '/',
             protocol: 'http',
@@ -349,7 +337,6 @@ describe('Proxy', () => {
           path: '/',
           upstream: {
             host: 'localhost',
-            serviceName: 'localhost',
             port: dummy.getPort(),
             path: '/',
             protocol: 'http',
@@ -380,7 +367,6 @@ describe('Proxy', () => {
           path: '/',
           upstream: {
             host: 'localhost',
-            serviceName: 'localhost',
             port: dummy.getPort(),
             path: '/',
             protocol: 'http',
@@ -407,7 +393,6 @@ describe('Proxy', () => {
           path: '/',
           upstream: {
             host: 'localhost',
-            serviceName: 'localhost',
             port: dummy.getPort(),
             path: '/',
             protocol: 'http',
@@ -460,7 +445,6 @@ describe('Proxy', () => {
         path: '/',
         upstream: {
           host: 'localhost',
-          serviceName: 'localhost',
           port: dummy.getPort(),
           path: '/',
           protocol: 'http',
@@ -490,5 +474,23 @@ describe('Proxy', () => {
       method: 'OPTIONS',
     });
     expect(response.status).to.equal(StatusCodes.NO_CONTENT);
+  });
+
+  it('can handle a bad request url to proxy gracefully', async () => {
+    const dummy = await Helper.startHttpServer();
+    const proxy = await Helper.startProxy([
+      {
+        path: '/',
+        upstream: {
+          host: 'localhost',
+          port: dummy.getPort(),
+          path: '/',
+          protocol: 'http',
+        },
+      },
+    ]);
+
+    const response = await fetch(`http://localhost:${proxy.getPort()}//`);
+    expect(response.status).to.equal(StatusCodes.INTERNAL_SERVER_ERROR);
   });
 });

@@ -21,3 +21,7 @@ export interface LabObservation {
   other_unit?: string | null;
   kit_name?: string | null;
 }
+
+export interface LabObservationName {
+  name: string;
+}

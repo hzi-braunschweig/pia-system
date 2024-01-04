@@ -64,7 +64,7 @@ class LicenseTextCompleter {
         fetchP[i++] = (0, node_fetch_1.default)('https://raw.githubusercontent.com/sindresorhus/is-path-cwd/main/license').then(async (res) => {
             LicenseTextCompleter.MIT_SINDRE_SORHUS = await res.text();
         });
-        fetchP[i++] = (0, node_fetch_1.default)('https://raw.githubusercontent.com/jasmine/jasmine/main/MIT.LICENSE').then(async (res) => {
+        fetchP[i++] = (0, node_fetch_1.default)('https://raw.githubusercontent.com/jasmine/jasmine/main/LICENSE').then(async (res) => {
             LicenseTextCompleter.MIT_JASMINE = await res.text();
         });
         fetchP[i++] = (0, node_fetch_1.default)('https://zenorocha.mit-license.org/license.txt').then(async (res) => {

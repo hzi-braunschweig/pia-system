@@ -21,15 +21,16 @@ import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FeedbackStatisticsService } from '../feedback-statistics.service';
 import { RouterTestingModule } from '@angular/router/testing';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { FeedbackStatisticConfigurationDto } from './feedback-statistic-configuration.model';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
 import {
   MatLegacyDialog as MatDialog,
   MatLegacyDialogRef as MatDialogRef,
 } from '@angular/material/legacy-dialog';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 
 class MockConfigurationComponent {
   public readonly form = new FormGroup({
@@ -55,6 +56,8 @@ describe('FeedbackStatisticConfigurationComponent', () => {
   let feedbackStatisticsService: SpyObj<FeedbackStatisticsService>;
   let router: SpyObj<Router>;
   let matDialog: SpyObj<MatDialog>;
+  let matSnackBar: SpyObj<MatSnackBar>;
+  let translateService: SpyObj<TranslateService>;
   let dialogAfterClosed = new Subject<boolean>();
 
   beforeEach(async () => {
@@ -84,6 +87,10 @@ describe('FeedbackStatisticConfigurationComponent', () => {
     matDialog.open.and.returnValue({
       afterClosed: () => dialogAfterClosed.asObservable(),
     } as MatDialogRef<unknown>);
+
+    matSnackBar = jasmine.createSpyObj('MatSnackBar', ['open']);
+    translateService = jasmine.createSpyObj('MatSnackBar', ['instant']);
+    translateService.instant.and.returnValue('errorText');
   });
 
   describe('edit mode', () => {
@@ -157,6 +164,20 @@ describe('FeedbackStatisticConfigurationComponent', () => {
           component.metaDataConfigurationComponent.form.touched
         ).toBeTrue();
       });
+
+      it('should show a notification if the update does not work', fakeAsync(() => {
+        feedbackStatisticsService.putFeedbackStatisticConfiguration.and.returnValue(
+          throwError(() => 'error')
+        );
+
+        component.submit();
+        tick();
+
+        expect(matSnackBar.open).toHaveBeenCalledOnceWith('errorText', 'X', {
+          panelClass: ['error'],
+          duration: 4000,
+        });
+      }));
     });
   });
 
@@ -221,6 +242,20 @@ describe('FeedbackStatisticConfigurationComponent', () => {
           component.metaDataConfigurationComponent.form.touched
         ).toBeTrue();
       });
+
+      it('should show a notification if saving does not work', fakeAsync(() => {
+        feedbackStatisticsService.postFeedbackStatisticConfiguration.and.returnValue(
+          throwError(() => 'error')
+        );
+
+        component.submit();
+        tick();
+
+        expect(matSnackBar.open).toHaveBeenCalledOnceWith('errorText', 'X', {
+          panelClass: ['error'],
+          duration: 4000,
+        });
+      }));
     });
   });
 
@@ -238,6 +273,8 @@ describe('FeedbackStatisticConfigurationComponent', () => {
         MockProvider(FeedbackStatisticsService, feedbackStatisticsService),
         MockProvider(Router, router),
         MockProvider(MatDialog, matDialog),
+        MockProvider(MatSnackBar, matSnackBar),
+        MockProvider(TranslateService, translateService),
       ],
       imports: [MatButtonModule, MatIconModule, RouterTestingModule],
     }).compileComponents();

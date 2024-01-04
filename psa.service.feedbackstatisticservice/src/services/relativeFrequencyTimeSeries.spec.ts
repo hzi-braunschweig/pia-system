@@ -16,6 +16,10 @@ import {
 import { RelativeFrequencyTimeSeriesConfiguration } from '../entities/relativeFrequencyTimeSeriesConfiguration';
 
 describe('RelativeFrequencyTimeSeries', () => {
+  before(() => {
+    process.env.TZ = 'Europe/Berlin';
+  });
+
   it('should not accept non cyclic questionnaires', () => {
     // Arrange
     const questionnaire = createQuestionnaireSettings({
@@ -31,13 +35,40 @@ describe('RelativeFrequencyTimeSeries', () => {
             new Date('2022-06-03')
           ),
         }),
-        questionnaire
+        questionnaire,
+        questionnaire.createdAt
       );
 
     // Assert
     expect(constructor).to.throw(
       'Invalid cycle for relative frequency time series'
     );
+  });
+
+  it('should use the parameter firstQuestionnaireVersionCreatedAt instead of the createdAt from the questionnaire to determine the interval', () => {
+    // Arrange
+    const relativeFrequencyTimeSeries = new RelativeFrequencyTimeSeries(
+      createMockConfig({
+        intervalShift: new TimeSpan(0, TimeSpanUnit.HOUR),
+        timeRange: new TimeRange(
+          new Date('2022-06-01'),
+          new Date('2022-06-03')
+        ),
+      }),
+      createQuestionnaireSettings({
+        cycleUnit: 'hour',
+        cycleAmount: 2,
+        cycleFirstHour: 10,
+        cyclePerDay: 1,
+        createdAt: new Date('2022-06-02'),
+      }),
+      new Date('2022-06-01')
+    );
+
+    // Act
+    // Assert
+    const data = relativeFrequencyTimeSeries.getData();
+    expect(data[0]?.intervals).to.have.lengthOf(3);
   });
 
   describe('hour interval', () => {
@@ -58,7 +89,8 @@ describe('RelativeFrequencyTimeSeries', () => {
           cycleFirstHour: 10,
           cyclePerDay: 3,
           createdAt: new Date('2022-05-31'),
-        })
+        }),
+        new Date('2022-05-31')
       );
 
       // Act
@@ -113,7 +145,8 @@ describe('RelativeFrequencyTimeSeries', () => {
           cycleFirstHour: 10,
           cyclePerDay: 3,
           createdAt: new Date('2022-05-31'),
-        })
+        }),
+        new Date('2022-05-31')
       );
 
       // Act
@@ -121,14 +154,14 @@ describe('RelativeFrequencyTimeSeries', () => {
         questionnaireId: 5,
         questionnaireInstanceId: 1,
         questionnaireInstanceDateOfIssue: new Date('2022-06-01T08:00:00.000Z'),
-        answerOptionId: 1,
+        answerOptionId: 1810,
         valueCodes: [1],
       });
       relativeFrequencyTimeSeries.pushAnswer({
         questionnaireId: 5,
         questionnaireInstanceId: 1,
         questionnaireInstanceDateOfIssue: new Date('2022-06-03T12:00:00.000Z'),
-        answerOptionId: 1,
+        answerOptionId: 1810,
         valueCodes: [1],
       });
 
@@ -162,7 +195,7 @@ describe('RelativeFrequencyTimeSeries', () => {
       expect(data[0]?.intervals[8]?.value).to.be.approximately(100, 3);
     });
 
-    it('should return an error if dateOfIssue does not fit to timeRange', () => {
+    it('should not add a time range if dateOfIssue does not fit to timeRange', () => {
       // Arrange
       const relativeFrequencyTimeSeries = new RelativeFrequencyTimeSeries(
         createMockConfig({
@@ -178,24 +211,24 @@ describe('RelativeFrequencyTimeSeries', () => {
           cycleFirstHour: 10,
           cyclePerDay: 3,
           createdAt: new Date('2022-05-31'),
-        })
+        }),
+        new Date('2022-05-31')
       );
 
       // Act
+      relativeFrequencyTimeSeries.pushAnswer({
+        questionnaireId: 5,
+        questionnaireInstanceId: 1,
+        questionnaireInstanceDateOfIssue: new Date('2022-06-02T20:00:00.000Z'),
+        answerOptionId: 1810,
+        valueCodes: [1],
+      });
       // Assert
-      expect(() =>
-        relativeFrequencyTimeSeries.pushAnswer({
-          questionnaireId: 5,
-          questionnaireInstanceId: 1,
-          questionnaireInstanceDateOfIssue: new Date(
-            '2022-06-02T20:00:00.000Z'
-          ),
-          answerOptionId: 1,
-          valueCodes: [1],
-        })
-      ).to.throw(
-        'Answer for interval out of time series range: 2022-06-02T19:00:00.000Z/2022-06-02T21:00:00.000Z'
-      );
+      relativeFrequencyTimeSeries
+        .getData()[0]
+        ?.intervals.forEach((interval) => {
+          expect(interval.value).to.be.approximately(0, 3);
+        });
     });
 
     it('should never return values lower than 0 and larger than 100', () => {
@@ -215,7 +248,8 @@ describe('RelativeFrequencyTimeSeries', () => {
           cycleFirstHour: 10,
           cyclePerDay: 3,
           createdAt: new Date('2022-05-31'),
-        })
+        }),
+        new Date('2022-05-31')
       );
 
       // Act
@@ -251,7 +285,8 @@ describe('RelativeFrequencyTimeSeries', () => {
         createQuestionnaireSettings({
           cycleUnit: 'day',
           createdAt: new Date('2022-12-01'),
-        })
+        }),
+        new Date('2022-12-01')
       );
 
       // Act
@@ -302,7 +337,8 @@ describe('RelativeFrequencyTimeSeries', () => {
         createQuestionnaireSettings({
           cycleUnit: 'day',
           createdAt: new Date('2022-12-01'),
-        })
+        }),
+        new Date('2022-12-01')
       );
 
       // Act
@@ -310,14 +346,14 @@ describe('RelativeFrequencyTimeSeries', () => {
         questionnaireId: 5,
         questionnaireInstanceId: 1,
         questionnaireInstanceDateOfIssue: new Date('2022-12-06T07:00:00.000Z'),
-        answerOptionId: 1,
+        answerOptionId: 1810,
         valueCodes: [1],
       });
       relativeFrequencyTimeSeries.pushAnswer({
         questionnaireId: 5,
         questionnaireInstanceId: 1,
         questionnaireInstanceDateOfIssue: new Date('2022-12-19T07:00:00.000Z'),
-        answerOptionId: 1,
+        answerOptionId: 1810,
         valueCodes: [1],
       });
 
@@ -351,7 +387,7 @@ describe('RelativeFrequencyTimeSeries', () => {
       expect(data[0]?.intervals[13]?.value).to.be.approximately(100, 3);
     });
 
-    it('should return an error if dateOfIssue does not fit to timeRange', () => {
+    it('should not add a time range if dateOfIssue does not fit to timeRange', () => {
       // Arrange
       const relativeFrequencyTimeSeries = new RelativeFrequencyTimeSeries(
         createMockConfig({
@@ -360,22 +396,24 @@ describe('RelativeFrequencyTimeSeries', () => {
         createQuestionnaireSettings({
           cycleUnit: 'day',
           createdAt: new Date('2022-12-01'),
-        })
+        }),
+        new Date('2022-12-01')
       );
 
       // Act
+      relativeFrequencyTimeSeries.pushAnswer({
+        questionnaireId: 5,
+        questionnaireInstanceId: 1,
+        questionnaireInstanceDateOfIssue: new Date('2022-12-05'),
+        answerOptionId: 1,
+        valueCodes: [1],
+      });
       // Assert
-      expect(() =>
-        relativeFrequencyTimeSeries.pushAnswer({
-          questionnaireId: 5,
-          questionnaireInstanceId: 1,
-          questionnaireInstanceDateOfIssue: new Date('2022-12-05'),
-          answerOptionId: 1,
-          valueCodes: [1],
-        })
-      ).to.throw(
-        'Answer for interval out of time series range: 2022-11-28T00:00:00.000Z/2022-11-29T00:00:00.000Z'
-      );
+      relativeFrequencyTimeSeries
+        .getData()[0]
+        ?.intervals.forEach((interval) => {
+          expect(interval.value).to.be.approximately(0, 3);
+        });
     });
 
     it('should never return values lower than 0 and larger than 100', () => {
@@ -388,7 +426,8 @@ describe('RelativeFrequencyTimeSeries', () => {
         createQuestionnaireSettings({
           cycleUnit: 'day',
           createdAt: new Date('2022-12-01'),
-        })
+        }),
+        new Date('2022-12-01')
       );
 
       // Act
@@ -419,7 +458,8 @@ describe('RelativeFrequencyTimeSeries', () => {
       const answers: AnswerData[] = createAnswers();
       const relativeFrequencyTimeSeries = new RelativeFrequencyTimeSeries(
         createMockConfig(),
-        createQuestionnaireSettings()
+        createQuestionnaireSettings(),
+        createQuestionnaireSettings().createdAt
       );
 
       // Act
@@ -465,7 +505,8 @@ describe('RelativeFrequencyTimeSeries', () => {
             new Date('2022-12-17')
           ),
         }),
-        createQuestionnaireSettings()
+        createQuestionnaireSettings(),
+        createQuestionnaireSettings().createdAt
       );
 
       // Act
@@ -473,14 +514,14 @@ describe('RelativeFrequencyTimeSeries', () => {
         questionnaireId: 5,
         questionnaireInstanceId: 1,
         questionnaireInstanceDateOfIssue: new Date('2022-12-10T07:00:00.000Z'),
-        answerOptionId: 1,
+        answerOptionId: 1810,
         valueCodes: [1],
       });
       relativeFrequencyTimeSeries.pushAnswer({
         questionnaireId: 5,
         questionnaireInstanceId: 1,
         questionnaireInstanceDateOfIssue: new Date('2022-12-17T07:00:00.000Z'),
-        answerOptionId: 1,
+        answerOptionId: 1810,
         valueCodes: [1],
       });
 
@@ -506,26 +547,28 @@ describe('RelativeFrequencyTimeSeries', () => {
       expect(data[0]?.intervals[1]?.value).to.be.approximately(100, 3);
     });
 
-    it('should return an error if dateOfIssue does not fit to timeRange', () => {
+    it('should not add a time range if dateOfIssue does not fit to timeRange', () => {
       // Arrange
       const relativeFrequencyTimeSeries = new RelativeFrequencyTimeSeries(
         createMockConfig(),
-        createQuestionnaireSettings()
+        createQuestionnaireSettings(),
+        createQuestionnaireSettings().createdAt
       );
 
       // Act
+      relativeFrequencyTimeSeries.pushAnswer({
+        questionnaireId: 5,
+        questionnaireInstanceId: 1,
+        questionnaireInstanceDateOfIssue: new Date('2022-12-05'),
+        answerOptionId: 1810,
+        valueCodes: [1],
+      });
       // Assert
-      expect(() =>
-        relativeFrequencyTimeSeries.pushAnswer({
-          questionnaireId: 5,
-          questionnaireInstanceId: 1,
-          questionnaireInstanceDateOfIssue: new Date('2022-12-05'),
-          answerOptionId: 1,
-          valueCodes: [1],
-        })
-      ).to.throw(
-        'Answer for interval out of time series range: 2022-11-28T00:00:00.000Z/2022-12-05T00:00:00.000Z'
-      );
+      relativeFrequencyTimeSeries
+        .getData()[0]
+        ?.intervals.forEach((interval) => {
+          expect(interval.value).to.be.approximately(0, 3);
+        });
     });
 
     it('should never return values lower than 0 and larger than 100', () => {
@@ -533,7 +576,8 @@ describe('RelativeFrequencyTimeSeries', () => {
       const answers: AnswerData[] = createAnswers();
       const relativeFrequencyTimeSeries = new RelativeFrequencyTimeSeries(
         createMockConfig(),
-        createQuestionnaireSettings()
+        createQuestionnaireSettings(),
+        createQuestionnaireSettings().createdAt
       );
 
       // Act
@@ -573,7 +617,8 @@ describe('RelativeFrequencyTimeSeries', () => {
         createQuestionnaireSettings({
           cycleUnit: 'month',
           createdAt: new Date('2022-01-01'),
-        })
+        }),
+        new Date('2022-01-01')
       );
 
       // Act
@@ -624,7 +669,8 @@ describe('RelativeFrequencyTimeSeries', () => {
         createQuestionnaireSettings({
           cycleUnit: 'month',
           createdAt: new Date('2022-01-01'),
-        })
+        }),
+        new Date('2022-01-01')
       );
 
       // Act
@@ -632,14 +678,14 @@ describe('RelativeFrequencyTimeSeries', () => {
         questionnaireId: 5,
         questionnaireInstanceId: 1,
         questionnaireInstanceDateOfIssue: new Date('2022-02-01T07:00:00.000Z'),
-        answerOptionId: 1,
+        answerOptionId: 1810,
         valueCodes: [1],
       });
       relativeFrequencyTimeSeries.pushAnswer({
         questionnaireId: 5,
         questionnaireInstanceId: 1,
         questionnaireInstanceDateOfIssue: new Date('2022-12-01T07:00:00.000Z'),
-        answerOptionId: 1,
+        answerOptionId: 1810,
         valueCodes: [1],
       });
 
@@ -665,7 +711,7 @@ describe('RelativeFrequencyTimeSeries', () => {
       expect(data[0]?.intervals[10]?.value).to.be.approximately(100, 3);
     });
 
-    it('should return an error if dateOfIssue does not fit to timeRange', () => {
+    it('should not add a time range if dateOfIssue does not fit to timeRange', () => {
       // Arrange
       const relativeFrequencyTimeSeries = new RelativeFrequencyTimeSeries(
         createMockConfig({
@@ -678,24 +724,24 @@ describe('RelativeFrequencyTimeSeries', () => {
         createQuestionnaireSettings({
           cycleUnit: 'month',
           createdAt: new Date('2022-01-01'),
-        })
+        }),
+        new Date('2022-01-01')
       );
 
       // Act
+      relativeFrequencyTimeSeries.pushAnswer({
+        questionnaireId: 5,
+        questionnaireInstanceId: 1,
+        questionnaireInstanceDateOfIssue: new Date('2023-01-01T07:00:00.000Z'),
+        answerOptionId: 1810,
+        valueCodes: [1],
+      });
       // Assert
-      expect(() =>
-        relativeFrequencyTimeSeries.pushAnswer({
-          questionnaireId: 5,
-          questionnaireInstanceId: 1,
-          questionnaireInstanceDateOfIssue: new Date(
-            '2023-01-01T07:00:00.000Z'
-          ),
-          answerOptionId: 1,
-          valueCodes: [1],
-        })
-      ).to.throw(
-        'Answer for interval out of time series range: 2022-12-01T07:00:00.000Z/2023-01-01T07:00:00.000Z'
-      );
+      relativeFrequencyTimeSeries
+        .getData()[0]
+        ?.intervals.forEach((interval) => {
+          expect(interval.value).to.be.approximately(0, 3);
+        });
     });
 
     it('should never return values lower than 0 and larger than 100', () => {
@@ -712,7 +758,8 @@ describe('RelativeFrequencyTimeSeries', () => {
         createQuestionnaireSettings({
           cycleUnit: 'month',
           createdAt: new Date('2022-01-01'),
-        })
+        }),
+        new Date('2022-01-01')
       );
 
       // Act
@@ -742,7 +789,8 @@ describe('RelativeFrequencyTimeSeries', () => {
       // Arrange
       const relativeFrequencyTimeSeries = new RelativeFrequencyTimeSeries(
         createMockConfig(),
-        createQuestionnaireSettings()
+        createQuestionnaireSettings(),
+        createQuestionnaireSettings().createdAt
       );
 
       // Act
@@ -756,13 +804,14 @@ describe('RelativeFrequencyTimeSeries', () => {
       // Arrange
       const relativeFrequencyTimeSeries = new RelativeFrequencyTimeSeries(
         createMockConfig(),
-        createQuestionnaireSettings()
+        createQuestionnaireSettings(),
+        createQuestionnaireSettings().createdAt
       );
       relativeFrequencyTimeSeries.pushAnswer({
         questionnaireId: 5,
         questionnaireInstanceId: 1,
         questionnaireInstanceDateOfIssue: new Date('2023-01-07T07:00:00.000Z'),
-        answerOptionId: 1,
+        answerOptionId: 1810,
         valueCodes: [1, 2],
       });
 
@@ -775,7 +824,7 @@ describe('RelativeFrequencyTimeSeries', () => {
   });
 });
 
-function createMockConfig(
+export function createMockConfig(
   overwrites: Partial<RelativeFrequencyTimeSeriesConfiguration> = {}
 ): RelativeFrequencyTimeSeriesConfiguration {
   return {
@@ -839,56 +888,56 @@ function createAnswers(): AnswerData[] {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2023-01-07T07:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [1, 2],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2023-01-07T07:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [1],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2023-01-07T07:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [2],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2023-01-07T07:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [3],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2023-01-14T07:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [1],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2023-01-14T07:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [2, 3],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2023-01-14T07:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [2],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2023-01-14T07:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [3],
     },
   ];
@@ -900,56 +949,56 @@ function createAnswersForMonthlyQuestionnaire(): AnswerData[] {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-02-01T07:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [1, 2],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-02-01T07:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [1],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-03-01T07:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [2],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-04-01T06:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [3],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-05-01T06:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [1],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-05-01T06:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [2, 3],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-05-01T06:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [2],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-06-01T06:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [3],
     },
   ];
@@ -961,70 +1010,70 @@ function createAnswersForHourlyQuestionnaire(): AnswerData[] {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-06-01T08:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [1, 2],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-06-01T08:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [1],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-06-01T10:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [2],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-06-01T10:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [3],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-06-01T12:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [2],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-06-01T12:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [1],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-06-02T08:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [2, 3],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-06-02T10:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [2],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-06-02T12:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [1],
     },
     {
       questionnaireId: 5,
       questionnaireInstanceId: 1,
       questionnaireInstanceDateOfIssue: new Date('2022-06-03T08:00:00.000Z'),
-      answerOptionId: 1,
+      answerOptionId: 1810,
       valueCodes: [3],
     },
   ];

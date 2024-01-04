@@ -57,7 +57,7 @@ RUN npm run build
 
 FROM base AS final
 
-COPY --from=docker:24.0.5@sha256:b1f43c30e065966611cf5e38012fda2145bc08b01082fa102296957d77c2cb4c /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=docker:24.0.6@sha256:0752ca4e936da012c173c119217c0f9599b3b191c1557e53206d5d06d2627580 /usr/local/bin/docker /usr/local/bin/docker
 
 ENV TZ=UTC
 

@@ -3,7 +3,6 @@ include: ci/rules.yml
 unit:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
   stage: test
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$FOLDER-npm-install:$IMAGE_ID
   script:

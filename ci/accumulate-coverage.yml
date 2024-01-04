@@ -5,7 +5,6 @@ include:
 accumulate-coverage:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   stage: accumulate
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.coverage:$IMAGE_ID

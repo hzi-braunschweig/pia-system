@@ -6,7 +6,7 @@ check-merge-allowed:
   extends:
     - .job-exclude-schedules-pipelines
     - .no-cpu-request
-  image: bash:5.1.16@sha256:fc742d0c3d9d8f5fb2681062398c04b710cd08c46dac1a8f0a5515687018acb9
+  image: bash:5.2.15@sha256:acbac47fb9ea642a211c35013f50481bec20bd23db852c9c2634a4d153e631f1
   stage: prepare
   variables:
     GIT_STRATEGY: none

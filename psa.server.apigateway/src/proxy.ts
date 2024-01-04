@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import httpProxy from 'http-proxy';
+import { createProxyServer } from 'http-proxy';
 import { HttpServer, ISsl } from './httpServer';
 import { Header, Headers } from './headers';
 import { Logging } from './logging';
@@ -19,7 +19,7 @@ import {
 import { StatusCodes } from 'http-status-codes';
 
 import * as http from 'http';
-import net from 'net';
+import * as net from 'net';
 
 interface Context {
   received: number;
@@ -28,7 +28,7 @@ interface Context {
 
 export class Proxy extends HttpServer<Context> {
   private static readonly BASE = 'http://localhost';
-  private readonly proxy = httpProxy.createProxyServer({
+  private readonly proxy = createProxyServer({
     xfwd: true,
   });
 
@@ -71,14 +71,21 @@ export class Proxy extends HttpServer<Context> {
     req: http.IncomingMessage,
     res: http.ServerResponse
   ): void {
-    const route = this.routes.find((r) => req.url?.startsWith(r.path));
-    if (isProxyRoute(route)) {
-      this.handleProxyRoute(route, req, res);
-    } else if (isResponseRoute(route) && req.url === route.path) {
-      this.handleResponseRoute(route, req, res);
-    } else {
-      res.statusCode = StatusCodes.NOT_FOUND;
+    try {
+      const route = this.routes.find((r) => req.url?.startsWith(r.path));
+      if (isProxyRoute(route)) {
+        this.handleProxyRoute(route, req, res);
+      } else if (isResponseRoute(route) && req.url === route.path) {
+        this.handleResponseRoute(route, req, res);
+      } else {
+        res.statusCode = StatusCodes.NOT_FOUND;
+        res.end();
+      }
+    } catch (e) {
+      res.statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
       res.end();
+
+      this.logStatus(req, res.statusCode, e instanceof Error ? e : undefined);
     }
   }
 

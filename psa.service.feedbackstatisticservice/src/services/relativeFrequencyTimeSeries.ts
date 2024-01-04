@@ -67,7 +67,8 @@ export class RelativeFrequencyTimeSeries {
 
   public constructor(
     private readonly config: RelativeFrequencyTimeSeriesConfiguration,
-    private readonly questionnaire: QuestionnaireSettings
+    private readonly questionnaire: QuestionnaireSettings,
+    private readonly firstQuestionnaireVersionCreatedAt: Date | null
   ) {}
 
   public getData(): RelativeFrequencyTimeSeriesDataDto[] {
@@ -95,6 +96,8 @@ export class RelativeFrequencyTimeSeries {
       console.error(
         'Answer for interval out of time series range: ' + intervalKey
       );
+
+      return;
     }
 
     const intervalData = this.timeSeriesData.get(intervalKey) ?? [];
@@ -119,7 +122,10 @@ export class RelativeFrequencyTimeSeries {
 
   private initializeTimeSeriesIntervals(): Map<string, GivenAnswers[]> {
     return new Map<string, GivenAnswers[]>(
-      IssueDatesCalculator.getFromQuestionnaireSettings(this.questionnaire)
+      IssueDatesCalculator.getFromQuestionnaireSettings(
+        this.questionnaire,
+        this.firstQuestionnaireVersionCreatedAt
+      )
         .map((dateOfIssue) => this.intervalShift.shiftDate(dateOfIssue))
         .map(
           (intervalStartDate) =>

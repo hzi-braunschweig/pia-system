@@ -149,7 +149,7 @@ Any contributions you make are **greatly appreciated**.
 
 ## Licence
 
-Distributed under the AGPL-3.0 license. See [LICENSE](./LICENSE.md) for more information.
+Distributed under the AGPL-3.0 license. See [LICENSE](./LICENSES/AGPL-3.0-or-later.txt) for more information.
 
 ## Contact
 

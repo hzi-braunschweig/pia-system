@@ -8,7 +8,7 @@ merge-requests:
     - .job-exclude-schedules-pipelines
     - .no-cpu-request
   stage: push
-  image: curlimages/curl@sha256:faaba66e89c87fd3fb51336857142ee6ce78fa8d8f023a5713d2bf4957f1aca8
+  image: curlimages/curl@sha256:4a3396ae573c44932d06ba33f8696db4429c419da87cbdc82965ee96a37dd0af
   needs: []
   rules:
     - if: $CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+/

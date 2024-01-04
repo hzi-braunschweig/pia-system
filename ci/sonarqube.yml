@@ -5,11 +5,10 @@ include:
 check-sonarqube:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   stage: push
   image:
-    name: sonarsource/sonar-scanner-cli:4.7@sha256:d94a8fc33800f3d3330154768d6527984e9caeff969001018d2e5a9d82155b67
+    name: sonarsource/sonar-scanner-cli:5.0@sha256:494ecc3b5b1ee1625bd377b3905c4284e4f0cc155cff397805a244dee1c7d575
     entrypoint: ['']
   needs:
     - job: accumulate-coverage

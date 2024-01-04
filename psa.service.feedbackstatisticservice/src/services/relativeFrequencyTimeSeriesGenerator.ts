@@ -49,7 +49,29 @@ class RelativeFrequencyTimeSeriesGenerator
     questionnaire: QuestionnaireInternalDto
   ): Promise<RelativeFrequencyTimeSeriesDataDto[]> {
     const valueCodesMapper = new ValueCodesMapper(questionnaire.questions);
-    const timeSeries = new RelativeFrequencyTimeSeries(config, questionnaire);
+    let createdAt = questionnaire.createdAt;
+    if (questionnaire.version > 1) {
+      try {
+        const firstQuestionnaireVersion =
+          await questionnaireserviceClient.getQuestionnaire(
+            questionnaire.id,
+            1
+          );
+        createdAt = firstQuestionnaireVersion.createdAt;
+      } catch (e) {
+        console.error(
+          `First version of questionnaire with id ${questionnaire.id} could not be retrieved.
+           It might have been deleted. Using createdAt of the currently active version as a fallback.`,
+          e
+        );
+      }
+    }
+
+    const timeSeries = new RelativeFrequencyTimeSeries(
+      config,
+      questionnaire,
+      createdAt
+    );
 
     const answersStream =
       await questionnaireserviceClient.getQuestionnaireAnswers(

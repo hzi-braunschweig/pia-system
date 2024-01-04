@@ -1,7 +1,10 @@
-FROM registry.gitlab.com/gitlab-org/release-cli:v0.11.0@sha256:af74927a13c44668cf3741a8e3ef513cd4353703707c64b51b6f6ea98d3fefaf AS release-cli-binary
+FROM regclient/regctl:v0.5.4@sha256:f88a8e55da3ff1fc53284f7f9643dd814244536812158fba0483472501c6c5e7 AS regctl
 
-FROM debian:12.1@sha256:a60c0c42bc6bdc09d91cd57067fcc952b68ad62de651c4cf939c27c9f007d1c5 AS final
+FROM registry.gitlab.com/gitlab-org/release-cli:v0.16.0@sha256:5a71acbadc47c1971100f5246b09f88ba09e84ebe7769e425475dce85245a2bf AS release-cli-binary
 
-RUN apt-get update && apt-get install -y skopeo ca-certificates
+FROM debian:12.2@sha256:22cc4de537485807b7efe6f4c942d7460c4482852f49434f9c022c044c545a90 AS final
+
+RUN apt-get update && apt-get install -y skopeo ca-certificates jq
 
 COPY --from=release-cli-binary /usr/local/bin/release-cli /usr/local/bin/release-cli
+COPY --from=regctl /regctl /usr/local/bin/regctl

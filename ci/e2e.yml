@@ -3,7 +3,6 @@ include: ci/rules.yml
 e2e:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
   stage: test
   image:
     name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.e2e-runner:$IMAGE_ID

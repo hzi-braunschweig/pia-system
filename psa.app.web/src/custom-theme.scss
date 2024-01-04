@@ -41,3 +41,9 @@ $theme: mat.define-light-theme($primary, $accent, $warn);
 @include mat.all-component-themes($theme);
 @include mat.all-legacy-component-themes($theme);
 @include theme-fixes($theme);
+
+:root {
+  --color-primary: #{mat.get-color-from-palette($primary, 500)};
+  --color-accent: #{mat.get-color-from-palette($accent, 500)};
+  --color-warn: #{mat.get-color-from-palette($warn, 500)};
+}

@@ -1,0 +1,45 @@
+cleanup-registry:
+  extends:
+    - .no-cpu-request
+  image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-release-image:$IMAGE_ID
+  stage: push
+  variables:
+    GIT_STRATEGY: none
+  dependencies: []
+  script:
+    - sh -c "skopeo login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
+    - sh -c "regctl registry login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
+    - >
+      REGEX="(^[0-9]+$)|(^[0-9]+-with-faked-secrets$)"
+
+      IMAGES=
+
+      for JOB in $JOBS_INSTALL; do
+          IMAGES+="$JOB-npm-install "
+      done
+
+      for JOB in $JOBS_DOCKER; do
+          IMAGES+="$JOB "
+      done
+
+      for IMAGE in $IMAGES; do
+          echo $IMAGE
+          skopeo list-tags docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$IMAGE > tags.json
+          for TAG in `jq ".Tags[]" < tags.json | sed 's/"//g'`; do
+
+              if [[ "$TAG" =~ $REGEX ]]; then
+                  echo deleting $IMAGE:$TAG
+
+                  # skopeo uses the tag to identify the hash and delete ALL the images with that hash!
+                  #skopeo delete docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$IMAGE:$TAG || true
+                  # therefore we are using rectl to just delete a tag
+                  regctl tag delete $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$IMAGE:$TAG || true
+              fi
+          done
+      done
+
+  rules:
+    - if: '$CI_SCHEDULED_TASK == "cleanup-registry"'
+  needs:
+    - job: build-docker
+      artifacts: false

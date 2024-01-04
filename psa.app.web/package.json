@@ -45,8 +45,9 @@
     "@ngx-translate/core": "^14.0.0",
     "@ngx-translate/http-loader": "^7.0.0",
     "@pia-system/charts": "file:../psa.lib.charts/dist",
+    "chart.js": "^4.2.0",
     "date-fns": "^2.29.3",
-    "firebase": "^9.14.0",
+    "firebase": "^9.23.0",
     "flag-icon-css": "^4.1.6",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.25",
@@ -59,8 +60,7 @@
     "remove-markdown": "^0.5.0",
     "rxjs": "^7.5.7",
     "swiper": "^6.8.4",
-    "tslib": "^2.4.1",
-    "chart.js": "^4.2.0"
+    "tslib": "^2.4.1"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^15.2.1",

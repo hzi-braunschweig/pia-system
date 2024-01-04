@@ -5,7 +5,6 @@ include:
 npm-audit:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   stage: prepare
   image: node:20.3.0-buster-slim@sha256:a0f92f6970cb1fd5e9b6039a8f428616a9b9ed3633360c6b84dcc6aa5c7d5723

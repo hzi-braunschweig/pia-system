@@ -47,8 +47,11 @@ export class MarkdownEditorComponent
 {
   @Input()
   public label = 'GENERAL.MARKDOWN_TEXT_INPUT';
+  @Input()
+  public transformTextBeforeRendering?: (text: string) => string;
 
   public text = new FormControl('');
+  public transformedText?: string;
 
   @ViewChild('markdownTextarea', { static: false, read: ElementRef })
   private markdownTextarea: ElementRef;
@@ -62,9 +65,12 @@ export class MarkdownEditorComponent
   }
 
   public registerOnChange(onChange: (value: string) => void) {
-    this.subscription = this.text.valueChanges.subscribe((value) =>
-      onChange(value)
-    );
+    this.subscription = this.text.valueChanges.subscribe((value) => {
+      if (this.transformTextBeforeRendering !== undefined) {
+        this.transformedText = this.transformTextBeforeRendering(value);
+      }
+      return onChange(value);
+    });
   }
 
   public registerOnTouched(fn) {}
@@ -74,8 +80,8 @@ export class MarkdownEditorComponent
   }
 
   public insertTextAtCurrentSelection(textToInsert: string): void {
-    let start = this.markdownTextarea.nativeElement.selectionStart;
-    let end = this.markdownTextarea.nativeElement.selectionEnd;
+    const start = this.markdownTextarea.nativeElement.selectionStart;
+    const end = this.markdownTextarea.nativeElement.selectionEnd;
 
     this.text.setValue(
       this.text.value.slice(0, start) +

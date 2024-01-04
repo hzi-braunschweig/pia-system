@@ -16,6 +16,9 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DialogInfoComponent } from '../../../_helpers/dialog-info';
+import { lastValueFrom } from 'rxjs';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-feedback-statistic-configuration',
@@ -46,7 +49,9 @@ export class FeedbackStatisticConfigurationComponent implements AfterViewInit {
     private readonly activatedRoute: ActivatedRoute,
     private readonly feedbackStatisticsService: FeedbackStatisticsService,
     private readonly router: Router,
-    private readonly matDialog: MatDialog
+    private readonly matDialog: MatDialog,
+    private readonly snackBar: MatSnackBar,
+    private readonly translate: TranslateService
   ) {}
 
   public ngAfterViewInit(): void {
@@ -68,7 +73,7 @@ export class FeedbackStatisticConfigurationComponent implements AfterViewInit {
     }
   }
 
-  public submit(): void {
+  public async submit(): Promise<void> {
     if (
       this.metaDataConfigurationComponent.form.invalid ||
       this.specificConfigurationComponent.form.invalid
@@ -83,17 +88,37 @@ export class FeedbackStatisticConfigurationComponent implements AfterViewInit {
       ...this.specificConfigurationComponent.getConfiguration(),
     };
 
-    if (this.isEditMode) {
-      this.feedbackStatisticsService
-        .putFeedbackStatisticConfiguration({
-          id: this.configurationId,
-          ...configuration,
-        })
-        .subscribe(() => this.onSuccessfulSubmit());
-    } else {
-      this.feedbackStatisticsService
-        .postFeedbackStatisticConfiguration(configuration)
-        .subscribe(() => this.onSuccessfulSubmit());
+    try {
+      if (this.isEditMode) {
+        await lastValueFrom(
+          this.feedbackStatisticsService.putFeedbackStatisticConfiguration({
+            id: this.configurationId,
+            ...configuration,
+          })
+        );
+      } else {
+        await lastValueFrom(
+          this.feedbackStatisticsService.postFeedbackStatisticConfiguration(
+            configuration
+          )
+        );
+      }
+
+      this.onSuccessfulSubmit();
+    } catch (error) {
+      console.log(
+        'error at updating/saving feedback statistic configuration: ',
+        error
+      );
+
+      this.snackBar.open(
+        this.translate.instant('FEEDBACK_STATISTICS.SAVING_ERROR'),
+        'X',
+        {
+          panelClass: ['error'],
+          duration: 4000,
+        }
+      );
     }
   }
 

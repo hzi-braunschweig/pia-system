@@ -2,7 +2,7 @@ include:
   - local: ci/rules.yml
 
 renovate:
-  image: renovate/renovate:36.24.0@sha256:35db2b4fa98207a7e58bc3356615aca7cf32236bab13bfb16f8a7e4047fa6334
+  image: renovate/renovate:37.33.4@sha256:047ac94f175de7402396e21c1f3669b15c5a761e673642cfd0c5166c73c6ceca
   stage: deploy
   extends: .no-cpu-request
   resource_group: renovate
@@ -23,7 +23,7 @@ renovate:
     RENOVATE_EXTRA_FLAGS: '--autodiscover=true --print-config=true'
   needs: []
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "schedule" && $CI_SCHEDULED_TASK == "renovate"'
+    - if: '$CI_SCHEDULED_TASK == "renovate"'
   script:
     - renovate $RENOVATE_EXTRA_FLAGS
   artifacts:

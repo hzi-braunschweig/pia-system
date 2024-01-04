@@ -818,6 +818,9 @@
     "FILTER_BY_NOT_FILLEDOUT": "Only not filled out questionnaires",
     "PROCESSED_STATUS_CHANGED": "The processing status was changed"
   },
+  "FEEDBACK_STATISTICS": {
+    "SAVING_ERROR": "Could not create or update the feedback statistic configuration."
+  },
   "WELCOME_TEXT": {
     "WELCOME_TEXT_INPUT": "Set the welcome text",
     "PREVIEW": "Preview",

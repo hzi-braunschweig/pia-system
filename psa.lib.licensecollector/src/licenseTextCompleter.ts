@@ -113,7 +113,7 @@ export class LicenseTextCompleter {
       LicenseTextCompleter.MIT_SINDRE_SORHUS = await res.text();
     });
     fetchP[i++] = fetch(
-      'https://raw.githubusercontent.com/jasmine/jasmine/main/MIT.LICENSE'
+      'https://raw.githubusercontent.com/jasmine/jasmine/main/LICENSE'
     ).then(async (res) => {
       LicenseTextCompleter.MIT_JASMINE = await res.text();
     });

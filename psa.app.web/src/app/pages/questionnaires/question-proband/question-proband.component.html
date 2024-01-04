@@ -399,7 +399,10 @@
                                   matSuffix
                                   [for]="picker"
                                 ></mat-datepicker-toggle>
-                                <mat-datepicker #picker></mat-datepicker>
+                                <mat-datepicker
+                                  #picker
+                                  startView="multi-year"
+                                ></mat-datepicker>
                               </mat-form-field>
                               <mat-error
                                 *ngIf="answer.hasError('answerRequired')"
@@ -972,7 +975,10 @@
                                 matSuffix
                                 [for]="picker"
                               ></mat-datepicker-toggle>
-                              <mat-datepicker #picker></mat-datepicker>
+                              <mat-datepicker
+                                #picker
+                                startView="multi-year"
+                              ></mat-datepicker>
                             </mat-form-field>
                             <mat-error
                               *ngIf="

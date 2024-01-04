@@ -10,6 +10,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Questionnaire } from '../../models/questionnaire';
 import { LabResultTemplate } from '../../models/labresultTemplate';
 import { firstValueFrom } from 'rxjs';
+import { LabObservationName } from '../../models/labObservationName';
 
 @Injectable()
 export class SampleTrackingService {
@@ -74,6 +75,16 @@ export class SampleTrackingService {
         headers,
         responseType: 'text',
       })
+    );
+  }
+
+  /**
+   * Returns a list of distinct laboratory observation names
+   * @return a html string as a presentation of the laboratory result
+   */
+  getLabObservationNames(): Promise<LabObservationName[]> {
+    return firstValueFrom(
+      this.http.get<LabObservationName[]>(this.apiUrl + `labObservations/names`)
     );
   }
 

@@ -183,6 +183,10 @@ const postgresqlHelper = (function () {
       });
   }
 
+  async function getLabObservationNames() {
+    return await db.manyOrNone('SELECT DISTINCT name FROM lab_observations');
+  }
+
   async function getUser(user_id) {
     return await db.one(
       'SELECT status FROM probands WHERE pseudonym=$(pseudonym)',
@@ -364,6 +368,14 @@ const postgresqlHelper = (function () {
      * @return {Promise} a resolved promise in case of success or a rejected otherwise
      */
     deleteLabResultAsPM: deleteLabResultAsPM,
+
+    /**
+     * @function
+     * @description gets all distinct names of lab_observations currently in the database
+     * @memberof module:postgresqlHelper
+     * @return {Promise} a resolved promise in case of success or a rejected otherwise
+     */
+    getLabObservationNames: getLabObservationNames,
 
     /**
      * @function

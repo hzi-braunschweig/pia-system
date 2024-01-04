@@ -75,6 +75,6 @@ RUN npm run build:browser
 
 ################################################################
 
-FROM busybox:1.35.0@sha256:20246233b52de844fa516f8c51234f1441e55e71ecdd1a1d91ebb252e1fd4603 AS final
+FROM busybox:1.36.1@sha256:3fbc632167424a6d997e74f52b878d7cc478225cffac6bc977eedfe51c7f4e79 AS final
 
 COPY --from=build-browser /usr/src/node-app/platforms/browser/www/ /assets/browser

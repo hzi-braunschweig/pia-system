@@ -4,10 +4,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-.toolbar {
-  width: 100%;
+.button-flex-group {
   display: flex;
-  justify-content: end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.flex-pair {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  width: 100%;
 }
 
 .divider {
@@ -15,7 +22,68 @@
   margin-bottom: 10px;
 }
 
-.info-tooltip {
-  white-space: pre-line;
-  min-width: 500px;
+.mat-form-field {
+  max-width: 300px;
+}
+
+.mat-form-field-wrapper {
+  margin-top: -0.6em;
+  margin-bottom: -1.25em;
+}
+
+.drag-drop-area {
+  border: 2px dashed #ccc;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  width: 100%;
+}
+
+.drag-drop-area p {
+  margin: 0;
+}
+
+.drag-drop-area:hover {
+  border-color: var(--color-primary);
+}
+
+.drag-drop-area-on-drop {
+  border-color: var(--color-primary);
+}
+
+.choose-file-button {
+  margin-top: 1em;
+}
+
+.add-button {
+  margin-left: 10px;
+}
+
+h5 {
+  margin-bottom: 0;
+}
+
+mat-list.horizontal-list {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  align-items: center;
+}
+
+.list-button {
+  order: 3;
+}
+
+.list-button-icon {
+  margin-top: -0.7em;
+}
+
+.list-divider {
+  order: 4;
+}
+
+.action-button {
+  display: flex;
+  justify-content: end;
+  margin-top: 10px;
 }

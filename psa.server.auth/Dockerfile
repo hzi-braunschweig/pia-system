@@ -29,7 +29,7 @@ RUN npm ci \
 
 ################################################################
 
-FROM curlimages/curl@sha256:faaba66e89c87fd3fb51336857142ee6ce78fa8d8f023a5713d2bf4957f1aca8 AS dl-keycloak-config-cli
+FROM curlimages/curl@sha256:4a3396ae573c44932d06ba33f8696db4429c419da87cbdc82965ee96a37dd0af AS dl-keycloak-config-cli
 
 WORKDIR /dl
 RUN curl -L -o ./keycloak-config-cli.jar https://github.com/adorsys/keycloak-config-cli/releases/download/v5.3.1/keycloak-config-cli-19.0.1.jar

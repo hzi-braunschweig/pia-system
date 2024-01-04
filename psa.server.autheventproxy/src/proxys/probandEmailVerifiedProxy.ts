@@ -55,21 +55,30 @@ export class ProbandEmailVerifiedProxy extends EventProxy {
       }
 
       const event = JSON.parse(json) as KeycloakVerifyEmailEvent;
-      const username = event.details.username.toLowerCase();
+      const username = (
+        event.details.username as string | undefined
+      )?.toLowerCase();
 
-      this._producer
-        .publish({ pseudonym: username })
-        .then(() => {
-          console.log(
-            `Event Processed | ${this.pattern} > ${TARGET_TOPIC} | ${username}`
-          );
-          channel.ack(message, false);
-        })
-        .catch(() => {
-          console.error(
-            `Event Error | ${this.pattern} > ${TARGET_TOPIC} | ${username}`
-          );
-        });
+      if (username !== undefined) {
+        this._producer
+          .publish({ pseudonym: username })
+          .then(() => {
+            console.log(
+              `Event Processed | ${this.pattern} > ${TARGET_TOPIC} | ${username}`
+            );
+            channel.ack(message, false);
+          })
+          .catch(() => {
+            console.error(
+              `Event Error | ${this.pattern} > ${TARGET_TOPIC} | ${username}`
+            );
+          });
+      } else {
+        console.error(
+          `Event Error | ${this.pattern} > ${TARGET_TOPIC} | username is undefined`
+        );
+        channel.nack(message, false, false);
+      }
     };
   }
 }

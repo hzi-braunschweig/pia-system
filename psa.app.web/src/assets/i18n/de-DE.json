@@ -650,7 +650,18 @@
     "CANCEL_CHANGES": "Änderungen an der Studie beenden",
     "CANCEL_CHANGES_CONFIRMATION_QUESTION": "Möchten Sie die angefragte Studienänderung beenden?",
     "CONFIGURATION_INCOMPLETE_HINT": "Bevor die Selbstregistrierung genutzt werden kann, muss zuerst das Pseudonym-Präfix und die Pseudonym-Länge von Forschenden mit Administrationsrechten konfiguriert werden.",
-    "EDIT_LABRESULT_TEMPLATE_INFO_TEXT": "Hinzufügen von lokalen Logos:\n An der zu anzeigenden Stelle im Markdown: ![Bildbeschreibung][1] \n Unten im Markdown: [1]: data:image/png;base64, /9j/4AA... \n \"1\" ist hierbei eine Referenz und kann durch beliebige Zeichen ersetzt werden.\n \"/9j/4AA...\" ist eine Base64 kodierte Zeichenfolge des Logos (z.B. mit https://www.base64-image.de/ erstellbar: Bild einfügen, dann \"copy image\" auswählen)."
+    "LABRESULT_TEMPLATE": {
+      "EDIT": "Laborergebnistext anpassen",
+      "TABLE_HEADER": "Tabelle",
+      "ADD_TABLE": "Tabelle hinzufügen",
+      "TABLE_HEADER_ROW": "Spaltenüberschriften bearbeiten",
+      "TABLE_COLUMNS": "Zeilen bearbeiten",
+      "TABLE_ENTRY_NAME": "Name der Probe",
+      "TABLE_HEADER_TITLE": "Anzeigename der Spalte",
+      "TABLE_HEADER_ATTRIBUTE_NAME": "Attributname der Spalte",
+      "TABLE_ATTRIBUTE_NAME_INFO": "Um auf ein Attribut der Daten zuzugreifen, wird dem Attribut ein Punkt vorangestellt (z.B. \".result\"). Um den Namen der Tabellenzeile auszugeben, wird das Schlüsselwort \"key\" (ohne vorangestellten Punkt) verwendet.",
+      "ADD_IMAGE": "Bild hinzufügen"
+    }
   },
   "STUDIES": {
     "NEW_STUDY": "Studie erstellen",
@@ -925,7 +936,8 @@
     "TIME_RANGE_END_DATE_REQUIRED_ERROR": "Bitte wählen Sie den Endzeitpunkt aus.",
     "SUBMIT": "Feedback-Statistik speichern",
     "SUBMIT_SUCCESS": "Die Feedback-Statistik-Konfiguration wurde erfolgreich gespeichert.",
-    "CAPTION": "Datenstand: {{updatedAt}} (Es handelt sich um nicht qualitätsgesicherte Rohdaten)"
+    "CAPTION": "Datenstand: {{updatedAt}} (Es handelt sich um nicht qualitätsgesicherte Rohdaten)",
+    "SAVING_ERROR": "Feedbackstatistik konnte nicht gespeichert bzw. geupdated werden."
   },
   "CHARTS": {
     "FEEDBACK_STATISTIC": {

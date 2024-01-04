@@ -7,7 +7,6 @@ include:
 build-ionic-ios-store:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
@@ -16,7 +15,7 @@ build-ionic-ios-store:
       artifacts: false
   script:
     - cd psa.app.mobile
-    - ionic-cloud build ios app-store --app-id="5be00d76" --native-config="iOS-Store" --environment="pia_build_node_18" --signing-cert="PIA_Store" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
+    - ionic-cloud build ios app-store --app-id="5be00d76" --native-config="iOS-Store" --environment="pia_build_node_18_api_33" --signing-cert="PIA_Store" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
     - if: $CI_MERGE_REQUEST_IID
       when: manual
@@ -34,7 +33,6 @@ build-ionic-ios-store:
 build-and-push-ionic-ios-store:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
@@ -43,7 +41,7 @@ build-and-push-ionic-ios-store:
       artifacts: false
   script:
     - cd psa.app.mobile
-    - BUILD_ID=$(ionic-cloud build ios app-store --app-id="5be00d76" --native-config="iOS-Store" --environment="pia_build_node_18" --signing-cert="PIA_Store" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}" --json  | jq -r '.buildId')
+    - BUILD_ID=$(ionic-cloud build ios app-store --app-id="5be00d76" --native-config="iOS-Store" --environment="pia_build_node_18_api_33" --signing-cert="PIA_Store" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}" --json  | jq -r '.buildId')
     - ionic-cloud deploy ios --app-id="5be00d76" --build-id=$BUILD_ID --destination="Apple App Store" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
     - if: $CI_MERGE_REQUEST_IID
@@ -62,7 +60,6 @@ build-and-push-ionic-ios-store:
 build-ionic-android-store:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
@@ -71,7 +68,7 @@ build-ionic-android-store:
       artifacts: false
   script:
     - cd psa.app.mobile
-    - ionic-cloud build android release --app-id="5be00d76" --native-config="Android-Store" --environment="pia_build_node_18" --build-stack="Linux - 2023.06" --signing-cert="PIA_Android" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
+    - ionic-cloud build android release --app-id="5be00d76" --native-config="Android-Store" --environment="pia_build_node_18_api_33" --build-stack="Linux - 2023.06" --signing-cert="PIA_Android" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
     - if: $CI_MERGE_REQUEST_IID
       when: manual
@@ -89,7 +86,6 @@ build-ionic-android-store:
 build-and-push-ionic-android-store:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.mobile-npm-install:$CI_PIPELINE_ID
   stage: push
@@ -98,7 +94,7 @@ build-and-push-ionic-android-store:
       artifacts: false
   script:
     - cd psa.app.mobile
-    - BUILD_ID=$(ionic-cloud build android release --app-id="5be00d76" --native-config="Android-Store" --environment="pia_build_node_18" --build-stack="Linux - 2023.06" --signing-cert="PIA_Android" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}" --json  | jq -r '.buildId')
+    - BUILD_ID=$(ionic-cloud build android release --app-id="5be00d76" --native-config="Android-Store" --environment="pia_build_node_18_api_33" --build-stack="Linux - 2023.06" --signing-cert="PIA_Android" --commit="$CI_COMMIT_SHA" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}" --json  | jq -r '.buildId')
     - ionic-cloud deploy android --app-id="5be00d76" --build-id=$BUILD_ID --destination="Google Play Store, Produktion" --token="${IONIC_CLOUD_PERSONAL_ACCESS_TOKEN}"
   rules:
     - if: $CI_MERGE_REQUEST_IID

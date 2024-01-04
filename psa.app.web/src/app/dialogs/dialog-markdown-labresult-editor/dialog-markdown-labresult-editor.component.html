@@ -8,20 +8,241 @@
   {{ data.dialogTitle | translate }}
 </h2>
 <mat-dialog-content>
-  <div class="toolbar">
-    <button
-      mat-mini-fab
-      color="primary"
-      aria-label="Info Button"
-      matTooltip="{{ 'STUDY.EDIT_LABRESULT_TEMPLATE_INFO_TEXT' | translate }}"
-      matTooltipClass="info-tooltip"
-    >
-      <mat-icon>info</mat-icon>
-    </button>
-  </div>
-  <mat-divider class="divider"></mat-divider>
+  <mat-accordion>
+    <mat-expansion-panel data-unit="expansion-placeholder">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ 'STUDY.LABRESULT_TEMPLATE.ADD_TAGS_PLACEHOLDER' | translate }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="button-flex-group">
+        <button
+          *ngFor="let tagToInsert of TAGS_TO_INSERT"
+          color="primary"
+          mat-flat-button
+          [attr.data-unit]="'placeholder-button-' + tagToInsert.i18nIdentifier"
+          (click)="insertTag(tagToInsert.tag)"
+        >
+          {{ tagToInsert.i18nIdentifier | translate }}
+        </button>
+      </div>
+    </mat-expansion-panel>
 
-  <app-markdown-editor [(ngModel)]="text"></app-markdown-editor>
+    <mat-expansion-panel data-unit="expansion-table">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ 'STUDY.LABRESULT_TEMPLATE.TABLE_HEADER' | translate }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <h5>{{ 'STUDY.LABRESULT_TEMPLATE.TABLE_HEADER_ROW' | translate }}</h5>
+      <div class="button-flex-group">
+        <mat-list class="horizontal-list">
+          <mat-list-item
+            *ngFor="
+              let header of tableHeaders;
+              let indexOfHeader = index;
+              let lastItem = last
+            "
+          >
+            <span matListItemTitle matTooltip="{{ header.title }}">{{
+              header.title
+            }}</span>
+            <span matListItemLine matTooltip="{{ header.attributeName }}">{{
+              header.attributeName
+            }}</span>
+            <button
+              mat-icon-button
+              matListItemIcon
+              class="list-button"
+              data-unit="remove-row"
+              (click)="removeHeaderAtIndex(indexOfHeader)"
+            >
+              <mat-icon>remove</mat-icon>
+            </button>
+            <mat-divider
+              vertical="true"
+              class="list-divider"
+              *ngIf="!lastItem"
+            ></mat-divider>
+          </mat-list-item>
+        </mat-list>
+        <div class="flex-pair">
+          <mat-form-field appearance="fill">
+            <mat-label>{{
+              'STUDY.LABRESULT_TEMPLATE.TABLE_HEADER_TITLE' | translate
+            }}</mat-label>
+            <input
+              matInput
+              type="text"
+              placeholder="Ergebnis"
+              [(ngModel)]="headerTitle"
+              data-unit="input-header-title"
+            />
+          </mat-form-field>
+          <mat-form-field appearance="fill">
+            <mat-label>{{
+              'STUDY.LABRESULT_TEMPLATE.TABLE_HEADER_ATTRIBUTE_NAME' | translate
+            }}</mat-label>
+            <input
+              matInput
+              type="text"
+              placeholder=".result"
+              [(ngModel)]="headerAttributeName"
+              data-unit="input-header-attribute-name"
+              [matAutocomplete]="autoHeaderAttributes"
+            />
+            <mat-icon
+              matSuffix
+              matTooltip="{{
+                'STUDY.LABRESULT_TEMPLATE.TABLE_ATTRIBUTE_NAME_INFO' | translate
+              }}"
+              >info</mat-icon
+            >
+            <mat-autocomplete #autoHeaderAttributes="matAutocomplete">
+              <mat-option
+                *ngFor="let option of possibleTableHeaderAttributes"
+                [value]="option"
+              >
+                {{ option }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+          <button
+            color="primary"
+            mat-icon-button
+            [disabled]="headerTitle === '' || headerAttributeName === ''"
+            (click)="addTableHeader()"
+            data-unit="add-header"
+          >
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <h5>{{ 'STUDY.LABRESULT_TEMPLATE.TABLE_COLUMNS' | translate }}</h5>
+      <div class="button-flex-group">
+        <mat-list class="horizontal-list">
+          <mat-list-item
+            *ngFor="
+              let column of tableColumns;
+              let indexOfColumn = index;
+              let lastItem = last
+            "
+          >
+            <span matListItemTitle matTooltip="{{ column }}">{{ column }}</span>
+            <button
+              mat-icon-button
+              matListItemIcon
+              class="list-button"
+              (click)="removeColumnAtIndex(indexOfColumn)"
+            >
+              <mat-icon class="list-button-icon">remove</mat-icon>
+            </button>
+            <mat-divider
+              vertical="true"
+              class="list-divider"
+              *ngIf="!lastItem"
+            ></mat-divider>
+          </mat-list-item>
+        </mat-list>
+        <div class="flex-pair">
+          <mat-form-field appearance="fill">
+            <mat-label>{{
+              'STUDY.LABRESULT_TEMPLATE.TABLE_ENTRY_NAME' | translate
+            }}</mat-label>
+            <input
+              matInput
+              type="text"
+              placeholder="Adenovirus-PCR (resp.)"
+              [(ngModel)]="tableColumn"
+              data-unit="input-column"
+              [matAutocomplete]="autoLabObserationNames"
+            />
+            <mat-autocomplete #autoLabObserationNames="matAutocomplete">
+              <mat-option
+                *ngFor="let option of labObservationNames"
+                [value]="option"
+              >
+                {{ option }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+          <button
+            color="primary"
+            mat-icon-button
+            [disabled]="tableColumn === ''"
+            (click)="addTableColumn()"
+            data-unit="add-column"
+          >
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+      </div>
+      <div class="action-button">
+        <button
+          color="primary"
+          mat-flat-button
+          (click)="insertTable()"
+          data-unit="add-table"
+        >
+          {{ 'STUDY.LABRESULT_TEMPLATE.ADD_TABLE' | translate }}
+        </button>
+      </div>
+    </mat-expansion-panel>
+    <mat-expansion-panel data-unit="expansion-images">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          {{ 'STUDY.LABRESULT_TEMPLATE.IMAGES_HEADER' | translate }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="button-flex-group">
+        <div
+          (drop)="handleDrop($event)"
+          (dragover)="dragOver($event)"
+          (dragleave)="dragLeave($event)"
+          class="drag-drop-area"
+          [class.drag-drop-area-on-drop]="isDragNDropHovered"
+        >
+          <div *ngIf="imageToInsert === undefined">
+            <p>{{ 'STUDY.LABRESULT_TEMPLATE.DRAG_N_DROP' | translate }}</p>
+          </div>
+          <div *ngIf="imageToInsert !== undefined">
+            <p>{{ imageToInsert.name }}</p>
+          </div>
+          <button
+            mat-stroked-button
+            (click)="openFileExplorer()"
+            class="choose-file-button"
+          >
+            {{ 'STUDY.LABRESULT_TEMPLATE.CHOOSE_FILE' | translate }}
+          </button>
+          <input
+            type="file"
+            #fileInput
+            style="display: none"
+            (change)="handleFileInput($event)"
+          />
+        </div>
+      </div>
+      <div class="action-button">
+        <button
+          color="primary"
+          mat-flat-button
+          (click)="insertImage()"
+          data-unit="add-image"
+        >
+          {{ 'STUDY.LABRESULT_TEMPLATE.ADD_IMAGE' | translate }}
+        </button>
+      </div>
+    </mat-expansion-panel>
+
+    <mat-divider class="divider"></mat-divider>
+
+    <app-markdown-editor
+      [(ngModel)]="text"
+      [transformTextBeforeRendering]="transformTextBeforeRendering"
+    ></app-markdown-editor>
+  </mat-accordion>
 </mat-dialog-content>
 <mat-dialog-actions>
   <button

@@ -7,7 +7,7 @@ build-docker:
     - .job-exclude-schedules-pipelines
     - .no-cpu-request
   stage: prepare
-  image: snickch/buildx@sha256:71060c230c8c23e1525c89389ba18a4342a1923c29d7b76663ae41a6062c17b6
+  image: snickch/buildx@sha256:63db62815b7ec00b80fd28c5f85c88c50df48d65fbbdd454e18b0efcc96a3235
   # downloads may fail
   retry: 2
   variables:
@@ -28,6 +28,7 @@ build-docker:
     - docker buildx bake --push -f bake.hcl
     - docker buildx bake --push -f bake-with-faked-secrets.hcl
   rules:
+    - if: $CI_SCHEDULED_TASK == "cleanup-registry"
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
     - if: $CI_MERGE_REQUEST_IID
     - if: $CI_COMMIT_TAG
@@ -41,7 +42,6 @@ build-docker:
 push-branch-images:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   stage: push
   image:

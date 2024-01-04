@@ -10,7 +10,6 @@ include:
 deploy-pia-develop:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
@@ -28,7 +27,6 @@ deploy-pia-develop:
 deploy-pia-release:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
@@ -47,7 +45,6 @@ deploy-pia-release:
 deploy-pia-load:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
@@ -70,7 +67,6 @@ deploy-pia-load:
 deploy-sb-pia-niedersachsen-release:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
@@ -89,7 +85,6 @@ deploy-sb-pia-niedersachsen-release:
 deploy-stable:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
@@ -114,7 +109,6 @@ deploy-stable:
 deploy-feature-stage:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
@@ -153,7 +147,6 @@ deploy-feature-stage:
 deploy-sb-feature-stage:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: deploy
@@ -192,7 +185,6 @@ deploy-sb-feature-stage:
 stop-feature-stage:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: undeploy
@@ -213,7 +205,6 @@ stop-feature-stage:
 stop-sb-feature-stage:
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.utils.ci-awx-cli:$IMAGE_ID
   stage: undeploy

@@ -299,7 +299,7 @@ describe('StudyComponent', () => {
         {
           width: '1300px',
           data: {
-            dialogTitle: 'STUDY.EDIT_LABRESULT_TEMPLATE_TEXT',
+            dialogTitle: 'STUDY.LABRESULT_TEMPLATE.EDIT',
             initialText: 'some existing text',
           },
         }

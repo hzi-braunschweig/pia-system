@@ -480,17 +480,12 @@ export class NotificationHelper {
           notificationSchedule.user_id
         )) as FcmToken[];
         const sendNotification = tokens.length > 0;
-        const sendMail = !sendNotification;
 
-        let notification_body;
-        const notification_title = qInstance.questionnaire.notificationTitle;
-
-        if (qInstance.status === 'active') {
-          notification_body = qInstance.questionnaire.notificationBodyNew;
-        } else {
-          notification_body =
-            qInstance.questionnaire.notificationBodyInProgress;
-        }
+        const notificationTitle = qInstance.questionnaire.notificationTitle;
+        const notificationBody =
+          qInstance.status === 'active'
+            ? qInstance.questionnaire.notificationBodyNew
+            : qInstance.questionnaire.notificationBodyInProgress;
 
         let didSendReminder = false;
         try {
@@ -516,25 +511,24 @@ export class NotificationHelper {
             if (success) {
               didSendReminder = true;
             }
-          }
-          if (sendMail) {
+          } else {
             console.log(
               `Sending email to user: ${qInstance.pseudonym} for instance id: ${qInstance.id}`
             );
 
             const email = await personaldataserviceClient
               .getPersonalDataEmail(qInstance.pseudonym)
-              .catch(() => {
-                console.log('User has no email address');
+              .catch((e) => {
+                console.error('Error at retrieving user email address: ', e);
                 return null;
               });
 
             if (email) {
               const url = `${config.probandAppUrl}/extlink/questionnaire/${qInstance.questionnaire.id}/${qInstance.id}`;
               const InstanceReminderMail = {
-                subject: notification_title,
-                text: `Liebe:r Nutzer:in,\n\n${notification_body}\nKlicken Sie auf folgenden Link, um direkt zum Fragebogen zu gelangen:\n<a href="${url}">PIA Webapp</a>`,
-                html: `Liebe:r Nutzer:in,<br><br>${notification_body}<br>Klicken Sie auf folgenden Link, um direkt zum Fragebogen zu gelangen:<br><a href="${url}">PIA Webapp</a>`,
+                subject: notificationTitle,
+                text: `Liebe:r Nutzer:in,\n\n${notificationBody}\nKlicken Sie auf folgenden Link, um direkt zum Fragebogen zu gelangen:\n<a href="${url}">PIA Webapp</a>`,
+                html: `Liebe:r Nutzer:in,<br><br>${notificationBody}<br>Klicken Sie auf folgenden Link, um direkt zum Fragebogen zu gelangen:<br><a href="${url}">PIA Webapp</a>`,
               };
               await MailService.sendMail(email, InstanceReminderMail);
               console.log(
@@ -544,6 +538,8 @@ export class NotificationHelper {
                 notificationSchedule.id
               );
               didSendReminder = true;
+            } else {
+              console.log('User has no email address');
             }
           }
         } catch (e) {
@@ -552,7 +548,7 @@ export class NotificationHelper {
 
         if (!didSendReminder) {
           console.log(
-            `Error sending notification AND email to user: ${qInstance.pseudonym} for instance id: ${qInstance.id}, postponing it`
+            `Error sending either notification or email to user: ${qInstance.pseudonym} for instance id: ${qInstance.id}, postponing it`
           );
           await postgresqlHelper.postponeNotificationByInstanceId(
             notificationSchedule.reference_id

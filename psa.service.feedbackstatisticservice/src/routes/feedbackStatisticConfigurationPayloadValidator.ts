@@ -22,7 +22,7 @@ export const feedbackStatisticConfigurationPayloadValidator = Joi.object({
     }).required(),
     answerOptionValueCodes: Joi.object({
       id: Joi.number().required(),
-      variableName: Joi.string().allow(null).required(),
+      variableName: Joi.string().allow('').allow(null).required(),
       valueCodes: Joi.array().items(Joi.number()).min(1).required(),
     }).required(),
   }).required(),
@@ -39,7 +39,7 @@ export const feedbackStatisticConfigurationPayloadValidator = Joi.object({
         }).required(),
         answerOptionValueCodes: Joi.object({
           id: Joi.number().required(),
-          variableName: Joi.string().allow(null).required(),
+          variableName: Joi.string().allow('').allow(null).required(),
           valueCodes: Joi.array().items(Joi.number()).min(1).required(),
         }).required(),
       })

@@ -818,6 +818,9 @@
     "FILTER_BY_NOT_FILLEDOUT": "Nur nicht ausgefüllte FBs",
     "PROCESSED_STATUS_CHANGED": "Der Bearbeitungsstatus wurde geändert"
   },
+  "FEEDBACK_STATISTICS": {
+    "SAVING_ERROR": "Feedbackstatistik konnte nicht gespeichert bzw. geupdated werden."
+  },
   "WELCOME_TEXT": {
     "WELCOME_TEXT_INPUT": "Begrüssungstext eingeben",
     "PREVIEW": "Vorschau",

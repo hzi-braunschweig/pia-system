@@ -64,3 +64,4 @@ include:
   - /ci/load-test.yml
   - /ci/java-test-unit.yml
   - /ci/renovate.yml
+  - /ci/cleanup-registry.yml

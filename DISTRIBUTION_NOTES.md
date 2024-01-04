@@ -2,6 +2,14 @@
 
 This file contains notes about changes that are important to the operations team.
 
+## 1.36
+
+- no relevant changes for operations team
+
+## 1.35 (Feedback statistic service)
+
+- FeedbackStatisticService was added
+
 ## 1.32 (Export improvements, GitLab Migration)
 
 - From now on PIA release images are pushed to the [GitLab cloud docker registry](registry.gitlab.com)

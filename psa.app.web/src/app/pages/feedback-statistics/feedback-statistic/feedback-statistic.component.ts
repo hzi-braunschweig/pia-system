@@ -72,9 +72,9 @@ export class FeedbackStatisticComponent implements OnInit {
         return null;
       }
       const isLower = value === this.rangeSelection.controls.lower.value;
-      let date;
+      let date: Date;
 
-      if (isLower) {
+      if (isLower && value <= this.chartFeedbackStatistic.intervals.length) {
         date = this.chartFeedbackStatistic.intervals[value - 1][0];
       } else {
         date = this.chartFeedbackStatistic.intervals[value - 2][1];
@@ -92,9 +92,23 @@ export class FeedbackStatisticComponent implements OnInit {
     const lower = value.lower - 1;
     const upper = value.upper - 2;
 
+    if (lower > this.chartFeedbackStatistic.intervals.length || upper < -1) {
+      throw new Error('range out of bounds for chartFeedbackStatistic');
+    }
+
+    const startValue =
+      lower === this.chartFeedbackStatistic.intervals.length
+        ? this.chartFeedbackStatistic.intervals[lower - 1][1]
+        : this.chartFeedbackStatistic.intervals[lower][0];
+
+    const endValue =
+      upper === -1
+        ? this.chartFeedbackStatistic.intervals[0][0]
+        : this.chartFeedbackStatistic.intervals[upper][1];
+
     this.interval = {
-      start: this.chartFeedbackStatistic.intervals[lower][0],
-      end: this.chartFeedbackStatistic.intervals[upper][1],
+      start: startValue,
+      end: endValue,
     };
   }
 
@@ -105,7 +119,7 @@ export class FeedbackStatisticComponent implements OnInit {
     const lower = Math.floor(maxBarsToShow / numberOfBarsPerInterval);
 
     this.rangeSelection.setValue({
-      lower: this.range.max - lower,
+      lower: Math.max(this.range.max - lower, this.range.min),
       upper: this.range.max,
     });
 

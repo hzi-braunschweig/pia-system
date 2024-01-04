@@ -4,7 +4,7 @@ include:
 
 npm-install:
   stage: prepare
-  image: snickch/buildx@sha256:71060c230c8c23e1525c89389ba18a4342a1923c29d7b76663ae41a6062c17b6
+  image: snickch/buildx@sha256:63db62815b7ec00b80fd28c5f85c88c50df48d65fbbdd454e18b0efcc96a3235
   variables:
     DOCKER_HOST: null
   before_script:
@@ -13,7 +13,6 @@ npm-install:
     - docker buildx install
   extends:
     - .job-exclude-schedules-pipelines
-    - .job-exclude-update-third-party-licenses
     - .no-cpu-request
   script:
     # generate the bake files

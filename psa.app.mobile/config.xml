@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget android-packageName="de.pia.app" id="de.pia.app" ios-CFBundleIdentifier="de.info-pia.app" version="1.35.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android">
+<widget android-packageName="de.pia.app" id="de.pia.app" ios-CFBundleIdentifier="de.info-pia.app" version="1.36.0" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android">
     <name>PIA</name>
     <description>Mobile App for PIA</description>
     <author email="piapost@helmholtz-hzi.de" href="https://info-pia.de/">Helmholtz-Zentrum für Infektionsforschung GmbH</author>
@@ -13,8 +13,8 @@
     <allow-intent href="geo:*" />
     <hook src="scripts/ios/disallowArbitraryLoads.js" type="after_prepare" />
     <hook src="scripts/android/fixDeprecatedGradleUsage.js" type="after_prepare" />
-    <preference name="android-minSdkVersion" value="23" />
-    <preference name="android-targetSdkVersion" value="32" />
+    <preference name="android-minSdkVersion" value="24" />
+    <preference name="android-targetSdkVersion" value="33" />
     <preference name="ScrollEnabled" value="false" />
     <preference name="BackupWebStorage" value="none" />
     <preference name="SplashMaintainAspectRatio" value="true" />
@@ -28,6 +28,7 @@
     <preference name="iosPersistentFileLocation" value="Library" />
     <preference name="DisableDeploy" value="true" />
     <preference name="AndroidXEnabled" value="true" />
+    <preference name="GradlePluginGoogleServicesEnabled" value="true" />
     <platform name="browser">
         <preference name="SplashScreen" value="assets/images/pia_logo.png" />
     </platform>

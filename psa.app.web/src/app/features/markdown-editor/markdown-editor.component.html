@@ -18,5 +18,8 @@
     ></textarea>
   </mat-form-field>
 
-  <markdown class="markdown-preview" [data]="text.value"></markdown>
+  <markdown
+    class="markdown-preview"
+    [data]="transformedText ?? text.value"
+  ></markdown>
 </div>
