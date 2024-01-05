@@ -157,7 +157,3 @@ Distributed under the AGPL-3.0 license. See [LICENSE](./LICENSES/AGPL-3.0-or-lat
 
 ![HZI](psa.app.web/src/assets/images/hzi_logo.jpg)
 
-## Contributing
-
-Contributions are welcome.
-Please fork [the gitlab repository](https://gitlab.com/pia-eresearch-system/pia).
