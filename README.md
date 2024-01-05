@@ -140,7 +140,7 @@ grant_type=password&client_id=pia-admin-web-app-client&username={{username}}&pas
 
 Any contributions you make are **greatly appreciated**.
 
-1. Fork the Project
+1. Please fork [the gitlab repository](https://gitlab.com/pia-eresearch-system/pia)
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
 3. Make sure your Changes are formatted using [prettier](https://github.com/prettier/prettier) (`npx prettier --write .`)
 4. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
