@@ -47,17 +47,17 @@ describe('EndpointService', () => {
     });
 
     it('should set a new endpoint if a backend mapping entry matches', () => {
-      const result = service.setEndpointForUser('Dtest-exists');
+      const result = service.setEndpointForUser('LOCAL-exists');
 
       expect(result).toBeTrue();
-      expect(service.getUrl()).toEqual('https://pia-develop.netzlink.com');
+      expect(service.getUrl()).toEqual('https://pia-app');
     });
 
     it('should match backend mapping entries case-insensitive', () => {
-      const result = service.setEndpointForUser('DTEST-also-exists');
+      const result = service.setEndpointForUser('local-also-exists');
 
       expect(result).toBeTrue();
-      expect(service.getUrl()).toEqual('https://pia-develop.netzlink.com');
+      expect(service.getUrl()).toEqual('https://pia-app');
     });
   });
 

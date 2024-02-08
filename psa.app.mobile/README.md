@@ -172,3 +172,7 @@ Remove the platform folder and try again.
 ### More
 
 https://ionicframework.com/docs/developing/tips
+
+## Prefix generation for backend_mapping.ts
+
+For the prefix generation see [Readme](../psa.utils.scripts/prefixes-for-backend-mapping/README.md)
