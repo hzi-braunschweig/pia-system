@@ -5,7 +5,7 @@
  */
 
 const Boom = require('@hapi/boom');
-const complianceService = require('../../services/complianceService');
+const { ComplianceService } = require('../../services/complianceService');
 
 /**
  * @enum {string}
@@ -40,7 +40,7 @@ class InternalComplianceInteractor {
     }
     let agree;
     try {
-      agree = await complianceService.getComplianceAgree(
+      agree = await ComplianceService.getComplianceAgree(
         request,
         study,
         userId

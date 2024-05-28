@@ -10,7 +10,7 @@ import {
   CreateIDSProbandRequest,
   CreateProbandRequest,
 } from '../models/proband';
-import { ProbandAccountDeletionType } from '../services/probandService';
+import { ProbandSelfDeletionType } from '../services/probandService';
 import { AccessToken } from '@pia/lib-service-core';
 
 export class ProbandsHandler {
@@ -47,7 +47,7 @@ export class ProbandsHandler {
     return await ProbandsInteractor.deleteAccount(
       request.auth.credentials as AccessToken,
       request.params['pseudonym'] as string,
-      request.query['deletionType'] as ProbandAccountDeletionType
+      request.query['deletionType'] as ProbandSelfDeletionType
     );
   };
 }

@@ -7,6 +7,7 @@
 
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
+import fbAdmin from 'firebase-admin';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
 import { addMinutes, startOfToday } from 'date-fns';
@@ -89,7 +90,7 @@ describe('/notification', function () {
     suiteSandbox
       .stub(FcmHelper, 'sendDefaultNotification')
       .callsFake(FcmHelperMock.sendDefaultNotification);
-    suiteSandbox.stub(FcmHelper, 'initFBAdmin');
+    suiteSandbox.stub(fbAdmin, 'initializeApp');
     suiteSandbox.stub(MailService, 'initService');
     suiteSandbox.stub(MailService, 'sendMail').resolves(true);
     await Server.init();

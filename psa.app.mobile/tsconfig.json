@@ -5,11 +5,6 @@
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
-    // Default angular as goal:
-    //    "strict": true,
-    //    "noImplicitOverride": true,
-    //    "noPropertyAccessFromIndexSignature": true,
-    //    "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
@@ -17,9 +12,10 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2020",
+    "target": "ES2022",
     "module": "es2020",
-    "lib": ["es2020", "dom", "dom.iterable"]
+    "lib": ["ES2022", "dom", "dom.iterable"],
+    "useDefineForClassFields": false
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

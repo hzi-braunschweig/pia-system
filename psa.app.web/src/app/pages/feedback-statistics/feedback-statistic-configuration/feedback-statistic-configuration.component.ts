@@ -14,16 +14,15 @@ import {
   SpecificFeedbackStatisticConfigurationDto,
 } from './feedback-statistic-configuration.model';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogInfoComponent } from '../../../_helpers/dialog-info';
 import { lastValueFrom } from 'rxjs';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-feedback-statistic-configuration',
   templateUrl: './feedback-statistic-configuration.component.html',
-  styleUrls: ['./feedback-statistic-configuration.component.scss'],
 })
 export class FeedbackStatisticConfigurationComponent implements AfterViewInit {
   public isLoading = false;

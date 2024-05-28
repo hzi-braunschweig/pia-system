@@ -203,9 +203,11 @@ export class InternalProbandsInteractor {
   ): Promise<void> {
     const repo = getRepository(Proband);
     const proband = await repo.findOne(pseudonym);
+
     if (!proband) {
       throw Boom.notFound('proband not found');
     }
+
     if (
       isProbandComplianceContactPatch(attributes) &&
       !attributes.complianceContact
@@ -217,8 +219,12 @@ export class InternalProbandsInteractor {
     ) {
       proband.status = ProbandStatus.DEACTIVATED;
       proband.deactivatedAt = new Date();
+
       await repo.save(proband);
-      await messageQueueService.sendProbandDeactivated(pseudonym);
+      await messageQueueService.sendProbandDeactivated(
+        pseudonym,
+        proband.study?.name ?? ''
+      );
     }
   }
 

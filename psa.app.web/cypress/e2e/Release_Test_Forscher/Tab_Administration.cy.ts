@@ -149,41 +149,57 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
     cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
 
-    cy.get('.mat-option').contains(study.name).click();
-    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type('Test Fragebogen');
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('Test Fragebogen', { force: true });
 
     cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
-    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
     cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
-    cy.get('.mat-option').contains('Einmal').click();
+    cy.get('[data-e2e="option"]').contains('Einmal').click();
 
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
-    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').focus().type('0');
 
-    cy.get('#mat-expansion-panel-header-0').click();
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="button"]')
+      .eq(0)
+      .click();
+
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('Wie heißen Sie?');
-    cy.get('#cdk-accordion-child-0')
+
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Freitext').click();
+
+    cy.get('[data-e2e="option"]').contains('Freitext').click();
 
     cy.get('[data-e2e="e2e-add-new-question-button"]').click();
-    cy.get('#mat-expansion-panel-header-1').click();
-    cy.get('#cdk-accordion-child-1')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="button"]')
+      .eq(1)
+      .parent()
+      .click();
+
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(1)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('Wie alt sind Sie?');
 
-    cy.get('#cdk-accordion-child-1')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(1)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Numerisch').click();
+    cy.get('[data-e2e="option"]').contains('Numerisch').click();
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
@@ -194,13 +210,12 @@ describe('Release Test, role: "Forscher", Administration', () => {
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
     cy.get('[data-e2e="e2e-questionnaire-name"]').contains('Test Fragebogen');
 
     cy.get('[data-e2e="e2e-logout"]').click();
-    cy.get('.mat-dialog-container').find('button').contains('OK').click();
+    cy.get('[data-e2e="dialog-button-accept"]').click();
 
     const proband2 = generateRandomProbandForStudy();
 
@@ -217,7 +232,6 @@ describe('Release Test, role: "Forscher", Administration', () => {
         );
       });
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
     cy.get('[data-e2e="e2e-questionnaire-name"]').contains('Test Fragebogen');
@@ -227,91 +241,90 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
     cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
 
-    cy.get('.mat-option').contains(study.name).click();
-    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type(
-      'First Questionnaire'
-    );
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('First Questionnaire', { force: true });
 
     cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
-    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
     cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
-    cy.get('.mat-option').contains('Einmal').click();
+    cy.get('[data-e2e="option"]').contains('Einmal').click();
 
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
-    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').focus().type('0');
 
-    cy.get(
-      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
-    )
-      .first()
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="button"]')
+      .eq(0)
       .click();
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('Wie alt sind Sie?');
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Numerisch').click();
+    cy.get('[data-e2e="option"]').contains('Numerisch').click();
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
 
     // Create second questionnaire
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
     cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
 
-    cy.get('.mat-option').contains(study.name).click();
-    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type(
-      'Second Questionnaire'
-    );
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('Second Questionnaire', { force: true });
 
     cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
-    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
     cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
-    cy.get('.mat-option').contains('Einmal').click();
+    cy.get('[data-e2e="option"]').contains('Einmal').click();
 
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
-    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').focus().type('0');
 
     cy.get('[data-e2e="e2e-questionnaire-condition-set-button"]').click();
     cy.get('[data-e2e="e2e-show-questionnaire-condition-select"]').click();
-    cy.get('.mat-option').contains('auf externen Fragebogen').click();
+    cy.get('[data-e2e="option"]').contains('auf externen Fragebogen').click();
 
     cy.get('[data-e2e="e2e-condition-target-questionnaire-select"]').click();
-    cy.get('.mat-option').contains('First Questionnaire').click();
+    cy.get('[data-e2e="option"]').contains('First Questionnaire').click();
 
     cy.get('[data-e2e="e2e-condition-question-id-select"]').click();
-    cy.get('.mat-option').contains('F1: Wie alt sind Sie?').click();
+    cy.get('[data-e2e="option"]').contains('F1: Wie alt sind Sie?').click();
 
     cy.get('[data-e2e="e2e-condition-target-answer-option-select"]').click();
-    cy.get('.mat-option').contains('UF 1:').click();
+    cy.get('[data-e2e="option"]').contains('UF 1:').click();
 
     cy.get('[data-e2e="e2e-condition-operand-select"]').click();
-    cy.get('.mat-option').contains('>').click();
+    cy.get('[data-e2e="option"]').contains('>').click();
 
-    cy.get('[data-e2e="e2e-condition-numeric-value-input"]').type('20');
+    cy.get('[data-e2e="e2e-condition-numeric-value-input"]').focus().type('20');
 
-    cy.get(
-      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
-    )
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="button"]')
       .first()
+      .parent()
       .click();
 
-    cy.get('.mat-expansion-panel-content')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('Bitte beschreiben sie Ihre Symptome');
-    cy.get('.mat-expansion-panel-content')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
 
-    cy.get('.mat-option').contains('Freitext').click();
+    cy.get('[data-e2e="option"]').contains('Freitext').click();
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
@@ -323,7 +336,6 @@ describe('Release Test, role: "Forscher", Administration', () => {
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
     cy.get('[data-e2e="e2e-questionnaire-name"]')
@@ -332,7 +344,10 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-questionnaire-name"]')
       .contains('First Questionnaire')
       .click();
-    cy.get('[data-e2e="e2e-input-type-number"]').type('22');
+    cy.get('[data-e2e="e2e-input-type-number"]')
+      .find('input')
+      .focus()
+      .type('22');
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
     cy.get('[data-e2e="e2e-release-questionnaire-1-button"]').click();
@@ -353,7 +368,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
       .should('exist');
   });
 
-  it('should get warnings when editing questions and answer options', () => {
+  it('should show warnings for variable names when editing questions and answer options', () => {
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
@@ -362,19 +377,26 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
     // input questionnaire settings
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
-    cy.get('.mat-option').contains(study.name).click();
-    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type('Test Fragebogen');
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('Test Fragebogen', { force: true });
     cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
-    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
     cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
-    cy.get('.mat-option').contains('Einmal').click();
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
-    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+    cy.get('[data-e2e="option"]').contains('Einmal').click();
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').focus().type('0');
 
     // open first question and edit text field
-    cy.get('#mat-expansion-panel-header-0').click();
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="button"]')
+      .eq(0)
+      .click();
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('Wie heißen Sie?{backspace}!');
 
     cy.get('[data-e2e="question-variable-name-warning-text"]').should(
@@ -385,13 +407,15 @@ describe('Release Test, role: "Forscher", Administration', () => {
     );
 
     // Open answer option, set to single choice and edit text fields
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Einzelauswahl').click();
-    cy.get('[data-e2e="e2e-answer-option-test-input"]').type(
-      'Unterfrage A{backspace}B'
-    );
+
+    cy.get('[data-e2e="option"]').contains('Einzelauswahl').click();
+    cy.get('[data-e2e="e2e-answer-option-test-input"]')
+      .focus()
+      .type('Unterfrage A{backspace}B');
 
     cy.get('[data-e2e="question-variable-name-warning-text"]').should(
       'not.exist'
@@ -431,15 +455,17 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.wait(3000);
 
     // open question panel again
-    cy.get('#questionexpansionpanel').children().first().click();
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="button"]')
+      .eq(0)
+      .click();
 
     // change question text
-    cy.get('[data-e2e="e2e-question-text-input"]').type('{backspace}?');
+    cy.get('[data-e2e="e2e-question-text-input"]').focus().type('{backspace}?');
 
     cy.get('[data-e2e="question-variable-name-warning-text"]').should('exist');
     cy.get('[data-e2e="question-variable-name-warning-icon"]').should('exist');
 
-    cy.get('[data-e2e="e2e-question-text-input"]').type('{backspace}!');
+    cy.get('[data-e2e="e2e-question-text-input"]').focus().type('{backspace}!');
 
     cy.get('[data-e2e="question-variable-name-warning-text"]').should(
       'not.exist'
@@ -449,7 +475,9 @@ describe('Release Test, role: "Forscher", Administration', () => {
     );
 
     // change answer option text
-    cy.get('[data-e2e="e2e-answer-option-test-input"]').type('{backspace}A');
+    cy.get('[data-e2e="e2e-answer-option-test-input"]')
+      .focus()
+      .type('{backspace}A');
 
     cy.get('[data-e2e="answer-option-variable-name-warning-text"]').should(
       'exist'
@@ -458,7 +486,9 @@ describe('Release Test, role: "Forscher", Administration', () => {
       'exist'
     );
 
-    cy.get('[data-e2e="e2e-answer-option-test-input"]').type('{backspace}B');
+    cy.get('[data-e2e="e2e-answer-option-test-input"]')
+      .focus()
+      .type('{backspace}B');
 
     cy.get('[data-e2e="answer-option-variable-name-warning-text"]').should(
       'not.exist'
@@ -471,10 +501,12 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="answer-option-values"]')
       .find('input')
       .eq(0)
+      .focus()
       .type('{backspace}C');
     cy.get('[data-e2e="answer-option-values"]')
       .find('input')
       .eq(2)
+      .focus()
       .type('{backspace}D');
 
     cy.get('[data-e2e="answer-option-variable-name-warning-text"]').should(
@@ -487,6 +519,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="answer-option-values"]')
       .find('input')
       .eq(2)
+      .focus()
       .type('{backspace}B');
 
     cy.get('[data-e2e="answer-option-variable-name-warning-text"]').should(
@@ -499,6 +532,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="answer-option-values"]')
       .find('input')
       .eq(0)
+      .focus()
       .type('{backspace}A');
 
     cy.get('[data-e2e="answer-option-variable-name-warning-text"]').should(
@@ -509,8 +543,10 @@ describe('Release Test, role: "Forscher", Administration', () => {
     );
 
     // should be able to save with warnings and clear them
-    cy.get('[data-e2e="e2e-question-text-input"]').type('{backspace}?');
-    cy.get('[data-e2e="e2e-answer-option-test-input"]').type('{backspace}A');
+    cy.get('[data-e2e="e2e-question-text-input"]').focus().type('{backspace}?');
+    cy.get('[data-e2e="e2e-answer-option-test-input"]')
+      .focus()
+      .type('{backspace}A');
 
     cy.get('[data-e2e="question-variable-name-warning-text"]').should('exist');
     cy.get('[data-e2e="question-variable-name-warning-icon"]').should('exist');
@@ -526,7 +562,10 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
     cy.wait('@reviseQuestionnaire');
 
-    cy.get('#questionexpansionpanel').children().first().click();
+    cy.get('[data-e2e="e2e-question-expansion-panel"]')
+      .children()
+      .first()
+      .click();
 
     cy.get('[data-e2e="question-variable-name-warning-text"]').should(
       'not.exist'
@@ -542,42 +581,104 @@ describe('Release Test, role: "Forscher", Administration', () => {
     );
   });
 
+  it('should show errors when redeclaring variable names', () => {
+    cy.visit(adminAppUrl);
+    login(forscherCredentials.username, forscherCredentials.password);
+    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
+
+    cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
+
+    // input questionnaire settings
+    cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('Test Fragebogen', { force: true });
+    cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
+    cy.get('[data-e2e="option"]').contains('Einmal').click();
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').focus().type('0');
+
+    // open first question and add variable name
+    cy.get(
+      '[data-e2e="question-list-item"]:nth-child(1) [role="button"]'
+    ).click();
+
+    cy.get(
+      '[data-e2e="question-list-item"]:nth-child(1) [data-e2e="question-variable-name-input"]'
+    )
+      .focus()
+      .type('Variable A');
+
+    // create and open second question and add variable name
+    cy.get('[data-e2e="e2e-add-new-question-button"]').click();
+
+    cy.get(
+      '[data-e2e="question-list-item"]:nth-child(2) [role="button"]'
+    ).click();
+
+    cy.get(
+      '[data-e2e="question-list-item"]:nth-child(2) [data-e2e="question-variable-name-input"]'
+    )
+      .focus()
+      .type('Variable B');
+
+    cy.get('[data-e2e="question-redeclared-variable-name-error"]').should(
+      'not.exist'
+    );
+
+    cy.get(
+      '[data-e2e="question-list-item"]:nth-child(1) [data-e2e="question-variable-name-input"]'
+    )
+      .focus()
+      .type('{backspace}B');
+
+    cy.get('[data-e2e="question-redeclared-variable-name-error"]').should(
+      'have.length',
+      2
+    );
+  });
+
   // This test works only in chromium and headless. Does not work on Firefox,
   // because it does not start downloading file immediately but ask if you want to open it or download
   it('should export questionnaire', () => {
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
     cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
 
-    cy.get('.mat-option').contains(study.name).click();
-    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type(
-      'Export this questionnaire'
-    );
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('Export this questionnaire', { force: true });
 
     cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
-    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
     cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
-    cy.get('.mat-option').contains('Einmal').click();
+    cy.get('[data-e2e="option"]').contains('Einmal').click();
 
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
-    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').focus().type('0');
 
-    cy.get(
-      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
-    )
+    cy.get(' [data-e2e="e2e-question-expansion-panel"] > [role="button"]')
       .first()
+      .parent()
       .click();
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('What is your name?');
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Freitext').click();
+    cy.get('[data-e2e="option"]').contains('Freitext').click();
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
@@ -599,7 +700,6 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
     cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
 
@@ -609,7 +709,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
     );
 
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
-    cy.get('.mat-option').contains(study.name).click();
+    cy.get('[data-e2e="option"]').contains(study.name).click();
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
@@ -627,9 +727,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
     );
     cy.get('[data-e2e="e2e-notification-tries"]').should('have.value', 0);
 
-    cy.get(
-      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
-    )
+    cy.get(' [data-e2e="e2e-question-expansion-panel"] > [role="button"]')
       .first()
       .contains('Frage : Where are you from?')
       .should('exist');
@@ -639,114 +737,114 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
 
     // Create first questionnaire
     cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
 
-    cy.get('.mat-option').contains(study.name).click();
-    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type(
-      'First Questionnaire'
-    );
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('First Questionnaire', { force: true });
 
     cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
-    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
     cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
-    cy.get('.mat-option').contains('Einmal').click();
+    cy.get('[data-e2e="option"]').contains('Einmal').click();
 
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
-    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').focus().type('0');
 
-    cy.get(
-      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
-    )
+    cy.get(' [data-e2e="e2e-question-expansion-panel"] > [role="button"]')
       .first()
+      .parent()
       .click();
 
     getExpansionPanel(0).then((elm) => {
       elm()
         .find('[data-e2e="e2e-question-text-input"]')
+        .focus()
         .type('What is your name?');
       elm().find('[data-e2e="e2e-answer-type-select-dropdown"]').click();
-      cy.get('.mat-option').contains('Freitext').click();
+      cy.get('[data-e2e="option"]').contains('Freitext').click();
     });
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
 
     // Create second questionnaire
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
 
     cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
 
-    cy.get('.mat-option').contains(study.name).click();
-    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type(
-      'Second Questionnaire'
-    );
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('Second Questionnaire', { force: true });
 
     cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
-    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
     cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
-    cy.get('.mat-option').contains('Einmal').click();
+    cy.get('[data-e2e="option"]').contains('Einmal').click();
 
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
-    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').focus().type('0');
 
     getExpansionPanel(0).then((elm) => {
       elm().find('mat-expansion-panel-header').first().click();
       elm()
         .find('[data-e2e="e2e-question-text-input"]')
+        .focus()
         .type('Where are you from?');
       elm().find('[data-e2e="e2e-answer-type-select-dropdown"]').click();
-      cy.get('.mat-option').contains('Freitext').click();
+      cy.get('[data-e2e="option"]').contains('Freitext').click();
     });
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
 
     // Create third questionnaire
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
 
     cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
 
-    cy.get('.mat-option').contains(study.name).click();
-    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type(
-      'Third Questionnaire'
-    );
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('Third Questionnaire', { force: true });
 
     cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
-    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
     cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
-    cy.get('.mat-option').contains('Einmal').click();
+    cy.get('[data-e2e="option"]').contains('Einmal').click();
 
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
-    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').focus().type('0');
 
     getExpansionPanel(0).then((elm) => {
       elm().find('mat-expansion-panel-header').first().click();
       elm()
         .find('[data-e2e="e2e-question-text-input"]')
+        .focus()
         .type('How old are you?');
       elm().find('[data-e2e="e2e-answer-type-select-dropdown"]').click();
-      cy.get('.mat-option').contains('Numerisch').click();
+      cy.get('[data-e2e="option"]').contains('Numerisch').click();
     });
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
 
     //
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
 
     // Check if all 3 questionnaires listed
     cy.get('[data-e2e="e2e-questionnaire-name"]').should('have.length', 3);
-    cy.get('[data-e2e="e2e-filter-questionnaires-input"]').type('Second');
+    cy.get('[data-e2e="e2e-filter-questionnaires-input"]')
+      .focus()
+      .type('Second');
     cy.get('[data-e2e="e2e-questionnaire-name"]').should('have.length', 1);
     cy.get('[data-e2e="e2e-questionnaire-name"]')
       .contains('Second Questionnaire')
@@ -756,38 +854,39 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
 
     // Create sample questionnaire
     cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
 
-    cy.get('.mat-option').contains(study.name).click();
-    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type(
-      'Sample Questionnaire'
-    );
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('Sample Questionnaire', { force: true });
 
     cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
-    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
     cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
-    cy.get('.mat-option').contains('Einmal').click();
+    cy.get('[data-e2e="option"]').contains('Einmal').click();
 
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
-    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').focus().type('0');
 
-    cy.get(
-      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
-    )
+    cy.get(' [data-e2e="e2e-question-expansion-panel"] > [role="button"]')
       .first()
+      .parent()
       .click();
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('Where are you from?');
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Freitext').click();
+    cy.get('[data-e2e="option"]').contains('Freitext').click();
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
@@ -810,38 +909,39 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
 
     // Create sample questionnaire
     cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
 
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
-    cy.get('.mat-option').contains(study.name).click();
-    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type(
-      'Questionnaire Version 1'
-    );
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('Questionnaire Version 1', { force: true });
 
     cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
-    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
     cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
-    cy.get('.mat-option').contains('Einmal').click();
+    cy.get('[data-e2e="option"]').contains('Einmal').click();
 
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
-    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').focus().type('0');
 
-    cy.get(
-      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
-    )
+    cy.get(' [data-e2e="e2e-question-expansion-panel"] > [role="button"]')
       .first()
+      .parent()
       .click();
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('How old are you?');
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Numerisch').click();
+    cy.get('[data-e2e="option"]').contains('Numerisch').click();
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
@@ -854,11 +954,13 @@ describe('Release Test, role: "Forscher", Administration', () => {
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
     cy.get('[data-e2e="e2e-questionnaire-name"]').click();
-    cy.get('[data-e2e="e2e-input-type-number"]').type('42');
+    cy.get('[data-e2e="e2e-input-type-number"]')
+      .find('input')
+      .focus()
+      .type('42');
     cy.get('p').contains('How old are you?').should('exist');
     cy.get('[data-e2e="e2e-save-questionnaire-and-exit"]').click();
     cy.get('#confirmbutton').click();
@@ -873,10 +975,15 @@ describe('Release Test, role: "Forscher", Administration', () => {
     login(forscherCredentials.username, forscherCredentials.password);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
-    cy.get('.mat-row').contains(study.name).get('#editicon').click();
+    cy.get('[data-e2e="e2e-study-name"]')
+      .contains(study.name)
+      .parent()
+      .find('#editicon')
+      .click();
 
-    cy.get('.mat-expansion-panel-header-title')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="button"]')
       .contains('Frage : How old are you?')
+      .parent()
       .click();
 
     // Delete question
@@ -885,20 +992,33 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-add-new-question-button"]').click();
 
     cy.get('[data-e2e="e2e-question-expansion-panel"]').first().click();
-    cy.get('.mat-expansion-panel-body')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
       .first()
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('Are you over 18');
-    cy.get('.mat-expansion-panel-body')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
       .first()
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Einzelauswahl').click();
+    cy.get('[data-e2e="option"]').contains('Einzelauswahl').click();
 
-    cy.get('[data-placeholder="Wert 1"]').type('Yes');
-    cy.get('[data-placeholder="Code 1"]').type('0');
-    cy.get('[data-placeholder="Wert 2"]').type('No');
-    cy.get('[data-placeholder="Code 2"]').type('1');
+    cy.get('mat-form-field:has(label:contains("Wert 1"))')
+      .find('input')
+      .focus()
+      .type('Yes');
+    cy.get('mat-form-field:has(label:contains("Code 1"))')
+      .find('input')
+      .focus()
+      .type('0');
+    cy.get('mat-form-field:has(label:contains("Wert 2"))')
+      .find('input')
+      .focus()
+      .type('No');
+    cy.get('mat-form-field:has(label:contains("Code 2"))')
+      .find('input')
+      .focus()
+      .type('1');
 
     // Update questionnaire Version
     cy.get('[data-e2e="e2e-questionnaire-revise-button"]').click();
@@ -911,7 +1031,6 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.visit(probandAppUrl);
     login(probandCredentials.username, newPassword);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
     cy.get('[data-e2e="e2e-questionnaire-name"]').first().click();
@@ -943,7 +1062,6 @@ describe('Release Test, role: "Forscher", Administration', () => {
         login(cred.username, cred.password);
         changePassword(cred.password, newPassword);
 
-        cy.get('[data-e2e="e2e-sidenav-content"]').click();
         cy.get('[data-e2e="e2e-sidenav-content"]')
           .contains('Fragebögen')
           .click();
@@ -966,41 +1084,42 @@ describe('Release Test, role: "Forscher", Administration', () => {
       });
   });
 
-  it('should test spontaneous questionnaire', () => {
+  it.only('should test spontaneous questionnaire', () => {
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
 
     // Create spontaneous questionnaire
     cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
 
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
-    cy.get('.mat-option').contains(study.name).click();
-    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type(
-      'Spontaneous Questionnaire'
-    );
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('Spontaneous Questionnaire', { force: true });
 
     cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
-    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
     cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
-    cy.get('.mat-option').contains('Spontan').click();
+    cy.get('[data-e2e="option"]').contains('Spontan').click();
 
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
 
-    cy.get(
-      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
-    )
+    cy.get(' [data-e2e="e2e-question-expansion-panel"] > [role="button"]')
       .first()
+      .parent()
       .click();
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('Where are you from?');
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Freitext').click();
+    cy.get('[data-e2e="option"]').contains('Freitext').click();
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
@@ -1013,14 +1132,16 @@ describe('Release Test, role: "Forscher", Administration', () => {
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
     cy.get('[data-e2e="e2e-spontaneous-questionnaire-edit-button"]').click();
 
     // The version 1 should be shown
     cy.get('p').contains('Where are you from?').should('exist');
-    cy.get('[data-e2e="e2e-input-type-text"]').type('Bonn');
+    cy.get('[data-e2e="e2e-input-type-text"]')
+      .find('input')
+      .focus()
+      .type('Bonn');
 
     // Release questionnaire
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
@@ -1028,17 +1149,18 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('#confirmbutton').click();
 
     // Logout
-    cy.get('[data-e2e="e2e-logout"]').click();
-    cy.get('#confirmButton').click();
-    expectLocation(probandAuthFormUrl);
+    cy.logoutParticipant();
 
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
 
-    cy.get('.mat-row').contains(study.name).get('#editicon').click();
+    cy.get('[data-e2e="e2e-study-name"]')
+      .contains(study.name)
+      .parent()
+      .find('#editicon')
+      .click();
 
     // Create new Version of questionnaire
     cy.get('[data-e2e="e2e-questionnaire-revise-button"]').click();
@@ -1056,19 +1178,20 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('#confirmbutton').click();
 
     // Logout
-    cy.get('[data-e2e="e2e-logout"]').click();
-    expectLocation(adminAuthFormUrl);
+    cy.logoutProfessional();
 
     // Login as Proband A
     cy.visit(probandAppUrl);
     login(probandCredentials.username, newPassword);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
     cy.get('[data-e2e="e2e-spontaneous-questionnaire-edit-button"]').click();
 
-    cy.get('[data-e2e="e2e-input-type-text"]').type('Johny');
+    cy.get('[data-e2e="e2e-input-type-text"]')
+      .find('input')
+      .focus()
+      .type('Johny');
     cy.get('p').contains('What is your name?').should('exist');
 
     // Release questionnaire
@@ -1084,12 +1207,14 @@ describe('Release Test, role: "Forscher", Administration', () => {
     login(probandCredentialsB.username, probandCredentialsB.password);
     changePassword(probandCredentialsB.password, newPassword);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
     cy.get('[data-e2e="e2e-spontaneous-questionnaire-edit-button"]').click();
 
-    cy.get('[data-e2e="e2e-input-type-text"]').type('Johny');
+    cy.get('[data-e2e="e2e-input-type-text"]')
+      .find('input')
+      .focus()
+      .type('Johny');
     cy.get('p').contains('What is your name?').should('exist');
 
     // Release questionnaire
@@ -1102,145 +1227,204 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
 
     // Create sample question
     cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
 
-    cy.get('.mat-option').contains(study.name).click();
-    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type(
-      'Sample Questionnaire'
-    );
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('Sample Questionnaire', { force: true });
 
     cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
-    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
     cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
-    cy.get('.mat-option').contains('Einmal').click();
+    cy.get('[data-e2e="option"]').contains('Einmal').click();
 
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
-    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').focus().type('0');
 
     // Add Free text
     cy.get('#mat-expansion-panel-header-0').click();
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('Where are you from?');
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Freitext').click();
+    cy.get('[data-e2e="option"]').contains('Freitext').click();
 
     // Add Numerical answer
     cy.get('[data-e2e="e2e-add-new-question-button"]').click();
     cy.get('#mat-expansion-panel-header-1').click();
     cy.get('#cdk-accordion-child-1')
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('How old are you?');
     cy.get('#cdk-accordion-child-1')
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Numerisch').click();
+    cy.get('[data-e2e="option"]').contains('Numerisch').click();
 
     // Add multiple answer
     cy.get('[data-e2e="e2e-add-new-question-button"]').click();
     cy.get('#mat-expansion-panel-header-2').click();
     cy.get('#cdk-accordion-child-2')
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('What are your symptoms?');
     cy.get('#cdk-accordion-child-2')
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Mehrfach').click();
+    cy.get('[data-e2e="option"]').contains('Mehrfach').click();
 
-    cy.get('[data-placeholder="Wert 1"]').clear();
-    cy.get('[data-placeholder="Wert 1"]').type('Yes');
-    cy.get('[data-placeholder="Code 1"]').type('0');
-    cy.get('[data-placeholder="Wert 2"]').type('No');
-    cy.get('[data-placeholder="Code 2"]').type('1');
-    cy.get('[data-placeholder="Wert 3"]').type('No');
-    cy.get('[data-placeholder="Code 3"]').type('2');
-    cy.get('#mat-expansion-panel-header-2').click();
+    cy.get('mat-form-field:has(label:contains("Wert 1"))')
+      .find('input')
+      .clear();
+    cy.get('mat-form-field:has(label:contains("Wert 1"))')
+      .find('input')
+      .type('Yes');
+    cy.get('mat-form-field:has(label:contains("Code 1"))')
+      .find('input')
+      .type('0');
+    cy.get('mat-form-field:has(label:contains("Wert 2"))')
+      .find('input')
+      .type('No');
+    cy.get('mat-form-field:has(label:contains("Code 2"))')
+      .find('input')
+      .type('1');
+    cy.get('mat-form-field:has(label:contains("Wert 3"))')
+      .find('input')
+      .type('No');
+    cy.get('mat-form-field:has(label:contains("Code 3"))')
+      .find('input')
+      .type('2');
 
     // Add multiple answer
     cy.get('[data-e2e="e2e-add-new-question-button"]').click();
-    cy.get('#mat-expansion-panel-header-3').click();
-    cy.get('#cdk-accordion-child-3')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="button"]')
+      .eq(3)
+      .click();
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(3)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('What is a gender?');
-    cy.get('#cdk-accordion-child-3')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(3)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Einzelauswahl').click();
+    cy.get('[data-e2e="option"]').contains('Einzelauswahl').click();
 
-    cy.get('#cdk-accordion-child-3')
-      .find('[data-placeholder="Wert 1"]')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(3)
+      .find('mat-form-field:has(label:contains("Wert 1"))')
+      .find('input')
+      .focus()
       .type('Male');
-    cy.get('#cdk-accordion-child-3')
-      .find('[data-placeholder="Code 1"]')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(3)
+      .find('mat-form-field:has(label:contains("Code 1"))')
+      .find('input')
+      .focus()
       .type('0');
-    cy.get('#cdk-accordion-child-3')
-      .find('[data-placeholder="Wert 2"]')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(3)
+      .find('mat-form-field:has(label:contains("Wert 2"))')
+      .find('input')
+      .focus()
       .type('Female');
-    cy.get('#cdk-accordion-child-3')
-      .find('[data-placeholder="Code 2"]')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(3)
+      .find('mat-form-field:has(label:contains("Code 2"))')
+      .find('input')
+      .focus()
       .type('1');
 
     // Add datum answer
     cy.get('[data-e2e="e2e-add-new-question-button"]').click();
-    cy.get('#mat-expansion-panel-header-4').click();
-    cy.get('#cdk-accordion-child-4')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="button"]')
+      .eq(4)
+      .click();
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(4)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('When is your birthday?');
-    cy.get('#cdk-accordion-child-4')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(4)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Datum').click();
+    cy.get('[data-e2e="option"]').contains('Datum').click();
 
     // Add probe answer
     cy.get('[data-e2e="e2e-add-new-question-button"]').click();
-    cy.get('#mat-expansion-panel-header-5').click();
-    cy.get('#cdk-accordion-child-5')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="button"]')
+      .eq(5)
+      .click();
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(5)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('Pleas scan the probe');
-    cy.get('#cdk-accordion-child-5')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(5)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Probe').click();
+    cy.get('[data-e2e="option"]').contains('Probe').click();
 
     // Add PZN answer
     cy.get('[data-e2e="e2e-add-new-question-button"]').click();
-    cy.get('#mat-expansion-panel-header-6').click();
-    cy.get('#cdk-accordion-child-6')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="button"]')
+      .eq(6)
+      .click();
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(6)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('PZN');
-    cy.get('#cdk-accordion-child-6')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(6)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('PZN').click();
+    cy.get('[data-e2e="option"]').contains('PZN').click();
 
     // Add Foto answer
     cy.get('[data-e2e="e2e-add-new-question-button"]').click();
-    cy.get('#mat-expansion-panel-header-7').click();
-    cy.get('#cdk-accordion-child-7')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="button"]')
+      .eq(7)
+      .click();
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(7)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('Please upload your Photo');
-    cy.get('#cdk-accordion-child-7')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(7)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Foto').click();
+    cy.get('[data-e2e="option"]').contains('Foto').click();
 
     // Add Zeitstempel answer
     cy.get('[data-e2e="e2e-add-new-question-button"]').click();
-    cy.get('#mat-expansion-panel-header-8').click();
-    cy.get('#cdk-accordion-child-8')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="button"]')
+      .eq(8)
+      .click();
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(8)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('Please add Timestamp');
-    cy.get('#cdk-accordion-child-8')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(8)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Zeitstempel').click();
+    cy.get('[data-e2e="option"]').contains('Zeitstempel').click();
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();
@@ -1252,38 +1436,39 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
 
     // Create sample questionnaire
     cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
     cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
 
-    cy.get('.mat-option').contains(study.name).click();
-    cy.get('[data-e2e="e2e-questionnaire-name-input"]').type(
-      'Sample Questionnaire'
-    );
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+    cy.get('[data-e2e="e2e-questionnaire-name-input"]')
+      .focus()
+      .type('Sample Questionnaire', { force: true });
 
     cy.get('[data-e2e="e2e-questionnaire-type-select"]').click();
-    cy.get('.mat-option').contains('Für Teilnehmende').click();
+    cy.get('[data-e2e="option"]').contains('Für Teilnehmende').click();
     cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]').click();
-    cy.get('.mat-option').contains('Einmal').click();
+    cy.get('[data-e2e="option"]').contains('Einmal').click();
 
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').type('0');
-    cy.get('[data-e2e="e2e-notification-tries"]').type('0');
+    cy.get('[data-e2e="e2e-activate-after-days-input"]').focus().type('0');
+    cy.get('[data-e2e="e2e-notification-tries"]').focus().type('0');
 
-    cy.get(
-      '[data-e2e="e2e-question-expansion-panel"] mat-expansion-panel-header'
-    )
+    cy.get(' [data-e2e="e2e-question-expansion-panel"] > [role="button"]')
       .first()
+      .parent()
       .click();
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-question-text-input"]')
+      .focus()
       .type('Where are you from?');
-    cy.get('#cdk-accordion-child-0')
+    cy.get('[data-e2e="e2e-question-expansion-panel"] > [role="region"]')
+      .eq(0)
       .find('[data-e2e="e2e-answer-type-select-dropdown"]')
       .click();
-    cy.get('.mat-option').contains('Freitext').click();
+    cy.get('[data-e2e="option"]').contains('Freitext').click();
 
     cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
     cy.get('#confirmbutton').click();

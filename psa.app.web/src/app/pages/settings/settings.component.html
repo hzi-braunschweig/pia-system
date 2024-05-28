@@ -6,32 +6,33 @@
 
 <div class="jumbotron" data-e2e="e2e-settings-content">
   <mat-card>
-    <h1>{{ 'SIDENAV.SETTINGS' | translate }}</h1>
-
-    <mat-card-content>
-      <div>
-        {{ 'SETTINGS.MANAGE_PASSWORD' | translate }}
+    <mat-card-header>
+      <mat-card-title>{{ 'SIDENAV.SETTINGS' | translate }}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="block-children space-y">
+      <p>
         <button
           data-e2e="change-password-button"
-          unit-change-password-icon
-          mat-icon-button
+          mat-raised-button
+          color="primary"
           (click)="changePassword()"
         >
+          {{ 'SETTINGS.MANAGE_PASSWORD' | translate }}
           <mat-icon>subdirectory_arrow_right</mat-icon>
         </button>
-      </div>
-
-      <div>
-        {{ 'SETTINGS.DELETE_ACCOUNT_AND_PERSONAL_DATA' | translate }}:
+      </p>
+      <p>
         <button
           data-e2e="delete-account-button"
           data-unit="delete-account-button"
-          mat-icon-button
+          color="warn"
+          mat-raised-button
           (click)="initiateAccountDeletion()"
         >
+          {{ 'SETTINGS.DELETE_ACCOUNT_AND_PERSONAL_DATA' | translate }}
           <mat-icon>delete</mat-icon>
         </button>
-      </div>
+      </p>
     </mat-card-content>
   </mat-card>
 </div>

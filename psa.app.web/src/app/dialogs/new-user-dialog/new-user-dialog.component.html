@@ -12,42 +12,36 @@
       'DIALOG.EMPTY_STUDY' | translate
     }}</mat-hint>
     <mat-dialog-content>
-      <mat-grid-list [cols]="1" rowHeight="75px">
-        <mat-grid-tile>
-          <mat-form-field fxFlex>
-            <input
-              id="usernameinput"
-              matInput
-              formControlName="username"
-              placeholder="{{ 'LOGIN.USERNAME' | translate }}"
-            />
-            <mat-error *ngIf="form.controls['username'].hasError('required')">{{
-              'LOGIN.USERNAME_REQUIRED' | translate
-            }}</mat-error>
-            <mat-error *ngIf="form.controls['username'].hasError('email')">{{
-              'DIALOG.EMAIL' | translate
-            }}</mat-error>
-          </mat-form-field>
-          <mat-form-field fxFlex>
-            <mat-select
-              disableOptionCentering
-              id="selectrole"
-              placeholder="{{ 'ROLES.ROLES' | translate }}"
-              formControlName="role"
-            >
-              <mat-option *ngFor="let role of roles" [value]="role.value">
-                {{ role.viewValue | translate }}
-              </mat-option>
-            </mat-select>
-            <mat-error *ngIf="form.controls['role'].hasError('required')">{{
-              'DIALOG.ROLE_REQUIRED' | translate
-            }}</mat-error>
-          </mat-form-field>
-          <button type="button" mat-icon-button (click)="addStudyAccess()">
-            <mat-icon>add_circle_outline</mat-icon>
-          </button>
-        </mat-grid-tile>
-      </mat-grid-list>
+      <div class="grid-container">
+        <mat-form-field>
+          <mat-label>{{ 'LOGIN.USERNAME' | translate }}</mat-label>
+          <input id="usernameinput" matInput formControlName="username" />
+          <mat-error *ngIf="form.controls['username'].hasError('required')">{{
+            'LOGIN.USERNAME_REQUIRED' | translate
+          }}</mat-error>
+          <mat-error *ngIf="form.controls['username'].hasError('email')">{{
+            'DIALOG.EMAIL' | translate
+          }}</mat-error>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>{{ 'ROLES.ROLES' | translate }}</mat-label>
+          <mat-select
+            disableOptionCentering
+            id="selectrole"
+            formControlName="role"
+          >
+            <mat-option *ngFor="let role of roles" [value]="role.value">
+              {{ role.viewValue | translate }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="form.controls['role'].hasError('required')">{{
+            'DIALOG.ROLE_REQUIRED' | translate
+          }}</mat-error>
+        </mat-form-field>
+        <button type="button" mat-icon-button (click)="addStudyAccess()">
+          <mat-icon>add_circle_outline</mat-icon>
+        </button>
+      </div>
 
       <div formArrayName="study_accesses">
         <div
@@ -56,65 +50,64 @@
             let i = index
           "
         >
-          <div formGroupName="{{ i }}">
-            <mat-grid-list [cols]="1" rowHeight="75px">
-              <mat-grid-tile>
-                <mat-form-field fxFlex>
-                  <mat-label>{{
-                    'GENERAL.SELECT_STUDY' | translate
-                  }}</mat-label>
-                  <mat-select
-                    id="selectstudy"
-                    (click)="showError = false"
-                    formControlName="study_id"
-                  >
-                    <mat-select-search
-                      [formControl]="studyFilterCtrl"
-                    ></mat-select-search>
-                    <mat-option
-                      #checkbox
-                      *ngFor="let studie of filteredStudies | async"
-                      [value]="studie.name"
-                    >
-                      {{ studie.name }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-
-                <mat-form-field fxFlex>
-                  <mat-select
-                    disableOptionCentering
-                    id="selectaccesslevel"
-                    placeholder="{{ 'DIALOG.ACCESS_LEVEL' | translate }}"
-                    formControlName="access_level"
-                  >
-                    <mat-option
-                      *ngFor="let access of accesses"
-                      [value]="access.value"
-                    >
-                      {{ access.viewValue | translate }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-                <button
-                  id="removeStudyAccess"
-                  type="button"
-                  mat-icon-button
-                  (click)="removeStudyAccess(i)"
+          <div formGroupName="{{ i }}" class="grid-container">
+            <mat-form-field>
+              <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
+              <mat-select
+                id="selectstudy"
+                (click)="showError = false"
+                formControlName="study_id"
+              >
+                <mat-select-search
+                  [formControl]="studyFilterCtrl"
+                ></mat-select-search>
+                <mat-option
+                  #checkbox
+                  *ngFor="let studie of filteredStudies | async"
+                  [value]="studie.name"
                 >
-                  <mat-icon>remove_circle_outline</mat-icon>
-                </button>
-              </mat-grid-tile>
-            </mat-grid-list>
+                  {{ studie.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label>{{ 'DIALOG.ACCESS_LEVEL' | translate }}</mat-label>
+              <mat-select
+                disableOptionCentering
+                id="selectaccesslevel"
+                formControlName="access_level"
+              >
+                <mat-option
+                  *ngFor="let access of accesses"
+                  [value]="access.value"
+                >
+                  {{ access.viewValue | translate }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button
+              id="removeStudyAccess"
+              type="button"
+              mat-icon-button
+              (click)="removeStudyAccess(i)"
+            >
+              <mat-icon>remove_circle_outline</mat-icon>
+            </button>
           </div>
         </div>
       </div>
     </mat-dialog-content>
-    <mat-dialog-actions align="end">
+    <mat-dialog-actions>
       <button mat-button type="button" (click)="dialogRef.close()">
         {{ 'DIALOG.CANCEL' | translate }}
       </button>
-      <button id="confirmbutton" mat-button (click)="checkIfArrayIsUnique()">
+      <button
+        id="confirmbutton"
+        mat-button
+        color="primary"
+        (click)="checkIfArrayIsUnique()"
+      >
         {{ 'DIALOG.REGISTER' | translate }}
       </button>
     </mat-dialog-actions>

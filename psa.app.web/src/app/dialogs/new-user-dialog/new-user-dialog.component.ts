@@ -5,7 +5,7 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 import { Study } from '../../psa.app.core/models/study';
@@ -17,6 +17,7 @@ import { ReplaySubject } from 'rxjs';
 @Component({
   selector: 'new-user-dialog',
   templateUrl: 'new-user-dialog.component.html',
+  styleUrls: ['new-user-dialog.component.scss'],
 })
 export class DialogNewUserComponent implements OnInit {
   public form: FormGroup;

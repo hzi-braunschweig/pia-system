@@ -6,16 +6,10 @@
 
 import { GlobalConfig, SupersetOfServiceConfig } from '../../src';
 
-const dummySslCerts = {
-  cert: new Buffer(''),
-  key: new Buffer(''),
-  ca: new Buffer(''),
-};
-
 const conf = {
-  public: GlobalConfig.getPublic(dummySslCerts, 'exampleservice'),
+  public: GlobalConfig.getPublic('exampleservice'),
   internal: GlobalConfig.getInternal('exampleservice'),
-  database: GlobalConfig.getQPia(dummySslCerts),
+  database: GlobalConfig.getQPia(),
   services: {
     loggingservice: GlobalConfig.loggingservice,
     userservice: GlobalConfig.userservice,

@@ -18,12 +18,6 @@ It will be used by integration tests.
 
 Generates random strings of given length.
 
-## secret.js
-
-Creates **weak** secrets for tests.
-Do not use this directly.
-It will be used by unit/integration/api tests.
-
 ## setup-db.js
 
 Actually spins up a postgres container for the tests by utilizing docker.js

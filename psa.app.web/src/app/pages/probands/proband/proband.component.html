@@ -7,11 +7,11 @@
 <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
 <div class="jumbotron">
   <mat-card class="d-flex justify-content-center">
-    <mat-card-title>
-      <h3>
+    <mat-card-header>
+      <mat-card-title>
         {{ pseudonym }}
-      </h3>
-    </mat-card-title>
+      </mat-card-title>
+    </mat-card-header>
     <mat-card-content class="proband-details">
       <div *ngIf="proband">
         <table>
@@ -63,14 +63,14 @@
         <mat-checkbox
           [checked]="proband.is_test_proband"
           (change)="changeTestprobandState($event.checked)"
-          >{{ 'PROBAND.TEST_PROBAND' | translate }}</mat-checkbox
-        >
+          >{{ 'PROBAND.TEST_PROBAND' | translate }}
+        </mat-checkbox>
       </div>
     </mat-card-content>
     <mat-card-actions>
       <button
         [disabled]="!proband"
-        mat-raised-button
+        mat-button
         color="primary"
         (click)="openSampleManagement()"
       >
@@ -78,7 +78,7 @@
       </button>
       <button
         [disabled]="!plannedProband"
-        mat-raised-button
+        mat-button
         color="primary"
         (click)="openLoginLetter()"
       >

@@ -43,7 +43,6 @@ const typeOrmOptions: ConnectionOptions = {
   username: config.database.user,
   password: config.database.password,
   database: config.database.database,
-  ssl: config.database.ssl,
   entities: [FollowUp, SormasOneTimeToken, SymptomTransmission],
   namingStrategy: new SnakeNamingStrategyWithPlural(),
   synchronize: false,

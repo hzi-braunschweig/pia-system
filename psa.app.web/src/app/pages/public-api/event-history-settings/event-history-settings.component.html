@@ -1,0 +1,41 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<form [formGroup]="formGroup" (ngSubmit)="save()">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>{{ 'EVENT_HISTORY.TITLE' | translate }}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <p>{{ 'EVENT_HISTORY.DESCRIPTION' | translate }}</p>
+      <div class="grid-container">
+        <mat-form-field>
+          <mat-label
+            >{{ 'EVENT_HISTORY.RETENTION_PERIOD_IN_DAYS' | translate }}
+          </mat-label>
+          <input
+            matInput
+            type="number"
+            min="0"
+            max="365"
+            formControlName="retentionTimeInDays"
+          />
+          <mat-error *ngIf="formGroup.hasError('invalidRetentionTime')">
+            {{ 'EVENT_HISTORY.INVALID_RETENTION_TIME' | translate }}
+          </mat-error>
+        </mat-form-field>
+        <mat-slide-toggle class="toggle-active" formControlName="active">
+          {{ 'EVENT_HISTORY.TOGGLE_ACTIVE' | translate }}
+        </mat-slide-toggle>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <button color="primary" mat-button [disabled]="formGroup.invalid">
+        {{ 'EVENT_HISTORY.SAVE' | translate }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>

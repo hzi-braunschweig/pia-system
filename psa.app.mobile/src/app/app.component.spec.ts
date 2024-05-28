@@ -92,7 +92,7 @@ describe('AppComponent', () => {
     platformSpy.ready.and.resolveTo();
     compliance.userHasCompliances.and.resolveTo(true);
     compliance.isInternalComplianceActive.and.resolveTo(true);
-    auth.isAuthenticated.and.resolveTo(true);
+    auth.isAuthenticated.and.returnValue(true);
     auth.logout.and.resolveTo();
 
     await MockBuilder(AppComponent, AppModule)

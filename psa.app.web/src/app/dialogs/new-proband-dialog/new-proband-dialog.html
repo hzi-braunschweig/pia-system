@@ -7,92 +7,78 @@
 <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
 <form *ngIf="!isLoading" [formGroup]="form" (ngSubmit)="submit()">
   <h1 mat-dialog-title>{{ 'PROBANDEN.NEW_PROBAND' | translate }}</h1>
-  <mat-dialog-content>
-    <mat-grid-list [cols]="1" rowHeight="2rem">
-      <mat-grid-tile [rowspan]="2">
-        <mat-form-field>
-          <input
-            matInput
-            formControlName="pseudonym"
-            placeholder="{{ 'PROBAND.PSEUDONYM' | translate }}"
-            data-unit="new-proband-pseudonym"
-          />
-        </mat-form-field>
-      </mat-grid-tile>
-      <mat-grid-tile [rowspan]="1">
+  <mat-dialog-content class="full-width-children">
+    <mat-form-field>
+      <mat-label>{{ 'PROBAND.PSEUDONYM' | translate }}</mat-label>
+      <input
+        matInput
+        formControlName="pseudonym"
+        data-unit="new-proband-pseudonym"
+      />
+    </mat-form-field>
+    <ul>
+      <li>
         <mat-checkbox
-          fxFlex
-          fxLayoutAlign="start center"
           formControlName="complianceLabresults"
           data-unit="new-proband-compliance-labresults"
         >
-          {{'PROBAND.COMPLIANCE_LABRESULTS' | translate }}
+          {{ 'PROBAND.COMPLIANCE_LABRESULTS' | translate }}
         </mat-checkbox>
-      </mat-grid-tile>
-      <mat-grid-tile [rowspan]="1">
+      </li>
+      <li>
         <mat-checkbox
-          fxFlex
-          fxLayoutAlign="start center"
           formControlName="complianceSamples"
           data-unit="new-proband-compliance-samples"
         >
-          {{'PROBAND.COMPLIANCE_SAMPLES' | translate }}
+          {{ 'PROBAND.COMPLIANCE_SAMPLES' | translate }}
         </mat-checkbox>
-      </mat-grid-tile>
-      <mat-grid-tile [rowspan]="1">
+      </li>
+      <li>
         <mat-checkbox
-          fxFlex
-          fxLayoutAlign="start center"
           formControlName="complianceBloodsamples"
           data-unit="new-proband-compliance-bloodsamples"
         >
-          {{'PROBAND.COMPLIANCE_BLOODSAMPLES' | translate }}
+          {{ 'PROBAND.COMPLIANCE_BLOODSAMPLES' | translate }}
         </mat-checkbox>
-      </mat-grid-tile>
-      <mat-grid-tile [rowspan]="2">
-        <mat-form-field>
-          <input
-            matInput
-            formControlName="studyCenter"
-            placeholder="{{ 'PROBAND.STUDY_CENTER' | translate }}"
-            data-unit="new-proband-study-center"
-          />
-        </mat-form-field>
-      </mat-grid-tile>
-      <mat-grid-tile [rowspan]="2">
-        <mat-form-field>
-          <input
-            matInput
-            formControlName="examinationWave"
-            type="number"
-            placeholder="{{ 'PROBAND.EXAMINATION_WAVE' | translate }}"
-            data-unit="new-proband-examination-wave"
-          />
-        </mat-form-field>
-      </mat-grid-tile>
-      <mat-grid-tile [rowspan]="2">
-        <mat-form-field>
-          <mat-select
-            id="selectstudies"
-            [multiple]="false"
-            placeholder="{{ 'PLANNED_PROBANDS.STUDY_ID' | translate }}"
-            formControlName="studyName"
-          >
-            <mat-select-search
-              [formControl]="studiesFilterCtrl"
-              [noEntriesFoundLabel]="null"
-              data-unit="new-proband-study-name"
-            ></mat-select-search>
-            <mat-option
-              *ngFor="let study of filteredStudies | async"
-              [value]="study"
-            >
-              {{ study }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </mat-grid-tile>
-    </mat-grid-list>
+      </li>
+    </ul>
+    <mat-form-field>
+      <mat-label>{{ 'PROBAND.STUDY_CENTER' | translate }}</mat-label>
+      <input
+        matInput
+        formControlName="studyCenter"
+        data-unit="new-proband-study-center"
+      />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>{{ 'PROBAND.EXAMINATION_WAVE' | translate }}</mat-label>
+      <input
+        matInput
+        formControlName="examinationWave"
+        type="number"
+        data-unit="new-proband-examination-wave"
+      />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>{{ 'PLANNED_PROBANDS.STUDY_ID' | translate }}</mat-label>
+      <mat-select
+        id="selectstudies"
+        [multiple]="false"
+        formControlName="studyName"
+      >
+        <mat-select-search
+          [formControl]="studiesFilterCtrl"
+          [noEntriesFoundLabel]="null"
+          data-unit="new-proband-study-name"
+        ></mat-select-search>
+        <mat-option
+          *ngFor="let study of filteredStudies | async"
+          [value]="study"
+        >
+          {{ study }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
   </mat-dialog-content>
   <mat-dialog-actions>
     <button mat-button mat-dialog-close type="button">

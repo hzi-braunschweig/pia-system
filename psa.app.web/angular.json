@@ -111,18 +111,18 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production-proband-app": {
-              "browserTarget": "psa:build:production-proband-app"
+              "buildTarget": "psa:build:production-proband-app"
             },
             "production-admin-app": {
-              "browserTarget": "psa:build:production-admin-app"
+              "buildTarget": "psa:build:production-admin-app"
             },
             "development-proband-app": {
-              "browserTarget": "psa:build:development-proband-app",
-              "proxyConfig": "proxy.conf.json"
+              "proxyConfig": "proxy.conf.json",
+              "buildTarget": "psa:build:development-proband-app"
             },
             "development-admin-app": {
-              "browserTarget": "psa:build:development-admin-app",
-              "proxyConfig": "proxy.conf.json"
+              "proxyConfig": "proxy.conf.json",
+              "buildTarget": "psa:build:development-admin-app"
             }
           },
           "defaultConfiguration": "throw-on-default"
@@ -130,7 +130,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "psa:build"
+            "buildTarget": "psa:build"
           }
         },
         "test": {
@@ -203,7 +203,6 @@
       }
     }
   },
-  "defaultProject": "psa",
   "cli": {
     "schematicCollections": ["@angular-eslint/schematics"]
   }

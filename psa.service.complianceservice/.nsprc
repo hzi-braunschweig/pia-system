@@ -8,5 +8,6 @@
     "active": true,
     "notes": "sequelize: we will update sequelize for the next release",
     "expiry": "2023-02-27T23:59:59.999Z"
-  }
+  },
+  "1096733": "There is no potential security risk, as all our user controlled inputs are validated after deserialization."
 }

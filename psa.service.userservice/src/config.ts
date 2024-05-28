@@ -7,20 +7,13 @@
 import {
   ConfigUtils,
   GlobalConfig,
-  SslCerts,
   SupersetOfServiceConfig,
 } from '@pia/lib-service-core';
 
-const SSL_CERTS: SslCerts = {
-  cert: ConfigUtils.getFileContent('./ssl/us.cert'),
-  key: ConfigUtils.getFileContent('./ssl/us.key'),
-  ca: ConfigUtils.getFileContent('./ssl/ca.cert'),
-};
-
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS, 'userservice'),
+  public: GlobalConfig.getPublic('userservice'),
   internal: GlobalConfig.getInternal('userservice'),
-  database: GlobalConfig.getQPia(SSL_CERTS),
+  database: GlobalConfig.getQPia(),
   services: {
     loggingservice: GlobalConfig.loggingservice,
     personaldataservice: GlobalConfig.personaldataservice,

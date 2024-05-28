@@ -10,7 +10,7 @@ cleanup-registry:
     - sh -c "skopeo login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
     - sh -c "regctl registry login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
     - >
-      REGEX="(^[0-9]+$)|(^[0-9]+-with-faked-secrets$)"
+      REGEX="(^[0-9]+$)"
 
       IMAGES=
 
@@ -31,7 +31,7 @@ cleanup-registry:
                   echo deleting $IMAGE:$TAG
 
                   # skopeo uses the tag to identify the hash and delete ALL the images with that hash!
-                  #skopeo delete docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$IMAGE:$TAG || true
+                  # skopeo delete docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$IMAGE:$TAG || true
                   # therefore we are using rectl to just delete a tag
                   regctl tag delete $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$IMAGE:$TAG || true
               fi

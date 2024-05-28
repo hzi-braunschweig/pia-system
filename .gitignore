@@ -9,13 +9,13 @@
 .vscode
 **/*.iml
 
-secrets
 .docker
 coverage
 node_modules
 .npm
 .sonar
 .scannerwork
+openapi-merge.json
 
 **/__pycache__
 **/.nyc_output

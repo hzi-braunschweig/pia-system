@@ -1,8 +1,10 @@
 .gitlab-ci.yml
+.angular
 dist/
 out-tsc/
 .nyc_output/
 coverage/
+.angular/
 psa.app.mobile/platforms/
 psa.app.mobile/www/
 psa.app.mobile/plugins/
@@ -11,3 +13,6 @@ psa.app.web/src/assets/licenses.json
 ci/generated.yml
 psa.server.auth/realms/
 psa.server.auth/templates/
+**/*.generated.ts
+k8s/deployment/base/app.yaml
+k8s/utils/overlay-template.yaml

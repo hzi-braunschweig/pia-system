@@ -19,8 +19,8 @@ import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import java.util.stream.Stream;
 

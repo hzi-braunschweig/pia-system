@@ -13,12 +13,13 @@
   allowEmptySelection="true"
 >
   <ion-item *ngFor="let value of values" lines="none">
-    <ion-label class="ion-text-wrap">{{ value }}</ion-label>
     <ion-radio
+      class="ion-text-wrap"
       [value]="value"
       [disabled]="disabled"
       color="dark"
       mode="md"
-    ></ion-radio>
+      >{{ value }}</ion-radio
+    >
   </ion-item>
 </ion-radio-group>

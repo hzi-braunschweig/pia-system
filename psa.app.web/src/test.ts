@@ -14,6 +14,10 @@ import {
 } from '@angular/platform-browser-dynamic/testing';
 import { MockInstance, ngMocks } from 'ng-mocks';
 
+// Disable Zone.js long stack trace so assertion errors are readable
+Error['stackTraceLimit'] = 0;
+Zone['assertZonePatched'] = function () {};
+
 // @see https://ng-mocks.sudo.eu/extra/auto-spy
 ngMocks.autoSpy('jasmine');
 

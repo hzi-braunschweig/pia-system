@@ -4,9 +4,9 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<h3>
+<h1 mat-dialog-title>
   {{ 'COMPLIANCE.COMPLIANCE' | translate }}
-</h3>
+</h1>
 <mat-dialog-content>
   <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
   <app-template-viewer
@@ -20,7 +20,7 @@
   </button>
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
+<mat-dialog-actions>
   <button mat-button type="button" (click)="dialogRef.close()">
     {{ 'DIALOG.CLOSE' | translate }}
   </button>

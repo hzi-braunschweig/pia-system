@@ -20,6 +20,7 @@ interface GitlabCiModules {
       unit: string[];
       int: string[];
       e2e: string[];
+      openapi: string[];
     };
   };
 }
@@ -40,6 +41,7 @@ export class Generator {
           e2e: jobs.testE2e,
           unit: jobs.testUnit,
           lint: jobs.lint,
+          openapi: jobs.openApi,
         },
       },
     };

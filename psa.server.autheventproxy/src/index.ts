@@ -6,9 +6,9 @@
 
 import { ServerRunner } from '@pia/lib-service-core';
 import { AuthEventProxyServer } from './server';
+import { probandAuthClient } from './clients/authServerClient';
 
-try {
-  new ServerRunner(new AuthEventProxyServer()).start();
-} catch (e) {
-  console.error('Could not start service: ', e);
-}
+probandAuthClient
+  .waitForServer()
+  .then(() => new ServerRunner(new AuthEventProxyServer()).start())
+  .catch(console.error);

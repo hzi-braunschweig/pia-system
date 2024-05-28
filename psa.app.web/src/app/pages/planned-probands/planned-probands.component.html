@@ -4,40 +4,32 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<div class="jumbotron">
-  <div
-    class="page-header"
-    fxLayout="row"
-    fxLayout.lt-lg="row wrap"
-    fxLayoutAlign="space-between center"
-  >
-    <div>
+<div class="jumbotron space-y">
+  <mat-card class="utility-card">
+    <mat-card-content>
       <mat-form-field>
-        <input
-          matInput
-          [formControl]="filterFormControl"
-          placeholder="{{ 'DIALOG.FILTER' | translate }}"
-        />
+        <mat-label>{{ 'DIALOG.FILTER' | translate }}</mat-label>
+        <input matInput [formControl]="filterFormControl" />
       </mat-form-field>
-    </div>
-    <div>
-      <button mat-raised-button color="primary" (click)="addPlannedProbands()">
+    </mat-card-content>
+    <mat-card-actions>
+      <button mat-button color="primary" (click)="addPlannedProbands()">
         {{ 'PLANNED_PROBANDS.ADD' | translate }}
       </button>
       <button
-        mat-raised-button
+        mat-button
         color="primary"
         [disabled]="selection.selected.length == 0"
         (click)="createLetters()"
       >
         {{ 'PLANNED_PROBANDS.CREATE_LOGIN_PDFS' | translate }}
       </button>
-    </div>
-  </div>
+    </mat-card-actions>
+  </mat-card>
 
   <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
 
-  <div class="probands-container mat-elevation-z8">
+  <div class="probands-container mat-elevation-z1">
     <mat-table
       #table
       [dataSource]="dataSource"
@@ -90,7 +82,7 @@
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           {{ 'PLANNED_PROBANDS.STATUS' | translate }}
         </mat-header-cell>
-        <mat-cell *matCellDef="let row"> {{ row.activated_at }} </mat-cell>
+        <mat-cell *matCellDef="let row"> {{ row.activated_at }}</mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="delete">
@@ -116,7 +108,7 @@
       </ng-container>
 
       <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns"> </mat-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
     </mat-table>
 
     <mat-paginator

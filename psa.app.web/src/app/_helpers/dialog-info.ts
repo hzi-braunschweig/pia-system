@@ -6,12 +6,12 @@
 
 import { Component, Inject } from '@angular/core';
 import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogModule,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { TranslateModule } from '@ngx-translate/core';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'dialog-info',
@@ -22,13 +22,13 @@ import { MatLegacyButtonModule } from '@angular/material/legacy-button';
       {{ data.content | translate }}
     </div>
     <hr />
-    <mat-dialog-actions align="center">
+    <mat-dialog-actions>
       <button id="confirmbutton" mat-button (click)="confirmSelection()">
         OK
       </button>
     </mat-dialog-actions>
   `,
-  imports: [MatLegacyDialogModule, MatLegacyButtonModule, TranslateModule],
+  imports: [MatDialogModule, MatButtonModule, TranslateModule],
 })
 export class DialogInfoComponent {
   constructor(

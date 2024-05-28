@@ -5,21 +5,15 @@
  */
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import {
-  MatLegacyPaginator as MatPaginator,
-  MatLegacyPaginatorIntl as MatPaginatorIntl,
-} from '@angular/material/legacy-paginator';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { AlertService } from '../../../_services/alert.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Study } from '../../../psa.app.core/models/study';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { PersonalDataService } from 'src/app/psa.app.core/providers/personaldata-service/personaldata-service';
 import { DialogDeleteComponent } from '../../../_helpers/dialog-delete';
 import {
@@ -43,7 +37,7 @@ import { PendingPersonalDataDeletion } from '../../../psa.app.core/models/pendin
 import { PendingProbandDeletion } from '../../../psa.app.core/models/pendingDeletion';
 import { AccountStatusPipe } from '../../../pipes/account-status.pipe';
 import { CurrentUser } from '../../../_services/current-user.service';
-import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
+import { DialogYesNoComponent } from '../../../dialogs/dialog-yes-no/dialog-yes-no';
 import { filter } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { DatePipe } from '@angular/common';

@@ -11,20 +11,13 @@ import {
   Connection,
   DatabaseConnection,
   HttpConnection,
-  HttpProtocol,
   MailserverConnection,
   MessageQueueConnection,
-  SecureConnection,
-  SslCerts,
 } from './configModel';
 
 export class GlobalAuthSettings implements AuthSettings {
   public static get keycloakHttpConnection(): HttpConnection {
     return new HttpConnection(
-      ConfigUtils.getEnvVariable(
-        'AUTHSERVER_PROTOCOL',
-        'https'
-      ) as HttpProtocol,
       ConfigUtils.getEnvVariable('AUTHSERVER_HOST', 'authserver'),
       ConfigUtils.getEnvVariableInt('AUTHSERVER_PORT')
     );
@@ -138,6 +131,14 @@ export class GlobalConfig {
   }
 
   /**
+   * sampletrackingservice http connection
+   * @see {@link GlobalConfig#getHttpConnection}
+   */
+  public static get sampletrackingservice(): HttpConnection {
+    return GlobalConfig.getHttpConnection('SAMPLETRACKINGSERVICE');
+  }
+
+  /**
    * gets the application timeZone
    */
   public static get timeZone(): string {
@@ -194,18 +195,10 @@ export class GlobalConfig {
   /**
    * Configuration of the public API server of a microservice
    */
-  public static getPublic(
-    sslCerts: SslCerts,
-    serviceName: string
-  ): SecureConnection {
+  public static getPublic(serviceName: string): Connection {
     return {
       host: '0.0.0.0',
       port: GlobalConfig.getPort(serviceName),
-      tls: ConfigUtils.getEnvVariable('PROTOCOL', 'https') !== 'http' && {
-        cert: sslCerts.cert,
-        key: sslCerts.key,
-        rejectUnauthorized: true,
-      },
     };
   }
 
@@ -217,21 +210,13 @@ export class GlobalConfig {
    *
    * @deprecated should be replaced by service specific db config
    */
-  public static getQPia(sslCerts: SslCerts): DatabaseConnection {
+  public static getQPia(): DatabaseConnection {
     return {
       host: ConfigUtils.getEnvVariable('QPIA_HOST'),
       port: Number(ConfigUtils.getEnvVariable('QPIA_PORT')),
       user: ConfigUtils.getEnvVariable('QPIA_USER'),
       password: ConfigUtils.getEnvVariable('QPIA_PASSWORD'),
       database: ConfigUtils.getEnvVariable('QPIA_DB'),
-      ssl: {
-        rejectUnauthorized:
-          ConfigUtils.getEnvVariable('QPIA_ACCEPT_UNAUTHORIZED', 'false') !==
-          'true',
-        cert: sslCerts.cert,
-        key: sslCerts.key,
-        ca: sslCerts.ca,
-      },
     };
   }
 
@@ -269,7 +254,6 @@ export class GlobalConfig {
    */
   private static getHttpConnection(servicePrefix: string): HttpConnection {
     return new HttpConnection(
-      ConfigUtils.getEnvVariable('INTERNAL_PROTOCOL', 'http') as HttpProtocol,
       ConfigUtils.getEnvVariable(servicePrefix + '_HOST'),
       Number(ConfigUtils.getEnvVariable(servicePrefix + '_INTERNAL_PORT'))
     );

@@ -38,4 +38,24 @@ export class Color {
   public static bool(bool: boolean): string {
     return bool ? Color.success('true') : Color.error('false');
   }
+
+  public static statusCode(statusCode: number): string {
+    const HTTP_STATUS_GROUP_SIZE = 100;
+    const HTTP_STATUS_GROUP_SUCCESS = 2;
+    const HTTP_STATUS_GROUP_REDIRECT = 3;
+    const HTTP_STATUS_GROUP_CLIENT_ERROR = 4;
+    const HTTP_STATUS_GROUP_SERVER_ERROR = 5;
+    switch (Math.floor(statusCode / HTTP_STATUS_GROUP_SIZE)) {
+      case HTTP_STATUS_GROUP_SUCCESS:
+        return Color.success(statusCode.toString());
+      case HTTP_STATUS_GROUP_REDIRECT:
+        return Color.warn(statusCode.toString());
+      case HTTP_STATUS_GROUP_CLIENT_ERROR:
+        return Color.error(statusCode.toString());
+      case HTTP_STATUS_GROUP_SERVER_ERROR:
+        return Color.error(statusCode.toString());
+      default:
+        return chalk.bold(statusCode.toString());
+    }
+  }
 }

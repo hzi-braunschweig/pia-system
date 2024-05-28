@@ -5,13 +5,6 @@
  */
 
 /* Structure */
-.grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, 300px);
-  grid-gap: 1rem;
-  align-items: baseline;
-}
-
 .probands-container {
   display: flex;
   flex-direction: column;
@@ -19,21 +12,14 @@
   opacity: 0.8;
 }
 
-.mat-form-field {
-  font-size: 14px;
-  flex-grow: 1;
-  margin-top: 8px;
-  max-width: 250px;
-}
-
 /** Selection styles */
-.mat-cell {
+.mat-mdc-cell {
   display: flex;
   justify-content: flex-start;
   text-align: start;
 }
 
-.mat-header-cell {
+.mat-mdc-header-cell {
   display: flex;
   justify-content: flex-start;
 }
@@ -42,7 +28,7 @@
   margin: 0 10px;
 }
 
-::ng-deep .mat-tooltip {
+::ng-deep .mat-mdc-tooltip {
   font-size: 14px;
 }
 

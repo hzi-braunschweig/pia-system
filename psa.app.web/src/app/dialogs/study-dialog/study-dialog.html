@@ -12,74 +12,65 @@
     <h1 mat-dialog-title *ngIf="this.isEditMode">
       {{ 'STUDIES.CHANGE_STUDY' | translate }}
     </h1>
-    <mat-dialog-content align="start">
+    <mat-dialog-content>
       <mat-form-field>
+        <mat-label>{{ 'STUDIES.STUDY_NAME' | translate }}</mat-label>
         <input
           id="studynameinput"
           data-e2e="study-name-input"
           matInput
           formControlName="name"
-          placeholder="{{ 'STUDIES.STUDY_NAME' | translate }}"
         />
       </mat-form-field>
       <mat-form-field>
+        <mat-label>{{ 'STUDIES.DESCRIPTION' | translate }}</mat-label>
         <input
           id="studydescriptioninput"
           data-e2e="study-description-input"
           matInput
           formControlName="description"
-          placeholder="{{ 'STUDIES.DESCRIPTION' | translate }}"
         />
       </mat-form-field>
       <mat-form-field>
+        <mat-label>{{ 'STUDIES.PM_MAIL' | translate }}</mat-label>
         <input
           type="email"
           id="pmemailinput"
           data-e2e="pm-email-input"
           matInput
           formControlName="pm_email"
-          placeholder="{{ 'STUDIES.PM_MAIL' | translate }}"
         />
       </mat-form-field>
       <mat-form-field>
+        <mat-label>{{ 'STUDIES.HUB_MAIL' | translate }}</mat-label>
         <input
           type="email"
           id="hubemailinput"
           data-e2e="hub-email-input"
           matInput
           formControlName="hub_email"
-          placeholder="{{ 'STUDIES.HUB_MAIL' | translate }}"
         />
       </mat-form-field>
       <mat-form-field>
-        <input
-          matInput
-          formControlName="sample_prefix"
-          placeholder="{{ 'STUDIES.SAMPLE_PREFIX' | translate }}"
-        />
+        <mat-label>{{ 'STUDIES.SAMPLE_PREFIX' | translate }}</mat-label>
+        <input matInput formControlName="sample_prefix" />
       </mat-form-field>
       <mat-form-field>
-        <input
-          matInput
-          type="number"
-          formControlName="sample_suffix_length"
-          placeholder="{{ 'STUDIES.SAMPLE_SUFFIX_LENGTH' | translate }}"
-        />
-      </mat-form-field>
-
-      <mat-form-field>
-        <input
-          matInput
-          formControlName="pseudonym_prefix"
-          placeholder="{{ 'STUDIES.PSEUDONYM_PREFIX' | translate }}"
-        />
+        <mat-label>{{ 'STUDIES.SAMPLE_SUFFIX_LENGTH' | translate }}</mat-label>
+        <input matInput type="number" formControlName="sample_suffix_length" />
       </mat-form-field>
       <mat-form-field>
+        <mat-label>{{ 'STUDIES.PSEUDONYM_PREFIX' | translate }}</mat-label>
+        <input matInput formControlName="pseudonym_prefix" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label
+          >{{ 'STUDIES.PSEUDONYM_SUFFIX_LENGTH' | translate }}</mat-label
+        >
         <input
           matInput
           type="number"
           formControlName="pseudonym_suffix_length"
-          placeholder="{{ 'STUDIES.PSEUDONYM_SUFFIX_LENGTH' | translate }}"
         />
       </mat-form-field>
       <span
@@ -97,13 +88,15 @@
       <mat-form-field
         *ngIf="form.get('has_open_self_registration').value === true"
       >
+        <mat-label
+          >{{ 'STUDIES.MAX_ALLOWED_ACCOUNTS_COUNT' | translate }}</mat-label
+        >
         <input
           type="number"
           id="maxallowedaccountscount"
           matInput
           data-e2e="max-allowed-proband-count-input"
           formControlName="max_allowed_accounts_count"
-          placeholder="{{ 'STUDIES.MAX_ALLOWED_ACCOUNTS_COUNT' | translate }}"
         />
         <mat-error
           *ngIf="form.get('max_allowed_accounts_count').hasError('min') && (form.get('max_allowed_accounts_count').touched || form.get('max_allowed_accounts_count').dirty)"
@@ -135,7 +128,7 @@
         >{{ 'STUDIES.HAS_REQUIRED_TOTP' | translate }}</mat-checkbox
       >
     </mat-dialog-content>
-    <mat-dialog-actions align="end">
+    <mat-dialog-actions>
       <button mat-button type="button" (click)="dialogRef.close()">
         {{ 'DIALOG.CANCEL' | translate }}
       </button>
@@ -153,6 +146,7 @@
         *ngIf="this.isEditMode"
         id="confirmbutton"
         mat-button
+        color="primary"
         type="submit"
         [disabled]="!form.valid"
       >

@@ -7,36 +7,26 @@
 import {
   ConfigUtils,
   GlobalConfig,
-  SslCerts,
   SupersetOfServiceConfig,
 } from '@pia/lib-service-core';
 import { ServiceAccount } from 'firebase-admin/lib/credential';
 
-interface FirebaseCredentialsFile {
-  project_id: string;
-  private_key: string;
-  client_email: string;
+function getFirebaseCredentials(): ServiceAccount {
+  const privateKey = Buffer.from(
+    ConfigUtils.getEnvVariable('FIREBASE_PRIVATE_KEY_BASE64'),
+    'base64'
+  ).toString('utf-8');
+
+  return {
+    privateKey,
+    clientEmail: ConfigUtils.getEnvVariable('FIREBASE_CLIENT_EMAIL'),
+    projectId: ConfigUtils.getEnvVariable('FIREBASE_PROJECT_ID'),
+  };
 }
 
-const fbCredentialsFile = JSON.parse(
-  ConfigUtils.getFileContent('./firebase/credential.json').toString() || '{}'
-) as FirebaseCredentialsFile;
-
-const fireBaseCredentials: ServiceAccount = {
-  projectId: fbCredentialsFile.project_id,
-  privateKey: fbCredentialsFile.private_key,
-  clientEmail: fbCredentialsFile.client_email,
-};
-
-const SSL_CERTS: SslCerts = {
-  cert: ConfigUtils.getFileContent('./ssl/no.cert'),
-  key: ConfigUtils.getFileContent('./ssl/no.key'),
-  ca: ConfigUtils.getFileContent('./ssl/ca.cert'),
-};
-
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS, 'notificationservice'),
-  database: GlobalConfig.getQPia(SSL_CERTS),
+  public: GlobalConfig.getPublic('notificationservice'),
+  database: GlobalConfig.getQPia(),
   services: {
     userservice: GlobalConfig.userservice,
     personaldataservice: GlobalConfig.personaldataservice,
@@ -54,7 +44,7 @@ const conf = {
   },
   probandAppUrl: GlobalConfig.probandAppUrl,
   adminAppUrl: GlobalConfig.adminAppUrl,
-  fireBaseCredentials: fireBaseCredentials,
+  fireBaseCredentials: getFirebaseCredentials(),
   timeZone: GlobalConfig.timeZone,
   notificationTime: {
     hours: 8, // in the time zone configured above

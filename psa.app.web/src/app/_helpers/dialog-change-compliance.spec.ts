@@ -6,10 +6,7 @@
 
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 import { DialogChangeComplianceComponent } from './dialog-change-compliance';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AppModule } from '../app.module';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { DialogChangeComplianceData } from '../pages/probands/probands-personal-info/probands-personal-info.component';

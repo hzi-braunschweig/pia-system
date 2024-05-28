@@ -156,25 +156,6 @@ const postgresqlHelper = (function () {
     );
   }
 
-  async function getAllNotificationsForUser(user_id) {
-    // Only get qReminder schedules for questionnaires that have no hourly cycle
-    return await db.manyOrNone(
-      `SELECT *
-             FROM notification_schedules
-             WHERE user_id = $1
-               AND (
-                 notification_type != $2 OR (
-                     notification_type = $2 AND reference_id:: int IN (
-                     SELECT id FROM questionnaire_instances WHERE questionnaire_id IN (
-                     SELECT id FROM questionnaires WHERE cycle_unit != $3
-                     )
-                     )
-                     )
-                 )`,
-      [user_id, 'qReminder', 'hour']
-    );
-  }
-
   async function getNotificationById(id) {
     return await db.one('SELECT * FROM notification_schedules WHERE id=$1', [
       id,
@@ -567,15 +548,6 @@ const postgresqlHelper = (function () {
      * @returns {Promise} a resolved promise in case of success or a rejected promise otherwise
      */
     getAllDueNotifications: getAllDueNotifications,
-
-    /**
-     * @function
-     * @description gets the notification schedule for the user
-     * @memberof module:postgresqlHelper
-     * @param {number} user_id the users id
-     * @returns {Promise} a resolved promise in case of success or a rejected promise otherwise
-     */
-    getAllNotificationsForUser: getAllNotificationsForUser,
 
     /**
      * @function

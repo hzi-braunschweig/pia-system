@@ -9,20 +9,21 @@ import {
   MessageQueueClient,
   MessageQueueClientHelper,
 } from '@pia/lib-messagequeue';
-import { config, proxys } from '../config';
+import { config } from '../config';
 import { EventProxy } from '../proxys/eventProxy';
+import { proxies } from '../proxies';
 
 export class MessageQueueService extends MessageQueueClient {
-  private _proxys: typeof EventProxy[] = [];
+  private _proxies: typeof EventProxy[] = [];
 
-  public set proxys(value: typeof EventProxy[]) {
-    this._proxys = value;
+  public set proxies(value: typeof EventProxy[]) {
+    this._proxies = value;
   }
 
   public async connect(waitForAvailability?: boolean): Promise<void> {
     await super.connect(waitForAvailability);
 
-    for (const proxy of this._proxys) {
+    for (const proxy of this._proxies) {
       try {
         const proxyInstance = await proxy.build(this);
         await this.createTopicConsumer(
@@ -99,7 +100,7 @@ export function MessageQueueServiceFactory(
 ): MessageQueueService {
   if (!messageQueueService) {
     messageQueueService = new MessageQueueService(messageQueueConfig);
-    messageQueueService.proxys = proxys;
+    messageQueueService.proxies = proxies;
   }
 
   return messageQueueService;

@@ -12,7 +12,7 @@ chai.use(chaiExclude);
 const expect = chai.expect;
 
 const { config } = require('../../src/config');
-const server = require('../../src/server');
+const { Server } = require('../../src/server');
 const apiAddress = `http://localhost:${config.public.port}`;
 
 const { sequelize, ComplianceText } = require('../../src/db');
@@ -47,11 +47,11 @@ describe('Compliance Text API', () => {
   const studyName = 'QTeststudy';
   before(async () => {
     await sequelize.sync();
-    await server.init();
+    await Server.init();
   });
 
   after(async () => {
-    await server.stop();
+    await Server.stop();
   });
 
   beforeEach(async () => {

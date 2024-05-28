@@ -17,6 +17,10 @@ import packageJson from '../package.json';
 import { config } from './config';
 import { connectDatabase, db } from './db';
 import { messageQueueService } from './services/messageQueueService';
+import { RegisterRoutes } from './publicRoutes.generated';
+import { ValidateError } from 'tsoa';
+import { PublicApiValidationError } from './errors';
+import { adminAuthClient, probandAuthClient } from './clients/authServerClient';
 
 export class Server {
   private static instance: Hapi.Server;
@@ -28,7 +32,6 @@ export class Server {
     this.instance = Hapi.server({
       host: config.public.host,
       port: config.public.port,
-      tls: config.public.tls,
       routes: {
         cors: { origin: ['*'] },
         timeout: {
@@ -40,7 +43,11 @@ export class Server {
         healthcheck: async () => {
           await db.one('SELECT 1;');
           await getConnection().query('SELECT 1');
-          return messageQueueService.isConnected();
+          return (
+            probandAuthClient.isConnected() &&
+            adminAuthClient.isConnected() &&
+            messageQueueService.isConnected()
+          );
         },
       },
     });
@@ -62,12 +69,14 @@ export class Server {
       version: packageJson.version,
       routes: defaultPublicRoutesPaths,
     });
+    RegisterRoutes(this.instance);
     await registerPlugins(this.instanceInternal, {
       name: packageJson.name,
       version: packageJson.version,
       routes: defaultInternalRoutesPaths,
       isInternal: true,
     });
+    this.addGlobalErrorValidationHandler();
 
     await messageQueueService.connect();
 
@@ -91,5 +100,17 @@ export class Server {
     await this.instanceInternal.stop();
     this.instanceInternal.log(['startup'], `Internal Server was stopped`);
     await messageQueueService.disconnect();
+  }
+
+  private static addGlobalErrorValidationHandler(): void {
+    this.instance.ext('onPreResponse', (request, h) => {
+      if (request.response instanceof ValidateError) {
+        request.response = PublicApiValidationError.asBoom(
+          request.response.fields
+        );
+      }
+
+      return h.continue;
+    });
   }
 }

@@ -12,13 +12,10 @@ import {
   ViewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
-import { DialogMarkdownEditorData } from '../dialog-markdown-editor/dialog-markdown-editor.component';
-import { MarkdownEditorComponent } from '../../features/markdown-editor/markdown-editor.component';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
+import { MarkdownEditorComponent } from '../../features/markdown-editor/markdown-editor.component';
+import { DialogMarkdownEditorData } from '../dialog-markdown-editor/dialog-markdown-editor.component';
 
 interface TagInfo {
   i18nIdentifier: string;

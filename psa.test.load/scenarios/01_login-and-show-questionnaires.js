@@ -61,7 +61,7 @@ export default () => {
     getAsset('/favicon.png', 'asset from index.html');
 
     getAsset('/assets/i18n/en-US.json', 'asset from webapp');
-    getAsset('/assets/images/logo-hzi.jpeg', 'asset from webapp');
+    getAsset('/assets/images/logo.jpeg', 'asset from webapp');
 
     // todo: make this request dynamic and independent from angular build
     getAsset(

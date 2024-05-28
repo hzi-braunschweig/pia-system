@@ -1,0 +1,4138 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    linkerd.io/inject: enabled
+  labels:
+    app: pia
+  name: pia
+spec: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: pia-precheck
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+  labels:
+    app: pia
+  name: pia-precheck
+spec:
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-precheck-pia-precheck-c8392892
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - args:
+            - precheck
+            - /internal-secrets
+            - /pia-config
+          image: registry.hzdr.de/pia-eresearch-system/pia/k8s:1.37.0
+          imagePullPolicy: IfNotPresent
+          name: main
+          resources:
+            limits:
+              cpu: "1"
+              memory: 128Mi
+            requests:
+              cpu: "0.1"
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /internal-secrets
+              name: secret-internal-secrets
+              readOnly: true
+            - mountPath: /pia-config
+              name: secret-pia-config
+              readOnly: true
+      dnsPolicy: ClusterFirst
+      hostNetwork: false
+      restartPolicy: Never
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: pia-precheck
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: secret-internal-secrets
+          secret:
+            secretName: internal-secrets
+        - name: secret-pia-config
+          secret:
+            secretName: pia-config
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: pia
+  name: qpiaservice
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: qpiaservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: qpiaservice
+spec:
+  externalIPs: []
+  ports:
+    - name: postgres
+      port: 5432
+  selector:
+    cdk8s.io/metadata.addr: pia-qpiaservice-sts-c8d23852
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: pia
+  name: qpiaservice
+spec:
+  minReadySeconds: 0
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-qpiaservice-sts-c8d23852
+  serviceName: qpiaservice
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-qpiaservice-sts-c8d23852
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: POSTGRES_USER
+              value: superuser
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: qpia_superuser_db.password
+                  name: internal-secrets
+            - name: POSTGRES_DB
+              value: pia_database
+            - name: DB_LOG_USER
+              value: loggingservice
+            - name: DB_LOG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: loggingservice_db.password
+                  name: internal-secrets
+            - name: DB_SORMAS_USER
+              value: sormasservice
+            - name: DB_SORMAS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: sormasservice_db.password
+                  name: internal-secrets
+            - name: DB_FEEDBACKSTATISTIC_USER
+              value: feedbackstatisticservice
+            - name: DB_FEEDBACKSTATISTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: feedbackstatisticservice_db.password
+                  name: internal-secrets
+            - name: DB_EVENTHISTORY_USER
+              value: eventhistoryserver
+            - name: DB_EVENTHISTORY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: eventhistoryserver_db.password
+                  name: internal-secrets
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database:1.37.0
+          imagePullPolicy: IfNotPresent
+          name: main
+          ports:
+            - containerPort: 5432
+              name: postgres
+          resources:
+            limits:
+              cpu: "8"
+              memory: 8192Mi
+            requests:
+              cpu: "1"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data/
+              name: pvc-qpiaservice
+              subPath: data
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: qpiaservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: pvc-qpiaservice
+          persistentVolumeClaim:
+            claimName: qpiaservice
+            readOnly: false
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: pia
+  name: ewpiaservice
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: ewpiaservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: ewpiaservice
+spec:
+  externalIPs: []
+  ports:
+    - name: postgres
+      port: 5432
+  selector:
+    cdk8s.io/metadata.addr: pia-ewpiaservice-sts-c89c485f
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: pia
+  name: ewpiaservice
+spec:
+  minReadySeconds: 0
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-ewpiaservice-sts-c89c485f
+  serviceName: ewpiaservice
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-ewpiaservice-sts-c89c485f
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: POSTGRES_USER
+              value: superuser
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: ewpia_supersuser_db.password
+                  name: internal-secrets
+            - name: POSTGRES_DB
+              value: pia_database
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ewpia:1.37.0
+          imagePullPolicy: IfNotPresent
+          name: main
+          ports:
+            - containerPort: 5432
+              name: postgres
+          resources:
+            limits:
+              cpu: "8"
+              memory: 8192Mi
+            requests:
+              cpu: "1"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data/
+              name: pvc-ewpiaservice
+              subPath: data
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: ewpiaservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: pvc-ewpiaservice
+          persistentVolumeClaim:
+            claimName: ewpiaservice
+            readOnly: false
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: pia
+  name: ipiaservice
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: ipiaservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: ipiaservice
+spec:
+  externalIPs: []
+  ports:
+    - name: postgres
+      port: 5432
+  selector:
+    cdk8s.io/metadata.addr: pia-ipiaservice-sts-c8032d43
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: pia
+  name: ipiaservice
+spec:
+  minReadySeconds: 0
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-ipiaservice-sts-c8032d43
+  serviceName: ipiaservice
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-ipiaservice-sts-c8032d43
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: POSTGRES_USER
+              value: superuser
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: ipia_superuser_db.password
+                  name: internal-secrets
+            - name: POSTGRES_DB
+              value: pia_database
+            - name: DB_PERSONALDATA_USER
+              value: personaldataservice
+            - name: DB_PERSONALDATA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: personaldataservice_db.password
+                  name: internal-secrets
+            - name: DB_AUTHSERVER_USER
+              value: authserver
+            - name: DB_AUTHSERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_db.password
+                  name: internal-secrets
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ipia:1.37.0
+          imagePullPolicy: IfNotPresent
+          name: main
+          ports:
+            - containerPort: 5432
+              name: postgres
+          resources:
+            limits:
+              cpu: "8"
+              memory: 8192Mi
+            requests:
+              cpu: "1"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data/
+              name: pvc-ipiaservice
+              subPath: data
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: ipiaservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: pvc-ipiaservice
+          persistentVolumeClaim:
+            claimName: ipiaservice
+            readOnly: false
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: pia
+  name: messagequeue
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: messagequeue
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: messagequeue
+spec:
+  externalIPs: []
+  ports:
+    - port: 5672
+  selector:
+    cdk8s.io/metadata.addr: pia-messagequeue-sts-c86e5abc
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: pia
+  name: messagequeue
+spec:
+  minReadySeconds: 0
+  podManagementPolicy: OrderedReady
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-messagequeue-sts-c86e5abc
+  serviceName: messagequeue
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-messagequeue-sts-c86e5abc
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: MESSAGEQUEUE_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_admin.password
+                  name: internal-secrets
+            - name: MESSAGEQUEUE_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: RABBITMQ_NODENAME
+              value: rabbit@messagequeue
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.messagequeue:1.37.0
+          imagePullPolicy: IfNotPresent
+          name: messagequeue
+          ports:
+            - containerPort: 5672
+              name: rabbitmq
+          resources:
+            limits:
+              cpu: "2"
+              memory: 2048Mi
+            requests:
+              cpu: "1"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+          volumeMounts:
+            - mountPath: /var/lib/rabbitmq/mnesia/
+              name: pvc-messagequeue
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostAliases:
+        - hostnames:
+            - messagequeue
+          ip: 127.0.0.1
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: messagequeue
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: pvc-messagequeue
+          persistentVolumeClaim:
+            claimName: messagequeue
+            readOnly: false
+  updateStrategy:
+    rollingUpdate:
+      partition: 0
+    type: RollingUpdate
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: authserver
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: authserver
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-authserver-deployment-c816a434
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-authserver-deployment-c816a434
+      name: authserver
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: KEYCLOAK_ADMIN
+              value: admin
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_user.password
+                  name: internal-secrets
+            - name: DB_AUTHSERVER_HOST
+              value: ipiaservice
+            - name: DB_AUTHSERVER_PORT
+              value: "5432"
+            - name: DB_AUTHSERVER_USER
+              value: authserver
+            - name: DB_AUTHSERVER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_db.password
+                  name: internal-secrets
+            - name: DB_AUTHSERVER_DB
+              value: pia_database
+            - name: MAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerHostName
+                  name: pia-config
+            - name: MAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerPort
+                  name: pia-config
+            - name: MAIL_USER
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerUserName
+                  name: pia-config
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerPassword
+                  name: pia-config
+            - name: MAIL_REQUIRE_TLS
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerRequireTls
+                  name: pia-config
+            - name: MAIL_FROM_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerFromAddress
+                  name: pia-config
+            - name: MAIL_FROM_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerFromName
+                  name: pia-config
+            - name: AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_proband_management_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_ADMIN_MANAGEMENT_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_management_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_proband_token_introspection_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_token_introspection_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_PROBAND_TERMS_OF_SERVICE_URL
+              valueFrom:
+                secretKeyRef:
+                  key: probandTermsOfServiceUrl
+                  name: pia-config
+            - name: AUTHSERVER_PROBAND_POLICY_URL
+              valueFrom:
+                secretKeyRef:
+                  key: probandPolicyUrl
+                  name: pia-config
+            - name: KK_TO_RMQ_URL
+              value: messagequeue
+            - name: KK_TO_RMQ_PORT
+              value: "5672"
+            - name: KK_TO_RMQ_USERNAME
+              value: app
+            - name: KK_TO_RMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: KK_TO_RMQ_EXCHANGE
+              value: keycloak.events
+            - name: KK_TO_RMQ_VHOST
+              value: /
+            - name: WEBAPP_URL
+              valueFrom:
+                secretKeyRef:
+                  key: webappUrl
+                  name: pia-config
+            - name: EXTERNAL_PROTOCOL
+              valueFrom:
+                secretKeyRef:
+                  key: externalProtocol
+                  name: pia-config
+            - name: EXTERNAL_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: externalPort
+                  name: pia-config
+            - name: EXTERNAL_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: externalHost
+                  name: pia-config
+            - name: IS_DEVELOPMENT_SYSTEM
+              value: "false"
+            - name: IS_DIRECT_ACCESS_GRANT_ENABLED
+              value: "false"
+            - name: USER_PASSWORD_LENGTH
+              valueFrom:
+                secretKeyRef:
+                  key: userPasswordLength
+                  name: pia-config
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.auth:1.37.0
+          imagePullPolicy: IfNotPresent
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+          resources:
+            limits:
+              cpu: "4"
+              memory: 4096Mi
+            requests:
+              cpu: "1"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: true
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: authserver
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: authserver
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-authserver-deployment-c816a434
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: webappserver
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: webappserver
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-webappserver-deployment-c8089d19
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-webappserver-deployment-c8089d19
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: DEFAULT_LANGUAGE
+              valueFrom:
+                secretKeyRef:
+                  key: defaultLanguage
+                  name: pia-config
+            - name: IS_DEVELOPMENT_SYSTEM
+              value: "false"
+            - name: WEBAPPSERVER_HTTP_PORT
+              value: "80"
+            - name: IS_SORMAS_ENABLED
+              valueFrom:
+                secretKeyRef:
+                  key: isSormasEnabled
+                  name: pia-config
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.app.web:1.37.0
+          imagePullPolicy: IfNotPresent
+          name: main
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1024Mi
+            requests:
+              cpu: "0.5"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: webappserver
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: webappserver
+spec:
+  externalIPs: []
+  ports:
+    - port: 80
+  selector:
+    cdk8s.io/metadata.addr: pia-webappserver-deployment-c8089d19
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: userservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: userservice
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-userservice-deployment-c8125265
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-userservice-deployment-c8125265
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: WEBAPP_URL
+              valueFrom:
+                secretKeyRef:
+                  key: webappUrl
+                  name: pia-config
+            - name: USER_PASSWORD_LENGTH
+              valueFrom:
+                secretKeyRef:
+                  key: userPasswordLength
+                  name: pia-config
+            - name: LOGGINGSERVICE_HOST
+              value: internal-loggingservice
+            - name: LOGGINGSERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: PERSONALDATASERVICE_HOST
+              value: internal-personaldataservice
+            - name: PERSONALDATASERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: QPIA_HOST
+              value: qpiaservice
+            - name: QPIA_PORT
+              value: "5432"
+            - name: QPIA_USER
+              value: superuser
+            - name: QPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: qpia_superuser_db.password
+                  name: internal-secrets
+            - name: QPIA_DB
+              value: pia_database
+            - name: MAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerHostName
+                  name: pia-config
+            - name: MAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerPort
+                  name: pia-config
+            - name: MAIL_USER
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerUserName
+                  name: pia-config
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerPassword
+                  name: pia-config
+            - name: MAIL_REQUIRE_TLS
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerRequireTls
+                  name: pia-config
+            - name: MAIL_FROM_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerFromAddress
+                  name: pia-config
+            - name: MAIL_FROM_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerFromName
+                  name: pia-config
+            - name: MESSAGEQUEUE_HOST
+              value: messagequeue
+            - name: MESSAGEQUEUE_PORT
+              value: "5672"
+            - name: MESSAGEQUEUE_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: MESSAGEQUEUE_APP_USER
+              value: app
+            - name: AUTHSERVER_PORT
+              value: "4000"
+            - name: AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_proband_management_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_proband_token_introspection_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_ADMIN_MANAGEMENT_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_management_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_token_introspection_client_secret.password
+                  name: internal-secrets
+            - name: IS_DEVELOPMENT_SYSTEM
+              value: "false"
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.userservice:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: userservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: userservice
+  name: userservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-userservice-deployment-c8125265
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-userservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-userservice-deployment-c8125265
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: userservice
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: userservice
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: loggingservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: loggingservice
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-loggingservice-deployment-c8493c2f
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-loggingservice-deployment-c8493c2f
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: WEBAPP_URL
+              valueFrom:
+                secretKeyRef:
+                  key: webappUrl
+                  name: pia-config
+            - name: AUTHSERVER_PORT
+              value: "4000"
+            - name: AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_token_introspection_client_secret.password
+                  name: internal-secrets
+            - name: DB_LOG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: loggingservice_db.password
+                  name: internal-secrets
+            - name: DB_LOG_USER
+              value: loggingservice
+            - name: DB_LOG_HOST
+              value: qpiaservice
+            - name: DB_LOG_PORT
+              value: "5432"
+            - name: DB_LOG_DB
+              value: pia_database
+            - name: USERSERVICE_HOST
+              value: internal-userservice
+            - name: USERSERVICE_INTERNAL_PORT
+              value: "5000"
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.loggingservice:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: loggingservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: loggingservice
+  name: loggingservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-loggingservice-deployment-c8493c2f
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-loggingservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-loggingservice-deployment-c8493c2f
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: loggingservice
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: loggingservice
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: personaldataservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: personaldataservice
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-personaldataservice-deployment-c844866a
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-personaldataservice-deployment-c844866a
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: WEBAPP_URL
+              valueFrom:
+                secretKeyRef:
+                  key: webappUrl
+                  name: pia-config
+            - name: LOGGINGSERVICE_HOST
+              value: internal-loggingservice
+            - name: LOGGINGSERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: USERSERVICE_HOST
+              value: internal-userservice
+            - name: USERSERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: MAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerHostName
+                  name: pia-config
+            - name: MAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerPort
+                  name: pia-config
+            - name: MAIL_USER
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerUserName
+                  name: pia-config
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerPassword
+                  name: pia-config
+            - name: MAIL_REQUIRE_TLS
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerRequireTls
+                  name: pia-config
+            - name: MAIL_FROM_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerFromAddress
+                  name: pia-config
+            - name: MAIL_FROM_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerFromName
+                  name: pia-config
+            - name: MESSAGEQUEUE_HOST
+              value: messagequeue
+            - name: MESSAGEQUEUE_PORT
+              value: "5672"
+            - name: MESSAGEQUEUE_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: MESSAGEQUEUE_APP_USER
+              value: app
+            - name: AUTHSERVER_PORT
+              value: "4000"
+            - name: AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_token_introspection_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_proband_management_client_secret.password
+                  name: internal-secrets
+            - name: DB_PERSONALDATA_HOST
+              value: ipiaservice
+            - name: DB_PERSONALDATA_PORT
+              value: "5432"
+            - name: DB_PERSONALDATA_USER
+              value: personaldataservice
+            - name: DB_PERSONALDATA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: personaldataservice_db.password
+                  name: internal-secrets
+            - name: DB_PERSONALDATA_DB
+              value: pia_database
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.personaldataservice:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: personaldataservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: personaldataservice
+  name: personaldataservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-personaldataservice-deployment-c844866a
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-personaldataservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-personaldataservice-deployment-c844866a
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: personaldataservice
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: personaldataservice
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: modysservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: modysservice
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-modysservice-deployment-c88ffd79
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-modysservice-deployment-c88ffd79
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: MODYS_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  key: modysBaseUrl
+                  name: pia-config
+            - name: MODYS_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  key: modysUserName
+                  name: pia-config
+            - name: MODYS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: modysPassword
+                  name: pia-config
+            - name: MODYS_STUDY
+              valueFrom:
+                secretKeyRef:
+                  key: modysStudy
+                  name: pia-config
+            - name: MODYS_IDENTIFIER_TYPE_ID
+              valueFrom:
+                secretKeyRef:
+                  key: modysIdentifierTypeId
+                  name: pia-config
+            - name: MODYS_REQUEST_CONCURRENCY
+              valueFrom:
+                secretKeyRef:
+                  key: modysRequestConcurrency
+                  name: pia-config
+            - name: USERSERVICE_HOST
+              value: internal-userservice
+            - name: USERSERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: PERSONALDATASERVICE_HOST
+              value: internal-personaldataservice
+            - name: PERSONALDATASERVICE_INTERNAL_PORT
+              value: "5000"
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.modysservice:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: modysservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: modysservice
+  name: modysservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-modysservice-deployment-c88ffd79
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-modysservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-modysservice-deployment-c88ffd79
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: modysservice
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: modysservice
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: complianceservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: complianceservice
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-complianceservice-deployment-c8122fdb
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-complianceservice-deployment-c8122fdb
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: WEBAPP_URL
+              valueFrom:
+                secretKeyRef:
+                  key: webappUrl
+                  name: pia-config
+            - name: DEFAULT_LANGUAGE
+              valueFrom:
+                secretKeyRef:
+                  key: defaultLanguage
+                  name: pia-config
+            - name: USERSERVICE_HOST
+              value: internal-userservice
+            - name: USERSERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: MESSAGEQUEUE_HOST
+              value: messagequeue
+            - name: MESSAGEQUEUE_PORT
+              value: "5672"
+            - name: MESSAGEQUEUE_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: MESSAGEQUEUE_APP_USER
+              value: app
+            - name: EWPIA_HOST
+              value: ewpiaservice
+            - name: EWPIA_PORT
+              value: "5432"
+            - name: EWPIA_USER
+              value: superuser
+            - name: EWPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: ewpia_supersuser_db.password
+                  name: internal-secrets
+            - name: EWPIA_DB
+              value: pia_database
+            - name: AUTHSERVER_PORT
+              value: "4000"
+            - name: AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_proband_token_introspection_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_token_introspection_client_secret.password
+                  name: internal-secrets
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.complianceservice:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: complianceservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: complianceservice
+  name: complianceservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-complianceservice-deployment-c8122fdb
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-complianceservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-complianceservice-deployment-c8122fdb
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: complianceservice
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: complianceservice
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: questionnaireservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: questionnaireservice
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-questionnaireservice-deployment-c8efed54
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-questionnaireservice-deployment-c8efed54
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: LOGGINGSERVICE_HOST
+              value: internal-loggingservice
+            - name: LOGGINGSERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: USERSERVICE_HOST
+              value: internal-userservice
+            - name: USERSERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: COMPLIANCESERVICE_HOST
+              value: internal-complianceservice
+            - name: COMPLIANCESERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: SAMPLETRACKINGSERVICE_HOST
+              value: internal-sampletrackingservice
+            - name: SAMPLETRACKINGSERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: MESSAGEQUEUE_HOST
+              value: messagequeue
+            - name: MESSAGEQUEUE_PORT
+              value: "5672"
+            - name: MESSAGEQUEUE_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: MESSAGEQUEUE_APP_USER
+              value: app
+            - name: QPIA_HOST
+              value: qpiaservice
+            - name: QPIA_PORT
+              value: "5432"
+            - name: QPIA_USER
+              value: superuser
+            - name: QPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: qpia_superuser_db.password
+                  name: internal-secrets
+            - name: QPIA_DB
+              value: pia_database
+            - name: AUTHSERVER_PORT
+              value: "4000"
+            - name: AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_proband_token_introspection_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_token_introspection_client_secret.password
+                  name: internal-secrets
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.questionnaireservice:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: questionnaireservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: questionnaireservice
+  name: questionnaireservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-questionnaireservice-deployment-c8efed54
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-questionnaireservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-questionnaireservice-deployment-c8efed54
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: questionnaireservice
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: questionnaireservice
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: analyzerservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: analyzerservice
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-analyzerservice-deployment-c8834427
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-analyzerservice-deployment-c8834427
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: QPIA_HOST
+              value: qpiaservice
+            - name: QPIA_PORT
+              value: "5432"
+            - name: QPIA_USER
+              value: superuser
+            - name: QPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: qpia_superuser_db.password
+                  name: internal-secrets
+            - name: QPIA_DB
+              value: pia_database
+            - name: MESSAGEQUEUE_HOST
+              value: messagequeue
+            - name: MESSAGEQUEUE_PORT
+              value: "5672"
+            - name: MESSAGEQUEUE_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: MESSAGEQUEUE_APP_USER
+              value: app
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.analyzerservice:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: analyzerservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: analyzerservice
+  name: analyzerservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-analyzerservice-deployment-c8834427
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-analyzerservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-analyzerservice-deployment-c8834427
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: analyzerservice
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: analyzerservice
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: notificationservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: notificationservice
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-notificationservice-deployment-c8370432
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-notificationservice-deployment-c8370432
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: WEBAPP_URL
+              valueFrom:
+                secretKeyRef:
+                  key: webappUrl
+                  name: pia-config
+            - name: PERSONALDATASERVICE_HOST
+              value: internal-personaldataservice
+            - name: PERSONALDATASERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: USERSERVICE_HOST
+              value: internal-userservice
+            - name: USERSERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: QUESTIONNAIRESERVICE_HOST
+              value: internal-questionnaireservice
+            - name: QUESTIONNAIRESERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: QPIA_HOST
+              value: qpiaservice
+            - name: QPIA_PORT
+              value: "5432"
+            - name: QPIA_USER
+              value: superuser
+            - name: QPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: qpia_superuser_db.password
+                  name: internal-secrets
+            - name: QPIA_DB
+              value: pia_database
+            - name: MAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerHostName
+                  name: pia-config
+            - name: MAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerPort
+                  name: pia-config
+            - name: MAIL_USER
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerUserName
+                  name: pia-config
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerPassword
+                  name: pia-config
+            - name: MAIL_REQUIRE_TLS
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerRequireTls
+                  name: pia-config
+            - name: MAIL_FROM_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerFromAddress
+                  name: pia-config
+            - name: MAIL_FROM_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerFromName
+                  name: pia-config
+            - name: MESSAGEQUEUE_HOST
+              value: messagequeue
+            - name: MESSAGEQUEUE_PORT
+              value: "5672"
+            - name: MESSAGEQUEUE_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: MESSAGEQUEUE_APP_USER
+              value: app
+            - name: AUTHSERVER_PORT
+              value: "4000"
+            - name: AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_proband_token_introspection_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_token_introspection_client_secret.password
+                  name: internal-secrets
+            - name: FIREBASE_PRIVATE_KEY_BASE64
+              valueFrom:
+                secretKeyRef:
+                  key: firebasePrivateKeyBase64
+                  name: pia-config
+            - name: FIREBASE_PROJECT_ID
+              valueFrom:
+                secretKeyRef:
+                  key: firebaseProjectId
+                  name: pia-config
+            - name: FIREBASE_CLIENT_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  key: firebaseClientEmail
+                  name: pia-config
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.notificationservice:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: notificationservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: notificationservice
+  name: notificationservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-notificationservice-deployment-c8370432
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-notificationservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-notificationservice-deployment-c8370432
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: notificationservice
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: notificationservice
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: sampletrackingservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: sampletrackingservice
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-sampletrackingservice-deployment-c8a2b16a
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-sampletrackingservice-deployment-c8a2b16a
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: QPIA_HOST
+              value: qpiaservice
+            - name: QPIA_PORT
+              value: "5432"
+            - name: QPIA_USER
+              value: superuser
+            - name: QPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: qpia_superuser_db.password
+                  name: internal-secrets
+            - name: QPIA_DB
+              value: pia_database
+            - name: WEBAPP_URL
+              valueFrom:
+                secretKeyRef:
+                  key: webappUrl
+                  name: pia-config
+            - name: MHH_FTPSERVICE_HOST
+              value: ""
+            - name: MHH_FTPSERVICE_PORT
+              value: ""
+            - name: MHH_FTPSERVICE_USER
+              value: ""
+            - name: MHH_FTPSERVICE_PW
+              value: ""
+            - name: MHH_FTPSERVICE_ALLOW_OLD_SSH2_KEX
+              value: ""
+            - name: HZI_FTPSERVICE_HOST
+              value: ""
+            - name: HZI_FTPSERVICE_PORT
+              value: ""
+            - name: HZI_FTPSERVICE_USER
+              value: ""
+            - name: HZI_FTPSERVICE_PW
+              value: ""
+            - name: HZI_FTPSERVICE_ALLOW_OLD_SSH2_KEX
+              value: ""
+            - name: COMPLIANCESERVICE_HOST
+              value: internal-complianceservice
+            - name: COMPLIANCESERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: USERSERVICE_HOST
+              value: internal-userservice
+            - name: USERSERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: MESSAGEQUEUE_HOST
+              value: messagequeue
+            - name: MESSAGEQUEUE_PORT
+              value: "5672"
+            - name: MESSAGEQUEUE_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: MESSAGEQUEUE_APP_USER
+              value: app
+            - name: AUTHSERVER_PORT
+              value: "4000"
+            - name: AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_proband_token_introspection_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_token_introspection_client_secret.password
+                  name: internal-secrets
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sampletrackingservice:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: sampletrackingservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: sampletrackingservice
+  name: sampletrackingservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-sampletrackingservice-deployment-c8a2b16a
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-sampletrackingservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-sampletrackingservice-deployment-c8a2b16a
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: sampletrackingservice
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: sampletrackingservice
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: feedbackstatisticservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: feedbackstatisticservice
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-feedbackstatisticservice-deployment-c8961e2c
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-feedbackstatisticservice-deployment-c8961e2c
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: DB_FEEDBACKSTATISTIC_HOST
+              value: qpiaservice
+            - name: DB_FEEDBACKSTATISTIC_PORT
+              value: "5432"
+            - name: DB_FEEDBACKSTATISTIC_USER
+              value: feedbackstatisticservice
+            - name: DB_FEEDBACKSTATISTIC_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: feedbackstatisticservice_db.password
+                  name: internal-secrets
+            - name: DB_FEEDBACKSTATISTIC_DB
+              value: pia_database
+            - name: QUESTIONNAIRESERVICE_HOST
+              value: internal-questionnaireservice
+            - name: QUESTIONNAIRESERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: USERSERVICE_HOST
+              value: internal-userservice
+            - name: USERSERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: MESSAGEQUEUE_HOST
+              value: messagequeue
+            - name: MESSAGEQUEUE_PORT
+              value: "5672"
+            - name: MESSAGEQUEUE_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: MESSAGEQUEUE_APP_USER
+              value: app
+            - name: AUTHSERVER_PORT
+              value: "4000"
+            - name: AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_proband_token_introspection_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_token_introspection_client_secret.password
+                  name: internal-secrets
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.feedbackstatisticservice:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: feedbackstatisticservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: feedbackstatisticservice
+  name: feedbackstatisticservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-feedbackstatisticservice-deployment-c8961e2c
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-feedbackstatisticservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-feedbackstatisticservice-deployment-c8961e2c
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: feedbackstatisticservice
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: feedbackstatisticservice
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: sormasservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: sormasservice
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-sormasservice-deployment-c8855e3a
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-sormasservice-deployment-c8855e3a
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: USERSERVICE_HOST
+              value: internal-userservice
+            - name: USERSERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: PERSONALDATASERVICE_HOST
+              value: internal-personaldataservice
+            - name: PERSONALDATASERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: QUESTIONNAIRESERVICE_HOST
+              value: internal-questionnaireservice
+            - name: QUESTIONNAIRESERVICE_INTERNAL_PORT
+              value: "5000"
+            - name: WEBAPP_URL
+              valueFrom:
+                secretKeyRef:
+                  key: webappUrl
+                  name: pia-config
+            - name: DEFAULT_LANGUAGE
+              valueFrom:
+                secretKeyRef:
+                  key: defaultLanguage
+                  name: pia-config
+            - name: QPIA_HOST
+              value: qpiaservice
+            - name: QPIA_PORT
+              value: "5432"
+            - name: QPIA_USER
+              value: superuser
+            - name: QPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: qpia_superuser_db.password
+                  name: internal-secrets
+            - name: QPIA_DB
+              value: pia_database
+            - name: DB_SORMAS_HOST
+              value: qpiaservice
+            - name: DB_SORMAS_PORT
+              value: "5432"
+            - name: DB_SORMAS_USER
+              value: sormasservice
+            - name: DB_SORMAS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: sormasservice_db.password
+                  name: internal-secrets
+            - name: DB_SORMAS_DB
+              value: pia_database
+            - name: MAIL_HOST
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerHostName
+                  name: pia-config
+            - name: MAIL_PORT
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerPort
+                  name: pia-config
+            - name: MAIL_USER
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerUserName
+                  name: pia-config
+            - name: MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerPassword
+                  name: pia-config
+            - name: MAIL_REQUIRE_TLS
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerRequireTls
+                  name: pia-config
+            - name: MAIL_FROM_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerFromAddress
+                  name: pia-config
+            - name: MAIL_FROM_NAME
+              valueFrom:
+                secretKeyRef:
+                  key: mailServerFromName
+                  name: pia-config
+            - name: VERBOSE
+              value: "false"
+            - name: SORMAS_STUDY
+              value: ""
+            - name: SORMAS_SERVER_URL
+              value: ""
+            - name: PIA_ON_SORMAS_USER
+              value: ""
+            - name: PIA_ON_SORMAS_PASSWORD
+              value: ""
+            - name: SORMAS_ON_PIA_USER
+              value: ""
+            - name: SORMAS_ON_PIA_PASSWORD
+              value: ""
+            - name: SORMAS_ON_PIA_TOKEN_VALIDITY_TIMEOUT
+              value: "300"
+            - name: MESSAGEQUEUE_HOST
+              value: messagequeue
+            - name: MESSAGEQUEUE_PORT
+              value: "5672"
+            - name: MESSAGEQUEUE_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: MESSAGEQUEUE_APP_USER
+              value: app
+            - name: AUTHSERVER_PORT
+              value: "4000"
+            - name: AUTHSERVER_PROBAND_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_proband_token_introspection_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_token_introspection_client_secret.password
+                  name: internal-secrets
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sormasservice:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: sormasservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: sormasservice
+  name: sormasservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-sormasservice-deployment-c8855e3a
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-sormasservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-sormasservice-deployment-c8855e3a
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: sormasservice
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: sormasservice
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: deploymentservice
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: deploymentservice
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-deploymentservice-deployment-c86511a1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-deploymentservice-deployment-c86511a1
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: QPIA_HOST
+              value: qpiaservice
+            - name: QPIA_PORT
+              value: "5432"
+            - name: QPIA_USER
+              value: superuser
+            - name: QPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: qpia_superuser_db.password
+                  name: internal-secrets
+            - name: QPIA_DB
+              value: pia_database
+            - name: IPIA_HOST
+              value: ipiaservice
+            - name: IPIA_PORT
+              value: "5432"
+            - name: IPIA_USER
+              value: superuser
+            - name: IPIA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: ipia_superuser_db.password
+                  name: internal-secrets
+            - name: IPIA_DB
+              value: pia_database
+            - name: ENABLE_DB_IMPORT
+              value: "false"
+            - name: ENABLE_DB_EXPORT
+              value: "false"
+            - name: DEPLOYMENT_USER
+              value: deployer
+            - name: DEPLOYMENT_PASSWORD
+              value: deployer
+            - name: IS_DEVELOPMENT_SYSTEM
+              value: "true"
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.utils.deploymentservice:1.37.0
+          imagePullPolicy: IfNotPresent
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: deploymentservice
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: deploymentservice
+  name: deploymentservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-deploymentservice-deployment-c86511a1
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-deploymentservice
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-deploymentservice-deployment-c86511a1
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: deploymentservice
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: deploymentservice
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: publicapiserver
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: publicapiserver
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-publicapiserver-deployment-c8c8bc62
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-publicapiserver-deployment-c8c8bc62
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: AUTHSERVER_PORT
+              value: "4000"
+            - name: AUTHSERVER_ADMIN_MANAGEMENT_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_management_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_token_introspection_client_secret.password
+                  name: internal-secrets
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.publicapi:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: publicapiserver
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: publicapiserver
+  name: publicapiserver
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-publicapiserver-deployment-c8c8bc62
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-publicapiserver
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-publicapiserver-deployment-c8c8bc62
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: publicapiserver
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: publicapiserver
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: eventhistoryserver
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: eventhistoryserver
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-eventhistoryserver-deployment-c81efbe2
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-eventhistoryserver-deployment-c81efbe2
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: DB_EVENTHISTORY_HOST
+              value: qpiaservice
+            - name: DB_EVENTHISTORY_PORT
+              value: "5432"
+            - name: DB_EVENTHISTORY_USER
+              value: eventhistoryserver
+            - name: DB_EVENTHISTORY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: eventhistoryserver_db.password
+                  name: internal-secrets
+            - name: DB_EVENTHISTORY_DB
+              value: pia_database
+            - name: MESSAGEQUEUE_HOST
+              value: messagequeue
+            - name: MESSAGEQUEUE_PORT
+              value: "5672"
+            - name: MESSAGEQUEUE_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: MESSAGEQUEUE_APP_USER
+              value: app
+            - name: AUTHSERVER_PORT
+              value: "4000"
+            - name: AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_admin_token_introspection_client_secret.password
+                  name: internal-secrets
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.eventhistory:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: eventhistoryserver
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: eventhistoryserver
+  name: eventhistoryserver
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-eventhistoryserver-deployment-c81efbe2
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-eventhistoryserver
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-eventhistoryserver-deployment-c81efbe2
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: eventhistoryserver
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: eventhistoryserver
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  labels:
+    app: pia
+  name: eventhistoryserver-remove-old-events
+spec:
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: pia
+            cdk8s.io/metadata.addr: pia-eventhistoryserver-remove-old-events-c8c7910b
+        spec:
+          automountServiceAccountToken: false
+          containers:
+            - args:
+                - npm
+                - run
+                - cli
+                - --
+                - remove-old-events
+              env:
+                - name: DB_EVENTHISTORY_HOST
+                  value: qpiaservice
+                - name: DB_EVENTHISTORY_PORT
+                  value: "5432"
+                - name: DB_EVENTHISTORY_USER
+                  value: eventhistoryserver
+                - name: DB_EVENTHISTORY_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      key: eventhistoryserver_db.password
+                      name: internal-secrets
+                - name: DB_EVENTHISTORY_DB
+                  value: pia_database
+                - name: IGNORE_MISSING_CONFIG
+                  value: "1"
+                - name: NO_UPDATE_NOTIFIER
+                  value: "1"
+              image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.eventhistory:1.37.0
+              imagePullPolicy: IfNotPresent
+              name: main
+              resources:
+                limits:
+                  cpu: "2"
+                  memory: 4096Mi
+                requests:
+                  cpu: "0.1"
+                  memory: 64Mi
+              securityContext:
+                allowPrivilegeEscalation: false
+                privileged: false
+                readOnlyRootFilesystem: true
+                runAsGroup: 1000
+                runAsNonRoot: true
+                runAsUser: 1000
+              volumeMounts:
+                - mountPath: /home/node/.npm
+                  name: npm-dir-remove-old-events
+          dnsPolicy: ClusterFirst
+          hostNetwork: false
+          restartPolicy: Never
+          securityContext:
+            fsGroupChangePolicy: Always
+            runAsNonRoot: true
+          setHostnameAsFQDN: false
+          terminationGracePeriodSeconds: 30
+          volumes:
+            - emptyDir: {}
+              name: npm-dir-remove-old-events
+      ttlSecondsAfterFinished: 172800
+  schedule: 0 0 * * *
+  startingDeadlineSeconds: 10
+  successfulJobsHistoryLimit: 3
+  suspend: false
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: apigateway
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: apigateway
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-apigateway-deployment-c8847fc1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-apigateway-deployment-c8847fc1
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: WEBAPPSERVER_HTTP_PORT
+              value: "80"
+            - name: USERSERVICE_PORT
+              value: "4000"
+            - name: QUESTIONNAIRESERVICE_PORT
+              value: "4000"
+            - name: NOTIFICATIONSERVICE_PORT
+              value: "4000"
+            - name: SAMPLETRACKINGSERVICE_PORT
+              value: "4000"
+            - name: PERSONALDATASERVICE_PORT
+              value: "4000"
+            - name: LOGGINGSERVICE_PORT
+              value: "4000"
+            - name: MODYSSERVICE_PORT
+              value: "4000"
+            - name: COMPLIANCESERVICE_PORT
+              value: "4000"
+            - name: ANALYZERSERVICE_PORT
+              value: "4000"
+            - name: SORMASSERVICE_PORT
+              value: "4000"
+            - name: DEPLOYMENTSERVICE_PORT
+              value: "4000"
+            - name: FEEDBACKSTATISTICSERVICE_PORT
+              value: "4000"
+            - name: AUTHSERVER_PORT
+              value: "4000"
+            - name: PUBLICAPISERVER_PORT
+              value: "4000"
+            - name: EVENTHISTORYSERVER_PORT
+              value: "4000"
+            - name: X_FRAME_OPTIONS
+              value: ""
+            - name: CONTENT_SECURITY_POLICY
+              value: ""
+            - name: IS_DEVELOPMENT_SYSTEM
+              value: "false"
+            - name: EXTERNAL_PROTOCOL
+              value: http
+            - name: EXTERNAL_PORT
+              value: "80"
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.apigateway:1.37.0
+          imagePullPolicy: IfNotPresent
+          name: main
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            limits:
+              cpu: "2"
+              memory: 1024Mi
+            requests:
+              cpu: "1"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: apigateway
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: apigateway
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 80
+  selector:
+    cdk8s.io/metadata.addr: pia-apigateway-deployment-c8847fc1
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: pia
+  name: apigateway
+spec:
+  rules:
+    - host: pia-app
+      http:
+        paths:
+          - backend:
+              service:
+                name: apigateway
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - pia-app
+      secretName: ingress-tls
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: autheventproxy
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: autheventproxy
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-autheventproxy-deployment-c8375e6a
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-autheventproxy-deployment-c8375e6a
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: MESSAGEQUEUE_HOST
+              value: messagequeue
+            - name: MESSAGEQUEUE_PORT
+              value: "5672"
+            - name: MESSAGEQUEUE_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: MESSAGEQUEUE_APP_USER
+              value: app
+            - name: AUTHSERVER_PORT
+              value: "4000"
+            - name: AUTHSERVER_PROBAND_MANAGEMENT_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: authserver_proband_management_client_secret.password
+                  name: internal-secrets
+            - name: AUTHSERVER_MESSAGEQUEUE_EXCHANGE
+              value: keycloak.events
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.autheventproxy:1.37.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: autheventproxy
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: autheventproxy
+  name: autheventproxy
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-autheventproxy-deployment-c8375e6a
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-autheventproxy
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-autheventproxy-deployment-c8375e6a
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: autheventproxy
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: autheventproxy
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: mailserver
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: mailserver
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-mailserver-deployment-c82b6790
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        cdk8s.io/metadata.addr: pia-mailserver-deployment-c82b6790
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - args:
+            - -auth-file=/auth.config
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.mailserver:1.37.0
+          imagePullPolicy: IfNotPresent
+          name: main
+          ports:
+            - containerPort: 1025
+              name: smtp
+            - containerPort: 8025
+              name: http
+          resources:
+            limits:
+              cpu: "1"
+              memory: 1024Mi
+            requests:
+              cpu: "0.2"
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /auth.config
+              name: secret-pia-config
+              subPath: mailhogAuth
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: mailserver
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: secret-pia-config
+          secret:
+            secretName: pia-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: mailserver
+spec:
+  externalIPs: []
+  ports:
+    - port: 1025
+  selector:
+    cdk8s.io/metadata.addr: pia-mailserver-deployment-c82b6790
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: mailserver-ui
+spec:
+  externalIPs: []
+  ports:
+    - port: 8025
+  selector:
+    cdk8s.io/metadata.addr: pia-mailserver-deployment-c82b6790
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: pia
+  name: mailhog
+spec:
+  rules:
+    - host: mailhog
+      http:
+        paths:
+          - backend:
+              service:
+                name: mailserver-ui
+                port:
+                  number: 8025
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - mailhog
+      secretName: ingress-mailhog-tls
+

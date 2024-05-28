@@ -1,0 +1,187 @@
+apiVersion: skaffold/v4beta9
+kind: Config
+metadata:
+  name: pia
+build:
+  local:
+    push: false # this will force the usage of local images instead of pulling from a registry
+    useBuildkit: true
+    concurrency: 3 # a high number of concurrent builds can cause issues and is therefore limited
+  artifacts:
+    - image: registry.hzdr.de/pia-eresearch-system/pia/k8s
+      context: .
+      docker:
+        dockerfile: k8s/Dockerfile
+        buildArgs:
+          DIR: k8s
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.app.web
+      context: .
+      docker:
+        dockerfile: psa.app.web/Dockerfile
+        buildArgs:
+          DIR: psa.app.web
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.database
+      context: .
+      docker:
+        dockerfile: psa.database/Dockerfile
+        buildArgs:
+          DIR: psa.database
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ewpia
+      context: .
+      docker:
+        dockerfile: psa.database.ewpia/Dockerfile
+        buildArgs:
+          DIR: psa.database.ewpia
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ipia
+      context: .
+      docker:
+        dockerfile: psa.database.ipia/Dockerfile
+        buildArgs:
+          DIR: psa.database.ipia
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.apigateway
+      context: .
+      docker:
+        dockerfile: psa.server.apigateway/Dockerfile
+        buildArgs:
+          DIR: psa.server.apigateway
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.auth
+      context: .
+      docker:
+        dockerfile: psa.server.auth/Dockerfile
+        buildArgs:
+          DIR: psa.server.auth
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.autheventproxy
+      context: .
+      docker:
+        dockerfile: psa.server.autheventproxy/Dockerfile
+        buildArgs:
+          DIR: psa.server.autheventproxy
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.mailserver
+      context: .
+      docker:
+        dockerfile: psa.server.mailserver/Dockerfile
+        buildArgs:
+          DIR: psa.server.mailserver
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.messagequeue
+      context: .
+      docker:
+        dockerfile: psa.server.messagequeue/Dockerfile
+        buildArgs:
+          DIR: psa.server.messagequeue
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.analyzerservice
+      context: .
+      docker:
+        dockerfile: psa.service.analyzerservice/Dockerfile
+        buildArgs:
+          DIR: psa.service.analyzerservice
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.complianceservice
+      context: .
+      docker:
+        dockerfile: psa.service.complianceservice/Dockerfile
+        buildArgs:
+          DIR: psa.service.complianceservice
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.feedbackstatisticservice
+      context: .
+      docker:
+        dockerfile: psa.service.feedbackstatisticservice/Dockerfile
+        buildArgs:
+          DIR: psa.service.feedbackstatisticservice
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.loggingservice
+      context: .
+      docker:
+        dockerfile: psa.service.loggingservice/Dockerfile
+        buildArgs:
+          DIR: psa.service.loggingservice
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.modysservice
+      context: .
+      docker:
+        dockerfile: psa.service.modysservice/Dockerfile
+        buildArgs:
+          DIR: psa.service.modysservice
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.notificationservice
+      context: .
+      docker:
+        dockerfile: psa.service.notificationservice/Dockerfile
+        buildArgs:
+          DIR: psa.service.notificationservice
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.personaldataservice
+      context: .
+      docker:
+        dockerfile: psa.service.personaldataservice/Dockerfile
+        buildArgs:
+          DIR: psa.service.personaldataservice
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.questionnaireservice
+      context: .
+      docker:
+        dockerfile: psa.service.questionnaireservice/Dockerfile
+        buildArgs:
+          DIR: psa.service.questionnaireservice
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sampletrackingservice
+      context: .
+      docker:
+        dockerfile: psa.service.sampletrackingservice/Dockerfile
+        buildArgs:
+          DIR: psa.service.sampletrackingservice
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sormasservice
+      context: .
+      docker:
+        dockerfile: psa.service.sormasservice/Dockerfile
+        buildArgs:
+          DIR: psa.service.sormasservice
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.userservice
+      context: .
+      docker:
+        dockerfile: psa.service.userservice/Dockerfile
+        buildArgs:
+          DIR: psa.service.userservice
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.utils.deploymentservice
+      context: .
+      docker:
+        dockerfile: psa.utils.deploymentservice/Dockerfile
+        buildArgs:
+          DIR: psa.utils.deploymentservice
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.publicapi
+      context: .
+      docker:
+        dockerfile: psa.server.publicapi/Dockerfile
+        buildArgs:
+          DIR: psa.server.publicapi
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.eventhistory
+      context: .
+      docker:
+        dockerfile: psa.server.eventhistory/Dockerfile
+        buildArgs:
+          DIR: psa.server.eventhistory
+manifests:
+  kustomize:
+    paths:
+      - k8s/deployment/base
+  hooks:
+    before:
+      - host:
+          command:
+            [
+              'sh',
+              '-c',
+              'test -f "k8s/deployment/overlays/local-k3d/internal-secrets.yaml" && echo "Internal secrets exist. Continuing..." || npm run --silent generate-internal-secrets --prefix ./k8s > ./k8s/deployment/overlays/local-k3d/internal-secrets.yaml',
+            ]
+profiles:
+  - name: local-k3d
+    manifests:
+      kustomize:
+        paths:
+          - k8s/deployment/overlays/local-k3d
+    activation:
+      - command: dev
+deploy:
+  kubectl:
+    hooks:
+      before:
+        - host:
+            command:
+              [
+                'sh',
+                '-c',
+                'kubectl -n pia apply -f ./k8s/deployment/overlays/local-k3d/persistent-resources.yaml',
+              ]
+            dir: './'

@@ -72,7 +72,7 @@ export class NotificationService {
   }
 
   private async openNotification(notificationId: string) {
-    if (await this.auth.isAuthenticated()) {
+    if (this.auth.isAuthenticated()) {
       await this.notificationPresenter.present(notificationId);
     } else {
       this.lastUndeliveredMessage = {

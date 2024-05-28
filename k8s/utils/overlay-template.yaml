@@ -1,0 +1,119 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+sortOptions:
+  order: fifo
+metadata:
+  name: {deploymentName}
+
+namespace: {namespace}
+
+resources:
+  - ../../base
+  - internal-secrets.yaml
+
+components:
+  - ../../components/no-deploymentservice # Do not remove this for production environments
+  - ../../components/no-mailhog # Do not remove this for production environments
+  - ../../components/no-servicemonitor # Remove, if you plan to use Prometheus
+  - ../../components/no-modysservice # Remove, if you plan to connect to a MODYS instance
+  - ../../components/no-sormasservice # Remove, if you plan to connect to a SORMAS instance
+
+images:
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.database
+    newName: {dockerRegistryPath}/psa.database
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ewpia
+    newName: {dockerRegistryPath}/psa.database.ewpia
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ipia
+    newName: {dockerRegistryPath}/psa.database.ipia
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.server.messagequeue
+    newName: {dockerRegistryPath}/psa.server.messagequeue
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.server.auth
+    newName: {dockerRegistryPath}/psa.server.auth
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.app.web
+    newName: {dockerRegistryPath}/psa.app.web
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.userservice
+    newName: {dockerRegistryPath}/psa.service.userservice
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.loggingservice
+    newName: {dockerRegistryPath}/psa.service.loggingservice
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.personaldataservice
+    newName: {dockerRegistryPath}/psa.service.personaldataservice
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.modysservice
+    newName: {dockerRegistryPath}/psa.service.modysservice
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.complianceservice
+    newName: {dockerRegistryPath}/psa.service.complianceservice
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.questionnaireservice
+    newName: {dockerRegistryPath}/psa.service.questionnaireservice
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.analyzerservice
+    newName: {dockerRegistryPath}/psa.service.analyzerservice
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.notificationservice
+    newName: {dockerRegistryPath}/psa.service.notificationservice
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sampletrackingservice
+    newName: {dockerRegistryPath}/psa.service.sampletrackingservice
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.feedbackstatisticservice
+    newName: {dockerRegistryPath}/psa.service.feedbackstatisticservice
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sormasservice
+    newName: {dockerRegistryPath}/psa.service.sormasservice
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.server.apigateway
+    newName: {dockerRegistryPath}/psa.server.apigateway
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.server.autheventproxy
+    newName: {dockerRegistryPath}/psa.server.autheventproxy
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.server.mailserver
+    newName: {dockerRegistryPath}/psa.server.mailserver
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.server.publicapi
+    newName: {dockerRegistryPath}/psa.server.publicapi
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.server.eventhistory
+    newName: {dockerRegistryPath}/psa.service.eventhistory
+    newTag: {dockerImageTag}
+
+secretGenerator:
+  - name: docker-registry
+    type: kubernetes.io/dockerconfigjson
+    options:
+      disableNameSuffixHash: true
+    files:
+      - .dockerconfigjson
+  - name: pia-config
+    options:
+      disableNameSuffixHash: true
+    type: kubernetes.io/opaque
+    literals:
+      - webappUrl={webappUrl}
+      - externalProtocol={externalProtocol}
+      - externalHost={externalHost}
+      - externalPort={externalPort}
+      - defaultLanguage={defaultLanguage}
+      - userPasswordLength={userPasswordLength}
+      - probandTermsOfServiceUrl={probandTermsOfServiceUrl}
+      - probandPolicyUrl={probandPolicyUrl}
+      - mailServerHostName={mailServerHostName}
+      - mailServerPort={mailServerPort}
+      - mailServerUserName={mailServerUserName}
+      - mailServerPassword={mailServerPassword}
+      - mailServerRequireTls={mailServerRequireTls}
+      - mailServerFromAddress={mailServerFromAddress}
+      - mailServerFromName={mailServerFromName}
+      - firebasePrivateKeyBase64={firebasePrivateKeyBase64}
+      - firebaseProjectId={firebaseProjectId}
+      - firebaseClientEmail={firebaseClientEmail}
+      - isSormasEnabled=false

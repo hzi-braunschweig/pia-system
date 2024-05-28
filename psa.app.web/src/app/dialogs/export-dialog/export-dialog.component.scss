@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-.mat-dialog-content {
+.mat-mdc-dialog-content {
   overflow: visible;
 }
 
@@ -12,18 +12,22 @@
   display: grid !important;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   grid-gap: 1rem;
+  align-items: center;
 
   & > span {
     align-self: baseline;
   }
+}
 
-  ul {
-    list-style-type: none;
-    padding-left: 0;
-  }
+.export-selection {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+span + mat-form-field {
+  margin-left: 0.5em;
 }
 
 .dialog-export-hint {
-  padding: 30px;
-  background-color: #d9ecf5;
+  --pia-hint-bg-color: #d9ecf5 !important;
 }

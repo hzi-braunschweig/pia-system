@@ -3,11 +3,8 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-
-::ng-deep .mat-form-field .mat-form-field-infix {
-  width: auto;
-}
-
-.mat-dialog-actions {
-  justify-content: flex-end;
+ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin-top: 0;
 }

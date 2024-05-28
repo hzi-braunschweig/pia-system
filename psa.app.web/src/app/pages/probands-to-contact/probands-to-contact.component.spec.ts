@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 import { AppModule } from 'src/app/app.module';
 import { fakeAsync, tick } from '@angular/core/testing';
@@ -17,12 +18,12 @@ import {
   createPersonalData,
   createProbandToContact,
 } from '../../psa.app.core/models/instance.helper.spec';
-import { MatLegacyPaginatorModule as MatPaginatorModule } from '@angular/material/legacy-paginator';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import SpyObj = jasmine.SpyObj;
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
+import { MatCardModule } from '@angular/material/card';
 
 describe('ProbandsToContactComponent', () => {
   let fixture: MockedComponentFixture;
@@ -51,6 +52,7 @@ describe('ProbandsToContactComponent', () => {
       .keep(MatPaginatorModule)
       .keep(MatSortModule)
       .keep(MatCardModule)
+      .keep(BreakpointObserver)
       .mock(MatDialog, matDialog)
       .mock(Router, router)
       .mock(PersonalDataService, personalDataService)

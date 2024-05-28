@@ -1,0 +1,13 @@
+*.d.ts
+*.js
+!jest.config.js
+node_modules
+dist/
+certs/
+dummy.key
+
+config/
+deployment/overlays/**/.dockerconfigjson
+deployment/overlays/**/internal-secrets.yaml
+deployment/overlays/**/*.crt
+deployment/overlays/**/*.key

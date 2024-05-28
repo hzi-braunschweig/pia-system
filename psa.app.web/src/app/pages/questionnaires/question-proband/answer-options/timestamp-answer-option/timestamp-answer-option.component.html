@@ -5,11 +5,11 @@
   -->
 
 <mat-form-field>
+  <mat-label>{{ 'GENERAL.TIMESTAMP' | translate }}</mat-label>
   <input
     matInput
     #textInput
     type="text"
-    placeholder="{{ 'GENERAL.TIMESTAMP' | translate }}"
     [ngModel]="timestamp | date: 'HH:mm dd.MM.yy'"
     (blur)="textInputBlurred(textInput.value)"
     data-unit="timestamp-input"

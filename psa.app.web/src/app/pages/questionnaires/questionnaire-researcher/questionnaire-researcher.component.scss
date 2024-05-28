@@ -10,15 +10,42 @@ $warning-color: mat.get-color-from-palette(mat.$yellow-palette, 500);
 
 /* Structure */
 .grid-container {
-  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  grid-gap: 1rem;
 
   .double-input {
     display: grid;
-    grid-template-columns: 47% 47%;
-    grid-column-gap: 6%;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-column-gap: var(--grid-layout-gap);
   }
+}
+
+.condition-card {
+  .grid-container {
+    --grid-template-columns: repeat(
+      var(--grid-columns-question-condition),
+      1fr
+    );
+
+    .sub-question {
+      --grid-template-columns: subgrid;
+    }
+  }
+}
+
+.questionnaire-conditions {
+  --grid-template-columns: repeat(
+    var(--grid-columns-questionnaire-condition),
+    1fr
+  );
+
+  button {
+    display: inline;
+    float: right;
+  }
+}
+
+.question-expansion-panel {
+  background-color: #d9ecf5;
 }
 
 form {
@@ -28,13 +55,6 @@ form {
 }
 
 .questionnaire-card {
-  opacity: 0.8;
-
-  .mat-checkbox {
-    font-size: 0.8em;
-    margin-top: 20px;
-  }
-
   .study-notifications-options {
     width: 100%;
     font-size: 0.8em;
@@ -45,26 +65,10 @@ form {
       width: 3em;
     }
 
-    .mat-form-field {
+    .mat-mdc-form-field {
       width: 150px;
       text-align: center;
     }
-  }
-
-  .condition-questionnaire {
-    .mat-card-title {
-      button {
-        &.left {
-          float: left;
-        }
-
-        &.right {
-          float: right;
-        }
-      }
-    }
-
-    flex-wrap: wrap;
   }
 }
 
@@ -75,31 +79,44 @@ form {
     margin-bottom: 10px;
   }
 
+  .question-panel-title {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
   .mat-expansion-panel {
     .mat-expansion-panel-header {
       .mat-expansion-panel-header-title {
-        display: block;
-        text-overflow: ellipsis;
         overflow: hidden;
-        white-space: nowrap;
       }
 
-      .mat-checkbox {
-        margin-right: 20px;
+      .mat-expansion-panel-header-description {
+        flex-grow: 0;
+      }
+
+      .mat-mdc-checkbox {
+        white-space: nowrap;
       }
     }
 
     .form-group {
+      margin-bottom: var(--pia-space-y);
+
       .question-text {
         display: flex;
       }
 
-      .question-text-field {
+      .question-text-group {
         flex: 1;
         margin-bottom: 20px;
+      }
+
+      .question-text-field,
+      .question-help-text-field {
         max-width: 900px;
 
-        .mat-form-field {
+        .mat-mdc-form-field {
           width: 90%;
           max-width: 900px;
         }
@@ -112,8 +129,9 @@ form {
       .question-variable-name {
         width: 25%;
         min-width: 200px;
+        margin-bottom: 1rem;
 
-        .mat-form-field {
+        .mat-mdc-form-field {
           width: 100%;
         }
 
@@ -125,7 +143,6 @@ form {
         }
 
         &__warning {
-          margin-top: -15px;
           margin-bottom: 10px;
         }
       }
@@ -134,22 +151,12 @@ form {
         font-size: 1em;
       }
 
-      #addQuestionCondition {
-        margin: 10px;
-      }
-
-      .mat-card {
+      .mat-mdc-card {
         &.conditionQuestion {
-          .mat-card-title {
-            button {
-              float: right;
-            }
-          }
-
-          .mat-card-content {
+          .mat-mdc-card-content {
             .mat-grid-list {
               #conditionTypeQuestionCondition {
-                .mat-option {
+                .mat-mdc-option {
                   width: auto;
                 }
               }
@@ -160,11 +167,6 @@ form {
 
               .w60p {
                 width: 60%;
-              }
-
-              .mat-grid-tile {
-                &.sub-question {
-                }
               }
             }
           }
@@ -179,14 +181,16 @@ form {
           align-items: center;
           white-space: nowrap;
         }
+
         &__index {
           padding-right: 15px;
         }
+
         &__move-buttons {
           display: flex;
         }
 
-        .mat-card-title {
+        .mat-mdc-card-title {
           button {
             float: right;
           }
@@ -204,6 +208,7 @@ form {
 
         .answer-option-variable-name {
           display: block;
+
           &__warning {
             margin-top: -15px;
             margin-bottom: 15px;
@@ -218,7 +223,7 @@ form {
           }
 
           .mat-grid-tile {
-            .mat-form-field,
+            .mat-mdc-form-field,
             span:first-child {
               margin-bottom: 20px;
             }
@@ -245,7 +250,7 @@ form {
             &.checkbox-decimal {
               max-width: 240px;
 
-              .mat-checkbox {
+              .mat-mdc-checkbox {
                 margin-bottom: 20px;
               }
             }
@@ -266,48 +271,38 @@ form {
             }
           }
 
-          .mat-card.condition-card {
-            .mat-card-title {
-              button {
-                float: right;
-              }
-            }
+          .mat-mdc-card.condition-card {
+            .mat-mdc-card-content {
+              .mat-mdc-form-field {
+                margin-bottom: 35px;
 
-            .mat-card-content {
-              .mat-grid-list {
-                .mat-grid-tile {
-                  .mat-form-field {
-                    margin-bottom: 35px;
-
-                    .mat-option {
-                      &.auto {
-                        width: auto;
-                      }
-                    }
-
-                    .mat-hint {
-                      color: red;
-                    }
-                  }
-
-                  > span {
-                    margin-bottom: 35px;
-                  }
-
-                  .w60 {
-                    width: 60px;
+                .mat-mdc-option {
+                  &.auto {
+                    width: auto;
                   }
                 }
+
+                .mat-mdc-form-field-hint {
+                  color: red;
+                }
+              }
+
+              > span {
+                margin-bottom: 35px;
+              }
+
+              .w60 {
+                width: 60px;
               }
             }
           }
 
           .item-class {
-            .mat-form-field {
+            .mat-mdc-form-field {
               margin-bottom: 20px;
             }
 
-            .mat-checkbox {
+            .mat-mdc-checkbox {
               margin-left: 10px;
             }
 
@@ -368,7 +363,6 @@ form {
 }
 
 .markdown-container {
-  max-height: 100px;
   overflow: auto;
 }
 

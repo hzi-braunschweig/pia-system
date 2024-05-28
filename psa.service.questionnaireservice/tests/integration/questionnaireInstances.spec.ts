@@ -5,25 +5,28 @@
  */
 /* eslint-disable @typescript-eslint/no-magic-numbers, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment */
 
-import chai, { expect } from 'chai';
-import chaiHttp from 'chai-http';
+import {
+  MessageQueueClient,
+  MessageQueueTopic,
+  QuestionnaireInstanceReleasedMessage,
+} from '@pia/lib-messagequeue';
 
 import {
   AuthServerMock,
   AuthTokenMockBuilder,
   GlobalConfig,
 } from '@pia/lib-service-core';
-import { MessageQueueClient } from '@pia/lib-messagequeue';
+import chai, { expect } from 'chai';
+import chaiHttp from 'chai-http';
+import { StatusCodes } from 'http-status-codes';
+import { config } from '../../src/config';
+import { Question as QuestionDeprecated } from '../../src/models/question';
+import { QuestionnaireInstance as QuestionnaireInstanceDeprecated } from '../../src/models/questionnaireInstance';
+import { Server } from '../../src/server';
 import {
   cleanup,
   setup,
 } from './questionnaireInstances.spec.data/setup.helper';
-import { Server } from '../../src/server';
-import { config } from '../../src/config';
-import { StatusCodes } from 'http-status-codes';
-import { QuestionnaireInstance as QuestionnaireInstanceDeprecated } from '../../src/models/questionnaireInstance';
-import { Question as QuestionDeprecated } from '../../src/models/question';
-import { MessagePayloadQuestionnaireInstanceReleased } from '../../src/models/messagePayloads';
 
 chai.use(chaiHttp);
 
@@ -149,6 +152,7 @@ describe('/questionnaireInstances', function () {
         user_id: 'qtest-studie-proband1',
         date_of_release_v1: null,
         date_of_release_v2: null,
+        release_version: 0,
         links: {
           answers: {
             href: `/questionnaireInstances/${questionnaireInstanceId}/answers`,
@@ -184,6 +188,7 @@ describe('/questionnaireInstances', function () {
         user_id: 'qtest-studie-proband1',
         date_of_release_v1: null,
         date_of_release_v2: null,
+        release_version: 0,
         links: {
           answers: {
             href: `/questionnaireInstances/${questionnaireInstanceId}/answers`,
@@ -220,6 +225,7 @@ describe('/questionnaireInstances', function () {
         user_id: 'qtest-studie-proband1',
         date_of_release_v1: null,
         date_of_release_v2: null,
+        release_version: 1,
         links: {
           answers: {
             href: `/questionnaireInstances/${questionnaireInstanceId}/answers`,
@@ -242,10 +248,12 @@ describe('/questionnaireInstances', function () {
         .connect()
         .then(async () => {
           return testMessageQueueService.createConsumer(
-            'questionnaire_instance.released',
-            async (message: MessagePayloadQuestionnaireInstanceReleased) => {
+            MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
+            async (message: QuestionnaireInstanceReleasedMessage) => {
               // Assert #2
               expect(message.id).to.eql(questionnaireInstanceId);
+              expect(message.studyName).to.eql('ApiTestStudie');
+
               await testMessageQueueService.disconnect();
               done();
             }
@@ -295,6 +303,7 @@ describe('/questionnaireInstances', function () {
         user_id: 'qtest-studie-proband1',
         date_of_release_v1: null,
         date_of_release_v2: null,
+        release_version: 2,
         links: {
           answers: {
             href: `/questionnaireInstances/${questionnaireInstanceId}/answers`,
@@ -417,6 +426,7 @@ describe('/questionnaireInstances', function () {
         user_id: 'qtest-studie-proband1',
         date_of_release_v1: null,
         date_of_release_v2: null,
+        release_version: 0,
         links: {
           answers: {
             href: `/questionnaireInstances/${questionnaireInstanceId}/answers`,
@@ -450,6 +460,7 @@ describe('/questionnaireInstances', function () {
         user_id: 'qtest-studie-proband1',
         date_of_release_v1: null,
         date_of_release_v2: null,
+        release_version: 0,
         links: {
           answers: {
             href: `/questionnaireInstances/${questionnaireInstanceId}/answers`,
@@ -481,6 +492,80 @@ describe('/questionnaireInstances', function () {
         id: questionnaireInstanceId,
         status: 'released_once',
         user_id: 'qtest-studie-proband1',
+        release_version: 1,
+        links: {
+          answers: {
+            href: `/questionnaireInstances/${questionnaireInstanceId}/answers`,
+          },
+          self: {
+            href: `/questionnaireInstances/${questionnaireInstanceId}`,
+          },
+        },
+      });
+    });
+
+    it('should return HTTP 200 and update date of issue if cycle unit is "spontan" when releasing once', async () => {
+      // Arrange
+      const questionnaireInstanceId = 444441;
+
+      // Act
+      const result = await chai
+        .request(apiAddress)
+        .put('/questionnaireInstances/' + questionnaireInstanceId.toString())
+        .set(probandHeader1)
+        .send({
+          status: 'released_once',
+          progress: 15,
+        });
+
+      // Assert
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(result.body)
+        .to.have.property('date_of_issue')
+        .and.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)
+        .and.not.equal('1970-11-30T23:00:00.000Z');
+
+      expect(result.body).to.deep.include({
+        id: questionnaireInstanceId,
+        status: 'released_once',
+        user_id: 'qtest-studie-proband1',
+        release_version: 1,
+        links: {
+          answers: {
+            href: `/questionnaireInstances/${questionnaireInstanceId}/answers`,
+          },
+          self: {
+            href: `/questionnaireInstances/${questionnaireInstanceId}`,
+          },
+        },
+      });
+    });
+
+    it('should return HTTP 200 keep not modify date of issue if cycle unit is "spontan" not releasing once', async () => {
+      // Arrange
+      const questionnaireInstanceId = 444440;
+
+      // Act
+      const result = await chai
+        .request(apiAddress)
+        .put('/questionnaireInstances/' + questionnaireInstanceId.toString())
+        .set(probandHeader1)
+        .send({
+          status: 'in_progress',
+          progress: 15,
+        });
+
+      // Assert
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(result.body)
+        .to.have.property('date_of_issue')
+        .and.equal('1970-11-30T23:00:00.000Z');
+
+      expect(result.body).to.deep.include({
+        id: questionnaireInstanceId,
+        status: 'in_progress',
+        user_id: 'qtest-studie-proband1',
+        release_version: 0,
         links: {
           answers: {
             href: `/questionnaireInstances/${questionnaireInstanceId}/answers`,
@@ -512,6 +597,7 @@ describe('/questionnaireInstances', function () {
         id: questionnaireInstanceId,
         status: 'released_twice',
         user_id: 'qtest-studie-proband1',
+        release_version: 2,
         links: {
           answers: {
             href: `/questionnaireInstances/${questionnaireInstanceId}/answers`,
@@ -536,9 +622,10 @@ describe('/questionnaireInstances', function () {
         .connect()
         .then(async () => {
           return testMessageQueueService.createConsumer(
-            'questionnaire_instance.released',
-            async (message: MessagePayloadQuestionnaireInstanceReleased) => {
+            MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
+            async (message: QuestionnaireInstanceReleasedMessage) => {
               expect(message.id).to.eql(99995);
+              expect(message.studyName).to.eql('ApiTestStudie');
               await testMessageQueueService.disconnect();
               done();
             }

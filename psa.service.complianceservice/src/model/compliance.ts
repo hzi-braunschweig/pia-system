@@ -49,3 +49,20 @@ export interface ComplianceRes {
     | null;
   timestamp: Date;
 }
+
+export interface Compliance {
+  mappingId: string;
+  study: string;
+  timestamp: string;
+  complianceText: string;
+  username?: string;
+  ids?: string;
+  firstname?: string;
+  lastname?: string;
+  location?: string;
+  birthdate?: Date;
+  complianceApp: boolean;
+  complianceBloodsamples: boolean;
+  complianceLabresults: boolean;
+  complianceSamples: boolean;
+}

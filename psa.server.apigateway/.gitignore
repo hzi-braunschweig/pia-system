@@ -1,5 +1,13 @@
+# Dependency directories
 node_modules/
+
+# Build
 dist/
-.incremental
+
+# Test reports
 .nyc_output/
 tests/reports/
+
+# Secrets
+ssl
+firebase

@@ -11,15 +11,14 @@ import { SinonStubbedInstance } from 'sinon';
 import sinonChai from 'sinon-chai';
 import fetchMocker from 'fetch-mock';
 import { Server } from '../../src/server';
-import {
-  Message,
-  messageQueueService,
-} from '../../src/services/messageQueueService';
+import { messageQueueService } from '../../src/services/messageQueueService';
 import {
   MessageQueueClient,
   MessageQueueTestUtils,
   MessageQueueTopic,
   Producer,
+  ProbandRegisteredMessage,
+  ProbandEmailVerifiedMessage,
 } from '@pia/lib-messagequeue';
 import { config } from '../../src/config';
 import { mockGetProbandAccount } from './accountServiceRequestMock.helper.spec';
@@ -31,7 +30,6 @@ import { MailService } from '@pia/lib-service-core';
 import { SinonMethodStub } from '@pia/lib-service-core/src';
 import { ProbandService } from '../../src/services/probandService';
 import { ProbandDto } from '../../src/models/proband';
-import { MessagePayloadProbandRegistered } from '../../src/models/messagePayloadProbandRegistered';
 import { getRepository } from 'typeorm';
 import { Proband } from '../../src/entities/proband';
 import { cleanup, setup } from './messageQueueService.spec.data/setup.helper';
@@ -76,8 +74,11 @@ describe('MessageQueueService', () => {
 
   describe('Consume proband.email_verified', () => {
     const topic = MessageQueueTopic.PROBAND_EMAIL_VERIFIED;
-    let producer: Producer<Message>;
-    let processedProbandEmailVerified: Promise<void>;
+    let producer: Producer<ProbandEmailVerifiedMessage>;
+    let processedProbandEmailVerified: Promise<{
+      message: ProbandEmailVerifiedMessage;
+      timestamp: number;
+    }>;
 
     beforeEach(async () => {
       mockGetProbandAccount(testSandbox, 'qtest-proband1', 'Teststudy');
@@ -85,7 +86,7 @@ describe('MessageQueueService', () => {
 
       producer = await mqc.createProducer(topic);
       processedProbandEmailVerified =
-        MessageQueueTestUtils.injectMessageProcessedAwaiter(
+        MessageQueueTestUtils.injectMessageProcessedAwaiter<ProbandEmailVerifiedMessage>(
           messageQueueService,
           topic,
           testSandbox
@@ -99,7 +100,10 @@ describe('MessageQueueService', () => {
         .resolves({ study: 'Teststudy' } as ProbandDto);
 
       // Act
-      await producer.publish({ pseudonym: 'qtest-proband1' });
+      await producer.publish({
+        pseudonym: 'qtest-proband1',
+        studyName: 'Teststudy',
+      });
       await processedProbandEmailVerified;
 
       // Assert
@@ -136,18 +140,22 @@ describe('MessageQueueService', () => {
   describe('Consume proband.registered', () => {
     const expectedStudy = 'QTestStudy3';
     const expectedId = 'mock-id';
-    const expectedPayload: MessagePayloadProbandRegistered = {
+    const expectedPayload: ProbandRegisteredMessage = {
       username: 'some-fake-email@localhost',
+      studyName: expectedStudy,
     };
     const topic = MessageQueueTopic.PROBAND_REGISTERED;
     let authClientUsersMock: SinonStubbedInstance<Users>;
-    let producer: Producer<MessagePayloadProbandRegistered>;
-    let processedProbandRegistered: Promise<void>;
+    let producer: Producer<ProbandRegisteredMessage>;
+    let processedProbandRegistered: Promise<{
+      message: ProbandRegisteredMessage;
+      timestamp: number;
+    }>;
 
     beforeEach(async () => {
       producer = await mqc.createProducer(topic);
       processedProbandRegistered =
-        MessageQueueTestUtils.injectMessageProcessedAwaiter(
+        MessageQueueTestUtils.injectMessageProcessedAwaiter<ProbandRegisteredMessage>(
           messageQueueService,
           topic,
           testSandbox

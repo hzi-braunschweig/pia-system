@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -30,6 +30,7 @@ export interface Questionnaire {
   activate_after_days: number;
   deactivate_after_days: number;
   name: string;
+  custom_name: string | null;
   type: string;
   notification_tries: number;
   notification_title: string;

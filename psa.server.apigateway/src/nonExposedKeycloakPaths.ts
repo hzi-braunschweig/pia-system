@@ -5,7 +5,7 @@
  */
 
 import { StatusCodes } from 'http-status-codes';
-import { ResponseRoute } from './proxyRoute';
+import { ResponseRouteConfig } from './responseRoute';
 
 /**
  * The following Keycloak paths, such as the management console path,
@@ -13,7 +13,7 @@ import { ResponseRoute } from './proxyRoute';
  *
  * @see {@link https://www.keycloak.org/server/reverseproxy|Exposed path recommendations}
  */
-export const nonExposedKeycloakPaths: ResponseRoute[] = [
+export const nonExposedKeycloakPaths: ResponseRouteConfig[] = [
   notFoundResponseRoute('/api/v1/auth/admin/'),
   notFoundResponseRoute('/api/v1/auth/welcome/'),
   notFoundResponseRoute('/api/v1/auth/realms/master/metrics'),
@@ -26,7 +26,7 @@ export const nonExposedKeycloakPaths: ResponseRoute[] = [
   notFoundResponseRoute('/admin/api/v1/auth/health'),
 ];
 
-function notFoundResponseRoute(path: string): ResponseRoute {
+function notFoundResponseRoute(path: string): ResponseRouteConfig {
   return {
     path,
     response: {

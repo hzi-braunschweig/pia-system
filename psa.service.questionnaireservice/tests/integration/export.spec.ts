@@ -153,7 +153,7 @@ describe('/admin/admin/export', function () {
       expect(result).to.have.status(StatusCodes.BAD_REQUEST);
     });
 
-    it('should return HTTP 400 if the payload has no expots', async function () {
+    it('should return HTTP 400 if the payload has no exports', async function () {
       mockGetPseudonyms(['NotSearchedFor']);
 
       const invalidSearchNoUsers: ExportOptions = {

@@ -6,7 +6,7 @@
 
 import Chainable = Cypress.Chainable;
 import { UserCredentials } from './user.commands';
-import { getRandomId } from './helper.commands';
+import { expectLocation, getRandomId } from './helper.commands';
 
 export interface Study {
   name: string;
@@ -152,9 +152,8 @@ export function changeStudy(
 }
 
 export function selectStudy(studyName: string) {
-  cy.get('[data-e2e="e2e-sidenav-content"]').click();
   cy.get('[data-e2e="e2e-sidenav-content"]').contains('Studien').click();
 
   cy.get('[data-e2e="e2e-study-select"]').click();
-  cy.get('[data-e2e="e2e-study-option"]').contains(studyName).click();
+  cy.get('[data-e2e="option"]').contains(studyName).click();
 }

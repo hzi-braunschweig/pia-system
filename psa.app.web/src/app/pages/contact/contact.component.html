@@ -7,28 +7,30 @@
 <div class="jumbotron" data-e2e="e2e-contact-content">
   <div class="align-center">
     <mat-card>
-      <h1>{{ 'SIDENAV.CONTACT' | translate }}</h1>
-      <div *ngFor="let address of addresses">
-        <div class="contact-heading">{{ address.name }}</div>
-        <mat-divider [inset]="true"></mat-divider>
+      <mat-card-content>
+        <h1>{{ 'SIDENAV.CONTACT' | translate }}</h1>
+        <div *ngFor="let address of addresses">
+          <div class="contact-heading">{{ address.name }}</div>
+          <mat-divider [inset]="true"></mat-divider>
+          <div
+            [innerHTML]="address.address"
+            class="contact-row"
+            unit-address-text
+          ></div>
+          <mat-divider [inset]="true"></mat-divider>
+        </div>
         <div
-          [innerHTML]="address.address"
-          class="contact-row"
-          unit-address-text
+          *ngIf="noAddresses"
+          [innerHTML]="noAddresses"
+          unit-no-addresses-hint
         ></div>
-        <mat-divider [inset]="true"></mat-divider>
-      </div>
-      <div
-        *ngIf="noAddresses"
-        [innerHTML]="noAddresses"
-        unit-no-addresses-hint
-      ></div>
-      <div>
-        <app-request-new-material
-          *ngIf="this.user.isProband() && hasSampleCompliance"
-        >
-        </app-request-new-material>
-      </div>
+        <div>
+          <app-request-new-material
+            *ngIf="this.user.isProband() && hasSampleCompliance"
+          >
+          </app-request-new-material>
+        </div>
+      </mat-card-content>
     </mat-card>
   </div>
 </div>

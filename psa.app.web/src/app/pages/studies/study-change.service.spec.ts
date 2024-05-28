@@ -8,10 +8,7 @@ import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { StudyChangeService } from './study-change.service';
 import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
 import { MockProvider } from 'ng-mocks';
 import SpyObj = jasmine.SpyObj;
@@ -23,7 +20,7 @@ import { DialogChangeStudyComponent } from '../../dialogs/dialog-change-study/di
 import { DialogPopUpComponent } from '../../_helpers/dialog-pop-up';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SpecificHttpError } from '../../psa.app.core/models/specificHttpError';
-import { DialogYesNoComponent } from '../../_helpers/dialog-yes-no';
+import { DialogYesNoComponent } from '../../dialogs/dialog-yes-no/dialog-yes-no';
 
 describe('StudyChangeService', () => {
   let service: StudyChangeService;
@@ -48,6 +45,7 @@ describe('StudyChangeService', () => {
     TestBed.configureTestingModule({
       providers: [
         MockProvider(AuthService, authService),
+        MockProvider(MatDialog, dialog),
         MockProvider(MatDialog, dialog),
       ],
     });

@@ -18,113 +18,116 @@
   </div>
   <form (submit)="onSubmit()" [formGroup]="message" class="message-form-group">
     <mat-card>
-      <h1>{{ 'CONTACT_PROBAND.HEADING' | translate }}</h1>
-      <div>
-        <mat-form-field>
-          <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
-          <mat-select
-            id="selectstudy"
-            data-e2e="e2e-contact-proband-study-select"
-            [formControl]="studyName"
-          >
-            <mat-option
-              *ngFor="let studyName of currentUser.studies"
-              [value]="studyName"
-              unit-study-option
+      <mat-card-content>
+        <h1>{{ 'CONTACT_PROBAND.HEADING' | translate }}</h1>
+        <div>
+          <mat-form-field>
+            <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
+            <mat-select
+              id="selectstudy"
+              data-e2e="e2e-contact-proband-study-select"
+              [formControl]="studyName"
             >
-              {{ studyName }}
-            </mat-option>
-          </mat-select>
-          <mat-error
-            *ngIf="studyName.touched && studyName.hasError('required')"
-            unit-study-select-error
+              <mat-option
+                *ngFor="let studyName of currentUser.studies"
+                [value]="studyName"
+                data-e2e="option"
+                unit-study-option
+              >
+                {{ studyName }}
+              </mat-option>
+            </mat-select>
+            <mat-error
+              *ngIf="studyName.touched && studyName.hasError('required')"
+              unit-study-select-error
+            >
+              {{ 'DIALOG.STUDY_REQUIRED' | translate }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div>
+          <app-chip-autocomplete
+            [label]="'CONTACT_PROBAND.RECEIVER' | translate"
+            [placeholder]="'CONTACT_PROBAND.RECEIVER' | translate"
+            [allowedValues]="allPseudonyms"
+            [showError]="
+              message.get('recipients').touched &&
+              message.get('recipients').hasError('required')
+            "
+            [errorMessage]="'CONTACT_PROBAND.RECIPIENT_IS_REQUIRED' | translate"
+            formControlName="recipients"
           >
-            {{ 'DIALOG.STUDY_REQUIRED' | translate }}
-          </mat-error>
-        </mat-form-field>
-      </div>
-      <div>
-        <app-chip-autocomplete
-          [label]="'CONTACT_PROBAND.RECEIVER' | translate"
-          [placeholder]="'CONTACT_PROBAND.RECEIVER' | translate"
-          [allowedValues]="allPseudonyms"
-          [showError]="
-            message.get('recipients').touched &&
-            message.get('recipients').hasError('required')
+          </app-chip-autocomplete>
+        </div>
+        <div>
+          <mat-form-field>
+            <mat-label>{{ 'CONTACT_PROBAND.SUBJECT' | translate }}</mat-label>
+            <input
+              matInput
+              formControlName="title"
+              data-e2e="e2e-contact-proband-subject-input"
+            />
+
+            <mat-error
+              *ngIf="
+                message.get('title').touched &&
+                message.get('title').hasError('required')
+              "
+            >
+              {{ 'CONTACT_PROBAND.SUBJECT_IS_REQUIRED' | translate }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div>
+          <mat-form-field>
+            <mat-label
+              >{{ 'CONTACT_PROBAND.PLEASE_ENTER_YOUR_MESSAGE' | translate }}
+            </mat-label>
+            <textarea
+              matInput
+              cdkTextareaAutosize
+              cdkAutosizeMinRows="5"
+              cdkAutosizeMaxRows="10"
+              formControlName="body"
+              data-e2e="e2e-contact-proband-message-textarea"
+            ></textarea>
+
+            <mat-error
+              *ngIf="
+                message.get('body').touched &&
+                message.get('body').hasError('required')
+              "
+            >
+              {{ 'CONTACT_PROBAND.MESSAGE_IS_REQUIRED' | translate }}
+            </mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="contact-proband-message-types">
+          <mat-checkbox
+            [formControl]="notifyByEmail"
+            data-e2e="e2e-contact-proband-email-checkbox"
+            >{{ 'CONTACT_PROBAND.EMAIL' | translate }}
+          </mat-checkbox>
+          <mat-checkbox [formControl]="notifyByNotification"
+            >{{ 'CONTACT_PROBAND.PUSH_NOTIFICATION' | translate }}
+          </mat-checkbox>
+        </div>
+        <button
+          mat-raised-button
+          color="primary"
+          type="button"
+          (click)="onSubmit()"
+          [disabled]="
+            message.disabled ||
+            (notifyByEmail.value === false &&
+              notifyByNotification.value === false)
           "
-          [errorMessage]="'CONTACT_PROBAND.RECIPIENT_IS_REQUIRED' | translate"
-          formControlName="recipients"
+          data-e2e="e2e-contact-proband-send-button"
         >
-        </app-chip-autocomplete>
-      </div>
-      <div>
-        <mat-form-field>
-          <input
-            matInput
-            placeholder="{{ 'CONTACT_PROBAND.SUBJECT' | translate }}"
-            formControlName="title"
-            data-e2e="e2e-contact-proband-subject-input"
-          />
-
-          <mat-error
-            *ngIf="
-              message.get('title').touched &&
-              message.get('title').hasError('required')
-            "
-          >
-            {{ 'CONTACT_PROBAND.SUBJECT_IS_REQUIRED' | translate }}
-          </mat-error>
-        </mat-form-field>
-      </div>
-      <div>
-        <mat-form-field>
-          <textarea
-            matInput
-            placeholder="{{
-              'CONTACT_PROBAND.PLEASE_ENTER_YOUR_MESSAGE' | translate
-            }}"
-            matTextareaAutosize
-            matAutosizeMinRows="5"
-            matAutosizeMaxRows="10"
-            formControlName="body"
-            data-e2e="e2e-contact-proband-message-textarea"
-          ></textarea>
-
-          <mat-error
-            *ngIf="
-              message.get('body').touched &&
-              message.get('body').hasError('required')
-            "
-          >
-            {{ 'CONTACT_PROBAND.MESSAGE_IS_REQUIRED' | translate }}
-          </mat-error>
-        </mat-form-field>
-      </div>
-
-      <div class="contact-proband-message-types">
-        <mat-checkbox
-          [formControl]="notifyByEmail"
-          data-e2e="e2e-contact-proband-email-checkbox"
-          >{{ 'CONTACT_PROBAND.EMAIL' | translate }}</mat-checkbox
-        >
-        <mat-checkbox [formControl]="notifyByNotification">{{
-          'CONTACT_PROBAND.PUSH_NOTIFICATION' | translate
-        }}</mat-checkbox>
-      </div>
-      <button
-        mat-raised-button
-        color="primary"
-        type="button"
-        (click)="onSubmit()"
-        [disabled]="
-          message.disabled ||
-          (notifyByEmail.value === false &&
-            notifyByNotification.value === false)
-        "
-        data-e2e="e2e-contact-proband-send-button"
-      >
-        {{ 'GENERAL.SEND' | translate }}
-      </button>
+          {{ 'GENERAL.SEND' | translate }}
+        </button>
+      </mat-card-content>
     </mat-card>
   </form>
 </div>

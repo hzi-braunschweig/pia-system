@@ -4,14 +4,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.registerPlugins = exports.defaultInternalRoutesPaths = exports.defaultPublicRoutesPaths = void 0;
-const inert_1 = __importDefault(require("@hapi/inert"));
-const vision_1 = __importDefault(require("@hapi/vision"));
-const hapi_swagger_1 = __importDefault(require("hapi-swagger"));
 const good_1 = __importDefault(require("@hapi/good"));
 const good_squeeze_1 = require("@hapi/good-squeeze");
 const good_console_1 = __importDefault(require("@hapi/good-console"));
-const rotating_file_stream_1 = require("rotating-file-stream");
 const hapi_router_1 = __importDefault(require("hapi-router"));
+const handleFieldValidationErrors_1 = require("./handleFieldValidationErrors");
+const health_1 = require("./health");
 const version_1 = require("./version");
 const metrics_1 = require("./metrics");
 const errorHandler_1 = require("./errorHandler");
@@ -28,10 +26,10 @@ exports.defaultPublicRoutesPaths = 'src/routes/{admin,proband}/*';
 exports.defaultInternalRoutesPaths = 'src/routes/internal/*';
 const registerPlugins = async (server, options) => {
     await server.register([
-        inert_1.default,
-        vision_1.default,
         version_1.Version,
+        health_1.Health,
         metrics_1.Metrics,
+        handleFieldValidationErrors_1.HandleFieldValidationErrors,
         errorHandler_1.ErrorHandler,
         assertStudyAccess_1.AssertStudyAccess,
     ]);
@@ -64,45 +62,7 @@ const registerPlugins = async (server, options) => {
                     },
                     'stdout',
                 ],
-                file: [
-                    {
-                        module: good_squeeze_1.Squeeze,
-                        args: logSqueezeArgs,
-                    },
-                    {
-                        module: good_squeeze_1.SafeJson,
-                    },
-                    {
-                        module: rotating_file_stream_1.createStream,
-                        args: [
-                            'log',
-                            {
-                                interval: '1d',
-                                compress: 'gzip',
-                                path: './logs',
-                            },
-                        ],
-                    },
-                ],
             },
-        },
-    });
-    await server.register({
-        plugin: hapi_swagger_1.default,
-        options: {
-            documentationPage: true,
-            info: {
-                title: `API Documentation ${options.name}${options.isInternal ? ' Internal' : ''}`,
-                version: options.version,
-            },
-            securityDefinitions: {
-                jwt: {
-                    type: 'apiKey',
-                    name: 'Authorization',
-                    in: 'header',
-                },
-            },
-            security: [{ jwt: [] }],
         },
     });
 };

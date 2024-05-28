@@ -10,10 +10,7 @@ import {
   DialogSelectForPartialDeletionData,
 } from './dialog-select-for-partial-deletion.component';
 import { AppModule } from '../../../app.module';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { mock } from 'ts-mockito';
 import {

@@ -35,7 +35,6 @@ export class Server {
     this.instance = new Hapi.Server({
       host: config.public.host,
       port: config.public.port,
-      tls: config.public.tls,
       app: {
         healthcheck: async (): Promise<boolean> => {
           await db.one('SELECT 1;');

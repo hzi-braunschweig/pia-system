@@ -16,7 +16,7 @@ const getLicenses = util.promisify(init);
 export class LicenseCollector {
   /**
    * You may add other permissive licenses but this needs
-   * to be double checked first!
+   * to be double-checked first!
    */
   private static readonly LICENSE_WHITELIST_PROD = [
     '0BSD',
@@ -33,6 +33,10 @@ export class LicenseCollector {
     'MPL-2.0',
     'Unlicense',
     'WTFPL',
+    // permitted by lawyer request as of 2023-11-28
+    'BlueOak-1.0.0',
+    // permitted by lawyer request as of 2023-11-28
+    'Unicode-DFS-2016',
   ];
 
   private static readonly LICENSE_WHITELIST_PROD_AND_DEV = [

@@ -8,7 +8,7 @@ import { Lifecycle } from '@hapi/hapi';
 
 import { AccessToken } from '@pia/lib-service-core';
 import { FileInteractor } from '../interactors/fileInteractor';
-import { UserFileDto } from '../models/userFile';
+import { UserFileResponse } from '../models/userFile';
 
 export class FileHandler {
   /**
@@ -17,7 +17,7 @@ export class FileHandler {
    */
   public static getFileById: Lifecycle.Method = async (
     request
-  ): Promise<UserFileDto> => {
+  ): Promise<UserFileResponse> => {
     const file = await FileInteractor.getFileById(
       request.params['id'] as string,
       request.auth.credentials as AccessToken

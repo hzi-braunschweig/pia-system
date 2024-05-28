@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "license": "AGPL-3.0-or-later",
   "peerDependencies": {
-    "@angular/common": "^14.2.12",
-    "@angular/core": "^14.2.12",
-    "@ngx-translate/core": "^14.0.0"
+    "@angular/common": "^17.3.5",
+    "@angular/core": "^17.3.5",
+    "@ngx-translate/core": "^15.0.0"
   },
   "dependencies": {
     "date-fns": "^2.29.3",

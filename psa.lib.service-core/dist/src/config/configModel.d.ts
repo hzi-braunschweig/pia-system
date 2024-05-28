@@ -1,24 +1,17 @@
-/// <reference types="node" />
 export interface Connection {
     host: string;
     port: number;
 }
-export interface SecureConnection extends Connection {
-    tls: false | TlsSettings;
-}
-export declare type HttpProtocol = 'http' | 'https';
 export declare class HttpConnection implements Connection {
-    protocol: HttpProtocol;
     host: string;
     port: number;
-    constructor(protocol: HttpProtocol, host: string, port: number);
+    constructor(host: string, port: number);
     get url(): string;
 }
 export interface DatabaseConnection extends Connection {
     user: string;
     password: string;
     database: string;
-    ssl: SslSettings;
 }
 export interface MailserverConnection extends Connection {
     user: string;
@@ -49,21 +42,8 @@ export interface AuthClientSettings {
     clientId: string;
     secret: string;
 }
-export interface TlsSettings {
-    cert: Buffer;
-    key: Buffer;
-    rejectUnauthorized: true;
-}
-export interface SslCerts {
-    cert: Buffer;
-    key: Buffer;
-    ca: Buffer;
-}
-export interface SslSettings extends SslCerts {
-    rejectUnauthorized: boolean;
-}
 export interface ServiceConfig {
-    public: SecureConnection;
+    public: Connection;
     internal?: Connection;
     database?: DatabaseConnection;
     services?: {

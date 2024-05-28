@@ -4,225 +4,248 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<div>
+<div class="space-y">
+  <mat-divider></mat-divider>
   <mat-form-field data-unit="unit-filter-input-field">
     <mat-label>{{ 'QUESTIONNAIRES_FORSCHER.FILTER' | translate }}</mat-label>
     <input matInput (keyup)="applyFilter($event.target.value)" />
   </mat-form-field>
-</div>
-<div
-  *ngIf="qDatasourceSpontan.data.length > 0"
-  class="mat-elevation-z8 questionnaire-spontaneous"
->
-  <table
-    mat-table
-    class="questionnaires-table"
-    [dataSource]="qDatasourceSpontan"
-    data-unit="unit-questionnaire-instances-table-spontan"
+  <div
+    *ngIf="qDatasourceSpontan.data.length > 0"
+    class="questionnaire-spontaneous"
   >
-    <!-- Icon Column -->
-    <ng-container matColumnDef="status">
-      <th mat-header-cell class="icon-column" *matHeaderCellDef></th>
-      <td mat-cell class="icon-column" *matCellDef="let row">
-        <mat-icon>feedback</mat-icon>
-      </td>
-    </ng-container>
+    <table
+      mat-table
+      class="questionnaires-table"
+      [dataSource]="qDatasourceSpontan"
+      data-unit="unit-questionnaire-instances-table-spontan"
+    >
+      <!-- Icon Column -->
+      <ng-container matColumnDef="status">
+        <th mat-header-cell class="icon-column" *matHeaderCellDef></th>
+        <td mat-cell class="icon-column" *matCellDef="let row">
+          <mat-icon>feedback</mat-icon>
+        </td>
+      </ng-container>
 
-    <!-- Name Column -->
-    <ng-container matColumnDef="questionnaire_name">
-      <th mat-header-cell *matHeaderCellDef>
-        {{ 'QUESTIONNAIRES_PROBAND.SPONTANEOUS_QUESTIONNAIRES' | translate }}
-      </th>
-      <td
-        data-e2e="e2e-spontaneous-questionnaire"
-        mat-cell
-        *matCellDef="let row"
-        matTooltip="{{ 'QUESTIONNAIRES_FORSCHER.STUDY_ID' | translate }}: {{
-          row.study_id
-        }}, {{ 'QUESTIONNAIRES_PROBAND.STATUS' | translate }}: {{
-          row.status
-        }}, {{ 'QUESTIONNAIRES_PROBAND.VERSION' | translate }}: {{
-          row.questionnaire_version
-        }}"
-      >
-        {{ row.questionnaire_name }}
-      </td>
-    </ng-container>
-
-    <!-- Progress Column -->
-    <ng-container matColumnDef="progress">
-      <th mat-header-cell *matHeaderCellDef>
-        {{ 'QUESTIONNAIRES_PROBAND.PROGRESS' | translate }}
-      </th>
-      <td mat-cell *matCellDef="let row">
-        <div class="progress">
-          <mat-progress-bar
-            color="accent"
-            mode="determinate"
-            value="{{ row.progress }}"
-            matTooltip="{{ 'QUESTIONNAIRES_PROBAND.PROGRESS' | translate }}: {{
-              row.progress
-            }}%"
-          ></mat-progress-bar>
-          <button
-            data-e2e="e2e-spontaneous-questionnaire-edit-button"
-            mat-icon-button
-            matTooltip="{{
-              'QUESTIONNAIRES_PROBAND.EDIT_QUESTIONNAIRE' | translate
-            }}"
-            (click)="
-              editOrViewQuestionnaire(row.questionnaire_id, row.id, row.status)
-            "
-          >
-            <mat-icon>assignment</mat-icon>
-          </button>
-        </div>
-      </td>
-    </ng-container>
-
-    <!-- Date Column -->
-    <ng-container matColumnDef="date_of_issue">
-      <th mat-header-cell class="date-column" *matHeaderCellDef></th>
-      <td mat-cell class="date-column" *matCellDef="let row"></td>
-    </ng-container>
-
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-  </table>
-</div>
-
-<div class="mat-elevation-z8 questionnaire-container">
-  <table
-    mat-table
-    class="questionnaires-table"
-    [dataSource]="qDatasource"
-    data-unit="unit-questionnaire-instances-table"
-    matSort
-  >
-    <!-- Icon Column -->
-    <ng-container matColumnDef="status">
-      <th mat-header-cell class="icon-column" *matHeaderCellDef mat-sort-header>
-        {{ 'QUESTIONNAIRES_PROBAND.STATUS' | translate }}
-      </th>
-      <td
-        mat-cell
-        class="icon-column"
-        *matCellDef="let row"
-        data-e2e="e2e-icon-td"
-      >
-        <span *ngIf="row.status == 'active'" class="q-active">{{
-          'QUESTIONNAIRES_PROBAND.NEW' | translate
-        }}</span>
-        <span *ngIf="row.status == 'in_progress'" class="q-in-progress">
-          !
-        </span>
-        <span
-          *ngIf="row.status == 'released_once' || row.status == 'released'"
-          class="q-released"
+      <!-- Name Column -->
+      <ng-container matColumnDef="questionnaire_name">
+        <th mat-header-cell *matHeaderCellDef>
+          {{ 'QUESTIONNAIRES_PROBAND.SPONTANEOUS_QUESTIONNAIRES' | translate }}
+        </th>
+        <td
+          data-e2e="e2e-spontaneous-questionnaire"
+          mat-cell
+          *matCellDef="let row"
+          matTooltip="{{ 'QUESTIONNAIRES_FORSCHER.STUDY_ID' | translate }}: {{
+            row.study_id
+          }}, {{ 'QUESTIONNAIRES_PROBAND.STATUS' | translate }}: {{
+            row.status
+          }}, {{ 'QUESTIONNAIRES_PROBAND.VERSION' | translate }}: {{
+            row.questionnaire_version
+          }}"
         >
-          ✔
-        </span>
-        <span *ngIf="row.status == 'released_twice'" class="q-released-2">
-          ✔✔</span
+          {{ row.questionnaire_name }}
+        </td>
+      </ng-container>
+
+      <!-- Progress Column -->
+      <ng-container matColumnDef="progress">
+        <th mat-header-cell *matHeaderCellDef>
+          {{ 'QUESTIONNAIRES_PROBAND.PROGRESS' | translate }}
+        </th>
+        <td mat-cell *matCellDef="let row">
+          <div class="progress">
+            <mat-progress-bar
+              color="accent"
+              mode="determinate"
+              value="{{ row.progress }}"
+              matTooltip="{{
+                'QUESTIONNAIRES_PROBAND.PROGRESS' | translate
+              }}: {{ row.progress }}%"
+            ></mat-progress-bar>
+            <button
+              data-e2e="e2e-spontaneous-questionnaire-edit-button"
+              mat-icon-button
+              matTooltip="{{
+                'QUESTIONNAIRES_PROBAND.EDIT_QUESTIONNAIRE' | translate
+              }}"
+              (click)="
+                editOrViewQuestionnaire(
+                  row.questionnaire_id,
+                  row.id,
+                  row.status
+                )
+              "
+            >
+              <mat-icon>assignment</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Date Column -->
+      <ng-container matColumnDef="date_of_issue">
+        <th mat-header-cell class="date-column" *matHeaderCellDef></th>
+        <td mat-cell class="date-column" *matCellDef="let row"></td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </div>
+
+  <div class="mat-elevation-z1 questionnaire-container">
+    <table
+      mat-table
+      class="questionnaires-table"
+      [dataSource]="qDatasource"
+      data-unit="unit-questionnaire-instances-table"
+      matSort
+    >
+      <!-- Icon Column -->
+      <ng-container matColumnDef="status">
+        <th
+          mat-header-cell
+          class="icon-column"
+          *matHeaderCellDef
+          mat-sort-header
         >
-      </td>
-    </ng-container>
-
-    <!-- Name Column -->
-    <ng-container matColumnDef="questionnaire_name">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>
-        {{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_NAME' | translate }}
-      </th>
-      <td
-        data-e2e="e2e-questionnaire-name"
-        mat-cell
-        *matCellDef="let row"
-        matTooltip="{{ 'QUESTIONNAIRES_FORSCHER.STUDY_ID' | translate }}: {{
-          row.study_id
-        }}, {{ 'QUESTIONNAIRES_PROBAND.STATUS' | translate }}: {{
-          row.status
-        }}, {{ 'QUESTIONNAIRES_PROBAND.VERSION' | translate }}: {{
-          row.questionnaire_version
-        }}"
-      >
-        {{ row.questionnaire_name }}
-      </td>
-    </ng-container>
-
-    <!-- Progress Column -->
-    <ng-container matColumnDef="progress">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>
-        {{ 'QUESTIONNAIRES_PROBAND.PROGRESS' | translate }}
-      </th>
-      <td mat-cell *matCellDef="let row">
-        <div class="progress">
-          <mat-progress-bar
-            color="accent"
-            mode="determinate"
-            value="{{ row.progress }}"
-            matTooltip="{{ 'QUESTIONNAIRES_PROBAND.PROGRESS' | translate }}: {{
-              row.progress
-            }}%"
-          ></mat-progress-bar>
-          <button
-            mat-icon-button
-            matTooltip="{{
-              'QUESTIONNAIRES_PROBAND.EDIT_QUESTIONNAIRE' | translate
-            }}"
-            (click)="
-              editOrViewQuestionnaire(row.questionnaire_id, row.id, row.status)
-            "
-            *ngIf="row.status != 'released_twice'"
+          {{ 'QUESTIONNAIRES_PROBAND.STATUS' | translate }}
+        </th>
+        <td
+          mat-cell
+          class="icon-column"
+          *matCellDef="let row"
+          data-e2e="e2e-icon-td"
+        >
+          <span *ngIf="row.status == 'active'" class="q-active">{{
+            'QUESTIONNAIRES_PROBAND.NEW' | translate
+          }}</span>
+          <span *ngIf="row.status == 'in_progress'" class="q-in-progress">
+            !
+          </span>
+          <span
+            *ngIf="row.status == 'released_once' || row.status == 'released'"
+            class="q-released"
           >
-            <mat-icon>assignment</mat-icon>
-          </button>
-
-          <button
-            mat-icon-button
-            matTooltip="{{
-              'QUESTIONNAIRES_PROBAND.VIEW_QUESTIONNAIRE' | translate
-            }}"
-            (click)="
-              editOrViewQuestionnaire(row.questionnaire_id, row.id, row.status)
-            "
-            *ngIf="row.status == 'released_twice'"
+            ✔
+          </span>
+          <span *ngIf="row.status == 'released_twice'" class="q-released-2">
+            ✔✔</span
           >
-            <mat-icon>visibility</mat-icon>
-          </button>
-        </div>
-      </td>
-    </ng-container>
+        </td>
+      </ng-container>
 
-    <!-- Date Column -->
-    <ng-container matColumnDef="date_of_issue">
-      <th mat-header-cell class="date-column" *matHeaderCellDef mat-sort-header>
-        {{ 'QUESTIONNAIRES_PROBAND.DATE' | translate }}
-      </th>
-      <td mat-cell class="date-column" *matCellDef="let row">
-        {{
-          row.questionnaire_cycle_unit == 'hour'
-            ? (row.date_of_issue | date: 'medium')
-            : (row.date_of_issue | date: 'mediumDate')
-        }}
-      </td>
-    </ng-container>
+      <!-- Name Column -->
+      <ng-container matColumnDef="questionnaire_name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_NAME' | translate }}
+        </th>
+        <td
+          data-e2e="e2e-questionnaire-name"
+          mat-cell
+          *matCellDef="let row"
+          matTooltip="{{ 'QUESTIONNAIRES_FORSCHER.STUDY_ID' | translate }}: {{
+            row.study_id
+          }}, {{ 'QUESTIONNAIRES_PROBAND.STATUS' | translate }}: {{
+            row.status
+          }}, {{ 'QUESTIONNAIRES_PROBAND.VERSION' | translate }}: {{
+            row.questionnaire_version
+          }}"
+        >
+          {{ row.questionnaire_name }}
+        </td>
+      </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr
-      mat-row
-      *matRowDef="let row; columns: displayedColumns"
-      (click)="
-        editOrViewQuestionnaire(row.questionnaire_id, row.id, row.status)
-      "
-    ></tr>
-  </table>
+      <!-- Progress Column -->
+      <ng-container matColumnDef="progress">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          {{ 'QUESTIONNAIRES_PROBAND.PROGRESS' | translate }}
+        </th>
+        <td mat-cell *matCellDef="let row">
+          <div class="progress">
+            <mat-progress-bar
+              color="accent"
+              mode="determinate"
+              value="{{ row.progress }}"
+              matTooltip="{{
+                'QUESTIONNAIRES_PROBAND.PROGRESS' | translate
+              }}: {{ row.progress }}%"
+            ></mat-progress-bar>
+            <button
+              mat-icon-button
+              matTooltip="{{
+                'QUESTIONNAIRES_PROBAND.EDIT_QUESTIONNAIRE' | translate
+              }}"
+              (click)="
+                editOrViewQuestionnaire(
+                  row.questionnaire_id,
+                  row.id,
+                  row.status
+                )
+              "
+              *ngIf="row.status != 'released_twice'"
+            >
+              <mat-icon>assignment</mat-icon>
+            </button>
 
-  <mat-paginator
-    [length]="qDatasource.filteredData.length"
-    [pageIndex]="0"
-    [pageSize]="10"
-    [pageSizeOptions]="[10, 25, 50, 100]"
-    showFirstLastButtons
-  >
-  </mat-paginator>
+            <button
+              mat-icon-button
+              matTooltip="{{
+                'QUESTIONNAIRES_PROBAND.VIEW_QUESTIONNAIRE' | translate
+              }}"
+              (click)="
+                editOrViewQuestionnaire(
+                  row.questionnaire_id,
+                  row.id,
+                  row.status
+                )
+              "
+              *ngIf="row.status == 'released_twice'"
+            >
+              <mat-icon>visibility</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Date Column -->
+      <ng-container matColumnDef="date_of_issue">
+        <th
+          mat-header-cell
+          class="date-column"
+          *matHeaderCellDef
+          mat-sort-header
+        >
+          {{ 'QUESTIONNAIRES_PROBAND.DATE' | translate }}
+        </th>
+        <td mat-cell class="date-column" *matCellDef="let row">
+          {{
+            row.questionnaire_cycle_unit == 'hour'
+              ? (row.date_of_issue | date: 'medium')
+              : (row.date_of_issue | date: 'mediumDate')
+          }}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr
+        mat-row
+        *matRowDef="let row; columns: displayedColumns"
+        (click)="
+          editOrViewQuestionnaire(row.questionnaire_id, row.id, row.status)
+        "
+      ></tr>
+    </table>
+
+    <mat-paginator
+      [length]="qDatasource.filteredData.length"
+      [pageIndex]="0"
+      [pageSize]="10"
+      [pageSizeOptions]="[10, 25, 50, 100]"
+      showFirstLastButtons
+    >
+    </mat-paginator>
+  </div>
 </div>

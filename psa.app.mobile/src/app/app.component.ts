@@ -19,6 +19,7 @@ import { EndpointService } from './shared/services/endpoint/endpoint.service';
 import { BadgeService } from './shared/services/badge/badge.service';
 import { CurrentUser } from './auth/current-user.service';
 import { filter } from 'rxjs/operators';
+import { register } from 'swiper/element/bundle';
 
 interface AppPage {
   title: string;
@@ -26,6 +27,8 @@ interface AppPage {
   icon: string;
   isShown: boolean;
 }
+
+register();
 
 @Component({
   selector: 'app-root',
@@ -71,7 +74,7 @@ export class AppComponent {
    * Executed once at app start
    */
   private async onAppStart() {
-    if (await this.auth.isAuthenticated()) {
+    if (this.auth.isAuthenticated()) {
       await this.setupSideMenu();
     }
   }
@@ -93,7 +96,7 @@ export class AppComponent {
    * Executed as soon as the cordova platform is ready and plugins may be used
    */
   private async onPlatformReady() {
-    if (await this.auth.isAuthenticated()) {
+    if (this.auth.isAuthenticated()) {
       await this.notification.initPushNotifications(this.currentUser.username);
     }
 

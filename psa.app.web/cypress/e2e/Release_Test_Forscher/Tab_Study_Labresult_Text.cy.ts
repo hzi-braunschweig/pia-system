@@ -96,6 +96,7 @@ describe('Release Test, role: "Forscher", Tab: Study Labresult Text', () => {
     // forscher edits lab result text
     cy.visit(adminAppUrl);
     login(forscherCredentials.username, forscherCredentials.password);
+
     selectStudy(study.name);
     cy.get('[data-e2e="edit-labresult-template-text-button"]').click();
     cy.get('[data-e2e="markdown-editor-textarea"]').clear();

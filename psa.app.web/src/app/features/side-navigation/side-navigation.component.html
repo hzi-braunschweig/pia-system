@@ -6,12 +6,13 @@
 
 <div class="sidenav-content" data-e2e="e2e-sidenav-content">
   <div class="sidenav-top">
-    <img class="logo" src="assets/images/logo-hzi.jpeg" />
+    <img class="logo" src="assets/images/logo.jpeg" alt="logo" />
     <mat-list>
       <mat-button-toggle-group
         #group="matButtonToggleGroup"
         vertical="true"
         [(value)]="selectedPage"
+        hideSingleSelectionIndicator
       >
         <mat-divider></mat-divider>
         <mat-button-toggle

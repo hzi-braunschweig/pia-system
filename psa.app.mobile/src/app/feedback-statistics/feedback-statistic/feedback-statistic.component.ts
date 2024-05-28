@@ -34,7 +34,6 @@ export type RangeValueObject = Extract<
 export class FeedbackStatisticComponent implements OnInit {
   @Input()
   public feedbackStatisticDto: FeedbackStatisticDto | null = null;
-  c;
   public chartFeedbackStatistic: ChartFeedbackStatistic;
   public showDescription: boolean = false;
   public range: { min: number; max: number };

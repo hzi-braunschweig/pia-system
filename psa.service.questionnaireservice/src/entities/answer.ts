@@ -41,3 +41,5 @@ export class Answer implements AnswerDto {
   @Column({ type: 'varchar', nullable: true })
   public releasingPerson!: string | null;
 }
+
+export type PartialAnswer = Pick<Answer, 'answerOption' | 'question' | 'value'>;

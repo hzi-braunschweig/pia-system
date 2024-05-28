@@ -1,0 +1,1311 @@
+openapi: 3.0.3
+info:
+  title: PIA Public API
+  version: '1'
+  description: Endpoints for integrators and developers to connect 3rd party applications
+  license:
+    name: AGPL-3.0-or-later
+  contact: {}
+servers:
+  - url: /public/api/v1
+tags:
+  - name: Event History
+    description: >-
+      Operations related to the event history.
+
+
+      PIA is using a message queue for inter-service communication. Messages
+      classified as events can be stored for a configurable duration and
+      retrieved, if enabled by a SysAdmin.
+  - name: Questionnaires
+    description: >-
+      Operations related to the questionnaires resource.
+
+
+      A questionnaire provides the blueprint for one or many instances of said
+      questionnaire. It contains meta information (e.g. name, schedule, version)
+      and defines the structure, content, and validation rules in form of
+      questions and answer options. It is managed by the researcher role and not
+      shown to participants directly.
+  - name: Questionnaire Instances
+    description: >-
+      Operations regarding the questionnaire instances resource.
+
+
+      Questionnaire instances are shown to participants. This resource is
+      actually answered by participants. Each questionnaire instance is valid
+      for a time span specified in the underlying questionnaire and always
+      belongs to exactly one participant.
+  - name: Answers
+    description: >-
+      Operations related to the answers resource.
+
+
+      An answer is the actual value provided by a specific participant to a
+      specific question in a questionnaire instance.
+  - name: Participants
+    description: >-
+      Operations related to the participant resource.
+
+
+      A participant can answer questionnaire instances and is always part of
+      exactly one study.
+paths:
+  /event-history:
+    get:
+      operationId: GetEvents
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/EventResponseDto'
+                type: array
+        '403':
+          description: Client has no access to the requested study
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClientHasNoAccessToStudyError'
+              examples:
+                Example 1: {}
+        '404':
+          description: The event history has been disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventHistoryIsDisabledError'
+              examples:
+                Example 1: {}
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                Example 1: {}
+      description: Returns a list of events that match the given filters
+      tags:
+        - Event History
+      security:
+        - jwt-public: []
+      parameters:
+        - description: Name of the study
+          in: query
+          name: studyName
+          required: false
+          schema:
+            $ref: '#/components/schemas/StudyName'
+        - description: Start date of the time range as ISO 8601 string
+          in: query
+          name: from
+          required: false
+          schema:
+            format: date-time
+            type: string
+        - description: End date of the time range as ISO 8601 string
+          in: query
+          name: to
+          required: false
+          schema:
+            format: date-time
+            type: string
+        - description: Type of events to return
+          in: query
+          name: type
+          required: false
+          schema:
+            $ref: '#/components/schemas/EventTypeString'
+  '/studies/{studyName}/participants/{pseudonym}/questionnaire-instances':
+    get:
+      operationId: GetQuestionnaireInstances
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/GetQuestionnaireInstanceResponseDto'
+                type: array
+        '404':
+          description: Questionnaire instance was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireInstanceNotFoundError'
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      description: Get questionnaire instances for a participant of a study
+      tags:
+        - Questionnaire Instances
+      security:
+        - jwt-public: []
+      parameters:
+        - description: Name of the study
+          in: path
+          name: studyName
+          required: true
+          schema:
+            $ref: '#/components/schemas/StudyName'
+        - description: Pseudonym of the participant
+          in: path
+          name: pseudonym
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pseudonym'
+        - description: Filter by custom name of associated questionnaire
+          in: query
+          name: questionnaireCustomName
+          required: false
+          schema:
+            $ref: '#/components/schemas/CustomName'
+        - description: Filter by questionnaire instance status
+          in: query
+          name: status
+          required: false
+          schema:
+            $ref: '#/components/schemas/QuestionnaireInstanceStatus'
+  '/studies/{studyName}/participants/{pseudonym}/questionnaire-instances/{identifier}':
+    patch:
+      operationId: PatchQuestionnaireInstance
+      responses:
+        '200':
+          description: Patch successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PatchQuestionnaireInstanceResponseDto'
+              examples:
+                Example 1:
+                  value:
+                    status: released
+                    progress: 49
+                    releaseVersion: 1
+        '400':
+          description: Requested status transition is not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidStatusTransitionError'
+        '403':
+          description: >-
+            The questionnaires cycle unit does not guarantee selecting a single
+            instance by custom name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidQuestionnaireCycleUnitError'
+        '404':
+          description: Questionnaire instance was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireInstanceNotFoundError'
+        '412':
+          description: There are no new answers to release
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleaseNeedsAnswersError'
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      description: >-
+        Update a questionnaire instance by ID or a custom name.
+
+        Using a custom name as an identifier is only supported for
+        questionnaires with a cycle unit of 'once'.
+      tags:
+        - Questionnaire Instances
+      security:
+        - jwt-public: []
+      parameters:
+        - description: Name of the study
+          in: path
+          name: studyName
+          required: true
+          schema:
+            $ref: '#/components/schemas/StudyName'
+        - description: Pseudonym of the participant
+          in: path
+          name: pseudonym
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pseudonym'
+        - description: ID or a questionnaires custom name the instance is related to
+          in: path
+          name: identifier
+          required: true
+          schema:
+            $ref: '#/components/schemas/QuestionnaireInstanceIdentifier'
+      requestBody:
+        description: Questionnaire fields to patch
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchQuestionnaireInstanceRequestDto'
+              description: Questionnaire fields to patch
+  '/studies/{studyName}/participants/{pseudonym}/questionnaire-instances/{identifier}/answers':
+    post:
+      operationId: PostQuestionnaireInstanceAnswers
+      responses:
+        '200':
+          description: Post successful
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PostAnswerResponseDto'
+                type: array
+              examples:
+                Example 1:
+                  value:
+                    - answerOptionVariableName: answer_option_a
+                      questionVariableName: aquestion_a
+                      type: MultiSelect
+                      value:
+                        - 3
+                        - 5
+                        - 7
+                      version: 1
+                      dateOfRelease: '2024-02-06T12:12:12000'
+        '403':
+          description: >-
+            The questionnaires cycle unit does not guarantee selecting a single
+            instance by custom name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidQuestionnaireCycleUnitError'
+        '404':
+          description: Questionnaire instance was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuestionnaireInstanceNotFoundError'
+        '422':
+          description: The given answers could not be created or updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CouldNotCreateOrUpdateAnswersError'
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      description: >-
+        Add or update answers for a questionnaire instance by ID or a custom
+        name.
+
+        Using a custom name as an identifier is only supported for
+        questionnaires with a cycle unit of 'once'.
+
+
+        If any base64 encoded files were included in the posted answers, only
+        the provided filenames will be included in the response. The property
+        `file` will be an empty string.
+      tags:
+        - Answers
+        - Questionnaire Instances
+      security:
+        - jwt-public: []
+      parameters:
+        - description: Name of the study
+          in: path
+          name: studyName
+          required: true
+          schema:
+            $ref: '#/components/schemas/StudyName'
+        - description: Pseudonym of the participant
+          in: path
+          name: pseudonym
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pseudonym'
+        - description: ID or a questionnaires custom name the instance is related to
+          in: path
+          name: identifier
+          required: true
+          schema:
+            $ref: '#/components/schemas/QuestionnaireInstanceIdentifier'
+      requestBody:
+        description: A complete list of answers to post
+        required: true
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/PostAnswerRequestDto'
+              type: array
+              description: A complete list of answers to post
+  '/studies/{studyName}/participants':
+    get:
+      operationId: GetParticipants
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ParticipantDto'
+                type: array
+      description: Returns all participants of given study
+      tags:
+        - Participants
+      security:
+        - jwt-public: []
+      parameters:
+        - description: the name of the study
+          in: path
+          name: studyName
+          required: true
+          schema:
+            type: string
+    post:
+      operationId: PostParticipant
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateParticipantResponseDto'
+        '404':
+          description: Study does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StudyNotFoundError1'
+        '409':
+          description: The pseudonym is already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PseudonymAlreadyExistsError'
+        '500':
+          description: An error occurred while trying to save the participant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantSaveError'
+      description: Creates a new participant
+      tags:
+        - Participants
+      security:
+        - jwt-public: []
+      parameters:
+        - in: path
+          name: studyName
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateParticipantRequestDto'
+  '/studies/{studyName}/participants/{pseudonym}':
+    get:
+      operationId: GetParticipant
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantDto'
+        '404':
+          description: The participant with the given pseudonym does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantNotFoundError'
+      description: Returns the participant with given pseudonym
+      tags:
+        - Participants
+      security:
+        - jwt-public: []
+      parameters:
+        - description: the name of the study
+          in: path
+          name: studyName
+          required: true
+          schema:
+            type: string
+        - description: the pseudonym of the participant
+          in: path
+          name: pseudonym
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pseudonym'
+    patch:
+      operationId: PatchParticipant
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantDto'
+      description: Allows to update certain fields of a participant
+      tags:
+        - Participants
+      security:
+        - jwt-public: []
+      parameters:
+        - in: path
+          name: studyName
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: pseudonym
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pseudonym'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchParticipantRequestDto'
+    delete:
+      operationId: DeleteParticipant
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: The participant with the given pseudonym does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ParticipantNotFoundError'
+      description: |-
+        Deletes a participant and all its data
+
+        Should be used in case of a participant's total opposition.
+      tags:
+        - Participants
+      security:
+        - jwt-public: []
+      parameters:
+        - in: path
+          name: studyName
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: pseudonym
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pseudonym'
+        - in: query
+          name: deletionType
+          required: false
+          schema:
+            $ref: '#/components/schemas/ParticipantDeletionType'
+components:
+  schemas:
+    Pick_EventEntity.Exclude_keyofEventEntity.type__:
+      properties:
+        payload:
+          anyOf:
+            - properties:
+                pseudonym:
+                  type: string
+              required:
+                - pseudonym
+              type: object
+            - properties:
+                releaseVersion:
+                  type: number
+                  format: double
+                id:
+                  type: number
+                  format: double
+              required:
+                - releaseVersion
+                - id
+              type: object
+        id:
+          type: number
+          format: double
+        studyName:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - payload
+        - id
+        - studyName
+        - timestamp
+      type: object
+      description: 'From T, pick a set of properties whose keys are in the union K'
+    Omit_EventEntity.type_:
+      $ref: '#/components/schemas/Pick_EventEntity.Exclude_keyofEventEntity.type__'
+      description: Construct a type with the properties of T except for those in type K.
+    EventTypeString:
+      type: string
+      enum:
+        - proband.created
+        - proband.deleted
+        - proband.deactivated
+        - proband.logged_in
+        - proband.email_verified
+        - compliance.created
+        - questionnaire_instance.released
+      nullable: false
+    EventResponseDto:
+      allOf:
+        - $ref: '#/components/schemas/Omit_EventEntity.type_'
+        - properties:
+            type:
+              $ref: '#/components/schemas/EventTypeString'
+          required:
+            - type
+          type: object
+    StatusCodes.NOT_FOUND:
+      enum:
+        - 404
+      type: number
+    EventHistoryIsDisabledError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+        causedBy: {}
+        statusCode:
+          $ref: '#/components/schemas/StatusCodes.NOT_FOUND'
+        errorCode:
+          type: string
+          enum:
+            - EVENT_HISTORY_IS_DISABLED
+          nullable: false
+          default: EVENT_HISTORY_IS_DISABLED
+      required:
+        - name
+        - message
+        - statusCode
+        - errorCode
+      type: object
+      additionalProperties: false
+    StatusCodes.FORBIDDEN:
+      enum:
+        - 403
+      type: number
+    ClientHasNoAccessToStudyError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+        causedBy: {}
+        statusCode:
+          $ref: '#/components/schemas/StatusCodes.FORBIDDEN'
+        errorCode:
+          type: string
+          enum:
+            - CLIENT_HAS_NO_ACCESS_TO_STUDY
+          nullable: false
+          default: CLIENT_HAS_NO_ACCESS_TO_STUDY
+      required:
+        - name
+        - message
+        - statusCode
+        - errorCode
+      type: object
+      additionalProperties: false
+    Error:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+      required:
+        - name
+        - message
+      type: object
+      additionalProperties: false
+    StudyName:
+      type: string
+      example: Example Study
+      description: The name of a study is also a unique identifier.
+    QuestionnaireInstanceStatus:
+      type: string
+      enum:
+        - inactive
+        - active
+        - in_progress
+        - released
+        - released_once
+        - released_twice
+        - expired
+        - deleted
+      example: released
+      description: >-
+        Defines the current state of a questionnaire instance.
+
+        `released` is only valid for questionnaires of type
+        `for_study_assistant`.
+
+        `released_once` and `released_twice` is only valid for questionnaires of
+        type `for_participant`.
+    Pick_QuestionnaireInstance.Exclude_keyofQuestionnaireInstance.questionnaire-or-answers-or-studyId__:
+      properties:
+        id:
+          type: integer
+          format: int32
+        questionnaireName:
+          type: string
+        pseudonym:
+          type: string
+        dateOfIssue:
+          type: string
+          format: date-time
+        dateOfReleaseV1:
+          type: string
+          format: date-time
+        dateOfReleaseV2:
+          type: string
+          format: date-time
+        cycle:
+          type: integer
+          format: int32
+        status:
+          $ref: '#/components/schemas/QuestionnaireInstanceStatus'
+        notificationsScheduled:
+          type: boolean
+        progress:
+          type: integer
+          format: int32
+          description: Current progress in percent. Ranges from 0 to 100.
+        releaseVersion:
+          type: integer
+          format: int32
+          description: 'Version counter, increasing with each release.'
+      required:
+        - id
+        - questionnaireName
+        - pseudonym
+        - dateOfIssue
+        - dateOfReleaseV1
+        - dateOfReleaseV2
+        - cycle
+        - status
+        - notificationsScheduled
+        - progress
+        - releaseVersion
+      type: object
+      description: 'From T, pick a set of properties whose keys are in the union K'
+    Omit_QuestionnaireInstance.questionnaire-or-answers-or-studyId_:
+      $ref: >-
+        #/components/schemas/Pick_QuestionnaireInstance.Exclude_keyofQuestionnaireInstance.questionnaire-or-answers-or-studyId__
+      description: Construct a type with the properties of T except for those in type K.
+    CustomName:
+      type: string
+      example: asthma_medical_trail
+      description: >-
+        A questionnaires custom name helps to reference a questionnaire by a
+        speakable and unique name.
+      pattern: '^[a-zA-Z0-9-_]+$'
+    GetQuestionnaireInstanceResponseDto:
+      allOf:
+        - $ref: >-
+            #/components/schemas/Omit_QuestionnaireInstance.questionnaire-or-answers-or-studyId_
+        - properties:
+            questionnaireCustomName:
+              allOf:
+                - $ref: '#/components/schemas/CustomName'
+              nullable: true
+            questionnaireVersion:
+              type: integer
+              format: int32
+            questionnaireId:
+              type: integer
+              format: int32
+            studyName:
+              $ref: '#/components/schemas/StudyName'
+          required:
+            - questionnaireCustomName
+            - questionnaireVersion
+            - questionnaireId
+            - studyName
+          type: object
+    StudyNotFoundError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+      required:
+        - name
+        - message
+      type: object
+      additionalProperties: false
+    QuestionnaireInstanceNotFoundError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+      required:
+        - name
+        - message
+      type: object
+      additionalProperties: false
+    Pseudonym:
+      type: string
+      example: abcd-1234
+      description: |-
+        The pseudonym is the unique identifier of a participant.
+        It consists of a prefix and a suffix. The prefix maps
+        to exactly one study. The suffix consists only of integers
+        and is unique within the study. There is no specific
+        limitation for the length of the prefix and the suffix.
+      pattern: '^[a-z]+-[0-9]+$'
+    Pick_QuestionnaireInstanceDto.status-or-releaseVersion-or-progress_:
+      properties:
+        status:
+          $ref: '#/components/schemas/QuestionnaireInstanceStatus'
+        progress:
+          type: integer
+          format: int32
+          description: Current progress in percent. Ranges from 0 to 100.
+          example: '49'
+        releaseVersion:
+          type: integer
+          format: int32
+          description: 'Version counter, increasing with each release.'
+          example: '1'
+      required:
+        - status
+        - progress
+        - releaseVersion
+      type: object
+      description: 'From T, pick a set of properties whose keys are in the union K'
+    PatchQuestionnaireInstanceResponseDto:
+      $ref: >-
+        #/components/schemas/Pick_QuestionnaireInstanceDto.status-or-releaseVersion-or-progress_
+    InvalidQuestionnaireCycleUnitError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+      required:
+        - name
+        - message
+      type: object
+      additionalProperties: false
+    InvalidStatusTransitionError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+      required:
+        - name
+        - message
+      type: object
+      additionalProperties: false
+    ReleaseNeedsAnswersError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+      required:
+        - name
+        - message
+      type: object
+      additionalProperties: false
+    ResourceID:
+      type: integer
+      format: int32
+      example: '456'
+      description: A resource ID
+    QuestionnaireInstanceIdentifier:
+      anyOf:
+        - $ref: '#/components/schemas/ResourceID'
+        - $ref: '#/components/schemas/CustomName'
+      example: 456 or asthma_medical_trail
+      description: >-
+        Identifies a questionnaire instance by either its ID or the custom name
+
+        of its related questionnaire.
+
+
+        A custom name can only be a valid identifier of unique questionnaire
+        instance,
+
+        when the cycle unit of its related questionnaire is 'once'.
+    Pick_QuestionnaireInstanceDto.status_:
+      properties:
+        status:
+          $ref: '#/components/schemas/QuestionnaireInstanceStatus'
+      required:
+        - status
+      type: object
+      description: 'From T, pick a set of properties whose keys are in the union K'
+    PatchQuestionnaireInstanceRequestDto:
+      $ref: '#/components/schemas/Pick_QuestionnaireInstanceDto.status_'
+    TextValue:
+      type: string
+      example: Any textual answer
+      description: Value for answer of type "Text".
+    Pzn:
+      type: string
+      example: '-12345678'
+      description: |-
+        Pharmacy central number for pharmaceutical products in Germany.
+        Value for answer of type "PZN".
+      pattern: '^-[0-9]{8}$'
+    IsoDateString:
+      type: string
+      example: '2024-02-06'
+      description: |-
+        ISO 8601 date string with a fixed format.
+        A date value can be restricted to a range, defined by its answer option.
+      pattern: '^\d{4}-\d{2}-\d{2}$'
+    IsoTimestampString:
+      type: string
+      example: '2024-02-06T12:12:12.000Z'
+      description: ISO 8601 timestamp string.
+    SingleSelectValue:
+      type: integer
+      format: int32
+      example: '2'
+      description: |-
+        Numeric codes from a set of choices.
+        Answer for type of "SingleSelect".
+    MultipleSelectValue:
+      items:
+        type: integer
+        format: int32
+      type: array
+      example:
+        - 2
+        - 5
+        - 9
+      description: |-
+        Array of numeric codes from a set of choices.
+        Answer for type of "MultipleSelect".
+    SampleId:
+      type: string
+      example: PREFIX-012345678
+      description: |-
+        Sample ID, consisting of an optional prefix and number sequence.
+        The prefix and length of the number sequence is defined by the
+        corresponding study.
+      pattern: '^([A-Z]+-)?[0-9]+$'
+    SampleDto:
+      description: |-
+        Contains a sample ID and an optional dummy ID for validation.
+        Answer for type of "Sample".
+      properties:
+        sampleId:
+          $ref: '#/components/schemas/SampleId'
+        dummySampleId:
+          $ref: '#/components/schemas/SampleId'
+      required:
+        - sampleId
+      type: object
+      additionalProperties: false
+    base64file:
+      type: string
+      description: Represents a base64 encoded file.
+      pattern: '^data:(\w+\/[-+.\w]+);base64,(.+)$'
+    UserFileDto:
+      description: 'Defines a file, consisting of a file name and a base64 encoded file'
+      properties:
+        file:
+          $ref: '#/components/schemas/base64file'
+        fileName:
+          type: string
+      required:
+        - file
+        - fileName
+      type: object
+      additionalProperties: false
+    AnswerValue:
+      anyOf:
+        - $ref: '#/components/schemas/TextValue'
+        - $ref: '#/components/schemas/Pzn'
+        - $ref: '#/components/schemas/IsoDateString'
+        - $ref: '#/components/schemas/IsoTimestampString'
+        - $ref: '#/components/schemas/SingleSelectValue'
+        - $ref: '#/components/schemas/MultipleSelectValue'
+        - $ref: '#/components/schemas/SampleDto'
+        - $ref: '#/components/schemas/UserFileDto'
+      nullable: true
+      description: >-
+        Value for an answer. It will be validated against the expected answer
+        type.
+
+
+        Please keep in mind, the order of types in this union type is the order
+        of
+
+        validation and casting of values in tsoa.
+    Required_PostAnswerRequestDto_:
+      properties:
+        questionVariableName:
+          type: string
+          example: question_example
+        answerOptionVariableName:
+          type: string
+          example: answer_option_example
+        value:
+          $ref: '#/components/schemas/AnswerValue'
+        dateOfRelease:
+          type: string
+      required:
+        - questionVariableName
+        - answerOptionVariableName
+        - value
+        - dateOfRelease
+      type: object
+      description: Make all properties in T required
+    AnswerTypeKeys:
+      type: string
+      enum:
+        - None
+        - SingleSelect
+        - MultiSelect
+        - Number
+        - Text
+        - Date
+        - Sample
+        - PZN
+        - Image
+        - Timestamp
+        - File
+      nullable: false
+    PostAnswerResponseDto:
+      allOf:
+        - $ref: '#/components/schemas/Required_PostAnswerRequestDto_'
+        - properties:
+            type:
+              $ref: '#/components/schemas/AnswerTypeKeys'
+              description: |-
+                The type of the answer option the answer was given for.
+                Use it to narrow the type of answer value.
+              example: SingleSelect
+            version:
+              type: integer
+              format: int32
+              description: >-
+                Version number, automatically increased based on questionnaire
+                instance status
+              example: '1'
+          required:
+            - type
+            - version
+          type: object
+    CouldNotCreateOrUpdateAnswersError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+      required:
+        - name
+        - message
+      type: object
+      additionalProperties: false
+    PostAnswerRequestDto:
+      properties:
+        questionVariableName:
+          type: string
+          example: question_example
+        answerOptionVariableName:
+          type: string
+          example: answer_option_example
+        value:
+          $ref: '#/components/schemas/AnswerValue'
+        dateOfRelease:
+          $ref: '#/components/schemas/IsoTimestampString'
+      required:
+        - questionVariableName
+        - answerOptionVariableName
+        - value
+      type: object
+      additionalProperties: false
+    ParticipantStatus:
+      description: The participant's status within the study
+      enum:
+        - active
+        - deactivated
+        - deleted
+      type: string
+    AccountStatus:
+      description: The participant's account status
+      enum:
+        - account
+        - no_account
+      type: string
+    ParticipantDto:
+      description: A participant of a study
+      properties:
+        pseudonym:
+          $ref: '#/components/schemas/Pseudonym'
+        ids:
+          type: string
+          nullable: true
+          description: Optional external ids of the participant
+        study:
+          type: string
+          description: The name of the study the participant belongs to
+        status:
+          $ref: '#/components/schemas/ParticipantStatus'
+        accountStatus:
+          $ref: '#/components/schemas/AccountStatus'
+        studyCenter:
+          type: string
+          nullable: true
+          description: |-
+            The optional name of the study center
+            where the participant is examined.
+            Only used for documentation reasons
+        examinationWave:
+          type: integer
+          format: int32
+          nullable: true
+          description: |-
+            The optional examination wave in which the
+            participant participates.
+            Only used for documentation reasons
+        isTestParticipant:
+          type: boolean
+          description: |-
+            The optional flag that indicates if the participant
+            is a test participant and not a real participant.
+        firstLoggedInAt:
+          type: string
+          format: date-time
+          nullable: true
+        deactivatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+      required:
+        - pseudonym
+        - ids
+        - study
+        - status
+        - accountStatus
+        - studyCenter
+        - examinationWave
+        - isTestParticipant
+        - firstLoggedInAt
+        - deactivatedAt
+        - deletedAt
+      type: object
+      additionalProperties: false
+    ParticipantNotFoundError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+        causedBy: {}
+      required:
+        - name
+        - message
+      type: object
+      additionalProperties: false
+    Pick_ParticipantDto.pseudonym_:
+      properties:
+        pseudonym:
+          $ref: '#/components/schemas/Pseudonym'
+      required:
+        - pseudonym
+      type: object
+      description: 'From T, pick a set of properties whose keys are in the union K'
+    CreateParticipantResponseDto:
+      allOf:
+        - $ref: '#/components/schemas/Pick_ParticipantDto.pseudonym_'
+        - properties:
+            password:
+              type: string
+          required:
+            - password
+          type: object
+    StudyNotFoundError1:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+        causedBy: {}
+      required:
+        - name
+        - message
+      type: object
+      additionalProperties: false
+    PseudonymAlreadyExistsError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+        causedBy: {}
+      required:
+        - name
+        - message
+      type: object
+      additionalProperties: false
+    AccountCreateError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+        causedBy: {}
+      required:
+        - name
+        - message
+      type: object
+      additionalProperties: false
+    ParticipantSaveError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+        causedBy: {}
+      required:
+        - name
+        - message
+      type: object
+      additionalProperties: false
+    Partial_Pick_ParticipantDto.-or-pseudonym-or-ids-or-studyCenter-or-examinationWave-or-isTestParticipant__:
+      properties:
+        pseudonym:
+          $ref: '#/components/schemas/Pseudonym'
+        ids:
+          type: string
+          nullable: true
+          description: Optional external ids of the participant
+        studyCenter:
+          type: string
+          nullable: true
+          description: |-
+            The optional name of the study center
+            where the participant is examined.
+            Only used for documentation reasons
+        examinationWave:
+          type: integer
+          format: int32
+          nullable: true
+          description: |-
+            The optional examination wave in which the
+            participant participates.
+            Only used for documentation reasons
+        isTestParticipant:
+          type: boolean
+          description: |-
+            The optional flag that indicates if the participant
+            is a test participant and not a real participant.
+      type: object
+      description: Make all properties in T optional
+    CreateParticipantRequestDto:
+      $ref: >-
+        #/components/schemas/Partial_Pick_ParticipantDto.-or-pseudonym-or-ids-or-studyCenter-or-examinationWave-or-isTestParticipant__
+    Partial_Pick_ParticipantDto.ids-or-studyCenter-or-examinationWave-or-isTestParticipant__:
+      properties:
+        ids:
+          type: string
+          nullable: true
+          description: Optional external ids of the participant
+        studyCenter:
+          type: string
+          nullable: true
+          description: |-
+            The optional name of the study center
+            where the participant is examined.
+            Only used for documentation reasons
+        examinationWave:
+          type: integer
+          format: int32
+          nullable: true
+          description: |-
+            The optional examination wave in which the
+            participant participates.
+            Only used for documentation reasons
+        isTestParticipant:
+          type: boolean
+          description: |-
+            The optional flag that indicates if the participant
+            is a test participant and not a real participant.
+      type: object
+      description: Make all properties in T optional
+    PatchParticipantRequestDto:
+      $ref: >-
+        #/components/schemas/Partial_Pick_ParticipantDto.ids-or-studyCenter-or-examinationWave-or-isTestParticipant__
+    ParticipantDeletionType:
+      description: The type of deletion of a participant
+      enum:
+        - default
+        - full
+      type: string
+  responses: {}
+  parameters: {}
+  examples: {}
+  requestBodies: {}
+  headers: {}
+  securitySchemes:
+    jwt-public:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: /api/v1/auth/realms/pia-admin-realm/protocol/openid-connect/token
+          scopes: {}

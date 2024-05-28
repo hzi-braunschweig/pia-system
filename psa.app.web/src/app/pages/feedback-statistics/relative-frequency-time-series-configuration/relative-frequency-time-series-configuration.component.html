@@ -5,12 +5,12 @@
   -->
 
 <mat-card>
-  <mat-card-title>
-    <mat-icon inline="true">bar_chart</mat-icon>
-    {{
-      'FEEDBACK_STATISTICS.RELATIVE_FREQUENCY_TIME_SERIES' | translate
-    }}</mat-card-title
-  >
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>bar_chart</mat-icon>
+      {{ 'FEEDBACK_STATISTICS.RELATIVE_FREQUENCY_TIME_SERIES' | translate }}
+    </mat-card-title>
+  </mat-card-header>
   <mat-card-content>
     <form [formGroup]="form" class="grid-container-2cols">
       <h2 class="grid-item-100">
@@ -32,9 +32,11 @@
         "
       >
         <mat-form-field class="grid-item-50">
+          <mat-label
+            >{{ 'FEEDBACK_STATISTICS.QUESTIONNAIRE' | translate }}
+          </mat-label>
           <mat-select
             disableOptionCentering
-            placeholder="{{ 'FEEDBACK_STATISTICS.QUESTIONNAIRE' | translate }}"
             formControlName="questionnaire"
             data-e2e="e2e-questionnaire-select"
             data-unit="questionnaire-select"
@@ -63,15 +65,17 @@
           </mat-error>
         </mat-form-field>
 
-        <app-hint class="grid-item-50">{{
-          'FEEDBACK_STATISTICS.QUESTIONNAIRE_CYCLE_HINT' | translate
-        }}</app-hint>
+        <app-hint class="grid-item-50"
+          >{{ 'FEEDBACK_STATISTICS.QUESTIONNAIRE_CYCLE_HINT' | translate }}
+        </app-hint>
 
         <ng-container formGroupName="answerOptionValueCodes">
           <mat-form-field class="grid-item-50">
+            <mat-label
+              >{{ 'FEEDBACK_STATISTICS.QUESTION' | translate }}
+            </mat-label>
             <mat-select
               disableOptionCentering
-              placeholder="{{ 'FEEDBACK_STATISTICS.QUESTION' | translate }}"
               formControlName="id"
               data-e2e="e2e-answer-select"
               data-unit="answer-option-select"
@@ -102,21 +106,23 @@
           </mat-form-field>
 
           <div class="grid-item-50">
-            <app-hint>{{
-              'FEEDBACK_STATISTICS.DENOMINATOR_ANSWER_TYPE_HINT' | translate
-            }}</app-hint>
-            <app-hint>{{
-              'FEEDBACK_STATISTICS.QUESTION_HINT' | translate
-            }}</app-hint>
+            <app-hint
+              >{{
+                'FEEDBACK_STATISTICS.DENOMINATOR_ANSWER_TYPE_HINT' | translate
+              }}
+            </app-hint>
+            <app-hint
+              >{{ 'FEEDBACK_STATISTICS.QUESTION_HINT' | translate }}
+            </app-hint>
           </div>
 
           <mat-form-field class="grid-item-50">
+            <mat-label
+              >{{ 'FEEDBACK_STATISTICS.ANSWER_OPTION' | translate }}
+            </mat-label>
             <mat-select
               disableOptionCentering
               multiple="true"
-              placeholder="{{
-                'FEEDBACK_STATISTICS.ANSWER_OPTION' | translate
-              }}"
               formControlName="valueCodes"
               data-e2e="e2e-questionnaire-select"
               data-unit="value-codes-select"
@@ -153,35 +159,36 @@
       </ng-container>
 
       <ng-template #studyHint>
-        <app-hint>{{
-          'FEEDBACK_STATISTICS.SELECT_STUDY_HINT' | translate
-        }}</app-hint>
+        <app-hint
+          >{{ 'FEEDBACK_STATISTICS.SELECT_STUDY_HINT' | translate }}
+        </app-hint>
       </ng-template>
 
       <h3 class="grid-item-100">
         {{ 'FEEDBACK_STATISTICS.NUMERATOR' | translate }}
       </h3>
 
-      <app-hint class="grid-item-100">{{
-        'FEEDBACK_STATISTICS.TIME_SERIES_HINT' | translate
-      }}</app-hint>
+      <app-hint class="grid-item-100"
+        >{{ 'FEEDBACK_STATISTICS.TIME_SERIES_HINT' | translate }}
+      </app-hint>
 
-      <span
+      <div
         *ngIf="selectedQuestionnaire$ | async as questionnaire"
         class="grid-item-100"
       >
-        <app-time-series-item
-          *ngFor="
-            let timeSeriesForm of form.controls.timeSeries.controls;
-            let i = index
-          "
-          [index]="i"
-          [form]="timeSeriesForm"
-          [selectedQuestionnaire]="questionnaire"
-          [selectableColors]="selectableColors$ | async"
-          (remove)="removeTimeSeries(i)"
-        ></app-time-series-item>
-
+        <div class="space-y">
+          <app-time-series-item
+            *ngFor="
+              let timeSeriesForm of form.controls.timeSeries.controls;
+              let i = index
+            "
+            [index]="i"
+            [form]="timeSeriesForm"
+            [selectedQuestionnaire]="questionnaire"
+            [selectableColors]="selectableColors$ | async"
+            (remove)="removeTimeSeries(i)"
+          ></app-time-series-item>
+        </div>
         <button
           type="button"
           mat-raised-button
@@ -193,20 +200,20 @@
           <mat-icon inline="true">add</mat-icon>
           {{ 'FEEDBACK_STATISTICS.ADD_TIME_SERIES' | translate }}
         </button>
-      </span>
+      </div>
 
       <h3 class="grid-item-100">
         {{ 'FEEDBACK_STATISTICS.INTERVAL_SHIFT' | translate }}
       </h3>
       <ng-container formGroupName="intervalShift">
         <mat-form-field class="grid-item-50">
+          <mat-label
+            >{{ 'FEEDBACK_STATISTICS.INTERVAL_SHIFT_AMOUNT' | translate }}
+          </mat-label>
           <input
             matInput
             type="number"
             formControlName="amount"
-            placeholder="{{
-              'FEEDBACK_STATISTICS.INTERVAL_SHIFT_AMOUNT' | translate
-            }}"
             data-e2e="e2e-interval-shift"
           />
 
@@ -237,11 +244,11 @@
         </app-hint>
 
         <mat-form-field class="grid-item-50">
+          <mat-label
+            >{{ 'FEEDBACK_STATISTICS.INTERVAL_SHIFT_UNIT' | translate }}
+          </mat-label>
           <mat-select
             disableOptionCentering
-            placeholder="{{
-              'FEEDBACK_STATISTICS.INTERVAL_SHIFT_UNIT' | translate
-            }}"
             formControlName="unit"
             data-e2e="e2e-interval-shift-unit-select"
           >
@@ -272,9 +279,9 @@
 
       <ng-container formGroupName="timeRange">
         <mat-form-field class="grid-item-50">
-          <mat-label>{{
-            'FEEDBACK_STATISTICS.TIME_RANGE_START' | translate
-          }}</mat-label>
+          <mat-label
+            >{{ 'FEEDBACK_STATISTICS.TIME_RANGE_START' | translate }}
+          </mat-label>
           <input
             matInput
             formControlName="startDate"
@@ -294,8 +301,8 @@
             >{{
               'FEEDBACK_STATISTICS.TIME_RANGE_START_DATE_REQUIRED_ERROR'
                 | translate
-            }}</mat-error
-          >
+            }}
+          </mat-error>
         </mat-form-field>
 
         <app-hint class="grid-item-50 grid-item-rows-2">
@@ -310,9 +317,9 @@
         </mat-checkbox>
 
         <mat-form-field class="grid-item-50">
-          <mat-label>{{
-            'FEEDBACK_STATISTICS.TIME_RANGE_END' | translate
-          }}</mat-label>
+          <mat-label
+            >{{ 'FEEDBACK_STATISTICS.TIME_RANGE_END' | translate }}
+          </mat-label>
           <input
             matInput
             formControlName="endDate"
@@ -332,8 +339,8 @@
             >{{
               'FEEDBACK_STATISTICS.TIME_RANGE_END_DATE_REQUIRED_ERROR'
                 | translate
-            }}</mat-error
-          >
+            }}
+          </mat-error>
         </mat-form-field>
       </ng-container>
     </form>

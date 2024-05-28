@@ -5,10 +5,7 @@
  */
 
 import { Component, Inject, OnInit } from '@angular/core';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ComplianceService } from '../../../psa.app.core/providers/compliance-service/compliance-service';
 import { AlertService } from '../../../_services/alert.service';
 import { ComplianceWrapper } from './complianceWrapper';
@@ -22,7 +19,6 @@ export interface DialogViewComplianceComponentData {
 @Component({
   selector: 'app-dialog-view-compliance',
   templateUrl: './dialog-view-compliance.component.html',
-  styleUrls: ['./dialog-view-compliance.component.scss'],
 })
 export class DialogViewComplianceComponent implements OnInit {
   isLoading: boolean = false;

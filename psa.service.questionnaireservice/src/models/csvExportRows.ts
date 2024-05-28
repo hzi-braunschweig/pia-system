@@ -95,6 +95,7 @@ export interface CsvCodebookRow extends Record<string, unknown> {
   column_name: string;
   answer_position: string;
   text_level_1: string | null;
+  help_text_level_1: string | null;
   text_level_2: string | null;
   answer_option_text: string | null;
   answer_type: string | null;

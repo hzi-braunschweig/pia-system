@@ -1,0 +1,54 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<form [formGroup]="form">
+  <h1 mat-dialog-title>
+    {{ 'PUBLIC_API.CLIENT_ADD_DIALOG_TITLE' | translate }}
+  </h1>
+  <div mat-dialog-content>
+    <p data-unit="dialog-description">
+      {{ 'PUBLIC_API.CLIENT_ADD_DIALOG_DESCRIPTION' | translate }}
+    </p>
+    <mat-form-field class="margin-bottom-15">
+      <mat-label>{{
+        'PUBLIC_API.CLIENT_ADD_NAME_INPUT_LABEL' | translate
+      }}</mat-label>
+      <input matInput formControlName="name" required />
+      <mat-error *ngIf="form.controls.name.hasError('required')">
+        {{ 'PUBLIC_API.CLIENT_ADD_NAME_INPUT_ERROR' | translate }}
+      </mat-error>
+    </mat-form-field>
+    <mat-form-field class="margin-bottom-15">
+      <mat-label>{{
+        'PUBLIC_API.CLIENT_ADD_STUDIES_INPUT_LABEL' | translate
+      }}</mat-label>
+      <mat-select formControlName="studies" minlength="1" multiple>
+        <mat-option
+          *ngFor="let study of selectableStudies | async"
+          [value]="study"
+          >{{ study }}</mat-option
+        >
+      </mat-select>
+      <mat-error *ngIf="form.controls.studies.hasError('required')">
+        {{ 'PUBLIC_API.CLIENT_ADD_STUDIES_INPUT_ERROR' | translate }}
+      </mat-error>
+    </mat-form-field>
+  </div>
+  <div mat-dialog-actions>
+    <button
+      type="submit"
+      mat-button
+      color="primary"
+      [disabled]="!form.valid"
+      [mat-dialog-close]="form.value"
+    >
+      {{ 'PUBLIC_API.CLIENT_ADD_DIALOG_SUBMIT_BUTTON' | translate }}
+    </button>
+    <button mat-button mat-dialog-close>
+      {{ 'PUBLIC_API.CLIENT_ADD_DIALOG_CANCEL_BUTTON' | translate }}
+    </button>
+  </div>
+</form>

@@ -14,17 +14,6 @@ import {
 } from '@angular/platform-browser-dynamic/testing';
 import { MockInstance, ngMocks } from 'ng-mocks';
 
-declare const require: {
-  context(
-    path: string,
-    deep?: boolean,
-    filter?: RegExp
-  ): {
-    keys(): string[];
-    <T>(id: string): T;
-  };
-};
-
 // @see https://ng-mocks.sudo.eu/extra/auto-spy
 ngMocks.autoSpy('jasmine');
 
@@ -41,8 +30,3 @@ getTestBed().initTestEnvironment(
   BrowserDynamicTestingModule,
   platformBrowserDynamicTesting()
 );
-
-// Then we find all the tests.
-const context = require.context('./', true, /\.spec\.ts$/);
-// And load the modules.
-context.keys().map(context);

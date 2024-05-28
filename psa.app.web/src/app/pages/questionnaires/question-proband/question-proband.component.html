@@ -127,565 +127,523 @@
       <div class="container">
         <div
           class="swiper"
-          [hidden]="
-            questionnaire_instance_status == 'released_twice' ||
-            displayStatus != DisplayStatus.QUESTIONS ||
+          [style.display]="
+            questionnaire_instance_status === 'released_twice' ||
+            displayStatus !== DisplayStatus.QUESTIONS ||
             user.hasRole('Forscher')
+              ? 'none'
+              : 'block'
           "
         >
-          <swiper id="questionSwiper" #questionSwiper [config]="config">
-            <div class="swiper-wrapper" formArrayName="questions">
-              <div
-                class="swiper-slide"
-                *ngFor="
-                  let question of myForm['controls']['questions'].controls;
-                  let i = index
+          <swiper-container
+            id="questionSwiper"
+            #questionSwiper
+            space-between="30"
+            pagination-el=".swiper-pagination"
+            pagination-clickable="false"
+            navigation-next-el=".swiper-button-next"
+            navigation-prev-el=".swiper-button-prev"
+            navigation-disabled-class="swiper-navigation-disabled"
+            watch-overflow="false"
+            formArrayName="questions"
+          >
+            <swiper-slide
+              *ngFor="
+                let question of myForm['controls']['questions'].controls;
+                let i = index
+              "
+              formGroupName="{{ i }}"
+              fxLayoutAlign="center center"
+              fxLayoutAlign.lt-md="center start"
+            >
+              <mat-card
+                class="question-card"
+                fxLayout="column"
+                *ngIf="
+                  question.controls['show_question'].value &&
+                  question.controls['show_question_answer_condition'].value
                 "
-                formGroupName="{{ i }}"
-                fxLayoutAlign="center center"
-                fxLayoutAlign.lt-md="center start"
               >
-                <mat-card
-                  class="question-card"
-                  fxLayout="column"
-                  *ngIf="
-                    question.controls['show_question'].value &&
-                    question.controls['show_question_answer_condition'].value
-                  "
-                >
-                  <mat-card-content fxFlex="1 0 90">
-                    <markdown
-                      [data]="question.controls['text'].value"
-                    ></markdown>
-                    <div formArrayName="answer_options" class="answer-options">
-                      <div
-                        *ngFor="
-                          let answer of question.controls['answer_options']
-                            .controls;
-                          let j = index
-                        "
-                      >
-                        <div formGroupName="{{ j }}">
-                          <div
-                            *ngIf="answer.controls['show_answer_option'].value"
-                          >
-                            <div
-                              *ngIf="answer.controls['text'].value"
-                              class="answer-option-hint"
-                            >
-                              {{ answer.controls['text'].value }}
-                            </div>
+                <mat-card-content fxFlex="1 0 90">
+                  <app-question-text
+                    [text]="question.controls.text.value"
+                    [helpText]="question.controls.help_text.value"
+                  >
+                  </app-question-text>
+                  <div formArrayName="answer_options" class="answer-options">
+                    <div
+                      *ngFor="
+                        let answer of question.controls['answer_options']
+                          .controls;
+                        let j = index
+                      "
+                    >
+                      <div formGroupName="{{ j }}">
+                        <div
+                          *ngIf="answer.controls['text'].value"
+                          class="answer-option-hint"
+                        >
+                          {{ answer.controls['text'].value }}
+                        </div>
 
-                            <div
-                              *ngIf="
-                                answer.controls['answer_type_id'].value == 1
-                              "
-                              class="answer-type radio-group"
-                              data-e2e="e2e-input-type-radio-group"
-                            >
-                              <div>
-                                <mat-radio-group formControlName="value">
-                                  <div
-                                    *ngFor="
-                                      let valueAnswers of answer.controls[
-                                        'values'
-                                      ].value;
-                                      let k = index
-                                    "
-                                  >
-                                    <mat-radio-button
-                                      #radioButton
-                                      [value]="valueAnswers.value"
-                                      [checked]="
-                                        valueAnswers.value ==
-                                        answer.controls['value'].value
-                                      "
-                                      (click)="
-                                        updateState(radioButton, i, j);
-                                        $event.preventDefault()
-                                      "
-                                    >
-                                      <span>{{ valueAnswers.value }}</span>
-                                    </mat-radio-button>
-                                  </div>
-                                </mat-radio-group>
-                              </div>
-                              <mat-error
-                                *ngIf="answer.hasError('answerRequired')"
-                              >
-                                {{
-                                  'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
-                                    | translate
-                                }}
-                              </mat-error>
-                            </div>
-
-                            <div
-                              *ngIf="
-                                answer.controls['answer_type_id'].value == 2
-                              "
-                              class="answer-type checkbox-group"
-                              data-e2e="e2e-input-type-checkbox-group"
-                            >
-                              <input [hidden]="true" formControlName="value" />
+                        <div
+                          *ngIf="answer.controls['answer_type_id'].value == 1"
+                          class="answer-type radio-group"
+                          data-e2e="e2e-input-type-radio-group"
+                        >
+                          <div>
+                            <mat-radio-group formControlName="value">
                               <div
                                 *ngFor="
-                                  let valueList of answer.controls['values']
-                                    .controls;
+                                  let valueAnswers of answer.controls['values']
+                                    .value;
                                   let k = index
                                 "
                               >
-                                <input
-                                  id="checkboxinput"
-                                  #checkbox
-                                  type="checkbox"
-                                  [checked]="valueList.value.isChecked"
-                                  (change)="onChange(checkbox, i, j)"
-                                  value="{{ valueList.value.value }}"
-                                />{{ valueList.controls['value'].value }}
+                                <mat-radio-button
+                                  #radioButton
+                                  [value]="valueAnswers.value"
+                                  (click)="updateState(radioButton, i, j)"
+                                >
+                                  <span
+                                    (click)="$event.stopImmediatePropagation()"
+                                    >{{ valueAnswers.value }}</span
+                                  >
+                                </mat-radio-button>
                               </div>
-                              <mat-error
-                                *ngIf="answer.hasError('answerRequired')"
-                              >
-                                {{
-                                  'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
-                                    | translate
-                                }}
-                              </mat-error>
-                            </div>
-
-                            <div
-                              *ngIf="
-                                answer.controls['answer_type_id'].value == 3
-                              "
-                              class="answer-type text"
-                              data-e2e="e2e-input-type-number"
-                            >
-                              <mat-form-field>
-                                <input
-                                  matInput
-                                  formControlName="value"
-                                  (input)="checkConditions(i, j)"
-                                />
-                                <mat-error
-                                  *ngIf="
-                                    !answer.controls['value'].hasError(
-                                      'notDecimalNumber'
-                                    ) &&
-                                    answer.controls['value'].hasError(
-                                      'valuesValidate'
-                                    ) &&
-                                    !answer.controls['value'].hasError(
-                                      'notNumber'
-                                    )
-                                  "
-                                  >{{
-                                    'QUESTION_PROBAND.VALUE_RANGES_NUMBER'
-                                      | translate
-                                        : {
-                                            restriction_min:
-                                              answer.controls['restriction_min']
-                                                .value,
-                                            restriction_max:
-                                              answer.controls['restriction_max']
-                                                .value
-                                          }
-                                  }}
-                                </mat-error>
-                                <mat-error
-                                  *ngIf="
-                                    answer.controls['value'].hasError(
-                                      'notDecimalNumber'
-                                    )
-                                  "
-                                >
-                                  {{
-                                    'QUESTIONNAIRE_FORSCHER.VALUES_NOT_DECIMAL'
-                                      | translate
-                                  }}
-                                </mat-error>
-                                <mat-error
-                                  *ngIf="
-                                    answer.controls['value'].hasError(
-                                      'notNumber'
-                                    )
-                                  "
-                                >
-                                  {{
-                                    'QUESTIONNAIRE_FORSCHER.VALUES_NOT_INTEGER'
-                                      | translate
-                                  }}
-                                </mat-error>
-                              </mat-form-field>
-                              <mat-error
-                                *ngIf="answer.hasError('answerRequired')"
-                              >
-                                {{
-                                  'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
-                                    | translate
-                                }}
-                              </mat-error>
-                            </div>
-
-                            <div
-                              *ngIf="
-                                answer.controls['answer_type_id'].value == 4
-                              "
-                              data-e2e="e2e-input-type-text"
-                              class="answer-type text"
-                            >
-                              <mat-form-field>
-                                <input
-                                  matInput
-                                  type="text"
-                                  formControlName="value"
-                                  (input)="checkConditions(i, j)"
-                                />
-                              </mat-form-field>
-                              <mat-error
-                                *ngIf="answer.hasError('answerRequired')"
-                              >
-                                {{
-                                  'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
-                                    | translate
-                                }}
-                              </mat-error>
-                            </div>
-
-                            <div
-                              *ngIf="
-                                answer.controls['answer_type_id'].value == 5
-                              "
-                              data-e2e="e2e-input-type-date"
-                            >
-                              <mat-form-field>
-                                <input
-                                  matInput
-                                  [matDatepicker]="picker"
-                                  [min]="
-                                    answer.controls['restriction_min'].value
-                                  "
-                                  [max]="
-                                    answer.controls['restriction_max'].value
-                                  "
-                                  [value]="answer.controls['value'].value"
-                                  placeholder="{{
-                                    'QUESTIONNAIRE_FORSCHER.DATEPICKER'
-                                      | translate
-                                  }}"
-                                  formControlName="value"
-                                  (dateChange)="checkConditions(i, j)"
-                                />
-                                <mat-error
-                                  *ngIf="
-                                    answer.controls['value'].hasError(
-                                      'valuesValidate'
-                                    )
-                                  "
-                                  >{{
-                                    'QUESTION_PROBAND.VALUE_RANGES_DATE'
-                                      | translate
-                                        : {
-                                            restriction_min:
-                                              answer.controls['restriction_min']
-                                                .value | date: 'dd.MM.yyyy',
-                                            restriction_max:
-                                              answer.controls['restriction_max']
-                                                .value | date: 'dd.MM.yyyy'
-                                          }
-                                  }}
-                                </mat-error>
-                                <mat-datepicker-toggle
-                                  matSuffix
-                                  [for]="picker"
-                                ></mat-datepicker-toggle>
-                                <mat-datepicker
-                                  #picker
-                                  startView="multi-year"
-                                ></mat-datepicker>
-                              </mat-form-field>
-                              <mat-error
-                                *ngIf="answer.hasError('answerRequired')"
-                              >
-                                {{
-                                  'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
-                                    | translate
-                                }}
-                              </mat-error>
-                            </div>
-
-                            <div
-                              *ngIf="
-                                answer.controls['answer_type_id'].value == 6
-                              "
-                              class="answer-type data"
-                            >
-                              <mat-error
-                                *ngIf="answer.hasError('wrong_format')"
-                                class="data-error"
-                                >{{ 'SAMPLES.NOT_MATCH' | translate }}
-                              </mat-error>
-                              <mat-error
-                                *ngIf="
-                                  (answer.controls['sample_id_1'] &&
-                                    answer.controls['sample_id_1'].hasError(
-                                      'already_scanned'
-                                    )) ||
-                                  (answer.controls['sample_id_2'] &&
-                                    answer.controls['sample_id_2'].hasError(
-                                      'already_scanned'
-                                    ))
-                                "
-                                class="data-error"
-                                >{{ 'SAMPLES.ALREADY_SCANNED' | translate }}
-                              </mat-error>
-                              <mat-grid-list
-                                layout="row"
-                                [cols]="1"
-                                rowHeight="100px"
-                              >
-                                <mat-grid-tile>
-                                  <mat-form-field>
-                                    <input
-                                      matInput
-                                      [value]="
-                                        answer.controls['sample_id_1'].value
-                                      "
-                                      formControlName="sample_id_1"
-                                      [readonly]="
-                                        !!answer.controls['hasValue'].value
-                                      "
-                                      (input)="checkConditions(i, j)"
-                                    />
-                                    <mat-error
-                                      *ngIf="
-                                        answer.controls['sample_id_1'].value &&
-                                        answer.controls['sample_id_1'].hasError(
-                                          'sampleWrongFormat'
-                                        )
-                                      "
-                                    >
-                                      {{
-                                        'SAMPLES.WRONG_SAMPLE_FORMAT'
-                                          | translate
-                                            : {
-                                                prefix:
-                                                  studyOfQuestionnaire.sample_prefix
-                                                    ? studyOfQuestionnaire.sample_prefix +
-                                                      '-'
-                                                    : 'XXX',
-                                                length:
-                                                  studyOfQuestionnaire.sample_suffix_length
-                                                    ? studyOfQuestionnaire.sample_suffix_length
-                                                    : '0-N'
-                                              }
-                                      }}
-                                    </mat-error>
-                                    <mat-error
-                                      *ngIf="
-                                        answer.controls['sample_id_1'].value &&
-                                        answer.controls['sample_id_1'].hasError(
-                                          'not_exist'
-                                        )
-                                      "
-                                    >
-                                      {{ 'SAMPLES.NOT_EXIST' | translate }}
-                                    </mat-error>
-                                  </mat-form-field>
-                                </mat-grid-tile>
-                                <mat-grid-tile
-                                  *ngIf="studyOfQuestionnaire.has_rna_samples"
-                                >
-                                  <mat-form-field>
-                                    <input
-                                      matInput
-                                      [value]="
-                                        answer.controls['sample_id_2'].value
-                                      "
-                                      formControlName="sample_id_2"
-                                      [readonly]="
-                                        !!answer.controls['hasValue'].value
-                                      "
-                                      (input)="checkConditions(i, j)"
-                                    />
-                                    <mat-error
-                                      *ngIf="
-                                        answer.controls['sample_id_2'].value &&
-                                        answer.controls['sample_id_2'].hasError(
-                                          'sampleWrongFormat'
-                                        )
-                                      "
-                                    >
-                                      {{
-                                        'SAMPLES.WRONG_SAMPLE_FORMAT'
-                                          | translate
-                                            : {
-                                                prefix:
-                                                  studyOfQuestionnaire.sample_prefix
-                                                    ? studyOfQuestionnaire.sample_prefix +
-                                                      '-'
-                                                    : 'XXX',
-                                                length:
-                                                  studyOfQuestionnaire.sample_suffix_length
-                                                    ? studyOfQuestionnaire.sample_suffix_length
-                                                    : '0-N'
-                                              }
-                                      }}
-                                    </mat-error>
-                                    <mat-error
-                                      *ngIf="
-                                        answer.controls['sample_id_2'].value &&
-                                        answer.controls['sample_id_2'].hasError(
-                                          'not_exist'
-                                        )
-                                      "
-                                    >
-                                      {{ 'SAMPLES.NOT_EXIST' | translate }}
-                                    </mat-error>
-                                  </mat-form-field>
-                                </mat-grid-tile>
-                              </mat-grid-list>
-                              <button
-                                mat-raised-button
-                                type="button"
-                                (click)="onSendSampleIdClicked(answer)"
-                                [disabled]="!!answer.controls['hasValue'].value"
-                              >
-                                {{ 'ANSWERS_PROBAND.VERIFY' | translate }}
-                              </button>
-                            </div>
-
-                            <div
-                              *ngIf="
-                                answer.controls['answer_type_id'].value == 7
-                              "
-                            >
-                              <mat-form-field>
-                                <input
-                                  matInput
-                                  [value]="answer.controls['value'].value"
-                                  placeholder="{{
-                                    'ANSWERS_PROBAND.ENTER_PZN' | translate
-                                  }}"
-                                  formControlName="value"
-                                  (input)="checkConditions(i, j)"
-                                />
-                              </mat-form-field>
-                              <mat-error
-                                *ngIf="
-                                  answer.controls['value'].hasError('required')
-                                "
-                              >
-                                {{
-                                  'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
-                                    | translate
-                                }}
-                              </mat-error>
-                            </div>
-
-                            <div
-                              *ngIf="
-                                answer.controls['answer_type_id'].value == 8
-                              "
-                            >
-                              <input [hidden]="true" formControlName="value" />
-                              <app-image-answer-option
-                                [question_id]="
-                                  answer.controls['question_id'].value
-                                "
-                                [questionnaire_instance_id]="
-                                  questionnaireInstanceId
-                                "
-                                [imgId]="answer.controls['value'].value"
-                                [answer_option_id]="answer.controls['id'].value"
-                                [answerOptionIndex]="j"
-                                [isReadOnly]="false"
-                                (imgResult)="updateAnswerTypeValue($event)"
-                              >
-                              </app-image-answer-option>
-                              <mat-error
-                                *ngIf="
-                                  answer.controls['value'].hasError('required')
-                                "
-                              >
-                                {{
-                                  'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
-                                    | translate
-                                }}
-                              </mat-error>
-                            </div>
-                            <div
-                              *ngIf="
-                                answer.controls['answer_type_id'].value == 9
-                              "
-                            >
-                              <input [hidden]="true" formControlName="value" />
-                              <app-timestamp-answer-option
-                                [timestamp]="answer.controls['value'].value"
-                                (timestampChanged)="
-                                  setAnswerTypeValue(answer, $event, i, j)
-                                "
-                              >
-                              </app-timestamp-answer-option>
-                            </div>
-                            <div
-                              *ngIf="
-                                answer.controls['answer_type_id'].value == 10
-                              "
-                            >
-                              <input [hidden]="true" formControlName="value" />
-                              <app-file-answer-option
-                                [question_id]="
-                                  answer.controls['question_id'].value
-                                "
-                                [questionnaire_instance_id]="
-                                  questionnaireInstanceId
-                                "
-                                [fileId]="answer.controls['value'].value"
-                                [answer_option_id]="answer.controls['id'].value"
-                                [answerOptionIndex]="j"
-                                [isReadOnly]="false"
-                                (fileResult)="updateAnswerTypeValue($event)"
-                              >
-                                >
-                              </app-file-answer-option>
-                            </div>
+                            </mat-radio-group>
                           </div>
+                          <mat-error *ngIf="answer.hasError('answerRequired')">
+                            {{
+                              'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
+                                | translate
+                            }}
+                          </mat-error>
+                        </div>
+
+                        <div
+                          *ngIf="answer.controls['answer_type_id'].value == 2"
+                          class="answer-type checkbox-group"
+                          data-e2e="e2e-input-type-checkbox-group"
+                        >
+                          <input [hidden]="true" formControlName="value" />
+                          <div
+                            *ngFor="
+                              let valueList of answer.controls['values']
+                                .controls;
+                              let k = index
+                            "
+                          >
+                            <input
+                              id="checkboxinput"
+                              #checkbox
+                              type="checkbox"
+                              [checked]="valueList.value.isChecked"
+                              (change)="onChange(checkbox, i, j)"
+                              value="{{ valueList.value.value }}"
+                            />{{ valueList.controls['value'].value }}
+                          </div>
+                          <mat-error *ngIf="answer.hasError('answerRequired')">
+                            {{
+                              'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
+                                | translate
+                            }}
+                          </mat-error>
+                        </div>
+
+                        <div
+                          *ngIf="answer.controls['answer_type_id'].value == 3"
+                          class="answer-type text"
+                          data-e2e="e2e-input-type-number"
+                        >
+                          <mat-form-field>
+                            <input
+                              matInput
+                              formControlName="value"
+                              (input)="checkConditions(i, j)"
+                            />
+                            <mat-error
+                              *ngIf="
+                                !answer.controls['value'].hasError(
+                                  'notDecimalNumber'
+                                ) &&
+                                answer.controls['value'].hasError(
+                                  'valuesValidate'
+                                ) &&
+                                !answer.controls['value'].hasError('notNumber')
+                              "
+                              >{{
+                                'QUESTION_PROBAND.VALUE_RANGES_NUMBER'
+                                  | translate
+                                    : {
+                                        restriction_min:
+                                          answer.controls['restriction_min']
+                                            .value,
+                                        restriction_max:
+                                          answer.controls['restriction_max']
+                                            .value
+                                      }
+                              }}
+                            </mat-error>
+                            <mat-error
+                              *ngIf="
+                                answer.controls['value'].hasError(
+                                  'notDecimalNumber'
+                                )
+                              "
+                            >
+                              {{
+                                'QUESTIONNAIRE_FORSCHER.VALUES_NOT_DECIMAL'
+                                  | translate
+                              }}
+                            </mat-error>
+                            <mat-error
+                              *ngIf="
+                                answer.controls['value'].hasError('notNumber')
+                              "
+                            >
+                              {{
+                                'QUESTIONNAIRE_FORSCHER.VALUES_NOT_INTEGER'
+                                  | translate
+                              }}
+                            </mat-error>
+                          </mat-form-field>
+                          <mat-error *ngIf="answer.hasError('answerRequired')">
+                            {{
+                              'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
+                                | translate
+                            }}
+                          </mat-error>
+                        </div>
+
+                        <div
+                          *ngIf="answer.controls['answer_type_id'].value == 4"
+                          data-e2e="e2e-input-type-text"
+                          class="answer-type text"
+                        >
+                          <mat-form-field>
+                            <input
+                              matInput
+                              type="text"
+                              formControlName="value"
+                              (input)="checkConditions(i, j)"
+                            />
+                          </mat-form-field>
+                          <mat-error *ngIf="answer.hasError('answerRequired')">
+                            {{
+                              'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
+                                | translate
+                            }}
+                          </mat-error>
+                        </div>
+
+                        <div
+                          *ngIf="answer.controls['answer_type_id'].value == 5"
+                          data-e2e="e2e-input-type-date"
+                        >
+                          <mat-form-field>
+                            <mat-label
+                              >{{
+                                'QUESTIONNAIRE_FORSCHER.DATEPICKER' | translate
+                              }}
+                            </mat-label>
+                            <input
+                              matInput
+                              [matDatepicker]="picker"
+                              [min]="answer.controls['restriction_min'].value"
+                              [max]="answer.controls['restriction_max'].value"
+                              [value]="answer.controls['value'].value"
+                              formControlName="value"
+                              (dateChange)="checkConditions(i, j)"
+                            />
+                            <mat-error
+                              *ngIf="
+                                answer.controls['value'].hasError(
+                                  'valuesValidate'
+                                )
+                              "
+                              >{{
+                                'QUESTION_PROBAND.VALUE_RANGES_DATE'
+                                  | translate
+                                    : {
+                                        restriction_min:
+                                          answer.controls['restriction_min']
+                                            .value | date: 'dd.MM.yyyy',
+                                        restriction_max:
+                                          answer.controls['restriction_max']
+                                            .value | date: 'dd.MM.yyyy'
+                                      }
+                              }}
+                            </mat-error>
+                            <mat-datepicker-toggle
+                              matSuffix
+                              [for]="picker"
+                            ></mat-datepicker-toggle>
+                            <mat-datepicker
+                              #picker
+                              startView="multi-year"
+                            ></mat-datepicker>
+                          </mat-form-field>
+                          <mat-error *ngIf="answer.hasError('answerRequired')">
+                            {{
+                              'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
+                                | translate
+                            }}
+                          </mat-error>
+                        </div>
+
+                        <div
+                          *ngIf="answer.controls['answer_type_id'].value == 6"
+                          class="answer-type data"
+                        >
+                          <mat-error
+                            *ngIf="answer.hasError('wrong_format')"
+                            class="data-error"
+                            >{{ 'SAMPLES.NOT_MATCH' | translate }}
+                          </mat-error>
+                          <mat-error
+                            *ngIf="
+                              (answer.controls['sample_id_1'] &&
+                                answer.controls['sample_id_1'].hasError(
+                                  'already_scanned'
+                                )) ||
+                              (answer.controls['sample_id_2'] &&
+                                answer.controls['sample_id_2'].hasError(
+                                  'already_scanned'
+                                ))
+                            "
+                            class="data-error"
+                            >{{ 'SAMPLES.ALREADY_SCANNED' | translate }}
+                          </mat-error>
+                          <mat-grid-list
+                            layout="row"
+                            [cols]="1"
+                            rowHeight="100px"
+                          >
+                            <mat-grid-tile>
+                              <mat-form-field>
+                                <input
+                                  matInput
+                                  [value]="answer.controls['sample_id_1'].value"
+                                  formControlName="sample_id_1"
+                                  [readonly]="
+                                    !!answer.controls['hasValue'].value
+                                  "
+                                  (input)="checkConditions(i, j)"
+                                />
+                                <mat-error
+                                  *ngIf="
+                                    answer.controls['sample_id_1'].value &&
+                                    answer.controls['sample_id_1'].hasError(
+                                      'sampleWrongFormat'
+                                    )
+                                  "
+                                >
+                                  {{
+                                    'SAMPLES.WRONG_SAMPLE_FORMAT'
+                                      | translate
+                                        : {
+                                            prefix:
+                                              studyOfQuestionnaire.sample_prefix
+                                                ? studyOfQuestionnaire.sample_prefix +
+                                                  '-'
+                                                : 'XXX',
+                                            length:
+                                              studyOfQuestionnaire.sample_suffix_length
+                                                ? studyOfQuestionnaire.sample_suffix_length
+                                                : '0-N'
+                                          }
+                                  }}
+                                </mat-error>
+                                <mat-error
+                                  *ngIf="
+                                    answer.controls['sample_id_1'].value &&
+                                    answer.controls['sample_id_1'].hasError(
+                                      'not_exist'
+                                    )
+                                  "
+                                >
+                                  {{ 'SAMPLES.NOT_EXIST' | translate }}
+                                </mat-error>
+                              </mat-form-field>
+                            </mat-grid-tile>
+                            <mat-grid-tile
+                              *ngIf="studyOfQuestionnaire.has_rna_samples"
+                            >
+                              <mat-form-field>
+                                <input
+                                  matInput
+                                  [value]="answer.controls['sample_id_2'].value"
+                                  formControlName="sample_id_2"
+                                  [readonly]="
+                                    !!answer.controls['hasValue'].value
+                                  "
+                                  (input)="checkConditions(i, j)"
+                                />
+                                <mat-error
+                                  *ngIf="
+                                    answer.controls['sample_id_2'].value &&
+                                    answer.controls['sample_id_2'].hasError(
+                                      'sampleWrongFormat'
+                                    )
+                                  "
+                                >
+                                  {{
+                                    'SAMPLES.WRONG_SAMPLE_FORMAT'
+                                      | translate
+                                        : {
+                                            prefix:
+                                              studyOfQuestionnaire.sample_prefix
+                                                ? studyOfQuestionnaire.sample_prefix +
+                                                  '-'
+                                                : 'XXX',
+                                            length:
+                                              studyOfQuestionnaire.sample_suffix_length
+                                                ? studyOfQuestionnaire.sample_suffix_length
+                                                : '0-N'
+                                          }
+                                  }}
+                                </mat-error>
+                                <mat-error
+                                  *ngIf="
+                                    answer.controls['sample_id_2'].value &&
+                                    answer.controls['sample_id_2'].hasError(
+                                      'not_exist'
+                                    )
+                                  "
+                                >
+                                  {{ 'SAMPLES.NOT_EXIST' | translate }}
+                                </mat-error>
+                              </mat-form-field>
+                            </mat-grid-tile>
+                          </mat-grid-list>
+                          <button
+                            mat-raised-button
+                            type="button"
+                            (click)="onSendSampleIdClicked(answer)"
+                            [disabled]="!!answer.controls['hasValue'].value"
+                          >
+                            {{ 'ANSWERS_PROBAND.VERIFY' | translate }}
+                          </button>
+                        </div>
+
+                        <div
+                          *ngIf="answer.controls['answer_type_id'].value == 7"
+                        >
+                          <mat-form-field>
+                            <input
+                              matInput
+                              [value]="answer.controls['value'].value"
+                              placeholder="{{
+                                'ANSWERS_PROBAND.ENTER_PZN' | translate
+                              }}"
+                              formControlName="value"
+                              (input)="checkConditions(i, j)"
+                            />
+                          </mat-form-field>
+                          <mat-error
+                            *ngIf="
+                              answer.controls['value'].hasError('required')
+                            "
+                          >
+                            {{
+                              'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
+                                | translate
+                            }}
+                          </mat-error>
+                        </div>
+
+                        <div
+                          *ngIf="answer.controls['answer_type_id'].value == 8"
+                        >
+                          <input [hidden]="true" formControlName="value" />
+                          <app-image-answer-option
+                            [question_id]="answer.controls['question_id'].value"
+                            [questionnaire_instance_id]="
+                              questionnaireInstanceId
+                            "
+                            [imgId]="answer.controls['value'].value"
+                            [answer_option_id]="answer.controls['id'].value"
+                            [answerOptionIndex]="j"
+                            [isReadOnly]="false"
+                            (imgResult)="updateAnswerTypeValue($event)"
+                          >
+                          </app-image-answer-option>
+                          <mat-error
+                            *ngIf="
+                              answer.controls['value'].hasError('required')
+                            "
+                          >
+                            {{
+                              'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
+                                | translate
+                            }}
+                          </mat-error>
+                        </div>
+                        <div
+                          *ngIf="answer.controls['answer_type_id'].value == 9"
+                        >
+                          <input [hidden]="true" formControlName="value" />
+                          <app-timestamp-answer-option
+                            [timestamp]="answer.controls['value'].value"
+                            (timestampChanged)="
+                              setAnswerTypeValue(answer, $event, i, j)
+                            "
+                          >
+                          </app-timestamp-answer-option>
+                        </div>
+                        <div
+                          *ngIf="answer.controls['answer_type_id'].value == 10"
+                        >
+                          <input [hidden]="true" formControlName="value" />
+                          <app-file-answer-option
+                            [question_id]="answer.controls['question_id'].value"
+                            [questionnaire_instance_id]="
+                              questionnaireInstanceId
+                            "
+                            [fileId]="answer.controls['value'].value"
+                            [answer_option_id]="answer.controls['id'].value"
+                            [answerOptionIndex]="j"
+                            [isReadOnly]="false"
+                            (fileResult)="updateAnswerTypeValue($event)"
+                          >
+                            >
+                          </app-file-answer-option>
                         </div>
                       </div>
                     </div>
-                  </mat-card-content>
-                  <mat-card-actions fxLayoutAlign="end center">
-                    <button
-                      type="button"
-                      *ngIf="questionnaire_instance_status != 'released_once'"
-                      mat-raised-button
-                      (click)="saveAndGoToOverview(i)"
-                      data-e2e="e2e-save-questionnaire-and-exit"
-                    >
-                      <mat-icon>save</mat-icon>
-                      {{
-                        'QUESTIONNAIRES_PROBAND.SAVE_QUESTIONNAIRE_AND_EXIT'
-                          | translate
-                      }}
-                    </button>
-                  </mat-card-actions>
-                </mat-card>
-              </div>
-            </div>
-            <div class="swiper-pagination"></div>
-            <div
-              [hidden]="isLoading"
-              class="swiper-button-next"
-              data-e2e="e2e-swiper-button-next"
-              (click)="onSwipeNext()"
-            ></div>
-            <div
-              [hidden]="isLoading"
-              class="swiper-button-prev"
-              (click)="onSwipePrev()"
-            ></div>
-          </swiper>
+                  </div>
+                </mat-card-content>
+                <mat-card-actions fxLayoutAlign="end center">
+                  <button
+                    type="button"
+                    *ngIf="questionnaire_instance_status != 'released_once'"
+                    mat-raised-button
+                    (click)="saveAndGoToOverview(i)"
+                    data-e2e="e2e-save-questionnaire-and-exit"
+                  >
+                    <mat-icon>save</mat-icon>
+                    {{
+                      'QUESTIONNAIRES_PROBAND.SAVE_QUESTIONNAIRE_AND_EXIT'
+                        | translate
+                    }}
+                  </button>
+                </mat-card-actions>
+              </mat-card>
+            </swiper-slide>
+          </swiper-container>
+          <div class="swiper-pagination"></div>
+          <div
+            [hidden]="isLoading"
+            class="swiper-button-next"
+            data-e2e="e2e-swiper-button-next"
+            (click)="onSwipeNext()"
+          ></div>
+          <div
+            [hidden]="isLoading"
+            class="swiper-button-prev"
+            (click)="onSwipePrev()"
+          ></div>
         </div>
 
         <mat-card
@@ -696,24 +654,25 @@
             user.hasRole('Forscher')
           "
         >
-          <mat-card-title>
-            <button
-              *ngIf="
-                questionnaire_instance_status == 'released_twice' ||
-                user.hasRole('Forscher')
-              "
-              id="arrowback"
-              mat-button
-              type="button"
-              (click)="backClicked()"
-            >
-              <i class="material-icons">arrow_back_ios</i>
-            </button>
-            {{ 'ANSWERS_PROBAND.OVERVIEW' | translate }}
-          </mat-card-title>
+          <mat-card-header>
+            <mat-card-title>
+              <button
+                *ngIf="
+                  questionnaire_instance_status == 'released_twice' ||
+                  user.hasRole('Forscher')
+                "
+                id="arrowback"
+                mat-button
+                type="button"
+                (click)="backClicked()"
+              >
+                <i class="material-icons">arrow_back_ios</i>
+              </button>
+              {{ 'ANSWERS_PROBAND.OVERVIEW' | translate }}
+            </mat-card-title>
+          </mat-card-header>
           <mat-card-content>
             <mat-divider
-              [inset]="true"
               *ngIf="
                 questionnaire_instance_status == 'in_progress' ||
                 questionnaire_instance_status == 'released_once' ||
@@ -737,7 +696,7 @@
                 }}</ng-container
               >
             </p>
-            <mat-divider [inset]="true"></mat-divider>
+            <mat-divider></mat-divider>
             <div formArrayName="questions" disabled class="questions">
               <div
                 *ngFor="
@@ -754,7 +713,11 @@
                     question.controls['answer_options'].controls.length > 0
                   "
                 >
-                  <markdown>{{ question.controls['text'].value }}</markdown>
+                  <app-question-text
+                    [text]="question.controls.text.value"
+                    [helpText]="question.controls.help_text.value"
+                  >
+                  </app-question-text>
                   <div formArrayName="answer_options" class="answer-options">
                     <div
                       *ngFor="
@@ -1087,12 +1050,12 @@
                             *ngIf="answer.controls['answer_type_id'].value == 7"
                           >
                             <mat-form-field>
+                              <mat-label
+                                >{{ 'ANSWERS_PROBAND.ENTER_PZN' | translate }}
+                              </mat-label>
                               <input
                                 matInput
                                 [value]="answer.controls['value'].value"
-                                placeholder="{{
-                                  'ANSWERS_PROBAND.ENTER_PZN' | translate
-                                }}"
                                 formControlName="value"
                               />
                             </mat-form-field>
@@ -1208,30 +1171,25 @@
               </div>
             </div>
           </mat-card-content>
-          <mat-card-actions>
+          <mat-card-actions *ngIf="isReleaseButtonVisible">
             <button
+              id="sdf"
               [disabled]="isQuestionnaireEmpty() || !f.form.valid"
               mat-raised-button
               color="primary"
               (click)="releaseAnswers()"
               data-e2e="e2e-release-questionnaire-1-button"
+              data-unit="release-button"
             >
               <span
                 *ngIf="
                   questionnaire_instance_status != 'released_once' &&
-                  questionnaire_instance_status != 'released_twice' &&
-                  !user.hasRole('Forscher')
+                  questionnaire_instance_status != 'released_twice'
                 "
               >
                 {{ 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE1' | translate }}
               </span>
-              <span
-                *ngIf="
-                  questionnaire_instance_status == 'released_once' &&
-                  questionnaire_instance_status != 'released_twice' &&
-                  !user.hasRole('Forscher')
-                "
-              >
+              <span *ngIf="questionnaire_instance_status == 'released_once'">
                 {{ 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE2' | translate }}
               </span>
             </button>

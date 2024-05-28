@@ -30,11 +30,11 @@ const route: ServerRoute = {
     validate: {
       query: Joi.object({
         studyName: Joi.string().description(
-          'the name of the study. Must not be null if requester is not a SysAdmin.'
+          'the name of the study - must not be null if requester is not a SysAdmin'
         ),
         role: Joi.string()
           .description(
-            'the role to filter by. Takes effect only for SysAdmins. Will return only accounts of same role for non SysAdmins.'
+            'only SysAdmins can fetch all and filter by roles - other professional roles can only fetch accounts of the same role'
           )
           .valid(...professionalRoles),
         accessLevel: Joi.string()

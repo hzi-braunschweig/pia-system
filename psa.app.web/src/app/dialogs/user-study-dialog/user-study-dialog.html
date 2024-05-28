@@ -7,51 +7,45 @@
 <form [formGroup]="form" (ngSubmit)="submit()">
   <h1 mat-dialog-title>{{ 'STUDIES.ADD_USER' | translate }}</h1>
   <mat-dialog-content>
-    <mat-form-field fxFlex>
-      <mat-select
-        disableOptionCentering
-        placeholder="{{ 'ROLES.ROLES' | translate }}"
-        [formControl]="selectedRole"
-      >
-        <mat-option *ngFor="let role of roles" [value]="role.value">
-          {{ role.viewValue | translate }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+    <div class="grid-container">
+      <mat-form-field>
+        <mat-label>{{ 'ROLES.ROLES' | translate }}</mat-label>
+        <mat-select disableOptionCentering [formControl]="selectedRole">
+          <mat-option *ngFor="let role of roles" [value]="role.value">
+            {{ role.viewValue | translate }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
-    <mat-form-field fxFlex>
-      <mat-select
-        placeholder="{{ 'LOGIN.USERNAME' | translate }}"
-        formControlName="username"
-      >
-        <mat-select-search
-          [formControl]="usernameFilterCtrl"
-        ></mat-select-search>
-        <mat-option
-          *ngFor="let user of filteredUsers | async"
-          [value]="user.username"
-        >
-          {{ user.username }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'LOGIN.USERNAME' | translate }}</mat-label>
+        <mat-select formControlName="username">
+          <mat-select-search
+            [formControl]="usernameFilterCtrl"
+          ></mat-select-search>
+          <mat-option
+            *ngFor="let user of filteredUsers | async"
+            [value]="user.username"
+          >
+            {{ user.username }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
-    <mat-form-field fxFlex>
-      <mat-select
-        disableOptionCentering
-        placeholder="{{ 'DIALOG.ACCESS_LEVEL' | translate }}"
-        formControlName="accessLevel"
-      >
-        <mat-option *ngFor="let access of accesses" [value]="access.value">
-          {{ access.viewValue | translate }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'DIALOG.ACCESS_LEVEL' | translate }}</mat-label>
+        <mat-select disableOptionCentering formControlName="accessLevel">
+          <mat-option *ngFor="let access of accesses" [value]="access.value">
+            {{ access.viewValue | translate }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
 
     <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
   </mat-dialog-content>
 
-  <mat-dialog-actions align="end">
+  <mat-dialog-actions>
     <button mat-button type="button" (click)="dialogRef.close()">
       {{ 'DIALOG.CANCEL' | translate }}
     </button>

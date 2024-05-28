@@ -1,16 +1,14 @@
 # psa.app.web
 
-PIA App for Browser
+PIA App for browsers.
 
 ## Setup local
 
-- Install all dependencies `npm install`
+Install dependencies: `npm install`.
 
 ## Start App locally
 
-Before you start App
-
-- run `./start.sh` in **pia-ansible/local**
+- Start backend services as described in the [development documentation](../docs/development.md)
 - `npm run start.proband` for proband app
 - `npm run start.admin` for admin app
 
@@ -22,16 +20,15 @@ Before you start App
 
 ### Run end-to-end tests
 
-Before running end-to-end tests locally, get sure a SysAdmin user exists whose credentials match those in
-`psa.app.web/cypress/fixtures/users.json`
-
-To create the user you can use:
+You need to create a SysAdmin user, before you can run E2E tests:
 
 ```shell
-docker exec authserver /add-sysadmin.sh --email e2e-admin@example.com --password admin-PW-with-22-chars
+kubectl -n pia exec -it deploy/authserver -- /add-sysadmin.sh --email e2e-admin@example.com --password admin-PW-with-22-chars
 ```
 
-Start the tests with `npm run e2e`
+The credentials must match the SysAdmin user, defined in the [`users.json`](cypress/fixtures/users.json) fixture.
+
+Start tests by executing `npm run e2e`.
 
 ### Run tests in a CI-pipeline
 
@@ -42,4 +39,4 @@ npm run test.ci
 npm run e2e.ci
 ```
 
-The e2e.ci expect the webapp to be already served. The URL has to be set in the env variable `$WEBAPP_URL`.
+The script `e2e.ci` expects the webapp to be already served. Set environment variable `WEBAPP_URL` to point to the running webapp.

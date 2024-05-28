@@ -1,11 +1,13 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 import {
+  AfterViewChecked,
   Component,
+  ElementRef,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -16,8 +18,8 @@ import { FormArray, FormControl } from '@angular/forms';
 import {
   AlertController,
   IonContent,
-  IonSlides,
   ViewWillLeave,
+  IonicSlides,
 } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
@@ -38,6 +40,7 @@ import {
 } from '../questionnaire-form/questionnaire-form.service';
 import { QuestionnaireAnswerValidators } from '../questionnaire-form/questionnaire-answer-validators';
 import { QuestionnaireConditionChecker } from '../questionnaire-condition-checker';
+import { SwiperContainer } from 'swiper/element';
 
 @Component({
   selector: 'app-questionnaire-detail',
@@ -46,9 +49,11 @@ import { QuestionnaireConditionChecker } from '../questionnaire-condition-checke
   encapsulation: ViewEncapsulation.None,
 })
 export class QuestionnaireDetailPage
-  implements OnInit, OnDestroy, ViewWillLeave
+  implements OnInit, OnDestroy, ViewWillLeave, AfterViewChecked
 {
-  @ViewChild(IonSlides) slides: IonSlides;
+  @ViewChild('swiper') swiperContainer?: ElementRef<SwiperContainer>;
+  swiperModules = [IonicSlides];
+  isSwiperInitialized = false;
 
   @ViewChild(IonContent) content: IonContent;
 
@@ -67,8 +72,6 @@ export class QuestionnaireDetailPage
   canSubmit: boolean;
 
   currentSlideIndex = 0;
-
-  slidesOptions = { autoHeight: true };
 
   statusChangesSubscription: Subscription;
   answerVersionFromServer: number;
@@ -93,7 +96,6 @@ export class QuestionnaireDetailPage
     );
     await this.fetchQuestionnaireInstance(questionnaireInstanceId);
   }
-
   ngOnDestroy() {
     if (this.statusChangesSubscription) {
       this.statusChangesSubscription.unsubscribe();
@@ -176,7 +178,8 @@ export class QuestionnaireDetailPage
       form.controls.forEach((control) => control.markAsDirty());
       return;
     }
-    this.slides.slideNext();
+
+    this.swiperContainer?.nativeElement.swiper.slideNext();
   }
 
   async beforeSlideChange() {
@@ -191,7 +194,8 @@ export class QuestionnaireDetailPage
 
   async afterSlideChange() {
     this.updateFabButtonStatus();
-    this.currentSlideIndex = await this.slides.getActiveIndex();
+    this.currentSlideIndex =
+      this.swiperContainer?.nativeElement.swiper.activeIndex;
     this.lockSwipeToNextIfFormInvalid();
   }
 
@@ -282,15 +286,29 @@ export class QuestionnaireDetailPage
     this.isLoading = false;
   }
 
+  ngAfterViewChecked() {
+    if (this.swiperContainer && !this.isSwiperInitialized && this.form) {
+      this.swiperContainer.nativeElement.swiper.update();
+      this.isSwiperInitialized = true;
+    }
+  }
+
   private lockSwipeToNextIfFormInvalid() {
     if (this.statusChangesSubscription) {
       this.statusChangesSubscription.unsubscribe();
     }
     const currentSlideForm = this.getFormOfCurrentSlide();
-    if (currentSlideForm) {
-      this.slides.lockSwipeToNext(currentSlideForm.status === 'INVALID');
+    if (currentSlideForm && this.swiperContainer) {
+      this.swiperContainer.nativeElement.swiper.allowSlideNext =
+        currentSlideForm.status !== 'INVALID';
+
       this.statusChangesSubscription = currentSlideForm.statusChanges.subscribe(
-        (status) => this.slides.lockSwipeToNext(status === 'INVALID')
+        (status) => {
+          if (this.swiperContainer) {
+            this.swiperContainer.nativeElement.swiper.allowSlideNext =
+              status !== 'INVALID';
+          }
+        }
       );
     }
   }
@@ -369,7 +387,12 @@ export class QuestionnaireDetailPage
   private updateSlideHeight(): void {
     let updateCount = 10;
     const interval = setInterval(() => {
-      void this.slides.updateAutoHeight();
+      if (
+        this.swiperContainer?.nativeElement.swiper &&
+        this.swiperContainer.nativeElement.swiper.destroyed === false
+      ) {
+        this.swiperContainer.nativeElement.swiper.updateAutoHeight();
+      }
       --updateCount;
       if (updateCount <= 0) {
         clearInterval(interval);
@@ -502,11 +525,13 @@ export class QuestionnaireDetailPage
     return Math.round((answersCompletedCount / totalAnswersCount) * 100);
   }
 
-  private async updateFabButtonStatus() {
-    this.canGoToPrevious = !(await this.slides.isBeginning());
-    this.canGoToNext = !(await this.slides.isEnd());
+  private updateFabButtonStatus() {
+    this.canGoToPrevious =
+      !this.swiperContainer?.nativeElement.swiper.isBeginning;
+
+    this.canGoToNext = !this.swiperContainer?.nativeElement.swiper.isEnd;
     this.canSubmit =
-      (await this.slides.isEnd()) &&
+      this.swiperContainer?.nativeElement.swiper.isEnd &&
       !this.hasQuestionnaireStatus('released_twice');
   }
 

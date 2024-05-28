@@ -53,7 +53,6 @@ describe('Release Test, role: "Forscher", General', () => {
     login(forscherCredentials.username, forscherCredentials.password);
     changePassword(forscherCredentials.password, newPassword);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]')
       .contains('Studien')
       .should('be.visible');
@@ -72,7 +71,6 @@ describe('Release Test, role: "Forscher", General', () => {
     login(forscherCredentials.username, forscherCredentials.password);
     changePassword(forscherCredentials.password, newPassword);
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Abmelden').click();
     cy.get('[data-e2e="login-form"]');
   });

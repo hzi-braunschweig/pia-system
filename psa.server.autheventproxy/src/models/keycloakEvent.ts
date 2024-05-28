@@ -39,7 +39,7 @@ export interface KeycloakVerifyEmailEvent extends KeycloakGenericEvent {
     redirect_uri: string;
     consent: string;
     code_id: string;
-    username: string;
+    username?: string;
     response_mode: string;
   };
 }

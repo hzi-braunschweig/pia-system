@@ -42,12 +42,10 @@ export class SnakeNamingStrategyWithPlural extends SnakeNamingStrategy {
 const typeOrmOptions: ConnectionOptions = {
   type: 'postgres',
   host: config.database.host,
-  //host: '127.0.0.1',
   port: config.database.port,
   username: config.database.user,
   password: config.database.password,
   database: config.database.database,
-  ssl: config.database.ssl,
   entities: [
     FeedbackStatisticConfiguration,
     FeedbackStatistic,

@@ -16,8 +16,10 @@ export declare class AuthServerClient extends KcAdminClient {
     readonly realm: string;
     private waitForConnection;
     private currentInterval;
+    private connected;
     private accessTokenLifespan;
     constructor(clientSettings: AuthServerClientSettings, reconnectInterval?: number);
+    isConnected(): boolean;
     connect(): void;
     disconnect(): void;
     waitForServer(): Promise<void>;

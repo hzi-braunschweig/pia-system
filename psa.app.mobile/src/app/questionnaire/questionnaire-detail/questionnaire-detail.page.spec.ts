@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -441,6 +441,7 @@ function createQuestionnaireInstance(): QuestionnaireInstance {
           id: 4057,
           questionnaire_id: 528,
           text: 'Die folgenden Fragen sind Testfragen, mit gegenseitigen Bedingungen',
+          help_text: 'Dieser Text wird ihnen bei der Beantwortung helfen',
           position: 1,
           is_mandatory: true,
           variable_name: '',
@@ -469,6 +470,7 @@ function createQuestionnaireInstance(): QuestionnaireInstance {
           id: 4058,
           questionnaire_id: 528,
           text: 'Wie war das Testergebnis?',
+          help_text: '',
           position: 2,
           is_mandatory: true,
           variable_name: '',
@@ -513,6 +515,7 @@ function createQuestionnaireInstance(): QuestionnaireInstance {
           id: 4059,
           questionnaire_id: 528,
           text: 'Wann wurde der Test auf das Corona-Virus durchgeführt? Wenn Sie häufiger positiv getestet wurden, geben Sie bitte das Datum des letzten positiven Tests an. ',
+          help_text: 'Wenn Sie unsicher sind, schätzen Sie das ungefähre Datum',
           position: 3,
           is_mandatory: true,
           variable_name: '',
@@ -554,6 +557,7 @@ function createQuestionnaireInstance(): QuestionnaireInstance {
           id: 4060,
           questionnaire_id: 528,
           text: 'Wann wurde der Test auf das Corona-Virus durchgeführt? Wenn Sie häufiger getestet wurden, tragen Sie bitte das Datum des letzten Tests ein.',
+          help_text: '',
           position: 4,
           is_mandatory: true,
           variable_name: '',
@@ -595,6 +599,7 @@ function createQuestionnaireInstance(): QuestionnaireInstance {
           id: 4061,
           questionnaire_id: 528,
           text: 'Welche Art von Test wurde durchgeführt? \n\nWenn Sie häufiger positiv getestet wurden, geben Sie bitte die Testart des letzten positiven Tests an. ',
+          help_text: '',
           position: 5,
           is_mandatory: true,
           variable_name: '',
@@ -670,6 +675,7 @@ function createQuestionnaireInstance(): QuestionnaireInstance {
           id: 4062,
           questionnaire_id: 528,
           text: 'Vielen Dank für Ihre Angaben!',
+          help_text: '',
           position: 6,
           is_mandatory: false,
           variable_name: '',

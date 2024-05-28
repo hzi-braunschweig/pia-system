@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+:host {
+  display: block;
+}
+
 pia-feedback-statistic-bar-chart {
   height: 350px;
 }

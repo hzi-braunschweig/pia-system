@@ -1,0 +1,14 @@
+check-version-file:
+  extends:
+    - .job-exclude-schedules-pipelines
+    - .no-cpu-request
+  image: alpine:3.19.1
+  stage: prepare
+  dependencies: []
+  script:
+    - export VERSION_FROM_BRANCH=`echo $CI_COMMIT_REF_SLUG | sed -e 's/release-//g' -e 's/-/./g'`
+    - export VERSION_FROM_FILE=`cat VERSION`
+    - echo VERSION_FROM_BRANCH="$VERSION_FROM_BRANCH" VERSION_FROM_FILE="$VERSION_FROM_FILE"
+    - test "$VERSION_FROM_BRANCH" = "$VERSION_FROM_FILE"
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ /^release/

@@ -22,6 +22,7 @@ import { ExportMetaInfo } from '../../models/export/exportMetaInfo';
 import { ColumnMeta } from '../../models/export/columnMeta';
 import { ColumnMetaInfo } from '../../models/export/columnMetaInfo';
 import { QuestionnaireInfo } from '../../models/questionnaireInfo';
+import { pipeline } from 'stream';
 
 const SAMPLE_COLUMNS_COUNT = 2;
 const BASE64_ENCODING_MARK = ';base64,';
@@ -44,7 +45,12 @@ export class AnswersExport extends AbstractExportFeature {
         new Date(),
         DateFormat.InFilename
       );
-      this.archive.append(answersStream.pipe(transformStream).pipe(csvStream), {
+      pipeline(answersStream, transformStream, csvStream, (err) => {
+        if (err) {
+          console.log('AnswersExport failed with error: ', err);
+        }
+      });
+      this.archive.append(csvStream, {
         name: `answers/answers_${questionnaireName}_v${questionnaire.version}_${questionnaire.id}_${date}.csv`,
       });
 
@@ -112,9 +118,13 @@ export class AnswersExport extends AbstractExportFeature {
           .then((userFiles) => {
             this.writeUserFilesToArchive(userFiles);
             userFiles.on('end', () => resolve());
+
+            this.archive.on('error', () => {
+              userFiles.destroy();
+            });
           })
-          .catch(() => {
-            reject();
+          .catch((e) => {
+            reject(e);
           });
       });
     });

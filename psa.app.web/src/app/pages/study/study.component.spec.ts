@@ -22,14 +22,11 @@ import { NgLetDirective } from '../../_directives/ng-let.directive';
 import { LoadingSpinnerComponent } from '../../features/loading-spinner/loading-spinner.component';
 import { StudySelectComponent } from '../../features/study-select/study-select.component';
 import { StudyProfessionalSummaryComponent } from './study-professional-summary/study-professional-summary.component';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
+import { MatCardModule } from '@angular/material/card';
 import { FormsModule } from '@angular/forms';
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { AlertService } from '../../_services/alert.service';
 import { StudyWelcomeText } from '../../psa.app.core/models/studyWelcomeText';
 import { DialogMarkdownEditorComponent } from '../../dialogs/dialog-markdown-editor/dialog-markdown-editor.component';

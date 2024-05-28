@@ -6,7 +6,7 @@
 
 import jsQR from 'jsqr';
 import { PNG } from 'pngjs';
-import totp from 'totp-generator';
+import { TOTP } from 'totp-generator';
 
 import { UserCredentials } from './user.commands';
 import { login } from './commands';
@@ -35,10 +35,10 @@ export function setupTotpForSysAdmin(): Chainable {
               const totpSecret = readTotpSecretFromQrCodeData(totpQrCode);
               cy.log('totpSecret:', totpSecret);
 
-              const token = totp(totpSecret);
-              cy.log('token:', token);
+              const { otp } = TOTP.generate(totpSecret);
+              cy.log('otp:', otp);
 
-              cy.get('#kc-totp-settings-form #totp').type(token);
+              cy.get('#kc-totp-settings-form #totp').type(otp);
               cy.get('#saveTOTPBtn').click();
 
               cy.expectPathname('/admin/home');

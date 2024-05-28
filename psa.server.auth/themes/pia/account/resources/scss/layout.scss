@@ -113,6 +113,13 @@ h3 {
   }
 }
 
+// until issue https://codebase.helmholtz.cloud/pia-eresearch-system/pia/-/issues/320 is fixed
+// we do not want to show the sign out button at all
+#signOutButton,
+#landingSignOutButton {
+  display: none !important;
+}
+
 @media screen and (max-width: 764px) {
   .pf-l-toolbar__group {
     margin-right: 0 !important;

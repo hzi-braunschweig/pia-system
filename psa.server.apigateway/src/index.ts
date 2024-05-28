@@ -5,45 +5,39 @@
  */
 
 import { Proxy } from './proxy';
-import { HttpServer, ISsl } from './httpServer';
+import { HttpServer } from './httpServer';
 import config from './config';
-import { RouteHelper } from './routeHelper';
 import { Color } from './color';
-import { RedirectingHttpServer } from './redirectingHttpServer';
-import * as fs from 'fs';
-import { isProxyRoute } from './proxyRoute';
+import { RedirectHttpToHttpsServer } from './redirectHttpToHttpsServer';
+import { ProxyRoute } from './proxyRoute';
+import { ResponseRoute } from './responseRoute';
+import { RouteHelper } from './routeHelper';
+import { StatusCodes } from 'http-status-codes';
 
 const HTTP_PORT = 80;
 
-const isInternalSslEnabled = config.web.internal.protocol !== 'http';
 const isExternalSslEnabled = config.web.external.protocol !== 'http';
 
-const routes = RouteHelper.sortRoutes([
-  ...config.responseRoutes,
-  ...config.routes,
-]);
+const routes = RouteHelper.sort([...config.responseRoutes, ...config.routes]);
 
-RouteHelper.checkRoutes(routes);
+RouteHelper.assertNoDuplicates(routes);
 
-const externalSsl: ISsl | undefined = isExternalSslEnabled
-  ? {
-      cert: fs.readFileSync(config.web.external.ssl.certificate),
-      key: fs.readFileSync(config.web.external.ssl.key),
-    }
-  : undefined;
-
-const internalCa = fs.readFileSync(config.web.internal.ssl.ca);
-
-console.log(
-  `ssl[external=${Color.bool(!!externalSsl)}, internal=${Color.bool(
-    isInternalSslEnabled
-  )}], system.isDevelopment=${Color.bool(config.system.isDevelopment)}`
-);
+console.log(`system.isDevelopment=${Color.bool(config.system.isDevelopment)}`);
 
 for (const route of routes) {
-  if (!isProxyRoute(route)) continue;
+  if (ResponseRoute.isConfig(route)) {
+    const statusCode = route.response.statusCode ?? StatusCodes.OK;
+    console.log(
+      `routing ${Color.route(route.path)} -> StatusCode=${Color.statusCode(
+        statusCode
+      )}`
+    );
+  }
+
+  if (!ProxyRoute.isConfig(route)) continue;
+
   const target = [
-    Color.protocol(route.upstream.protocol),
+    Color.protocol('http'),
     '://',
     Color.serviceName(route.upstream.host),
     ':',
@@ -55,13 +49,7 @@ for (const route of routes) {
 
 const servers: HttpServer<unknown>[] = [];
 
-const proxy = new Proxy(
-  routes,
-  externalSsl,
-  internalCa,
-  false,
-  config.web.headers
-);
+const proxy = new Proxy(routes, false, config.web.headers);
 
 proxy.listen(config.web.external.port).catch((error) => {
   console.error(error);
@@ -69,7 +57,7 @@ proxy.listen(config.web.external.port).catch((error) => {
 servers.push(proxy);
 
 if (isExternalSslEnabled) {
-  const redirectingHttpServer = new RedirectingHttpServer();
+  const redirectingHttpServer = new RedirectHttpToHttpsServer();
   redirectingHttpServer.listen(HTTP_PORT).catch((error) => {
     console.error(error);
   });

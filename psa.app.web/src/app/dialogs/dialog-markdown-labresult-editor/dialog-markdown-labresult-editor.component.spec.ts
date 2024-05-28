@@ -4,22 +4,33 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { Pipe, PipeTransform } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
+import {
+  MatAutocomplete,
+  MatAutocompleteModule,
+} from '@angular/material/autocomplete';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { By } from '@angular/platform-browser';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MockComponent, MockProvider } from 'ng-mocks';
+import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
+import { MarkdownEditorComponent } from '../../features/markdown-editor/markdown-editor.component';
 
 import { DialogMarkdownLabresultEditorComponent } from './dialog-markdown-labresult-editor.component';
-import { MockComponent, MockProvider } from 'ng-mocks';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogModule as MatDialogModule,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
-import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
-import { MarkdownEditorComponent } from '../../features/markdown-editor/markdown-editor.component';
-import { By } from '@angular/platform-browser';
-import { Pipe, PipeTransform } from '@angular/core';
-import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
-import { MatAutocomplete } from '@angular/material/autocomplete';
+import SpyObj = jasmine.SpyObj;
 
 @Pipe({ name: 'translate' })
 class MockTranslatePipe implements PipeTransform {
@@ -48,7 +59,19 @@ describe('DialogMarkdownLabresultEditorComponent', () => {
     ).and.returnValue([{ name: 'test' }]);
 
     await TestBed.configureTestingModule({
-      imports: [MatDialogModule, MockComponent(MarkdownEditorComponent)],
+      imports: [
+        FormsModule,
+        NoopAnimationsModule,
+        MatDialogModule,
+        MatExpansionModule,
+        MatListModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatIconModule,
+        MatAutocompleteModule,
+        MatTooltipModule,
+        MockComponent(MarkdownEditorComponent),
+      ],
       declarations: [
         DialogMarkdownLabresultEditorComponent,
         MockTranslatePipe,
@@ -319,12 +342,10 @@ describe('DialogMarkdownLabresultEditorComponent', () => {
     it('should transform custom table tags with default headers if no header is given', () => {
       expect(
         component.transformTextBeforeRendering(
-          `<pia-laboratory-result-table>
-<pia-laboratory-result-table-entry name="Adenovirus-PCR (resp.)"></pia-laboratory-result-table-entry>
-</pia-laboratory-result-table>`
+          '<pia-laboratory-result-table><pia-laboratory-result-table-entry name="Adenovirus-PCR (resp.)"></pia-laboratory-result-table-entry></pia-laboratory-result-table>'
         )
       ).toEqual(
-        '<table class="pia-laboratory-result-table"><tr><th>PCR</th><th>Ergebnis</th><th>Analysis Datum</th><th>Eingang der Probe</th><th>Datum der Ergebnismitteilung</th></tr><tr><td>Adenovirus-PCR (resp.)</td><td>Adenovirus-PCR (resp.).result</td><td>Adenovirus-PCR (resp.).date_of_analysis</td><td>Adenovirus-PCR (resp.).date_of_delivery</td><td>Adenovirus-PCR (resp.).date_of_announcement</td></tr></table>'
+        `<table class="pia-laboratory-result-table"><tr><th>PCR</th><th>Ergebnis</th><th>Analysis Datum</th><th>Eingang der Probe</th><th>Datum der Ergebnismitteilung</th></tr><tr><td>Adenovirus-PCR (resp.)</td><td>Adenovirus-PCR (resp.).result</td><td>Adenovirus-PCR (resp.).date_of_analysis</td><td>Adenovirus-PCR (resp.).date_of_delivery</td><td>Adenovirus-PCR (resp.).date_of_announcement</td></tr></table>`
       );
     });
 

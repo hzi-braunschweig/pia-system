@@ -20,16 +20,13 @@ import { By } from '@angular/platform-browser';
 import { MockComponents, MockModule, MockProvider } from 'ng-mocks';
 import { ComplianceTextComponent } from './compliance-text/compliance-text.component';
 import { ComplianceRadioComponent } from './compliance-radio/compliance-radio.component';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { TranslateModule } from '@ngx-translate/core';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
-import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
-import { MatLegacyRadioModule as MatRadioModule } from '@angular/material/legacy-radio';
+import { MatCardModule } from '@angular/material/card';
+import { MatRadioModule } from '@angular/material/radio';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { LoadingSpinnerModule } from '../../../features/loading-spinner/loading-spinner.module';

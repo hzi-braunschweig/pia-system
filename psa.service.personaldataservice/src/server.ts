@@ -9,7 +9,6 @@ import packageJson from '../package.json';
 
 import { config } from './config';
 import { db } from './db';
-import { messageQueueService } from './services/messageQueueService';
 import {
   Connection,
   defaultInternalRoutesPaths,
@@ -17,8 +16,9 @@ import {
   MailService,
   registerAuthStrategies,
   registerPlugins,
-  SecureConnection,
 } from '@pia/lib-service-core';
+import { messageQueueService } from './services/messageQueueService';
+import { probandAuthClient } from './clients/authServerClient';
 
 export class Server {
   private static instance: Hapi.Server;
@@ -67,13 +67,10 @@ export class Server {
     await messageQueueService.disconnect();
   }
 
-  private static extractServerOptions(
-    connection: Connection | SecureConnection
-  ): ServerOptions {
+  private static extractServerOptions(connection: Connection): ServerOptions {
     return {
       host: connection.host,
       port: connection.port,
-      tls: 'tls' in connection ? connection.tls : false,
       routes: {
         cors: { origin: ['*'] },
         timeout: {
@@ -84,7 +81,9 @@ export class Server {
       app: {
         healthcheck: async (): Promise<boolean> => {
           await db.one('SELECT 1;');
-          return messageQueueService.isConnected();
+          return (
+            probandAuthClient.isConnected() && messageQueueService.isConnected()
+          );
         },
       },
     };

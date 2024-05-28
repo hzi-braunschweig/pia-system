@@ -1,6 +1,15 @@
 # Distribution notes
 
-This file contains notes about changes that are important to the operations team.
+This file contains notes about changes that operation teams need to be aware of when updating PIA.
+
+## 1.37 (Kubernetes)
+
+- PIA deployment is now based on Kubernetes and Kustomize
+  - **Ansible based deployment setup has been removed and <u>is not supported anymore</u>**
+    - Kubernetes is the preferred way to run a PIA instance from now on
+  - **Internal network traffic is not secured by default anymore**
+    - a services mesh solution is required to secure internal network traffic
+  - See new [documentation on how to deploy and configure PIA on Kubernetes in detail](./docs/deployment.md)
 
 ## 1.36
 

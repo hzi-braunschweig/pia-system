@@ -15,16 +15,23 @@ export interface CreateIDSProbandRequest {
   ids: string;
 }
 
+export enum ProbandOrigin {
+  SELF = 'self', // created on probands own accord
+  INVESTIGATOR = 'investigator', // created by an investigator
+  SORMAS = 'sormas', // created by sormas
+  PUBLIC_API = 'public_api', // created via public api
+}
+
 export interface CreateProbandRequest {
   pseudonym?: string;
-  ids?: string;
-  complianceLabresults: boolean;
-  complianceSamples: boolean;
-  complianceBloodsamples: boolean;
-  studyCenter?: string;
-  examinationWave?: number;
+  ids?: string | null;
+  complianceLabresults?: boolean;
+  complianceSamples?: boolean;
+  complianceBloodsamples?: boolean;
+  studyCenter?: string | null;
+  examinationWave?: number | null;
   temporaryPassword?: boolean;
-  origin: string;
+  origin: ProbandOrigin;
 }
 
 export interface CreateProbandResponse {
@@ -53,7 +60,9 @@ export interface ProbandExternalIdResponse {
 }
 
 // Patch Proband
-
+export type ProbandDataPatch = Partial<
+  Pick<ProbandDto, 'ids' | 'studyCenter' | 'examinationWave' | 'isTestProband'>
+>;
 export type ProbandComplianceContactPatch = Pick<Proband, 'complianceContact'>;
 export type ProbandStatusPatch = Pick<Proband, 'status'>;
 export type ProbandPatch = ProbandComplianceContactPatch | ProbandStatusPatch;

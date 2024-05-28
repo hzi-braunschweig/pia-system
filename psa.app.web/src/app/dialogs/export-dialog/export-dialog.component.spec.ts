@@ -11,26 +11,23 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import { MatLegacyButton as MatButton } from '@angular/material/legacy-button';
-import { MatLegacyCheckbox as MatCheckbox } from '@angular/material/legacy-checkbox';
-import { MatLegacyOption as MatOption } from '@angular/material/legacy-core';
+import { MatButton } from '@angular/material/button';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { MatOption } from '@angular/material/core';
 import {
   MatDatepicker,
   MatDatepickerInput,
   MatDatepickerToggle,
 } from '@angular/material/datepicker';
 import {
-  MatLegacyDialogActions as MatDialogActions,
-  MatLegacyDialogContent as MatDialogContent,
-  MatLegacyDialogRef as MatDialogRef,
-  MatLegacyDialogTitle as MatDialogTitle,
-} from '@angular/material/legacy-dialog';
-import {
-  MatLegacyError as MatError,
-  MatLegacyFormField as MatFormField,
-} from '@angular/material/legacy-form-field';
+  MatDialogActions,
+  MatDialogContent,
+  MatDialogRef,
+  MatDialogTitle,
+} from '@angular/material/dialog';
+import { MatError, MatFormField } from '@angular/material/form-field';
 import { MatGridList, MatGridTile } from '@angular/material/grid-list';
-import { MatLegacySelect as MatSelect } from '@angular/material/legacy-select';
+import { MatSelect } from '@angular/material/select';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../_services/alert.service';
 import { MockComponent, MockDirective, MockModule, MockPipe } from 'ng-mocks';

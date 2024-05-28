@@ -7,7 +7,6 @@
 import {
   ConfigUtils,
   GlobalConfig,
-  SslCerts,
   SupersetOfServiceConfig,
 } from '@pia/lib-service-core';
 import { SftpConfig } from './models/sftpConfig';
@@ -46,15 +45,10 @@ const hziftpserver: SftpConfig = {
   password: ConfigUtils.getEnvVariable('HZI_FTPSERVICE_PW'),
 };
 
-const SSL_CERTS: SslCerts = {
-  cert: ConfigUtils.getFileContent('./ssl/sa.cert'),
-  key: ConfigUtils.getFileContent('./ssl/sa.key'),
-  ca: ConfigUtils.getFileContent('./ssl/ca.cert'),
-};
-
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS, 'sampletrackingservice'),
-  database: GlobalConfig.getQPia(SSL_CERTS),
+  public: GlobalConfig.getPublic('sampletrackingservice'),
+  internal: GlobalConfig.getInternal('sampletrackingservice'),
+  database: GlobalConfig.getQPia(),
   services: {
     complianceservice: GlobalConfig.complianceservice,
     userservice: GlobalConfig.userservice,

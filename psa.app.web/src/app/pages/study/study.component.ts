@@ -11,7 +11,7 @@ import { from, merge, mergeMap, Observable, of, Subject, tap } from 'rxjs';
 import { filter, first, map, pluck } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StudyChangeService } from '../studies/study-change.service';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import {
   DialogMarkdownEditorComponent,
   DialogMarkdownEditorData,

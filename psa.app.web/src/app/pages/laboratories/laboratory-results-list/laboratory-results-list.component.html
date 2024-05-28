@@ -14,18 +14,15 @@
   </div>
   <div>
     <mat-form-field>
-      <input
-        matInput
-        placeholder="{{ 'DIALOG.FILTER' | translate }}"
-        (keyup)="applyFilter($event.target.value)"
-      />
+      <mat-label>{{ 'DIALOG.FILTER' | translate }}</mat-label>
+      <input matInput (keyup)="applyFilter($event.target.value)" />
     </mat-form-field>
   </div>
 </div>
 
 <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
 
-<div class="laboratory-results-container mat-elevation-z8">
+<div class="laboratory-results-container mat-elevation-z1">
   <mat-table #table [dataSource]="dataSource" matSort>
     <!-- Laboratory results Column -->
     <ng-container matColumnDef="id">

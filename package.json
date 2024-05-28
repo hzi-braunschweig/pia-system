@@ -3,13 +3,17 @@
   "private": true,
   "license": "AGPL-3.0-or-later",
   "scripts": {
+    "start": "skaffold dev",
     "update-packages": "ncu --packageFile 'psa.*/package.json' -i -x '/@types/node$|@types/node-fetch|node-fetch|typeorm|parse5|chalk|ngx-.*|ng-.*|rxjs|jspdf.*|.*angular.*/'",
     "update-packagelock": "rm -rf psa.*/node_modules psa.*/package-lock.json && lerna exec \"npm install --ignore-scripts --package-lock-only --no-audit\"",
+    "update-openapi": "REBUILD_OPENAPI=1 ./psa.utils.scripts/openapi/generate-merge-config.sh && openapi-merge-cli",
+    "update-third-party-licenses": "docker build --target raw -f psa.utils.ci-thirdparty-license-collector/Dockerfile -o . .",
     "format": "prettier -w ."
   },
   "devDependencies": {
     "lerna": "^4.0.0",
     "npm-check-updates": "^12.0.2",
+    "openapi-merge-cli": "^1.3.1",
     "prettier": "^2.5.1"
   }
 }

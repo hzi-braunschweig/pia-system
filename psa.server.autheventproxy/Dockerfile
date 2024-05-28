@@ -1,5 +1,5 @@
 FROM node:20.3.0-alpine@sha256:2d5e8a8a51bc341fd5f2eed6d91455c3a3d147e91a14298fc564b5dc519c1666 AS base
-RUN apk --update --no-cache add curl tzdata
+RUN apk --update --no-cache add curl tzdata bash
 
 USER node
 WORKDIR /usr/src/node-app/
@@ -10,10 +10,12 @@ COPY $DIR/package*.json ./
 #copy dependencies' package.json
 COPY --chown=node:node psa.lib.service-core/package*.json ../psa.lib.service-core/
 COPY --chown=node:node psa.lib.messagequeue/package*.json ../psa.lib.messagequeue/
+COPY --chown=node:node psa.lib.auth-server-client/package*.json ../psa.lib.auth-server-client/
 
 #copy dependencies' source
 COPY --chown=node:node psa.lib.service-core/dist ../psa.lib.service-core/dist
 COPY --chown=node:node psa.lib.messagequeue/dist ../psa.lib.messagequeue/dist
+COPY --chown=node:node psa.lib.auth-server-client/dist ../psa.lib.auth-server-client/dist
 
 ################################################################
 
@@ -28,6 +30,8 @@ USER node
 WORKDIR /usr/src/psa.lib.service-core
 RUN npm ci
 WORKDIR /usr/src/psa.lib.messagequeue
+RUN npm ci
+WORKDIR /usr/src/psa.lib.auth-server-client
 RUN npm ci
 WORKDIR /usr/src/node-app/
 ###
@@ -89,13 +93,6 @@ FROM base AS final
 COPY --from=install-production /usr/src/ /usr/src/
 COPY --from=build /usr/src/node-app/dist/src ./src
 
-# comma separated list (1.0.0.1,8.8.8.8)
-# use * to allow all ips
-ARG METRICS_IP_WHITELIST=-
-ENV METRICS_IP_WHITELIST=$METRICS_IP_WHITELIST
-
-ENV NODE_EXTRA_CA_CERTS=./ssl/ca.cert
-ENV PROTOCOL=https
 ENV PORT=4000
 
 # since Node v15 UnhandledPromiseRejection will throw errors by default
@@ -104,5 +101,6 @@ ENV NODE_OPTIONS=--unhandled-rejections=warn
 
 EXPOSE 4000
 
+COPY --chmod=0755 psa.utils.scripts/logs-masking/custom-entrypoint.sh /custom-entrypoint.sh
+ENTRYPOINT ["/custom-entrypoint.sh", "docker-entrypoint.sh"]
 CMD npm start
-HEALTHCHECK CMD curl --max-time 10 -k $PROTOCOL://localhost:$PORT/metrics | grep "^up 1"

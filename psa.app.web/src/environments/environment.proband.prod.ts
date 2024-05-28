@@ -17,8 +17,8 @@ export const environment: Environment = {
     '${IS_DEVELOPMENT_SYSTEM}' &&
     '${IS_DEVELOPMENT_SYSTEM}'.toLowerCase() !== 'false',
   isE2ETestSystem:
-    '${IS_E2E_Test_SYSTEM}' &&
-    '${IS_E2E_Test_SYSTEM}'.toLowerCase() !== 'false',
+    '${IS_E2E_TEST_SYSTEM}' &&
+    '${IS_E2E_TEST_SYSTEM}'.toLowerCase() !== 'false',
   authserver: {
     url: window.location.origin + '/api/v1/auth',
     realm: 'pia-proband-realm',

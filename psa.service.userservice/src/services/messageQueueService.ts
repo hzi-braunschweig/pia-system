@@ -8,28 +8,21 @@ import {
   MessageQueueClient,
   MessageQueueTopic,
   Producer,
+  ProbandDeletedMessage,
+  ProbandDeactivatedMessage,
+  ProbandCreatedMessage,
+  StudyDeletedMessage,
+  ProbandEmailVerifiedMessage,
+  ProbandRegisteredMessage,
 } from '@pia/lib-messagequeue';
 import { config } from '../config';
 import { ProbandDeletionType, ProbandService } from './probandService';
-import { MessagePayloadProbandRegistered } from '../models/messagePayloadProbandRegistered';
 import { StudyService } from './studyService';
-
-interface ProbandDeletedMessage extends Message {
-  deletionType: ProbandDeletionType;
-}
-
-export interface Message {
-  pseudonym: string;
-}
-
-export interface StudyDeletedMessage {
-  studyName: string;
-}
 
 export class MessageQueueService extends MessageQueueClient {
   private probandDeleted?: Producer<ProbandDeletedMessage>;
-  private probandDeactivated?: Producer<Message>;
-  private probandCreated?: Producer<Message>;
+  private probandDeactivated?: Producer<ProbandDeactivatedMessage>;
+  private probandCreated?: Producer<ProbandCreatedMessage>;
   private studyDeleted?: Producer<StudyDeletedMessage>;
 
   public async connect(): Promise<void> {
@@ -37,10 +30,11 @@ export class MessageQueueService extends MessageQueueClient {
     this.probandDeleted = await this.createProducer<ProbandDeletedMessage>(
       MessageQueueTopic.PROBAND_DELETED
     );
-    this.probandDeactivated = await this.createProducer<Message>(
-      MessageQueueTopic.PROBAND_DEACTIVATED
-    );
-    this.probandCreated = await this.createProducer<Message>(
+    this.probandDeactivated =
+      await this.createProducer<ProbandDeactivatedMessage>(
+        MessageQueueTopic.PROBAND_DEACTIVATED
+      );
+    this.probandCreated = await this.createProducer<ProbandCreatedMessage>(
       MessageQueueTopic.PROBAND_CREATED
     );
     this.studyDeleted = await this.createProducer<StudyDeletedMessage>(
@@ -49,13 +43,13 @@ export class MessageQueueService extends MessageQueueClient {
 
     await this.createConsumer(
       MessageQueueTopic.PROBAND_EMAIL_VERIFIED,
-      async (message: Message) =>
+      async (message: ProbandEmailVerifiedMessage) =>
         await this.onProbandEmailVerified(message.pseudonym)
     );
 
     await this.createConsumer(
       MessageQueueTopic.PROBAND_REGISTERED,
-      async (message: MessagePayloadProbandRegistered) => {
+      async (message: ProbandRegisteredMessage) => {
         await ProbandService.createProbandForRegistration(message.username);
       }
     );
@@ -68,7 +62,8 @@ export class MessageQueueService extends MessageQueueClient {
 
   public async sendProbandDeleted(
     pseudonym: string,
-    deletionType: ProbandDeletionType
+    deletionType: ProbandDeletionType,
+    studyName: string
   ): Promise<void> {
     if (!this.probandDeleted) {
       throw new Error('not connected to messagequeue');
@@ -76,24 +71,33 @@ export class MessageQueueService extends MessageQueueClient {
     await this.probandDeleted.publish({
       pseudonym,
       deletionType,
+      studyName,
     });
   }
 
-  public async sendProbandCreated(pseudonym: string): Promise<void> {
+  public async sendProbandCreated(
+    pseudonym: string,
+    studyName: string
+  ): Promise<void> {
     if (!this.probandCreated) {
       throw new Error('not connected to messagequeue');
     }
     await this.probandCreated.publish({
       pseudonym,
+      studyName,
     });
   }
 
-  public async sendProbandDeactivated(pseudonym: string): Promise<void> {
+  public async sendProbandDeactivated(
+    pseudonym: string,
+    studyName: string
+  ): Promise<void> {
     if (!this.probandDeactivated) {
       throw new Error('not connected to messagequeue');
     }
     await this.probandDeactivated.publish({
       pseudonym,
+      studyName,
     });
   }
 

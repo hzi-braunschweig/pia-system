@@ -4,72 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-.mat-select-panel {
-  background: #fff;
-}
-
-.mat-select-panel:not([class*='mat-elevation-z']) {
-  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14),
-    0 1px 10px 0 rgba(0, 0, 0, 0.12);
-}
-
-.mat-radio-label {
-  white-space: normal !important;
-}
-
-.table-container {
-  display: block;
-  overflow: auto;
-}
-.mat-table {
-  overflow: auto;
-  opacity: 0.8;
-  width: 100%;
-
-  .mat-header-row {
-    top: 0;
-    position: sticky;
-    z-index: 1;
-  }
-
-  .mat-header-row,
-  .mat-row {
-    padding: 0 1rem;
-    min-width: fit-content;
-
-    .mat-header-cell,
-    .mat-cell {
-      min-width: 70px;
-    }
-  }
-
-  .mat-icon-button {
-    color: #225168;
-  }
-
-  .column {
-    &.name {
-      overflow-wrap: break-word;
-      word-break: break-word;
-      min-width: 115px;
-    }
-  }
-}
-
-mat-table {
-  mat-header-row,
-  mat-row {
-    mat-header-cell,
-    mat-cell {
-      &:first-of-type {
-        padding-left: 0;
-      }
-
-      &:last-of-type {
-        padding-right: 0;
-      }
-    }
-  }
+:root {
+  --pia-space-y: 20px;
+  --pia-space-x: 20px;
+  --grid-layout-gap: calc(var(--pia-space-y) / 2);
 }
 
 html,
@@ -87,42 +25,23 @@ body {
   background-size: cover;
 }
 
+// align icons in headings and card title
+h3,
+.mat-mdc-card-title {
+  display: flex !important;
+  align-items: center;
+  gap: calc(var(--pia-space-x) / 2);
+}
+
+// align anything next to card header to the right by expanding the card header
+.mat-mdc-card-header-text {
+  &:has(~ *) {
+    flex-grow: 1;
+  }
+}
+
 .align-center {
   text-align: center;
-}
-
-.startForm {
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  margin: 4em auto;
-  padding: 3em 2em 2em 2em;
-  background: #fafafa;
-  border: 1px solid #ebebeb;
-  box-shadow: rgba(0, 0, 0, 0.14902) 0 1px 1px 0,
-    rgba(0, 0, 0, 0.09804) 0 1px 2px 0;
-}
-
-.start-form-group {
-  position: relative;
-  margin-top: 20px;
-  margin-bottom: 45px;
-}
-
-.conditionQuestion {
-  background: #acd359;
-  margin: 20px;
-}
-
-.condition-card {
-  background-color: #acd359;
-  flex: 1 1 auto;
-  text-align: left;
-}
-
-.question-expansion-panel {
-  background-color: #d9ecf5;
-  text-align: left;
 }
 
 .list-group {
@@ -134,53 +53,59 @@ body {
   margin: 15px;
 }
 
-.send-button {
-  color: white;
-  text-decoration: none;
-  background-color: #7dd4ff;
-}
-
-.dnd-drag-start {
-  -moz-transform: scale(0.8);
-  -webkit-transform: scale(0.8);
-  transform: scale(0.8);
-  opacity: 0.7;
-  border: 2px dashed #000;
-}
-
-.dnd-drag-enter {
-  opacity: 0.7;
-  border: 2px dashed #000;
-}
-
-.dnd-drag-over {
-  border: 2px dashed #000;
-}
-
-.dnd-sortable-drag {
-  -moz-transform: scale(0.9);
-  -webkit-transform: scale(0.9);
-  transform: scale(0.9);
-  opacity: 0.7;
-  border: 1px dashed #000;
-}
-
 .jumbotron {
   align-items: center;
   margin: 20px;
+}
+
+.space-y {
+  > *:first-child {
+    margin-block-end: unset;
+  }
+
+  > * + * {
+    margin-top: var(--pia-space-y);
+  }
+
+  > * + .mat-divider {
+    margin-top: var(--pia-space-y) !important;
+  }
+}
+
+.space-x {
+  > * + * {
+    margin-left: var(--pia-space-x);
+  }
+}
+
+.full-width-children {
+  > * {
+    display: block;
+    width: 100%;
+  }
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: var(
+    --grid-template-columns,
+    repeat(auto-fit, minmax(100px, 1fr))
+  );
+  grid-gap: var(--grid-layout-gap);
+  align-items: start;
+}
+
+.utility-card {
+  mat-card-content {
+    @extend .grid-container;
+    padding-bottom: 0 !important;
+  }
 }
 
 .material-icons {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  vertical-align: middle !important;
-}
-
-.mat-form-field {
-  font-size: 14px;
-  flex-grow: 1;
-  margin-top: 8px;
 }
 
 .table-no-results {
@@ -193,44 +118,6 @@ body {
   background: #fff;
 }
 
-/** Selection styles */
-.mat-column-select {
-  max-width: 54px;
-}
-
-.mat-row:hover,
-.questionnaire-selected-row {
-  background: #f5f5f5;
-}
-
-.mat-row:active,
-.mat-row.questionnaire-selected-row {
-  background: #eaeaea;
-}
-
-.mat-paginator {
-  opacity: 0.9;
-}
-
-.mat-select.mat-paginator-page-size-select {
-  padding-top: 0;
-}
-
-.example-additional-selection {
-  opacity: 0.75;
-  font-size: 0.75em;
-}
-
-.mat-card {
-  background: rgba(255, 255, 255, 0.8);
-  margin-top: 10px;
-}
-
-.mat-error {
-  margin-bottom: 0.2rem;
-  color: red;
-}
-
 @media screen and (max-width: 959px) {
   .jumbotron {
     height: 95%;
@@ -241,19 +128,16 @@ body {
   }
 }
 
-snack-bar-container {
-  &.error {
-    background: red;
-    color: white;
+.snack-bar-error {
+  --mdc-snackbar-container-color: red;
+  --mat-mdc-snack-bar-button-color: white;
 
-    .mat-button-wrapper {
-      color: white;
-    }
+  .mat-button-wrapper {
+    --mat-mdc-snack-bar-button-color: white;
   }
 }
 
 .grid-container-2cols {
-  --grid-layout-gap: 10px;
   --grid-column-count: 2;
 
   --gap-count: calc(var(--grid-column-count) - 1);
@@ -283,7 +167,6 @@ snack-bar-container {
 }
 
 .grid-container-10cols {
-  --grid-layout-gap: 10px;
   --grid-column-count: 10;
 
   --gap-count: calc(var(--grid-column-count) - 1);
@@ -302,30 +185,39 @@ snack-bar-container {
   .grid-item-10 {
     grid-column-end: span 1;
   }
+
   .grid-item-20 {
     grid-column-end: span 2;
   }
+
   .grid-item-30 {
     grid-column-end: span 3;
   }
+
   .grid-item-40 {
     grid-column-end: span 4;
   }
+
   .grid-item-50 {
     grid-column-end: span 5;
   }
+
   .grid-item-60 {
     grid-column-end: span 6;
   }
+
   .grid-item-70 {
     grid-column-end: span 7;
   }
+
   .grid-item-80 {
     grid-column-end: span 8;
   }
+
   .grid-item-90 {
     grid-column-end: span 9;
   }
+
   .grid-item-100 {
     grid-column-end: span 10;
   }
@@ -340,7 +232,7 @@ snack-bar-container {
 }
 
 .margin-bottom-15 {
-  margin-top: 15px !important;
+  margin-bottom: 15px !important;
 }
 
 .margin-left-15 {
@@ -349,4 +241,8 @@ snack-bar-container {
 
 .margin-right-15 {
   margin-right: 15px;
+}
+
+.margin-top-0 {
+  margin-top: 0 !important;
 }

@@ -5,7 +5,7 @@ const configUtils_1 = require("./configUtils");
 const configModel_1 = require("./configModel");
 class GlobalAuthSettings {
     static get keycloakHttpConnection() {
-        return new configModel_1.HttpConnection(configUtils_1.ConfigUtils.getEnvVariable('AUTHSERVER_PROTOCOL', 'https'), configUtils_1.ConfigUtils.getEnvVariable('AUTHSERVER_HOST', 'authserver'), configUtils_1.ConfigUtils.getEnvVariableInt('AUTHSERVER_PORT'));
+        return new configModel_1.HttpConnection(configUtils_1.ConfigUtils.getEnvVariable('AUTHSERVER_HOST', 'authserver'), configUtils_1.ConfigUtils.getEnvVariableInt('AUTHSERVER_PORT'));
     }
     static get probandTokenIntrospectionClient() {
         return {
@@ -57,6 +57,9 @@ class GlobalConfig {
     static get userservice() {
         return GlobalConfig.getHttpConnection('USERSERVICE');
     }
+    static get sampletrackingservice() {
+        return GlobalConfig.getHttpConnection('SAMPLETRACKINGSERVICE');
+    }
     static get timeZone() {
         return configUtils_1.ConfigUtils.getEnvVariable('APPLICATION_TIMEZONE', 'Europe/Berlin');
     }
@@ -85,31 +88,19 @@ class GlobalConfig {
             port: GlobalConfig.getPort(serviceName, 'INTERNAL_'),
         };
     }
-    static getPublic(sslCerts, serviceName) {
+    static getPublic(serviceName) {
         return {
             host: '0.0.0.0',
             port: GlobalConfig.getPort(serviceName),
-            tls: configUtils_1.ConfigUtils.getEnvVariable('PROTOCOL', 'https') !== 'http' && {
-                cert: sslCerts.cert,
-                key: sslCerts.key,
-                rejectUnauthorized: true,
-            },
         };
     }
-    static getQPia(sslCerts) {
+    static getQPia() {
         return {
             host: configUtils_1.ConfigUtils.getEnvVariable('QPIA_HOST'),
             port: Number(configUtils_1.ConfigUtils.getEnvVariable('QPIA_PORT')),
             user: configUtils_1.ConfigUtils.getEnvVariable('QPIA_USER'),
             password: configUtils_1.ConfigUtils.getEnvVariable('QPIA_PASSWORD'),
             database: configUtils_1.ConfigUtils.getEnvVariable('QPIA_DB'),
-            ssl: {
-                rejectUnauthorized: configUtils_1.ConfigUtils.getEnvVariable('QPIA_ACCEPT_UNAUTHORIZED', 'false') !==
-                    'true',
-                cert: sslCerts.cert,
-                key: sslCerts.key,
-                ca: sslCerts.ca,
-            },
         };
     }
     static getMessageQueue(serviceName) {
@@ -128,7 +119,7 @@ class GlobalConfig {
         return configUtils_1.ConfigUtils.getEnvVariable('NODE_ENV', '').toLowerCase() === 'test';
     }
     static getHttpConnection(servicePrefix) {
-        return new configModel_1.HttpConnection(configUtils_1.ConfigUtils.getEnvVariable('INTERNAL_PROTOCOL', 'http'), configUtils_1.ConfigUtils.getEnvVariable(servicePrefix + '_HOST'), Number(configUtils_1.ConfigUtils.getEnvVariable(servicePrefix + '_INTERNAL_PORT')));
+        return new configModel_1.HttpConnection(configUtils_1.ConfigUtils.getEnvVariable(servicePrefix + '_HOST'), Number(configUtils_1.ConfigUtils.getEnvVariable(servicePrefix + '_INTERNAL_PORT')));
     }
     static getPort(serviceName, prefix = '') {
         const port = configUtils_1.ConfigUtils.getEnvVariableInt(prefix + 'PORT', Number.NaN);

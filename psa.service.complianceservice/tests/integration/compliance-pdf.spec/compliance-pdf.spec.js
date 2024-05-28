@@ -13,7 +13,7 @@ const fs = require('fs');
 const fetchMocker = require('fetch-mock');
 
 const { HttpClient } = require('@pia-system/lib-http-clients-internal');
-const server = require('../../../src/server');
+const { Server } = require('../../../src/server');
 const {
   sequelize,
   ComplianceText,
@@ -61,11 +61,11 @@ const fetchMock = fetchMocker.sandbox();
 describe('Compliance PDF API', function () {
   before(async () => {
     await sequelize.sync();
-    await server.init();
+    await Server.init();
   });
 
   after(async () => {
-    await server.stop();
+    await Server.stop();
   });
 
   beforeEach(async () => {

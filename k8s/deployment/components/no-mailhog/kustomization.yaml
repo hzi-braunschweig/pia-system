@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+patches:
+  - target:
+      kind: Ingress
+      name: mailhog
+    patch: |-
+      $patch: delete
+      kind: Ingress
+      metadata:
+        name: 'ANY' # name doesn't matter but must be specified
+
+  - target:
+      kind: Deployment
+      name: mailserver
+    patch: |-
+      $patch: delete
+      kind: Deployment
+      metadata:
+        name: 'ANY' # name doesn't matter but must be specified

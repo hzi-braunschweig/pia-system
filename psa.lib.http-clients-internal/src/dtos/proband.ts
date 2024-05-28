@@ -42,6 +42,7 @@ export enum ProbandOrigin {
   SELF = 'self', // created on probands own accord
   INVESTIGATOR = 'investigator', // created by an investigator
   SORMAS = 'sormas', // created by sormas
+  PUBLIC_API = 'public_api', // created via public api
 }
 
 export interface ProbandResponseInternalDto {

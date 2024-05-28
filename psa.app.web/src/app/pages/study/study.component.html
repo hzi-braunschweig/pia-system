@@ -10,12 +10,16 @@
     cover="true"
   ></app-loading-spinner>
 
-  <div class="jumbotron" data-e2e="e2e-home-professional-content">
-    <app-study-select
-      [required]="true"
-      [(ngModel)]="selectedStudyName"
-      (ngModelChange)="changeSelectedStudy($event)"
-    ></app-study-select>
+  <div class="jumbotron space-y" data-e2e="e2e-home-professional-content">
+    <mat-card class="utility-card">
+      <mat-card-content>
+        <app-study-select
+          [required]="true"
+          [(ngModel)]="selectedStudyName"
+          (ngModelChange)="changeSelectedStudy($event)"
+        ></app-study-select>
+      </mat-card-content>
+    </mat-card>
 
     <app-study-professional-summary
       *ngIf="selectedStudyName && selectedStudy !== null"
@@ -30,7 +34,9 @@
     ></app-study-professional-summary>
 
     <mat-card *ngIf="!selectedStudyName">
-      <p>{{ 'STUDY.EMPTY_CONTENT_HINT' | translate }}</p>
+      <mat-card-content>
+        <p>{{ 'STUDY.EMPTY_CONTENT_HINT' | translate }}</p>
+      </mat-card-content>
     </mat-card>
   </div>
 </ng-container>

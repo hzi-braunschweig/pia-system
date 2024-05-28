@@ -31,14 +31,14 @@ import {
   KeycloakError,
   KeycloakLoginOptions,
   KeycloakLogoutOptions,
-  KeycloakPromise,
   KeycloakRegisterOptions,
 } from 'keycloak-js';
 import { KeycloakService } from 'keycloak-angular';
 import {
   EMPTY,
   finalize,
-  mapTo,
+  firstValueFrom,
+  lastValueFrom,
   merge,
   mergeMap,
   Observable,
@@ -54,7 +54,6 @@ import {
 } from '@awesome-cordova-plugins/in-app-browser/ngx';
 import { TranslateService } from '@ngx-translate/core';
 
-import { KeycloakPromiseImpl } from './keycloak-promise';
 import { LoginFailedError } from '../errors/login-failed-error';
 import { CallbackStorage } from './callback-storage';
 import { OAuthAccessToken, OAuthParams } from './keycloak.model';
@@ -81,7 +80,7 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
     private readonly realmUrl: string
   ) {}
 
-  login(options?: KeycloakLoginOptions): KeycloakPromise<void, void> {
+  login(options?: KeycloakLoginOptions): Promise<void> {
     /**
      * The login has a timeout of 2 seconds if it is done in the background
      * (on app start). Otherwise, the timeout is 15 minutes.
@@ -97,7 +96,7 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
       ...options?.cordovaOptions,
     });
 
-    return KeycloakPromiseImpl.fromObservable(
+    return firstValueFrom(
       merge(
         browser
           .on('loadstart')
@@ -129,11 +128,17 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
           return this.processCallback(callback);
         }),
         finalize(() => browser.close())
-      )
+      ),
+      {
+        // usually we should always get a value or an error
+        // but in the unit tests it happens that the processCallback is returning EMPTY
+        // and the timeout is not throwing
+        defaultValue: undefined,
+      }
     );
   }
 
-  logout(options?: KeycloakLogoutOptions): KeycloakPromise<void, void> {
+  logout(options?: KeycloakLogoutOptions): Promise<void> {
     let logoutUrl = this.keycloakService
       .getKeycloakInstance()
       .createLogoutUrl(options);
@@ -142,7 +147,7 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
       hidden: 'yes',
     });
 
-    return KeycloakPromiseImpl.fromObservable(
+    return firstValueFrom(
       merge(
         browser
           .on('loadstart')
@@ -165,18 +170,18 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
         )
       ).pipe(
         tap(() => this.keycloakService.clearToken()),
-        mapTo(void 0),
+        map(() => void 0),
         finalize(() => browser.close())
       )
     );
   }
 
-  register(options?: KeycloakRegisterOptions): KeycloakPromise<void, void> {
+  register(_options?: KeycloakRegisterOptions): Promise<void> {
     console.warn('it is not possible to register via mobile app');
-    return KeycloakPromiseImpl.reject();
+    return Promise.reject(new Error('not possible to register via mobile app'));
   }
 
-  accountManagement(): KeycloakPromise<void, void> {
+  accountManagement(): Promise<void> {
     const accountUrl = this.keycloakService
       .getKeycloakInstance()
       .createAccountUrl();
@@ -185,7 +190,7 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
       toolbar: 'no',
     });
 
-    return KeycloakPromiseImpl.fromObservable(
+    return lastValueFrom(
       browser.on('loadstart').pipe(
         takeUntil(browser.on('exit')),
         filter((event) => event.url.includes(PiaKeycloakAdapter.REDIRECT_URL)),
@@ -458,6 +463,6 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
   private throwError(error: KeycloakError): Observable<void> {
     const kc = this.keycloakService.getKeycloakInstance();
     kc.onAuthError && kc.onAuthError(error);
-    return throwError(error);
+    return throwError(() => error);
   }
 }

@@ -90,7 +90,8 @@
       "CONTENT": "Wenn Sie sich abmelden, werden Sie keine weiteren Benachrichtigungen von PIA erhalten. Wenn Sie nur die Benachrichtigungen ausstellen möchten, können Sie das in den Benachrichtigungseinstellungen Ihres Webbrowsers tun."
     },
     "PROBAND": "Teilnehmer:in",
-    "STUDY_WELCOME_TEXT": "Begrüssungstext"
+    "STUDY_WELCOME_TEXT": "Begrüssungstext",
+    "PUBLIC_API": "API"
   },
   "PLANNED_PROBANDS": {
     "CREATE_LOGIN_PDFS": "Login-Bögen erstellen",
@@ -154,7 +155,8 @@
     "DIALOG_VIEW_NO_CONTENT": "Es liegt keine Einwilligung vor.",
     "DIALOG_VIEW_ERROR": "Beim Abrufen der Einwilligungen ist ein Fehler aufgetreten.",
     "FILTER_NO_RESULTS_FOR_STUDY": "Für diese Studie sind derzeit keine Einwilligungen verfügbar.",
-    "FILTER_NO_RESULTS": "Keine Fragebögen gefunden."
+    "FILTER_NO_RESULTS": "Keine Fragebögen gefunden.",
+    "EXPORT": "Datenexport"
   },
   "CONTACTS": {
     "HEADING": "Teilnehmerkontakte",
@@ -194,6 +196,9 @@
   },
   "QUESTIONNAIRE_FORSCHER": {
     "QUESTIONNAIRE_NAME": "Fragebogenname",
+    "QUESTIONNAIRE_CUSTOM_NAME": "Benutzerdefinierte Kennung",
+    "QUESTIONNAIRE_CUSTOM_NAME_HINT": "Die benutzerdefinierte Kennung kann zusätzlich zum eigentlichen Fragebogenname und der später vom System zugewiesenen internen ID genutzt werden, um Fragebögen im Datenexport oder über die öffentliche API (falls freigeschaltet) zu finden. Die benutzerdefinierte Kennung muss mindestens einen Buchstaben enthalten und erlaubt keine Leerzeichen. Verwenden Sie stattdessen einen Binde- oder Unterstrich.",
+    "QUESTIONNAIRE_CUSTOM_NAME_INVALID_FORMAT": "Erlaubt sind Buchstaben, Zahlen, Binde- und Unterstrich.",
     "QUESTIONNAIRE_TYPE": "Fragebogentyp",
     "QUESTIONNAIRE_DATE": "Herausgabe/Abnahme:",
     "TYPE_FOR_PROBANDS": "Für Teilnehmende",
@@ -224,6 +229,7 @@
     "QUESTION_TEXT_MARKDOWN": "Fragentext (Markdown)",
     "QUESTION_TEXT_REQUIRED": "Fragentext ist erforderlich",
     "QUESTION_TEXT_VARIABLE_NUMBER": "Bitte nur ganze, positive oder negative Zahlen.",
+    "QUESTION_HELP_TEXT": "Hilfetext",
     "ADD_VARIABLE": "Variable hinzufügen: Geben Sie bitte den Versatz in Tagen relativ zum Ausgabedatum des Fragebogens an. Beispiel: (dat=-5) -> Ausgabedatum - 5 Tage.",
     "POSITION": "Position",
     "SUB-QUESTION": "Unterfrage",
@@ -244,6 +250,8 @@
     "DESCRIPTION": "Beschreibung (optional)",
     "VARIABLE_NAME": "Variablenname für Export (optional)",
     "VARIABLE_NAME_WARNING": "Sie haben Änderungen an einer Frage vorgenommen. Möchten Sie auch den zugehörigen Variablennamen anpassen? Dies ist vor allem zu empfehlen, wenn Sie Änderungen umgesetzt haben, die über Rechtschreibkorrekturen hinaus gehen. Ansonsten kann es passieren, dass die Fragen mehrerer Fragebogenversionen bei der Auswertung als identische Variable interpretiert werden.",
+    "REDECLARED_VARIABLE_NAME_QUESTION": "Der Variablenname wurde bereits in Frage #{{question}} deklariert.",
+    "REDECLARED_VARIABLE_NAME_ANSWER_OPTION": "Der Variablenname wurde bereits in Unterfrage #{{answerOption}} deklariert.",
     "NOTABLE_ANSWER": "Auffällige Antwort",
     "VALUE": "Wert",
     "CODE": "Code",
@@ -357,7 +365,7 @@
     "FILTER": "Fragebögen filtern",
     "NEW_QUESTIONNAIRE": "Neuen Fragebogen erstellen",
     "STUDY_ID": "Studienname",
-    "QUESTIONS_NUMBER": " Anzahl der Fragen",
+    "QUESTIONS_NUMBER": "Anz. Fragen",
     "ACTIVE_STATUS": "Status",
     "ACTIVE": "aktiv",
     "NOT_ACTIVE": "deaktiviert",
@@ -535,6 +543,8 @@
     "CANCEL": "Abbrechen",
     "CLOSE": "Schliessen",
     "REGISTER": "Registrieren",
+    "SAVE": "Speichern",
+    "CLEAR": "Leeren",
     "WRITE": "Schreiben",
     "READ": "Lesen",
     "ADMIN": "Administrator:in",
@@ -682,7 +692,7 @@
     "CANCEL": "Abbrechen",
     "TIME_UNIT": " Uhr",
     "DELETE_ACCOUNT_AND_PERSONAL_DATA": "Account und persönliche Daten löschen",
-    "DELETE_ACCOUNT_BUT_KEEP_HEALTH_DATA_QUESTION": "Sie möchten Ihren PIA Account dauerhaft löschen. Wollen Sie der Studie ermöglichen, Ihre bereits eingegebenen Fragebogenantworten weiterhin auszuwerten?",
+    "DELETE_ACCOUNT_BUT_KEEP_HEALTH_DATA_QUESTION": "Sie möchten Ihren PIA Account dauerhaft löschen. Wollen Sie der Studie ermöglichen, Ihre bereits über PIA eingegebenen Fragebogenantworten weiterhin auszuwerten?",
     "AGREE_KEEP_HEALTH_DATA": "Ja, ermöglichen",
     "DISAGREE_KEEP_HEALTH_DATA": "Nein, alles löschen",
     "CONFIRM_ACCOUNT_DELETION_AND_ALL_DATA": "Hiermit löschen Sie Ihren PIA Account, Ihre in PIA gespeicherten Kontaktdaten und Fragenbogenantworten dauerhaft und unwiderruflich. Sind Sie sich sicher?",
@@ -827,6 +837,43 @@
     "EDIT": "Bearbeiten",
     "PUBLISH": "Veröffentlichen",
     "PUBLISHED_SUCCESSFULLY": "Der Begrüssungstext wurde erfolgreich bereitgestellt."
+  },
+  "PUBLIC_API": {
+    "EMPTY_HINT": "Der <strong>Third-party Access per API</strong> ermöglicht PIA-externen Anwendungen auf Daten und Funktionalitäten in PIA zuzugreifen.<br /><br />Fügen Sie API Clients für Anwendungen hinzu, welche Zugriff auf die API erhalten sollen. Zurzeit ist kein API Client konfiguriert.",
+    "CLIENTS": "API Clients",
+    "ADD": "API Client hinzufügen",
+    "DELETE": "API Client löschen",
+    "CREATED_AT": "Erstellt am {{date}}",
+    "STUDY_ACCESS": "Studienzugriffe",
+    "CLIENT_ID": "Client ID",
+    "COPY_CLIENT_ID": "Client ID in die Zwischenablage kopieren",
+    "SECRET": "Secret",
+    "SHOW_SECRET": "Secret anzeigen/verbergen",
+    "COPY_SECRET": "Secret in die Zwischenablage kopieren",
+    "CLIENT_DELETION_CONFIRMATION_QUESTION": "Möchten Sie diesen API Client wirklich löschen?",
+    "CLIENT_ADD_DIALOG_TITLE": "API Client hinzufügen",
+    "CLIENT_ADD_DIALOG_DESCRIPTION": "Vergeben Sie einen Namen für den API Client und wählen Sie die Studien aus, auf die der API Client Zugriff erhalten soll.",
+    "CLIENT_ADD_NAME_INPUT_LABEL": "API Client Name",
+    "CLIENT_ADD_NAME_INPUT_ERROR": "Bitte vergeben Sie einen Namen für den API Client.",
+    "CLIENT_ADD_STUDIES_INPUT_LABEL": "Studienzugriff",
+    "CLIENT_ADD_STUDIES_INPUT_ERROR": "Bitte wählen Sie mindestens eine Studie aus.",
+    "CLIENT_ADD_DIALOG_SUBMIT_BUTTON": "API Client hinzufügen",
+    "CLIENT_ADD_DIALOG_CANCEL_BUTTON": "Abbrechen",
+    "API_CLIENT_ALREADY_EXISTS": "Ein API Client mit diesem Namen existiert bereits. Bitte wählen Sie einen anderen Namen.",
+    "API_CLIENT_NOT_FOUND": "Der API Client konnte nicht gefunden werden."
+  },
+  "EVENT_HISTORY": {
+    "TITLE": "Event History API",
+    "DESCRIPTION": "Über die Event History API können in PIA auftretende Events (bspw. \"Teilnehmer:in wurde registriert\" als Liste abgefragt werden.",
+    "TOGGLE_ACTIVE": "Event History API aktivieren",
+    "RETENTION_PERIOD_IN_DAYS": "Aufbewahrungszeitraum in Tagen",
+    "INVALID_RETENTION_TIME": "Der Aufbewahrungszeitraum muss mindestens einen Tag betragen",
+    "SAVE": "Speichern",
+    "SAVE_SUCCESS": "Die Konfiguration der Event History API wurde erfolgreich gespeichert.",
+    "SAVE_FAILED": "Die Konfiguration der Event History API konnte nicht gespeichert werden. Bitte versuchen Sie es später erneut.",
+    "LOAD_FAILED": "Die Konfiguration der Ereignis-Historie konnte nicht geladen werden.",
+    "CONFIRM_DEACTIVATION_TITLE": "Sind Sie sicher, dass Sie die Event API deaktivieren wollen?",
+    "CONFIRM_DEACTIVATION_BODY": "Anwendungen werden nicht mehr auf diese API zugreifen können. Aktuell vorgehaltene Event-Daten gehen verloren."
   },
   "SYSTEM": {
     "IS_DEVELOPMENT_SYSTEM": "Achtung! Dies ist ein Entwicklungssystem!"

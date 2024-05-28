@@ -25,8 +25,8 @@ export class AuthService {
     private readonly badgeService: BadgeService
   ) {}
 
-  public async isAuthenticated(): Promise<boolean> {
-    return await this.keycloakClient.isLoggedIn();
+  public isAuthenticated(): boolean {
+    return this.keycloakClient.isLoggedIn();
   }
 
   public async loginWithUsername(

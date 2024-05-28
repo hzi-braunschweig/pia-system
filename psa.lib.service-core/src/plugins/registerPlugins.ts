@@ -5,10 +5,7 @@
  */
 
 import { Plugin, Server } from '@hapi/hapi';
-import Inert from '@hapi/inert';
-import Vision from '@hapi/vision';
-import Swagger from 'hapi-swagger';
-// Unfortunately there are not types for the following two packages
+// Unfortunately there are no types for the following two packages
 // They are also deprecated and should be replaced soon.
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -19,11 +16,12 @@ import { SafeJson, Squeeze } from '@hapi/good-squeeze';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import GoodConsole from '@hapi/good-console';
-import { createStream } from 'rotating-file-stream';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import Router from 'hapi-router';
+import { HandleFieldValidationErrors } from './handleFieldValidationErrors';
+import { Health } from './health';
 
 import { Version } from './version';
 import { Metrics } from './metrics';
@@ -54,10 +52,10 @@ export const registerPlugins = async (
   options: ServicePluginOptions
 ): Promise<void> => {
   await server.register([
-    Inert, // required by hapi-swagger
-    Vision, // required by hapi-swagger
     Version, // registers the application version route
+    Health, // registers the application health route
     Metrics, // registers the application metrics route
+    HandleFieldValidationErrors, // handles errors regarding tsoa field validation errors
     ErrorHandler, // registers an error handler that logs server side errors (>=500)
     AssertStudyAccess, // registers a handler which checks study access at route level
   ]);
@@ -92,48 +90,7 @@ export const registerPlugins = async (
           },
           'stdout',
         ],
-        file: [
-          {
-            module: Squeeze as unknown,
-            args: logSqueezeArgs,
-          },
-          {
-            module: SafeJson as unknown,
-          },
-          {
-            module: createStream,
-            args: [
-              'log',
-              {
-                interval: '1d',
-                compress: 'gzip',
-                path: './logs',
-              },
-            ],
-          },
-        ],
       },
-    },
-  });
-
-  await server.register({
-    plugin: Swagger,
-    options: {
-      documentationPage: true,
-      info: {
-        title: `API Documentation ${options.name}${
-          options.isInternal ? ' Internal' : ''
-        }`,
-        version: options.version,
-      },
-      securityDefinitions: {
-        jwt: {
-          type: 'apiKey',
-          name: 'Authorization',
-          in: 'header',
-        },
-      },
-      security: [{ jwt: [] }],
     },
   });
 };

@@ -1,22 +1,35 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-export interface EditOption {
-  value: string;
+export interface EditOptionWithValue {
+  value: string | number;
   viewValue: string;
 }
 
+export interface EditOptionWithId {
+  id: number;
+  viewValue: string;
+}
+
+export interface EditOptionWithRestriction
+  extends EditOptionWithId,
+    EditOptionWithValue {
+  availableFor: ('for_probands' | 'for_research_team')[];
+}
+
+export type EditOption = EditOptionWithValue | EditOptionWithId;
+
 export class QuestionnaireEditOptions {
-  public static readonly conditionLinks: QuestionnaireEditOptions[] = [
+  public static readonly conditionLinks: EditOption[] = [
     { value: 'OR', viewValue: 'OR' },
     { value: 'AND', viewValue: 'AND' },
     { value: 'XOR', viewValue: 'XOR' },
   ];
 
-  public static readonly conditionOperands: QuestionnaireEditOptions[] = [
+  public static readonly conditionOperands: EditOption[] = [
     { id: 1, viewValue: '<' },
     { id: 2, viewValue: '<=' },
     { id: 3, viewValue: '==' },
@@ -25,7 +38,7 @@ export class QuestionnaireEditOptions {
     { id: 6, viewValue: '\\=' },
   ];
 
-  public static readonly conditionTypes: QuestionnaireEditOptions[] = [
+  public static readonly conditionTypes: EditOption[] = [
     { value: 'external', viewValue: 'QUESTIONNAIRE_FORSCHER.CONDITION_EXTERN' },
     {
       value: 'internal_last',
@@ -37,15 +50,14 @@ export class QuestionnaireEditOptions {
     },
   ];
 
-  public static readonly conditionTypesForQuestionnaire: QuestionnaireEditOptions[] =
-    [
-      {
-        value: 'external',
-        viewValue: 'QUESTIONNAIRE_FORSCHER.CONDITION_EXTERN',
-      },
-    ];
+  public static readonly conditionTypesForQuestionnaire: EditOption[] = [
+    {
+      value: 'external',
+      viewValue: 'QUESTIONNAIRE_FORSCHER.CONDITION_EXTERN',
+    },
+  ];
 
-  public static readonly questionnaireTypes: QuestionnaireEditOptions[] = [
+  public static readonly questionnaireTypes: EditOption[] = [
     {
       value: 'for_probands',
       viewValue: 'QUESTIONNAIRE_FORSCHER.TYPE_FOR_PROBANDS',
@@ -56,7 +68,7 @@ export class QuestionnaireEditOptions {
     },
   ];
 
-  public static readonly answerTypes: QuestionnaireEditOptions[] = [
+  public static readonly answerTypes: EditOptionWithRestriction[] = [
     {
       id: 1,
       value: 'array_single',
@@ -119,7 +131,7 @@ export class QuestionnaireEditOptions {
     },
   ];
 
-  public static readonly cycleUnits: QuestionnaireEditOptions[] = [
+  public static readonly cycleUnits: EditOption[] = [
     { value: 'once', viewValue: 'QUESTIONNAIRE_FORSCHER.ONCE' },
     { value: 'hour', viewValue: 'QUESTIONNAIRE_FORSCHER.HOUR' },
     { value: 'day', viewValue: 'QUESTIONNAIRE_FORSCHER.DAY' },
@@ -129,23 +141,25 @@ export class QuestionnaireEditOptions {
     { value: 'spontan', viewValue: 'QUESTIONNAIRE_FORSCHER.SPONTANEOUS' },
   ];
 
-  public static readonly hoursOfDay: QuestionnaireEditOptions[] = [];
+  public static readonly hoursOfDay: EditOption[] = [];
 
   public static readonly hoursPerDay: number[] = [
     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
     22, 23, 24,
   ];
 
-  public static readonly publishOptions: QuestionnaireEditOptions[] = [
+  public static readonly publishOptions: EditOption[] = [
     { value: 'hidden', viewValue: 'QUESTIONNAIRE_FORSCHER.HIDDEN' },
     { value: 'testprobands', viewValue: 'QUESTIONNAIRE_FORSCHER.TESTPROBANDS' },
     { value: 'allaudiences', viewValue: 'QUESTIONNAIRE_FORSCHER.ALLAUDIENCES' },
   ];
 
-  public static getHoursOfDay(timePostfix: string): QuestionnaireEditOptions[] {
+  public static getHoursOfDay(timePostfix: string = ''): EditOption[] {
     return [...Array(24).keys()].map((hour) => ({
       value: hour,
-      viewValue: `${hour < 10 ? '0' : ''}${hour} ${timePostfix}`,
+      viewValue: `${hour < 10 ? '0' : ''}${hour}${
+        timePostfix ? ' ' + timePostfix : ''
+      }`,
     }));
   }
 }

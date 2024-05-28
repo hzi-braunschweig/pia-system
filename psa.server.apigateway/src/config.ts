@@ -4,31 +4,29 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { ProxyRoute, ResponseRoute } from './proxyRoute';
 import { ConfigUtils } from '@pia/lib-service-core';
+import { StatusCodes } from 'http-status-codes';
 import { nonExposedKeycloakPaths } from './nonExposedKeycloakPaths';
+import { ProxyRouteConfig } from './proxyRoute';
+import { ResponseRouteConfig } from './responseRoute';
 
-const publicApiPath = '/api/v1/';
+const apiPath = '/api/v1/';
 const adminApiPath = '/admin/api/v1/';
+const publicApiPath = '/public/api/v1/';
 
-const publicUpstreamPath = '/';
+const upstreamPath = '/';
 const adminUpstreamPath = '/admin/';
+const publicUpstreamPath = '/public/';
 
 const isDevelopment =
   ConfigUtils.getEnvVariable('IS_DEVELOPMENT_SYSTEM', 'false').toLowerCase() ===
   'true';
-const isInternalSslEnabled =
-  ConfigUtils.getEnvVariable('PROTOCOL', 'https') !== 'http';
-
-function getProtocol(): 'https' | 'http' {
-  return isInternalSslEnabled ? 'https' : 'http';
-}
 
 const publicMetaData = {
   minimalAppVersion: '1.29.19',
 };
 
-const responseRoutes: ResponseRoute[] = [
+const responseRoutes: ResponseRouteConfig[] = [
   ...(isDevelopment ? [] : nonExposedKeycloakPaths),
   {
     path: '/api/v1/',
@@ -41,13 +39,12 @@ const responseRoutes: ResponseRoute[] = [
   },
 ];
 
-const routes: ProxyRoute[] = [
+const routes: ProxyRouteConfig[] = [
   {
-    path: publicApiPath + 'questionnaire/',
+    path: apiPath + 'questionnaire/',
     upstream: {
       host: 'questionnaireservice',
-      path: publicUpstreamPath,
-      protocol: getProtocol(),
+      path: upstreamPath,
       port: ConfigUtils.getEnvVariableInt('QUESTIONNAIRESERVICE_PORT'),
     },
   },
@@ -56,17 +53,27 @@ const routes: ProxyRoute[] = [
     upstream: {
       host: 'questionnaireservice',
       path: adminUpstreamPath,
-      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('QUESTIONNAIRESERVICE_PORT'),
+    },
+  },
+  {
+    path:
+      publicApiPath +
+      'studies/:studyName/participants/:pseudonym/questionnaire-instances',
+    upstream: {
+      host: 'questionnaireservice',
+      path:
+        publicUpstreamPath +
+        'studies/:studyName/participants/:pseudonym/questionnaire-instances',
       port: ConfigUtils.getEnvVariableInt('QUESTIONNAIRESERVICE_PORT'),
     },
   },
 
   {
-    path: publicApiPath + 'user/',
+    path: apiPath + 'user/',
     upstream: {
       host: 'userservice',
-      path: publicUpstreamPath,
-      protocol: getProtocol(),
+      path: upstreamPath,
       port: ConfigUtils.getEnvVariableInt('USERSERVICE_PORT'),
     },
   },
@@ -75,17 +82,23 @@ const routes: ProxyRoute[] = [
     upstream: {
       host: 'userservice',
       path: adminUpstreamPath,
-      protocol: getProtocol(),
+      port: ConfigUtils.getEnvVariableInt('USERSERVICE_PORT'),
+    },
+  },
+  {
+    path: publicApiPath + 'studies/:studyName/participants',
+    upstream: {
+      host: 'userservice',
+      path: publicUpstreamPath + 'studies/:studyName/participants',
       port: ConfigUtils.getEnvVariableInt('USERSERVICE_PORT'),
     },
   },
 
   {
-    path: publicApiPath + 'notification/',
+    path: apiPath + 'notification/',
     upstream: {
       host: 'notificationservice',
-      path: publicUpstreamPath,
-      protocol: getProtocol(),
+      path: upstreamPath,
       port: ConfigUtils.getEnvVariableInt('NOTIFICATIONSERVICE_PORT'),
     },
   },
@@ -94,17 +107,15 @@ const routes: ProxyRoute[] = [
     upstream: {
       host: 'notificationservice',
       path: adminUpstreamPath,
-      protocol: getProtocol(),
       port: ConfigUtils.getEnvVariableInt('NOTIFICATIONSERVICE_PORT'),
     },
   },
 
   {
-    path: publicApiPath + 'sample/',
+    path: apiPath + 'sample/',
     upstream: {
       host: 'sampletrackingservice',
-      path: publicUpstreamPath,
-      protocol: getProtocol(),
+      path: upstreamPath,
       port: ConfigUtils.getEnvVariableInt('SAMPLETRACKINGSERVICE_PORT'),
     },
   },
@@ -113,27 +124,24 @@ const routes: ProxyRoute[] = [
     upstream: {
       host: 'sampletrackingservice',
       path: adminUpstreamPath,
-      protocol: getProtocol(),
       port: ConfigUtils.getEnvVariableInt('SAMPLETRACKINGSERVICE_PORT'),
     },
   },
 
   {
-    path: publicApiPath + 'sormas/',
+    path: apiPath + 'sormas/',
     upstream: {
       host: 'sormasservice',
-      path: publicUpstreamPath,
-      protocol: getProtocol(),
+      path: upstreamPath,
       port: ConfigUtils.getEnvVariableInt('SORMASSERVICE_PORT'),
     },
   },
 
   {
-    path: publicApiPath + 'personal/',
+    path: apiPath + 'personal/',
     upstream: {
       host: 'personaldataservice',
-      path: publicUpstreamPath,
-      protocol: getProtocol(),
+      path: upstreamPath,
       port: ConfigUtils.getEnvVariableInt('PERSONALDATASERVICE_PORT'),
     },
   },
@@ -142,17 +150,15 @@ const routes: ProxyRoute[] = [
     upstream: {
       host: 'personaldataservice',
       path: adminUpstreamPath,
-      protocol: getProtocol(),
       port: ConfigUtils.getEnvVariableInt('PERSONALDATASERVICE_PORT'),
     },
   },
 
   {
-    path: publicApiPath + 'compliance/',
+    path: apiPath + 'compliance/',
     upstream: {
       host: 'complianceservice',
-      path: publicUpstreamPath,
-      protocol: getProtocol(),
+      path: upstreamPath,
       port: ConfigUtils.getEnvVariableInt('COMPLIANCESERVICE_PORT'),
     },
   },
@@ -161,17 +167,15 @@ const routes: ProxyRoute[] = [
     upstream: {
       host: 'complianceservice',
       path: adminUpstreamPath,
-      protocol: getProtocol(),
       port: ConfigUtils.getEnvVariableInt('COMPLIANCESERVICE_PORT'),
     },
   },
 
   {
-    path: publicApiPath + 'log/',
+    path: apiPath + 'log/',
     upstream: {
       host: 'loggingservice',
-      path: publicUpstreamPath,
-      protocol: getProtocol(),
+      path: upstreamPath,
       port: ConfigUtils.getEnvVariableInt('LOGGINGSERVICE_PORT'),
     },
   },
@@ -180,16 +184,14 @@ const routes: ProxyRoute[] = [
     upstream: {
       host: 'loggingservice',
       path: adminUpstreamPath,
-      protocol: getProtocol(),
       port: ConfigUtils.getEnvVariableInt('LOGGINGSERVICE_PORT'),
     },
   },
 
   {
-    path: publicApiPath + 'feedbackstatistic/',
+    path: apiPath + 'feedbackstatistic/',
     upstream: {
       host: 'feedbackstatisticservice',
-      protocol: getProtocol(),
       path: '/',
       port: ConfigUtils.getEnvVariableInt('FEEDBACKSTATISTICSERVICE_PORT'),
     },
@@ -199,16 +201,40 @@ const routes: ProxyRoute[] = [
     upstream: {
       host: 'feedbackstatisticservice',
       path: adminUpstreamPath,
-      protocol: getProtocol(),
       port: ConfigUtils.getEnvVariableInt('FEEDBACKSTATISTICSERVICE_PORT'),
     },
   },
 
   {
-    path: publicApiPath + 'auth/',
+    path: adminApiPath + 'event-history/',
+    upstream: {
+      host: 'eventhistoryserver',
+      path: adminUpstreamPath,
+      port: ConfigUtils.getEnvVariableInt('EVENTHISTORYSERVER_PORT'),
+    },
+  },
+  {
+    path: publicApiPath + 'event-history',
+    upstream: {
+      host: 'eventhistoryserver',
+      path: publicUpstreamPath + 'event-history',
+      port: ConfigUtils.getEnvVariableInt('EVENTHISTORYSERVER_PORT'),
+    },
+  },
+
+  {
+    path: adminApiPath + 'publicapi/',
+    upstream: {
+      host: 'publicapiserver',
+      path: adminUpstreamPath,
+      port: ConfigUtils.getEnvVariableInt('PUBLICAPISERVER_PORT'),
+    },
+  },
+
+  {
+    path: apiPath + 'auth/',
     upstream: {
       host: 'authserver',
-      protocol: 'https',
       path: '/',
       port: ConfigUtils.getEnvVariableInt('AUTHSERVER_PORT'),
     },
@@ -220,11 +246,7 @@ const routes: ProxyRoute[] = [
     upstream: {
       host: 'webappserver',
       path: '/',
-      protocol: getProtocol(),
-      port:
-        ConfigUtils.getEnvVariable('PROTOCOL', 'https') === 'http'
-          ? ConfigUtils.getEnvVariableInt('WEBAPPSERVER_HTTP_PORT')
-          : ConfigUtils.getEnvVariableInt('WEBAPPSERVER_HTTPS_PORT'),
+      port: ConfigUtils.getEnvVariableInt('WEBAPPSERVER_HTTP_PORT'),
     },
   },
 ];
@@ -235,35 +257,32 @@ if (isDevelopment) {
     upstream: {
       host: 'deploymentservice',
       path: '/deployment/',
-      protocol: 'http',
       port: ConfigUtils.getEnvVariableInt('DEPLOYMENTSERVICE_PORT'),
     },
   });
 }
 
+if (!isDevelopment) {
+  const responses: ResponseRouteConfig[] = routes.map((route) => {
+    return {
+      path: route.path + 'metrics',
+      response: {
+        statusCode: StatusCodes.FORBIDDEN,
+      },
+    };
+  });
+  responseRoutes.push(...responses);
+}
+
 export default {
   web: {
     internal: {
-      protocol: ConfigUtils.getEnvVariable('PROTOCOL', 'https'),
       port: parseInt(ConfigUtils.getEnvVariable('PORT', '443'), 10),
-      ssl: {
-        ca: ConfigUtils.getEnvVariable('SSL_CA', '/etc/ssl/ca.cert'),
-      },
     },
     external: {
-      protocol: ConfigUtils.getEnvVariable('EXTERNAL_PROTOCOL', 'https'),
-      port: parseInt(ConfigUtils.getEnvVariable('EXTERNAL_PORT', '443'), 10),
+      protocol: ConfigUtils.getEnvVariable('EXTERNAL_PROTOCOL', 'http'),
+      port: parseInt(ConfigUtils.getEnvVariable('EXTERNAL_PORT', '80'), 10),
       hostName: ConfigUtils.getEnvVariable('EXTERNAL_HOST_NAME', '_'),
-      ssl: {
-        certificate: ConfigUtils.getEnvVariable(
-          'SSL_CERTIFICATE',
-          '/etc/ssl/api.cert'
-        ),
-        key: ConfigUtils.getEnvVariable(
-          'SSL_CERTIFICATE_KEY',
-          '/etc/ssl/api.key'
-        ),
-      },
     },
     headers: {
       xFrameOptions: ConfigUtils.getEnvVariable('X_FRAME_OPTIONS', ''),

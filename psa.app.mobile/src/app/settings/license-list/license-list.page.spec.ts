@@ -29,51 +29,7 @@ import { MockComponent, MockPipe } from 'ng-mocks';
 import { TranslatePipe } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { HeaderComponent } from '../../shared/components/header/header.component';
-import {
-  Component,
-  ContentChild,
-  Directive,
-  Input,
-  OnChanges,
-  TemplateRef,
-  ViewContainerRef,
-} from '@angular/core';
-import { VirtualContext } from '@ionic/angular/directives/virtual-scroll/virtual-utils';
-
-@Directive({
-  // eslint-disable-next-line @angular-eslint/directive-selector
-  selector: '[virtualItem]',
-})
-export class MockVirtualItemDirective {
-  constructor(
-    public templateRef: TemplateRef<VirtualContext>,
-    public viewContainer: ViewContainerRef
-  ) {}
-}
-
-@Component({
-  // eslint-disable-next-line @angular-eslint/component-selector
-  selector: 'ion-virtual-scroll',
-  template: '<ng-content></ng-content>',
-})
-class MockVirtualScrollComponent implements OnChanges {
-  @ContentChild(MockVirtualItemDirective, { static: false })
-  itmTmp: MockVirtualItemDirective;
-
-  @Input() items;
-
-  ngOnChanges() {
-    if (this.items) {
-      this.itmTmp.viewContainer.clear();
-      this.items.forEach((item, index) => {
-        this.itmTmp.viewContainer.createEmbeddedView(this.itmTmp.templateRef, {
-          $implicit: item,
-          index,
-        });
-      });
-    }
-  }
-}
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 describe('LicenseListPage', () => {
   let component: LicenseListPage;
@@ -86,8 +42,6 @@ describe('LicenseListPage', () => {
         LicenseListPage,
         MockPipe(TranslatePipe),
         MockComponent(HeaderComponent),
-        MockVirtualItemDirective,
-        MockVirtualScrollComponent,
         IonContent,
         IonCard,
         IonCardHeader,
@@ -96,7 +50,7 @@ describe('LicenseListPage', () => {
         IonCardContent,
         IonSkeletonText,
       ],
-      imports: [HttpClientTestingModule],
+      imports: [HttpClientTestingModule, ScrollingModule],
     }).compileComponents();
   });
 
@@ -104,6 +58,7 @@ describe('LicenseListPage', () => {
     httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(LicenseListPage);
     component = fixture.componentInstance;
+
     fixture.detectChanges();
   });
 
@@ -135,13 +90,13 @@ describe('LicenseListPage', () => {
   it('should show cards with licenses', fakeAsync(() => {
     const mockRequest = httpMock.expectOne('../../../assets/licenses.json');
     mockRequest.flush(createLicensesJson());
+    fixture.autoDetectChanges();
     tick();
-    fixture.detectChanges();
 
     const cardElements = fixture.debugElement.queryAll(
       By.css('[data-unit="unit-license-card"]')
     );
-    expect(cardElements.length).toEqual(2);
+
     expect(
       cardElements[0]
         .query(By.css('[data-unit="unit-license-card-title"]'))

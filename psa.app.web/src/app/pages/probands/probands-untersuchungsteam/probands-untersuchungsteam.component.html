@@ -6,17 +6,12 @@
 
 <app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
 
-<div class="jumbotron">
-  <div
-    class="page-header"
-    fxLayout="row"
-    fxLayout.lt-lg="row wrap"
-    fxLayoutAlign="space-between center"
-  >
-    <div>
+<div class="jumbotron space-y">
+  <mat-card class="utility-card">
+    <mat-card-actions>
       <button
         id="createIDS"
-        mat-raised-button
+        mat-button
         color="primary"
         (click)="createIDS()"
         unit-create-ids
@@ -25,15 +20,15 @@
       </button>
       <button
         id="createProband"
-        mat-raised-button
+        mat-button
         color="primary"
         (click)="addOrEditProband()"
         unit-create-proband
       >
         {{ 'PROBANDEN.NEW_PROBAND' | translate }}
       </button>
-    </div>
-  </div>
+    </mat-card-actions>
+  </mat-card>
 
   <app-probands-list (isLoading)="this.isLoading = $event">
     <!-- Show lab results or details or register proband column -->

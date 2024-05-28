@@ -730,24 +730,6 @@ const postgresqlHelper = (function () {
     );
   }
 
-  async function getCommonStudiesOfAllUsers(users, options) {
-    if (!users || users.length === 0) return [];
-    const myDb = getDbTransactionFromOptionsOrDbConnection(options);
-    return myDb
-      .manyOrNone(
-        `SELECT study_id
-             FROM study_users
-             WHERE user_id IN ($(users:csv))
-             GROUP BY study_id
-             HAVING COUNT(user_id) = $(length);`,
-        {
-          users,
-          length: users.length,
-        }
-      )
-      .then((rows) => rows.map((row) => row.study_id));
-  }
-
   async function updateStudyWelcomeText(study_id, welcomeText) {
     return db.one(
       'INSERT INTO study_welcome_text (study_id, welcome_text)' +
@@ -1095,15 +1077,6 @@ const postgresqlHelper = (function () {
      * @returns {Promise} a resolved promise returning when deletion is finished
      */
     deleteStudyData: deleteStudyData,
-
-    /**
-     * @function
-     * @description gets a list of all studies all of the user have in common
-     * @param {string[]} users the users to be checked
-     * @param {IOptions} options a optional transaction
-     * @return {Promise<string[]>} the names of all common studies
-     */
-    getCommonStudiesOfAllUsers: getCommonStudiesOfAllUsers,
 
     /**
      * @function

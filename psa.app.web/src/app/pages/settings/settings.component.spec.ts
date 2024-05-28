@@ -10,10 +10,7 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MockBuilder } from 'ng-mocks';
 import { Subject } from 'rxjs';
 

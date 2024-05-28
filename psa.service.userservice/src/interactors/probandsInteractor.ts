@@ -11,43 +11,25 @@ import {
 } from '../models/proband';
 import Boom from '@hapi/boom';
 import {
-  ProbandAccountDeletionType,
+  ProbandSelfDeletionType,
   ProbandService,
 } from '../services/probandService';
 import {
   AccountCreateError,
   IdsAlreadyExistsError,
   PlannedProbandNotFoundError,
-  ProbandNotFoundError,
+  ParticipantNotFoundError,
   ProbandSaveError,
   PseudonymAlreadyExistsError,
   StudyNotFoundError,
 } from '../errors';
-import { getRepository } from 'typeorm';
-import { Proband } from '../entities/proband';
-import { AccountStatus } from '../models/accountStatus';
-import { ProbandAccountService } from '../services/probandAccountService';
 import { AccessToken } from '@pia/lib-service-core';
 
 export class ProbandsInteractor {
   public static async getAllProbandsOfStudy(
     studyName: string
   ): Promise<ProbandDto[]> {
-    const probandAccountsList =
-      await ProbandAccountService.getProbandAccountsByStudyName(studyName);
-    const probandAccountsSet = new Set(
-      probandAccountsList.map((account) => account.username)
-    );
-
-    return (
-      await getRepository(Proband).find({ study: { name: studyName } })
-    ).map((proband) => ({
-      ...proband,
-      study: studyName,
-      accountStatus: probandAccountsSet.has(proband.pseudonym)
-        ? AccountStatus.ACCOUNT
-        : AccountStatus.NO_ACCOUNT,
-    }));
+    return await ProbandService.getAllProbandsOfStudy(studyName);
   }
 
   public static async createProband(
@@ -68,7 +50,7 @@ export class ProbandsInteractor {
         throw Boom.preconditionRequired('planned proband not found');
       } else if (e instanceof PseudonymAlreadyExistsError) {
         throw Boom.conflict('proband with same pseudonym already exists');
-      } else if (e instanceof ProbandNotFoundError) {
+      } else if (e instanceof ParticipantNotFoundError) {
         throw Boom.conflict('proband with the given ids not found');
       } else if (e instanceof AccountCreateError) {
         console.error(e);
@@ -112,13 +94,16 @@ export class ProbandsInteractor {
   public static async deleteAccount(
     decodedToken: AccessToken,
     pseudonym: string,
-    deletionType: ProbandAccountDeletionType
+    selfDeletionType: ProbandSelfDeletionType
   ): Promise<null> {
     if (pseudonym !== decodedToken.username) {
       throw Boom.forbidden('probands can only delete their own accounts');
     }
-    if (deletionType === 'full') {
-      await ProbandService.delete(pseudonym);
+    if (selfDeletionType === 'full') {
+      // A participant deleting themselves fully, means deleting everything except the pseudonym.
+      // ProbandService.delete() accepts the ProbandDeletionType, which needs to be 'default' to
+      // keep the pseudonym and delete everything else.
+      await ProbandService.delete(pseudonym, 'default');
     } else {
       await ProbandService.revokeComplianceContact(pseudonym);
     }

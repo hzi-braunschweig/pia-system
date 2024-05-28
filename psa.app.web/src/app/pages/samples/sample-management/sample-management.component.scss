@@ -4,21 +4,25 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-/* Structure */
+.utility-card {
+  --grid-template-columns: repeat(var(--columns), 1fr);
+}
+
 .probands-container {
   display: flex;
   flex-direction: column;
   min-width: 300px;
   opacity: 0.8;
+}
 
-  .material-column {
-    max-width: 40px;
+.mat-column-select,
+.mat-column-needs_material {
+  flex: 0 1 auto;
+}
 
-    .mat-icon {
-      color: red;
-      font-weight: bold;
-    }
-  }
+.needs-material-icon {
+  color: red;
+  font-weight: bold;
 }
 
 .probands-header {
@@ -32,42 +36,13 @@
   border-bottom: 1px solid transparent;
 }
 
-.mat-form-field {
-  font-size: 14px;
-  flex-grow: 1;
-  margin-top: 8px;
-  margin-bottom: 30px;
-  max-width: 150px;
-}
-
-.mat-cell {
+.mat-mdc-cell {
   display: flex;
   justify-content: flex-start;
   text-align: start;
 }
 
-.mat-header-cell {
+.mat-mdc-header-cell {
   display: flex;
   justify-content: flex-start;
-}
-
-.questionnaire-header {
-  margin-bottom: 10px;
-
-  .mat-checkbox {
-    margin-bottom: 30px;
-  }
-
-  .mat-grid-tile {
-    button:only-child {
-      width: 250px;
-      margin-bottom: 30px;
-    }
-
-    &:last-child {
-      .mat-form-field {
-        max-width: 200px;
-      }
-    }
-  }
 }

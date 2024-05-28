@@ -50,6 +50,7 @@ export class CodebookExport extends AbstractExportFeature {
           'questionnaire.name',
           'question.id',
           'question.text',
+          'question.help_text',
           'question.variable_name as question_variable_name',
           'question.position',
           'question.is_mandatory',

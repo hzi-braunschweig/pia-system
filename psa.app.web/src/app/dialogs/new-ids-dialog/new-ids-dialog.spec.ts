@@ -7,7 +7,7 @@
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 import { AppModule } from '../../app.module';
 import { DialogNewIdsComponent } from './new-ids-dialog';
-import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
 import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 import { CreateIDSProbandRequest } from '../../psa.app.core/models/proband';

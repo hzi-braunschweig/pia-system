@@ -200,18 +200,34 @@ describe('MessageQueueClient functionality', () => {
     await mq2.connect();
 
     try {
-      let received = 0;
-      const producer = await mq1.createProducer(topic);
-      await mq2.createConsumer(topic, async () => {
-        received++;
-        return Promise.resolve();
-      });
-
-      await producer.publish({ x: 'dummy' });
-
-      while (received !== 1) {
-        await delay(DELAY_TIME);
+      interface Arguments {
+        message: { x: string };
+        timestamp: Date;
       }
+
+      const expectedMessage = { x: 'dummy' };
+      const producer = await mq1.createProducer(topic);
+
+      let resolver: (value: Arguments | PromiseLike<Arguments>) => void;
+
+      const consumer = new Promise<Arguments>(
+        (resolve) => (resolver = resolve)
+      );
+
+      await mq2.createConsumer(
+        topic,
+        async (message: { x: string }, timestamp: Date) => {
+          resolver({ message, timestamp });
+          return Promise.resolve();
+        }
+      );
+
+      producer.publish(expectedMessage).catch(console.error);
+
+      const message = await consumer;
+
+      expect(message.message).to.deep.equal(expectedMessage);
+      expect(message.timestamp).to.be.instanceOf(Date);
     } finally {
       await mq1.disconnect();
       await mq2.disconnect();

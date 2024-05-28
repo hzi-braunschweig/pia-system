@@ -20,7 +20,7 @@ FROM node:20.3.0-alpine AS base
 ARG DIR=.
 COPY $DIR/package*.json ./
 #copy dependencies' package.json
-COPY --chown=node:node psa.lib.auth-server-client/package.json ../psa.lib.auth-server-client/
+COPY --chown=node:node psa.lib.auth-server-client/package*.json ../psa.lib.auth-server-client/
 
 RUN npm ci --omit=dev
 #copy dependencies' source

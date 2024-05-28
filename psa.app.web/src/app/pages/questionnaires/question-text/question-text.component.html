@@ -1,0 +1,11 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<markdown [data]="text" data-unit-text></markdown>
+<p class="help-text" *ngIf="helpText" data-unit-help-text-wrapper>
+  <mat-icon class="icon">help_outlined</mat-icon>
+  <markdown [data]="helpText" data-unit-help-text></markdown>
+</p>

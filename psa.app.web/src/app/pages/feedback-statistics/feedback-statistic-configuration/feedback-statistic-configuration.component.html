@@ -6,21 +6,22 @@
 
 <app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
 
-<div class="jumbotron">
-  <h2>
+<div class="jumbotron space-y">
+  <h3>
     <button mat-icon-button class="back-button" (click)="goBack()">
       <mat-icon class="back-icon">arrow_back_ios</mat-icon>
     </button>
     {{
       'FEEDBACK_STATISTICS.HEADING' | translate: { studyName: this.studyName }
     }}
-  </h2>
+  </h3>
 
   <app-feedback-statistic-meta-data
     [study]="studyName"
   ></app-feedback-statistic-meta-data>
 
-  <ng-container
+  <div
+    class="space-y"
     [ngSwitch]="metaDataConfigurationComponent?.form.controls.type.value"
   >
     <app-relative-frequency-time-series-configuration
@@ -28,7 +29,7 @@
       *ngSwitchCase="'relative_frequency_time_series'"
       [study]="studyName"
     ></app-relative-frequency-time-series-configuration>
-  </ng-container>
+  </div>
 
   <button
     type="button"

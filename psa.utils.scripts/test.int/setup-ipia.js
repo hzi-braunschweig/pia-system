@@ -11,10 +11,8 @@ const setupIpia = {
   configure: function ({ registry }) {
     const config = {
       postgresContainer: 'pia-postgres-ipia-test.int',
-      postgresImageBase: `${registry}/pia/psa.database.ipia:test.int-base`,
       postgresImage: `${registry}/pia/psa.database.ipia:test.int`,
       postgresPath: '../psa.database.ipia',
-      postgresSecretsPath: '../psa.utils.scripts/secrets-dockerfile',
       dbUser: 'user_' + random.createRandomString(16),
       dbPassword: random.createRandomString(16),
       dbName: random.createRandomString(16),
@@ -36,14 +34,12 @@ const setupIpia = {
     config.env.DB_PERSONALDATA_USER = config.dbPersonaldataUser;
     config.env.DB_PERSONALDATA_PASSWORD = config.dbPersonaldataPassword;
     config.env.DB_PERSONALDATA_DB = config.dbName;
-    config.env.DB_PERSONALDATA_ACCEPT_UNAUTHORIZED = 'true';
 
     config.env.DB_AUTHSERVER_HOST = 'localhost';
     config.env.DB_AUTHSERVER_PORT = config.dbPort.toString();
     config.env.DB_AUTHSERVER_USER = config.dbAuthserverUser;
     config.env.DB_AUTHSERVER_PASSWORD = config.dbAuthserverPassword;
     config.env.DB_AUTHSERVER_DB = config.dbName;
-    config.env.DB_AUTHSERVER_ACCEPT_UNAUTHORIZED = 'true';
 
     env.update(config.env);
 

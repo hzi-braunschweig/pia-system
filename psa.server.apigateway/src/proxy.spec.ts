@@ -5,14 +5,15 @@
  */
 
 import { expect } from 'chai';
-import { Proxy as HttpProxy } from './proxy';
-import { Route } from './proxyRoute';
-import { HttpServer } from './httpServer';
-import { Headers } from './headers';
+import * as http from 'http';
 import { StatusCodes } from 'http-status-codes';
 import { default as fetch, Response } from 'node-fetch';
 
-import * as http from 'http';
+import { Proxy as HttpProxy } from './proxy';
+import { HttpServer } from './httpServer';
+import { Headers } from './headers';
+import { ProxyRouteConfig } from './proxyRoute';
+import { ResponseRouteConfig } from './responseRoute';
 
 class TestHttpServer extends HttpServer<unknown> {
   private statusCode: number | undefined;
@@ -93,23 +94,11 @@ class Helper {
   }
 
   public static async startProxy(
-    routes: Route[],
+    routes: (ProxyRouteConfig | ResponseRouteConfig)[],
     loggingDisabled = true,
-    headers?: Headers,
-    ssl = false
+    headers?: Headers
   ): Promise<TestProxy> {
-    const proxy = new TestProxy(
-      routes,
-      ssl
-        ? {
-            key: Buffer.alloc(0),
-            cert: Buffer.alloc(0),
-          }
-        : undefined,
-      undefined,
-      loggingDisabled,
-      headers
-    );
+    const proxy = new TestProxy(routes, loggingDisabled, headers);
     await proxy.listen();
     this.servers.push(proxy);
     return proxy;
@@ -145,7 +134,6 @@ describe('Proxy', () => {
           host: 'localhost',
           port: 1,
           path: '/',
-          protocol: 'http',
         },
       },
     ]);
@@ -162,7 +150,6 @@ describe('Proxy', () => {
           host: 'localhost',
           port: dummy.getPort(),
           path: '/',
-          protocol: 'http',
         },
       },
     ]);
@@ -179,7 +166,6 @@ describe('Proxy', () => {
           host: 'localhost',
           port: dummy.getPort(),
           path: '/test/',
-          protocol: 'http',
         },
       },
       {
@@ -188,7 +174,6 @@ describe('Proxy', () => {
           host: 'localhost',
           port: dummy.getPort(),
           path: '/test/',
-          protocol: 'http',
         },
       },
       {
@@ -197,7 +182,22 @@ describe('Proxy', () => {
           host: 'localhost',
           port: dummy.getPort(),
           path: '/test/',
-          protocol: 'http',
+        },
+      },
+      {
+        path: '/public/dynamic/:segment',
+        upstream: {
+          host: 'localhost',
+          port: dummy.getPort(),
+          path: '/dynamic/:segment/',
+        },
+      },
+      {
+        path: '/public/api/v1/dynamic/:segment2/and/:another/:segment1',
+        upstream: {
+          host: 'localhost',
+          port: dummy.getPort(),
+          path: '/public/dynamic/:segment1/and/:another/:segment2',
         },
       },
     ]);
@@ -205,6 +205,24 @@ describe('Proxy', () => {
     await Helper.expectUrl(proxy, '/test/a', '/test/a');
     await Helper.expectUrl(proxy, '/admin/test/a', '/test/a');
     await Helper.expectUrl(proxy, '/api/v1/test/a', '/test/a');
+    await Helper.expectUrl(proxy, '/public/dynamic/1', '/dynamic/1/');
+    await Helper.expectUrl(proxy, '/public/dynamic/123', '/dynamic/123/');
+    await Helper.expectUrl(proxy, '/public/dynamic/5678', '/dynamic/5678/');
+    await Helper.expectUrl(
+      proxy,
+      '/public/dynamic/123/additional/segments',
+      '/dynamic/123/additional/segments'
+    );
+    await Helper.expectUrl(
+      proxy,
+      '/public/api/v1/dynamic/segment2/and/another/segment1',
+      '/public/dynamic/segment1/and/another/segment2'
+    );
+    await Helper.expectUrl(
+      proxy,
+      '/public/api/v1/dynamic/segment2/and/another/segment1/with/even/more',
+      '/public/dynamic/segment1/and/another/segment2/with/even/more'
+    );
   });
 
   it('can rewrite routes with special characters correctly', async () => {
@@ -216,7 +234,6 @@ describe('Proxy', () => {
           host: 'localhost',
           port: dummy.getPort(),
           path: '/test/',
-          protocol: 'http',
         },
       },
       {
@@ -225,7 +242,6 @@ describe('Proxy', () => {
           host: 'localhost',
           port: dummy.getPort(),
           path: '/test/',
-          protocol: 'http',
         },
       },
       {
@@ -234,7 +250,6 @@ describe('Proxy', () => {
           host: 'localhost',
           port: dummy.getPort(),
           path: '/test/',
-          protocol: 'http',
         },
       },
     ]);
@@ -242,6 +257,51 @@ describe('Proxy', () => {
     await Helper.expectUrl(proxy, '/test/a b c de', '/test/a b c de');
     await Helper.expectUrl(proxy, '/admin/test/a b c de', '/test/a b c de');
     await Helper.expectUrl(proxy, '/api/v1/test/a b c de', '/test/a b c de');
+  });
+
+  it('can handle query params', async () => {
+    const dummy = await Helper.startHttpServer();
+    const proxy = await Helper.startProxy([
+      {
+        path: '/test',
+        upstream: {
+          host: 'localhost',
+          port: dummy.getPort(),
+          path: '/test/',
+        },
+      },
+    ]);
+
+    await Helper.expectUrl(
+      proxy,
+      '/test/some/path?param=1',
+      '/test/some/path?param=1'
+    );
+    await Helper.expectUrl(
+      proxy,
+      '/test/some/path?param=test&anotherparam=1234',
+      '/test/some/path?param=test&anotherparam=1234'
+    );
+  });
+
+  it('ignores url fragments', async () => {
+    const dummy = await Helper.startHttpServer();
+    const proxy = await Helper.startProxy([
+      {
+        path: '/test',
+        upstream: {
+          host: 'localhost',
+          port: dummy.getPort(),
+          path: '/test/',
+        },
+      },
+    ]);
+
+    await Helper.expectUrl(
+      proxy,
+      '/test/some/path#irrelevant-hash',
+      '/test/some/path'
+    );
   });
 
   it('works with logging enabled', async () => {
@@ -254,7 +314,6 @@ describe('Proxy', () => {
             host: 'localhost',
             port: dummy.getPort(),
             path: '/test/',
-            protocol: 'http',
           },
         },
       ],
@@ -274,7 +333,6 @@ describe('Proxy', () => {
             host: 'localhost',
             port: dummy.getPort(),
             path: '/',
-            protocol: 'http',
           },
         },
       ],
@@ -295,7 +353,6 @@ describe('Proxy', () => {
             host: 'localhost',
             port: dummy.getPort(),
             path: '/',
-            protocol: 'http',
           },
         },
       ],
@@ -316,7 +373,6 @@ describe('Proxy', () => {
             host: 'localhost',
             port: dummy.getPort(),
             path: '/',
-            protocol: 'http',
           },
         },
       ],
@@ -339,7 +395,6 @@ describe('Proxy', () => {
             host: 'localhost',
             port: dummy.getPort(),
             path: '/',
-            protocol: 'http',
           },
         },
       ],
@@ -369,7 +424,6 @@ describe('Proxy', () => {
             host: 'localhost',
             port: dummy.getPort(),
             path: '/',
-            protocol: 'http',
           },
         },
       ],
@@ -383,31 +437,6 @@ describe('Proxy', () => {
     const response = await Helper.expectUrl(proxy, '/test', '/test');
     expect(response.headers.has('x-frame-options')).to.equal(false);
     expect(response.headers.has('content-security-policy')).to.equal(false);
-  });
-
-  it('crashes on https without key/cert', async () => {
-    const dummy = await Helper.startHttpServer();
-    const result = Helper.startProxy(
-      [
-        {
-          path: '/',
-          upstream: {
-            host: 'localhost',
-            port: dummy.getPort(),
-            path: '/',
-            protocol: 'http',
-          },
-        },
-      ],
-      false,
-      undefined,
-      true
-    ).then(
-      async () => Promise.resolve(false),
-      async () => Promise.resolve(true)
-    );
-
-    expect(await result).to.equal(true);
   });
 
   it('should return a predefined response', async () => {
@@ -447,7 +476,6 @@ describe('Proxy', () => {
           host: 'localhost',
           port: dummy.getPort(),
           path: '/',
-          protocol: 'http',
         },
       },
     ]);
@@ -485,7 +513,6 @@ describe('Proxy', () => {
           host: 'localhost',
           port: dummy.getPort(),
           path: '/',
-          protocol: 'http',
         },
       },
     ]);

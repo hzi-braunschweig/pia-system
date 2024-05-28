@@ -35,6 +35,7 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 
+import { logout } from './commands';
 import {
   login,
   loginProband,
@@ -45,6 +46,8 @@ import {
   createRandomProband,
   deleteProfessionalUser,
   deleteProband,
+  logoutParticipant,
+  logoutProfessional,
 } from './user.commands';
 import {
   createStudy,
@@ -74,6 +77,8 @@ declare global {
       configurePseudonymPrefix: typeof configurePseudonymPrefix;
       // helper commands
       expectPathname: typeof expectLocation;
+      logoutParticipant: typeof logoutParticipant;
+      logoutProfessional: typeof logoutProfessional;
     }
   }
 }
@@ -95,3 +100,5 @@ Cypress.Commands.add('disableFourEyesOpposition', disableFourEyesOpposition);
 Cypress.Commands.add('configurePseudonymPrefix', configurePseudonymPrefix);
 // helper commands
 Cypress.Commands.add('expectPathname', expectLocation);
+Cypress.Commands.add('logoutParticipant', logoutParticipant);
+Cypress.Commands.add('logoutProfessional', logoutProfessional);

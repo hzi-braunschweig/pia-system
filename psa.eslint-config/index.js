@@ -20,7 +20,7 @@ module.exports = {
     'prefer-const': 'error',
     'no-only-tests/no-only-tests': 'error',
   },
-  ignorePatterns: ['dist'],
+  ignorePatterns: ['dist', 'spec', '*.generated.ts'],
   overrides: [
     {
       files: '**/*.ts',

@@ -74,7 +74,7 @@ export class QuestionnaireInstancesHandler {
     const { status, progress, release_version } = request.payload as {
       status: QuestionnaireInstanceStatus | null;
       progress: number;
-      release_version: number;
+      release_version: number | null;
     };
 
     try {

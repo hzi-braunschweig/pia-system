@@ -12,7 +12,11 @@ class MessageQueueTestUtils {
                     if (!sandbox) {
                         mqcp.handleMessage = original;
                     }
-                    resolve();
+                    const data = JSON.parse(args.message.content.toString());
+                    resolve({
+                        message: data.message,
+                        timestamp: args.message.properties.timestamp,
+                    });
                 }
             };
             if (sandbox) {

@@ -5,7 +5,7 @@
  */
 
 const complianceTextRepository = require('../repositories/complianceTextRepository');
-const complianceService = require('../services/complianceService');
+const { ComplianceService } = require('../services/complianceService');
 const textSegmentationPipe = require('../services/textSegmentationPipe');
 
 class ComplianceTextInteractor {
@@ -110,7 +110,7 @@ class ComplianceTextInteractor {
    * @returns {Promise<boolean>} the converted compliance text as a segmented document
    */
   static async isInternalComplianceActive(request, study) {
-    return complianceService.isInternalComplianceActive(study);
+    return ComplianceService.isInternalComplianceActive(study);
   }
 }
 

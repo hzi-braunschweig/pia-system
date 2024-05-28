@@ -22,10 +22,12 @@
       <form [formGroup]="probandForm" novalidate>
         <div class="grid-container">
           <mat-form-field>
+            <mat-label>{{
+              'PROBAND_PERSONAL_INFO.SALUTATION' | translate
+            }}</mat-label>
             <mat-select
               disableOptionCentering
               id="selectanrede"
-              placeholder="{{ 'PROBAND_PERSONAL_INFO.SALUTATION' | translate }}"
               formControlName="anrede"
             >
               <mat-option *ngFor="let anrede of anreden" [value]="anrede">
@@ -34,11 +36,10 @@
             </mat-select>
           </mat-form-field>
           <mat-form-field>
-            <input
-              matInput
-              placeholder="{{ 'PROBAND_PERSONAL_INFO.TITLE' | translate }}"
-              formControlName="titel"
-            />
+            <mat-label>{{
+              'PROBAND_PERSONAL_INFO.TITLE' | translate
+            }}</mat-label>
+            <input matInput formControlName="titel" />
             <mat-error *ngIf="probandForm.get('titel').hasError('maxlength')"
               >{{
                 'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
@@ -52,11 +53,8 @@
             </mat-error>
           </mat-form-field>
           <mat-form-field>
-            <input
-              matInput
-              placeholder="{{ 'SAMPLE_MANAGEMENT.VORNAME' | translate }}"
-              formControlName="vorname"
-            />
+            <mat-label>{{ 'SAMPLE_MANAGEMENT.VORNAME' | translate }}</mat-label>
+            <input matInput formControlName="vorname" />
             <mat-error *ngIf="probandForm.get('vorname').hasError('maxlength')"
               >{{
                 'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
@@ -70,11 +68,10 @@
             </mat-error>
           </mat-form-field>
           <mat-form-field>
-            <input
-              matInput
-              placeholder="{{ 'SAMPLE_MANAGEMENT.NACHNAME' | translate }}"
-              formControlName="name"
-            />
+            <mat-label>{{
+              'SAMPLE_MANAGEMENT.NACHNAME' | translate
+            }}</mat-label>
+            <input matInput formControlName="name" />
             <mat-error *ngIf="probandForm.get('name').hasError('maxlength')"
               >{{
                 'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
@@ -90,11 +87,8 @@
         <div class="grid-container">
           <div class="double-input-street-house-no">
             <mat-form-field>
-              <input
-                matInput
-                placeholder="{{ 'GENERAL.STREET' | translate }}"
-                formControlName="strasse"
-              />
+              <mat-label>{{ 'GENERAL.STREET' | translate }}</mat-label>
+              <input matInput formControlName="strasse" />
               <mat-error
                 *ngIf="probandForm.get('strasse').hasError('maxlength')"
                 >{{
@@ -109,11 +103,8 @@
               </mat-error>
             </mat-form-field>
             <mat-form-field>
-              <input
-                matInput
-                placeholder="{{ 'GENERAL.HOUSE_NR' | translate }}"
-                formControlName="haus_nr"
-              />
+              <mat-label>{{ 'GENERAL.HOUSE_NR' | translate }}</mat-label>
+              <input matInput formControlName="haus_nr" />
               <mat-error
                 *ngIf="probandForm.get('haus_nr').hasError('maxlength')"
                 >{{
@@ -129,11 +120,8 @@
             </mat-form-field>
           </div>
           <mat-form-field>
-            <input
-              matInput
-              placeholder="{{ 'GENERAL.ZIP_CODE' | translate }}"
-              formControlName="plz"
-            />
+            <mat-label>{{ 'GENERAL.ZIP_CODE' | translate }}</mat-label>
+            <input matInput formControlName="plz" />
             <mat-error *ngIf="probandForm.get('plz').hasError('pattern')"
               >{{ 'PROBAND_PERSONAL_INFO.ZIP_CODE_ERROR_TEXT' | translate }}
             </mat-error>
@@ -149,11 +137,8 @@
             </mat-error>
           </mat-form-field>
           <mat-form-field>
-            <input
-              matInput
-              placeholder="{{ 'GENERAL.DISTRICT' | translate }}"
-              formControlName="landkreis"
-            />
+            <mat-label>{{ 'GENERAL.DISTRICT' | translate }}</mat-label>
+            <input matInput formControlName="landkreis" />
             <mat-error
               *ngIf="probandForm.get('landkreis').hasError('maxlength')"
               >{{
@@ -168,11 +153,8 @@
             </mat-error>
           </mat-form-field>
           <mat-form-field>
-            <input
-              matInput
-              placeholder="{{ 'GENERAL.CITY' | translate }}"
-              formControlName="ort"
-            />
+            <mat-label>{{ 'GENERAL.CITY' | translate }}</mat-label>
+            <input matInput formControlName="ort" />
             <mat-error *ngIf="probandForm.get('ort').hasError('maxlength')"
               >{{
                 'PROBAND_PERSONAL_INFO.PHONENUMBER_LENGTH_TEXT'
@@ -187,11 +169,8 @@
         </div>
         <div class="grid-container">
           <mat-form-field class="example-full-width">
-            <input
-              matInput
-              placeholder="{{ 'GENERAL.EMAIL' | translate }}"
-              formControlName="email"
-            />
+            <mat-label>{{ 'GENERAL.EMAIL' | translate }}</mat-label>
+            <input matInput formControlName="email" />
             <mat-error *ngIf="probandForm.get('email').hasError('email')">{{
               'PROBAND_PERSONAL_INFO.EMAIL_ERROR_TEXT' | translate
             }}</mat-error>
@@ -208,14 +187,10 @@
             </mat-error>
           </mat-form-field>
           <mat-form-field>
-            <input
-              matInput
-              type="tel"
-              placeholder="{{
-                'PROBAND_PERSONAL_INFO.PRIVATE_PHONENUMBER' | translate
-              }}"
-              formControlName="telefon_privat"
-            />
+            <mat-label>{{
+              'PROBAND_PERSONAL_INFO.PRIVATE_PHONENUMBER' | translate
+            }}</mat-label>
+            <input matInput type="tel" formControlName="telefon_privat" />
             <mat-error
               *ngIf="probandForm.get('telefon_privat').hasError('pattern')"
               >{{ 'PROBAND_PERSONAL_INFO.PHONENUMBER_ERROR_TEXT' | translate }}
@@ -235,14 +210,10 @@
             </mat-error>
           </mat-form-field>
           <mat-form-field>
-            <input
-              matInput
-              type="tel"
-              placeholder="{{
-                'PROBAND_PERSONAL_INFO.BUSINESS_PHONENUMBER' | translate
-              }}"
-              formControlName="telefon_dienst"
-            />
+            <mat-label>{{
+              'PROBAND_PERSONAL_INFO.BUSINESS_PHONENUMBER' | translate
+            }}</mat-label>
+            <input matInput type="tel" formControlName="telefon_dienst" />
             <mat-error
               *ngIf="probandForm.get('telefon_dienst').hasError('pattern')"
               >{{ 'PROBAND_PERSONAL_INFO.PHONENUMBER_ERROR_TEXT' | translate }}
@@ -262,14 +233,10 @@
             </mat-error>
           </mat-form-field>
           <mat-form-field>
-            <input
-              matInput
-              type="tel"
-              placeholder="{{
-                'PROBAND_PERSONAL_INFO.MOBILE_PHONENUMBER' | translate
-              }}"
-              formControlName="telefon_mobil"
-            />
+            <mat-label>{{
+              'PROBAND_PERSONAL_INFO.MOBILE_PHONENUMBER' | translate
+            }}</mat-label>
+            <input matInput type="tel" formControlName="telefon_mobil" />
             <mat-error
               *ngIf="probandForm.get('telefon_mobil').hasError('pattern')"
               >{{ 'PROBAND_PERSONAL_INFO.PHONENUMBER_ERROR_TEXT' | translate }}
@@ -291,16 +258,16 @@
         </div>
         <div class="grid-container">
           <mat-form-field class="comment">
+            <mat-label>{{
+              'PROBAND_PERSONAL_INFO.COMMENT_FIELD' | translate
+            }}</mat-label>
             <textarea
               matInput
               #comment
-              placeholder="{{
-                'PROBAND_PERSONAL_INFO.COMMENT_FIELD' | translate
-              }}"
               maxlength="3000"
-              matTextareaAutosize
-              matAutosizeMinRows="5"
-              matAutosizeMaxRows="10"
+              cdkTextareaAutosize
+              cdkAutosizeMinRows="5"
+              cdkAutosizeMaxRows="10"
               formControlName="comment"
             ></textarea>
             <mat-error *ngIf="probandForm.get('comment').hasError('maxlength')"

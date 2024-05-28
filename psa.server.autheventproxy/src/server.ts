@@ -6,12 +6,13 @@
 
 import Hapi from '@hapi/hapi';
 
-import { ErrorHandler, Metrics, Server } from '@pia/lib-service-core';
+import { ErrorHandler, Health, Metrics, Server } from '@pia/lib-service-core';
 import { config } from './config';
 import {
   MessageQueueService,
   MessageQueueServiceFactory,
 } from './services/messageQueueService';
+import { probandAuthClient } from './clients/authServerClient';
 
 export class AuthEventProxyServer implements Server {
   private readonly hapi: Hapi.Server;
@@ -24,7 +25,6 @@ export class AuthEventProxyServer implements Server {
     this.hapi = Hapi.server({
       host: config.public.host,
       port: config.public.port,
-      tls: config.public.tls,
       routes: {
         cors: { origin: ['*'] },
         timeout: {
@@ -34,13 +34,16 @@ export class AuthEventProxyServer implements Server {
       },
       app: {
         healthcheck: async () =>
-          Promise.resolve(this.messageQueueService.isConnected()),
+          Promise.resolve(
+            this.messageQueueService.isConnected() &&
+              probandAuthClient.isConnected()
+          ),
       },
     });
   }
 
   public async init(): Promise<void> {
-    await this.hapi.register([Metrics, ErrorHandler]);
+    await this.hapi.register([Metrics, Health, ErrorHandler]);
 
     await this.messageQueueService.connect();
     await this.hapi.start();

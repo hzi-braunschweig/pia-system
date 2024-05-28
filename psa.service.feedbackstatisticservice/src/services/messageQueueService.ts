@@ -8,18 +8,12 @@ import {
   MessageQueueClient,
   MessageQueueTopic,
   Producer,
+  FeedbackStatisticConfigurationUpdatedMessage,
+  StudyDeletedMessage,
 } from '@pia/lib-messagequeue';
 import { config } from '../config';
 import { FeedbackStatisticUpdater } from './feedbackStatisticUpdater';
 import { FeedbackStatisticConfigurationService } from './feedbackStatisticConfigurationService';
-
-export interface FeedbackStatisticConfigurationUpdatedMessage {
-  configurationId: number;
-}
-
-export interface StudyDeletedMessage {
-  studyName: string;
-}
 
 export class MessageQueueService extends MessageQueueClient {
   private configurationUpdated?: Producer<FeedbackStatisticConfigurationUpdatedMessage>;

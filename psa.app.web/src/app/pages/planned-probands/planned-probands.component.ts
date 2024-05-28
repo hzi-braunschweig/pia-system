@@ -8,13 +8,10 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormControl } from '@angular/forms';
 import { SelectionModel } from '@angular/cdk/collections';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import {
-  MatLegacyPaginator as MatPaginator,
-  MatLegacyPaginatorIntl as MatPaginatorIntl,
-} from '@angular/material/legacy-paginator';
+import { MatDialog } from '@angular/material/dialog';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { TranslateService } from '@ngx-translate/core';
 import { debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 
@@ -30,7 +27,6 @@ import { format } from 'date-fns';
 @Component({
   selector: 'app-planned-probands',
   templateUrl: './planned-probands.component.html',
-  styleUrls: ['./planned-probands.component.scss'],
   providers: [
     {
       provide: MatPaginatorIntl,

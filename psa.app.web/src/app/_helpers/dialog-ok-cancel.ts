@@ -4,14 +4,15 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { CommonModule } from '@angular/common';
 import { Component, Inject } from '@angular/core';
 import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogModule,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { MatLegacyButtonModule } from '@angular/material/legacy-button';
+import { MatButtonModule } from '@angular/material/button';
 
 export interface DialogOkCancelComponentData {
   q?: string;
@@ -23,28 +24,30 @@ export type DialogOkCancelComponentReturn = 'ok';
   selector: 'dialog-ok-cancel',
   standalone: true,
   template: `
-    <h1 mat-dialog-title style=" display: flex; justify-content: center; ">
-      {{ data.q | translate }}
-    </h1>
-    <div mat-dialog-content>
-      {{ data.content | translate }}
-    </div>
-    <hr />
-    <mat-dialog-actions align="center">
-      <button id="cancelButton" mat-raised-button (click)="cancel()">
+    <h1 *ngIf="data.q" mat-dialog-title>{{ data.q | translate }}</h1>
+    <div mat-dialog-content>{{ data.content | translate }}</div>
+    <mat-dialog-actions>
+      <button
+        id="cancelButton"
+        data-e2e="dialog-button-cancel"
+        mat-button
+        (click)="cancel()"
+      >
         {{ 'GENERAL.CANCEL' | translate }}
       </button>
       <button
         id="confirmButton"
-        mat-raised-button
+        mat-button
+        cdkFocusInitial
         color="primary"
         (click)="confirmSelection()"
+        data-e2e="dialog-button-accept"
       >
         {{ 'GENERAL.OK' | translate }}
       </button>
     </mat-dialog-actions>
   `,
-  imports: [TranslateModule, MatLegacyDialogModule, MatLegacyButtonModule],
+  imports: [CommonModule, TranslateModule, MatDialogModule, MatButtonModule],
 })
 export class DialogOkCancelComponent {
   constructor(

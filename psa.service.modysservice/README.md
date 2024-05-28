@@ -6,37 +6,12 @@ Imports data from external MODYS systems
 
 ## Getting Started
 
-### Requirements
+### Development
 
-- Linux, MacOS
-- nodejs
-- npm
-- docker
-- docker-compose
-
-### Installation
-
-Modysservice will be installed and started in a docker container.
-
-### Build and Run
-
-Use `start.sh` to automatically build and start the External data service in a docker container
-
-```
-cd pia-ansible/local
-./start.sh start modysservice
-```
+See [development documentation](../docs/development.md).
 
 ### Test
 
 - Install dependencies `npm install`
 - Run integration tests `npm run test.int`
 - Run unit tests `npm run test.unit`
-
-## Debug
-
-- View service logs `./start.sh logs modysservice`
-
-## Problems and Solutions
-
-- Add first problem/solution

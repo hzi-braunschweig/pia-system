@@ -7,50 +7,77 @@
 import { expect } from 'chai';
 
 import { RouteHelper } from './routeHelper';
-import { ProxyRoute } from './proxyRoute';
+import { ProxyRoute, ProxyRouteConfig } from './proxyRoute';
+import { ResponseRoute, ResponseRouteConfig } from './responseRoute';
 
-const defaultRoute: ProxyRoute = {
+const defaultRouteConfig: ProxyRouteConfig = {
   path: '/qwe',
   upstream: {
     host: 'test',
     port: 80,
     path: '/qwe',
-    protocol: 'http',
   },
 };
-const adminRoute: ProxyRoute = {
+const adminRouteConfig: ProxyRouteConfig = {
   path: '/admin/qwe',
   upstream: {
     host: 'test',
     port: 80,
     path: '/qwe',
-    protocol: 'http',
   },
 };
-const apiRoute: ProxyRoute = {
+const apiRouteConfig: ProxyRouteConfig = {
   path: '/api/v1/qwe',
   upstream: {
     host: 'test',
     port: 80,
     path: '/qwe',
-    protocol: 'http',
   },
 };
 
+const responseRouteConfig: ResponseRouteConfig = {
+  path: '/api/v1/qwe',
+  response: {},
+};
+
 describe('RouteHelper', () => {
+  it('returns specific route implementations', () => {
+    const proxyRoute = RouteHelper.createRoutefromConfig(defaultRouteConfig);
+    const responseRoute =
+      RouteHelper.createRoutefromConfig(responseRouteConfig);
+
+    expect(proxyRoute).to.be.instanceOf(ProxyRoute);
+    expect(responseRoute).to.be.instanceOf(ResponseRoute);
+  });
+
+  it('throws if invalid route config was passed', () => {
+    expect(() =>
+      RouteHelper.createRoutefromConfig({} as ProxyRouteConfig)
+    ).to.throw();
+  });
+
   it('sorts routes correctly', () => {
     expect(
-      RouteHelper.sortRoutes([adminRoute, defaultRoute, apiRoute])
-    ).to.deep.equal([apiRoute, adminRoute, defaultRoute]);
+      RouteHelper.sort([adminRouteConfig, defaultRouteConfig, apiRouteConfig])
+    ).to.deep.equal([apiRouteConfig, adminRouteConfig, defaultRouteConfig]);
   });
 
   it('checkRoutes throws on duplicates', () => {
     expect(() =>
-      RouteHelper.checkRoutes([adminRoute, defaultRoute, adminRoute, apiRoute])
+      RouteHelper.assertNoDuplicates([
+        adminRouteConfig,
+        defaultRouteConfig,
+        adminRouteConfig,
+        apiRouteConfig,
+      ])
     ).to.throw();
   });
 
   it('checkRoutes works without duplicates', () => {
-    RouteHelper.checkRoutes([adminRoute, defaultRoute, apiRoute]);
+    RouteHelper.assertNoDuplicates([
+      adminRouteConfig,
+      defaultRouteConfig,
+      apiRouteConfig,
+    ]);
   });
 });

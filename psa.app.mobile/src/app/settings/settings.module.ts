@@ -15,6 +15,7 @@ import { SettingsPage } from './settings.page';
 import { SharedModule } from '../shared/shared.module';
 import { LicenseListPage } from './license-list/license-list.page';
 import { AccountModule } from '../account/account.module';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @NgModule({
   imports: [
@@ -25,6 +26,7 @@ import { AccountModule } from '../account/account.module';
     SettingsPageRoutingModule,
     SharedModule,
     AccountModule,
+    ScrollingModule,
   ],
   declarations: [SettingsPage, LicenseListPage],
 })

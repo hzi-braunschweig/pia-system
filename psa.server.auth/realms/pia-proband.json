@@ -15,7 +15,7 @@
   "accessCodeLifespanLogin": 1800,
   "actionTokenGeneratedByAdminLifespan": 43200,
   "actionTokenGeneratedByUserLifespan": 600,
-  "sslRequired": "all",
+  "sslRequired": "external",
   "registrationAllowed": true,
   "registrationEmailAsUsername": false,
   "verifyEmail": false,
@@ -380,18 +380,10 @@
           "userSetupAllowed": false
         },
         {
-          "authenticator": "registration-profile-action",
-          "authenticatorFlow": false,
-          "requirement": "REQUIRED",
-          "priority": 65,
-          "autheticatorFlow": false,
-          "userSetupAllowed": false
-        },
-        {
           "authenticator": "registration-recaptcha-action",
           "authenticatorFlow": false,
           "requirement": "DISABLED",
-          "priority": 66,
+          "priority": 65,
           "autheticatorFlow": false,
           "userSetupAllowed": false
         }

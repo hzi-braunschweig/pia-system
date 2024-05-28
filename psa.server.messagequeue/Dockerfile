@@ -11,4 +11,5 @@ ARG DIR=
 COPY $DIR/definitions.json /etc/rabbitmq/definitions.json-template
 COPY $DIR/start.sh /usr/local/bin/start.sh
 
-ENTRYPOINT [ "/usr/local/bin/start.sh", "rabbitmq-server" ]
+COPY --chmod=0755 psa.utils.scripts/logs-masking/custom-entrypoint.sh /custom-entrypoint.sh
+ENTRYPOINT ["/custom-entrypoint.sh", "/usr/local/bin/start.sh", "rabbitmq-server"]

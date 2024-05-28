@@ -5,7 +5,7 @@
  */
 
 import { Component, ViewChild } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { AlertService } from '../../../_services/alert.service';
 import { ActivatedRoute, Router } from '@angular/router';

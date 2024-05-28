@@ -126,7 +126,7 @@
   "DELETE_ACCOUNT": {
     "TITLE": "Account und persönliche Daten löschen",
     "TITLE_SHORT": "Account löschen",
-    "TEXT_KEEP_STUDY_ANSWERS": "Sie möchten Ihren PIA Account dauerhaft löschen. Wollen Sie der Studie ermöglichen, Ihre bereits eingegebenen Fragebogenantworten weiterhin auszuwerten?",
+    "TEXT_KEEP_STUDY_ANSWERS": "Sie möchten Ihren PIA Account dauerhaft löschen. Wollen Sie der Studie ermöglichen, Ihre bereits über PIA eingegebenen Fragebogenantworten weiterhin auszuwerten?",
     "TEXT_DELETE": "Hiermit löschen Sie Ihren PIA Account und Ihre in PIA gespeicherten Kontaktdaten dauerhaft und unwiderruflich. Ihre bereits eingegebenen Fragebogenantworten bleiben erhalten. Sind Sie sich sicher?",
     "TEXT_DELETE_INCLUDING_ANSWERS": "Hiermit löschen Sie Ihren PIA Account, Ihre in PIA gespeicherten Kontaktdaten und Fragenbogenantworten dauerhaft und unwiderruflich. Sind Sie sich sicher?",
     "TEXT_CONFIRM": "Ihr Account und Ihre Daten wurden wie gewünscht gelöscht.",

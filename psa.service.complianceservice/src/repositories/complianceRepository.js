@@ -17,7 +17,7 @@ class ComplianceRepository {
    * @param {string|string[]} study the name of the study or multiple studies as array
    * @param {string} mappingId technical mapping uuid, connecting the compliance to the user
    * @param {IOptions} options
-   * @returns {Promise<Compliance>} a resolved promise with the compliance data or a rejected promise with the error
+   * @returns {Promise<Compliance> | null} a resolved promise with the compliance data or a rejected promise with the error
    */
   static async getComplianceOfUserForStudy(study, mappingId, options) {
     return Compliance.findOne({

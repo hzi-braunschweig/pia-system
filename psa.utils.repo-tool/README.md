@@ -9,6 +9,14 @@ With the gathered information it can run various tasks on the repository.
 npm run build && npm start -- $COMMAND
 ```
 
+## Help
+
+A helper page for the tool can be shown by running the following command:
+
+```bash
+npm run build && npm start -- -h
+```
+
 ## Generator
 
 This is a generator for a `.gitlab-ci.yml` file.
@@ -65,13 +73,3 @@ The LicenceCollector creates 3 files:
 - psa.app.mobile/src/assets/licenses.json (contains all prod-dependencies of the mobile-app)
 - psa.app.web/src/assets/licenses.json (contains all prod-dependencies of the web-app)
 - THIRD_PARTY_LICENSES (contains all dependencies of all modules and the Docker image licenses).
-
-## Scan Routes
-
-Collects all OpenAPI specs from any microservice of a local PIA instance (with open Ports 4000 to 4015) and merges
-all API route definitions into one CSV file, named `route-meta-data.csv`.
-This file can be used as an overview of all (public) API routes of PIA.
-
-```bash
-npm run scan-routes
-```

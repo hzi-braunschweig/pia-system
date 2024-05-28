@@ -70,9 +70,9 @@
         </mat-select>
       </mat-form-field>
       <mat-form-field>
-        <mat-label>{{
-          'DIALOG.PARTIAL_DELETION.LABORATORY_RESULTS' | translate
-        }}</mat-label>
+        <mat-label
+          >{{ 'DIALOG.PARTIAL_DELETION.LABORATORY_RESULTS' | translate }}
+        </mat-label>
         <mat-select [multiple]="true" formControlName="labResults">
           <mat-select-search
             [formControl]="labResultsFilterCtrl"
@@ -81,8 +81,8 @@
             value="allLabResultsCheckbox"
             (click)="onSelectAllLabResultsClicked()"
             *ngIf="filteredLabResults.length > 1"
-            >{{ 'DIALOG.PARTIAL_DELETION.SELECT_ALL' | translate }}</mat-option
-          >
+            >{{ 'DIALOG.PARTIAL_DELETION.SELECT_ALL' | translate }}
+          </mat-option>
           <mat-option
             *ngFor="let labResult of filteredLabResults"
             [value]="labResult"
@@ -98,10 +98,8 @@
         >{{ 'DIALOG.PARTIAL_DELETION.CHOSE_RESEARCHER' | translate }}
       </span>
       <mat-form-field>
-        <mat-select
-          placeholder="{{ 'ROLES.RESEARCHER' | translate }}"
-          formControlName="userForApprove"
-        >
+        <mat-label>{{ 'ROLES.RESEARCHER' | translate }}</mat-label>
+        <mat-select formControlName="userForApprove">
           <mat-select-search
             [formControl]="researcherFilterCtrl"
           ></mat-select-search>
@@ -113,8 +111,8 @@
           </mat-option>
         </mat-select>
         <mat-hint *ngIf="filteredResearchers.length == 0">
-          {{ 'DIALOG.PARTIAL_DELETION.NO_PARTNERS' | translate }}</mat-hint
-        >
+          {{ 'DIALOG.PARTIAL_DELETION.NO_PARTNERS' | translate }}
+        </mat-hint>
         <mat-error *ngIf="userForApproveFC.hasError('required')">
           {{ 'DIALOG.PARTIAL_DELETION.RESEARCHER_REQUIRED' | translate }}
         </mat-error>

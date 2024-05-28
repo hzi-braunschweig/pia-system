@@ -21,7 +21,7 @@ import { ProbandsListEntryActionComponent } from './probands-list-entry-action.c
 import { AlertService } from '../../_services/alert.service';
 import { TranslatedUserFactory } from './translated-user/translated-user.factory';
 import { TranslatedUser } from './translated-user/translated-user.model';
-import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
+import { MatTableModule } from '@angular/material/table';
 import { Proband } from '../../psa.app.core/models/proband';
 import { createProband } from '../../psa.app.core/models/instance.helper.spec';
 import { ProbandService } from '../../psa.app.core/providers/proband-service/proband.service';

@@ -6,99 +6,90 @@
 
 <app-loading-spinner *ngIf="isLoading" cover="true"></app-loading-spinner>
 
-<div class="jumbotron">
-  <div class="grid-container">
-    <mat-form-field>
-      <mat-select
-        disableOptionCentering
-        placeholder="{{ 'ROLES.ROLES' | translate }}"
-        [formControl]="selectedRole"
+<div class="jumbotron space-y">
+  <h3>Nutzerverwaltung</h3>
+  <mat-card class="utility-card">
+    <mat-card-content>
+      <mat-form-field>
+        <mat-label>{{ 'ROLES.ROLES' | translate }}</mat-label>
+        <mat-select disableOptionCentering [formControl]="selectedRole">
+          <mat-option *ngFor="let role of roles" [value]="role.value">
+            {{ role.viewValue | translate }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'GENERAL.FILTER' | translate }}</mat-label>
+        <input matInput (keyup)="applyFilter()" [(ngModel)]="filterKeyword" />
+      </mat-form-field>
+    </mat-card-content>
+    <mat-card-actions>
+      <button id="resetFilter" mat-button (click)="resetFilter()">
+        {{ 'PROBANDEN.RESET_FILTER' | translate }}
+      </button>
+      <button id="createUser" mat-button color="primary" (click)="addUser()">
+        {{ 'ROLES.NEW_USER' | translate }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-content>
+      <mat-table
+        #table
+        [dataSource]="dataSource"
+        matSortActive="username"
+        matSortDirection="asc"
+        matSort
       >
-        <mat-option *ngFor="let role of roles" [value]="role.value">
-          {{ role.viewValue | translate }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field>
-      <input
-        matInput
-        (keyup)="applyFilter()"
-        [(ngModel)]="filterKeyword"
-        placeholder="{{ 'GENERAL.FILTER' | translate }}"
-      />
-    </mat-form-field>
-    <button
-      id="resetFilter"
-      mat-raised-button
-      color="primary"
-      (click)="resetFilter()"
-    >
-      {{ 'PROBANDEN.RESET_FILTER' | translate }}
-    </button>
-    <button
-      id="createUser"
-      mat-raised-button
-      color="primary"
-      (click)="addUser()"
-    >
-      {{ 'ROLES.NEW_USER' | translate }}
-    </button>
-  </div>
-  <div class="users-container mat-elevation-z8">
-    <mat-table
-      #table
-      [dataSource]="dataSource"
-      matSortActive="username"
-      matSortDirection="asc"
-      matSort
-    >
-      <!-- Username Column -->
-      <ng-container matColumnDef="username" matSortStart>
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'PROBAND.PSEUDONYM' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row"> {{ row.username }}</mat-cell>
-      </ng-container>
+        <!-- Username Column -->
+        <ng-container matColumnDef="username" matSortStart>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'PROBAND.PSEUDONYM' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row"> {{ row.username }}</mat-cell>
+        </ng-container>
 
-      <!-- Role Column -->
-      <ng-container matColumnDef="role">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'QUESTIONNAIRES_FORSCHER.ROLE' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row"> {{ row.role }}</mat-cell>
-      </ng-container>
+        <!-- Role Column -->
+        <ng-container matColumnDef="role">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'QUESTIONNAIRES_FORSCHER.ROLE' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row"> {{ row.role }}</mat-cell>
+        </ng-container>
 
-      <ng-container matColumnDef="view">
-        <mat-header-cell *matHeaderCellDef></mat-header-cell>
-        <mat-cell *matCellDef="let row">
-          <button
-            id="deleteicon"
-            mat-icon-button
-            (click)="openDialog(row.username)"
-          >
-            <mat-icon>delete</mat-icon>
-          </button>
-        </mat-cell>
-      </ng-container>
+        <ng-container matColumnDef="view">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <button
+              id="deleteicon"
+              mat-icon-button
+              (click)="openDialog(row.username)"
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
 
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns"> </mat-row>
-    </mat-table>
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      </mat-table>
 
-    <div
-      class="table-no-results"
-      *ngIf="!isLoading"
-      [style.display]="dataSource.filteredData.length === 0 ? '' : 'none'"
-    >
-      {{ 'QUESTIONNAIRES_FORSCHER.FILTER_NO_RESULTS' | translate }}
-    </div>
+      <div
+        class="table-no-results"
+        *ngIf="!isLoading"
+        [style.display]="dataSource.filteredData.length === 0 ? '' : 'none'"
+      >
+        {{ 'QUESTIONNAIRES_FORSCHER.FILTER_NO_RESULTS' | translate }}
+      </div>
 
-    <mat-paginator
-      #paginator
-      [length]="dataSource.filteredData.length"
-      [pageSize]="25"
-      [pageSizeOptions]="[5, 10, 25, 100]"
-    >
-    </mat-paginator>
-  </div>
+      <mat-paginator
+        #paginator
+        [length]="dataSource.filteredData.length"
+        [pageSize]="25"
+        [pageSizeOptions]="[5, 10, 25, 100]"
+      >
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
 </div>

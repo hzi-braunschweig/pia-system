@@ -5,9 +5,9 @@
  */
 
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { UserFileDto } from '../models/userFile';
 import { AnswerOption } from './answerOption';
 import { QuestionnaireInstance } from './questionnaireInstance';
-import { UserFileDto } from '../models/userFile';
 
 @Entity()
 export class UserFile implements UserFileDto {
@@ -23,6 +23,7 @@ export class UserFile implements UserFileDto {
   @Column()
   public fileName!: string;
 
+  @ManyToOne(() => QuestionnaireInstance)
   @JoinColumn({ name: 'questionnaire_instance_id', referencedColumnName: 'id' })
   public questionnaireInstance?: QuestionnaireInstance;
 

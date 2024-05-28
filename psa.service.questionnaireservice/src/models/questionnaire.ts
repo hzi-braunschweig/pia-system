@@ -1,25 +1,33 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 import {
-  QuestionDto,
-  Question,
-  QuestionRequest,
-  QuestionResponse,
-} from './question';
-import {
-  ConditionDto,
   Condition,
+  ConditionDto,
   ConditionRequest,
   ConditionResponse,
 } from './condition';
+import {
+  Question,
+  QuestionDto,
+  QuestionRequest,
+  QuestionResponse,
+} from './question';
 
 export type QuestionnaireType = 'for_probands' | 'for_research_team';
 
 export type CycleUnit = 'once' | 'day' | 'week' | 'month' | 'hour' | 'spontan';
+
+/**
+ * A questionnaires custom name helps to reference a questionnaire by a speakable and unique name.
+ *
+ * @example "asthma_medical_trail"
+ * @pattern ^[a-zA-Z0-9-_]+$
+ */
+export type CustomName = string;
 
 export interface DbQuestionnaireForPM {
   id: number;
@@ -30,6 +38,7 @@ export interface DbQuestionnaire extends DbQuestionnaireForPM {
   id: number;
   version: number;
   study_id: string;
+  custom_name: CustomName | null;
   name: string;
   no_questions: number;
   cycle_amount: number | null;
@@ -69,32 +78,72 @@ export interface Questionnaire extends DbQuestionnaire {
 }
 
 export interface QuestionnaireDto {
+  /**
+   * @isInt
+   */
   id: number;
+  /**
+   * @isInt
+   */
   version: number;
-  studyId: string | null;
+  studyId: string;
+  customName: CustomName | null;
   name: string;
+  /**
+   * @isInt
+   */
   noQuestions: number;
+  /**
+   * @isInt
+   */
   cycleAmount: number | null;
   cycleUnit: CycleUnit | null;
+  /**
+   * @isInt
+   */
   activateAfterDays: number;
+  /**
+   * @isInt
+   */
   deactivateAfterDays: number;
+  /**
+   * @isInt
+   */
   notificationTries: number;
   notificationTitle: string;
   notificationBodyNew: string;
   notificationBodyInProgress: string;
   notificationWeekday: string | null;
+  /**
+   * @isInt
+   */
   notificationInterval: number | null;
   notificationIntervalUnit: string | null;
   activateAtDate: Date | null;
   complianceNeeded: boolean | null;
+  /**
+   * @isInt
+   */
   expiresAfterDays: number;
+  /**
+   * @isInt
+   */
   finalisesAfterDays: number;
   type: QuestionnaireType | null;
   publish: string | null;
   notifyWhenNotFilled: boolean | null;
   notifyWhenNotFilledTime: string | null;
+  /**
+   * @isInt
+   */
   notifyWhenNotFilledDay: number | null;
+  /**
+   * @isInt
+   */
   cyclePerDay: number | null;
+  /**
+   * @isInt
+   */
   cycleFirstHour: number | null;
   keepAnswers: boolean | null;
   active: boolean;
@@ -130,6 +179,7 @@ export interface QuestionnaireRequest {
   activate_after_days: number;
   deactivate_after_days: number;
   name: string;
+  custom_name: string | null;
   type: QuestionnaireType;
   notification_tries: number;
   notification_title: string;

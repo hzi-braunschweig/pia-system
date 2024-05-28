@@ -63,11 +63,6 @@ describe('Release Test, role: "Proband", Tab: Settings', () => {
     it('should change the user`s password', () => {
       const updatePassword = ',dYv3zg;r:CD';
 
-      cy.intercept({
-        method: 'GET',
-        url: '/api/v1/auth/realms/pia-proband-realm/protocol/openid-connect/login-status-iframe.html/init*',
-      }).as('loginStatusIframe');
-
       cy.visit(appUrl);
       loginProband();
       changeProbandPassword();
@@ -79,11 +74,6 @@ describe('Release Test, role: "Proband", Tab: Settings', () => {
       cy.get('[data-e2e="change-password-button"]').click();
 
       cy.expectPathname('/api/v1/auth/realms/pia-proband-realm/account/');
-
-      cy.wait('@loginStatusIframe');
-      cy.wait('@loginStatusIframe');
-      cy.wait('@loginStatusIframe');
-      cy.wait('@loginStatusIframe');
 
       cy.get('#landing-signingin > a')
         .contains('Passwort und Authentifizierung')
@@ -99,9 +89,6 @@ describe('Release Test, role: "Proband", Tab: Settings', () => {
       });
 
       cy.get('button[type="submit"]').click();
-
-      cy.wait('@loginStatusIframe');
-
       cy.get('#referrerLink').should('be.visible').click();
 
       cy.expectPathname('/settings');

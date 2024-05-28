@@ -14,6 +14,7 @@ import {
 import { UserService } from './user.service';
 import { StudyAccess } from '../../models/studyAccess';
 import { ProfessionalAccount } from '../../models/professionalAccount';
+import { Study } from '../../models/study';
 
 describe('UserService', () => {
   let httpMock: HttpTestingController;
@@ -114,6 +115,36 @@ describe('UserService', () => {
       const mockReq = httpMock.expectOne(`api/v1/user/accounts`);
       expect(mockReq.request.method).toBe('GET');
       mockReq.flush(professionalAccounts);
+      httpMock.verify();
+    });
+  });
+
+  describe('getStudies()', () => {
+    it('should get all studies', (done) => {
+      const studies: Study[] = [{ name: 'Teststudy' } as Study];
+
+      service.getStudies().then((response) => {
+        expect(response).toEqual(studies);
+        done();
+      });
+      const mockReq = httpMock.expectOne(`api/v1/user/studies`);
+      expect(mockReq.request.method).toBe('GET');
+      mockReq.flush(studies);
+      httpMock.verify();
+    });
+  });
+
+  describe('getStudies$()', () => {
+    it('should get all studies', (done) => {
+      const studies: Study[] = [{ name: 'Teststudy' } as Study];
+
+      service.getStudies$().subscribe((response) => {
+        expect(response).toEqual(studies);
+        done();
+      });
+      const mockReq = httpMock.expectOne(`api/v1/user/studies`);
+      expect(mockReq.request.method).toBe('GET');
+      mockReq.flush(studies);
       httpMock.verify();
     });
   });

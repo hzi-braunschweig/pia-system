@@ -7,7 +7,6 @@
 import { Injectable } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
-  CanActivate,
   Router,
   RouterStateSnapshot,
   UrlTree,
@@ -18,7 +17,7 @@ import { AuthService } from '../auth/auth.service';
 @Injectable({
   providedIn: 'root',
 })
-export class ComplianceGuard implements CanActivate {
+export class ComplianceGuard {
   constructor(
     private auth: AuthService,
     private compliance: ComplianceService,
@@ -29,7 +28,7 @@ export class ComplianceGuard implements CanActivate {
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Promise<boolean | UrlTree> {
-    if (!(await this.auth.isAuthenticated())) {
+    if (!this.auth.isAuthenticated()) {
       return false;
     }
     const isComplianceNeeded =

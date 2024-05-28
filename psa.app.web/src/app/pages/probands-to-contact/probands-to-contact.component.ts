@@ -6,13 +6,13 @@
 
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { PersonalDataService } from 'src/app/psa.app.core/providers/personaldata-service/personaldata-service';
-import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
+import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { AlertService } from '../../_services/alert.service';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { ProbandService } from '../../psa.app.core/providers/proband-service/proband.service';
 import { DialogPopUpComponent } from '../../_helpers/dialog-pop-up';
 import { AccountStatusPipe } from '../../pipes/account-status.pipe';

@@ -6,6 +6,8 @@
 
 import { ErrorWithCausedBy, SpecificError } from '@pia/lib-service-core';
 import { StatusCodes } from 'http-status-codes';
+import { FieldErrors } from 'tsoa';
+import { Boom } from '@hapi/boom';
 
 export class EntityNotFoundError extends Error {}
 
@@ -13,9 +15,11 @@ export class PlannedProbandNotFoundError extends ErrorWithCausedBy {}
 export class StudyNotFoundError extends ErrorWithCausedBy {}
 export class AccountCreateError extends ErrorWithCausedBy {}
 export class ProbandSaveError extends ErrorWithCausedBy {}
+export class ParticipantDeleteError extends ErrorWithCausedBy {}
+export class ParticipantSaveError extends ErrorWithCausedBy {}
 export class PseudonymAlreadyExistsError extends ErrorWithCausedBy {}
 export class IdsAlreadyExistsError extends ErrorWithCausedBy {}
-export class ProbandNotFoundError extends ErrorWithCausedBy {}
+export class ParticipantNotFoundError extends ErrorWithCausedBy {}
 export class UnknownRole extends ErrorWithCausedBy {}
 export class CannotGeneratePseudonymError extends ErrorWithCausedBy {}
 export class CannotUpdateAuthserverUsername extends ErrorWithCausedBy {}
@@ -56,4 +60,25 @@ export class AccountNotFound extends SpecificError {
 export class AccountAlreadyExistsError extends SpecificError {
   public readonly statusCode = StatusCodes.CONFLICT;
   public readonly errorCode = 'ACCOUNT.ALREADY_EXISTS';
+}
+
+export class PublicApiValidationError {
+  public static asBoom(fields: FieldErrors): Boom {
+    return new Boom<FieldErrors>(this.getMessage(fields), {
+      statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+      data: fields,
+    });
+  }
+
+  private static getMessage(fields: FieldErrors): string {
+    return (
+      'Payload is invalid:\n' +
+      Object.entries(fields)
+        .map(
+          ([fieldName, field]) =>
+            `${fieldName}: ${String(field.value)} --> ${field.message}`
+        )
+        .join('\n')
+    );
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -7,8 +7,12 @@
 import Joi from 'joi';
 import { RouteOptionsValidate } from '@hapi/hapi';
 
+export const studyNameValidator = Joi.string()
+  .description('the name of the study')
+  .required();
+
 export const complianceAgreeParamsValidator = Joi.object({
-  studyName: Joi.string().description('the name of the study').required(),
+  studyName: studyNameValidator,
   pseudonym: Joi.string()
     .description('the pseudonym of the proband')
     .lowercase()
@@ -41,8 +45,8 @@ export const complianceAgreeValidator: RouteOptionsValidate = {
   failAction: (_request, _h, err) => err ?? new Error(), // show detailed validation error
 };
 
-export const complianceTextValidator: RouteOptionsValidate = {
+export const paramsWithStudyNameValidator: RouteOptionsValidate = {
   params: Joi.object({
-    studyName: Joi.string().description('the name of the study').required(),
+    studyName: studyNameValidator,
   }).unknown(),
 };

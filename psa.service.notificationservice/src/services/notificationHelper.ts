@@ -676,7 +676,10 @@ export class NotificationHelper {
           html: notificationSchedule.body.replace(/\r\n|\r|\n/g, '<br>'),
         };
         await MailService.sendMail(emailTo, emailPayload);
-        console.log('Successfully sent email to: ' + emailTo);
+        console.log(
+          'Successfully sent email for schedule notification with id ',
+          notificationSchedule.id
+        );
         await postgresqlHelper.deleteScheduledNotification(
           notificationSchedule.id
         );

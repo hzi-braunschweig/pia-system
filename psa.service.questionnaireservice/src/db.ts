@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -28,8 +28,10 @@ import { Condition } from './entities/condition';
 import { Answer } from './entities/answer';
 import util from 'util';
 import { ConnectionOptions } from 'typeorm/connection/ConnectionOptions';
-import { RenameLabelToVariableName1668436755983 } from './migrations/1668436755983-RenameLabelToVariableName';
 import { UserFile } from './entities/userFile';
+import { RenameLabelToVariableName1668436755983 } from './migrations/1668436755983-RenameLabelToVariableName';
+import { AddCustomName1705593083327 } from './migrations/1705593083327-AddCustomName';
+import { AddHelpText1710161762375 } from './migrations/1710161762375-AddHelpText';
 
 const pgp = pgPromise({ capSQL: true, noLocking: config.isTestMode });
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -69,7 +71,6 @@ const typeOrmOptions: ConnectionOptions = {
   username: config.database.user,
   password: config.database.password,
   database: config.database.database,
-  ssl: config.database.ssl,
   entities: [
     QuestionnaireInstance,
     Questionnaire,
@@ -82,7 +83,11 @@ const typeOrmOptions: ConnectionOptions = {
   namingStrategy: new SnakeNamingStrategyWithPlural(),
   synchronize: false,
   migrationsRun: true,
-  migrations: [RenameLabelToVariableName1668436755983],
+  migrations: [
+    RenameLabelToVariableName1668436755983,
+    AddCustomName1705593083327,
+    AddHelpText1710161762375,
+  ],
   logging: false,
   extra: { poolSize: 100 },
 };

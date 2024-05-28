@@ -10,7 +10,7 @@ export interface AuthHeader {
 export declare class AuthTokenMockBuilder {
     static createAuthHeader(tokenAttributes: TokenAttributes): AuthHeader;
     static createToken(tokenAttributes: TokenAttributes): string;
-    private static createTokenPayload;
+    static createTokenPayload({ username, roles, studies, }: TokenAttributes): Record<string, unknown>;
     private static buildToken;
     private static toBase64;
     private static assertLowerCase;

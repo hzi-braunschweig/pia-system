@@ -21,6 +21,9 @@ import { Answer } from './answer';
 
 @Entity()
 export class QuestionnaireInstance implements QuestionnaireInstanceDto {
+  /**
+   * @isInt
+   */
   @PrimaryColumn()
   public id!: number;
 
@@ -52,6 +55,9 @@ export class QuestionnaireInstance implements QuestionnaireInstanceDto {
   @Column({ type: 'timestamp', nullable: true })
   public dateOfReleaseV2!: Date | null;
 
+  /**
+   * @isInt
+   */
   @Column()
   public cycle!: number;
 
@@ -61,9 +67,15 @@ export class QuestionnaireInstance implements QuestionnaireInstanceDto {
   @Column({ type: 'boolean', nullable: true })
   public notificationsScheduled!: boolean | null;
 
+  /**
+   * @isInt
+   */
   @Column({ type: 'integer', nullable: true })
   public progress!: number | null;
 
+  /**
+   * @isInt
+   */
   @Column({ type: 'integer', nullable: true })
   public releaseVersion!: number | null;
 

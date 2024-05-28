@@ -15,7 +15,7 @@ import { ConsentInputDateComponent } from './consent-input-date.component';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MockModule } from 'ng-mocks';
 import { TranslateModule } from '@ngx-translate/core';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 
 describe('ConsentInputDateComponent', () => {

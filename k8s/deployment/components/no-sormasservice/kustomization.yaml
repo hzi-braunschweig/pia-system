@@ -1,0 +1,39 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+patches:
+  - target:
+      kind: ServiceAccount
+      name: sormasservice
+    patch: |-
+      $patch: delete
+      kind: ServiceAccount
+      metadata:
+        name: 'ANY' # name doesn't matter but must be specified
+
+  - target:
+      kind: Deployment
+      name: sormasservice
+    patch: |-
+      $patch: delete
+      kind: Deployment
+      metadata:
+        name: 'ANY' # name doesn't matter but must be specified
+
+  - target:
+      kind: Service
+      name: sormasservice
+    patch: |-
+      $patch: delete
+      kind: Service
+      metadata:
+        name: 'ANY' # name doesn't matter but must be specified
+
+  - target:
+      kind: Service
+      name: internal-sormasservice
+    patch: |-
+      $patch: delete
+      kind: Service
+      metadata:
+        name: 'ANY' # name doesn't matter but must be specified

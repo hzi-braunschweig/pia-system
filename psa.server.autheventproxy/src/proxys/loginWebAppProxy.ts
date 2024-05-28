@@ -7,16 +7,21 @@
 import * as amqp from 'amqplib';
 import { KeycloakLoginEvent } from '../models/keycloakEvent';
 import { MessageQueueService } from '../services/messageQueueService';
-import { MessageQueueTopic, Producer } from '@pia/lib-messagequeue';
+import {
+  MessageQueueTopic,
+  Producer,
+  ProbandLoggedInMessage,
+} from '@pia/lib-messagequeue';
 import { EventProxy } from './eventProxy';
+import { ProxyOnMessageError } from '../errors';
 
 const TARGET_TOPIC = MessageQueueTopic.PROBAND_LOGGED_IN;
 
 export class LoginWebAppProxy extends EventProxy {
   public pattern = 'KK.EVENT.CLIENT.*.SUCCESS.pia-proband-web-app-client.LOGIN';
-  private _producer: Producer<unknown> | null = null;
+  private _producer: Producer<ProbandLoggedInMessage> | null = null;
 
-  public set producer(value: Producer<unknown> | null) {
+  public set producer(value: Producer<ProbandLoggedInMessage> | null) {
     this._producer = value;
   }
 
@@ -27,7 +32,7 @@ export class LoginWebAppProxy extends EventProxy {
       messageQueueService
     );
 
-    const instance = new this();
+    const instance = new LoginWebAppProxy();
     instance.producer = producer;
 
     return instance;
@@ -35,7 +40,7 @@ export class LoginWebAppProxy extends EventProxy {
 
   public static async createProbandLoggedInProducer(
     messageQueueService: MessageQueueService
-  ): Promise<Producer<unknown>> {
+  ): Promise<Producer<ProbandLoggedInMessage>> {
     return await messageQueueService.createProducer(TARGET_TOPIC);
   }
 
@@ -43,32 +48,44 @@ export class LoginWebAppProxy extends EventProxy {
     channel: amqp.Channel
   ): (message: amqp.ConsumeMessage | null) => void {
     return (message: amqp.ConsumeMessage | null) => {
-      if (!message || !this._producer) {
+      if (!message) {
         return;
       }
 
-      const json = message.content.toString();
-
-      if (!json) {
-        return;
-      }
-
-      const event = JSON.parse(json) as KeycloakLoginEvent;
-      const username = event.details.username.toLowerCase();
-
-      this._producer
-        .publish({ pseudonym: username })
-        .then(() => {
-          console.log(
-            `Event Processed | ${this.pattern} > ${TARGET_TOPIC} | ${username}`
-          );
-          channel.ack(message, false);
-        })
-        .catch(() => {
-          console.error(
-            `Event Error | ${this.pattern} > ${TARGET_TOPIC} | ${username}`
-          );
-        });
+      this.forwardMessageToProducer(message)
+        .then(() => channel.ack(message, false))
+        .catch(console.error);
     };
+  }
+
+  private async forwardMessageToProducer(
+    message: amqp.ConsumeMessage
+  ): Promise<void> {
+    if (!this._producer) {
+      return;
+    }
+
+    const json = message.content.toString();
+
+    if (!json) {
+      return;
+    }
+
+    const event = JSON.parse(json) as KeycloakLoginEvent;
+    const pseudonym = event.details.username.toLowerCase();
+
+    try {
+      const studyName = await this.getStudyNameOfAccountOrFail(pseudonym);
+
+      await this._producer.publish({ pseudonym, studyName });
+
+      console.log(
+        `Event Processed | ${this.pattern} > ${TARGET_TOPIC} | ${pseudonym}`
+      );
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        throw new ProxyOnMessageError(this.pattern, TARGET_TOPIC, e);
+      }
+    }
   }
 }

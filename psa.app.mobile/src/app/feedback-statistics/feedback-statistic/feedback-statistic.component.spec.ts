@@ -72,6 +72,9 @@ describe('FeedbackStatisticComponent', () => {
   });
 
   it('should display the title and description', () => {
+    // checking for fixture.detectChanges is important here because the used markdown pipe returns a promise
+    // the first change detection cycle only inits the component and does not detect the promise
+    fixture.detectChanges();
     const title = fixture.nativeElement.querySelector('[data-unit="title"]');
     expect(title.textContent).toBe('Title');
 

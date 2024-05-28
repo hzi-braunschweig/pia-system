@@ -5,7 +5,7 @@
  */
 
 import { defineConfig } from 'cypress';
-import filesystemPlugin from './cypress/plugins/index';
+import nodeEvents from './cypress/plugins/index';
 
 export default defineConfig({
   defaultCommandTimeout: 20000,
@@ -17,7 +17,7 @@ export default defineConfig({
   },
   e2e: {
     setupNodeEvents(on, config) {
-      return filesystemPlugin(on, config);
+      return nodeEvents(on, config);
     },
     baseUrl: 'http://localhost',
   },

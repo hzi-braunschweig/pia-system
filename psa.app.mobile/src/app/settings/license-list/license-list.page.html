@@ -1,5 +1,5 @@
 <!--
-  ~ SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~ SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
   ~
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
@@ -9,9 +9,16 @@
   isChildPageOf="settings"
 ></app-header>
 
-<ion-content>
-  <ion-virtual-scroll [items]="licenses | async" approxItemHeight="320px">
-    <ion-card *virtualItem="let license;" data-unit="unit-license-card">
+<ion-content class="container">
+  <cdk-virtual-scroll-viewport
+    itemSize="320"
+    class="scroll-viewport"
+    *ngIf="(licenses | async) !== null"
+  >
+    <ion-card
+      *cdkVirtualFor="let license of licenses | async"
+      data-unit="unit-license-card"
+    >
       <ion-card-header>
         <ion-card-title data-unit="unit-license-card-title">
           <h3>{{ license.packageName }}</h3>
@@ -24,7 +31,7 @@
         <p>{{ license.licenseText }}</p>
       </ion-card-content>
     </ion-card>
-  </ion-virtual-scroll>
+  </cdk-virtual-scroll-viewport>
 
   <ng-container *ngIf="(licenses | async) === null">
     <ion-card

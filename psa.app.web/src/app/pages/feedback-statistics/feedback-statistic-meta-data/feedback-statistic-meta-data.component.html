@@ -5,11 +5,13 @@
   -->
 
 <mat-card>
-  <mat-card-title>
-    <mat-icon inline="true">tune</mat-icon>
-    {{ 'FEEDBACK_STATISTICS.GENERAL_SETTINGS' | translate }}
-  </mat-card-title>
-  <mat-card-content>
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>tune</mat-icon>
+      {{ 'FEEDBACK_STATISTICS.GENERAL_SETTINGS' | translate }}
+    </mat-card-title>
+  </mat-card-header>
+  <mat-card-content class="content">
     <form [formGroup]="form" class="grid-container-2cols">
       <mat-form-field class="grid-item-100 headline-text-input">
         <mat-label>{{ 'FEEDBACK_STATISTICS.TITLE' | translate }}</mat-label>
@@ -21,8 +23,8 @@
         />
         <mat-hint
           >{{ form.controls.title.value?.length ?? 0 }} /
-          {{ feedbackStatisticTitleMaxLength }}</mat-hint
-        >
+          {{ feedbackStatisticTitleMaxLength }}
+        </mat-hint>
 
         <mat-error *ngIf="form.controls.title.hasError('required')">
           {{ 'FEEDBACK_STATISTICS.TITLE_REQUIRED_ERROR' | translate }}
@@ -36,16 +38,16 @@
       </mat-form-field>
 
       <mat-form-field class="grid-item-50">
-        <mat-label>{{
-          'FEEDBACK_STATISTICS.VISIBILITY' | translate
-        }}</mat-label>
+        <mat-label
+          >{{ 'FEEDBACK_STATISTICS.VISIBILITY' | translate }}
+        </mat-label>
         <mat-select formControlName="visibility" data-unit="visibility-select">
           <mat-option
             [value]="option.value"
             [data-unit]="'visibility-select-' + option.value"
             *ngFor="let option of visibilityOptions"
-            >{{ option.viewValue | translate }}</mat-option
-          >
+            >{{ option.viewValue | translate }}
+          </mat-option>
         </mat-select>
 
         <mat-error *ngIf="form.controls.visibility.hasError('required')">

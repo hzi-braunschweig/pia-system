@@ -10,7 +10,6 @@ import {
   createPlannedProband,
   createProband,
   createStudy,
-  createUser,
   generateRandomProbandForStudy,
   generateRandomStudy,
   getCredentialsForProbandByUsername,
@@ -85,14 +84,11 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
     cy.visit(probandAppUrl);
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
     cy.expectPathname('/compliance/agree');
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Startseite').click();
     cy.expectPathname('/compliance/agree');
-    cy.get('[da' + '' + 'ta-e2e="e2e-sidenav-content"]')
-      .contains('Fragebögen')
-      .click();
+    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
     cy.expectPathname('/compliance/agree');
     cy.get('[data-e2e="e2e-sidenav-content"]')
       .contains('Einstellungen')
@@ -106,7 +102,6 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
     cy.visit(probandAppUrl);
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
     cy.get('[data-e2e="e2e-compliance-edit-component"]')
       .find('[data-e2e="e2e-compliance-edit-component-header"]')
@@ -157,6 +152,8 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
     cy.contains('[data-e2e="e2e-sidenav-content"]', 'Einwilligung')
       .contains('Einwilligung')
       .click();
+
+    cy.get('[data-e2e="e2e-compliance-edit-component"]').scrollIntoView();
     cy.get('[data-e2e="e2e-compliance-edit-component"]')
       .contains('button', 'Als PDF herunterladen')
       .should('be.visible');

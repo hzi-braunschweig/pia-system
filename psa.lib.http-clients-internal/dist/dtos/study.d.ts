@@ -18,4 +18,4 @@ export interface StudyInternalDto {
     has_compliance_opposition: boolean | null;
     has_logging_opt_in: boolean | null;
 }
-export type StudyStatus = 'active' | 'deletion_pending' | 'deleted';
+export declare type StudyStatus = 'active' | 'deletion_pending' | 'deleted';

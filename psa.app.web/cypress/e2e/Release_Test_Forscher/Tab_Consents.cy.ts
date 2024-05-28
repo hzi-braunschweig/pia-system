@@ -34,15 +34,12 @@ let proband: CreateProbandRequest;
 let proband2: CreateProbandRequest;
 let ut;
 let pm;
-const forscherCredentials = { username: '', password: '' };
-const probandCredentials = { username: '', password: '' };
-const utCredentials = { username: '', password: '' };
 const newPassword = ',dYv3zg;r:CB';
 
 const adminAppUrl = '/admin/';
 const probandAppUrl = '/';
 
-describe('Release Test, role: "Forscher", General', () => {
+describe('Release Test, role: "Forscher", Consents', () => {
   beforeEach(() => {
     study = generateRandomStudy();
     study2 = generateRandomStudy();
@@ -71,6 +68,7 @@ describe('Release Test, role: "Forscher", General', () => {
       username: `e2e-pm-${translator.new()}@testpia-app.de`,
       role: 'ProbandenManager',
     };
+
     createStudy(study);
     createStudy(study2);
     createStudy(study3);
@@ -92,53 +90,36 @@ describe('Release Test, role: "Forscher", General', () => {
       .then((token) =>
         getCredentialsForProbandByUsername(proband.pseudonym, token)
       )
-      .then((cred) => {
-        probandCredentials.username = cred.username;
-        probandCredentials.password = cred.password;
-      })
+      .as('probandCred')
       .then(() => fetchPasswordForUserFromMailHog(ut.username))
-      .then((cred) => {
-        utCredentials.username = cred.username;
-        utCredentials.password = cred.password;
-      })
+      .as('utCred')
       .then(() => createProfessionalUser(forscher, study.name))
-      .then((cred) => {
-        forscherCredentials.username = cred.username;
-        forscherCredentials.password = cred.password;
-      })
-      .then(() => {
+      .as('fCred')
+      .then((fCred) => {
         cy.visit(adminAppUrl);
-        login(forscherCredentials.username, forscherCredentials.password);
+        login(fCred.username, fCred.password);
       });
   });
 
-  afterEach(() => {
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
-    cy.get('.sidenav-top').click();
-    cy.contains('Abmelden').click();
-  });
-
   it('should contain exact 4 studies', () => {
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Einwilligung').click();
 
     cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
-    cy.get('.mat-option-text')
-      .should('have.length', 4)
-      .contains(study.name)
-      .click();
+    cy.get('[data-e2e="option"]').should('have.length', 4);
+    cy.get('[data-e2e="option"]').contains(study.name).click();
+
+    cy.logoutProfessional();
   });
 
-  it('should has consent for "Proband" and "Untersuchungsteam" and should has 2 Studies without consents', () => {
+  it('should have consent for "Proband" and "Untersuchungsteam" and should have 2 studies without consent', () => {
     cy.fixture('consents.json').then((consents) => {
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Einwilligung')
         .click();
 
       // create consent for tn
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
-      cy.get('.mat-option-text').contains(study.name).click();
+      cy.get('[data-e2e="option"]').contains(study.name).click();
       cy.get(
         '[data-e2e="e2e-compliance-researcher-proband-radio-button"]'
       ).click();
@@ -149,14 +130,16 @@ describe('Release Test, role: "Forscher", General', () => {
         { delay: 0 }
       );
 
-      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]')
-        .should('not.be.disabled')
-        .click();
+      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]').should(
+        'not.be.disabled'
+      );
+      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]').click();
+
       cy.get('#confirmbutton').click();
 
       // create consent for ut
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
-      cy.get('.mat-option-text').contains(study2.name).click();
+      cy.get('[data-e2e="option"]').contains(study2.name).click();
       cy.get('[data-e2e="e2e-compliance-researcher-ut-radio-button"]').click();
       cy.get('[data-e2e="e2e-compliance-researcher-compliance-text"]').click();
 
@@ -170,52 +153,54 @@ describe('Release Test, role: "Forscher", General', () => {
         .click();
       cy.get('#confirmbutton').click();
 
-      cy.contains('Abmelden').click();
+      cy.logoutProfessional();
 
-      login(forscherCredentials.username, forscherCredentials.password);
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
+      cy.get<UserCredentials>('@fCred').then((cred) => {
+        login(cred.username, cred.password);
+      });
+
       cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Einwilligung')
         .click();
 
       // test consent for tn
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
-      cy.get('.mat-option-text').contains(study.name).click();
+      cy.get('[data-e2e="option"]').contains(study.name).click();
       cy.get('[data-e2e="e2e-compliance-researcher-compliance-text"]')
         .invoke('val')
         .should('eq', consents.consent_tn);
 
       // test consent for tn
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
-      cy.get('.mat-option-text').contains(study2.name).click();
+      cy.get('[data-e2e="option"]').contains(study2.name).click();
       cy.get('[data-e2e="e2e-compliance-researcher-compliance-text"]')
         .invoke('val')
         .should('eq', consents.consent_ut);
 
       // empty consent
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
-      cy.get('.mat-option-text').contains(study3.name).click();
+      cy.get('[data-e2e="option"]').contains(study3.name).click();
       cy.get('[data-e2e="e2e-compliance-researcher-compliance-text"]')
         .invoke('val')
         .should('be.empty');
 
       // empty consent
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
-      cy.get('.mat-option-text').contains(study4.name).click();
+      cy.get('[data-e2e="option"]').contains(study4.name).click();
       cy.get('[data-e2e="e2e-compliance-researcher-compliance-text"]')
         .invoke('val')
         .should('be.empty');
+
+      cy.logoutProfessional();
     });
   });
 
   it('should add new text field', () => {
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
-
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Einwilligung').click();
 
     cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
 
-    cy.get('.mat-option-text').contains(study.name).click();
+    cy.get('[data-e2e="option"]').contains(study.name).click();
 
     cy.get('[data-e2e="e2e-label-new-textfield"]').type('Foo');
     cy.get('[data-e2e="e2e-placeholder-new-textfield"]').type('Bar');
@@ -224,45 +209,48 @@ describe('Release Test, role: "Forscher", General', () => {
       .contains('Foo (Bar)')
       .click();
 
-    cy.contains('Abmelden').click();
+    cy.logoutProfessional();
 
-    login(forscherCredentials.username, forscherCredentials.password);
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
+    cy.get<UserCredentials>('@fCred').then((cred) => {
+      login(cred.username, cred.password);
+    });
+
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Einwilligung').click();
 
     cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
-    cy.get('.mat-option-text').contains(study.name).click();
+    cy.get('[data-e2e="option"]').contains(study.name).click();
     cy.get('[data-e2e="e2e-compliance-text-field-button"]')
       .contains('Foo (Bar)')
       .click();
+
+    cy.logoutProfessional();
   });
 
   it('should add "Einwilligungsfeld"', () => {
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
-
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Einwilligung').click();
 
     cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
 
-    cy.get('.mat-option-text').contains(study.name).click();
+    cy.get('[data-e2e="option"]').contains(study.name).click();
 
     cy.get('[data-e2e="e2e-compliance-input"]').type('FooBar');
     cy.get('[data-e2e="e2e-add-compliance-button"]').click();
     cy.get('[ data-e2e="e2e-add-compliance-field-to-consent"]')
       .contains('FooBar')
       .should('be.visible');
+
+    cy.logoutProfessional();
   });
 
-  it('create consent for tn, check that condition works and consent is correctly displayed to tn', () => {
+  it('create consent for participant, check that condition works and consent is correctly displayed to tn', () => {
     cy.fixture('consents.json').then((consents) => {
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Einwilligung')
         .click();
 
       // create consent for tn
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
-      cy.get('.mat-option-text').contains(study.name).click();
+      cy.get('[data-e2e="option"]').contains(study.name).click();
       cy.get(
         '[data-e2e="e2e-compliance-researcher-proband-radio-button"]'
       ).click();
@@ -273,16 +261,22 @@ describe('Release Test, role: "Forscher", General', () => {
         { delay: 0 }
       );
 
-      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]')
-        .should('not.be.disabled')
-        .click();
+      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]').should(
+        'not.be.disabled'
+      );
+      cy.get('[data-e2e="e2e-compliance-researcher-publish-button"]').click();
+
       cy.get('#confirmbutton').click();
 
-      cy.contains('Abmelden').click();
+      cy.logoutProfessional();
 
       cy.visit(probandAppUrl);
-      login(probandCredentials.username, probandCredentials.password);
-      changePassword(probandCredentials.password, newPassword);
+
+      cy.get<UserCredentials>('@probandCred').then((cred) => {
+        login(cred.username, cred.password);
+        changePassword(cred.password, newPassword);
+      });
+
       cy.get('[data-e2e="e2e-compliance-edit-component-header"]').contains(
         study.name
       );
@@ -337,6 +331,8 @@ describe('Release Test, role: "Forscher", General', () => {
         .find('input')
         .type('3/15/1975');
       cy.get('[data-e2e="e2e-consent-email-input"]').should('not.exist');
+
+      cy.logoutParticipant();
     });
   });
 
@@ -352,14 +348,13 @@ describe('Release Test, role: "Forscher", General', () => {
         url: `/admin/api/v1/compliance/${study.name}/questionnaire-placeholder`,
       }).as('getQuestionnairePlaceholder');
 
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Einwilligung')
         .click();
 
       // create consent for ut
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
-      cy.get('.mat-option-text').contains(study.name).click();
+      cy.get('[data-e2e="option"]').contains(study.name).click();
 
       // Wait to make sure the compliance texts are fetched from the backend
       cy.wait('@getTextEdit');
@@ -379,17 +374,18 @@ describe('Release Test, role: "Forscher", General', () => {
 
       cy.get('#confirmbutton').click();
 
-      cy.contains('Abmelden').click();
+      cy.logoutProfessional();
 
-      login(utCredentials.username, utCredentials.password);
+      cy.get<UserCredentials>('@utCred').then((cred) => {
+        login(cred.username, cred.password);
+      });
 
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Einwilligungsmanagement')
         .click();
 
       cy.get('[data-e2e="e2e-compliance-management-study-select"]').click();
-      cy.get('.mat-option-text').contains(study.name).click();
+      cy.get('[data-e2e="option"]').contains(study.name).click();
 
       cy.get('[data-e2e="e2e-compliance-management-study"]')
         .contains(study.name)
@@ -467,19 +463,20 @@ describe('Release Test, role: "Forscher", General', () => {
       cy.get('[groupname="textGeneric"]').find('input').type('Burgstraße 69');
       cy.get('[consentname="location"]').find('input').type('53177 Bonn');
 
-      cy.get('.mat-dialog-actions').contains('Schließen').click();
+      cy.get('[data-e2e="dialog-button-close"]').click();
+
+      cy.logoutProfessional();
     });
   });
 
   it('test preview function', () => {
     cy.fixture('consents.json').then((consents) => {
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Einwilligung')
         .click();
 
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
-      cy.get('.mat-option-text').contains(study.name).click();
+      cy.get('[data-e2e="option"]').contains(study.name).click();
       cy.get('[data-e2e="e2e-compliance-researcher-ut-radio-button"]').click();
       cy.get('[data-e2e="e2e-compliance-researcher-compliance-text"]').click();
 
@@ -522,18 +519,19 @@ describe('Release Test, role: "Forscher", General', () => {
 
       cy.get('[data-e2e="app"]').contains('Ja').click();
       cy.get('[data-e2e="Wissenschaft"]').contains('Ja').click();
+
+      cy.logoutProfessional();
     });
   });
 
   it('should test changing functionality', () => {
     cy.fixture('consents.json').then((consents) => {
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Einwilligung')
         .click();
 
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
-      cy.get('.mat-option-text').contains(study.name).click();
+      cy.get('[data-e2e="option"]').contains(study.name).click();
       cy.get(
         '[data-e2e="e2e-compliance-researcher-proband-radio-button"]'
       ).click();
@@ -553,29 +551,31 @@ describe('Release Test, role: "Forscher", General', () => {
         .click();
       cy.get('#confirmbutton').click();
 
-      cy.contains('Abmelden').click();
+      cy.logoutProfessional();
 
       cy.visit(probandAppUrl);
-      login(probandCredentials.username, probandCredentials.password);
-      changePassword(probandCredentials.password, newPassword);
 
-      cy.get('[data-e2e="child"').should('exist');
-      cy.get('[data-e2e="app"').should('exist');
-      cy.get('[data-e2e="Wissenschaft"').should('exist');
+      cy.get<UserCredentials>('@probandCred').then((cred) => {
+        login(cred.username, cred.password);
+        changePassword(cred.password, newPassword);
+      });
 
-      cy.contains('Abmelden').click();
-      cy.get('#confirmButton').click();
+      cy.get('[data-e2e="child"]').should('exist');
+      cy.get('[data-e2e="app"]').should('exist');
+      cy.get('[data-e2e="Wissenschaft"]').should('exist');
 
       cy.visit(adminAppUrl);
-      login(forscherCredentials.username, forscherCredentials.password);
 
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
+      cy.get<UserCredentials>('@fCred').then((cred) => {
+        login(cred.username, cred.password);
+      });
+
       cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Einwilligung')
         .click();
 
       cy.get('[data-e2e="e2e-setup-compliance-study-select"]').click();
-      cy.get('.mat-option-text').contains(study.name).click();
+      cy.get('[data-e2e="option"]').contains(study.name).click();
 
       // wait for the form to be initialized with the current compliance text
       cy.get('[data-e2e="e2e-compliance-researcher-compliance-text"]').should(
@@ -597,13 +597,15 @@ describe('Release Test, role: "Forscher", General', () => {
         .click();
       cy.get('#confirmbutton').click();
 
-      cy.contains('Abmelden').click();
+      cy.get('[data-e2e="e2e-logout"]').click();
 
       cy.visit(probandAppUrl);
 
-      cy.get('[data-e2e="child"').should('exist');
-      cy.get('[data-e2e="app"').should('exist');
-      cy.get('[data-e2e="Wissenschaft"').should('not.exist');
+      cy.get('[data-e2e="child"]').should('exist');
+      cy.get('[data-e2e="app"]').should('exist');
+      cy.get('[data-e2e="Wissenschaft"]').should('not.exist');
+
+      cy.logoutParticipant();
     });
   });
 });

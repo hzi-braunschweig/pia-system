@@ -4,12 +4,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { AnswerOptionDto, AnswerType } from './answerOption';
+import {
+  IsoDateString,
+  IsoTimestampString,
+  MultipleSelectValue,
+  Pzn,
+  SingleSelectValue,
+  TextValue,
+} from './customTypes';
+import { QuestionDto } from './question';
 import {
   QuestionnaireInstanceDto,
   QuestionnaireInstanceStatus,
 } from './questionnaireInstance';
-import { AnswerOptionDto, AnswerType } from './answerOption';
-import { QuestionDto } from './question';
+import { SampleDto } from './sample';
+import { UserFileDto } from './userFile';
 
 /**
  * @deprecated
@@ -38,7 +48,7 @@ export interface AnswerDto {
   question?: QuestionDto;
   answerOption?: AnswerOptionDto;
   versioning: number;
-  value: string;
+  value: AnswerValue;
   dateOfRelease: Date | null;
   releasingPerson: string | null;
 }
@@ -114,3 +124,25 @@ export interface AnswerExportDbRow {
   answer_status: QuestionnaireInstanceStatus;
   answers: AnswerExportAnswer[];
 }
+
+export type PartialAnswerDto = Pick<
+  AnswerDto,
+  'answerOption' | 'question' | 'value'
+>;
+
+/**
+ * Value for an answer. It will be validated against the expected answer type.
+ *
+ * Please keep in mind, the order of types in this union type is the order of
+ * validation and casting of values in tsoa.
+ */
+export type AnswerValue =
+  | null
+  | TextValue
+  | Pzn
+  | IsoDateString
+  | IsoTimestampString
+  | SingleSelectValue
+  | MultipleSelectValue
+  | SampleDto
+  | UserFileDto;

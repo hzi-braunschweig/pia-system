@@ -1,19 +1,23 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { AccessToken, assertStudyAccess } from '@pia/lib-service-core';
-import { Questionnaire, QuestionnaireRequest } from '../models/questionnaire';
-import pgHelper from '../services/postgresqlHelper';
-import { StudyAccess } from '../models/studyAccess';
 import Boom from '@hapi/boom';
-import { QuestionnaireRepository } from '../repositories/questionnaireRepository';
+import { AccessToken, assertStudyAccess } from '@pia/lib-service-core';
 import { DatabaseError } from 'pg-protocol';
-import { QuestionnaireService } from '../services/questionnaireService';
+import {
+  CouldNotCreateNewRandomVariableNameError,
+  CouldNotUpdateGeneratedCustomName,
+  VariableNameHasBeenReusedError,
+} from '../errors';
 import variableNameGenerator from '../helpers/variableNameGenerator';
-import { CouldNotCreateNewRandomVariableNameError } from '../errors';
+import { Questionnaire, QuestionnaireRequest } from '../models/questionnaire';
+import { StudyAccess } from '../models/studyAccess';
+import { QuestionnaireRepository } from '../repositories/questionnaireRepository';
+import pgHelper from '../services/postgresqlHelper';
+import { QuestionnaireService } from '../services/questionnaireService';
 
 const GENERATED_VARIABLE_DIGITS_LENGTH = 8;
 
@@ -57,17 +61,23 @@ export class QuestionnairesInteractor {
     );
 
     try {
-      this.addGeneratedVariableNames(questionnaire);
+      this.generateAndSetVariableNames(questionnaire);
+      this.validateVariableNamesUsage(questionnaire);
+
+      const result = (await pgHelper.insertQuestionnaire(
+        questionnaire
+      )) as Questionnaire;
+
+      await this.generateAndUpdateCustomName(result);
+
+      return result;
     } catch (e) {
-      if (e instanceof CouldNotCreateNewRandomVariableNameError) {
-        throw Boom.conflict('Could not create a new random variable name');
-      }
-      throw e;
-    }
-    return (await pgHelper.insertQuestionnaire(questionnaire).catch((err) => {
-      console.log(err);
+      this.handleCustomNameErrors(e);
+      this.handleVariableNameError(e);
+
+      console.log(e);
       throw Boom.badImplementation('Could not create questionnaire');
-    })) as Questionnaire;
+    }
   }
 
   /**
@@ -93,9 +103,12 @@ export class QuestionnairesInteractor {
       decodedToken,
       updatedQuestionnaire.study_id
     );
+
     return (await pgHelper
       .updateQuestionnaire(updatedQuestionnaire, id, version)
       .catch((err) => {
+        this.handleCustomNameErrors(err);
+
         console.log(err);
         if (err instanceof DatabaseError && err.code === '23503') {
           throw Boom.preconditionFailed('A reference could not be set');
@@ -159,19 +172,27 @@ export class QuestionnairesInteractor {
       revisedQuestionnaire.study_id
     );
 
-    // If all questions from the current questionnaire version have variable
-    // names set, we assume empty variable names in a new revision should be
-    // filled with automatically generated ones.
-    if (await this.currentQuestionnaireHasCompleteVariableNames(id)) {
-      this.addGeneratedVariableNames(revisedQuestionnaire);
-    }
+    try {
+      // If all questions from the current questionnaire version have variable
+      // names set, we assume empty variable names in a new revision should be
+      // filled with automatically generated ones.
+      if (await this.currentQuestionnaireHasCompleteVariableNames(id)) {
+        this.generateAndSetVariableNames(revisedQuestionnaire);
+      }
 
-    return (await pgHelper
-      .reviseQuestionnaire(revisedQuestionnaire, id)
-      .catch((err) => {
-        console.log(err);
-        throw Boom.badImplementation('Could not revise questionnaire');
-      })) as Questionnaire;
+      this.validateVariableNamesUsage(revisedQuestionnaire);
+
+      return (await pgHelper.reviseQuestionnaire(
+        revisedQuestionnaire,
+        id
+      )) as Questionnaire;
+    } catch (e: unknown) {
+      this.handleCustomNameErrors(e);
+      this.handleVariableNameError(e);
+
+      console.log(e);
+      throw Boom.badImplementation('Could not revise questionnaire');
+    }
   }
 
   /**
@@ -275,9 +296,32 @@ export class QuestionnairesInteractor {
     );
   }
 
-  private static addGeneratedVariableNames(
+  /**
+   * Generates and updates a questionnaires custom name, if the custom name is empty.
+   * The questionnaire has to be created in advanced, because we need an ID, which will
+   * be used as a suffix to ensure uniqueness.
+   *
+   * The given questionnaire object will be mutated and the value for custom_name set
+   * to the generated name.
+   */
+  private static async generateAndUpdateCustomName(
+    questionnaire: Questionnaire
+  ): Promise<void> {
+    if (questionnaire.custom_name !== null) {
+      return;
+    }
+
+    questionnaire.custom_name =
+      await QuestionnaireService.generateAndUpdateCustomName(questionnaire);
+  }
+
+  /**
+   * Adds variable names when not set by mutating questions and answer options
+   * of the given questionnaire
+   */
+  private static generateAndSetVariableNames(
     questionnaire: QuestionnaireRequest
-  ): QuestionnaireRequest {
+  ): void {
     const unavailableNames: string[] = [];
 
     questionnaire.questions?.forEach((question) => {
@@ -300,7 +344,86 @@ export class QuestionnairesInteractor {
         });
       return question;
     });
+  }
 
-    return questionnaire;
+  private static handleCustomNameErrors(e: unknown): void {
+    if (e instanceof DatabaseError && e.constraint === 'unique_custom_name') {
+      throw Boom.badRequest('Custom name is already in use');
+    } else if (e instanceof CouldNotUpdateGeneratedCustomName) {
+      throw Boom.internal(e.message);
+    }
+  }
+
+  private static handleVariableNameError(e: unknown): void {
+    if (e instanceof CouldNotCreateNewRandomVariableNameError) {
+      throw Boom.conflict('Could not create a new random variable name');
+    } else if (e instanceof VariableNameHasBeenReusedError) {
+      throw Boom.conflict(e.message);
+    }
+  }
+
+  /**
+   * Validates if variable names are used only once for questions and once for answer options below a question.
+   * @throws Error when variable names are not unique according to these rules.
+   */
+  private static validateVariableNamesUsage(
+    questionnaire: QuestionnaireRequest
+  ): void {
+    /**
+     * Tracks the usage of a variable name by its questions position
+     */
+    const questionVariableNames = new Map<string, number>();
+
+    /**
+     * Tracks the usage of a variable name by its answer options position.
+     * The tuple represents `[question.position, answer_option.position]`
+     */
+    const answerOptionVariableNames = new Map<string, [number, number]>();
+
+    questionnaire.questions?.forEach((question) => {
+      if (questionVariableNames.has(question.variable_name)) {
+        const declaringQuestionNumber = questionVariableNames.get(
+          question.variable_name
+        );
+        throw new VariableNameHasBeenReusedError(
+          `Question #${question.position} declares variable name "${
+            question.variable_name
+          }" which has already been declared in Question #${String(
+            declaringQuestionNumber
+          )}`
+        );
+      }
+
+      if (question.variable_name) {
+        questionVariableNames.set(question.variable_name, question.position);
+      }
+
+      question.answer_options?.forEach((answerOption) => {
+        if (
+          answerOption.variable_name &&
+          answerOptionVariableNames.has(answerOption.variable_name)
+        ) {
+          const [questionPos, answerOptionPos] =
+            answerOptionVariableNames.get(answerOption.variable_name) ?? [];
+
+          if (
+            questionPos &&
+            answerOptionPos &&
+            questionPos === question.position
+          ) {
+            throw new VariableNameHasBeenReusedError(
+              `Answer option #${question.position}.${answerOption.position} declares variable name "${answerOption.variable_name}" which has already been declared in answer option #${questionPos}.${answerOptionPos}`
+            );
+          }
+        }
+
+        if (answerOption.variable_name) {
+          answerOptionVariableNames.set(answerOption.variable_name, [
+            question.position,
+            answerOption.position,
+          ]);
+        }
+      });
+    });
   }
 }

@@ -1,6 +1,5 @@
 stages:
   - prepare
-  - generate
   - test
   - accumulate
   - push
@@ -44,7 +43,6 @@ include:
   - /ci/ionic.yml
   - /ci/npm-install.yml
   - /ci/npm-test-int.yml
-  - /ci/deploy-stage.yml
   - /ci/docker.yml
   - /ci/sonarqube.yml
   - /ci/collect-licenses.yml
@@ -65,3 +63,7 @@ include:
   - /ci/java-test-unit.yml
   - /ci/renovate.yml
   - /ci/cleanup-registry.yml
+  - /ci/openapi.yml
+  - /ci/check-k8s-base.yml
+  - /ci/check-bake-hcl.yml
+  - /ci/check-version-file.yml

@@ -4,122 +4,137 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<div class="jumbotron">
-  <div class="filter-section">
-    <mat-form-field>
-      <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
-      <mat-select
-        disableOptionCentering
-        id="selectstudy"
-        (selectionChange)="updateFilter()"
-        [(ngModel)]="activeFilter.studyName"
-      >
-        <mat-option
-          *ngFor="let studyName of studyFilterValues"
-          [value]="studyName"
+<div class="jumbotron space-y">
+  <mat-card class="utility-card">
+    <mat-card-content>
+      <mat-form-field>
+        <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
+        <mat-select
+          disableOptionCentering
+          id="selectstudy"
+          (selectionChange)="updateFilter()"
+          [(ngModel)]="activeFilter.studyName"
         >
-          {{ studyName }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-
-    <mat-form-field>
-      <input
-        matInput
-        (keyup)="updateFilter()"
-        [(ngModel)]="activeFilter.searchString"
-        placeholder="{{ 'GENERAL.FILTER' | translate }}"
-      />
-    </mat-form-field>
-  </div>
+          <mat-option
+            *ngFor="let studyName of studyFilterValues"
+            [value]="studyName"
+          >
+            {{ studyName }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'GENERAL.FILTER' | translate }}</mat-label>
+        <input
+          matInput
+          (keyup)="updateFilter()"
+          [(ngModel)]="activeFilter.searchString"
+        />
+      </mat-form-field>
+    </mat-card-content>
+    <mat-card-actions>
+      <button
+        data-e2e="download-compliances-button"
+        mat-button
+        color="primary"
+        [disabled]="!activeFilter.studyName"
+        (click)="downloadAllCompliances()"
+      >
+        {{ 'COMPLIANCE.EXPORT' | translate }}
+        <mat-icon>download</mat-icon>
+      </button>
+    </mat-card-actions>
+  </mat-card>
 
   <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
 
-  <div>
-    <mat-table
-      [dataSource]="dataSource"
-      matSortActive="firstname"
-      matSortDirection="asc"
-      matSort
-    >
-      <!-- Firstname Column -->
-      <ng-container matColumnDef="firstname" matSortStart>
-        <mat-header-cell *matHeaderCellDef mat-sort-header class="column">
-          {{ 'GENERAL.FIRST_NAME' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row" class="column">
-          {{ row.firstname }}
-        </mat-cell>
-      </ng-container>
+  <mat-card>
+    <mat-card-content>
+      <mat-table
+        [dataSource]="dataSource"
+        matSortActive="firstname"
+        matSortDirection="asc"
+        matSort
+      >
+        <!-- Firstname Column -->
+        <ng-container matColumnDef="firstname" matSortStart>
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="column">
+            {{ 'GENERAL.FIRST_NAME' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row" class="column">
+            {{ row.firstname }}
+          </mat-cell>
+        </ng-container>
 
-      <!-- Lastname Column -->
-      <ng-container matColumnDef="lastname" matSortStart>
-        <mat-header-cell *matHeaderCellDef mat-sort-header class="column">
-          {{ 'GENERAL.NAME' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row" class="column">
-          {{ row.lastname }}
-        </mat-cell>
-      </ng-container>
+        <!-- Lastname Column -->
+        <ng-container matColumnDef="lastname" matSortStart>
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="column">
+            {{ 'GENERAL.NAME' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row" class="column">
+            {{ row.lastname }}
+          </mat-cell>
+        </ng-container>
 
-      <!-- Birthdate Column -->
-      <ng-container matColumnDef="birthdate" matSortStart>
-        <mat-header-cell *matHeaderCellDef mat-sort-header class="column">
-          {{ 'GENERAL.BIRTHDAY' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row" class="column">
-          {{ row.birthdate | date }}
-        </mat-cell>
-      </ng-container>
+        <!-- Birthdate Column -->
+        <ng-container matColumnDef="birthdate" matSortStart>
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="column">
+            {{ 'GENERAL.BIRTHDAY' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row" class="column">
+            {{ row.birthdate | date }}
+          </mat-cell>
+        </ng-container>
 
-      <!-- IDS Column -->
-      <ng-container matColumnDef="ids" matSortStart>
-        <mat-header-cell *matHeaderCellDef mat-sort-header class="column">
-          {{ 'PROBAND.IDS' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row" class="column">
-          {{ row.ids }}
-        </mat-cell>
-      </ng-container>
+        <!-- IDS Column -->
+        <ng-container matColumnDef="ids" matSortStart>
+          <mat-header-cell *matHeaderCellDef mat-sort-header class="column">
+            {{ 'PROBAND.IDS' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row" class="column">
+            {{ row.ids }}
+          </mat-cell>
+        </ng-container>
 
-      <!-- View Compliance Details -->
+        <!-- View Compliance Details -->
 
-      <ng-container matColumnDef="viewCompliance">
-        <mat-header-cell *matHeaderCellDef></mat-header-cell>
-        <mat-cell *matCellDef="let row">
-          <button
-            (click)="showComplianceDetails(row.id)"
-            color="accent"
-            class="btn-view-compliance"
-            mat-icon-button
-          >
-            <mat-icon>remove_red_eye</mat-icon>
-            <label>{{ 'COMPLIANCE.COMPLIANCE' | translate }}</label>
-          </button>
-        </mat-cell>
-      </ng-container>
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-    </mat-table>
+        <ng-container matColumnDef="viewCompliance">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <button
+              (click)="showComplianceDetails(row.id)"
+              color="accent"
+              class="btn-view-compliance"
+              mat-icon-button
+            >
+              <mat-icon>remove_red_eye</mat-icon>
+              <label>{{ 'COMPLIANCE.COMPLIANCE' | translate }}</label>
+            </button>
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      </mat-table>
 
-    <div
-      class="table-no-results"
-      *ngIf="!isLoading && dataSource.filteredData.length === 0"
-    >
-      <span *ngIf="activeFilter.studyName">{{
-        'COMPLIANCE.FILTER_NO_RESULTS_FOR_STUDY' | translate
-      }}</span>
-      <span *ngIf="!activeFilter.studyName && activeFilter.searchString">{{
-        'COMPLIANCE.FILTER_NO_RESULTS' | translate
-      }}</span>
-    </div>
+      <div
+        class="table-no-results"
+        *ngIf="!isLoading && dataSource.filteredData.length === 0"
+      >
+        <span *ngIf="activeFilter.studyName">{{
+          'COMPLIANCE.FILTER_NO_RESULTS_FOR_STUDY' | translate
+        }}</span>
+        <span *ngIf="!activeFilter.studyName && activeFilter.searchString">{{
+          'COMPLIANCE.FILTER_NO_RESULTS' | translate
+        }}</span>
+      </div>
 
-    <mat-paginator
-      [length]="dataSource.data.length"
-      [pageIndex]="0"
-      [pageSize]="25"
-      [pageSizeOptions]="[5, 10, 25, 100]"
-    >
-    </mat-paginator>
-  </div>
+      <mat-paginator
+        [length]="dataSource.data.length"
+        [pageIndex]="0"
+        [pageSize]="25"
+        [pageSizeOptions]="[5, 10, 25, 100]"
+      >
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
 </div>

@@ -1,42 +1,74 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-export interface Upstream {
+import { compile, match, pathToRegexp } from 'path-to-regexp';
+import { Route, RouteConfig } from './route';
+
+export interface UpstreamConfig {
   host: string;
   port: number;
   path: string;
-  protocol: 'http' | 'https';
 }
 
-export type Route = ProxyRoute | ResponseRoute;
-
-interface IRoute {
-  path: string;
+export interface ProxyRouteConfig extends RouteConfig {
+  upstream: UpstreamConfig;
 }
 
-export function isRoute(route: unknown): route is IRoute {
-  return !!route && typeof (route as Partial<IRoute>).path === 'string';
-}
+export class ProxyRoute extends Route implements ProxyRouteConfig {
+  public readonly upstream: UpstreamConfig;
 
-export interface ProxyRoute extends IRoute {
-  upstream: Upstream;
-}
-export function isProxyRoute(route: unknown): route is ProxyRoute {
-  return isRoute(route) && typeof (route as ProxyRoute).upstream === 'object';
-}
+  private readonly pathMatcher: RegExp;
 
-export interface ResponseRoute extends IRoute {
-  response: {
-    headers?: Record<string, string>;
-    body?: string;
-    statusCode?: number;
-  };
-}
-export function isResponseRoute(route: unknown): route is ResponseRoute {
-  return (
-    isRoute(route) && typeof (route as ResponseRoute).response === 'object'
-  );
+  public constructor(route: ProxyRouteConfig) {
+    super(route.path);
+    this.upstream = route.upstream;
+    this.pathMatcher = pathToRegexp(this.path, [], {
+      sensitive: true,
+      end: false,
+    });
+  }
+
+  public static isConfig(route: unknown): route is ProxyRouteConfig {
+    return (
+      Route.isConfig(route) &&
+      typeof (route as ProxyRouteConfig).upstream === 'object'
+    );
+  }
+
+  public matches(path: string): boolean {
+    return this.pathMatcher.test(path);
+  }
+
+  public toUpstreamPath(url: URL): string {
+    return (
+      compile(this.upstream.path, { encode: encodeURIComponent })(
+        this.getParams(url.pathname + url.search)
+      ) + this.unmatchedRestOfPath(url.pathname)
+    );
+  }
+
+  public unmatchedRestOfPath(url: string): string {
+    const matchedPath = this.pathMatcher.exec(url);
+    if (matchedPath?.[0]?.length) {
+      const matchedPathLength = matchedPath[0].length;
+      return url.slice(matchedPathLength);
+    }
+    return '';
+  }
+
+  private getParams(path: string): Record<string, string> {
+    const pathMatch = match<Record<string, string>>(this.path, {
+      sensitive: true,
+      end: false,
+      decode: decodeURIComponent,
+    })(path);
+
+    if (!pathMatch) {
+      throw new Error('Could not match given path to route');
+    }
+    return pathMatch.params;
+  }
 }

@@ -224,7 +224,7 @@ export function fetchEMailsByUsername(username): Chainable {
     .request({
       method: 'GET',
       url:
-        (Cypress.env('MAILSERVER_BASEURL') || 'http://localhost:8025') +
+        (Cypress.env('MAILSERVER_BASEURL') || 'https://mail-pia-app') +
         `/api/v2/search?kind=to&query=${username}`,
     })
     .then((res) => res.body.items);

@@ -1,0 +1,115 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+sortOptions:
+  order: fifo
+metadata:
+  name: pia-release
+
+namespace: pia-release
+
+resources:
+  - ../../base
+
+components:
+  - ../../components/no-servicemonitor
+  - ../../components/no-modysservice
+  - ../../components/no-sormasservice
+
+#images:
+#- name: "*"
+#  newTag: "1.36.0"
+
+patches:
+  - target:
+      kind: PersistentVolumeClaim
+    patch: |-
+      - op: replace
+        path: /spec/storageClassName
+        value: csi-cinder-sc-retain
+
+  # for all ingresses
+
+  - target:
+      kind: Ingress
+    patch: |-
+      - op: replace
+        path: /spec/ingressClassName
+        value: nginx
+      - op: replace
+        path: "/metadata/annotations/cert-manager.io~1issuer"
+        value: "letsencrypt-prod"
+      - op: replace
+        path: "/metadata/annotations/nginx.ingress.kubernetes.io~1proxy-buffer-size"
+        value: "64k"
+
+  # for the apigateway ingress
+
+  - target:
+      kind: Ingress
+      name: apigateway
+    patch: |-
+      - op: replace
+        path: "/spec/rules/0/host"
+        value: "pia-release.de"
+      - op: replace
+        path: "/spec/tls/0/hosts/0"
+        value: "pia-release.de"
+
+  # for the mailhog ingress
+
+  - target:
+      kind: Ingress
+      name: mailhog
+    patch: |-
+      - op: replace
+        path: "/spec/rules/0/host"
+        value: "mail.pia-release.de"
+      - op: replace
+        path: "/spec/tls/0/hosts/0"
+        value: "mail.pia-release.de"
+
+  ##
+
+  - target:
+      kind: Secret
+    patch: |-
+      - op: replace
+        path: "/metadata/labels"
+        value:
+          app: "pia"
+
+secretGenerator:
+  - name: pia-config
+    options:
+      disableNameSuffixHash: true
+    type: kubernetes.io/opaque
+    literals:
+      - webappUrl=https://pia-release.de
+      - externalProtocol=https
+      - externalPort=443
+      - externalHost=pia-release.de
+      - mailServerHostName=mailserver
+      - mailServerPort=1025
+      - mailServerUserName=pia@some-faked-domain-that-hopefully-will-never-exist.faked
+      - mailServerPassword=emailpassword
+      - mailServerRequireTls=false
+      - mailServerFromAddress=pia@some-faked-domain-that-hopefully-will-never-exist.faked
+      - mailServerFromName=PIA
+      - probandTermsOfServiceUrl=https://localhost/fake-tos
+      - probandPolicyUrl=https://localhost/fake-policy
+      - modysBaseUrl=http://localhost:99999
+      - modysUserName=modysuser
+      - modysPassword=modyspassword
+      - modysStudy=Teststudy with MODYS
+      - modysIdentifierTypeId=1
+      - modysRequestConcurrency=5
+      - isSormasEnabled=false
+      # the default language, unless another language is explicitly set. Possible values:
+      # de-CH, de-DE, en-US
+      - defaultLanguage=de-DE
+      - userPasswordLength=12
+      # firebase credential
+      - firebasePrivateKeyBase64=LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUJWZ0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQVVBd2dnRThBZ0VBQWtFQXlUbGhkdFo0OGFteE9KZTAKMXN0aUZPWTdqdmw0YlRMSU9SMGtYREFlSXZ1SFM3ZHQwQ3ZERmVJYVl2VUhUSk02eGlFSUgrWW9rWko3VDk0MgpwTzJ2Y3dJREFRQUJBa0FOY2ZzVU1MSjJHMHVQSjN2YTJrNGNiV0hQWk5YcUhmbUk3MnlOaUYyTElyc0FwSzI1CmZCZzFqcTc2bVpvRTdGdnVCVnZxWmZUZW9Sa1dXNHNmQ2E2UkFpRUE3MytMSEVrOHhBSjhNcThsOWo1Wkw5RmkKeS9FbEJyZXhoYk5GZUZFS09Vc0NJUURYRnJxMUlvSXBBelh2ay9qamJPbENMZWFpbnNYYUZkeUljRTRQbk52eAplUUloQU85WVFGYkJYa2ZveitQN0krNEYreTJOakxXUnhkWUR5Qlo4eFVWcmY5TW5BaUVBbE5zYUpEblpzdUNSCjkxaUZLNEE0ZnFDZHVYWUFuOG41Y2tPbkFvOGdlS0VDSVFDT1MyUmx0WThla0NGOVhxWW4zamt2eTRhME8vTlgKekxMU2hQQmtFQy95RXc9PQotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg==
+      - firebaseProjectId=dummy
+      - firebaseClientEmail=dummy
+      - mailhogAuth=pia:$2a$04$vYMXXNXoS.ekdaD1YdLpEOlLkXOYijva6HmLeVnnwCBG3SNI8h3sW

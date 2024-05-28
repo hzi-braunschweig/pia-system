@@ -4,14 +4,16 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { MessageQueueClient, MessageQueueTopic } from '@pia/lib-messagequeue';
+import {
+  MessageQueueClient,
+  MessageQueueTopic,
+  ProbandDeletedMessage,
+  ProbandCreatedMessage,
+  ProbandLoggedInMessage,
+} from '@pia/lib-messagequeue';
 import { config } from '../config';
 import { NotificationHandlers } from './notificationHandlers';
 import { performance } from 'perf_hooks';
-
-interface ProbandMessage {
-  pseudonym: string;
-}
 
 export class MessageQueueService extends MessageQueueClient {
   private static async onProbandDeleted(pseudonym: string): Promise<void> {
@@ -52,19 +54,19 @@ export class MessageQueueService extends MessageQueueClient {
 
     await this.createConsumer(
       MessageQueueTopic.PROBAND_DELETED,
-      async (message: ProbandMessage) =>
+      async (message: ProbandDeletedMessage) =>
         await MessageQueueService.onProbandDeleted(message.pseudonym)
     );
 
     await this.createConsumer(
       MessageQueueTopic.PROBAND_CREATED,
-      async (message: ProbandMessage) =>
+      async (message: ProbandCreatedMessage) =>
         await MessageQueueService.onProbandCreated(message.pseudonym)
     );
 
     await this.createConsumer(
       MessageQueueTopic.PROBAND_LOGGED_IN,
-      async (message: ProbandMessage) =>
+      async (message: ProbandLoggedInMessage) =>
         await MessageQueueService.onProbandLoggedIn(message.pseudonym)
     );
   }

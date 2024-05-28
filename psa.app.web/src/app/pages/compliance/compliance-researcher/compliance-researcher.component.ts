@@ -11,7 +11,7 @@ import { ComplianceService } from 'src/app/psa.app.core/providers/compliance-ser
 import { AlertService } from 'src/app/_services/alert.service';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogOkCancelComponent } from '../../../_helpers/dialog-ok-cancel';
 import { ComplianceTextInEditMode } from '../../../psa.app.core/models/compliance';
 import { TemplateSegment } from '../../../psa.app.core/models/Segments';
@@ -72,7 +72,7 @@ export class ComplianceResearcherComponent implements OnInit {
   }
 
   /**
-   * Check if app consent placeholder is available. Otherwise ask for agreement.
+   * Check if app consent placeholder is available. Otherwise, ask for agreement.
    */
   async onPublish(): Promise<void> {
     this.complianceTextFG.markAllAsTouched();

@@ -6,7 +6,7 @@
 
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
-import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 import {
   AbstractControl,
   FormArray,
@@ -16,7 +16,10 @@ import {
 } from '@angular/forms';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../_services/alert.service';
-import { APP_DATE_FORMATS, AppDateAdapter } from '../../_helpers/date-adapter';
+import {
+  APP_DATE_FORMATS_SHORT,
+  AppDateAdapter,
+} from '../../_helpers/date-adapter';
 import { combineLatest, concatMap, Observable, tap } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { HttpEvent, HttpResponse } from '@angular/common/http';
@@ -43,7 +46,7 @@ interface StudyQuestionnaire {
     },
     {
       provide: MAT_DATE_FORMATS,
-      useValue: APP_DATE_FORMATS,
+      useValue: APP_DATE_FORMATS_SHORT,
     },
   ],
 })
@@ -163,7 +166,7 @@ export class DialogExportDataComponent implements OnInit {
 
   saveExportFile(responseStream: Observable<HttpEvent<Blob>>): void {
     responseStream.subscribe({
-      next: async (response: HttpResponse<Blob>) => {
+      next: (response: HttpResponse<Blob>) => {
         const downloadLink = document.createElement('a');
         downloadLink.href = window.URL.createObjectURL(response.body);
         downloadLink.setAttribute('download', 'export.zip');

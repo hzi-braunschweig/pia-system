@@ -5,17 +5,19 @@
   -->
 
 <mat-card>
-  <mat-card-title>
-    <mat-spinner
-      diameter="18"
-      style="display: inline-block"
-      *ngIf="feedbackStatisticDto?.status === 'pending'"
-    ></mat-spinner>
-    {{ feedbackStatisticDto?.title }}
-  </mat-card-title>
-  <mat-card-subtitle *ngIf="interval">
-    {{ interval.start | date }} - {{ interval.end | date }}
-  </mat-card-subtitle>
+  <mat-card-header>
+    <mat-card-title>
+      <mat-spinner
+        diameter="18"
+        style="display: inline-block"
+        *ngIf="feedbackStatisticDto?.status === 'pending'"
+      ></mat-spinner>
+      {{ feedbackStatisticDto?.title }}
+    </mat-card-title>
+    <mat-card-subtitle *ngIf="interval">
+      {{ interval.start | date }} - {{ interval.end | date }}
+    </mat-card-subtitle>
+  </mat-card-header>
   <mat-card-content>
     <div *ngIf="feedbackStatisticDto?.status === 'has_data'">
       <pia-feedback-statistic-bar-chart
@@ -40,10 +42,9 @@
           [max]="range.max"
           [displayWith]="getLabelFormatter()"
           step="1"
-          value="3"
           discrete
           showTickMarks
-        >
+          ><input matSliderThumb value="3" />
           <input
             matSliderStartThumb
             [formControl]="rangeSelection.controls.lower"
@@ -89,7 +90,7 @@
       class="description"
       data-unit="description"
       [ngClass]="{ show: showDescription }"
-      [innerHTML]="feedbackStatisticDto?.description | markdown"
+      [innerHTML]="feedbackStatisticDto?.description | markdown | async"
     ></div>
   </mat-card-content>
   <mat-card-actions *ngIf="isEditable">

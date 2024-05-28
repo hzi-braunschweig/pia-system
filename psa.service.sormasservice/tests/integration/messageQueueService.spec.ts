@@ -15,6 +15,7 @@ import {
   MessageQueueTestUtils,
   MessageQueueTopic,
   Producer,
+  ComplianceCreatedMessage,
 } from '@pia/lib-messagequeue';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
@@ -22,10 +23,6 @@ import { TaskScheduler } from '../../src/services/taskScheduler';
 import { messageQueueService } from '../../src/services/messageQueueService';
 import { SymptomTransmission } from '../../src/entities/symptomTransmission';
 import { FollowUp } from '../../src/entities/followUp';
-import {
-  MessagePayloadComplianceCreated,
-  MessagePayloadProbandDeleted,
-} from '../../src/models/messagePayloads';
 
 describe('message queue service', function () {
   const fetchMock = fetchMocker.sandbox();
@@ -61,8 +58,8 @@ describe('message queue service', function () {
   });
 
   describe('onComplianceCreated', () => {
-    let producer: Producer<MessagePayloadComplianceCreated>;
-    let processedComplianceCreated: Promise<void>;
+    let producer: Producer<ComplianceCreatedMessage>;
+    let processedComplianceCreated: Promise<unknown>;
 
     beforeEach(async () => {
       processedComplianceCreated =
@@ -72,7 +69,9 @@ describe('message queue service', function () {
           testSandbox
         );
 
-      producer = await mqc.createProducer(MessageQueueTopic.COMPLIANCE_CREATED);
+      producer = await mqc.createProducer<ComplianceCreatedMessage>(
+        MessageQueueTopic.COMPLIANCE_CREATED
+      );
 
       fetchMock
         .get('express:/user/users/test-pseudonym/ids', 'test-ids')
@@ -87,6 +86,7 @@ describe('message queue service', function () {
       // Act
       await producer.publish({
         pseudonym: 'test-pseudonym',
+        studyName: 'Any Study',
       });
       await processedComplianceCreated;
 
@@ -106,12 +106,14 @@ describe('message queue service', function () {
   });
 
   describe('onProbandDeleted', () => {
-    let processedProbandDeleted: Promise<void>;
-    let producer: Producer<MessagePayloadProbandDeleted>;
+    let processedProbandDeleted: ReturnType<
+      typeof MessageQueueTestUtils.injectMessageProcessedAwaiter
+    >;
+    let producer: Producer<ComplianceCreatedMessage>;
 
     beforeEach(async () => {
       processedProbandDeleted =
-        MessageQueueTestUtils.injectMessageProcessedAwaiter(
+        MessageQueueTestUtils.injectMessageProcessedAwaiter<ComplianceCreatedMessage>(
           messageQueueService,
           MessageQueueTopic.PROBAND_DELETED,
           testSandbox
@@ -132,6 +134,7 @@ describe('message queue service', function () {
       // Act
       await producer.publish({
         pseudonym: 'test-pseudonym',
+        studyName: 'Any Study',
       });
       await processedProbandDeleted;
 
@@ -169,6 +172,7 @@ describe('message queue service', function () {
       // Act
       await producer.publish({
         pseudonym: pseudonym,
+        studyName: 'Any Study',
       });
       await processedProbandDeleted;
 

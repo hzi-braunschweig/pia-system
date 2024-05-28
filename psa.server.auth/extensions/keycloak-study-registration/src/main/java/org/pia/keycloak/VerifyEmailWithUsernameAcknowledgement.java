@@ -28,7 +28,6 @@
 package org.pia.keycloak;
 
 import org.jboss.logging.Logger;
-import org.keycloak.Config;
 import org.keycloak.authentication.*;
 import org.keycloak.authentication.requiredactions.VerifyEmail;
 import org.keycloak.common.util.Time;
@@ -48,7 +47,7 @@ import org.keycloak.sessions.AuthenticationSessionCompoundId;
 import org.keycloak.sessions.AuthenticationSessionModel;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import javax.ws.rs.core.*;
+import jakarta.ws.rs.core.*;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

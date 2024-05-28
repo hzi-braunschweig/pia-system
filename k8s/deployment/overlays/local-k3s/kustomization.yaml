@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+sortOptions:
+  order: fifo
+metadata:
+  name: local-k3s
+
+namespace: pia
+
+resources:
+  - ../../base
+  - internal-secrets.yaml
+
+components:
+  - ../../components/local-development
+
+secretGenerator:
+  - name: docker-registry
+    type: kubernetes.io/dockerconfigjson
+    options:
+      disableNameSuffixHash: true
+    files:
+      - .dockerconfigjson

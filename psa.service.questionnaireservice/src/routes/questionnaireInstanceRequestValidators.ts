@@ -46,7 +46,7 @@ export const putQuestionnaireInstanceValidation: RouteOptionsValidate = {
       .description('progress expressed as a percentage'),
     release_version: Joi.number()
       .optional()
-      .default(0)
+      .default(null)
       .description('number of releasing times'),
   }).unknown(),
 };

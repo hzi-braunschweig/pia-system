@@ -4,26 +4,23 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { createProxyServer } from 'http-proxy';
-import { HttpServer, ISsl } from './httpServer';
-import { Header, Headers } from './headers';
-import { Logging } from './logging';
-import { Color } from './color';
-import {
-  isProxyRoute,
-  isResponseRoute,
-  ProxyRoute,
-  ResponseRoute,
-  Route,
-} from './proxyRoute';
-import { StatusCodes } from 'http-status-codes';
-
 import * as http from 'http';
+import { createProxyServer } from 'http-proxy';
+import { StatusCodes } from 'http-status-codes';
 import * as net from 'net';
+import { Color } from './color';
+import { Header, Headers } from './headers';
+
+import { HttpServer } from './httpServer';
+import { Logging } from './logging';
+import { ProxyRoute, ProxyRouteConfig } from './proxyRoute';
+import { ResponseRoute } from './responseRoute';
+import { Route, RouteConfig } from './route';
+import { RouteHelper } from './routeHelper';
 
 interface Context {
   received: number;
-  route: ProxyRoute;
+  route: ProxyRouteConfig;
 }
 
 export class Proxy extends HttpServer<Context> {
@@ -31,15 +28,18 @@ export class Proxy extends HttpServer<Context> {
   private readonly proxy = createProxyServer({
     xfwd: true,
   });
+  private readonly routes: Route[];
 
   public constructor(
-    private readonly routes: Route[],
-    externalSsl?: ISsl,
-    private readonly internalCa?: Buffer,
+    routes: RouteConfig[],
     private readonly disableLogging: boolean = false,
     private readonly headers?: Headers
   ) {
-    super(externalSsl);
+    super();
+
+    this.routes = routes.map((config) =>
+      RouteHelper.createRoutefromConfig(config)
+    );
 
     this.proxy.on('end', (req, _res, proxyRes) => {
       this.handleEnd(req, proxyRes);
@@ -72,10 +72,10 @@ export class Proxy extends HttpServer<Context> {
     res: http.ServerResponse
   ): void {
     try {
-      const route = this.routes.find((r) => req.url?.startsWith(r.path));
-      if (isProxyRoute(route)) {
+      const route = this.routes.find((r) => r.matches(req.url ?? ''));
+      if (route instanceof ProxyRoute) {
         this.handleProxyRoute(route, req, res);
-      } else if (isResponseRoute(route) && req.url === route.path) {
+      } else if (route instanceof ResponseRoute) {
         this.handleResponseRoute(route, req, res);
       } else {
         res.statusCode = StatusCodes.NOT_FOUND;
@@ -122,8 +122,8 @@ export class Proxy extends HttpServer<Context> {
     res: http.ServerResponse
   ): void {
     const url = new URL(req.url ?? '', Proxy.BASE);
-    url.pathname = route.upstream.path + url.pathname.substr(route.path.length);
-    req.url = url.toString().substr(Proxy.BASE.length);
+    url.pathname = route.toUpstreamPath(url);
+    req.url = url.pathname + url.search;
 
     const context = this.getContext(req);
     context.received = Date.now();
@@ -144,8 +144,7 @@ export class Proxy extends HttpServer<Context> {
           host: route.upstream.host,
           port: route.upstream.port,
           hostname: route.upstream.host,
-          protocol: route.upstream.protocol + ':',
-          ca: this.internalCa ? this.internalCa.toString() : undefined,
+          protocol: 'http:',
         },
       },
       (err, proxyReq, proxyRes) => {

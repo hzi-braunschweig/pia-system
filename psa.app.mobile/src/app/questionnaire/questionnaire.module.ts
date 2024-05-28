@@ -4,12 +4,13 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 import { MarkdownModule } from 'ngx-markdown';
+import { QuestionnaireQuestionTextComponent } from './questionnaire-question-text/questionnaire-question-text.component';
 
 import { QuestionnairePageRoutingModule } from './questionnaire-routing.module';
 import { QuestionnaireListPage } from './questionnaire-list/questionnaire-list.page';
@@ -29,8 +30,10 @@ import { QuestionnaireAnswerPznComponent } from './questionnaire-answer-pzn/ques
 import { QuestionnaireAnswerImageComponent } from './questionnaire-answer-image/questionnaire-answer-image.component';
 import { QuestionnaireAnswerTimestampComponent } from './questionnaire-answer-timestamp/questionnaire-answer-timestamp.component';
 import { QuestionnaireAnswerErrorComponent } from './questionnaire-answer-error/questionnaire-answer-error.component';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @NgModule({
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     CommonModule,
     FormsModule,
@@ -40,6 +43,7 @@ import { QuestionnaireAnswerErrorComponent } from './questionnaire-answer-error/
     SharedModule,
     MarkdownModule.forChild(),
     ReactiveFormsModule,
+    ScrollingModule,
   ],
   declarations: [
     QuestionnaireListPage,
@@ -58,6 +62,7 @@ import { QuestionnaireAnswerErrorComponent } from './questionnaire-answer-error/
     QuestionnaireRestrictionDaysAsDatePipe,
     QuestionnaireFillDatePlaceholdersPipe,
     QuestionnaireAnswerErrorComponent,
+    QuestionnaireQuestionTextComponent,
   ],
 })
 export class QuestionnaireModule {}

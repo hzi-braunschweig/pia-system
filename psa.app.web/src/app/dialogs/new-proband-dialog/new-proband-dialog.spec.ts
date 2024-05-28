@@ -10,10 +10,7 @@ import {
   DialogNewProbandComponent,
   DialogNewProbandComponentData,
 } from './new-proband-dialog';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from '../../psa.app.core/providers/auth-service/auth-service';
 import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 import {

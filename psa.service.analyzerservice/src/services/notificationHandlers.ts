@@ -147,9 +147,14 @@ export class NotificationHandlers {
     q_old: Questionnaire,
     q_new: Questionnaire
   ): Promise<void> {
-    if (NotificationHandlers.isDeactivationChange(q_old, q_new)) {
+    if (
       // Do nothing if a questionnaire is deactivated
       // inactive and active questionnaire_instances are already deleted by questionnaireservice
+      NotificationHandlers.isDeactivationChange(q_old, q_new) ||
+      // Do nothing if a questionnaire had no custom name set and a generated custom name has been set.
+      // This happens because we need the questionnaires ID, as it is part of a generated custom name.
+      NotificationHandlers.isOverwritingEmptyCustomName(q_old, q_new)
+    ) {
       return;
     }
     await db.tx(async function (t) {
@@ -877,5 +882,12 @@ export class NotificationHandlers {
     newQuestionnaire: Questionnaire
   ): boolean {
     return oldQuestionnaire.active && !newQuestionnaire.active;
+  }
+
+  private static isOverwritingEmptyCustomName(
+    oldQuestionnaire: Questionnaire,
+    newQuestionnaire: Questionnaire
+  ): boolean {
+    return !oldQuestionnaire.custom_name && !!newQuestionnaire.custom_name;
   }
 }

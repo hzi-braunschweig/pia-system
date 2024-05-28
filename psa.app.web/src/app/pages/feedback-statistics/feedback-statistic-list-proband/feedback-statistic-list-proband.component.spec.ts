@@ -14,7 +14,7 @@ import { MockComponent, MockPipe, MockProvider } from 'ng-mocks';
 import { LoadingSpinnerComponent } from '../../../features/loading-spinner/loading-spinner.component';
 import { FeedbackStatisticComponent } from '../feedback-statistic/feedback-statistic.component';
 import { TranslatePipe } from '@ngx-translate/core';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
+import { MatCardModule } from '@angular/material/card';
 import SpyObj = jasmine.SpyObj;
 
 describe('FeedbackStatisticListProbandComponent', () => {

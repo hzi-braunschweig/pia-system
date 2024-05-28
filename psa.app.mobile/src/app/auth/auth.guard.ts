@@ -7,7 +7,6 @@
 import { Injectable } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
-  CanActivate,
   Router,
   RouterStateSnapshot,
   UrlTree,
@@ -20,17 +19,17 @@ import { AuthService } from './auth.service';
 @Injectable({
   providedIn: 'root',
 })
-export class AuthGuard implements CanActivate {
+export class AuthGuard {
   constructor(
     private readonly auth: AuthService,
     private readonly router: Router
   ) {}
 
-  public async canActivate(
+  public canActivate(
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
-  ): Promise<true | UrlTree> {
-    if (await this.auth.isAuthenticated()) {
+  ): true | UrlTree {
+    if (this.auth.isAuthenticated()) {
       return true;
     } else {
       return this.router.createUrlTree(['auth', 'login']);

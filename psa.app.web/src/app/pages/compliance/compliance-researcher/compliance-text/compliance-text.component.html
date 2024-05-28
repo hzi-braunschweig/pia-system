@@ -6,9 +6,11 @@
 
 <div>
   <mat-card>
-    <mat-card-title class="placeholder-list-label"
-      >{{ 'COMPLIANCE.PLACEHOLDER_TEXTFIELD' | translate }}
-    </mat-card-title>
+    <mat-card-header>
+      <mat-card-title class="placeholder-list-label"
+        >{{ 'COMPLIANCE.PLACEHOLDER_TEXTFIELD' | translate }}
+      </mat-card-title>
+    </mat-card-header>
     <mat-divider></mat-divider>
     <mat-card-content>
       <mat-action-list dense>
@@ -37,15 +39,15 @@
       </mat-action-list>
     </mat-card-content>
     <mat-divider></mat-divider>
-    <p class="generic-field-label">
-      {{ 'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_TEXTFIELD' | translate }}
-    </p>
     <mat-card-content>
+      <p class="generic-field-label">
+        {{ 'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_TEXTFIELD' | translate }}
+      </p>
       <form [formGroup]="newGenericTextfieldForm">
         <mat-form-field>
-          <mat-label>{{
-            'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_LABEL' | translate
-          }}</mat-label>
+          <mat-label
+            >{{ 'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_LABEL' | translate }}
+          </mat-label>
           <input
             matInput
             placeholder="{{
@@ -63,9 +65,9 @@
           </mat-error>
         </mat-form-field>
         <mat-form-field>
-          <mat-label>{{
-            'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_NAME' | translate
-          }}</mat-label>
+          <mat-label
+            >{{ 'COMPLIANCE.NEW_QUESTIONNAIRE_PLACEHOLDER_NAME' | translate }}
+          </mat-label>
           <input
             matInput
             placeholder="{{

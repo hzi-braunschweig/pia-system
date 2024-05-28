@@ -89,10 +89,10 @@ export class KeycloakClientService {
     this._hasBeenInitialized = true;
   }
 
-  public async isLoggedIn(): Promise<boolean> {
+  public isLoggedIn(): boolean {
     return (
       this._hasBeenInitialized &&
-      (await this.keycloakService.isLoggedIn()) &&
+      this.keycloakService.isLoggedIn() &&
       !this.keycloakService.isTokenExpired()
     );
   }

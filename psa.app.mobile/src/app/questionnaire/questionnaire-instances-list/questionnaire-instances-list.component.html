@@ -1,5 +1,5 @@
 <!--
-  ~ SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~ SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
   ~
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
@@ -39,13 +39,13 @@
     *ngIf="otherQuestionnaireInstances.length"
     data-unit="unit-questionnaire-instances-list-other"
   >
-    <ion-virtual-scroll
-      [items]="otherQuestionnaireInstances"
-      approxItemHeight="100px"
+    <cdk-virtual-scroll-viewport
+      itemSize="100"
+      class="questionnaire-instances-viewport"
     >
       <ion-item
         button
-        *virtualItem="let qInstance"
+        *cdkVirtualFor="let qInstance of otherQuestionnaireInstances"
         [routerLink]="['/questionnaire', qInstance.id]"
       >
         <ion-badge
@@ -94,6 +94,6 @@
           slot="end"
         ></ion-icon>
       </ion-item>
-    </ion-virtual-scroll>
+    </cdk-virtual-scroll-viewport>
   </ion-item-group>
 </ion-list>

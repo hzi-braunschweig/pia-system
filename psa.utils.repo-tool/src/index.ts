@@ -6,15 +6,14 @@
 
 import { Command } from 'commander';
 import * as path from 'path';
-
-import { RepoMetaData } from './models/repoMetaData';
-import { Scanner } from './scanner';
+import { Color } from './color';
 
 import { Fs } from './fs';
-import { Runner } from './runner';
 import { Generator } from './generator';
-import { Color } from './color';
-import { RouteMetaDataScanner } from './route-meta-data-scanner';
+
+import { RepoMetaData } from './models/repoMetaData';
+import { Runner } from './runner';
+import { Scanner } from './scanner';
 
 class Program {
   public static handleError<T>(promise: Promise<T>): void {
@@ -48,6 +47,12 @@ class Program {
         Program.handleError(this.generate(repoMetaData, repoDir));
       });
     program
+      .command('generate-hcl')
+      .description('generates docker build hcl')
+      .action(() => {
+        Program.handleError(this.generateHcl(repoMetaData, repoDir));
+      });
+    program
       .command('update')
       .description('runs npm update on node modules')
       .action(() => {
@@ -65,14 +70,86 @@ class Program {
       .action(() => {
         Program.handleError(Runner.executeNpmAudit(repoMetaData, repoDir));
       });
-    program
-      .command('scan-routes')
-      .description('scans all api routes and collects its meta data')
-      .action(() => {
-        Program.handleError(RouteMetaDataScanner.scan());
-      });
 
     program.parse();
+  }
+
+  private static async generateHcl(
+    repoMetaData: RepoMetaData,
+    repoDir: string
+  ): Promise<void> {
+    // Read our env variables
+    const targetFile =
+      process.env['BAKE_TARGET_FILE'] ?? path.join(repoDir, 'bake.hcl');
+
+    const deploymentTargetPrefixes = [
+      'k8s',
+      'psa.app',
+      'psa.database',
+      'psa.server',
+      'psa.service',
+    ];
+
+    const file: string[] = [];
+
+    file.push(
+      'group "default" {',
+      '  targets = [ ',
+      repoMetaData.docker
+        .map((job) => `"${this.convertFolderNameToTargetName(job)}"`)
+        .join(', '),
+      '  ]',
+      '}',
+      '',
+      'group "deployment" {',
+      '  targets = [ ',
+      repoMetaData.docker
+        .filter((job) =>
+          deploymentTargetPrefixes.some((prefix) => job.startsWith(prefix))
+        )
+        .map((job) => `"${this.convertFolderNameToTargetName(job)}"`)
+        .join(', '),
+      '  ]',
+      '}',
+      '',
+      'variable "TAG" {',
+      '  default = "develop"',
+      '}',
+      '',
+      'variable "IMAGE_REGISTRY" {',
+      '  default = "pia"',
+      '}',
+      '',
+      'variable "VERSION_INFO_PIPELINE_ID" {',
+      '  default = "develop"',
+      '}',
+      '',
+      'variable "VERSION_INFO_GIT_HASH" {',
+      '  default = "UNKNOWN"',
+      '}',
+      '',
+      'variable "VERSION_INFO_GIT_REF" {',
+      '  default = "UNKNOWN"',
+      '}',
+      '',
+      ...repoMetaData.docker.flatMap((job) => {
+        return [
+          `target "${this.convertFolderNameToTargetName(job)}" {`,
+          '  context = "."',
+          `  dockerfile = "${job}/Dockerfile"`,
+          '  tags = [ "${IMAGE_REGISTRY}/' + job + ':${TAG}" ]',
+          '  args = {',
+          `    DIR = "${job}"`,
+          '    VERSION_INFO_PIPELINE_ID = "${VERSION_INFO_PIPELINE_ID}"',
+          '    VERSION_INFO_GIT_HASH = "${VERSION_INFO_GIT_HASH}"',
+          '    VERSION_INFO_GIT_REF = "${VERSION_INFO_GIT_REF}"',
+          '  }',
+          '}',
+        ];
+      })
+    );
+
+    await Fs.writeFile(targetFile, file.join('\n'));
   }
 
   private static async generate(
@@ -80,7 +157,7 @@ class Program {
     repoDir: string
   ): Promise<void> {
     // Read our env variables
-    const tagetFile =
+    const targetFile =
       process.env['TARGET_FILE'] ?? path.join(repoDir, 'ci/generated.yml');
 
     console.log(repoMetaData);
@@ -89,7 +166,11 @@ class Program {
     const gitlabCi = Generator.createGitlabCiModules(repoMetaData);
 
     // Write the resulting gitlab-ci.yml
-    await Fs.writeYaml(tagetFile, gitlabCi);
+    await Fs.writeYaml(targetFile, gitlabCi);
+  }
+
+  private static convertFolderNameToTargetName(folderName: string): string {
+    return folderName.replace(/\./g, '_');
   }
 }
 

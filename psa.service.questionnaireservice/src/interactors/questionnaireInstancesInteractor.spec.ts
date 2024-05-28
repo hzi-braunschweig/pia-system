@@ -4,16 +4,18 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import sinon from 'sinon';
-import { expect } from 'chai';
-
 import { AccessToken, SinonMethodStub } from '@pia/lib-service-core';
-import { QuestionnaireInstancesInteractor } from './questionnaireInstancesInteractor';
+import { expect } from 'chai';
+import sinon from 'sinon';
+import { QuestionnaireInstance as QuestionnaireInstanceEntity } from '../entities/questionnaireInstance';
+import { InvalidStatusTransitionError } from '../errors';
+import { Question } from '../models/question';
+import { Questionnaire } from '../models/questionnaire';
+import { QuestionnaireInstance } from '../models/questionnaireInstance';
 import { QuestionnaireInstanceRepository } from '../repositories/questionnaireInstanceRepository';
 import { messageQueueService } from '../services/messageQueueService';
-import { QuestionnaireInstance } from '../models/questionnaireInstance';
-import { Questionnaire } from '../models/questionnaire';
-import { Question } from '../models/question';
+import { QuestionnaireInstanceService } from '../services/questionnaireInstanceService';
+import { QuestionnaireInstancesInteractor } from './questionnaireInstancesInteractor';
 
 describe('questionnairesInstancesInteractor', () => {
   const sandbox = sinon.createSandbox();
@@ -25,10 +27,10 @@ describe('questionnairesInstancesInteractor', () => {
     typeof QuestionnaireInstanceRepository.getQuestionnaireInstancesWithQuestionnaireAsResearcher
   >;
   let getQuestionnaireInstanceStub: SinonMethodStub<
-    typeof QuestionnaireInstanceRepository.getQuestionnaireInstanceForProband
+    typeof QuestionnaireInstanceService.getQuestionnaireInstance
   >;
-  let updateQuestionnaireInstanceStub: SinonMethodStub<
-    typeof QuestionnaireInstanceRepository.updateQuestionnaireInstance
+  let patchInstanceStub: SinonMethodStub<
+    typeof QuestionnaireInstanceService.patchInstance
   >;
   let sendQuestionnaireInstanceReleasedStub: SinonMethodStub<
     typeof messageQueueService.sendQuestionnaireInstanceReleased
@@ -48,13 +50,10 @@ describe('questionnairesInstancesInteractor', () => {
       )
       .resolves();
     getQuestionnaireInstanceStub = sandbox
-      .stub(
-        QuestionnaireInstanceRepository,
-        'getQuestionnaireInstanceForProband'
-      )
+      .stub(QuestionnaireInstanceService, 'getQuestionnaireInstance')
       .resolves();
-    updateQuestionnaireInstanceStub = sandbox
-      .stub(QuestionnaireInstanceRepository, 'updateQuestionnaireInstance')
+    patchInstanceStub = sandbox
+      .stub(QuestionnaireInstanceService, 'patchInstance')
       .resolves();
     sendQuestionnaireInstanceReleasedStub = sandbox
       .stub(messageQueueService, 'sendQuestionnaireInstanceReleased')
@@ -401,10 +400,10 @@ describe('questionnairesInstancesInteractor', () => {
 
     it('should not update the qi, if the user has unknown role', async () => {
       // Arrange
-      getQuestionnaireInstanceStub.resolves(
-        createQuestionnaireInstance({ status: 'active' })
-      );
-      updateQuestionnaireInstanceStub.resolves(
+      getQuestionnaireInstanceStub.resolves({
+        status: 'active',
+      } as QuestionnaireInstanceEntity);
+      patchInstanceStub.resolves(
         createQuestionnaireInstance({ status: 'released_once' })
       );
       const session: AccessToken = createDecodedToken({
@@ -423,15 +422,17 @@ describe('questionnairesInstancesInteractor', () => {
         .catch(console.log)
         .finally(() => {
           // Assert
-          expect(getQuestionnaireInstanceStub.callCount).to.equal(0);
-          expect(updateQuestionnaireInstanceStub.callCount).to.equal(0);
+          expect(
+            getQuestionnaireInstancesWithQuestionnaireAsResearcherStub.callCount
+          ).to.equal(0);
+          expect(patchInstanceStub.callCount).to.equal(0);
         });
     });
 
     it('should not update the qi, if the user has role "Proband" but the qi is not for him', async () => {
       // Arrange
       getQuestionnaireInstanceStub.rejects();
-      updateQuestionnaireInstanceStub.resolves(
+      patchInstanceStub.resolves(
         createQuestionnaireInstance({ status: 'released_once' })
       );
       const session: AccessToken = createDecodedToken({
@@ -451,19 +452,17 @@ describe('questionnairesInstancesInteractor', () => {
         .finally(() => {
           // Assert
           expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
-          expect(updateQuestionnaireInstanceStub.callCount).to.equal(0);
+          expect(patchInstanceStub.callCount).to.equal(0);
         });
     });
 
     it('should not update the qi, if the user has role "Proband" but the qi has status inactive', async () => {
       // Arrange
-      getQuestionnaireInstanceStub.resolves(
-        createQuestionnaireInstance({
-          status: 'inactive',
-          user_id: 'Testproband',
-        })
-      );
-      updateQuestionnaireInstanceStub.resolves(
+      getQuestionnaireInstanceStub.resolves({
+        status: 'inactive',
+        pseudonym: 'Testproband',
+      } as QuestionnaireInstanceEntity);
+      patchInstanceStub.resolves(
         createQuestionnaireInstance({ status: 'released_once' })
       );
       const session: AccessToken = createDecodedToken({
@@ -483,19 +482,17 @@ describe('questionnairesInstancesInteractor', () => {
         .finally(() => {
           // Assert
           expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
-          expect(updateQuestionnaireInstanceStub.callCount).to.equal(0);
+          expect(patchInstanceStub.throws(InvalidStatusTransitionError));
         });
     });
 
     it('should not update the qi, if the user has role "Proband", the qi has status released_once and new status is active', async () => {
       // Arrange
-      getQuestionnaireInstanceStub.resolves(
-        createQuestionnaireInstance({
-          status: 'released_once',
-          user_id: 'Testproband',
-        })
-      );
-      updateQuestionnaireInstanceStub.resolves(
+      getQuestionnaireInstanceStub.resolves({
+        status: 'released_once',
+        pseudonym: 'Testproband',
+      } as QuestionnaireInstanceEntity);
+      patchInstanceStub.resolves(
         createQuestionnaireInstance({ status: 'active' })
       );
       const session: AccessToken = createDecodedToken({
@@ -514,18 +511,17 @@ describe('questionnairesInstancesInteractor', () => {
         .catch(console.log)
         .finally(() => {
           expect(getQuestionnaireInstanceStub.callCount).to.equal(1);
-          expect(updateQuestionnaireInstanceStub.callCount).to.equal(0);
+          expect(patchInstanceStub.throws(InvalidStatusTransitionError));
         });
     });
 
     it('should not update the qi, if the user has role "Forscher"', async () => {
       // Arrange
-      getQuestionnaireInstanceStub
-        .withArgs(1)
-        .resolves(
-          createQuestionnaireInstance({ study_id: '1', status: 'inactive' })
-        );
-      updateQuestionnaireInstanceStub.rejects();
+      getQuestionnaireInstanceStub.withArgs(1, sinon.match.object).resolves({
+        studyId: '1',
+        status: 'inactive',
+      } as QuestionnaireInstanceEntity);
+      patchInstanceStub.rejects();
       const session: AccessToken = createDecodedToken({
         scope: ['realm:Forscher'],
         username: 'Testforscher',
@@ -542,19 +538,17 @@ describe('questionnairesInstancesInteractor', () => {
         .catch(console.log)
         .finally(() => {
           expect(getQuestionnaireInstanceStub.callCount).to.equal(0);
-          expect(updateQuestionnaireInstanceStub.callCount).to.equal(0);
+          expect(patchInstanceStub.callCount).to.equal(0);
         });
     });
 
     it('should update the qi, if the user has role "Proband", old status is active, new status is released_once', async () => {
       // Arrange
-      getQuestionnaireInstanceStub.resolves(
-        createQuestionnaireInstance({
-          status: 'active',
-          user_id: 'Testproband',
-        })
-      );
-      updateQuestionnaireInstanceStub.resolves(
+      getQuestionnaireInstanceStub.resolves({
+        status: 'active',
+        pseudonym: 'Testproband',
+      } as QuestionnaireInstanceEntity);
+      patchInstanceStub.resolves(
         createQuestionnaireInstance({ status: 'released_once' })
       );
       const session: AccessToken = createDecodedToken({
@@ -575,19 +569,17 @@ describe('questionnairesInstancesInteractor', () => {
 
       // Assert
       expect(getQuestionnaireInstanceStub.calledOnce).to.equal(true);
-      expect(updateQuestionnaireInstanceStub.calledOnce).to.equal(true);
+      expect(patchInstanceStub.calledOnce).to.equal(true);
       expect(result.status).to.equal('released_once');
     });
 
     it('should update the qi, if the user has role "Proband", old status is released_once, new status is released_twice', async () => {
       // Arrange
-      getQuestionnaireInstanceStub.resolves(
-        createQuestionnaireInstance({
-          status: 'released_once',
-          user_id: 'Testproband',
-        })
-      );
-      updateQuestionnaireInstanceStub.resolves(
+      getQuestionnaireInstanceStub.resolves({
+        status: 'released_once',
+        pseudonym: 'Testproband',
+      } as QuestionnaireInstanceEntity);
+      patchInstanceStub.resolves(
         createQuestionnaireInstance({ status: 'released_twice' })
       );
       const session: AccessToken = createDecodedToken({
@@ -608,7 +600,7 @@ describe('questionnairesInstancesInteractor', () => {
 
       // Assert
       expect(getQuestionnaireInstanceStub.calledOnce).to.equal(true);
-      expect(updateQuestionnaireInstanceStub.calledOnce).to.equal(true);
+      expect(patchInstanceStub.calledOnce).to.equal(true);
       expect(result.status).to.equal('released_twice');
     });
   });

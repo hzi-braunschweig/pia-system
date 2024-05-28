@@ -12,7 +12,7 @@ class ComplianceTextRepository {
    * Gets the compliance text for a specific study
    * @param {string} study the name of the study
    * @param {IOptions} options
-   * @returns {Promise} a resolved promise with the requested compliance text
+   * @returns {Promise<unknown|null>} a resolved promise with the requested compliance text
    */
   static async getComplianceText(study, options) {
     return ComplianceText.findOne({

@@ -22,15 +22,11 @@ kc.sh \
     --hostname-strict=true \
     --hostname-strict-backchannel=true \
     --hostname-strict-https=${STRICT_HTTPS} \
-    --https-certificate-key-file=/certs/authserver.key \
-    --https-certificate-file=/certs/authserver.cert \
-    --https-port=4000 \
-    --proxy=reencrypt \
+    --http-port=4000 \
+    --proxy=edge \
     --db=postgres \
     --db-username=${DB_AUTHSERVER_USER} \
     --db-password=${DB_AUTHSERVER_PASSWORD} \
     --db-url-port=${DB_AUTHSERVER_PORT} \
     --db-url-host=${DB_AUTHSERVER_HOST} \
     --db-url-database=${DB_AUTHSERVER_DB} \
-    "--db-url-properties=\"?sslmode=verify-ca&sslrootcert=/certs/ca.cert\""
-

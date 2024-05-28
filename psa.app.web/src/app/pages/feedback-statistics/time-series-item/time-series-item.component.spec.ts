@@ -8,19 +8,19 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TimeSeriesItemComponent } from './time-series-item.component';
 import { RelativeFrequencyTimeSeriesConfigurationFormService } from '../relative-frequency-time-series-configuration/relative-frequency-time-series-configuration-form.service';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
 import { HintComponent } from '../../../features/hint/hint.component';
 import { MockComponent, MockPipe } from 'ng-mocks';
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
+import { MatButtonModule } from '@angular/material/button';
 import { TranslatePipe } from '@ngx-translate/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectSearchModule } from '../../../features/mat-select-search/mat-select-search.module';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatLegacySelectHarness as MatSelectHarness } from '@angular/material/legacy-select/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HarnessLoader } from '@angular/cdk/testing';
 import {

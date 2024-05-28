@@ -6,10 +6,7 @@
 
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { SelectionModel } from '@angular/cdk/collections';
-import {
-  MatLegacyPaginator as MatPaginator,
-  MatLegacyPaginatorIntl as MatPaginatorIntl,
-} from '@angular/material/legacy-paginator';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../../_services/alert.service';
@@ -17,7 +14,7 @@ import { QuestionnaireDataSource } from '../../../_helpers/questionnaire-data-so
 import { QuestionnaireDatabase } from '../../../_helpers/questionnaire-database';
 import { DialogDeleteComponent } from '../../../_helpers/dialog-delete';
 import { Router } from '@angular/router';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
 import { Questionnaire } from '../../../psa.app.core/models/questionnaire';
 

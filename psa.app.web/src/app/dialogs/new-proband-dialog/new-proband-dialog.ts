@@ -6,10 +6,10 @@
 
 import { Component, Inject, OnInit } from '@angular/core';
 import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AlertService } from '../../_services/alert.service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';

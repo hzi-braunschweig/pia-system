@@ -10,6 +10,7 @@ e2e:
   script:
     # when https://gitlab.com/gitlab-org/gitlab-runner/-/issues/27215 is done we can get rid of the sleep
     - sleep 120
+    - echo starting test
     - cd psa.app.web
     - ln -s $NODE_PATH ./node_modules
     - npm run e2e.ci.$FOLDER
@@ -32,8 +33,6 @@ e2e:
       - FOLDER: !reference [.modules, array, e2e]
 
   variables:
-    METRICS_IP_WHITELIST: '*'
-
     DB_LOG_USER: loggingservice
     DB_LOG_PASSWORD: log
     DB_LOG_DB: pia_database
@@ -51,6 +50,12 @@ e2e:
     DB_FEEDBACKSTATISTIC_DB: pia_database
     DB_FEEDBACKSTATISTIC_HOST: databaseservice
     DB_FEEDBACKSTATISTIC_PORT: '5433'
+
+    DB_EVENTHISTORY_USER: eventhistoryserver
+    DB_EVENTHISTORY_PASSWORD: eventhistory
+    DB_EVENTHISTORY_DB: pia_database
+    DB_EVENTHISTORY_HOST: databaseservice
+    DB_EVENTHISTORY_PORT: '5433'
 
     DB_PERSONALDATA_USER: personaldataservice
     DB_PERSONALDATA_PASSWORD: personaldata
@@ -91,7 +96,6 @@ e2e:
 
     PROTOCOL: http
     WEBAPPSERVER_HTTP_PORT: '8080'
-    WEBAPPSERVER_HTTPS_PORT: '1443'
 
     # also used inside the test.api script!
     DB_HOST: databaseservice
@@ -105,6 +109,11 @@ e2e:
 
     MAIL_FROM_ADDRESS: pia-noreply@example.de
     MAIL_FROM_NAME: PIA App
+
+    # Firebase credentials
+    FIREBASE_PRIVATE_KEY_BASE64: 'LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUJWZ0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQVVBd2dnRThBZ0VBQWtFQXlUbGhkdFo0OGFteE9KZTAKMXN0aUZPWTdqdmw0YlRMSU9SMGtYREFlSXZ1SFM3ZHQwQ3ZERmVJYVl2VUhUSk02eGlFSUgrWW9rWko3VDk0MgpwTzJ2Y3dJREFRQUJBa0FOY2ZzVU1MSjJHMHVQSjN2YTJrNGNiV0hQWk5YcUhmbUk3MnlOaUYyTElyc0FwSzI1CmZCZzFqcTc2bVpvRTdGdnVCVnZxWmZUZW9Sa1dXNHNmQ2E2UkFpRUE3MytMSEVrOHhBSjhNcThsOWo1Wkw5RmkKeS9FbEJyZXhoYk5GZUZFS09Vc0NJUURYRnJxMUlvSXBBelh2ay9qamJPbENMZWFpbnNYYUZkeUljRTRQbk52eAplUUloQU85WVFGYkJYa2ZveitQN0krNEYreTJOakxXUnhkWUR5Qlo4eFVWcmY5TW5BaUVBbE5zYUpEblpzdUNSCjkxaUZLNEE0ZnFDZHVYWUFuOG41Y2tPbkFvOGdlS0VDSVFDT1MyUmx0WThla0NGOVhxWW4zamt2eTRhME8vTlgKekxMU2hQQmtFQy95RXc9PQotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg=='
+    FIREBASE_PROJECT_ID: 'dummy'
+    FIREBASE_CLIENT_EMAIL: 'dummy'
 
     MHH_FTPSERVICE_HOST: sftpserver
     MHH_FTPSERVICE_PORT: '22'
@@ -156,6 +165,10 @@ e2e:
     ANALYZERSERVICE_INTERNAL_PORT: 4012
     FEEDBACKSTATISTICSERVICE_HOST: feedbackstatisticservice
     FEEDBACKSTATISTICSERVICE_PORT: 4015
+    PUBLICAPISERVER_HOST: publicapiserver
+    PUBLICAPISERVER_PORT: 4016
+    EVENTHISTORYSERVER_HOST: eventhistoryserver
+    EVENTHISTORYSERVER_PORT: 4017
 
     PIA_ON_SORMAS_USER: user
     PIA_ON_SORMAS_PASSWORD: password
@@ -194,8 +207,8 @@ e2e:
 
     #e2e
     MAILSERVER_BASEURL: http://mailserver:8025
-    CYPRESS_BASE_URL: https://apigateway
-    WEBAPP_URL: https://apigateway
+    CYPRESS_BASE_URL: http://apigateway
+    WEBAPP_URL: http://apigateway
     EXTERNAL_HOST: apigateway
 
     ENABLE_DB_IMPORT: 'true'
@@ -205,8 +218,8 @@ e2e:
     IS_E2E_TEST_SYSTEM: 'true'
     IS_DIRECT_ACCESS_GRANT_ENABLED: 'true'
 
-    EXTERNAL_PROTOCOL: 'https'
-    EXTERNAL_PORT: '443'
+    EXTERNAL_PROTOCOL: 'http'
+    EXTERNAL_PORT: '80'
 
     # skip migration in userservice - can be removed when migration is not used anymore
     NODE_ENV: test
@@ -227,64 +240,67 @@ e2e:
 
     DEFAULT_LANGUAGE: de-DE
   services:
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.sftpserver:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.sftpserver:$IMAGE_ID
       alias: sftpserver
       command: ['ftpuser:ftppassword:::upload']
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.mailserver:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.mailserver:$IMAGE_ID
       alias: mailserver
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database.ipia:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database.ipia:$IMAGE_ID
       alias: ipiaservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database.ewpia:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database.ewpia:$IMAGE_ID
       alias: ewpiaservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database:$IMAGE_ID
       # don't use a variable for alias - it doesn't get resolved!
       alias: databaseservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.loggingservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.loggingservice:$IMAGE_ID
       alias: loggingservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.userservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.userservice:$IMAGE_ID
       alias: userservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.questionnaireservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.questionnaireservice:$IMAGE_ID
       alias: questionnaireservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.sampletrackingservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.sampletrackingservice:$IMAGE_ID
       alias: sampletrackingservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.complianceservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.complianceservice:$IMAGE_ID
       alias: complianceservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.personaldataservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.personaldataservice:$IMAGE_ID
       alias: personaldataservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.analyzerservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.analyzerservice:$IMAGE_ID
       alias: analyzerservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.web:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.web:$IMAGE_ID
       alias: webappserver
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.apigateway:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.apigateway:$IMAGE_ID
       alias: apigateway
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.notificationservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.notificationservice:$IMAGE_ID
       alias: notificationservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.feedbackstatisticservice:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.feedbackstatisticservice:$IMAGE_ID
       alias: feedbackstatisticservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.messagequeue:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.messagequeue:$IMAGE_ID
       alias: messagequeue
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.auth:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.auth:$IMAGE_ID
       alias: authserver
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.autheventproxy:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.autheventproxy:$IMAGE_ID
       alias: autheventproxy
+
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.eventhistory:$IMAGE_ID
+      alias: eventhistoryserver
 
   rules:
     # e2e tests for non renovate merge requests should be triggered manually

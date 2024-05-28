@@ -31,3 +31,4 @@ tests/private.key
 
 # Build
 dist/
+spec/

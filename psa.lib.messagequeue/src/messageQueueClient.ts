@@ -19,6 +19,10 @@ interface Packet<M> {
   message: M;
 }
 
+interface MessageProperties {
+  timestamp: number;
+}
+
 // we are using fanout because we want this message to be broadcasted
 // to all queues that are interested in that topic
 const exchangeType = 'fanout';
@@ -93,7 +97,10 @@ export class MessageQueueClient extends MessageQueueClientConnection {
           contentEncoding
         );
         return Promise.resolve(
-          channel.publish(topic, this.serviceName, content, publishOptions)
+          channel.publish(topic, this.serviceName, content, {
+            ...publishOptions,
+            timestamp: Date.now(),
+          })
         );
       },
     };
@@ -161,7 +168,7 @@ export class MessageQueueClient extends MessageQueueClientConnection {
    */
   public async createConsumer<M>(
     topic: MessageQueueTopic,
-    onMessage: (message: M) => Promise<void>
+    onMessage: HandleMessageArgs<M>['onMessage']
   ): Promise<void> {
     if (!this.connection) {
       throw new Error('not connected');
@@ -208,17 +215,14 @@ export class MessageQueueClient extends MessageQueueClientConnection {
     const redelivered = args.message.fields.redelivered;
 
     try {
+      const properties = args.message.properties as MessageProperties;
       const data = JSON.parse(args.message.content.toString()) as Packet<M>;
-      await args.onMessage(data.message);
+      await args.onMessage(data.message, new Date(properties.timestamp));
       // message got successfully handled
       args.channel.ack(args.message, false);
     } catch {
       if (redelivered) {
-        console.error(
-          `dropping message on ${
-            args.topic
-          } to dead-letter-queue: ${args.message.content.toString()}`
-        );
+        console.error(`dropping message on ${args.topic} to dead-letter-queue`);
         args.channel.sendToQueue(
           args.deadLetterQueue.queue,
           args.message.content,

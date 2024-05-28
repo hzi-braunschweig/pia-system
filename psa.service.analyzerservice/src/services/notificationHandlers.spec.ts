@@ -249,6 +249,51 @@ describe.skip('notificationHandlers', function () {
       expect(dbStub.manyOrNone.callCount).to.equal(expectedCallCount);
       expect(dbStub.manyOrNone.calledWith(expectedCallArgs)).to.equal(true);
     });
+
+    it('should ignore when a custom name has been automatically generated for a questionnaire', () => {
+      // Arrange
+      const questionnaire_old = createQuestionnaire({
+        id: 99999,
+        study_id: 'Study1',
+        name: 'TestQuestionnaire1',
+        custom_name: null,
+        no_questions: 2,
+        cycle_amount: 1,
+        cycle_unit: 'day',
+        activate_after_days: 0,
+        deactivate_after_days: 1,
+      });
+
+      const questionnaire_new = createQuestionnaire({
+        id: 99999,
+        study_id: 'Study1',
+        name: 'TestQuestionnaire1',
+        custom_name: 'CustomName1',
+        no_questions: 2,
+        cycle_amount: 1,
+        cycle_unit: 'day',
+        activate_after_days: 0,
+        deactivate_after_days: 1,
+      });
+
+      // Act
+      const resultNullName = NotificationHandlers.handleUpdatedQuestionnaire(
+        questionnaire_old,
+        questionnaire_new
+      );
+
+      // Assert
+      expect(resultNullName).to.be.undefined;
+
+      // Act
+      const resultEmptyName = NotificationHandlers.handleUpdatedQuestionnaire(
+        { ...questionnaire_old, custom_name: '' },
+        questionnaire_new
+      );
+
+      // Assert
+      expect(resultEmptyName).to.be.undefined;
+    });
   });
 
   function createUser(
@@ -278,6 +323,7 @@ describe.skip('notificationHandlers', function () {
       id: 99999,
       study_id: 'Study1',
       name: 'TestQuestionnaire1',
+      custom_name: '',
       no_questions: 2,
       cycle_amount: 0,
       cycle_unit: 'once',

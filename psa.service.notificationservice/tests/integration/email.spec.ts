@@ -6,6 +6,7 @@
 
 import chai from 'chai';
 import chaiHttp from 'chai-http';
+import fbAdmin from 'firebase-admin';
 import sinon from 'sinon';
 import fetchMocker from 'fetch-mock';
 
@@ -38,7 +39,7 @@ describe('/admin/email', () => {
   before(async () => {
     suiteSandbox.stub(ListeningDbClient.prototype);
     suiteSandbox.stub(FcmHelper, 'sendDefaultNotification');
-    suiteSandbox.stub(FcmHelper, 'initFBAdmin');
+    suiteSandbox.stub(fbAdmin, 'initializeApp');
     suiteSandbox.stub(MailService, 'initService');
     suiteSandbox.stub(MailService, 'sendMail').resolves(true);
     await Server.init();

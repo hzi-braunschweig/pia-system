@@ -15,7 +15,7 @@ const expect = chai.expect;
 const { sequelize, ComplianceText, Compliance } = require('../../src/db');
 
 const { config } = require('../../src/config');
-const server = require('../../src/server');
+const { Server } = require('../../src/server');
 const {
   AuthServerMock,
   AuthTokenMockBuilder,
@@ -41,11 +41,11 @@ const probandHeader = AuthTokenMockBuilder.createAuthHeader({
 describe('Compliance Agreements API', () => {
   before(async () => {
     await sequelize.sync();
-    await server.init();
+    await Server.init();
   });
 
   after(async () => {
-    await server.stop();
+    await Server.stop();
   });
 
   beforeEach(async () => {

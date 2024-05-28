@@ -6,6 +6,7 @@
 
 import { expect } from 'chai';
 import config from './config';
+import { StatusCodes } from 'http-status-codes';
 
 describe('Config', () => {
   it('isDevelopment should default to false', () => {
@@ -17,5 +18,20 @@ describe('Config', () => {
       (r) => r.upstream.host === 'deploymentservice'
     );
     expect(route).to.be.undefined;
+  });
+
+  it('should forbid service /metrics by default', () => {
+    const route = config.responseRoutes
+      .filter(
+        (r) =>
+          r.path.endsWith('/metrics') &&
+          r.response.statusCode === StatusCodes.FORBIDDEN
+      )
+      .map((r) => r.path);
+    expect(route).to.include('/api/v1/compliance/metrics');
+    expect(route).to.include('/api/v1/user/metrics');
+
+    expect(route).to.include('/admin/api/v1/compliance/metrics');
+    expect(route).to.include('/admin/api/v1/user/metrics');
   });
 });

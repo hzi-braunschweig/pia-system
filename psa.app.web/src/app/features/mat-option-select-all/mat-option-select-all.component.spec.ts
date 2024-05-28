@@ -8,7 +8,7 @@ import { MatOptionSelectAllComponent } from './mat-option-select-all.component';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl } from '@angular/forms';
 import { MatPseudoCheckbox } from '@angular/material/core';
-import { MatLegacySelect as MatSelect } from '@angular/material/legacy-select';
+import { MatSelect } from '@angular/material/select';
 import { MockComponent } from 'ng-mocks';
 import { NEVER } from 'rxjs';
 import { By } from '@angular/platform-browser';
@@ -80,6 +80,6 @@ describe('MatOptionSelectAllComponent', () => {
   });
 
   function clickOptionCheckbox(): void {
-    fixture.debugElement.query(By.css('.mat-option')).nativeElement.click();
+    fixture.debugElement.query(By.css('.mat-mdc-option')).nativeElement.click();
   }
 });

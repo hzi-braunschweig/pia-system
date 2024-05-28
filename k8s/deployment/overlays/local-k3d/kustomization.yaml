@@ -1,0 +1,68 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+sortOptions:
+  order: fifo
+metadata:
+  name: local-k3d
+
+namespace: pia
+
+resources:
+  - ../../base
+  - internal-secrets.yaml
+
+components:
+  - ../../components/local-development
+
+# To keep volumes and their data after skaffold usage, we need to manage the namespace and PVCs ourselves
+patches:
+  - target:
+      version: v1
+      kind: Namespace
+      name: pia
+    patch: |-
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: not-managed-by-skaffold
+      $patch: delete
+  - target:
+      version: v1
+      kind: PersistentVolumeClaim
+      name: qpiaservice
+    patch: |-
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: not-managed-by-skaffold
+      $patch: delete
+  - target:
+      version: v1
+      kind: PersistentVolumeClaim
+      name: ewpiaservice
+    patch: |-
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: not-managed-by-skaffold
+      $patch: delete
+  - target:
+      version: v1
+      kind: PersistentVolumeClaim
+      name: ipiaservice
+    patch: |-
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: not-managed-by-skaffold
+      $patch: delete
+  - target:
+      version: v1
+      kind: PersistentVolumeClaim
+      name: messagequeue
+    patch: |-
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: not-managed-by-skaffold
+      $patch: delete

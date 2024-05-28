@@ -1,13 +1,13 @@
 /*
- * SPDX-FileCopyrightText: 2022 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 import Joi from 'joi';
+import { ConditionRequest } from '../models/condition';
 
 import { Questionnaire } from '../models/questionnaire';
-import { ConditionRequest } from '../models/condition';
 
 export const conditionValidation = Joi.object<ConditionRequest>().keys({
   condition_target_questionnaire: Joi.number()
@@ -51,6 +51,11 @@ export const conditionValidation = Joi.object<ConditionRequest>().keys({
 export const questionnaireRequestPayload = Joi.object<Questionnaire>({
   study_id: Joi.string().required().example('Teststudie1'),
   name: Joi.string().required().example('Testfragebogenname'),
+  custom_name: Joi.string()
+    .pattern(/^[a-zA-Z0-9_-]+$/)
+    .pattern(/^\d+$/, { invert: true })
+    .allow(null)
+    .example('test_questionnaire_custom_name'),
   type: Joi.string()
     .required()
     .default('for_probands')
@@ -196,6 +201,10 @@ export const questionnaireRequestPayload = Joi.object<Questionnaire>({
         .description('the question text')
         .required()
         .example('Welche Symptome haben Sie?'),
+      help_text: Joi.string()
+        .description('optional help text')
+        .allow('')
+        .required(),
       variable_name: Joi.string()
         .description('an optional variable name for export')
         .allow('')

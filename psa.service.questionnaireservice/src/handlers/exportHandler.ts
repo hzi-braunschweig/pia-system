@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -10,8 +10,8 @@ import {
   ExportInteractor,
   ExportOptions,
 } from '../interactors/exportInteractor';
-import { AccessToken } from '@pia/lib-service-core';
-import { StreamTimeout } from '../helpers/streamTimeout';
+import { AccessToken, StreamTimeout } from '@pia/lib-service-core';
+import { pipeline } from 'stream';
 
 export class ExportHandler {
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -23,6 +23,8 @@ export class ExportHandler {
   public static createOne: Lifecycle.Method = async (request, h) => {
     try {
       request.log(['export'], 'Start export');
+
+      const streamTimeout = new StreamTimeout(ExportHandler.streamTimeout);
       const stream = await ExportInteractor.export(
         request.auth.credentials as AccessToken,
         request.payload as ExportOptions
@@ -38,15 +40,24 @@ export class ExportHandler {
       stream.on('error', (err: Error) => {
         request.log(['export'], 'Export failed with Error:');
         request.log(['export'], err);
+        // the user will retrieve the zip file with every instance that was created before the error occured
+        stream.abort();
       });
       /**
        * The stream timeout ensures that export streams close after a
        * request is aborted by the client. This is a workaround for an open bug
        * in hapi: {@link https://github.com/hapijs/hapi/issues/4244}
        */
-      return h
-        .response(stream.pipe(new StreamTimeout(ExportHandler.streamTimeout)))
-        .type('application/zip');
+      pipeline(stream, streamTimeout, (err) => {
+        if (err) {
+          request.log(['export'], 'Export pipeline failed with Error:');
+          request.log(['export'], err);
+        } else {
+          request.log(['export'], 'Export pipeline finished successfully.');
+        }
+      });
+
+      return h.response(streamTimeout).type('application/zip');
     } catch (err) {
       request.log(['export'], 'Export failed');
       if (err instanceof Error) {

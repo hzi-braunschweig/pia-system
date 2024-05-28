@@ -4,22 +4,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { MigrationInterface, QueryRunner } from 'typeorm';
 import { ProbandOrigin } from '@pia-system/lib-http-clients-internal';
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 /**
- * We add the default value for probands.created_at later,
+ * We add the default value for `probands.created_at` later,
  * to keep null values for already created rows.
  * Only new rows should get a timestamp.
  *
- * We drop the default value for probands.origin later,
+ * We drop the default value for `probands.origin` later,
  * to enforce setting the origin, but initially set all
  * origins to investigator.
  */
 export class AlterProbandCreatedAtOriginDefaultValue1666089544308
   implements MigrationInterface
 {
-  public async up(queryRunner: QueryRunner): Promise<any> {
+  public async up(queryRunner: QueryRunner): Promise<unknown> {
     return Promise.all([
       queryRunner.query(`
             ALTER TABLE probands 
@@ -34,7 +34,7 @@ export class AlterProbandCreatedAtOriginDefaultValue1666089544308
     ]);
   }
 
-  public async down(queryRunner: QueryRunner): Promise<any> {
+  public async down(queryRunner: QueryRunner): Promise<unknown> {
     return Promise.all([
       queryRunner.query(`
             ALTER TABLE probands 

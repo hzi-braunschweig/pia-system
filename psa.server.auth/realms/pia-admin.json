@@ -15,7 +15,7 @@
   "accessCodeLifespanLogin": 1800,
   "actionTokenGeneratedByAdminLifespan": 43200,
   "actionTokenGeneratedByUserLifespan": 600,
-  "sslRequired": "all",
+  "sslRequired": "external",
   "rememberMe": true,
   "loginWithEmailAllowed": true,
   "verifyEmail": true,
@@ -230,7 +230,7 @@
       "username": "service-account-pia-admin-management-client",
       "serviceAccountClientId": "pia-admin-management-client",
       "clientRoles": {
-        "realm-management": ["view-users", "view-realm", "manage-users"]
+        "realm-management": ["view-users", "view-realm", "view-clients", "manage-clients", "manage-users"]
       }
     },
     {
@@ -383,5 +383,12 @@
       "config": {}
     }
   ],
-  "browserFlow": "Browser with conditional OTP"
+  "browserFlow": "Browser with conditional OTP",
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyInitialCounter": 0,
+  "otpPolicyDigits": 6,
+  "otpPolicyLookAheadWindow": 1,
+  "otpPolicyPeriod": 30,
+  "otpPolicyCodeReusable": true
 }

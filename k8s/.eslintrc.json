@@ -1,0 +1,7 @@
+{
+  "extends": ["@pia/eslint-config"],
+  "rules": {
+    "@typescript-eslint/no-magic-numbers": "warn",
+    "@typescript-eslint/no-namespace": [2, { "allowDeclarations": true }]
+  }
+}

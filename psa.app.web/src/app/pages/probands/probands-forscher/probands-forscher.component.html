@@ -6,25 +6,17 @@
 
 <app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
 
-<div class="jumbotron">
-  <div
-    class="page-header"
-    fxLayout="row"
-    fxLayout.lt-lg="row wrap"
-    fxLayoutAlign="space-between center"
+<div class="jumbotron space-y">
+  <h3>{{ 'SIDENAV.PROBANDS' | translate }}</h3>
+  <button
+    id="exportData"
+    mat-raised-button
+    color="primary"
+    (click)="openDialogExportData()"
+    unit-export-data
   >
-    <div>
-      <button
-        id="exportData"
-        mat-raised-button
-        color="primary"
-        (click)="openDialogExportData()"
-        unit-export-data
-      >
-        {{ 'PROBANDEN.EXPORT_DATA' | translate }}
-      </button>
-    </div>
-  </div>
+    {{ 'PROBANDEN.EXPORT_DATA' | translate }}
+  </button>
 
   <app-probands-list (isLoading)="this.isLoading = $event">
     <!-- Show answers -->

@@ -5,10 +5,7 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AlertService } from '../../_services/alert.service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
@@ -23,7 +20,6 @@ import { UserService } from '../../psa.app.core/providers/user-service/user.serv
 
 @Component({
   selector: 'dialog-new-ids',
-  styleUrls: ['new-ids-dialog.scss'],
   templateUrl: 'new-ids-dialog.html',
 })
 export class DialogNewIdsComponent implements OnInit {

@@ -7,16 +7,9 @@
 import {
   ConfigUtils,
   GlobalConfig,
-  SslCerts,
   SupersetOfServiceConfig,
 } from '@pia/lib-service-core';
 import { ModysConfig } from './models/modys';
-
-const SSL_CERTS: SslCerts = {
-  cert: ConfigUtils.getFileContent('./ssl/modys.cert'),
-  key: ConfigUtils.getFileContent('./ssl/modys.key'),
-  ca: ConfigUtils.getFileContent('./ssl/ca.cert'),
-};
 
 const modysConfig: ModysConfig = {
   baseUrl: ConfigUtils.getEnvVariable('MODYS_BASE_URL'),
@@ -30,7 +23,7 @@ const modysConfig: ModysConfig = {
 const DEFAULT_MODYS_REQUEST_CONCURRENCY = '5';
 
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS, 'modysservice'),
+  public: GlobalConfig.getPublic('modysservice'),
   services: {
     personaldataservice: GlobalConfig.personaldataservice,
     userservice: GlobalConfig.userservice,

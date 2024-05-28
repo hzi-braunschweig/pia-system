@@ -4,6 +4,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+:host {
+  display: block;
+}
+
 .headline-text-input {
   font-size: 1.1rem;
+}
+
+.mat-mdc-card-content {
+  padding-top: var(--pia-space-y);
 }

@@ -1,0 +1,21 @@
+/*
+ * SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+export class ColorPaletteUtility {
+    static { this.colors = [
+        '#668F31',
+        '#8FB744',
+        '#ADCF67',
+        '#CCE697',
+        '#2E90C1',
+        '#3AA9E0',
+        '#84C7E8',
+        '#A9DAF3',
+    ]; }
+    static getColorForIterator(index) {
+        return this.colors[index % this.colors.length];
+    }
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY29sb3ItcGFsZXR0ZS51dGlsaXR5LmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vLi4vcHJvamVjdHMvbGliL3NyYy9saWIvdXRpbGl0aWVzL2NvbG9yLXBhbGV0dGUudXRpbGl0eS50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQTs7OztHQUlHO0FBRUgsTUFBTSxPQUFPLG1CQUFtQjthQUNQLFdBQU0sR0FBRztRQUM5QixTQUFTO1FBQ1QsU0FBUztRQUNULFNBQVM7UUFDVCxTQUFTO1FBQ1QsU0FBUztRQUNULFNBQVM7UUFDVCxTQUFTO1FBQ1QsU0FBUztLQUNWLENBQUM7SUFFSyxNQUFNLENBQUMsbUJBQW1CLENBQUMsS0FBYTtRQUM3QyxPQUFPLElBQUksQ0FBQyxNQUFNLENBQUMsS0FBSyxHQUFHLElBQUksQ0FBQyxNQUFNLENBQUMsTUFBTSxDQUFDLENBQUM7SUFDakQsQ0FBQyIsInNvdXJjZXNDb250ZW50IjpbIi8qXG4gKiBTUERYLUZpbGVDb3B5cmlnaHRUZXh0OiAyMDIzIEhlbG1ob2x0ei1aZW50cnVtIGbDvHIgSW5mZWt0aW9uc2ZvcnNjaHVuZyBHbWJIIChIWkkpIDxQaWFQb3N0QGhlbG1ob2x0ei1oemkuZGU+XG4gKlxuICogU1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IEFHUEwtMy4wLW9yLWxhdGVyXG4gKi9cblxuZXhwb3J0IGNsYXNzIENvbG9yUGFsZXR0ZVV0aWxpdHkge1xuICBwdWJsaWMgc3RhdGljIHJlYWRvbmx5IGNvbG9ycyA9IFtcbiAgICAnIzY2OEYzMScsXG4gICAgJyM4RkI3NDQnLFxuICAgICcjQURDRjY3JyxcbiAgICAnI0NDRTY5NycsXG4gICAgJyMyRTkwQzEnLFxuICAgICcjM0FBOUUwJyxcbiAgICAnIzg0QzdFOCcsXG4gICAgJyNBOURBRjMnLFxuICBdO1xuXG4gIHB1YmxpYyBzdGF0aWMgZ2V0Q29sb3JGb3JJdGVyYXRvcihpbmRleDogbnVtYmVyKTogc3RyaW5nIHtcbiAgICByZXR1cm4gdGhpcy5jb2xvcnNbaW5kZXggJSB0aGlzLmNvbG9ycy5sZW5ndGhdO1xuICB9XG59XG4iXX0=

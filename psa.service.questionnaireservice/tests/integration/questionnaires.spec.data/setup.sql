@@ -58,6 +58,11 @@ INSERT INTO questionnaires (id, version, study_id, name, no_questions, cycle_amo
                             notification_body_in_progress)
 VALUES (100500, 1, 'ApiTestStudy1', 'ApiTestQuestionnaire5', 1, 1, 'day', 1, 365, 3, 'PIA Fragebogen', 'NeuNachricht',
         'AltNachricht');
+INSERT INTO questionnaires (id, version, study_id, name, custom_name, no_questions, cycle_amount, cycle_unit, activate_after_days,
+                            deactivate_after_days, notification_tries, notification_title, notification_body_new,
+                            notification_body_in_progress)
+VALUES (100600, 1, 'ApiTestStudy1', 'ApiTestQuestionnaire6', 'already_in_use', 1, 1, 'day', 1, 365, 3, 'PIA Fragebogen', 'NeuNachricht',
+        'AltNachricht');
 
 INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
@@ -78,29 +83,29 @@ VALUES (200300, 1, 'ApiTestStudy2', 'ApiTestGeneratedVariableNames', 1, NULL, 'o
         '', '', '');
 
 
-INSERT INTO questions (id, questionnaire_id, questionnaire_version, text, position, is_mandatory, variable_name)
-VALUES (1001101, 100100, 1, 'Mach mal n Bild', 1, TRUE, ''),
+INSERT INTO questions (id, questionnaire_id, questionnaire_version, text, help_text, position, is_mandatory, variable_name)
+VALUES (1001101, 100100, 1, 'Mach mal n Bild', '', 1, TRUE, ''),
 
-       (1002101, 100200, 1, 'Haben Sie Fieber?', 1, TRUE, ''),
-       (1002201, 100200, 1, 'Wie fühlen Sie sich?', 2, TRUE, ''),
+       (1002101, 100200, 1, 'Haben Sie Fieber?', '', 1, TRUE, ''),
+       (1002201, 100200, 1, 'Wie fühlen Sie sich?', '', 2, TRUE, ''),
 
-       (1002102, 100200, 2, 'Haben Sie Fieber?', 1, TRUE, ''),
-       (1002202, 100200, 2, 'Wie fühlen Sie sich?', 2, TRUE, ''),
+       (1002102, 100200, 2, 'Haben Sie Fieber?', '', 1, TRUE, ''),
+       (1002202, 100200, 2, 'Wie fühlen Sie sich?', '', 2, TRUE, ''),
 
-       (1003101, 100300, 1, 'Wie fühlen Sie sich?', 1, TRUE, ''),
+       (1003101, 100300, 1, 'Wie fühlen Sie sich?', '', 1, TRUE, ''),
 
-       (1004101, 100400, 1, 'Wie fühlen Sie sich?', 1, TRUE, ''),
-       (1004201, 100400, 1, 'Haben Sie Fieber?', 2, TRUE, ''),
+       (1004101, 100400, 1, 'Wie fühlen Sie sich?', '', 1, TRUE, ''),
+       (1004201, 100400, 1, 'Haben Sie Fieber?', '', 2, TRUE, ''),
 
-       (1005101, 100500, 1, 'Wie fühlen Sie sich?', 1, TRUE, ''),
+       (1005101, 100500, 1, 'Wie fühlen Sie sich?', '', 1, TRUE, ''),
 
-       (2001101, 200100, 1, 'Haben Sie Fieber?', 1, TRUE, ''),
-       (2001201, 200100, 1, 'Haben Sie Schmerzen?', 2, TRUE, ''),
+       (2001101, 200100, 1, 'Haben Sie Fieber?', '', 1, TRUE, ''),
+       (2001201, 200100, 1, 'Haben Sie Schmerzen?', '', 2, TRUE, ''),
 
-       (2002101, 200200, 1, 'Bedingung auf Ja', 1, TRUE, ''),
-       (2002201, 200200, 1, 'Bedingung auf Nein', 2, TRUE, ''),
-       (2002301, 200200, 1, 'Frage ohne Unterfrage', 3, FALSE, ''),
-       (2003101, 200300, 1, 'Frage mit Variablennamen', 1, FALSE, 'auto-11111111');
+       (2002101, 200200, 1, 'Bedingung auf Ja', '', 1, TRUE, ''),
+       (2002201, 200200, 1, 'Bedingung auf Nein', '', 2, TRUE, ''),
+       (2002301, 200200, 1, 'Frage ohne Unterfrage', '', 3, FALSE, ''),
+       (2003101, 200300, 1, 'Frage mit Variablennamen', '', 1, FALSE, 'auto-11111111');
 
 INSERT INTO answer_options(id, question_id, text, answer_type_id, values, position, variable_name)
 VALUES (1001111, 1001101, '', 10, '{}', 1, ''),
@@ -139,7 +144,6 @@ VALUES (1001111, 1001101, '', 10, '{}', 1, ''),
        (2002221, 2002201, '', 1, '{"Ja", "Nein", "Keine Angabe"}', 2, ''),
        (2003111, 2003101, '', 4, NULL, 1, 'auto-22222222'),
        (2003121, 2003101, '', 4, NULL, 2, 'auto-33333333');
-
 
 -- Conditions
 INSERT INTO conditions (condition_type, condition_answer_option_id, condition_question_id, condition_questionnaire_id,

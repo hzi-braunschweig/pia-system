@@ -6,10 +6,10 @@
 
 import { Component, Inject } from '@angular/core';
 import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogModule,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatButtonModule } from '@angular/material/button';
 
@@ -17,18 +17,17 @@ import { MatButtonModule } from '@angular/material/button';
   standalone: true,
   selector: 'app-dialog-delete',
   template: `
-    <mat-dialog-content style="text-align: left">{{
+    <mat-dialog-content>{{
       'DIALOG.DELETE' | translate: data
     }}</mat-dialog-content>
-    <hr />
-    <mat-dialog-actions align="end">
+    <mat-dialog-actions>
       <button mat-button (click)="onNoClick()">
         {{ 'DIALOG.CANCEL' | translate }}
       </button>
       <!-- Can optionally provide a result for the closing dialog. -->
       <button
         id="confirmbutton"
-        mat-raised-button
+        mat-button
         color="primary"
         (click)="confirmSelection()"
       >
@@ -36,7 +35,7 @@ import { MatButtonModule } from '@angular/material/button';
       </button>
     </mat-dialog-actions>
   `,
-  imports: [MatLegacyDialogModule, TranslateModule, MatButtonModule],
+  imports: [MatDialogModule, TranslateModule, MatButtonModule],
 })
 export class DialogDeleteComponent {
   constructor(

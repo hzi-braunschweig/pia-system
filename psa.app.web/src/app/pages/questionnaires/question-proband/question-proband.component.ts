@@ -6,6 +6,7 @@
 
 import {
   Component,
+  ElementRef,
   HostListener,
   Inject,
   OnDestroy,
@@ -33,8 +34,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { AnswerOption, Value } from '../../../psa.app.core/models/answerOption';
 import { Answer } from '../../../psa.app.core/models/answer';
-import { SwiperComponent } from 'ngx-useful-swiper';
-import { SwiperOptions } from 'swiper';
+import { SwiperContainer } from 'swiper/element';
 import { ComponentCanDeactivate } from '../../../_guards/pending-changes.guard';
 import { TranslateService } from '@ngx-translate/core';
 import {
@@ -42,9 +42,9 @@ import {
   MAT_DATE_FORMATS,
   MAT_DATE_LOCALE,
 } from '@angular/material/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import {
-  APP_DATE_FORMATS,
+  APP_DATE_FORMATS_SHORT,
   AppDateAdapter,
 } from '../../../_helpers/date-adapter';
 import { QuestionnaireInstanceQueue } from '../../../psa.app.core/models/questionnaireInstanceQueue';
@@ -62,10 +62,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { SelectedProbandInfoService } from '../../../_services/selected-proband-info.service';
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
 import { AnswerType } from '../../../psa.app.core/models/answerType';
-import { QuestionnaireInstance } from '../../../psa.app.core/models/questionnaireInstance';
-import { Proband } from '../../../psa.app.core/models/proband';
+import {
+  QuestionnaireInstance,
+  QuestionnaireStatus,
+} from '../../../psa.app.core/models/questionnaireInstance';
 import { CurrentUser } from '../../../_services/current-user.service';
-import { MatLegacyRadioButton as MatRadioButton } from '@angular/material/legacy-radio';
+import { MatRadioButton } from '@angular/material/radio';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { addDays, format, isAfter } from 'date-fns';
 
@@ -119,7 +121,7 @@ interface ConditionFormValue {
     },
     {
       provide: MAT_DATE_FORMATS,
-      useValue: APP_DATE_FORMATS,
+      useValue: APP_DATE_FORMATS_SHORT,
     },
   ],
 })
@@ -133,7 +135,7 @@ export class QuestionProbandComponent
   public readonly DisplayStatus = DisplayStatus;
   public displayStatus: DisplayStatus = DisplayStatus.QUESTIONS;
   public currentHistory: HistoryItem[] = [];
-  public questionnaire_instance_status: string;
+  public questionnaire_instance_status: QuestionnaireStatus;
   public date_of_issue: Date;
   public isLoading: boolean = false;
   public answerIdsFromServer: number[] = [];
@@ -141,18 +143,10 @@ export class QuestionProbandComponent
   public answerVersionFromServer: number;
   public release_version: number;
 
+  public isReleaseButtonVisible: boolean = false;
+
   @ViewChild('questionSwiper')
-  public questionSwiper: SwiperComponent;
-  public readonly config: SwiperOptions = {
-    pagination: { el: '.swiper-pagination', clickable: false },
-    navigation: {
-      nextEl: '.swiper-button-next',
-      prevEl: '.swiper-button-prev',
-      disabledClass: 'swiper-navigation-disabled',
-    },
-    simulateTouch: false,
-    spaceBetween: 30,
-  };
+  public questionSwiper: ElementRef<SwiperContainer>;
 
   public canDeactivate(): Observable<boolean> | boolean {
     return this.myForm ? !this.myForm.dirty : true;
@@ -203,6 +197,8 @@ export class QuestionProbandComponent
       this.pseudonym = result.user_id;
       this.release_version = result.release_version;
       this.questionnaire = result.questionnaire;
+
+      this.updateIsReleaseButtonVisible();
 
       /**
        * Get study for sample configuration
@@ -358,6 +354,7 @@ export class QuestionProbandComponent
       new FormGroup({
         id: new FormControl(id),
         text: new FormControl(text),
+        help_text: new FormControl(question.help_text),
         is_mandatory: new FormControl(is_mandatory),
         show_question: new FormControl(
           !(
@@ -718,10 +715,10 @@ export class QuestionProbandComponent
   }
 
   public goToAnswersView(sendAnswers: boolean): void {
-    const questionIndex = this.questionSwiper.swiper.activeIndex;
+    const questionIndex = this.questionSwiper.nativeElement.swiper.activeIndex;
     if (this.shouldLockActualSwipe(questionIndex)[0]) {
-      this.questionSwiper.swiper.allowSlidePrev = false;
-      this.questionSwiper.swiper.allowSlideNext = false;
+      this.questionSwiper.nativeElement.swiper.allowSlidePrev = false;
+      this.questionSwiper.nativeElement.swiper.allowSlideNext = false;
       this.showLockWarning(this.shouldLockActualSwipe(questionIndex)[1]);
     } else {
       if (sendAnswers) {
@@ -734,10 +731,10 @@ export class QuestionProbandComponent
   }
 
   public async goToHistoryView(): Promise<void> {
-    const questionIndex = this.questionSwiper.swiper.activeIndex;
+    const questionIndex = this.questionSwiper.nativeElement.swiper.activeIndex;
     if (this.shouldLockActualSwipe(questionIndex)[0]) {
-      this.questionSwiper.swiper.allowSlidePrev = false;
-      this.questionSwiper.swiper.allowSlideNext = false;
+      this.questionSwiper.nativeElement.swiper.allowSlidePrev = false;
+      this.questionSwiper.nativeElement.swiper.allowSlideNext = false;
       this.showLockWarning(this.shouldLockActualSwipe(questionIndex)[1]);
     } else {
       await this.postAllAnswers(false);
@@ -960,23 +957,24 @@ export class QuestionProbandComponent
   }
 
   public onClickQuestion(questionIndex: number): void {
-    const questionActiveIndex = this.questionSwiper.swiper.activeIndex;
-    this.questionSwiper.swiper.allowSlidePrev = true;
-    this.questionSwiper.swiper.allowSlideNext = true;
+    const questionActiveIndex =
+      this.questionSwiper.nativeElement.swiper.activeIndex;
+    this.questionSwiper.nativeElement.swiper.allowSlidePrev = true;
+    this.questionSwiper.nativeElement.swiper.allowSlideNext = true;
 
     if (
       this.displayStatus !== DisplayStatus.OVERVIEW &&
       this.shouldLockActualSwipe(questionActiveIndex)[0]
     ) {
-      this.questionSwiper.swiper.allowSlidePrev = false;
-      this.questionSwiper.swiper.allowSlideNext = false;
+      this.questionSwiper.nativeElement.swiper.allowSlidePrev = false;
+      this.questionSwiper.nativeElement.swiper.allowSlideNext = false;
       this.showLockWarning(this.shouldLockActualSwipe(questionActiveIndex)[1]);
     } else {
       this.postAllAnswers(false);
       this.displayStatus = DisplayStatus.QUESTIONS;
       const x = this.document.getElementById('questionSwiper');
       x.style.display = 'block';
-      this.questionSwiper.swiper.slideTo(questionIndex);
+      this.questionSwiper.nativeElement.swiper.slideTo(questionIndex);
     }
   }
 
@@ -984,13 +982,14 @@ export class QuestionProbandComponent
     if (this.isLoading) {
       return;
     }
-    const questionIndex = this.questionSwiper.swiper.activeIndex;
-    this.questionSwiper.swiper.allowSlidePrev = true;
-    this.questionSwiper.swiper.allowSlideNext = true;
+
+    const questionIndex = this.questionSwiper.nativeElement.swiper.activeIndex;
+    this.questionSwiper.nativeElement.swiper.allowSlidePrev = true;
+    this.questionSwiper.nativeElement.swiper.allowSlideNext = true;
 
     if (this.shouldLockActualSwipe(questionIndex)[0]) {
-      this.questionSwiper.swiper.allowSlidePrev = false;
-      this.questionSwiper.swiper.allowSlideNext = false;
+      this.questionSwiper.nativeElement.swiper.allowSlidePrev = false;
+      this.questionSwiper.nativeElement.swiper.allowSlideNext = false;
       this.showLockWarning(this.shouldLockActualSwipe(questionIndex)[1]);
     } else {
       this.postAllAnswers(false);
@@ -1002,15 +1001,15 @@ export class QuestionProbandComponent
     if (this.isLoading) {
       return;
     }
-    const questionIndex = this.questionSwiper.swiper.activeIndex;
+    const questionIndex = this.questionSwiper.nativeElement.swiper.activeIndex;
 
-    this.questionSwiper.swiper.allowSlidePrev = true;
-    this.questionSwiper.swiper.allowSlideNext = true;
+    this.questionSwiper.nativeElement.swiper.allowSlidePrev = true;
+    this.questionSwiper.nativeElement.swiper.allowSlideNext = true;
 
     const questionControl = this.myForm.get('questions') as FormArray;
     if (this.shouldLockActualSwipe(questionIndex)[0]) {
-      this.questionSwiper.swiper.allowSlidePrev = false;
-      this.questionSwiper.swiper.allowSlideNext = false;
+      this.questionSwiper.nativeElement.swiper.allowSlidePrev = false;
+      this.questionSwiper.nativeElement.swiper.allowSlideNext = false;
       this.showLockWarning(this.shouldLockActualSwipe(questionIndex)[1]);
     } else {
       this.postAllAnswers(false);
@@ -1023,14 +1022,14 @@ export class QuestionProbandComponent
               'show_question_answer_condition'
             ).value === true
           ) {
-            this.questionSwiper.swiper.slideTo(i);
+            this.questionSwiper.nativeElement.swiper.slideTo(i);
             break;
           } else if (i === 0) {
-            this.questionSwiper.swiper.slideTo(questionIndex);
+            this.questionSwiper.nativeElement.swiper.slideTo(questionIndex);
             break;
           }
         } else {
-          this.questionSwiper.swiper.slideTo(questionIndex + 1);
+          this.questionSwiper.nativeElement.swiper.slideTo(questionIndex + 1);
           break;
         }
       }
@@ -1380,6 +1379,8 @@ export class QuestionProbandComponent
         this.questionnaire_instance_status = 'released';
       }
 
+      this.updateIsReleaseButtonVisible();
+
       this.dialog.open(DialogPopUpComponent, {
         width: '300px',
         data: {
@@ -1579,6 +1580,7 @@ export class QuestionProbandComponent
             }
           );
           this.questionnaire_instance_status = res.status;
+          this.updateIsReleaseButtonVisible();
         } else {
           await this.questionnaireService.putQuestionnaireInstance(
             this.questionnaireInstanceId,
@@ -2111,12 +2113,13 @@ export class QuestionProbandComponent
   }
 
   private goToSlide(slideNumber: number): void {
-    this.questionSwiper.swiper.slideTo(slideNumber);
+    this.questionSwiper.nativeElement.swiper.slideTo(slideNumber);
   }
 
   private goToNextSlide(): void {
-    const questionIndex = this.questionSwiper.swiper.activeIndex;
-    const lastIndex = this.questionSwiper.swiper.slides.length - 1;
+    const questionIndex = this.questionSwiper.nativeElement.swiper.activeIndex;
+    const lastIndex =
+      this.questionSwiper.nativeElement.swiper.slides.length - 1;
 
     const questionControl = this.myForm.get('questions') as FormArray;
 
@@ -2148,7 +2151,7 @@ export class QuestionProbandComponent
     answerOptionIndex: number;
     file_name: string;
   }): void {
-    const questionIndex = this.questionSwiper.swiper.activeIndex;
+    const questionIndex = this.questionSwiper.nativeElement.swiper.activeIndex;
     const answerValue = this.getAnswerOptionFormControlAtPosition(
       questionIndex,
       result.answerOptionIndex
@@ -2174,5 +2177,18 @@ export class QuestionProbandComponent
       'value'
     );
     answerValue.setValue($event);
+  }
+
+  public updateIsReleaseButtonVisible(): void {
+    const status: QuestionnaireStatus[] = [
+      'active',
+      'in_progress',
+      'released_once',
+      'released',
+    ];
+
+    this.isReleaseButtonVisible =
+      status.includes(this.questionnaire_instance_status) &&
+      !this.user.hasRole('Forscher');
   }
 }

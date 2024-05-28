@@ -4,7 +4,7 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<h3>
+<h3 mat-dialog-title>
   {{ 'COMPLIANCE.DIALOG_EDIT_HEADER' | translate }}
   <em>{{ user?.pseudonym }}</em>
 </h3>
@@ -16,8 +16,13 @@
   ></app-compliance-edit-examiner>
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-button type="button" (click)="dialogRef.close()">
+<mat-dialog-actions>
+  <button
+    mat-button
+    data-e2e="dialog-button-close"
+    type="button"
+    (click)="dialogRef.close()"
+  >
     {{ 'DIALOG.CLOSE' | translate }}
   </button>
 </mat-dialog-actions>

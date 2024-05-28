@@ -42,26 +42,13 @@ All topics should use the naming scheme `<entity>.<event>` with the following de
 
 Name of the entity which is involved in the event triggering the message.
 
-Currently in use:
-
-- proband
-- compliance
-- questionnaire_instance
-
 #### Event
 
 Name of the event which triggered the message.
 
-Currently in use:
-
-- deleted
-- deactivated
-- created
-- released
-- logged_in
-- registered
-
 ### Existing topics
+
+See [messageQueueTopics.ts](./src/messageQueueTopics.ts) for a list of all existing entities.
 
 | Topic name                                | Description                                                                            |
 | ----------------------------------------- | -------------------------------------------------------------------------------------- |
@@ -77,20 +64,32 @@ Currently in use:
 | `feedbackstatistic_configuration.updated` | Published when a feedbackstatistic configuration got created or updated                |
 | `feedbackstatistic.outdated`              | Published when feedbackstatistic data should be recalculated                           |
 
+## Message payloads
+
+The payloads for all topics are defined in the `messageQueueMessage.ts` file. When a new topic is introduced that
+requires a payload, a corresponding interface should be added to this file. This interface should then be used in all
+services that publish or consume messages for this topic.
+
+It's important to create a unique interface for each topic, even if the properties are the same or similar to those of
+an existing interface. This practice ensures that changes to the payload of one topic won't inadvertently impact other
+topics.
+
 ## Example
 
 ```javascript
+import { MessageQueueTopic } from '@pia/lib-messagequeue';
+
 // instantiate the client in the service initialisation
 const mq = new MessageQueueClient({
   serviceName: 'testservice',
   host: 'localhost',
 });
 
-// and connect it in the service initialisation
+// and connect it durint the services initialisation
 await mq.connect();
 
 // create one consumer per topic the service is interested in
-await mq.createConsumer('test.created', async (message) => {
+await mq.createConsumer(MessageQueueTopic.TEST_CREATED, async (message) => {
   // handle the message payload
   console.log({
     received: message,
@@ -98,7 +97,7 @@ await mq.createConsumer('test.created', async (message) => {
 });
 
 // create one producer per topic that can be emitted
-const producer = await mq.createProducer('test.created');
+const producer = await mq.createProducer(MessageQueueTopic.TEST_CREATED);
 
 // emit a message
 await producer.publish({

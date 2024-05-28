@@ -10,16 +10,16 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 
 const { config } = require('../../src/config');
-const server = require('../../src/server');
+const { Server } = require('../../src/server');
 const apiAddress = `http://localhost:${config.public.port}`;
 
 describe('/metrics', () => {
   before(async () => {
-    await server.init();
+    await Server.init();
   });
 
   after(async () => {
-    await server.stop();
+    await Server.stop();
   });
 
   describe('GET /metrics', async () => {

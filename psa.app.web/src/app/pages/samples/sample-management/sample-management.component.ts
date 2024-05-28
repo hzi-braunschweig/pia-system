@@ -5,13 +5,10 @@
  */
 
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import {
-  MatLegacyPaginator as MatPaginator,
-  MatLegacyPaginatorIntl as MatPaginatorIntl,
-} from '@angular/material/legacy-paginator';
+import { MatDialog } from '@angular/material/dialog';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
 import { PersonalDataService } from 'src/app/psa.app.core/providers/personaldata-service/personaldata-service';
@@ -51,15 +48,15 @@ export class SampleManagementComponent implements OnInit {
   dataSource: MatTableDataSource<any>;
   dataWithProbandsWhoNeedsMaterial = [];
   data = [];
-  cols: Observable<number>;
+  cols: Observable<{ '--columns': number }>;
   sample_id = new FormControl('');
   personalDataAllStudies: PersonalData[];
   readonly mediaColumnMap = new Map([
     ['xs', 1],
     ['sm', 2],
     ['md', 3],
-    ['lg', 5],
-    ['xl', 5],
+    ['lg', 4],
+    ['xl', 4],
   ]);
 
   displayedColumns = [
@@ -124,7 +121,8 @@ export class SampleManagementComponent implements OnInit {
         changes.find((change) => this.mediaObserver.isActive(change.mqAlias))
       ),
       map((media) => this.mediaColumnMap.get(media.mqAlias)),
-      startWith(startCond2)
+      startWith(startCond2),
+      map((v) => ({ '--columns': v }))
     );
   }
 

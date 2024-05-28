@@ -1,21 +1,17 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import {
-  ConditionLink,
-  ConditionOperand,
-  ConditionType,
-  Questionnaire,
-} from '../../../psa.app.core/models/questionnaire';
-import { Question } from '../../../psa.app.core/models/question';
-import { AnswerOption } from '../../../psa.app.core/models/answerOption';
-import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
-import { AlertService } from '../../../_services/alert.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { firstValueFrom, Observable } from 'rxjs';
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  OnInit,
+} from '@angular/core';
+import { MediaObserver } from '@angular/flex-layout';
 import {
   AbstractControl,
   FormArray,
@@ -26,37 +22,44 @@ import {
   Validators,
 } from '@angular/forms';
 import {
-  ChangeDetectorRef,
-  Component,
-  HostListener,
-  OnInit,
-} from '@angular/core';
-import { Study } from '../../../psa.app.core/models/study';
-import { TranslateService } from '@ngx-translate/core';
-import {
   DateAdapter,
   MAT_DATE_FORMATS,
   MAT_DATE_LOCALE,
 } from '@angular/material/core';
 import { MatDatepickerInputEvent } from '@angular/material/datepicker';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
+import { NgxMaterialTimepickerTheme } from 'ngx-material-timepicker';
+import { firstValueFrom, Observable } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
+import { environment } from '../../../../environments/environment';
 import {
-  APP_DATE_FORMATS,
+  APP_DATE_FORMATS_SHORT,
   AppDateAdapter,
 } from '../../../_helpers/date-adapter';
+import {
+  DialogOkCancelComponent,
+  DialogOkCancelComponentData,
+} from '../../../_helpers/dialog-ok-cancel';
 import {
   DialogPopUpComponent,
   DialogPopUpData,
 } from '../../../_helpers/dialog-pop-up';
-import { MediaObserver } from '@angular/flex-layout';
-import { NgxMaterialTimepickerTheme } from 'ngx-material-timepicker';
-import { environment } from '../../../../environments/environment';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { QuestionnaireEditOptions } from './questionnaire-edit-options';
-import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
-import { filter } from 'rxjs/operators';
-import { validateQuestionnaireInstanceCount } from './questionnaire-instance-count-validator';
+import { AlertService } from '../../../_services/alert.service';
+import { DialogYesNoComponent } from '../../../dialogs/dialog-yes-no/dialog-yes-no';
+import { AnswerOption } from '../../../psa.app.core/models/answerOption';
+import { Question } from '../../../psa.app.core/models/question';
+import {
+  ConditionLink,
+  ConditionOperand,
+  ConditionType,
+  Questionnaire,
+} from '../../../psa.app.core/models/questionnaire';
+import { Study } from '../../../psa.app.core/models/study';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
+import { QuestionnaireEditOptions } from './questionnaire-edit-options';
 import {
   AnswerOptionConditionForm,
   AnswerOptionForm,
@@ -65,11 +68,9 @@ import {
   QuestionForm,
   QuestionnaireForm,
 } from './questionnaire-form';
+import { validateQuestionnaireInstanceCount } from './questionnaire-instance-count-validator';
+import { uniqueVariableNameValidator } from './unique-variable-name-validator';
 import { VariableNameFormService } from './variable-name-form.service';
-import {
-  DialogOkCancelComponent,
-  DialogOkCancelComponentData,
-} from '../../../_helpers/dialog-ok-cancel';
 
 @Component({
   templateUrl: 'questionnaire-researcher.component.html',
@@ -83,7 +84,7 @@ import {
     },
     {
       provide: MAT_DATE_FORMATS,
-      useValue: APP_DATE_FORMATS,
+      useValue: APP_DATE_FORMATS_SHORT,
     },
   ],
 })
@@ -159,9 +160,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
   cycleUnits = QuestionnaireEditOptions.cycleUnits;
   publishOptions = QuestionnaireEditOptions.publishOptions;
 
-  hoursOfDay = QuestionnaireEditOptions.getHoursOfDay(
-    this.translate.instant('QUESTIONNAIRE_FORSCHER.O_CLOCK')
-  );
+  hoursOfDay = QuestionnaireEditOptions.getHoursOfDay();
 
   hoursPerDay = QuestionnaireEditOptions.hoursPerDay;
 
@@ -190,6 +189,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
   };
 
   isLoading = true;
+  responsiveColumns: {
+    '--grid-columns-question-condition'?: number;
+    '--grid-columns-questionnaire-condition'?: number;
+  } = {};
 
   canDeactivate(): Observable<boolean> | boolean {
     return this.myForm ? !this.myForm.dirty : true;
@@ -212,7 +215,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     private activatedRoute: ActivatedRoute,
     private router: Router,
     private translate: TranslateService,
-    public dialog: MatDialog,
+    private dialog: MatDialog,
     private mediaObserver: MediaObserver,
     private alertService: AlertService,
     private questionnaireService: QuestionnaireService,
@@ -495,7 +498,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
     if (this.getFormValidationErrors() > 0) {
       this.showFailureDialog(
         this.translate.instant('QUESTIONNAIRE_FORSCHER.FORM_INVALID') +
-          this.fieldsWithErrors.toString()
+          '\n\n' +
+          this.fieldsWithErrors.join(', ')
       );
     } else {
       this.isImportedQuestionnaire = false;
@@ -680,10 +684,12 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
   public async initForm(questionnaire?: Questionnaire): Promise<void> {
     let name: string;
+    let custom_name: string;
     let activate_after_days: number;
     if (questionnaire) {
       this.canImportQuestionnaire = false;
       name = questionnaire.name;
+      custom_name = questionnaire.custom_name;
       this.type = questionnaire.type;
       this.study_id = questionnaire.study_id;
       await this.selectStudy(this.study_id);
@@ -780,6 +786,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
       }
     } else {
       name = '';
+      custom_name = '';
       this.study_id = null;
       this.type = null;
       this.cycle_amount = null;
@@ -809,6 +816,11 @@ export class QuestionnaireResearcherComponent implements OnInit {
     this.myForm = new FormGroup<QuestionnaireForm>(
       {
         name: new FormControl(name, Validators.required),
+        custom_name: new FormControl(custom_name, [
+          Validators.pattern('[a-zA-Z0-9_-]+'),
+          // the string should not consist of numbers only
+          Validators.pattern('^[^\\d]*\\d*[^\\d]+.*$'),
+        ]),
         type: new FormControl(this.type, Validators.required),
         study_id: new FormControl(this.study_id, Validators.required),
         cycle_amount: new FormControl(this.cycle_amount, Validators.required),
@@ -876,7 +888,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
           questionnaire ? questionnaire.condition_error : undefined
         ),
       },
-      validateQuestionnaireInstanceCount(this.maxInstanceCount)
+      [
+        validateQuestionnaireInstanceCount(this.maxInstanceCount),
+        uniqueVariableNameValidator,
+      ]
     );
 
     this.myForm.controls.notify_when_not_filled.setValidators(
@@ -938,6 +953,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
   addQuestion(question?: Question): void {
     const answer_options = new FormArray<FormGroup<AnswerOptionForm>>([]);
     const text = question ? question.text : '';
+    const help_text = question ? question.help_text : '';
     const variable_name = question?.variable_name ?? '';
     const id = question ? question.id : null;
     const position = question ? question.position : null;
@@ -952,6 +968,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
           Validators.required,
           this.validateFormControlTextVariableValue,
         ]),
+        help_text: new FormControl(help_text),
         variable_name: new FormControl(variable_name),
         id: new FormControl(id),
         position: new FormControl(position),
@@ -2293,7 +2310,6 @@ export class QuestionnaireResearcherComponent implements OnInit {
   onDeactivate(): void {
     this.dialog
       .open(DialogYesNoComponent, {
-        width: '500px',
         data: {
           content: 'QUESTIONNAIRE_FORSCHER.DEACTIVATION_CONFIRMATION_HINT',
         },
@@ -2705,6 +2721,11 @@ export class QuestionnaireResearcherComponent implements OnInit {
         answer.values_code = code_present ? values_code : [];
       });
     });
+
+    if (questionnaireRequest.custom_name === '') {
+      questionnaireRequest.custom_name = null;
+    }
+
     return questionnaireRequest;
   }
 
@@ -3100,6 +3121,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
           content: 'DIALOG.FAIL',
           values: { message },
           isSuccess: false,
+          showLinebreaks: true,
         },
       }
     );
@@ -3173,6 +3195,11 @@ export class QuestionnaireResearcherComponent implements OnInit {
       this.settingsCols = 15;
       this.conditionCols = 5;
     }
+
+    this.responsiveColumns = {
+      '--grid-columns-questionnaire-condition': this.settingsCols,
+      '--grid-columns-question-condition': this.conditionCols,
+    };
   }
 
   preventExpansion(event: Event): void {

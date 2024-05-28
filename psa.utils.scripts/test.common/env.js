@@ -18,7 +18,7 @@ const env = {
           if (line.length === 0) {
             return null;
           }
-          const parts = line.split('=');
+          const parts = line.split('=', 2);
           if (parts.length !== 2) {
             throw new Error(`invalid env line: "${line}"`);
           }

@@ -67,7 +67,7 @@ describe('VariableNameFormService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('warnings for existing questionnaire with labels', () => {
+  describe('warnings for existing questionnaire with variable names', () => {
     let currentQuestionnaire: Partial<Questionnaire>;
     beforeEach(() => {
       currentQuestionnaire = {
@@ -162,7 +162,7 @@ describe('VariableNameFormService', () => {
     });
   });
 
-  describe('warnings for existing questionnaire without labels', () => {
+  describe('warnings for existing questionnaire without variable names', () => {
     beforeEach(() => {
       const currentQuestionnaire: Partial<Questionnaire> = {
         questions: [

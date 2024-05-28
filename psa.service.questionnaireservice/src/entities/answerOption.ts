@@ -13,14 +13,20 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 import { AnswerOptionDto, AnswerType } from '../models/answerOption';
-import { Question } from './question';
 import { Condition } from './condition';
+import { Question } from './question';
 
 @Entity()
 export class AnswerOption implements AnswerOptionDto {
+  /**
+   * @isInt
+   */
   @PrimaryColumn()
   public id!: number;
 
+  /**
+   * @isInt
+   */
   @Column()
   public position!: number;
 
@@ -42,15 +48,24 @@ export class AnswerOption implements AnswerOptionDto {
   @Column({ type: 'varchar', nullable: true })
   public variableName!: string | null;
 
+  /**
+   * @isInt
+   */
   @Column({ type: 'integer', nullable: true })
   public restrictionMax!: number | null;
 
+  /**
+   * @isInt
+   */
   @Column({ type: 'integer', nullable: true })
   public restrictionMin!: number | null;
 
   @Column({ type: 'varchar', array: true, nullable: true })
   public values!: string[] | null;
 
+  /**
+   * @isInt
+   */
   @Column({ type: 'integer', array: true, nullable: true })
   public valuesCode!: number[] | null;
 

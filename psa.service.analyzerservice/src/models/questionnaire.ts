@@ -30,6 +30,7 @@ export interface Questionnaire {
   id: number;
   study_id: string;
   name: string;
+  custom_name: string | null;
   no_questions: number;
   cycle_amount: number;
   cycle_unit: CycleUnit;

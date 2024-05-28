@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { isEqual } from 'date-fns';
+import { AnswerOption } from '../entities/answerOption';
+import { Answer, AnswerDto, AnswerValue } from '../models/answer';
+import { AnswerType } from '../models/answerOption';
 import {
   Condition,
   ConditionDto,
@@ -11,29 +15,38 @@ import {
   ConditionOperand,
   isConditionDto,
 } from '../models/condition';
-import { Answer, AnswerDto } from '../models/answer';
-import { isEqual } from 'date-fns';
-import { AnswerType } from '../models/answerOption';
+import { isSampleDto } from '../models/sample';
+import { isUserFileDto } from '../models/userFile';
+
+type Value = string | number | Date;
 
 export class ConditionChecker {
   /**
    * Returns true if the value of answer meets the condition, false otherwise
    */
   public static isConditionMet(
-    answer: Answer | AnswerDto | { value: string } | undefined,
+    answer: Answer | AnswerDto | { value: AnswerValue } | undefined,
     condition: Condition | ConditionDto,
     type: AnswerType
   ): boolean {
     if (!answer) {
       return false;
     }
-    const answer_values: (string | number | Date)[] =
-      ConditionChecker.parseValues(answer.value, type);
 
-    let conditionValues: (string | number | Date)[];
+    const conditionIsDto = isConditionDto(condition);
+
+    const answer_values: Value[] = conditionIsDto
+      ? ConditionChecker.parseValues(
+          answer.value,
+          type,
+          condition.targetAnswerOption ?? undefined
+        )
+      : ConditionChecker.parseValues(answer.value, type);
+
+    let conditionValues: Value[];
     let conditionLink: ConditionLink;
     let conditionOperand: ConditionOperand | null;
-    if (isConditionDto(condition)) {
+    if (conditionIsDto) {
       conditionValues = ConditionChecker.parseValues(
         condition.value ?? '',
         type
@@ -278,15 +291,51 @@ export class ConditionChecker {
   }
 
   private static parseValues(
-    values: string,
-    type: AnswerType
-  ): (string | number | Date)[] {
-    if (type === AnswerType.Number) {
-      return values.split(';').map((value) => parseFloat(value));
-    } else if (type === AnswerType.Date) {
-      return values.split(';').map((value) => new Date(value));
-    } else {
+    values: AnswerValue,
+    type: AnswerType,
+    answerOption?: AnswerOption
+  ): Value[] {
+    if (values === null) {
+      return [];
+    }
+
+    if (typeof values === 'string') {
+      if (type === AnswerType.Number) {
+        return values.split(';').map((value) => parseFloat(value));
+      } else if (type === AnswerType.Date) {
+        return values.split(';').map((value) => new Date(value));
+      }
       return values.split(';');
     }
+
+    if (answerOption) {
+      if (type === AnswerType.SingleSelect && typeof values === 'number') {
+        return [this.decodeValueCodes(values, answerOption)];
+      } else if (type === AnswerType.MultiSelect && Array.isArray(values)) {
+        return values.map((v) => this.decodeValueCodes(v, answerOption));
+      }
+    }
+
+    if (isUserFileDto(values)) {
+      return ['file'];
+    }
+
+    if (isSampleDto(values)) {
+      return ['sample'];
+    }
+
+    return Array.isArray(values) ? values : [values];
+  }
+
+  private static decodeValueCodes(
+    code: number | string,
+    answerOption: AnswerOption
+  ): string {
+    if (!answerOption.valuesCode || !answerOption.values) {
+      return '';
+    }
+    code = typeof code === 'string' ? parseFloat(code) : code;
+    const index = answerOption.valuesCode.indexOf(code);
+    return index != -1 ? String(answerOption.values[`${index}`]) : '';
   }
 }

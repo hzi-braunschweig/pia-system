@@ -6,6 +6,7 @@
 
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
+import fbAdmin from 'firebase-admin';
 import sinon from 'sinon';
 
 import { FcmHelper } from '../../src/services/fcmHelper';
@@ -59,7 +60,7 @@ describe('/fcmToken', () => {
   before(async function () {
     suiteSandbox.stub(ListeningDbClient.prototype);
     suiteSandbox.stub(FcmHelper, 'sendDefaultNotification');
-    suiteSandbox.stub(FcmHelper, 'initFBAdmin');
+    suiteSandbox.stub(fbAdmin, 'initializeApp');
     await Server.init();
   });
 

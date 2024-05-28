@@ -4,42 +4,164 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 @use '@angular/material' as mat;
-
-// TODO(v15): As of v15 mat.legacy-core no longer includes default typography styles.
-//  The following line adds:
-//    1. Default typography styles for all components
-//    2. Styles for typography hierarchy classes (e.g. .mat-headline-1)
-//  If you specify typography styles for the components you use elsewhere, you should delete this line.
-//  If you don't need the default component typographies but still want the hierarchy styles,
-//  you can delete this line and instead use:
-//    `@include mat.legacy-typography-hierarchy(mat.define-legacy-typography-config());`
-@include mat.all-legacy-component-typographies();
-@include mat.legacy-core();
+@use 'sass:string';
 
 $primary: mat.define-palette(mat.$light-green-palette, 800, 500);
 $accent: mat.define-palette(mat.$light-blue-palette, 600, 100, 800);
 $warn: mat.define-palette(mat.$red-palette, 600);
-$theme: mat.define-light-theme($primary, $accent, $warn);
+
+$typography: mat.define-typography-config(
+  $font-family: string.unquote('Roboto, "Helvetica Neue", sans-serif'),
+  $body-1:
+    mat.define-typography-level(
+      $font-size: 14px,
+      $line-height: 1.5,
+      $font-weight: 400,
+      $letter-spacing: normal,
+    ),
+  $body-2:
+    mat.define-typography-level(
+      $font-size: 14px,
+      $line-height: 1.5,
+      $font-weight: 400,
+      $letter-spacing: normal,
+    ),
+  $subtitle-2:
+    mat.define-typography-level(
+      $font-size: 12px,
+      $line-height: 1.125,
+      $font-weight: 600,
+      $letter-spacing: normal,
+    ),
+  $button:
+    mat.define-typography-level(
+      $font-size: 14px,
+      $line-height: 1.125,
+      $font-weight: 500,
+      $letter-spacing: normal,
+    ),
+);
+
+$theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $primary,
+      accent: $accent,
+      warn: $warn,
+      foreground: #000,
+    ),
+    typography: $typography,
+  )
+);
 
 @mixin theme-fixes($theme) {
   $primary: map-get($theme, primary);
   $accent: map-get($theme, accent);
 
-  .mat-button-toggle-checked {
-    background-color: mat.get-color-from-palette($primary, 500);
-    color: mat.get-color-from-palette($accent, default-contrast);
-  }
-  .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle {
-    border-color: mat.get-color-from-palette(mat.$blue-grey-palette, 800);
+  // bigger text for panel title
+  .mat-expansion-panel-header {
+    font-size: 15px;
+    font-weight: normal;
   }
 
-  .mat-radio-button.mat-accent .mat-radio-inner-circle {
-    background-color: mat.get-color-from-palette(mat.$blue-grey-palette, 800);
+  // more padding for button
+  .mat-mdc-button {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  // white checkbox checkmark
+  .mat-mdc-checkbox.mat-accent {
+    --mdc-checkbox-selected-checkmark-color: #fff;
+  }
+
+  // unify dialog actions button alignment
+  .mat-mdc-dialog-actions {
+    justify-content: end !important;
+  }
+
+  // spacing below input fields with subscriptSizing: 'dynamic' enabled
+  .mat-mdc-form-field-subscript-dynamic-size {
+    min-height: 1.6rem;
+  }
+
+  .mat-mdc-select-panel {
+    background: #fff;
+  }
+
+  .mat-mdc-select-panel:not([class*='mat-elevation-z']) {
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2),
+      0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  .table-container {
+    display: block;
+    overflow: auto;
+  }
+
+  .mat-mdc-table {
+    overflow: auto;
+    width: 100%;
+
+    .mat-mdc-header-row {
+      top: 0;
+      position: sticky;
+      z-index: 1;
+    }
+
+    .mdc-data-table__header-cell {
+      color: mat.get-color-from-palette(mat.$gray-palette, 600);
+    }
+
+    .mat-mdc-header-row,
+    .mat-mdc-row {
+      min-width: fit-content;
+    }
+
+    .mat-mdc-icon-button {
+      color: rgba(#225168, 0.8);
+    }
+
+    .column {
+      &.name {
+        overflow-wrap: break-word;
+        word-break: break-word;
+        min-width: 115px;
+      }
+    }
+  }
+
+  .mat-mdc-cell {
+    .mat-mdc-button {
+      // stop buttons in tables from breaking
+      white-space: nowrap;
+    }
+  }
+
+  // Selection styles
+  .mat-mdc-row:hover,
+  .questionnaire-selected-row {
+    background: #f5f5f5 !important;
+  }
+
+  .mat-mdc-row:active,
+  .mat-row.questionnaire-selected-row {
+    background: #eaeaea !important;
+  }
+
+  .example-additional-selection {
+    opacity: 0.75;
+    font-size: 0.75em;
+  }
+
+  .mat-mdc-form-field-error {
+    margin-bottom: 0.2rem;
+    color: red;
   }
 }
 
+@include mat.core();
 @include mat.all-component-themes($theme);
-@include mat.all-legacy-component-themes($theme);
 @include theme-fixes($theme);
 
 :root {

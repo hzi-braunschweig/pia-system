@@ -4,16 +4,15 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { SinonMethodStub } from '@pia/lib-service-core';
 import chai, { expect } from 'chai';
 import sinon from 'sinon';
 import sinonChai from 'sinon-chai';
-
-import { SinonMethodStub } from '@pia/lib-service-core';
-import { QuestionnaireRepository } from '../repositories/questionnaireRepository';
-import { QuestionnaireInstanceRepository } from '../repositories/questionnaireInstanceRepository';
-import { QuestionnaireService } from './questionnaireService';
-import { Questionnaire } from '../models/questionnaire';
 import { db } from '../db';
+import { Questionnaire } from '../models/questionnaire';
+import { QuestionnaireInstanceRepository } from '../repositories/questionnaireInstanceRepository';
+import { QuestionnaireRepository } from '../repositories/questionnaireRepository';
+import { QuestionnaireService } from './questionnaireService';
 
 chai.use(sinonChai);
 
@@ -106,6 +105,7 @@ describe('QuestionnaireService', () => {
       active: false,
       study_id: 'Study1',
       name: 'TestQuestionnaire1',
+      custom_name: null,
       no_questions: 2,
       cycle_amount: 0,
       cycle_unit: 'once',

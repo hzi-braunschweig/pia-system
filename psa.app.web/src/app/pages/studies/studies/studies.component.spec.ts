@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { MockBuilder } from 'ng-mocks';
 import { AppModule } from 'src/app/app.module';
 import {
@@ -19,17 +20,14 @@ import {
   convertToParamMap,
   ParamMap,
 } from '@angular/router';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
-import { MatLegacyPaginatorModule as MatPaginatorModule } from '@angular/material/legacy-paginator';
+import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
 import { createStudy } from '../../../psa.app.core/models/instance.helper.spec';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { NEVER, Subject } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { SpecificHttpError } from '../../../psa.app.core/models/specificHttpError';
@@ -105,6 +103,7 @@ describe('StudiesComponent', () => {
       .keep(MatInputModule)
       .keep(MatPaginatorModule)
       .keep(MatSortModule)
+      .keep(BreakpointObserver)
       .mock(MatDialog, matDialog)
       .mock(ActivatedRoute, { snapshot })
       .mock(AuthService, authService)

@@ -4,23 +4,24 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { MessageQueueClient, MessageQueueTopic } from '@pia/lib-messagequeue';
+import {
+  MessageQueueClient,
+  MessageQueueTopic,
+  ComplianceCreatedMessage,
+  ProbandDeletedMessage,
+  QuestionnaireInstanceReleasedMessage,
+} from '@pia/lib-messagequeue';
 import { config } from '../config';
 import { SormasStatusUpdateService } from './sormasStatusUpdateService';
 import { getRepository } from 'typeorm';
 import { FollowUp } from '../entities/followUp';
 
 import { SymptomTransmission } from '../entities/symptomTransmission';
-import {
-  MessagePayloadComplianceCreated,
-  MessagePayloadProbandDeleted,
-  MessagePayloadQuestionnaireInstanceReleased,
-} from '../models/messagePayloads';
 import { QuestionnaireAnswersTransmissionService } from './questionnaireAnswersTransmissionService';
 
 export class MessageQueueService extends MessageQueueClient {
   private static async onProbandDeleted(
-    message: MessagePayloadProbandDeleted
+    message: ProbandDeletedMessage
   ): Promise<void> {
     await SormasStatusUpdateService.userDelete(message.pseudonym);
     await getRepository(FollowUp).delete({ pseudonym: message.pseudonym });
@@ -30,13 +31,13 @@ export class MessageQueueService extends MessageQueueClient {
   }
 
   private static async onComplianceCreated(
-    message: MessagePayloadComplianceCreated
+    message: ComplianceCreatedMessage
   ): Promise<void> {
     await SormasStatusUpdateService.complianceCreate(message.pseudonym);
   }
 
   private static async onQuestionnaireInstanceReleased(
-    message: MessagePayloadQuestionnaireInstanceReleased
+    message: QuestionnaireInstanceReleasedMessage
   ): Promise<void> {
     await QuestionnaireAnswersTransmissionService.onQuestionnaireInstanceReleased(
       message.id,
@@ -49,21 +50,21 @@ export class MessageQueueService extends MessageQueueClient {
 
     await this.createConsumer(
       MessageQueueTopic.COMPLIANCE_CREATED,
-      async (message: MessagePayloadComplianceCreated) => {
+      async (message: ComplianceCreatedMessage) => {
         await MessageQueueService.onComplianceCreated(message);
       }
     );
 
     await this.createConsumer(
       MessageQueueTopic.PROBAND_DELETED,
-      async (message: MessagePayloadProbandDeleted) => {
+      async (message: ProbandDeletedMessage) => {
         await MessageQueueService.onProbandDeleted(message);
       }
     );
 
     await this.createConsumer(
       MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
-      async (message: MessagePayloadQuestionnaireInstanceReleased) => {
+      async (message: QuestionnaireInstanceReleasedMessage) => {
         await MessageQueueService.onQuestionnaireInstanceReleased(message);
       }
     );

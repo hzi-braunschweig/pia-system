@@ -11,11 +11,11 @@ const pgHelper = require('../services/postgresqlHelper');
 const {
   QuestionnaireRepository,
 } = require('../repositories/questionnaireRepository');
-const { QuestionnaireService } = require('../services/questionnaireService');
 const { QuestionnairesInteractor } = require('./questionnairesInteractor');
 const {
   complianceserviceClient,
 } = require('../clients/complianceserviceClient');
+const { QuestionnaireService } = require('../services/questionnaireService');
 
 const expect = chai.expect;
 const sandbox = sinon.createSandbox();

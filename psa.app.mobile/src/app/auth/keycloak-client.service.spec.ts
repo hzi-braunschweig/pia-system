@@ -26,7 +26,6 @@ import { TranslateService } from '@ngx-translate/core';
 import { MockProvider, MockService } from 'ng-mocks';
 import { Platform } from '@ionic/angular';
 import { CurrentUser } from './current-user.service';
-import { KeycloakPromiseImpl } from './keycloak-adapter/keycloak-promise';
 import Keycloak from 'keycloak-js';
 import { PiaKeycloakAdapter } from './keycloak-adapter/keycloak-adapter';
 import Spy = jasmine.Spy;
@@ -176,7 +175,7 @@ describe('KeycloakClientService', () => {
 
     it('should return false if not logged in', async () => {
       await service.initialize();
-      keycloakService.isLoggedIn.and.resolveTo(false);
+      keycloakService.isLoggedIn.and.returnValue(false);
 
       const result = await service.isLoggedIn();
 
@@ -185,7 +184,7 @@ describe('KeycloakClientService', () => {
 
     it('should return true if logged in', async () => {
       await service.initialize();
-      keycloakService.isLoggedIn.and.resolveTo(true);
+      keycloakService.isLoggedIn.and.returnValue(true);
 
       const result = await service.isLoggedIn();
 
@@ -260,7 +259,7 @@ describe('KeycloakClientService', () => {
   describe('openAccountManagement', () => {
     it('should open accountManagement with InAppBrowser', async () => {
       keycloakService.getKeycloakInstance.and.returnValue({
-        accountManagement: () => KeycloakPromiseImpl.resolve(),
+        accountManagement: () => Promise.resolve(),
       } as Keycloak);
 
       await service.openAccountManagement();

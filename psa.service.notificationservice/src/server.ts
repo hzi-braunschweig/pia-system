@@ -44,7 +44,6 @@ export class Server {
     this.server = Hapi.server({
       host: config.public.host,
       port: config.public.port,
-      tls: config.public.tls,
       routes: {
         cors: { origin: ['*'] },
         timeout: {

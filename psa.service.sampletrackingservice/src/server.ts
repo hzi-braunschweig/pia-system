@@ -10,7 +10,6 @@ import {
   defaultPublicRoutesPaths,
   registerAuthStrategies,
   registerPlugins,
-  SecureConnection,
 } from '@pia/lib-service-core';
 
 import * as packageJson from '../package.json';
@@ -19,6 +18,7 @@ import { config } from './config';
 import { TaskScheduleHelper } from './services/taskScheduleHelper';
 import { LabResultImportHelper } from './services/labResultImportHelper';
 import { getConnection } from 'typeorm';
+import { RegisterRoutes as RegisterInternalRoutes } from './internalRoutes.generated';
 
 interface Cancelable {
   cancel: () => void;
@@ -26,6 +26,7 @@ interface Cancelable {
 
 export class Server {
   private static instance: Hapi.Server;
+  private static instanceInternal: Hapi.Server;
 
   private static csvImportJob: Cancelable;
   private static hl7ImportJob: Cancelable;
@@ -35,17 +36,39 @@ export class Server {
 
     this.instance = Hapi.server(this.extractServerOptions(config.public));
 
+    this.instanceInternal = Hapi.server({
+      host: config.internal.host,
+      port: config.internal.port,
+      routes: {
+        cors: { origin: ['*'] },
+        timeout: {
+          socket: false,
+          server: false,
+        },
+      },
+    });
+
     await registerAuthStrategies(this.instance, config.servers.authserver);
     await registerPlugins(this.instance, {
       name: packageJson.name,
       version: packageJson.version,
       routes: defaultPublicRoutesPaths,
     });
+    await registerPlugins(this.instanceInternal, {
+      name: packageJson.name,
+      version: packageJson.version,
+    });
+    RegisterInternalRoutes(this.instanceInternal);
 
     await this.instance.start();
     this.instance.log(
       ['startup'],
       `Server running at ${this.instance.info.uri}`
+    );
+    await this.instanceInternal.start();
+    this.instanceInternal.log(
+      ['startup'],
+      `InternalServer running at ${this.instanceInternal.info.uri}`
     );
 
     // Start scheduled jobs
@@ -61,15 +84,16 @@ export class Server {
 
     await this.instance.stop();
     this.instance.log(['startup'], `Server was stopped`);
+    await this.instanceInternal.stop();
+    this.instanceInternal.log(['startup'], `Internal Server was stopped`);
   }
 
   private static extractServerOptions(
-    connection: Connection | SecureConnection
+    connection: Connection
   ): Hapi.ServerOptions {
     return {
       host: connection.host,
       port: connection.port,
-      tls: 'tls' in connection ? connection.tls : false,
       routes: {
         cors: { origin: ['*'] },
         timeout: {

@@ -95,6 +95,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       questions: [
         {
           text: 'Conditional question',
+          help_text: '',
           variable_name: '',
           position: 1,
           is_mandatory: false,
@@ -141,6 +142,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       questions: [
         {
           text: 'Wie alt sind Sie?',
+          help_text: '',
           variable_name: '',
           position: 1,
           is_mandatory: false,
@@ -188,6 +190,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       questions: [
         {
           text: 'Wie heißen Sie?',
+          help_text: '',
           variable_name: '',
           position: 1,
           is_mandatory: false,
@@ -205,6 +208,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Wie alt sind sie?',
+          help_text: '',
           variable_name: '',
           position: 2,
           is_mandatory: false,
@@ -222,6 +226,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Ihr Geschlecht',
+          help_text: '',
           variable_name: '',
           position: 3,
           is_mandatory: false,
@@ -239,6 +244,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Welche Symptome haben Sie?',
+          help_text: '',
           variable_name: '',
           position: 4,
           is_mandatory: false,
@@ -264,6 +270,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Wann sind erste Symptome aufgetreten?',
+          help_text: '',
           variable_name: '',
           position: 5,
           is_mandatory: false,
@@ -332,9 +339,10 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
-      .find('.mat-row')
-      .should('have.length', 1);
+    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"] tbody tr').should(
+      'have.length',
+      1
+    );
 
     cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
       .find('[data-e2e="e2e-questionnaire-name"]')
@@ -385,7 +393,10 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       .check();
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
-    cy.get('[data-e2e="e2e-input-type-date"]').find('input').type('01.12.20');
+    cy.get('[data-e2e="e2e-input-type-date"]')
+      .find('input')
+      .focus()
+      .type('01.12.20');
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
     cy.get('button').contains('Fragebogen abschicken').click();
 
@@ -393,13 +404,11 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
 
     cy.expectPathname('/questionnaires/user');
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
-      .find('.mat-row')
-      .should('not.exist');
+    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"] tbody tr').should(
+      'not.exist'
+    );
 
-    cy.get('.mat-tab-label-content')
-      .contains('Abgeschlossene Fragebögen')
-      .click();
+    cy.get('[role="tab"]').contains('Abgeschlossene Fragebögen').click();
 
     cy.get('[data-e2e="e2e-proband-completed-questionnaire-table"]')
       .find('[data-e2e="e2e-questionnaire-name"]')
@@ -450,7 +459,10 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       .check();
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
-    cy.get('[data-e2e="e2e-input-type-date"]').find('input').type('01.12.20');
+    cy.get('[data-e2e="e2e-input-type-date"]')
+      .find('input')
+      .focus()
+      .type('01.12.20');
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
     cy.get('button').contains('Fragebogen abschicken').click();
 
@@ -500,6 +512,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       questions: [
         {
           text: 'Wie heißen Sie?',
+          help_text: '',
           variable_name: '',
           position: 1,
           is_mandatory: false,
@@ -517,6 +530,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Wie alt sind sie?',
+          help_text: '',
           variable_name: '',
           position: 2,
           is_mandatory: false,
@@ -534,6 +548,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Ihr Geschlecht',
+          help_text: '',
           variable_name: '',
           position: 3,
           is_mandatory: false,
@@ -551,6 +566,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Welche Symptome haben Sie?',
+          help_text: '',
           variable_name: '',
           position: 4,
           is_mandatory: false,
@@ -576,6 +592,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         },
         {
           text: 'Wann sind erste Symptome aufgetreten?',
+          help_text: '',
           variable_name: '',
           position: 5,
           is_mandatory: false,
@@ -602,13 +619,15 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
-      .find('.mat-row')
-      .should('have.length', 1);
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
-      .find('.mat-row')
+    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"] tbody tr').should(
+      'have.length',
+      1
+    );
+
+    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"] tbody tr')
       .contains(q2.name)
       .should('not.exist');
+
     cy.get<UserCredentials>('@fCred')
       .then(loginProfessional)
       .then((token) => {
@@ -617,11 +636,11 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
         cy.expectPathname('/questionnaires/user');
         cy.reload();
 
-        cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
-          .find('.mat-row')
-          .should('have.length', 2);
-        cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
-          .find('.mat-row')
+        cy.get(
+          '[data-e2e="e2e-proband-open-questionnaire-table"] tbody tr'
+        ).should('have.length', 2);
+        cy.get('[data-e2e="e2e-proband-open-questionnaire-table"] tbody tr')
+
           .contains(q2.name)
           .should('be.visible');
       });

@@ -16,8 +16,7 @@ import { expect } from 'chai';
 import { Boom } from '@hapi/boom';
 import { assert } from 'ts-essentials';
 import { StatusCodes } from 'http-status-codes';
-import { CreateProbandRequest } from '../../models/proband';
-import { ProbandOrigin } from '@pia-system/lib-http-clients-internal';
+import { CreateProbandRequest, ProbandOrigin } from '../../models/proband';
 
 describe('InternalProbandsInteractor', () => {
   const testSandbox = createSandbox();

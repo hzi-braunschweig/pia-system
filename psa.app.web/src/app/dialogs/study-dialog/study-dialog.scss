@@ -4,24 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-::ng-deep .mat-form-field .mat-form-field-infix {
-  width: auto;
-}
-
-.mat-form-field {
+.mat-mdc-form-field {
   width: 100%;
-}
-
-::ng-deep mat-checkbox.text-wrap {
-  margin-top: 10px;
-
-  label.mat-checkbox-layout {
-    white-space: normal;
-
-    .mat-checkbox-inner-container {
-      margin-top: 4px;
-    }
-  }
 }
 
 .form-field-error {

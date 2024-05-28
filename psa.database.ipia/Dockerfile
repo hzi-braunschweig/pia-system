@@ -51,5 +51,6 @@ COPY $DIR/migrations/*.* /migrations/
 COPY $DIR/scripts/* /usr/bin
 COPY $DIR/pg_hba-temp_server.conf /etc/postgres/pg_hba-temp_server.conf
 
-CMD /usr/bin/start.sh
-HEALTHCHECK CMD PGPASSWORD=$POSTGRES_PASSWORD /usr/bin/pg_isready -U $POSTGRES_USER -h localhost -d $POSTGRES_DB
+COPY --chmod=0755 psa.utils.scripts/logs-masking/custom-entrypoint.sh /custom-entrypoint.sh
+ENTRYPOINT ["/custom-entrypoint.sh", "/docker-entrypoint.sh"]
+CMD ["/usr/bin/start.sh"]

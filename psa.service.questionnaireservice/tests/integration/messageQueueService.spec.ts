@@ -14,9 +14,9 @@ import {
   MessageQueueClient,
   MessageQueueTopic,
   Producer,
+  ProbandDeactivatedMessage,
 } from '@pia/lib-messagequeue';
 import { config } from '../../src/config';
-import { MessagePayloadProbandDeactivated } from '../../src/models/messagePayloads';
 import { getManager, getRepository, Not, Repository } from 'typeorm';
 import { Questionnaire } from '../../src/entities/questionnaire';
 import {
@@ -65,7 +65,7 @@ describe('MessageQueueService', () => {
 
   describe('onUserDeactivated', () => {
     const endOfUserDeactivated = 'endOfUserDeactivated';
-    let producer: Producer<MessagePayloadProbandDeactivated>;
+    let producer: Producer<ProbandDeactivatedMessage>;
     beforeEach(async () => {
       const stub = testSandbox.stub(MessageQueueService, 'onUserDeactivated');
       stub.callsFake(async (pseudonym) => {
@@ -163,6 +163,7 @@ describe('MessageQueueService', () => {
       // Act
       await producer.publish({
         pseudonym: pseudonym1,
+        studyName: 'QTestStudy',
       });
 
       // Assert
@@ -195,6 +196,7 @@ describe('MessageQueueService', () => {
       // Act
       await producer.publish({
         pseudonym: pseudonym1,
+        studyName: 'QTestStudy',
       });
 
       // Assert

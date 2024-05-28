@@ -24,5 +24,5 @@ export declare class FeedbackStatisticBarChartComponent implements OnChanges, On
     private formatDate;
     private returnBaseChartConfig;
     static ɵfac: i0.ɵɵFactoryDeclaration<FeedbackStatisticBarChartComponent, never>;
-    static ɵcmp: i0.ɵɵComponentDeclaration<FeedbackStatisticBarChartComponent, "pia-feedback-statistic-bar-chart", never, { "feedbackStatistic": "feedbackStatistic"; "interval": "interval"; }, {}, never, never, false>;
+    static ɵcmp: i0.ɵɵComponentDeclaration<FeedbackStatisticBarChartComponent, "pia-feedback-statistic-bar-chart", never, { "feedbackStatistic": { "alias": "feedbackStatistic"; "required": false; }; "interval": { "alias": "interval"; "required": false; }; }, {}, never, never, false, never>;
 }

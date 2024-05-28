@@ -5,17 +5,17 @@
   -->
 
 <mat-card class="time-series-card">
-  <mat-card-subtitle>
-    {{ 'FEEDBACK_STATISTICS.TIME_SERIES' | translate }} {{ index + 1 }}
-  </mat-card-subtitle>
+  <mat-card-header>
+    <mat-card-subtitle>
+      {{ 'FEEDBACK_STATISTICS.TIME_SERIES' | translate }} {{ index + 1 }}
+    </mat-card-subtitle>
+  </mat-card-header>
   <mat-card-content>
     <div class="grid-container-10cols">
       <!-- Color Select -->
       <mat-form-field class="grid-item-10 color-select">
-        <mat-select
-          [formControl]="form.controls.color"
-          placeholder="{{ 'FEEDBACK_STATISTICS.COLOR' | translate }}"
-        >
+        <mat-label>{{ 'FEEDBACK_STATISTICS.COLOR' | translate }}</mat-label>
+        <mat-select [formControl]="form.controls.color">
           <mat-select-trigger>
             <span
               class="color-option-field color-option-field-trigger"
@@ -30,7 +30,8 @@
             <span
               class="color-option-field"
               [style]="'background-color: ' + color + ';'"
-            ></span>
+              >&nbsp;</span
+            >
           </mat-option>
         </mat-select>
 
@@ -41,12 +42,10 @@
 
       <!-- Legend Label -->
       <mat-form-field class="grid-item-90">
-        <input
-          type="text"
-          matInput
-          placeholder="{{ 'FEEDBACK_STATISTICS.LEGEND_LABEL' | translate }}"
-          [formControl]="form.controls.label"
-        />
+        <mat-label>{{
+          'FEEDBACK_STATISTICS.LEGEND_LABEL' | translate
+        }}</mat-label>
+        <input type="text" matInput [formControl]="form.controls.label" />
 
         <mat-hint>
           {{ form.controls.label.value?.length ?? 0 }} /
@@ -66,9 +65,11 @@
 
       <!-- Questionnaire Select -->
       <mat-form-field class="grid-item-20">
+        <mat-label
+          >{{ 'FEEDBACK_STATISTICS.QUESTIONNAIRE' | translate }}
+        </mat-label>
         <mat-select
           disableOptionCentering
-          placeholder="{{ 'FEEDBACK_STATISTICS.QUESTIONNAIRE' | translate }}"
           [formControl]="form.controls.questionnaire"
           [compareWith]="formService.isSameQuestionnaireValue"
           data-unit="questionnaire-select"
@@ -95,9 +96,9 @@
 
       <!-- Answer Option Select -->
       <mat-form-field class="grid-item-40">
+        <mat-label>{{ 'FEEDBACK_STATISTICS.QUESTION' | translate }}</mat-label>
         <mat-select
           disableOptionCentering
-          placeholder="{{ 'FEEDBACK_STATISTICS.QUESTION' | translate }}"
           [formControl]="form.controls.answerOptionValueCodes.controls.id"
           data-e2e="e2e-answer-select"
           data-unit="answer-option-select"
@@ -129,10 +130,12 @@
 
       <!-- Answer Option Values Select -->
       <mat-form-field class="grid-item-40">
+        <mat-label
+          >{{ 'FEEDBACK_STATISTICS.ANSWER_OPTION' | translate }}
+        </mat-label>
         <mat-select
           disableOptionCentering
           multiple="true"
-          placeholder="{{ 'FEEDBACK_STATISTICS.ANSWER_OPTION' | translate }}"
           [formControl]="
             form.controls.answerOptionValueCodes.controls.valueCodes
           "
@@ -153,9 +156,9 @@
         </mat-error>
       </mat-form-field>
 
-      <app-hint class="grid-item-100">{{
-        'FEEDBACK_STATISTICS.NUMERATOR_ANSWER_TYPE_HINT' | translate
-      }}</app-hint>
+      <app-hint class="grid-item-100"
+        >{{ 'FEEDBACK_STATISTICS.NUMERATOR_ANSWER_TYPE_HINT' | translate }}
+      </app-hint>
     </div>
   </mat-card-content>
   <mat-card-actions>

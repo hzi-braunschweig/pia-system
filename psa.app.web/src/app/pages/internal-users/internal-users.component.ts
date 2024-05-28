@@ -5,15 +5,12 @@
  */
 
 import { Component, OnInit, ViewChild } from '@angular/core';
-import {
-  MatLegacyPaginator as MatPaginator,
-  MatLegacyPaginatorIntl as MatPaginatorIntl,
-} from '@angular/material/legacy-paginator';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { AlertService } from '../../_services/alert.service';
 import { DialogDeleteComponent } from '../../_helpers/dialog-delete';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { DialogUserDataComponent } from '../../_helpers/dialog-user-data';
 import { DialogNewUserComponent } from '../../dialogs/new-user-dialog/new-user-dialog.component';
 import { MatPaginatorIntlGerman } from '../../_helpers/mat-paginator-intl';
@@ -21,7 +18,7 @@ import {
   ProfessionalRole,
   ProfessionalUser,
 } from '../../psa.app.core/models/user';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 import { ProfessionalAccount } from '../../psa.app.core/models/professionalAccount';
 import { FormControl } from '@angular/forms';

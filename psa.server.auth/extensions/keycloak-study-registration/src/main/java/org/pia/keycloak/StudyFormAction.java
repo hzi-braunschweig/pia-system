@@ -14,8 +14,8 @@ import org.keycloak.models.*;
 import org.keycloak.models.utils.FormMessage;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import java.util.ArrayList;
 import java.util.List;
 

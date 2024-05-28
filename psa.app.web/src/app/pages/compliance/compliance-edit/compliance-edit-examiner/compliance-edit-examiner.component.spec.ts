@@ -13,7 +13,7 @@ import {
 import { ComplianceEditExaminerComponent } from './compliance-edit-examiner.component';
 import { ComplianceService } from '../../../../psa.app.core/providers/compliance-service/compliance-service';
 import { AlertService } from '../../../../_services/alert.service';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { TranslateModule } from '@ngx-translate/core';
 import {

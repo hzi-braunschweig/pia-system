@@ -5,40 +5,9 @@
  */
 
 /* Structure */
-.grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, 200px);
-  grid-gap: 1rem;
-  align-items: baseline;
-  margin-bottom: 10px;
-}
-
 .users-container {
   display: flex;
   flex-direction: column;
   min-width: 300px;
   opacity: 0.8;
-}
-
-.mat-form-field {
-  font-size: 14px;
-  flex-grow: 1;
-  margin-top: 8px;
-  max-width: 250px;
-}
-
-/** Selection styles */
-.mat-cell {
-  display: flex;
-  justify-content: flex-start;
-  text-align: start;
-}
-
-.mat-header-cell {
-  display: flex;
-  justify-content: flex-start;
-}
-
-.mat-icon {
-  margin: 0 10px;
 }

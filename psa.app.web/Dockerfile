@@ -86,11 +86,12 @@ RUN find /usr/src/node-app/dist/out/ | xargs gzip -k -9
 ################################################################
 
 FROM nginx:1.25.3-alpine@sha256:db353d0f0c479c91bd15e01fc68ed0f33d9c4c52f3415e63332c3d0bf7a4bb77 AS final
+RUN apk --update --no-cache add bash
 
 ARG DIR=.
 
 RUN rm -rf /usr/share/nginx/html/*
-ENV WEBAPPSERVER_HTTP_PORT=80 WEBAPPSERVER_HTTPS_PORT=443 DEFAULT_LANGUAGE=en-US
+ENV WEBAPPSERVER_HTTP_PORT=80 DEFAULT_LANGUAGE=en-US
 COPY $DIR/envsubst-on-environment.sh /docker-entrypoint.d/40-envsubst-on-environment.sh
 COPY $DIR/nginx-site.conf /etc/nginx/templates/default.conf.template
 COPY --from=build-public /usr/src/node-app/dist/out/ /usr/share/nginx/html
@@ -109,4 +110,8 @@ ENV VERSION_INFO_GIT_REF=$VERSION_INFO_GIT_REF
 
 RUN echo "{\"PIPELINE_ID\":\"$VERSION_INFO_PIPELINE_ID\",\"GIT_HASH\":\"$VERSION_INFO_GIT_HASH\",\"GIT_REF\":\"$VERSION_INFO_GIT_REF\"}" > /usr/share/nginx/html/version
 
-HEALTHCHECK CMD curl -k https://localhost:$WEBAPPSERVER_HTTPS_PORT
+COPY psa.utils.scripts/logs-masking/custom-entrypoint.sh /custom-entrypoint.sh
+RUN chmod +x /custom-entrypoint.sh
+ENTRYPOINT ["/custom-entrypoint.sh", "/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
+

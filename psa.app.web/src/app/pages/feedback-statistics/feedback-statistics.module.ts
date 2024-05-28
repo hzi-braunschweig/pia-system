@@ -10,26 +10,26 @@ import { FeedbackStatisticConfigurationComponent } from './feedback-statistic-co
 import { FeedbackStatisticListResearcherComponent } from './feedback-statistic-list-researcher/feedback-statistic-list-researcher.component';
 import { FeedbackStatisticsRoutingModule } from './feedback-statistics-routing.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
+import { MatButtonModule } from '@angular/material/button';
 import { TranslateModule } from '@ngx-translate/core';
 import { LoadingSpinnerModule } from '../../features/loading-spinner/loading-spinner.module';
 import { RelativeFrequencyTimeSeriesConfigurationComponent } from './relative-frequency-time-series-configuration/relative-frequency-time-series-configuration.component';
 import { FeedbackStatisticMetaDataComponent } from './feedback-statistic-meta-data/feedback-statistic-meta-data.component';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
+import { MatCardModule } from '@angular/material/card';
 import { StudySelectComponent } from '../../features/study-select/study-select.component';
-import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
+import { MatSelectModule } from '@angular/material/select';
 import { MarkdownEditorComponent } from '../../features/markdown-editor/markdown-editor.component';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
+import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { HintComponent } from '../../features/hint/hint.component';
 import { TimeSeriesItemComponent } from './time-series-item/time-series-item.component';
 import { NgLetDirective } from '../../_directives/ng-let.directive';
 import { MatGridListModule } from '@angular/material/grid-list';
-import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSelectSearchModule } from '../../features/mat-select-search/mat-select-search.module';
-import { MatLegacyCheckboxModule as MatCheckboxModule } from '@angular/material/legacy-checkbox';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ChartsModule } from '@pia-system/charts';
 import { FeedbackStatisticComponent } from './feedback-statistic/feedback-statistic.component';
 import { MarkdownModule } from 'ngx-markdown';
@@ -37,7 +37,7 @@ import { MatSliderModule } from '@angular/material/slider';
 import { FeedbackStatisticListProbandComponent } from './feedback-statistic-list-proband/feedback-statistic-list-proband.component';
 import { FeedbackStatisticListComponent } from './feedback-statistic-list/feedback-statistic-list.component';
 import { DialogDeleteComponent } from '../../_helpers/dialog-delete';
-import { MatLegacyDialogModule } from '@angular/material/legacy-dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 import { DialogInfoComponent } from '../../_helpers/dialog-info';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
@@ -67,7 +67,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatDividerModule,
     MatCheckboxModule,
     MatSelectSearchModule,
-    MatLegacyDialogModule,
+    MatDialogModule,
     MatSliderModule,
     MatProgressSpinnerModule,
     TranslateModule,

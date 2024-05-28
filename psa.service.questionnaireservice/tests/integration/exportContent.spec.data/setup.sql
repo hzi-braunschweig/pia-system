@@ -51,20 +51,21 @@ VALUES (298, 'Teststudie - Export', 'FB3_morgen_expired', 2, 1, 'once', 0, 1, 0,
         NULL, FALSE, 2, 5, '2021-06-08', 'for_probands', 3, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE);
 
 
-INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, variable_name, questionnaire_version)
-VALUES (2618, 295, 'Es werden verschiedene Antworttypen durchgetestet.', 1, TRUE, '', 1),
-       (2620, 297, 'Es werden verschiedene Antworttypen durchgetestet.', 1, FALSE, '', 1),
-       (2621, 298, 'Wähle aus', 1, FALSE, '', 1),
-       (2622, 298, 'Wähle aus', 2, FALSE, '', 1),
-       (2623, 299, 'Frage mit Vars', 1, FALSE, '', 1),
-       (2624, 299, 'Frage mit Codes und Vars', 2, FALSE, '', 1),
-       (2625, 299, 'Frage mit Vars', 1, FALSE, '', 2),
-       (2626, 299, 'Frage mit Codes und Vars', 2, FALSE, '', 2),
-       (2629, 301, 'Frage mit Vars', 1, FALSE, '', 3),
-       (2630, 301, 'Frage mit Codes und Vars', 2, FALSE, '', 3),
-       (2627, 300, 'Es werden verschiedene Antworttypen durchgetestet.', 1, TRUE, 'UeberVariable', 1),
-       (2628, 300, 'Eine bedingte Frage.', 2, FALSE, '', 1),
-       (2631, 300, 'Frage ohne Unterfrage', 3, FALSE, '', 1);
+INSERT INTO questions (id, questionnaire_id, text, help_text, "position", is_mandatory, variable_name,
+                       questionnaire_version)
+VALUES (2618, 295, 'Es werden verschiedene Antworttypen durchgetestet.', 'Dieser Text hilft dabei.', 1, TRUE, '', 1),
+       (2620, 297, 'Es werden verschiedene Antworttypen durchgetestet.', '', 1, FALSE, '', 1),
+       (2621, 298, 'Wähle aus', '', 1, FALSE, '', 1),
+       (2622, 298, 'Wähle aus', '', 2, FALSE, '', 1),
+       (2623, 299, 'Frage mit Vars', '', 1, FALSE, '', 1),
+       (2624, 299, 'Frage mit Codes und Vars', '', 2, FALSE, '', 1),
+       (2625, 299, 'Frage mit Vars', '', 1, FALSE, '', 2),
+       (2626, 299, 'Frage mit Codes und Vars', 'Mit einem Hilfetext', 2, FALSE, '', 2),
+       (2629, 301, 'Frage mit Vars', '', 1, FALSE, '', 3),
+       (2630, 301, 'Frage mit Codes und Vars', '', 2, FALSE, '', 3),
+       (2627, 300, 'Es werden verschiedene Antworttypen durchgetestet.', '', 1, TRUE, 'UeberVariable', 1),
+       (2628, 300, 'Eine bedingte Frage.', '', 2, FALSE, '', 1),
+       (2631, 300, 'Frage ohne Unterfrage', '', 3, FALSE, '', 1);
 
 
 INSERT INTO answer_options (id, question_id, text, answer_type_id, is_notable, "values", values_code, "position",

@@ -4,19 +4,15 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { MessageQueueClient, MessageQueueTopic } from '@pia/lib-messagequeue';
+import {
+  MessageQueueClient,
+  MessageQueueTopic,
+  ProbandDeletedMessage,
+} from '@pia/lib-messagequeue';
 import { config } from '../config';
 import { runTransaction } from '../db';
 import { PendingDeletionRepository } from '../repositories/pendingDeletionRepository';
 import { PersonalDataRepository } from '../repositories/personalDataRepository';
-
-interface ProbandDeletedMessage {
-  pseudonym: string;
-  deletionType:
-    | 'default' // delete all proband data but keep the pseudonym
-    | 'keep_usage_data' // delete all proband data but keep usage data like logs and the pseudonym
-    | 'full'; // fully delete all proband data
-}
 
 export class MessageQueueService extends MessageQueueClient {
   private static async onProbandDeleted(pseudonym: string): Promise<void> {

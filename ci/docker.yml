@@ -19,14 +19,13 @@ build-docker:
   tags:
     - docker
   script:
-    # generate the bake files
-    - ./psa.utils.ci-create-bake-file/docker.sh > bake.hcl
-    - ./psa.utils.ci-create-bake-file/docker-with-faked-secrets.sh > bake-with-faked-secrets.hcl
-    # generate the secrets
-    - docker build --build-arg AUTH_KEY_SIZE=2048 --build-arg CA_KEY_SIZE=2048 --build-arg SERVICE_KEY_SIZE=2048 --build-arg CA_VALIDITY_DAYS=36500 --build-arg SERVICE_VALIDITY_DAYS=36500 -o secrets psa.utils.scripts/generate-secrets/
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - export TAG=$IMAGE_ID
+    - export IMAGE_REGISTRY=$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+    - export VERSION_INFO_PIPELINE_ID=$CI_PIPELINE_ID
+    - export VERSION_INFO_GIT_HASH=CI_COMMIT_SHA
+    - export VERSION_INFO_GIT_REF=$CI_COMMIT_REF_SLUG
     - docker buildx bake --push -f bake.hcl
-    - docker buildx bake --push -f bake-with-faked-secrets.hcl
   rules:
     - if: $CI_SCHEDULED_TASK == "cleanup-registry"
     - if: $CI_SCHEDULED_TASK == "update_third_party_licenses"
@@ -35,9 +34,6 @@ build-docker:
     - if: $CI_COMMIT_BRANCH =~ /^develop/
     - if: $CI_COMMIT_BRANCH =~ /^release/
     - if: $UNTAG_FAILED_RELEASE
-  artifacts:
-    paths:
-      - secrets
 
 push-branch-images:
   extends:

@@ -1,7 +1,7 @@
 import { TimeSpanDto } from './time-span';
 import { TimeRangeDto } from './time-range';
-export declare type FeedbackStatisticVisibility = 'hidden' | 'testprobands' | 'allaudiences';
-export declare type FeedbackStatisticConfigurationDto = RelativeFrequencyTimeSeriesConfigurationDto;
+export type FeedbackStatisticVisibility = 'hidden' | 'testprobands' | 'allaudiences';
+export type FeedbackStatisticConfigurationDto = RelativeFrequencyTimeSeriesConfigurationDto;
 interface FeedbackStatisticConfigurationMetaDataDto {
     id: number;
     study: string;

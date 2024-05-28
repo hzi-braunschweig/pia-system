@@ -6,10 +6,10 @@
 
 import { Component, Inject } from '@angular/core';
 import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
 import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
 import { CurrentUser } from '../../../_services/current-user.service';
@@ -76,25 +76,24 @@ export class RequestNewMaterialComponent {
 @Component({
   selector: 'confirm-new-material-request',
   template: `
-    <h1 mat-dialog-title style=" display: flex; justify-content: center; ">
+    <div mat-dialog-content>
       {{ 'SAMPLE_MANAGEMENT.SURE_REQUEST_MATERIAL' | translate }}
-    </h1>
-    <div>
+    </div>
+    <div mat-dialog-actions>
       <button
-        mat-raised-button
-        style="margin:10px;"
-        color="primary"
+        mat-button
         (click)="confirmSelection()"
+        data-e2e="dialog-button-accept"
       >
-        Ja
+        {{ 'GENERAL.YES' | translate }}
       </button>
       <button
-        mat-raised-button
-        style="margin:10px;"
+        mat-button
         color="primary"
         (click)="onNoClick()"
+        data-e2e="dialog-button-reject"
       >
-        Nein
+        {{ 'GENERAL.NO' | translate }}
       </button>
     </div>
   `,

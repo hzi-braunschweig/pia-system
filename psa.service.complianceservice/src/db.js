@@ -19,9 +19,6 @@ const sequelize = new Sequelize({
     timestamps: true,
   },
   logging: false,
-  dialectOptions: {
-    ssl: config.database.ssl,
-  },
 });
 
 // Definition of database models

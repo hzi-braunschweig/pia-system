@@ -20,6 +20,7 @@ export class Scanner {
     const testInt: string[] = [];
     const testE2e: string[] = [];
     const npmInstall: string[] = [];
+    const openApi: string[] = [];
 
     // Scan the repo dir for information
     for (const name of await Fs.readdir(repoDir)) {
@@ -56,6 +57,9 @@ export class Scanner {
         if (pack.scripts['test.int']) {
           testInt.push(name);
         }
+        if (pack.scripts['build.openapi']) {
+          openApi.push(name);
+        }
         for (const key of Object.keys(pack.scripts)) {
           const prefix = 'e2e.ci.';
           if (key.startsWith(prefix)) {
@@ -73,6 +77,7 @@ export class Scanner {
       testInt,
       testE2e,
       npmInstall,
+      openApi,
     };
   }
 }

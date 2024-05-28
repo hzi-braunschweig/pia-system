@@ -6,7 +6,7 @@
 
 const Boom = require('@hapi/boom');
 const complianceRepository = require('../repositories/complianceRepository');
-const complianceService = require('../services/complianceService');
+const { ComplianceService } = require('../services/complianceService');
 const templatePipelineService = require('../services/pdfGeneratorService');
 const { userserviceClient } = require('../clients/userserviceClient');
 const transactionWrapper = require('../utils/transactionWrapper');
@@ -22,7 +22,7 @@ class ComplianceInteractor {
    * @return {Promise<import("../model/compliance").ComplianceRes> | Promise<undefined>} the requested compliance of a specific study
    */
   static async getComplianceAgree(request, study, userId) {
-    return complianceService.getComplianceAgree(request, study, userId);
+    return ComplianceService.getComplianceAgree(request, study, userId);
   }
 
   /**
@@ -52,7 +52,7 @@ class ComplianceInteractor {
    */
   static async getCompliancesForProfessional(request, studies) {
     try {
-      return complianceService.getComplianceAgreementsForStudies(studies);
+      return await ComplianceService.getComplianceAgreementsForStudies(studies);
     } catch (e) {
       request.log('error', e.stack + JSON.stringify(e, null, 2));
       throw Boom.boomify(e);
@@ -175,14 +175,14 @@ class ComplianceInteractor {
           additionalData,
           { transaction: t }
         );
-        await messageQueueService.sendComplianceCreate(userId);
+        await messageQueueService.sendComplianceCreate(userId, study);
       })
       .catch((e) => {
         request.log('error', e.stack + JSON.stringify(e, null, 2));
         throw Boom.boomify(e);
       });
     // associations are not resolved in a transaction where they were created. Therefore: fetch after success
-    return await complianceService.getComplianceAgree(
+    return await ComplianceService.getComplianceAgree(
       request,
       study,
       userId,
@@ -219,7 +219,7 @@ class ComplianceInteractor {
    * @private
    */
   static async _getComplianceAgreeNeededByMappingId(study, mappingId, options) {
-    if (await complianceService.isInternalComplianceActive(study, options)) {
+    if (await ComplianceService.isInternalComplianceActive(study, options)) {
       const usersCompliance =
         await complianceRepository.getComplianceOfUserForStudy(
           study,

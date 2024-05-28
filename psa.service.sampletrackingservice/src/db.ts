@@ -23,6 +23,7 @@ import {
   createConnection,
   getConnection,
 } from 'typeorm';
+import { LabResult } from './entities/labResult';
 import { LabResultTemplate } from './entities/labResultTemplate';
 import { CreateLabResultTemplate1687426335432 } from './migrations/1687426335432-CreateLabResultTemplate';
 
@@ -53,8 +54,7 @@ const typeOrmOptions: ConnectionOptions = {
   username: config.database.user,
   password: config.database.password,
   database: config.database.database,
-  ssl: config.database.ssl,
-  entities: [LabResultTemplate],
+  entities: [LabResultTemplate, LabResult],
   namingStrategy: new SnakeNamingStrategyWithPlural(),
   synchronize: false,
   migrationsRun: true,

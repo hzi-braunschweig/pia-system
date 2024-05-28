@@ -34,7 +34,7 @@ describe('AuthGuard', () => {
   describe('canActivate()', () => {
     it('should send user to login if not authenticated', async () => {
       // Arrange
-      keycloak.isLoggedIn.and.resolveTo(false);
+      keycloak.isLoggedIn.and.returnValue(false);
       const state = { url: '/some/path' } as RouterStateSnapshot;
       const route = new ActivatedRouteSnapshot();
 
@@ -48,7 +48,7 @@ describe('AuthGuard', () => {
 
     it('should return true if no roles are expected', async () => {
       // Arrange
-      keycloak.isLoggedIn.and.resolveTo(true);
+      keycloak.isLoggedIn.and.returnValue(true);
       keycloak.getUserRoles.and.returnValue(['Untersuchungsteam']);
       const state = { url: '/some/path' } as RouterStateSnapshot;
       const route = new ActivatedRouteSnapshot();
@@ -62,7 +62,7 @@ describe('AuthGuard', () => {
 
     it('should return true if the role matches', async () => {
       // Arrange
-      keycloak.isLoggedIn.and.resolveTo(true);
+      keycloak.isLoggedIn.and.returnValue(true);
       keycloak.getUserRoles.and.returnValue(['Untersuchungsteam']);
       const state = { url: '/some/path' } as RouterStateSnapshot;
       const route = new ActivatedRouteSnapshot();
@@ -77,7 +77,7 @@ describe('AuthGuard', () => {
 
     it('should return false if no role matches', async () => {
       // Arrange
-      keycloak.isLoggedIn.and.resolveTo(true);
+      keycloak.isLoggedIn.and.returnValue(true);
       keycloak.getUserRoles.and.returnValue(['Proband']);
       const state = { url: '/some/path' } as RouterStateSnapshot;
       const route = new ActivatedRouteSnapshot();

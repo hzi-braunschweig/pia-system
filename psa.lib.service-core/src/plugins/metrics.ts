@@ -6,7 +6,6 @@
 
 import { createPlugin, signalIsUp, signalIsNotUp } from '@promster/hapi';
 import prom from 'prom-client';
-import Boom from '@hapi/boom';
 import { Plugin, Server } from '@hapi/hapi';
 
 // Add healthcheck property to ServerOptionsApp
@@ -25,9 +24,6 @@ export const Metrics: Plugin<unknown> = {
   name: 'metrics',
   version: '1.0.0',
   register: function (server: Server) {
-    const ipWhitelist = (process.env['METRICS_IP_WHITELIST'] ?? '').split(',');
-    const allAllowed = ipWhitelist.includes('*');
-
     // Activate hapi route metrics collection
     void server.register(upPlugin);
 
@@ -35,12 +31,7 @@ export const Metrics: Plugin<unknown> = {
     server.route({
       method: 'GET',
       path: '/metrics',
-      handler: async (request, h) => {
-        // We don't look for the x-forwarded-for header because we only want local addresses to be whitelisted
-        if (!allAllowed && !ipWhitelist.includes(request.info.remoteAddress)) {
-          return Boom.unauthorized('ip address not whitelisted for metrics');
-        }
-
+      handler: async (_, h) => {
         // refresh health
         try {
           if (

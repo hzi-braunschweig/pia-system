@@ -32,6 +32,12 @@ COMMANDS+="ALTER USER $DB_FEEDBACKSTATISTIC_USER WITH ENCRYPTED PASSWORD '$DB_FE
 COMMANDS+="GRANT feedbackstatisticservice_role to $DB_FEEDBACKSTATISTIC_USER;\n"
 COMMANDS+="ALTER ROLE $DB_FEEDBACKSTATISTIC_USER SET search_path TO feedbackstatisticservice;\n"
 
+# create user for eventhistoryserver schema
+COMMANDS+="SELECT 'CREATE USER $DB_EVENTHISTORY_USER' WHERE NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '$DB_EVENTHISTORY_USER') \gexec\n"
+COMMANDS+="ALTER USER $DB_EVENTHISTORY_USER WITH ENCRYPTED PASSWORD '$DB_EVENTHISTORY_PASSWORD';\n"
+COMMANDS+="GRANT eventhistoryserver_role to $DB_EVENTHISTORY_USER;\n"
+COMMANDS+="ALTER ROLE $DB_EVENTHISTORY_USER SET search_path TO eventhistoryserver;\n"
+
 # update the search_path for the superuser
 # "public" should be the primary search path!
 COMMANDS+="ALTER ROLE $POSTGRES_USER SET search_path TO public;\n"

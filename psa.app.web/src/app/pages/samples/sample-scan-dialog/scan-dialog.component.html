@@ -8,96 +8,78 @@
   {{ 'SAMPLES.SCAN_DIALOG' + (isBloodSample ? '_BLOOD' : '') | translate }}
 </h1>
 <form class="form-container" [formGroup]="scanForm">
-  <mat-dialog-content>
-    <mat-grid-list [cols]="1" rowHeight="50px">
-      <mat-grid-tile [rowspan]="2">
-        <h3>{{ study.name }}</h3>
-      </mat-grid-tile>
+  <mat-dialog-content class="space-y full-width-children">
+    <h3>{{ study.name }}</h3>
 
-      <mat-grid-tile [rowspan]="2">
-        <mat-form-field>
-          <input
-            type="text"
-            formControlName="sample_id"
-            matInput
-            placeholder="{{
-              (isBloodSample ? 'SAMPLES.PROBEN_ID' : 'SAMPLES.VIREN_PROBE_ID')
-                | translate
-            }}"
-          />
-          <mat-error *ngIf="scanForm.get('sample_id').hasError('required')"
-            >{{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
-          </mat-error>
-          <mat-error
-            *ngIf="
-              !scanForm.get('sample_id').hasError('required') &&
-              scanForm.get('sample_id').hasError('sampleWrongFormat')
-            "
-          >
-            {{
-              'SAMPLES.WRONG_SAMPLE_FORMAT'
-                | translate
-                  : {
-                      prefix: study.sample_prefix
-                        ? study.sample_prefix + '-'
-                        : 'XXX',
-                      length: study.sample_suffix_length
-                        ? study.sample_suffix_length
-                        : '0-N'
-                    }
-            }}
-          </mat-error>
-        </mat-form-field>
-      </mat-grid-tile>
+    <mat-form-field>
+      <mat-label>{{
+        (isBloodSample ? 'SAMPLES.PROBEN_ID' : 'SAMPLES.VIREN_PROBE_ID')
+          | translate
+      }}</mat-label>
+      <input type="text" formControlName="sample_id" matInput />
+      <mat-error *ngIf="scanForm.get('sample_id').hasError('required')"
+        >{{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+      </mat-error>
+      <mat-error
+        *ngIf="
+          !scanForm.get('sample_id').hasError('required') &&
+          scanForm.get('sample_id').hasError('sampleWrongFormat')
+        "
+      >
+        {{
+          'SAMPLES.WRONG_SAMPLE_FORMAT'
+            | translate
+              : {
+                  prefix: study.sample_prefix
+                    ? study.sample_prefix + '-'
+                    : 'XXX',
+                  length: study.sample_suffix_length
+                    ? study.sample_suffix_length
+                    : '0-N'
+                }
+        }}
+      </mat-error>
+    </mat-form-field>
 
-      <mat-grid-tile [rowspan]="2" *ngIf="hasDummySampleId()">
-        <mat-form-field>
-          <input
-            type="text"
-            formControlName="dummy_sample_id"
-            matInput
-            placeholder="{{ 'SAMPLES.BAKT_PROBE_ID' | translate }}"
-          />
-          <mat-error
-            *ngIf="scanForm.get('dummy_sample_id').hasError('required')"
-            >{{
-              'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate
-            }}</mat-error
-          >
-          <mat-error
-            *ngIf="
-              !scanForm.get('dummy_sample_id').hasError('required') &&
-              scanForm.get('dummy_sample_id').hasError('sampleWrongFormat')
-            "
-          >
-            {{
-              'SAMPLES.WRONG_SAMPLE_FORMAT'
-                | translate
-                  : {
-                      prefix: study.sample_prefix
-                        ? study.sample_prefix + '-'
-                        : 'XXX',
-                      length: study.sample_suffix_length
-                        ? study.sample_suffix_length
-                        : '0-N'
-                    }
-            }}
-          </mat-error>
-        </mat-form-field>
-      </mat-grid-tile>
-    </mat-grid-list>
+    <mat-form-field *ngIf="hasDummySampleId()">
+      <mat-label>{{ 'SAMPLES.BAKT_PROBE_ID' | translate }}</mat-label>
+      <input type="text" formControlName="dummy_sample_id" matInput />
+      <mat-error *ngIf="scanForm.get('dummy_sample_id').hasError('required')">{{
+        'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate
+      }}</mat-error>
+      <mat-error
+        *ngIf="
+          !scanForm.get('dummy_sample_id').hasError('required') &&
+          scanForm.get('dummy_sample_id').hasError('sampleWrongFormat')
+        "
+      >
+        {{
+          'SAMPLES.WRONG_SAMPLE_FORMAT'
+            | translate
+              : {
+                  prefix: study.sample_prefix
+                    ? study.sample_prefix + '-'
+                    : 'XXX',
+                  length: study.sample_suffix_length
+                    ? study.sample_suffix_length
+                    : '0-N'
+                }
+        }}
+      </mat-error>
+    </mat-form-field>
   </mat-dialog-content>
 
   <mat-dialog-actions>
     <button mat-button mat-dialog-close>
-      <mat-icon>cancel</mat-icon>
+      {{ 'DIALOG.CANCEL' | translate }}
     </button>
     <button
       mat-button
+      color="primary"
       [disabled]="!scanForm.valid"
       [mat-dialog-close]="getScanResult()"
     >
-      <mat-icon>done</mat-icon>
+      {{ 'DIALOG.SAVE' | translate }}
     </button>
   </mat-dialog-actions>
 </form>

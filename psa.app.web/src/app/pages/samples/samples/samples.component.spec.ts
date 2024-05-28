@@ -12,10 +12,7 @@
 
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 import { AppModule } from '../../../app.module';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { SamplesComponent } from './samples.component';
 import { CurrentUser } from '../../../_services/current-user.service';
@@ -38,9 +35,10 @@ import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
 import { Location } from '@angular/common';
 import { RemarkDialogComponent } from '../sample-remark-dialog/remark-dialog.component';
 import { DialogInfoComponent } from '../../../_helpers/dialog-info';
-import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
+import { DialogYesNoComponent } from '../../../dialogs/dialog-yes-no/dialog-yes-no';
 import { AlertService } from '../../../_services/alert.service';
 import SpyObj = jasmine.SpyObj;
+import any = jasmine.any;
 
 describe('SamplesComponent', () => {
   let fixture: MockedComponentFixture;
@@ -126,6 +124,10 @@ describe('SamplesComponent', () => {
     dialog.open.and.returnValue({
       afterClosed: () => afterClosedSubject.asObservable(),
     } as unknown as MatDialogRef<DialogDeletePartnerComponent>);
+    dialog = jasmine.createSpyObj<MatDialog>('MatDialog', ['open']);
+    dialog.open.and.returnValue({
+      afterClosed: () => afterClosedSubject.asObservable(),
+    } as unknown as MatDialogRef<DialogDeletePartnerComponent>);
     userService = jasmine.createSpyObj<UserService>('UserService', [
       'getStudy',
     ]);
@@ -136,6 +138,7 @@ describe('SamplesComponent', () => {
       .mock(CurrentUser, user)
       .mock(ActivatedRoute, activatedRoute)
       .mock(AuthService, authService)
+      .mock(MatDialog, dialog)
       .mock(MatDialog, dialog)
       .mock(SampleTrackingService, sampleTrackingService)
       .mock(UserService, userService);
@@ -571,7 +574,7 @@ describe('SamplesComponent', () => {
 
       // Assert
       expect(dialog.open).toHaveBeenCalledWith(RemarkDialogComponent, {
-        width: '250px',
+        width: '350px',
         data: { remark: '' },
       });
       expect(sampleTrackingService.putBloodSample).toHaveBeenCalledOnceWith(
@@ -619,7 +622,6 @@ describe('SamplesComponent', () => {
 
       // Assert
       expect(dialog.open).toHaveBeenCalledWith(DialogYesNoComponent, {
-        width: '300px',
         data: { content: 'SAMPLES.DIALOG.SURE_DEACTIVATE' },
       });
       expect(sampleTrackingService.putLabResult).toHaveBeenCalledOnceWith(

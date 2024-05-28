@@ -6,10 +6,7 @@
 
 import { Router } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MockBuilder } from 'ng-mocks';
 
 import { AppModule } from '../app.module';

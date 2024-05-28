@@ -11,10 +11,8 @@ const setupQpia = {
   configure: function ({ registry }) {
     const config = {
       postgresContainer: 'pia-postgres-test.int',
-      postgresImageBase: `${registry}/pia/psa.database:test.int-base`,
       postgresImage: `${registry}/pia/psa.database:test.int`,
       postgresPath: '../psa.database',
-      postgresSecretsPath: '../psa.utils.scripts/secrets-dockerfile',
       dbUser: 'user_' + random.createRandomString(16),
       dbPassword: random.createRandomString(16),
       dbName: random.createRandomString(16),
@@ -32,6 +30,10 @@ const setupQpia = {
         'feedbackstatistic_' + random.createRandomString(16),
       dbFeedbackStatisticPassword: random.createRandomString(16),
       dbFeedbackStatisticName: random.createRandomString(16),
+
+      dbEventHistoryUser: 'eventhistory_' + random.createRandomString(16),
+      dbEventHistoryPassword: random.createRandomString(16),
+      dbEventHistoryName: random.createRandomString(16),
     };
 
     // In beforeAll it is too late to set the process.env, so we need to do everything sync!
@@ -43,21 +45,18 @@ const setupQpia = {
     config.env.QPIA_USER = config.dbUser;
     config.env.QPIA_PASSWORD = config.dbPassword;
     config.env.QPIA_DB = config.dbName;
-    config.env.QPIA_ACCEPT_UNAUTHORIZED = 'true';
 
     config.env.DB_LOG_HOST = 'localhost';
     config.env.DB_LOG_PORT = config.dbPort.toString();
     config.env.DB_LOG_USER = config.dbLogUser;
     config.env.DB_LOG_PASSWORD = config.dbLogPassword;
     config.env.DB_LOG_DB = config.dbName;
-    config.env.DB_LOG_ACCEPT_UNAUTHORIZED = 'true';
 
     config.env.DB_SORMAS_HOST = 'localhost';
     config.env.DB_SORMAS_PORT = config.dbPort.toString();
     config.env.DB_SORMAS_USER = config.dbSormasUser;
     config.env.DB_SORMAS_PASSWORD = config.dbSormasPassword;
     config.env.DB_SORMAS_DB = config.dbName;
-    config.env.DB_SORMAS_ACCEPT_UNAUTHORIZED = 'true';
 
     config.env.DB_FEEDBACKSTATISTIC_HOST = 'localhost';
     config.env.DB_FEEDBACKSTATISTIC_PORT = config.dbPort.toString();
@@ -65,7 +64,12 @@ const setupQpia = {
     config.env.DB_FEEDBACKSTATISTIC_PASSWORD =
       config.dbFeedbackStatisticPassword;
     config.env.DB_FEEDBACKSTATISTIC_DB = config.dbName;
-    config.env.DB_FEEDBACKSTATISTIC_ACCEPT_UNAUTHORIZED = 'true';
+
+    config.env.DB_EVENTHISTORY_HOST = 'localhost';
+    config.env.DB_EVENTHISTORY_PORT = config.dbPort.toString();
+    config.env.DB_EVENTHISTORY_USER = config.dbEventHistoryUser;
+    config.env.DB_EVENTHISTORY_PASSWORD = config.dbEventHistoryPassword;
+    config.env.DB_EVENTHISTORY_DB = config.dbName;
 
     env.update(config.env);
 

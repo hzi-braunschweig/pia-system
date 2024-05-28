@@ -44,7 +44,7 @@ describe('ComplianceGuard', () => {
   });
 
   it('should return false if user is not authenticated', async () => {
-    auth.isAuthenticated.and.resolveTo(false);
+    auth.isAuthenticated.and.returnValue(false);
 
     const result = await guard.canActivate(new ActivatedRouteSnapshot(), null);
 
@@ -52,7 +52,7 @@ describe('ComplianceGuard', () => {
   });
 
   it('should redirect to compliance page if internal compliance is needed', async () => {
-    auth.isAuthenticated.and.resolveTo(true);
+    auth.isAuthenticated.and.returnValue(true);
     compliance.isInternalComplianceNeeded.and.resolveTo(true);
     const snapshot = new ActivatedRouteSnapshot();
     snapshot.url = [new UrlSegment('test', {})];
@@ -64,7 +64,7 @@ describe('ComplianceGuard', () => {
   });
 
   it('should return true if internal compliance is not needed', async () => {
-    auth.isAuthenticated.and.resolveTo(true);
+    auth.isAuthenticated.and.returnValue(true);
     compliance.isInternalComplianceNeeded.and.resolveTo(false);
 
     const result = await guard.canActivate(new ActivatedRouteSnapshot(), null);

@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+:host {
+  display: block;
+}
+
 .study-status {
   &.study-status-active {
     background-color: #a0cf69;
@@ -22,9 +26,13 @@
   text-align: center;
   border-radius: 5px;
   font-size: 12px;
+  line-height: 1;
+  align-self: flex-start;
+  margin-left: auto;
 }
 
 .study-accounts-count {
+  margin-bottom: var(--pia-space-y);
   strong {
     color: #558b2f;
   }
@@ -38,7 +46,9 @@
 }
 
 .registration-link {
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  width: fit-content;
   padding: 10px 10px 10px 15px;
 
   background-color: #d4d8d1;

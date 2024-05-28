@@ -5,7 +5,7 @@
  */
 
 import { AbstractExportFeature } from './abstractExportFeature';
-import { Readable } from 'stream';
+import { Readable, pipeline } from 'stream';
 import { CsvService } from '../../services/csvService';
 import { LegacyAnswersTransform } from '../../services/csvTransformStreams/legacyAnswersTransform';
 import { UserFile } from '../../models/userFile';
@@ -30,7 +30,12 @@ export class LegacyAnswersExport extends AbstractExportFeature {
     });
     const transformStream = new LegacyAnswersTransform();
     const csvStream = CsvService.stringify();
-    this.archive.append(answersStream.pipe(transformStream).pipe(csvStream), {
+    pipeline(answersStream, transformStream, csvStream, (err) => {
+      if (err) {
+        console.log('LegacyAnswersExport failed with error: ', err);
+      }
+    });
+    this.archive.append(csvStream, {
       name: 'answers.csv',
     });
 

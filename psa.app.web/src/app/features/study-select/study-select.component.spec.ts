@@ -12,7 +12,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CurrentUser } from '../../_services/current-user.service';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { MatLegacySelectHarness as MatSelectHarness } from '@angular/material/legacy-select/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { MockModule, MockProvider } from 'ng-mocks';
 import { TranslateModule } from '@ngx-translate/core';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';

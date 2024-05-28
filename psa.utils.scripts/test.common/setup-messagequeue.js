@@ -22,8 +22,10 @@ const setupMessagequeue = {
     console.log('building ' + messagequeueContainer);
     await docker.build(
       messagequeueImage,
-      messagequeuePath,
-      {},
+      '../',
+      {
+        DIR: messagequeuePath,
+      },
       messagequeuePath + '/Dockerfile'
     );
     console.log(

@@ -4,31 +4,9 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-::ng-deep .mat-form-field .mat-form-field-infix {
-  width: auto;
-}
-
-mat-hint {
-  font-size: 75%;
-}
-
-form {
-  mat-hint {
-    color: red;
-    margin-bottom: 30px;
-  }
-
-  mat-form-field {
-    margin: 20px;
-  }
-
-  mat-grid-list {
-    button {
-      color: #45a3d1;
-
-      mat-icon {
-        font-size: 30px;
-      }
-    }
+.grid-container {
+  grid-template-columns: 1fr 1fr min-content;
+  button {
+    margin-bottom: var(--pia-space-y);
   }
 }

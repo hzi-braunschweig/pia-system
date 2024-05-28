@@ -83,6 +83,7 @@ export interface AnswerOptionForm {
 
 export interface QuestionForm {
   text: FormControl<string>;
+  help_text: FormControl<string>;
   variable_name: FormControl<string>;
   id: FormControl<number>;
   position: FormControl<number>;
@@ -96,6 +97,7 @@ export interface QuestionForm {
 
 export interface QuestionnaireForm {
   name: FormControl<string>;
+  custom_name: FormControl<string>;
   type: FormControl<string>;
   study_id: FormControl<string>;
   cycle_amount: FormControl<number>;

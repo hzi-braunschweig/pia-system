@@ -100,20 +100,20 @@ describe('Release Test, role: "Proband", Additional, PM', () => {
       cy.visit(adminAppUrl);
       login(cred.username, cred.password);
 
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
-
       cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Kontaktieren')
         .click();
 
       cy.get('[data-e2e="e2e-contact-proband-study-select"]').click();
-      cy.get('.mat-option-text').contains(study.name).click();
+      cy.get('[data-e2e="option"]').contains(study.name).click();
 
       cy.get('[data-e2e="e2e-chip-autocomplete-input"]').click();
-      cy.get('.mat-option-text').contains(proband.pseudonym).click();
-      cy.get('[data-e2e="e2e-contact-proband-subject-input"').type(
+      cy.get('[data-e2e="option"]').contains(proband.pseudonym).click();
+      cy.get('[data-e2e="e2e-contact-proband-subject-input"]').focus();
+      cy.get('[data-e2e="e2e-contact-proband-subject-input"]').type(
         message.subject
       );
+      cy.get('[data-e2e="e2e-contact-proband-message-textarea"]').focus();
       cy.get('[data-e2e="e2e-contact-proband-message-textarea"]').type(
         message.content
       );

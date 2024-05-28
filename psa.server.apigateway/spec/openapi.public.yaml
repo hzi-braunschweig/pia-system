@@ -1,0 +1,9 @@
+info:
+  title: PIA Public API
+  version: '1'
+  description: Endpoints for integrators and developers to connect 3rd party applications
+  license:
+    name: AGPL-3.0-or-later
+  contact: {}
+servers:
+  - url: /public/api/v1

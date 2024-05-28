@@ -7,7 +7,7 @@
 import { ServerRoute } from '@hapi/hapi';
 
 import { ComplianceTextHandler } from '../../handlers/complianceTextHandler';
-import { complianceTextValidator } from '../complianceRequestValidators';
+import { paramsWithStudyNameValidator } from '../complianceRequestValidators';
 
 const route: ServerRoute = {
   path: '/admin/{studyName}/text',
@@ -21,7 +21,7 @@ const route: ServerRoute = {
     },
     app: { assertStudyAccess: true },
     tags: ['api'],
-    validate: complianceTextValidator,
+    validate: paramsWithStudyNameValidator,
   },
 };
 

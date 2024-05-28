@@ -7,11 +7,28 @@
 const cypressLogToOutput = require('cypress-log-to-output');
 const { rm, existsSync, readFileSync } = require('fs');
 
-export default function filesystemPlugin(
+export default function nodeEvents(
   on: Cypress.PluginEvents,
   _config: Cypress.PluginConfigOptions
 ): void {
   cypressLogToOutput.install(on);
+
+  // Remove video files if tests pass to avoid additional execution time by compressing it
+  on('after:spec', (spec, results) => {
+    return new Promise((resolve, reject) => {
+      if (results.stats.failures === 0 && results.video) {
+        rm(results.video, { force: true }, (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(null);
+          }
+        });
+      } else {
+        resolve(null);
+      }
+    });
+  });
 
   on('task', {
     deleteFolder(folderName: string): Promise<null> {
@@ -36,5 +53,14 @@ export default function filesystemPlugin(
       }
       return null;
     },
+  });
+
+  on('before:browser:launch', (browser = {} as any, launchOptions) => {
+    // needed to be able to read/write local storage when connecting via http (in pipeline e2e-tests)
+    if (browser.family === 'chromium') {
+      launchOptions.args.push('--unsafely-treat-insecure-origin-as-secure');
+    }
+
+    return launchOptions;
   });
 }

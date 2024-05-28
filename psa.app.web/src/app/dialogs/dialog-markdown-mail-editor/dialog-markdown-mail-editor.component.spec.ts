@@ -8,10 +8,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MockComponent, MockPipe, MockProvider } from 'ng-mocks';
 import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogModule as MatDialogModule,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
 import { MarkdownEditorComponent } from '../../features/markdown-editor/markdown-editor.component';

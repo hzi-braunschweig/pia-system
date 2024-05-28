@@ -5,18 +5,12 @@
  */
 
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
-import {
-  MatLegacyPaginator as MatPaginator,
-  MatLegacyPaginatorIntl as MatPaginatorIntl,
-} from '@angular/material/legacy-paginator';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SampleTrackingService } from '../../../psa.app.core/providers/sample-tracking-service/sample-tracking.service';
-import { DialogYesNoComponent } from '../../../_helpers/dialog-yes-no';
+import { DialogYesNoComponent } from '../../../dialogs/dialog-yes-no/dialog-yes-no';
 import { DialogInfoComponent } from '../../../_helpers/dialog-info';
 import {
   DialogPopUpComponent,
@@ -134,7 +128,7 @@ export class SamplesComponent implements OnInit {
 
   constructor(
     public readonly user: CurrentUser,
-    public dialog: MatDialog,
+    private dialog: MatDialog,
     private route: ActivatedRoute,
     private router: Router,
     private alertService: AlertService,
@@ -386,7 +380,7 @@ export class SamplesComponent implements OnInit {
   public onEditCellClicked(rowContent): void {
     this.dialog
       .open(RemarkDialogComponent, {
-        width: '250px',
+        width: '350px',
         data: { remark: rowContent.remark },
       })
       .afterClosed()
@@ -429,7 +423,7 @@ export class SamplesComponent implements OnInit {
   public onEditSampleRemarkClicked(rowContent): void {
     this.dialog
       .open(RemarkDialogComponent, {
-        width: '250px',
+        width: '350px',
         data: { remark: rowContent.remark },
       })
       .afterClosed()
@@ -497,7 +491,6 @@ export class SamplesComponent implements OnInit {
     } else {
       this.dialog
         .open(DialogYesNoComponent, {
-          width: '300px',
           data: { content: 'SAMPLES.DIALOG.SURE_DEACTIVATE' },
         })
         .afterClosed()

@@ -40,6 +40,7 @@ export class AuthServerClient extends KcAdminClient {
   public readonly realm: string;
   private waitForConnection: Promise<unknown> | undefined = undefined;
   private currentInterval: ReturnType<typeof setInterval> | undefined;
+  private connected = false;
 
   /**
    * The access token lifespan that controls when it should be refreshed.
@@ -59,6 +60,10 @@ export class AuthServerClient extends KcAdminClient {
       realmName: clientSettings.realm,
     });
     this.realm = clientSettings.realm;
+  }
+
+  public isConnected(): boolean {
+    return this.connected;
   }
 
   /**
@@ -143,6 +148,7 @@ export class AuthServerClient extends KcAdminClient {
   private initConnectionHandling(): void {
     this.connectionEvents.on('connection_lost', () => {
       console.warn('lost connection to keycloak');
+      this.connected = false;
       try {
         this.reconnect();
       } catch (e) {
@@ -151,6 +157,7 @@ export class AuthServerClient extends KcAdminClient {
     });
     this.connectionEvents.on('connected', () => {
       console.info('connected to keycloak');
+      this.connected = true;
       try {
         this.initRenewTokenHandling();
       } catch (e) {

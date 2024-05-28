@@ -13,7 +13,7 @@ import * as util from 'util';
 import fetchMocker from 'fetch-mock';
 
 import { HttpClient } from '@pia-system/lib-http-clients-internal';
-import * as server from '../../src/server';
+import { Server } from '../../src/server';
 import { Compliance, ComplianceText, sequelize } from '../../src/db';
 import { messageQueueService } from '../../src/services/messageQueueService';
 import { config } from '../../src/config';
@@ -102,11 +102,11 @@ const fetchMock = fetchMocker.sandbox();
 describe('Compliance API with MessageQueue', () => {
   before(async () => {
     await sequelize.sync();
-    await server.init();
+    await Server.init();
   });
 
   after(async () => {
-    await server.stop();
+    await Server.stop();
   });
 
   beforeEach(async () => {

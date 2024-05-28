@@ -1,5 +1,5 @@
 import { QuestionnaireInternalDto } from './questionnaire';
-export type QuestionnaireInstanceStatus = 'inactive' | 'active' | 'in_progress' | 'released' | 'released_once' | 'released_twice' | 'expired' | 'deleted';
+export declare type QuestionnaireInstanceStatus = 'inactive' | 'active' | 'in_progress' | 'released' | 'released_once' | 'released_twice' | 'expired' | 'deleted';
 export interface QuestionnaireInstanceInternalDto {
     id: number;
     studyId: string;

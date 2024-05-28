@@ -7,19 +7,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { MatLegacySelectHarness as MatSelectHarness } from '@angular/material/legacy-select/testing';
-import { MatLegacyInputHarness as MatInputHarness } from '@angular/material/legacy-input/testing';
+import { MatSelectHarness } from '@angular/material/select/testing';
+import { MatInputHarness } from '@angular/material/input/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatIconModule } from '@angular/material/icon';
 import { Pipe, PipeTransform } from '@angular/core';
 
 import { FeedbackStatisticMetaDataComponent } from './feedback-statistic-meta-data.component';
 import { FeedbackStatisticMetaDataFormService } from './feedback-statistic-meta-data-form.service';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
+import { MatCardModule } from '@angular/material/card';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
-import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MockComponent } from 'ng-mocks';
 import { HintComponent } from '../../../features/hint/hint.component';
 import { MarkdownEditorComponent } from '../../../features/markdown-editor/markdown-editor.component';

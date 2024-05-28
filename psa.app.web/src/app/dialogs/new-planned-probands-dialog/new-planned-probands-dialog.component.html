@@ -10,74 +10,62 @@
     <div formArrayName="pseudonyms">
       <div
         *ngFor="let pseudonym of getPseudonymsControl().controls; let i = index"
+        class="grid-container"
       >
-        <mat-grid-list [cols]="14">
-          <mat-grid-tile class="small-grid-tile" [colspan]="10">
-            <mat-form-field>
-              <input
-                #input
-                matInput
-                placeholder="{{ 'PLANNED_PROBANDS.SCAN_OR_TYPE' | translate }}"
-                [formControlName]="i"
-                (keyup.enter)="moveToNextField(i)"
-              />
-            </mat-form-field>
-          </mat-grid-tile>
-          <mat-grid-tile class="small-grid-tile" [colspan]="3">
-            <mat-icon
-              *ngIf="!form.controls['pseudonyms'].controls[i].valid"
-              class="warning"
-              >warning</mat-icon
-            >
-            <mat-icon
-              *ngIf="wasPosted && currentPlannedProbands[i].wasCreated"
-              color="primary"
-              >check_circle_outline</mat-icon
-            >
-            <mat-icon
-              *ngIf="
-                wasPosted && currentPlannedProbands[i].wasCreated === false
-              "
-              class="error"
-              >error_outline</mat-icon
-            >
-          </mat-grid-tile>
-          <mat-grid-tile class="small-grid-tile" [colspan]="1">
-            <button
-              type="button"
-              mat-icon-button
-              (click)="removePlannedProband(i)"
-            >
-              <mat-icon>remove_circle_outline</mat-icon>
-            </button>
-          </mat-grid-tile>
-        </mat-grid-list>
+        <mat-form-field>
+          <mat-label>{{
+            'PLANNED_PROBANDS.SCAN_OR_TYPE' | translate
+          }}</mat-label>
+          <input
+            #input
+            matInput
+            [formControlName]="i"
+            (keyup.enter)="moveToNextField(i)"
+          />
+
+          <mat-icon
+            matSuffix
+            *ngIf="!form.controls['pseudonyms'].controls[i].valid"
+            >warning</mat-icon
+          >
+          <mat-icon
+            matSuffix
+            *ngIf="wasPosted && currentPlannedProbands[i].wasCreated"
+            color="primary"
+            >check_circle_outline</mat-icon
+          >
+          <mat-icon
+            matSuffix
+            *ngIf="wasPosted && currentPlannedProbands[i].wasCreated === false"
+            color="warn"
+            >error_outline</mat-icon
+          >
+        </mat-form-field>
+        <button type="button" mat-icon-button (click)="removePlannedProband(i)">
+          <mat-icon>remove_circle_outline</mat-icon>
+        </button>
       </div>
     </div>
-    <div class="add-btn-container">
-      <button type="button" mat-icon-button (click)="addPlannedProband()">
-        <mat-icon>add_circle_outline</mat-icon>
-      </button>
-      <div fxFlex></div>
-    </div>
+    <button type="button" mat-icon-button (click)="addPlannedProband()">
+      <mat-icon>add_circle_outline</mat-icon>
+    </button>
   </mat-dialog-content>
 </form>
-<mat-dialog-actions align="end">
-  <button mat-button type="button" (click)="closeDialog()">
+<mat-dialog-actions>
+  <button mat-button type="button" mat-dialog-close>
     {{ 'PLANNED_PROBANDS.CLOSE' | translate }}
   </button>
-  <div fxFlex></div>
   <button
     [disabled]="!wasPosted"
-    mat-raised-button
-    color="primary"
+    mat-button
+    color="accent"
     (click)="closeDialogAndPrint()"
   >
     {{ 'PLANNED_PROBANDS.PRINT' | translate }}
   </button>
   <button
     [disabled]="!f.form.valid"
-    mat-raised-button
+    mat-button
     color="primary"
     (click)="submit()"
   >

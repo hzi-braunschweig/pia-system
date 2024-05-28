@@ -48,6 +48,12 @@ class MessageQueueClientConnection {
             password: this.options.password,
         });
         this.connection.once('close', () => {
+            console.warn('connection to messagequeue got closed');
+            this.connection = null;
+        });
+        this.connection.once('error', (error) => {
+            console.error('error on messagequeue connection');
+            console.error(error);
             this.connection = null;
         });
     }

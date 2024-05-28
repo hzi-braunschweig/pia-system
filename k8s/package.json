@@ -1,0 +1,49 @@
+{
+  "name": "k8s",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "types": "src/main.ts",
+  "license": "Apache-2.0",
+  "private": true,
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "generate-k8s-objects": "ts-node src/index.ts generate-k8s-objects > deployment/base/app.yaml",
+    "generate-internal-secrets": "ts-node src/index.ts generate-internal-secrets",
+    "generate-internal-secrets:k3s": "ts-node src/index.ts generate-internal-secrets > deployment/overlays/local-k3s/internal-secrets.yaml",
+    "generate-internal-secrets:k3d": "ts-node src/index.ts generate-internal-secrets > deployment/overlays/local-k3d/internal-secrets.yaml",
+    "generate-local-tls-certificates:k3d": "mkcert -cert-file deployment/overlays/local-k3d/pia-app.crt -key-file deployment/overlays/local-k3d/pia-app.key pia-app mail-pia-app",
+    "watch": "tsc --build -w",
+    "test.unit": "jest",
+    "update-snapshot": "jest --updateSnapshot",
+    "build": "tsc --build",
+    "upgrade": "npm i cdk8s@latest cdk8s-cli@latest",
+    "upgrade:next": "npm i cdk8s@next cdk8s-cli@next",
+    "format": "prettier -w .",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "cdk8s": "^2.66.5",
+    "cdk8s-plus-25": "^2.22.28",
+    "commander": "^11.1.0",
+    "constructs": "^10.2.70",
+    "node-forge": "^1.3.1",
+    "yaml": "^2.3.4"
+  },
+  "devDependencies": {
+    "@pia/eslint-config": "file:../psa.eslint-config",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^20.11.26",
+    "@types/node-forge": "^1.3.7",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "cdk8s-cli": "^2.127.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-no-only-tests": "^3.1.0",
+    "eslint-plugin-security": "^1.7.1",
+    "jest": "^26",
+    "ts-jest": "^26",
+    "ts-node": "^10.9.2",
+    "typescript": "^4.9.5"
+  }
+}

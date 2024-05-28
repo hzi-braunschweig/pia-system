@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -159,6 +159,43 @@ describe('/questionnaires', function () {
         .post('/admin/questionnaires')
         .set(forscherHeader1)
         .send(getWrongNotificationQuestionnaire());
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return HTTP 400 if the custom_name is already in use in study', async function () {
+      const questionnaire = getValidQuestionnaire1();
+      questionnaire.custom_name = 'already_in_use';
+
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/questionnaires')
+        .set(forscherHeader1)
+        .send(questionnaire);
+
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return HTTP 400 if the custom_name does not match pattern', async function () {
+      const questionnaire = getValidQuestionnaire1();
+      questionnaire.custom_name = 'this ? is # wrong.';
+
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/questionnaires')
+        .set(forscherHeader1)
+        .send(questionnaire);
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return HTTP 400 if the custom_name does only consist of numbers', async function () {
+      const questionnaire = getValidQuestionnaire1();
+      questionnaire.custom_name = '9361203';
+
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/questionnaires')
+        .set(forscherHeader1)
+        .send(questionnaire);
       expect(result).to.have.status(StatusCodes.BAD_REQUEST);
     });
 
@@ -528,18 +565,95 @@ describe('/questionnaires', function () {
       expect(body.questions[1].variable_name).to.eq('q1');
     });
 
-    it('should return HTTP 409 when it was not possible to generate a new variable name', async () => {
-      sandbox
-        .stub(variableNameGeneratorModule, 'default')
-        .throws(new CouldNotCreateNewRandomVariableNameError());
-
+    it('should return HTTP 200 with an questionnaire with a generated custom name', async () => {
       const result = await chai
         .request(apiAddress)
         .post('/admin/questionnaires')
         .set(forscherHeader1)
-        .send(getValidQuestionnaireWithVariableNames());
+        .send({
+          ...getValidQuestionnaire1(),
+          name: 'Long term observation on-demand (PIA)',
+          custom_name: null,
+        });
 
-      expect(result).to.have.status(StatusCodes.CONFLICT);
+      const body = result.body as QuestionnaireResponse;
+
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(body.custom_name).to.match(/[a-zA-Z0-9-_]+/g);
+    });
+
+    context('variable names', () => {
+      it('should return HTTP 409 when it was not possible to generate a new variable name', async () => {
+        sandbox
+          .stub(variableNameGeneratorModule, 'default')
+          .throws(new CouldNotCreateNewRandomVariableNameError());
+
+        const result = await chai
+          .request(apiAddress)
+          .post('/admin/questionnaires')
+          .set(forscherHeader1)
+          .send(getValidQuestionnaireWithVariableNames());
+
+        expect(result).to.have.status(StatusCodes.CONFLICT);
+      });
+
+      it('should return HTTP 409 when a variable name has been used more than once for a question', async () => {
+        const questionnaire = getValidQuestionnaireWithVariableNames();
+
+        questionnaire.questions[0].variable_name = 'used_twice';
+        questionnaire.questions[1].variable_name = 'used_twice';
+
+        const result = await chai
+          .request(apiAddress)
+          .post('/admin/questionnaires')
+          .set(forscherHeader1)
+          .send(questionnaire);
+
+        expect(result).to.have.status(StatusCodes.CONFLICT);
+      });
+
+      it('should return HTTP 409 when a variable name has been used more than once for an answer option in the same question', async () => {
+        const questionnaire = getValidQuestionnaireWithVariableNames();
+
+        questionnaire.questions[0].answer_options[0].variable_name =
+          'used_twice';
+        questionnaire.questions[0].answer_options[1].variable_name =
+          'used_twice';
+
+        const result = await chai
+          .request(apiAddress)
+          .post('/admin/questionnaires')
+          .set(forscherHeader1)
+          .send(questionnaire);
+
+        expect(result).to.have.status(StatusCodes.CONFLICT);
+      });
+
+      it('should return HTTP 200 when a variable name has been used more than once for an answer option in different questions', async () => {
+        const questionnaire = getValidQuestionnaireWithVariableNames();
+
+        questionnaire.questions[0].answer_options[0].variable_name =
+          'used_twice';
+        questionnaire.questions[1].answer_options = [
+          {
+            text: 'Answer with label',
+            answer_type_id: AnswerType.Text,
+            position: 1,
+            values: [],
+            values_code: null,
+            is_notable: [],
+            variable_name: 'used_twice',
+          },
+        ];
+
+        const result = await chai
+          .request(apiAddress)
+          .post('/admin/questionnaires')
+          .set(forscherHeader1)
+          .send(questionnaire);
+
+        expect(result).to.have.status(StatusCodes.OK);
+      });
     });
   });
 
@@ -575,6 +689,30 @@ describe('/questionnaires', function () {
       expect(result).to.have.status(StatusCodes.BAD_REQUEST);
     });
 
+    it('should return HTTP 400 if the custom_name is already in use in study', async function () {
+      const questionnaire = getValidQuestionnaire1();
+      questionnaire.custom_name = 'already_in_use';
+
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/revisequestionnaire/100100')
+        .set(forscherHeader1)
+        .send(questionnaire);
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return HTTP 400 if the custom_name does not match pattern', async function () {
+      const questionnaire = getValidQuestionnaire1();
+      questionnaire.custom_name = 'this ? is # wrong.';
+
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/revisequestionnaire/100100')
+        .set(forscherHeader1)
+        .send(questionnaire);
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
     it('should return HTTP 403 if the study_id is invalid', async function () {
       const wrongStudyQuestionnaire = getValidQuestionnaire1();
       wrongStudyQuestionnaire.study_id = 'noValidStudy';
@@ -607,6 +745,7 @@ describe('/questionnaires', function () {
     it('should return HTTP 200 with the new version of questionnaire if the request is valid, copy questions and answer_options and do not modify old version of questionnaire', async function () {
       const questionnaireRequest = getValidQuestionnaire1();
 
+      questionnaireRequest.custom_name = 'new_custom_name_for_v2';
       questionnaireRequest.questions = [questionnaireRequest.questions[0]];
       questionnaireRequest.questions[0].answer_options = [
         questionnaireRequest.questions[0].answer_options[0],
@@ -632,6 +771,9 @@ describe('/questionnaires', function () {
       );
 
       expect(result.body.id).to.equal(existingQuestionnaire4.id);
+      expect(result.body.custom_name).to.equal(
+        questionnaireRequest.custom_name
+      );
       expect(result.body.version).to.equal(2);
       expect(result.body.cycle_amount).to.equal(5);
       expect(result.body.keep_answers).to.be.true;
@@ -687,6 +829,7 @@ describe('/questionnaires', function () {
 
       questionnaireRequest.questions.push({
         text: 'Fragen die Variablennamen erhalten sollten',
+        help_text: '',
         position: 3,
         is_mandatory: true,
         variable_name: '',
@@ -728,47 +871,141 @@ describe('/questionnaires', function () {
         generatedLabelRegex
       );
     });
+    context('variable names', () => {
+      it('should return HTTP 200 and keep empty variable names, when previous version had not set variable names for every question', async () => {
+        const questionnaireRequest = getExistingQuestionnaire2v2();
 
-    it('should return HTTP 200 and keep empty variable names, when previous version had not set variable names for every question', async () => {
-      const questionnaireRequest = getExistingQuestionnaire2v2();
+        questionnaireRequest.questions.push({
+          text: 'Haben Sie Fieber?',
+          help_text: '',
+          position: 3,
+          is_mandatory: true,
+          variable_name: '',
+          answer_options: [
+            {
+              text: '',
+              answer_type_id: 1,
+              values: [
+                { value: 'Ja' },
+                { value: 'Nein' },
+                { value: 'Keine Angabe' },
+              ],
+              values_code: null,
+              position: 1,
+              variable_name: '',
+              is_notable: [],
+            },
+          ],
+        });
 
-      questionnaireRequest.questions.push({
-        text: 'Haben Sie Fieber?',
-        position: 3,
-        is_mandatory: true,
-        variable_name: '',
-        answer_options: [
-          {
-            text: '',
-            answer_type_id: 1,
-            values: [
-              { value: 'Ja' },
-              { value: 'Nein' },
-              { value: 'Keine Angabe' },
-            ],
-            values_code: null,
-            position: 1,
-            variable_name: '',
-            is_notable: [],
-          },
-        ],
+        const result = await chai
+          .request(apiAddress)
+          .post(`/admin/revisequestionnaire/${existingQuestionnaire2v1.id}`)
+          .set(forscherHeader1)
+          .send(questionnaireRequest);
+
+        expect(result).to.have.status(StatusCodes.OK);
+
+        const body = result.body as QuestionnaireResponse;
+
+        body.questions.forEach((q) => {
+          expect(q.variable_name).to.eq('');
+          q.answer_options.forEach((ao) => {
+            expect(ao.variable_name).to.eq('');
+          });
+        });
       });
 
-      const result = await chai
-        .request(apiAddress)
-        .post(`/admin/revisequestionnaire/${existingQuestionnaire4.id}`)
-        .set(forscherHeader1)
-        .send(questionnaireRequest);
+      it('should return HTTP 200 when a variable name has been used more than once for an answer option in different questions', async () => {
+        const questionnaire = getExistingQuestionnaire2v2();
 
-      expect(result).to.have.status(StatusCodes.OK);
+        questionnaire.questions[0].answer_options[0].variable_name =
+          'used_twice';
+        questionnaire.questions[1].answer_options[0].variable_name =
+          'used_twice';
 
-      const body = result.body as QuestionnaireResponse;
+        const result = await chai
+          .request(apiAddress)
+          .post(`/admin/revisequestionnaire/${existingQuestionnaire2v1.id}`)
+          .set(forscherHeader1)
+          .send(questionnaire);
 
-      body.questions.forEach((q) => {
-        expect(q.variable_name).to.eq('');
-        q.answer_options.forEach((ao) => {
-          expect(ao.variable_name).to.eq('');
+        expect(result).to.have.status(StatusCodes.OK);
+      });
+
+      it('should return HTTP 409 when it was not possible to generate a new variable name', async () => {
+        sandbox
+          .stub(variableNameGeneratorModule, 'default')
+          .throws(new CouldNotCreateNewRandomVariableNameError());
+
+        const questionnaireRequest =
+          getValidQuestionnaireWithGeneratedVariableNames();
+
+        questionnaireRequest.questions.push({
+          text: 'Fragen die Variablennamen erhalten sollten',
+          help_text: '',
+          position: 3,
+          is_mandatory: true,
+          variable_name: '',
+          answer_options: [
+            {
+              text: 'A',
+              answer_type_id: AnswerType.Text,
+              position: 1,
+              variable_name: '',
+              values: [],
+            },
+            {
+              text: 'B',
+              answer_type_id: AnswerType.Text,
+              position: 2,
+              variable_name: '',
+              values: [],
+            },
+          ],
         });
+
+        const result = await chai
+          .request(apiAddress)
+          .post(
+            `/admin/revisequestionnaire/${questionnaireApiTestGeneratedVariableNames.id}`
+          )
+          .set(forscherHeader2)
+          .send(questionnaireRequest);
+
+        expect(result).to.have.status(StatusCodes.CONFLICT);
+      });
+
+      it('should return HTTP 409 when a variable name has been used more than once for a question', async () => {
+        const questionnaire = getExistingQuestionnaire2v2();
+
+        questionnaire.questions[0].variable_name = 'used_twice';
+        questionnaire.questions[1].variable_name = 'used_twice';
+
+        const result = await chai
+          .request(apiAddress)
+          .post(`/admin/revisequestionnaire/${existingQuestionnaire2v1.id}`)
+          .set(forscherHeader1)
+          .send(questionnaire);
+
+        expect(result).to.have.status(StatusCodes.CONFLICT);
+      });
+
+      it('should return HTTP 409 when a variable name has been used more than once for an answer option in the same question', async () => {
+        const questionnaire = getExistingQuestionnaire2v2();
+
+        questionnaire.questions[1].answer_options[0].variable_name =
+          'used_twice';
+        questionnaire.questions[1].answer_options[1].variable_name =
+          'used_twice';
+
+        const result = await chai
+          .request(apiAddress)
+          .post(`/admin/revisequestionnaire/${existingQuestionnaire2v1.id}`)
+          .set(forscherHeader1)
+          .send(questionnaire);
+
+        expect(result).to.have.status(StatusCodes.CONFLICT);
       });
     });
   });
@@ -797,6 +1034,42 @@ describe('/questionnaires', function () {
         )
         .set(forscherHeader1)
         .send(getMissingFieldQuestionnaire());
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return HTTP 400 if the custom_name is already in use in study', async function () {
+      const questionnaire = getValidQuestionnaireEmptyQuestion();
+      questionnaire.custom_name = 'already_in_use';
+
+      const result = await chai
+        .request(apiAddress)
+        .put(
+          '/admin/questionnaires/' +
+            existingQuestionnaire4.id.toString() +
+            '/' +
+            existingQuestionnaire4.version.toString()
+        )
+        .set(forscherHeader1)
+        .send(questionnaire);
+
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return HTTP 400 if the custom_name does not match pattern', async function () {
+      const questionnaire = getValidQuestionnaireEmptyQuestion();
+      questionnaire.custom_name = 'this ? is # wrong.';
+
+      const result = await chai
+        .request(apiAddress)
+        .put(
+          '/admin/questionnaires/' +
+            existingQuestionnaire4.id.toString() +
+            '/' +
+            existingQuestionnaire4.version.toString()
+        )
+        .set(forscherHeader1)
+        .send(questionnaire);
+
       expect(result).to.have.status(StatusCodes.BAD_REQUEST);
     });
 
@@ -1068,6 +1341,7 @@ describe('/questionnaires', function () {
       changedQuestionnaire.questions = [
         {
           text: 'Version2 question',
+          help_text: '',
           position: 1,
           is_mandatory: false,
           variable_name: 'v2 question',
@@ -1186,7 +1460,7 @@ describe('/questionnaires', function () {
           };
         };
       };
-      expect(questionnairesResponse.questionnaires.length).to.equal(6);
+      expect(questionnairesResponse.questionnaires.length).to.equal(7);
       questionnairesResponse.questionnaires.forEach((q) => {
         expect(q.study_id).to.equal('ApiTestStudy1');
       });
@@ -1572,10 +1846,10 @@ describe('/questionnaires', function () {
 
       expect(result).to.have.status(StatusCodes.OK);
 
-      const resultFromDatabse = await db.manyOrNone(
+      const resultFromDatabase = await db.manyOrNone(
         'SELECT id FROM questionnaire_instances WHERE questionnaire_id=100300'
       );
-      expect(resultFromDatabse).to.deep.equal([{ id: 140300 }]);
+      expect(resultFromDatabase).to.deep.equal([{ id: 140300 }]);
     });
 
     it('should return HTTP 500 if database query failed', async function () {
@@ -1625,7 +1899,7 @@ function checkIfResponseMatchesRequestQuestionnaire(
 ): asserts questionnaireResponseInput is QuestionnaireResponse {
   const questionnaireResponse =
     questionnaireResponseInput as QuestionnaireResponse;
-  const { activate_at_date, questions, condition, ...expected } = {
+  const { activate_at_date, questions, condition, custom_name, ...expected } = {
     ...questionnaireRequest,
   };
 
@@ -1634,6 +1908,8 @@ function checkIfResponseMatchesRequestQuestionnaire(
       activate_at_date
     ).toISOString();
   }
+
+  expect(custom_name).to.match(/[a-zA-Z0-9-_]+/g);
 
   expect(
     questionnaireResponse,
@@ -1805,6 +2081,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
   return {
     study_id: 'ApiTestStudy1',
     name: 'ApiTestQuestionnaire2v1',
+    custom_name: null,
     type: 'for_probands',
     cycle_amount: 1,
     cycle_unit: 'week',
@@ -1824,6 +2101,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
       {
         id: 1002101,
         text: 'Haben Sie Fieber?',
+        help_text: '',
         position: 1,
         is_mandatory: true,
         variable_name: '',
@@ -1847,6 +2125,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
       {
         id: 1002201,
         text: 'Wie fühlen Sie sich?',
+        help_text: '',
         position: 2,
         is_mandatory: true,
         variable_name: '',
@@ -1953,6 +2232,7 @@ function getExistingQuestionnaire4(): QuestionnaireRequest {
   return {
     study_id: 'ApiTestStudy1',
     name: 'ApiTestQuestionnaire4',
+    custom_name: null,
     type: 'for_probands',
     cycle_amount: 1,
     cycle_unit: 'week',
@@ -1972,6 +2252,7 @@ function getExistingQuestionnaire4(): QuestionnaireRequest {
       {
         id: 1004101,
         text: 'Wie fühlen Sie sich?',
+        help_text: '',
         position: 1,
         is_mandatory: true,
         variable_name: '',
@@ -2010,6 +2291,7 @@ function getExistingQuestionnaire4(): QuestionnaireRequest {
       {
         id: 1004201,
         text: 'Haben Sie Fieber?',
+        help_text: '',
         position: 2,
         is_mandatory: true,
         variable_name: '',
@@ -2046,6 +2328,7 @@ function getConditionSourceQuestionnaire(): QuestionnaireRequest {
   return {
     study_id: 'ApiTestStudy2',
     name: 'ApiTestConditionSourceQuestionnaire',
+    custom_name: null,
     cycle_amount: 1,
     cycle_unit: 'week',
     activate_after_days: 1,
@@ -2081,6 +2364,7 @@ function getConditionSourceQuestionnaire(): QuestionnaireRequest {
       {
         id: 2002101,
         text: 'Bedingung auf Ja',
+        help_text: '',
         position: 1,
         is_mandatory: true,
         variable_name: '',
@@ -2136,6 +2420,7 @@ function getConditionSourceQuestionnaire(): QuestionnaireRequest {
       {
         id: 2002201,
         text: 'Bedingung auf Nein',
+        help_text: '',
         position: 2,
         is_mandatory: true,
         variable_name: '',
@@ -2191,6 +2476,7 @@ function getConditionSourceQuestionnaire(): QuestionnaireRequest {
       {
         id: 2002301,
         text: 'Frage ohne Unterfrage',
+        help_text: '',
         position: 3,
         is_mandatory: false,
         variable_name: '',
@@ -2216,6 +2502,7 @@ function getMissingFieldQuestionnaire(): Partial<QuestionnaireRequest> {
     questions: [
       {
         text: 'Welche Symptome haben Sie?',
+        help_text: '',
         position: 1,
         answer_options: [
           {
@@ -2234,6 +2521,7 @@ function getMissingFieldQuestionnaire(): Partial<QuestionnaireRequest> {
       },
       {
         text: 'Wie geht es Ihnen?',
+        help_text: '',
         position: 2,
         answer_options: [
           {
@@ -2261,6 +2549,7 @@ function getValidQuestionnaire1(): QuestionnaireRequest {
   return {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname1',
+    custom_name: 'valid_questionnaire_1',
     type: 'for_probands',
     cycle_amount: 7,
     cycle_unit: 'hour',
@@ -2283,6 +2572,7 @@ function getValidQuestionnaire1(): QuestionnaireRequest {
     questions: [
       {
         text: 'Welche Symptome haben Sie?1',
+        help_text: 'Sie müssen alle Fragen beantworten.',
         position: 1,
         is_mandatory: true,
         variable_name: '',
@@ -2332,6 +2622,7 @@ function getValidQuestionnaire1(): QuestionnaireRequest {
       },
       {
         text: 'Wie geht es Ihnen?1',
+        help_text: '',
         position: 2,
         is_mandatory: true,
         variable_name: 'q1',
@@ -2364,6 +2655,7 @@ function getValidQuestionnaire2(): QuestionnaireRequest {
   return {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname2',
+    custom_name: null,
     type: 'for_research_team',
     cycle_amount: 1,
     cycle_unit: 'once',
@@ -2382,6 +2674,7 @@ function getValidQuestionnaire2(): QuestionnaireRequest {
     questions: [
       {
         text: 'Welche Symptome haben Sie?2',
+        help_text: '',
         position: 1,
         is_mandatory: true,
         variable_name: '',
@@ -2408,6 +2701,7 @@ function getValidQuestionnaire2(): QuestionnaireRequest {
       },
       {
         text: 'Wie geht es Ihnen?2',
+        help_text: '',
         position: 2,
         is_mandatory: true,
         variable_name: '',
@@ -2440,6 +2734,7 @@ function getValidQuestionnaireWithVariableNames(): QuestionnaireRequest {
   return {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname1',
+    custom_name: null,
     type: 'for_probands',
     cycle_amount: 7,
     cycle_unit: 'hour',
@@ -2462,6 +2757,7 @@ function getValidQuestionnaireWithVariableNames(): QuestionnaireRequest {
     questions: [
       {
         text: 'Question without label',
+        help_text: '',
         position: 1,
         is_mandatory: true,
         variable_name: '',
@@ -2487,6 +2783,7 @@ function getValidQuestionnaireWithVariableNames(): QuestionnaireRequest {
       },
       {
         text: 'Question with label',
+        help_text: '',
         position: 2,
         is_mandatory: true,
         variable_name: 'q1',
@@ -2500,6 +2797,7 @@ function getValidQuestionnaireWithGeneratedVariableNames(): QuestionnaireRequest
   return {
     study_id: 'ApiTestStudy2',
     name: 'ApiTestGeneratedVariableNames',
+    custom_name: null,
     type: 'for_research_team',
     cycle_amount: 1,
     cycle_unit: 'once',
@@ -2518,6 +2816,7 @@ function getValidQuestionnaireWithGeneratedVariableNames(): QuestionnaireRequest
     questions: [
       {
         text: 'Frage mit Variablennamen',
+        help_text: '',
         position: 1,
         is_mandatory: false,
         variable_name: 'auto-11111111',
@@ -2546,6 +2845,7 @@ function getQuestionnaireImported(): QuestionnaireRequest {
   return {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname5',
+    custom_name: null,
     type: 'for_probands',
     cycle_amount: 1,
     cycle_unit: 'week',
@@ -2563,6 +2863,7 @@ function getQuestionnaireImported(): QuestionnaireRequest {
     questions: [
       {
         text: 'Welche Symptome haben Sie?2',
+        help_text: '',
         position: 1,
         is_mandatory: true,
         variable_name: '',
@@ -2589,6 +2890,7 @@ function getQuestionnaireImported(): QuestionnaireRequest {
       },
       {
         text: 'Wie geht es Ihnen?2',
+        help_text: '',
         position: 2,
         is_mandatory: true,
         variable_name: '',
@@ -2621,6 +2923,7 @@ function getValidQuestionnaireEmptyQuestion(): QuestionnaireRequest {
   return {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname3',
+    custom_name: null,
     type: 'for_probands',
     cycle_amount: 1,
     cycle_unit: 'week',
@@ -2638,6 +2941,7 @@ function getValidQuestionnaireEmptyQuestion(): QuestionnaireRequest {
     questions: [
       {
         text: 'Dies ist ein Info Text1',
+        help_text: '',
         position: 1,
         is_mandatory: false,
         variable_name: '',
@@ -2645,6 +2949,7 @@ function getValidQuestionnaireEmptyQuestion(): QuestionnaireRequest {
       },
       {
         text: 'Dies ist ein Info Text2',
+        help_text: '',
         position: 2,
         is_mandatory: false,
         variable_name: '',
@@ -2658,6 +2963,7 @@ function getWrongNotificationQuestionnaire(): QuestionnaireRequest {
   return {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname3',
+    custom_name: null,
     type: 'for_probands',
     cycle_amount: 1,
     cycle_unit: 'week',
@@ -2675,6 +2981,7 @@ function getWrongNotificationQuestionnaire(): QuestionnaireRequest {
     questions: [
       {
         text: 'Dies ist ein Info Text1',
+        help_text: '',
         position: 1,
         is_mandatory: false,
         variable_name: '',
@@ -2682,6 +2989,7 @@ function getWrongNotificationQuestionnaire(): QuestionnaireRequest {
       },
       {
         text: 'Dies ist ein Info Text2',
+        help_text: '',
         position: 2,
         is_mandatory: false,
         variable_name: '',
@@ -2695,6 +3003,7 @@ function getValidQuestionnaireSpontan(): QuestionnaireRequest {
   return {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname4',
+    custom_name: null,
     type: 'for_probands',
     cycle_amount: 0,
     cycle_unit: 'spontan',
@@ -2713,6 +3022,7 @@ function getValidQuestionnaireSpontan(): QuestionnaireRequest {
         text: 'Welche Symptome haben Sie?1',
         position: 1,
         is_mandatory: true,
+        help_text: '',
         variable_name: '',
         answer_options: [
           {
@@ -2736,6 +3046,7 @@ function getValidQuestionnaireSpontan(): QuestionnaireRequest {
         text: 'Wie geht es Ihnen?1',
         position: 2,
         is_mandatory: true,
+        help_text: 'Diese Frage bezieht sich auf ihr jetziges Befinden.',
         variable_name: '',
         answer_options: [
           {

@@ -5,10 +5,7 @@
  */
 
 import { Component, Inject } from '@angular/core';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AlertService } from '../../_services/alert.service';
 import { AccessLevel } from '../../psa.app.core/models/studyAccess';
@@ -24,7 +21,6 @@ export type DialogUserEditComponentReturn = boolean;
 @Component({
   selector: 'dialog-user-edit',
   templateUrl: 'user-edit-dialog.html',
-  styleUrls: ['user-edit-dialog.scss'],
 })
 export class DialogUserEditComponent {
   private studyName: string;

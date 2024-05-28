@@ -20,17 +20,29 @@ import { QuestionDto } from '../models/question';
 
 @Entity()
 export class Question implements QuestionDto {
+  /**
+   * @isInt
+   */
   @PrimaryColumn()
   public id!: number;
 
   @Column({ type: 'boolean', nullable: true })
   public isMandatory!: boolean | null;
 
+  /**
+   * @isInt
+   */
   @Column()
   public position!: number;
 
   @Column()
   public text!: string;
+
+  @Column({ type: 'text', nullable: true })
+  public helpText!: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  public variableName!: string | null;
 
   @ManyToOne(() => Questionnaire, (questionnaire) => questionnaire.questions)
   @JoinColumn([

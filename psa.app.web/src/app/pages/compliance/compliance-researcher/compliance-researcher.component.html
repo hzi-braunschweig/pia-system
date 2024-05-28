@@ -6,111 +6,110 @@
 
 <app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
 
-<div class="jumbotron" data-e2e="e2e-compliance-researcher-component">
-  <div>
-    <mat-card>
-      <mat-card-content>
-        <div>
-          <mat-form-field>
-            <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
-            <mat-select
-              disableOptionCentering
-              id="selectstudy"
-              [(value)]="newSelectedStudy"
-              (selectionChange)="onSelectStudy(newSelectedStudy)"
-              data-e2e="e2e-setup-compliance-study-select"
-            >
-              <mat-option *ngFor="let study of studies" [value]="study">
-                {{ study.name }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-        <mat-divider></mat-divider>
-        <div class="compliance-container" *ngIf="selectedStudy && !preview">
-          <div class="compliance-text-container">
-            <form [formGroup]="complianceTextFG">
-              <div class="radio-group-wrapper">
-                <mat-radio-group formControlName="to_be_filled_by">
-                  {{ 'COMPLIANCE.TO_BE_FILLED_OUT_BY' | translate }}:
-                  <mat-radio-button
-                    value="Proband"
-                    data-e2e="e2e-compliance-researcher-proband-radio-button"
-                    >{{ 'ROLES.PROBAND' | translate }}</mat-radio-button
-                  >
-                  <mat-radio-button
-                    value="Untersuchungsteam"
-                    data-e2e="e2e-compliance-researcher-ut-radio-button"
-                    >{{ 'ROLES.RESEARCH_TEAM' | translate }}</mat-radio-button
-                  >
-                  <mat-error
-                    *ngIf="
-                      complianceTextFG.controls.to_be_filled_by.hasError(
-                        'required'
-                      )
-                    "
-                  >
-                    {{
-                      'COMPLIANCE.TO_BE_FILLED_OUT_BY_IS_REQUIRED' | translate
-                    }}
-                  </mat-error>
-                </mat-radio-group>
-              </div>
-              <mat-form-field appearance="fill" class="compliance-text">
-                <mat-label>{{
-                  'COMPLIANCE.COMPLIANCE_TEXT' | translate
-                }}</mat-label>
-                <textarea
-                  #complianceTextarea
-                  matInput
-                  cdkTextareaAutosize
-                  cdkAutosizeMinRows="20"
-                  formControlName="compliance_text"
-                  unit-compliance-text
-                  data-e2e="e2e-compliance-researcher-compliance-text"
-                ></textarea>
-              </mat-form-field>
-            </form>
-          </div>
-          <div class="compliance-placeholder-container">
-            <app-compliance-text
-              [studyName]="selectedStudy.name"
-              (placeholderSelected)="insertText($event)"
-            ></app-compliance-text>
-            <app-compliance-radio
-              [studyName]="selectedStudy.name"
-              (placeholderSelected)="insertText($event)"
-            ></app-compliance-radio>
-          </div>
-        </div>
-        <div *ngIf="selectedStudy && preview" class="compliance-container">
-          <app-template-viewer
-            [form]="previewForm"
-            [segments]="previewText"
-          ></app-template-viewer>
-        </div>
-      </mat-card-content>
-      <mat-divider *ngIf="selectedStudy"></mat-divider>
-      <mat-card-actions *ngIf="selectedStudy">
-        <button
-          mat-raised-button
-          color="primary"
-          [disabled]="!complianceTextFG.get('compliance_text').value"
-          (click)="togglePreview()"
-          data-e2e="e2e-compliance-researcher-preview-button"
+<div class="jumbotron space-y" data-e2e="e2e-compliance-researcher-component">
+  <mat-card class="utility-card">
+    <mat-card-content>
+      <mat-form-field>
+        <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
+        <mat-select
+          disableOptionCentering
+          id="selectstudy"
+          [(value)]="newSelectedStudy"
+          (selectionChange)="onSelectStudy(newSelectedStudy)"
+          data-e2e="e2e-setup-compliance-study-select"
         >
-          {{ (preview ? 'COMPLIANCE.EDIT' : 'COMPLIANCE.PREVIEW') | translate }}
-        </button>
-        <button
-          mat-raised-button
-          color="primary"
-          [disabled]="!complianceTextFG.valid"
-          (click)="onPublish()"
-          data-e2e="e2e-compliance-researcher-publish-button"
-        >
-          {{ 'COMPLIANCE.PUBLISH' | translate }}
-        </button>
-      </mat-card-actions>
-    </mat-card>
-  </div>
+          <mat-option
+            data-e2e="option"
+            *ngFor="let study of studies"
+            [value]="study"
+          >
+            {{ study.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </mat-card-content>
+  </mat-card>
+  <mat-card *ngIf="selectedStudy">
+    <mat-card-content>
+      <div class="compliance-container" *ngIf="!preview">
+        <div class="compliance-text-container">
+          <form [formGroup]="complianceTextFG">
+            <div class="radio-group-wrapper">
+              <mat-radio-group formControlName="to_be_filled_by">
+                {{ 'COMPLIANCE.TO_BE_FILLED_OUT_BY' | translate }}:
+                <mat-radio-button
+                  value="Proband"
+                  data-e2e="e2e-compliance-researcher-proband-radio-button"
+                  >{{ 'ROLES.PROBAND' | translate }}
+                </mat-radio-button>
+                <mat-radio-button
+                  value="Untersuchungsteam"
+                  data-e2e="e2e-compliance-researcher-ut-radio-button"
+                  >{{ 'ROLES.RESEARCH_TEAM' | translate }}
+                </mat-radio-button>
+                <mat-error
+                  *ngIf="
+                    complianceTextFG.controls.to_be_filled_by.hasError(
+                      'required'
+                    )
+                  "
+                >
+                  {{ 'COMPLIANCE.TO_BE_FILLED_OUT_BY_IS_REQUIRED' | translate }}
+                </mat-error>
+              </mat-radio-group>
+            </div>
+            <mat-form-field appearance="fill" class="compliance-text">
+              <mat-label
+                >{{ 'COMPLIANCE.COMPLIANCE_TEXT' | translate }}
+              </mat-label>
+              <textarea
+                #complianceTextarea
+                matInput
+                cdkTextareaAutosize
+                cdkAutosizeMinRows="20"
+                formControlName="compliance_text"
+                unit-compliance-text
+                data-e2e="e2e-compliance-researcher-compliance-text"
+              ></textarea>
+            </mat-form-field>
+          </form>
+        </div>
+        <div class="compliance-placeholder-container">
+          <app-compliance-text
+            [studyName]="selectedStudy.name"
+            (placeholderSelected)="insertText($event)"
+          ></app-compliance-text>
+          <app-compliance-radio
+            [studyName]="selectedStudy.name"
+            (placeholderSelected)="insertText($event)"
+          ></app-compliance-radio>
+        </div>
+      </div>
+      <div *ngIf="preview" class="compliance-container">
+        <app-template-viewer
+          [form]="previewForm"
+          [segments]="previewText"
+        ></app-template-viewer>
+      </div>
+    </mat-card-content>
+    <mat-card-actions *ngIf="selectedStudy">
+      <button
+        mat-button
+        [disabled]="!complianceTextFG.get('compliance_text').value"
+        (click)="togglePreview()"
+        data-e2e="e2e-compliance-researcher-preview-button"
+      >
+        {{ (preview ? 'COMPLIANCE.EDIT' : 'COMPLIANCE.PREVIEW') | translate }}
+      </button>
+      <button
+        mat-button
+        color="primary"
+        [disabled]="!complianceTextFG.valid"
+        (click)="onPublish()"
+        data-e2e="e2e-compliance-researcher-publish-button"
+      >
+        {{ 'COMPLIANCE.PUBLISH' | translate }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
 </div>

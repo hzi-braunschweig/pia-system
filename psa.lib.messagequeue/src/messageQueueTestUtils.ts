@@ -31,12 +31,12 @@ export class MessageQueueTestUtils {
    * A helper function that can be used to wait until a message of a topic is processed.
    * Only use this in integration tests!
    */
-  public static async injectMessageProcessedAwaiter(
+  public static async injectMessageProcessedAwaiter<M>(
     messageQueueClient: MessageQueueClient,
     topic: MessageQueueTopic,
     sandbox?: Sandbox
-  ): Promise<void> {
-    return new Promise<void>((resolve) => {
+  ): Promise<{ message: M; timestamp: number }> {
+    return new Promise<{ message: M; timestamp: number }>((resolve) => {
       const mqcp = messageQueueClient as unknown as MessageQueueClientPrivate;
 
       const original: HandleMessage = mqcp.handleMessage;
@@ -49,7 +49,14 @@ export class MessageQueueTestUtils {
           if (!sandbox) {
             mqcp.handleMessage = original;
           }
-          resolve();
+
+          const data = JSON.parse(args.message.content.toString()) as {
+            message: M;
+          };
+          resolve({
+            message: data.message,
+            timestamp: args.message.properties.timestamp as number,
+          });
         }
       };
 

@@ -1,5 +1,5 @@
 /*!
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -34,6 +34,7 @@
     }
 
     button {
+      color: white;
       width: 100%;
     }
   }
@@ -48,6 +49,7 @@
         margin: 0.1rem 0.2rem;
       }
     }
+
     .questionnaire-form {
       height: 100%;
     }
@@ -58,7 +60,7 @@
     }
 
     .swiper,
-    swiper {
+    swiper-container {
       width: 100%;
       height: 100%;
     }
@@ -69,7 +71,7 @@
       pointer-events: none;
     }
 
-    .mat-card {
+    .mat-mdc-card {
       &.question-card {
         width: 70%; // 85
         height: calc(100% - 160px);
@@ -91,8 +93,8 @@
 
           .answer-type {
             &.radio-group {
-              .mat-radio-group {
-                .mat-radio-button {
+              .mat-mdc-radio-group {
+                .mat-mdc-radio-button {
                   padding-left: 1rem;
                   margin-bottom: 0.25rem;
                 }
@@ -114,13 +116,13 @@
             }
 
             &.text {
-              .mat-form-field {
+              .mat-mdc-form-field {
                 width: 60%;
               }
             }
 
             &.data {
-              .mat-error {
+              .mat-mdc-form-field-error {
                 & .data-error {
                   font-size: 12px;
                   font-style: italic;
@@ -141,7 +143,12 @@
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
 
-        .mat-card-content {
+        .mat-mdc-card-title {
+          padding-top: 16px;
+          padding-left: 16px;
+        }
+
+        .mat-mdc-card-content {
           .mat-divider {
             margin-top: 0.625rem;
             margin-bottom: 0.9375rem;
@@ -155,13 +162,14 @@
           width: 70%;
           margin: 0.4rem auto auto; // mobile
 
-          .mat-card-actions {
+          .mat-mdc-card-actions {
             padding: 0.5rem;
+            padding-left: 16px;
           }
         }
 
         &.forscher {
-          .mat-card-content {
+          .mat-mdc-card-content {
             .questions {
               pointer-events: none !important;
               cursor: none !important;
@@ -241,10 +249,10 @@
       .questionnaire-form,
       .container {
         .swiper,
-        swiper {
+        swiper-container {
           height: 97%;
 
-          .mat-card {
+          .mat-mdc-card {
             &.question-card {
               width: 98%;
               height: calc(100% - 80px);
@@ -252,7 +260,7 @@
           }
         }
 
-        .mat-card {
+        .mat-mdc-card {
           &.questionnaire-card {
             width: 89%;
             height: 88%;
@@ -272,7 +280,7 @@
       .questionnaire-form {
         height: 92%;
 
-        .mat-card {
+        .mat-mdc-card {
           &.question-card {
             width: 97%;
           }

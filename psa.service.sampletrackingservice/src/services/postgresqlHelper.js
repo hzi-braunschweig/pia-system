@@ -166,23 +166,6 @@ const postgresqlHelper = (function () {
     );
   }
 
-  async function deleteLabResultAsPM(user_id, result_id) {
-    return await db
-      .tx(async () => {
-        await db.any('DELETE FROM lab_observations WHERE lab_result_id=$1', [
-          result_id,
-        ]);
-        const res = await db.one(
-          'DELETE FROM lab_results WHERE user_id=$1 AND id=$2 RETURNING *',
-          [user_id, result_id]
-        );
-        return res;
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
-
   async function getLabObservationNames() {
     return await db.manyOrNone('SELECT DISTINCT name FROM lab_observations');
   }
@@ -357,17 +340,6 @@ const postgresqlHelper = (function () {
      * @return {Promise} a resolved promise in case of success or a rejected otherwise
      */
     requestNewMaterialFor: requestNewMaterialFor,
-
-    /**
-     * @function
-     * @description updates a labresult as a Proband
-     * @memberof module:postgresqlHelper
-     * @param {string} user_id the probands id
-     * @param {string} result_id the results id
-     * @param {string} new status the updated lab result
-     * @return {Promise} a resolved promise in case of success or a rejected otherwise
-     */
-    deleteLabResultAsPM: deleteLabResultAsPM,
 
     /**
      * @function

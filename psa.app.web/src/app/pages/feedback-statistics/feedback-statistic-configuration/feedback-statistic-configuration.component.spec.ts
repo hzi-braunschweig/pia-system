@@ -10,27 +10,24 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-
-import { FeedbackStatisticConfigurationComponent } from './feedback-statistic-configuration.component';
-import { MockComponent, MockPipe, MockProvider } from 'ng-mocks';
-import { FeedbackStatisticMetaDataComponent } from '../feedback-statistic-meta-data/feedback-statistic-meta-data.component';
-import { RelativeFrequencyTimeSeriesConfigurationComponent } from '../relative-frequency-time-series-configuration/relative-frequency-time-series-configuration.component';
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
-import { LoadingSpinnerComponent } from '../../../features/loading-spinner/loading-spinner.component';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FeedbackStatisticsService } from '../feedback-statistics.service';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { FeedbackStatisticConfigurationDto } from './feedback-statistic-configuration.model';
+import { MockComponent, MockPipe, MockProvider } from 'ng-mocks';
 import { of, Subject, throwError } from 'rxjs';
+import { LoadingSpinnerComponent } from '../../../features/loading-spinner/loading-spinner.component';
+import { FeedbackStatisticMetaDataComponent } from '../feedback-statistic-meta-data/feedback-statistic-meta-data.component';
+import { FeedbackStatisticsService } from '../feedback-statistics.service';
+import { RelativeFrequencyTimeSeriesConfigurationComponent } from '../relative-frequency-time-series-configuration/relative-frequency-time-series-configuration.component';
+
+import { FeedbackStatisticConfigurationComponent } from './feedback-statistic-configuration.component';
+import { FeedbackStatisticConfigurationDto } from './feedback-statistic-configuration.model';
 import SpyObj = jasmine.SpyObj;
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 
 class MockConfigurationComponent {
   public readonly form = new FormGroup({

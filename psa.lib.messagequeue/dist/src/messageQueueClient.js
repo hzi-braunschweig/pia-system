@@ -38,7 +38,10 @@ class MessageQueueClient extends messageQueueClientConnection_1.MessageQueueClie
         return {
             publish: async (message) => {
                 const content = Buffer.from(JSON.stringify({ message }), contentEncoding);
-                return Promise.resolve(channel.publish(topic, this.serviceName, content, publishOptions));
+                return Promise.resolve(channel.publish(topic, this.serviceName, content, {
+                    ...publishOptions,
+                    timestamp: Date.now(),
+                }));
             },
         };
     }
@@ -102,13 +105,14 @@ class MessageQueueClient extends messageQueueClientConnection_1.MessageQueueClie
     async handleMessage(args) {
         const redelivered = args.message.fields.redelivered;
         try {
+            const properties = args.message.properties;
             const data = JSON.parse(args.message.content.toString());
-            await args.onMessage(data.message);
+            await args.onMessage(data.message, new Date(properties.timestamp));
             args.channel.ack(args.message, false);
         }
         catch {
             if (redelivered) {
-                console.error(`dropping message on ${args.topic} to dead-letter-queue: ${args.message.content.toString()}`);
+                console.error(`dropping message on ${args.topic} to dead-letter-queue`);
                 args.channel.sendToQueue(args.deadLetterQueue.queue, args.message.content, publishOptions);
                 args.channel.ack(args.message, false);
             }

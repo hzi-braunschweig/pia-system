@@ -5,30 +5,31 @@
   -->
 
 <mat-card *ngIf="study">
-  <mat-card-title>
-    {{ study.name }}
+  <mat-card-header>
+    <mat-card-title>
+      {{ study.name }}
+    </mat-card-title>
+    <mat-card-subtitle class="study-accounts-count">
+      <strong [matTooltip]="'STUDY.ACCOUNTS_COUNT_HINT' | translate">
+        {{ study.accounts_count }}
+      </strong>
+      <ng-container>
+        <strong
+          *ngIf="study.max_allowed_accounts_count"
+          [matTooltip]="'STUDY.MAX_ALLOWED_ACCOUNTS_COUNT_HINT' | translate"
+          >/ {{ study.max_allowed_accounts_count }}</strong
+        >
+      </ng-container>
+      {{ 'STUDY.PROBANDS' | translate }}
+    </mat-card-subtitle>
     <div
       class="study-status"
       data-unit="study-status"
       [ngClass]="mapStudyStatusToCssClass(study.status)"
     >
       {{ study.status | studyStatusConvert | translate }}
-    </div></mat-card-title
-  >
-  <mat-card-subtitle class="study-accounts-count">
-    <strong [matTooltip]="'STUDY.ACCOUNTS_COUNT_HINT' | translate">
-      {{ study.accounts_count }}
-    </strong>
-    <ng-container>
-      <strong
-        *ngIf="study.max_allowed_accounts_count"
-        [matTooltip]="'STUDY.MAX_ALLOWED_ACCOUNTS_COUNT_HINT' | translate"
-        >/ {{ study.max_allowed_accounts_count }}</strong
-      >
-    </ng-container>
-    {{ 'STUDY.PROBANDS' | translate }}</mat-card-subtitle
-  >
-
+    </div>
+  </mat-card-header>
   <mat-card-content>
     <small class="study-description-label">{{
       'STUDY.PSEUDONYM_PREFIX' | translate
@@ -87,7 +88,6 @@
     </ng-container>
   </mat-card-content>
   <ng-container *ngIf="canUserEdit() && isStudyActive()">
-    <mat-divider></mat-divider>
     <mat-card-actions data-unit="study-actions">
       <button
         mat-button

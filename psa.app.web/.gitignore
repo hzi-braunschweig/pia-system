@@ -95,6 +95,7 @@ Thumbs.db
 # Cypress Test Results
 /cypress/screenshots
 /cypress/videos
+/cypress/downloads/
 
 # generated license list
 /src/assets/licenses.json

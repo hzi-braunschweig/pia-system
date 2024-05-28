@@ -7,18 +7,11 @@
 import {
   ConfigUtils,
   GlobalConfig,
-  SslCerts,
   SupersetOfServiceConfig,
 } from '@pia/lib-service-core';
 
-const SSL_CERTS: SslCerts = {
-  cert: ConfigUtils.getFileContent('./ssl/fs.cert'),
-  key: ConfigUtils.getFileContent('./ssl/fs.key'),
-  ca: ConfigUtils.getFileContent('./ssl/ca.cert'),
-};
-
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS, 'feedbackstatisticservice'),
+  public: GlobalConfig.getPublic('feedbackstatisticservice'),
   internal: GlobalConfig.getInternal('feedbackstatisticservice'),
   database: {
     host: ConfigUtils.getEnvVariable('DB_FEEDBACKSTATISTIC_HOST'),
@@ -26,16 +19,6 @@ const conf = {
     user: ConfigUtils.getEnvVariable('DB_FEEDBACKSTATISTIC_USER'),
     password: ConfigUtils.getEnvVariable('DB_FEEDBACKSTATISTIC_PASSWORD'),
     database: ConfigUtils.getEnvVariable('DB_FEEDBACKSTATISTIC_DB'),
-    ssl: {
-      rejectUnauthorized:
-        ConfigUtils.getEnvVariable(
-          'DB_FEEDBACKSTATISTIC_ACCEPT_UNAUTHORIZED',
-          'false'
-        ) !== 'true',
-      cert: SSL_CERTS.cert,
-      key: SSL_CERTS.key,
-      ca: SSL_CERTS.ca,
-    },
   },
   services: {
     questionnaireservice: GlobalConfig.questionnaireservice,

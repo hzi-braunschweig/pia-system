@@ -11,10 +11,8 @@ const setupEwpia = {
   configure: function ({ registry }) {
     const config = {
       postgresContainer: 'pia-postgres-ewpia-test.int',
-      postgresImageBase: `${registry}/pia/psa.database.ewpia:test.int-base`,
       postgresImage: `${registry}/pia/psa.database.ewpia:test.int`,
       postgresPath: '../psa.database.ewpia',
-      postgresSecretsPath: '../psa.utils.scripts/secrets-dockerfile',
       dbUser: 'user_' + random.createRandomString(16),
       dbPassword: random.createRandomString(16),
       dbName: random.createRandomString(16),
@@ -30,7 +28,6 @@ const setupEwpia = {
     config.env.EWPIA_USER = config.dbUser;
     config.env.EWPIA_PASSWORD = config.dbPassword;
     config.env.EWPIA_DB = config.dbName;
-    config.env.EWPIA_ACCEPT_UNAUTHORIZED = 'true';
 
     env.update(config.env);
 

@@ -12,7 +12,7 @@ import { Server } from '../../src/server';
 import { config } from '../../src/config';
 import { db } from '../../src/db';
 import { cleanup, setup } from './answers.spec.data/setup.helper';
-import { UserFileDto } from '../../src/models/userFile';
+import { UserFileResponse } from '../../src/models/userFile';
 import { Answer } from '../../src/entities/answer';
 import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 
@@ -458,7 +458,7 @@ describe('/questionnaireInstances/{id}/answers', function () {
         .set(probandHeader1)
         .send(validAnswerOfTypeImage);
       expect(result).to.have.status(StatusCodes.OK);
-      const resultFromDatabase: UserFileDto = await db.one(
+      const resultFromDatabase: UserFileResponse = await db.one(
         'SELECT file_name FROM user_files WHERE id=$1',
         [result.body.answers[0].value]
       );
@@ -481,11 +481,11 @@ describe('/questionnaireInstances/{id}/answers', function () {
         .set(probandHeader1)
         .send(validAnswerOfTypeImage2);
       expect(result).to.have.status(StatusCodes.OK);
-      const resultFromDatabase: UserFileDto = await db.one(
+      const resultFromDatabase: UserFileResponse = await db.one(
         'SELECT id FROM user_files WHERE id=$1',
         [result.body.answers[0].value]
       );
-      const newName: UserFileDto = await db.one(
+      const newName: UserFileResponse = await db.one(
         'SELECT file_name FROM user_files WHERE id=$1',
         [result.body.answers[0].value]
       );

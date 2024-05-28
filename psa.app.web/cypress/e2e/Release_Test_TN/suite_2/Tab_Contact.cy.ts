@@ -4,11 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import {
-  createProfessionalUser,
-  loginProfessional,
-  UserCredentials,
-} from '../../../support/user.commands';
+import { CreateProbandRequest } from '../../../../src/app/psa.app.core/models/proband';
 import {
   changePassword,
   createConsentForStudy,
@@ -20,7 +16,11 @@ import {
   getCredentialsForProbandByUsername,
   login,
 } from '../../../support/commands';
-import { CreateProbandRequest } from '../../../../src/app/psa.app.core/models/proband';
+import {
+  createProfessionalUser,
+  loginProfessional,
+  UserCredentials,
+} from '../../../support/user.commands';
 
 const short = require('short-uuid');
 const translator = short();
@@ -31,7 +31,6 @@ let proband: CreateProbandRequest;
 let ut;
 let pm;
 let forscher;
-const probandCredentials = { username: '', password: '' };
 const newPassword = ',dYv3zg;r:CB';
 
 const probandAppUrl = '/';
@@ -74,20 +73,19 @@ describe('Release Test, role: "Proband", Tab: Contact', () => {
       .then((token) => {
         createPlannedProband(proband.pseudonym, token);
         createProband(proband, study.name, token);
-        getCredentialsForProbandByUsername(proband.pseudonym, token).then(
-          (cred) => {
-            probandCredentials.username = cred.username;
-            probandCredentials.password = cred.password;
-          }
-        );
-      });
+        getCredentialsForProbandByUsername(proband.pseudonym, token);
+      })
+      .as('probandCred');
   });
 
   it('it should display message "Derzeit sind keine Kontaktinformationen für diese Studie verfügbar."', () => {
     cy.visit(probandAppUrl);
-    login(probandCredentials.username, probandCredentials.password);
-    changePassword(probandCredentials.password, newPassword);
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
+
+    cy.get<UserCredentials>('@probandCred').then((cred) => {
+      login(cred.username, cred.password);
+      changePassword(cred.password, newPassword);
+    });
+
     cy.contains('[data-e2e="e2e-sidenav-content"]', 'Kontakt')
       .contains('Kontakt')
       .click();
@@ -121,8 +119,10 @@ describe('Release Test, role: "Proband", Tab: Contact', () => {
         url: `/api/v1/compliance/${study.name}/text`,
       }).as('getText');
 
-      login(probandCredentials.username, probandCredentials.password);
-      changePassword(probandCredentials.password, newPassword);
+      cy.get<UserCredentials>('@probandCred').then((cred) => {
+        login(cred.username, cred.password);
+        changePassword(cred.password, newPassword);
+      });
 
       cy.wait('@getText');
 
@@ -162,7 +162,7 @@ describe('Release Test, role: "Proband", Tab: Contact', () => {
         .click();
 
       cy.get('[data-e2e="request-new-material-button"]').click();
-      cy.get('#mat-dialog-1').contains('Ja').click();
+      cy.get('[data-e2e="dialog-button-accept"]').click();
       cy.get('#confirmbutton').click();
 
       // necessary wait, otherwise the side menu rerenders and the element is  - in some circumstances - not clickable anymore
@@ -177,14 +177,12 @@ describe('Release Test, role: "Proband", Tab: Contact', () => {
         cy.visit(adminAppUrl);
         login(cred.username, cred.password);
 
-        cy.get('[data-e2e="e2e-sidenav-content"]').click();
-
         cy.contains('[data-e2e="e2e-sidenav-content"]', 'Probenverwaltung')
           .contains('Probenverwaltung')
           .click();
 
         cy.get('[data-e2e="e2e-sample-management-study-select"]').click();
-        cy.get('.mat-option-text').contains(study.name).click();
+        cy.get('[data-e2e="option"]').contains(study.name).click();
 
         cy.get('[data-e2e="e2e-sample-management-component"]').click();
 

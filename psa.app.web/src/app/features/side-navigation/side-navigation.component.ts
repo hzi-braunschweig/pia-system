@@ -5,7 +5,7 @@
  */
 
 import { Component, Input } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Event, NavigationEnd, Router } from '@angular/router';
 import { RequestNewMaterialComponent } from '../../pages/laboratories/request-new-material/request-new-material.component';

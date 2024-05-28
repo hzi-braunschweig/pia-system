@@ -9,7 +9,7 @@ const textSegmentationPipe = require('./textSegmentationPipe');
 class ComplianceMapper {
   /**
    * Converts an internalCompliance into a ComplianceI object for the API
-   * @param complianceAgree {Compliance}
+   * @param {Compliance} complianceAgree
    * @return {Promise<ComplianceRes>}
    */
   static async mapInternalCompliance(complianceAgree) {
@@ -37,6 +37,39 @@ class ComplianceMapper {
     };
   }
 
+  /**
+   * Converts an internalCompliance into a ComplianceI object for the API
+   * @param {Compliance} complianceAgree
+   * @return {Promise<ComplianceRes>}
+   */
+  static async mapComplianceForExport(complianceAgree) {
+    const complianceQuestionnaire =
+      await this._getMergedQuestionnaireCompliances(complianceAgree);
+
+    const customFields = complianceQuestionnaire.reduce(
+      (resultingObject, customField) => {
+        resultingObject[customField.name] = customField.value;
+        return resultingObject;
+      },
+      {}
+    );
+
+    return {
+      ...customFields,
+      pseudonym: complianceAgree.username,
+      timestamp: complianceAgree.timestamp,
+      ids: complianceAgree.ids,
+      firstname: complianceAgree.firstname,
+      lastname: complianceAgree.lastname,
+      birthdate: complianceAgree.birthdate,
+      address: complianceAgree.location,
+      complianceApp: complianceAgree.complianceApp,
+      complianceSamples: complianceAgree.complianceSamples,
+      complianceBloodsamples: complianceAgree.complianceBloodsamples,
+      complianceLabresults: complianceAgree.complianceLabresults,
+    };
+  }
+
   static async _getMergedQuestionnaireCompliances(complianceAgree) {
     return (
       await Promise.all([
@@ -50,7 +83,7 @@ class ComplianceMapper {
 
   /**
    * Converts an externalCompliance into a ComplianceI object for the API
-   * @param externalCompliance {{complianceSamples:boolean, complianceBloodsamples: boolean, complianceLabresults: boolean}}
+   * @param {{complianceSamples:boolean, complianceBloodsamples: boolean, complianceLabresults: boolean}} externalCompliance
    * @return {Promise<ComplianceRes>}
    */
   static async mapExternalCompliance(externalCompliance) {
@@ -71,7 +104,7 @@ class ComplianceMapper {
 
   /**
    * Converts a compliance object into a ComplianceI object for the API
-   * @param compliance object
+   * @param {object} compliance
    * @return {Promise<ComplianceRes>}
    */
   static async mapComplianceForComplianceManager(compliance) {

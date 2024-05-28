@@ -1,12 +1,12 @@
 {
   "/api": {
-    "target": "https://localhost",
+    "target": "https://pia-app",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
   },
   "/admin/api": {
-    "target": "https://localhost",
+    "target": "https://pia-app",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"

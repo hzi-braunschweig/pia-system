@@ -8,7 +8,7 @@ import { Component, OnInit } from '@angular/core';
 import { ComplianceService } from 'src/app/psa.app.core/providers/compliance-service/compliance-service';
 import { ComplianceManager } from '../../../../_services/compliance-manager.service';
 import { AlertService } from '../../../../_services/alert.service';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import {
   ComplianceDataRequest,
   ComplianceDataResponse,

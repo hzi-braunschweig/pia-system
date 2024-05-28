@@ -9,9 +9,12 @@ import { FCMService } from './_services/fcm.service';
 import { MediaChange, MediaObserver } from '@angular/flex-layout';
 import { LocaleService } from './_services/locale.service';
 import { environment } from '../environments/environment';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateService } from '@ngx-translate/core';
 import { first } from 'rxjs/operators';
+import { register } from 'swiper/element/bundle';
+
+register();
 
 @Component({
   selector: 'app-root',
@@ -45,7 +48,7 @@ export class AppComponent implements OnInit {
         .pipe(first())
         .subscribe((message) => {
           this.snackBar.open(message, 'X', {
-            panelClass: ['error'],
+            panelClass: ['snack-bar-error'],
             duration: 10000,
           });
         });

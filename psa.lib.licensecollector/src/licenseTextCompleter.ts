@@ -6,6 +6,16 @@
 
 import fetch from 'node-fetch';
 
+type LicenseProperty = Exclude<
+  {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    [K in keyof typeof LicenseTextCompleter]: typeof LicenseTextCompleter[K] extends Function
+      ? never
+      : K;
+  }[keyof typeof LicenseTextCompleter],
+  'knownMissingLicenseTexts' | 'initialize'
+>;
+
 export class LicenseTextCompleter {
   public static APACHE_LICENSE_2_0: string;
   public static GPL_2_0: string;
@@ -21,6 +31,11 @@ export class LicenseTextCompleter {
   public static MIT_SINDRE_SORHUS: string;
   public static MIT_JASMINE: string;
   public static MIT_MOMENT_MINI: string;
+  public static MIT_UNIDICI: string;
+  public static MIT_MICROMARK: string;
+  public static MIT_ROLLUP: string;
+  public static MIT_WEBASSEMBLYJS: string;
+  public static MIT_TYPEORM: string;
   public static knownMissingLicenseTexts: Map<string, string> | undefined;
   private static initialize: Promise<void> | null = null;
 
@@ -55,79 +70,96 @@ export class LicenseTextCompleter {
   }
 
   private static async fetchLicenses(): Promise<void> {
-    let i = 0;
-    const fetchP: Promise<void>[] = [];
-    fetchP[i++] = fetch('https://www.apache.org/licenses/LICENSE-2.0.txt').then(
-      async (res) => {
-        LicenseTextCompleter.APACHE_LICENSE_2_0 = await res.text();
-      }
+    const licenses: { url: string; key: LicenseProperty }[] = [
+      {
+        url: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
+        key: 'APACHE_LICENSE_2_0',
+      },
+      { url: 'https://www.gnu.org/licenses/gpl-2.0.txt', key: 'GPL_2_0' },
+      { url: 'https://www.gnu.org/licenses/gpl-3.0.txt', key: 'GPL_3_0' },
+      { url: 'https://www.gnu.org/licenses/lgpl-3.0.txt', key: 'LGPL_3_0' },
+      { url: 'https://www.gnu.org/licenses/lgpl-3.0.txt', key: 'LGPL_3_0' },
+      {
+        url: 'https://raw.githubusercontent.com/angular/angular/master/LICENSE',
+        key: 'MIT_ANGULAR',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/angular/angularfire/master/LICENSE',
+        key: 'MIT_ANGULAR_FIRE',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/ionic-team/ionic-framework/main/LICENSE',
+        key: 'MIT_IONIC',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/danielsogl/awesome-cordova-plugins/master/LICENSE',
+        key: 'MIT_AWESOME_CORDOVA_PLUGINS',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/LICENSE',
+        key: 'MIT_DEFINITELY_TYPED',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/evanw/esbuild/master/LICENSE.md',
+        key: 'MIT_ESBUILD',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/sindresorhus/is-path-cwd/main/license',
+        key: 'MIT_SINDRE_SORHUS',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/jasmine/jasmine/main/LICENSE',
+        key: 'MIT_JASMINE',
+      },
+      {
+        url: 'https://zenorocha.mit-license.org/license.txt',
+        key: 'MIT_ZENO_ROCHA',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/moment/moment/develop/LICENSE',
+        key: 'MIT_MOMENT_MINI',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/nodejs/undici/main/LICENSE',
+        key: 'MIT_UNIDICI',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/micromark/micromark/main/license',
+        key: 'MIT_MICROMARK',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/rollup/rollup/master/LICENSE.md',
+        key: 'MIT_ROLLUP',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/xtuc/webassemblyjs/master/LICENSE',
+        key: 'MIT_WEBASSEMBLYJS',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/typeorm/typeorm/master/LICENSE',
+        key: 'MIT_TYPEORM',
+      },
+      {
+        url: 'https://raw.githubusercontent.com/typeorm/typeorm/master/LICENSE',
+        key: 'MIT_TYPEORM',
+      },
+    ];
+
+    const fetchPromises = licenses.map(async (license) =>
+      this.fetchLicenseText(license.url, license.key)
     );
-    fetchP[i++] = fetch('https://www.gnu.org/licenses/gpl-2.0.txt').then(
-      async (res) => {
-        LicenseTextCompleter.GPL_2_0 = await res.text();
-      }
-    );
-    fetchP[i++] = fetch('https://www.gnu.org/licenses/gpl-3.0.txt').then(
-      async (res) => {
-        LicenseTextCompleter.GPL_3_0 = await res.text();
-      }
-    );
-    fetchP[i++] = fetch('https://www.gnu.org/licenses/lgpl-3.0.txt').then(
-      async (res) => {
-        LicenseTextCompleter.LGPL_3_0 = await res.text();
-      }
-    );
-    fetchP[i++] = fetch(
-      'https://raw.githubusercontent.com/angular/angular/master/LICENSE'
-    ).then(async (res) => {
-      LicenseTextCompleter.MIT_ANGULAR = await res.text();
+
+    await Promise.all(fetchPromises);
+  }
+
+  private static async fetchLicenseText(
+    url: string,
+    key: LicenseProperty
+  ): Promise<void> {
+    return fetch(url).then(async (res) => {
+      // eslint-disable-next-line security/detect-object-injection
+      LicenseTextCompleter[key] = await res.text();
     });
-    fetchP[i++] = fetch(
-      'https://raw.githubusercontent.com/angular/angularfire/master/LICENSE'
-    ).then(async (res) => {
-      LicenseTextCompleter.MIT_ANGULAR_FIRE = await res.text();
-    });
-    fetchP[i++] = fetch(
-      'https://raw.githubusercontent.com/ionic-team/ionic-framework/main/LICENSE'
-    ).then(async (res) => {
-      LicenseTextCompleter.MIT_IONIC = await res.text();
-    });
-    fetchP[i++] = fetch(
-      'https://raw.githubusercontent.com/danielsogl/awesome-cordova-plugins/master/LICENSE'
-    ).then(async (res) => {
-      LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS = await res.text();
-    });
-    fetchP[i++] = fetch(
-      'https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/LICENSE'
-    ).then(async (res) => {
-      LicenseTextCompleter.MIT_DEFINITELY_TYPED = await res.text();
-    });
-    fetchP[i++] = fetch(
-      'https://raw.githubusercontent.com/evanw/esbuild/master/LICENSE.md'
-    ).then(async (res) => {
-      LicenseTextCompleter.MIT_ESBUILD = await res.text();
-    });
-    fetchP[i++] = fetch(
-      'https://raw.githubusercontent.com/sindresorhus/is-path-cwd/main/license'
-    ).then(async (res) => {
-      LicenseTextCompleter.MIT_SINDRE_SORHUS = await res.text();
-    });
-    fetchP[i++] = fetch(
-      'https://raw.githubusercontent.com/jasmine/jasmine/main/LICENSE'
-    ).then(async (res) => {
-      LicenseTextCompleter.MIT_JASMINE = await res.text();
-    });
-    fetchP[i++] = fetch('https://zenorocha.mit-license.org/license.txt').then(
-      async (res) => {
-        LicenseTextCompleter.MIT_ZENO_ROCHA = await res.text();
-      }
-    );
-    fetchP[i++] = fetch(
-      'https://github.com/moment/moment/blob/develop/LICENSE'
-    ).then(async (res) => {
-      LicenseTextCompleter.MIT_MOMENT_MINI = await res.text();
-    });
-    await Promise.all(fetchP);
   }
 
   private static createLicenseMap(): void {
@@ -144,6 +176,7 @@ export class LicenseTextCompleter {
       ['@angular/platform-browser', LicenseTextCompleter.MIT_ANGULAR],
       ['@angular/router', LicenseTextCompleter.MIT_ANGULAR],
       ['@angular/compiler-cli', LicenseTextCompleter.MIT_ANGULAR],
+      ['@angular/platform-server', LicenseTextCompleter.MIT_ANGULAR],
       [
         '@awesome-cordova-plugins/in-app-browser',
         LicenseTextCompleter.APACHE_LICENSE_2_0,
@@ -897,7 +930,7 @@ export class LicenseTextCompleter {
       ['esbuild-windows-64', LicenseTextCompleter.MIT_ESBUILD],
       ['esbuild-windows-arm64', LicenseTextCompleter.MIT_ESBUILD],
       ['esbuild-android-64', LicenseTextCompleter.MIT_ESBUILD],
-      ['@esbuild/linux-loong64', LicenseTextCompleter.MIT_ESBUILD],
+      ['@esbuild/linux-x64', LicenseTextCompleter.MIT_ESBUILD],
       ['is-path-cwd', LicenseTextCompleter.MIT_SINDRE_SORHUS],
       ['jasmine-core', LicenseTextCompleter.MIT_JASMINE],
       ['jasmine', LicenseTextCompleter.MIT_JASMINE],
@@ -905,6 +938,10 @@ export class LicenseTextCompleter {
       [
         'typed-assert',
         'The MIT License (MIT)', // https://github.com/elierotenberg/typed-assert/issues/9
+      ],
+      [
+        'endent',
+        'The MIT License (MIT)', // see https://github.com/indentjs/endent?tab=readme-ov-file#license
       ],
       ['@angular/flex-layout', LicenseTextCompleter.MIT_ANGULAR],
       ['rxfire', LicenseTextCompleter.APACHE_LICENSE_2_0],
@@ -954,6 +991,97 @@ export class LicenseTextCompleter {
           'LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n' +
           'OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\n' +
           'THE SOFTWARE.',
+      ],
+      [
+        // Source: https://github.com/chaijs/chai-http?tab=readme-ov-file#license
+        'chai-http',
+        '(The MIT License)\n' +
+          '\n' +
+          'Copyright (c) Jake Luer jake@alogicalparadox.com\n' +
+          '\n' +
+          'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n' +
+          '\n' +
+          'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n' +
+          '\n' +
+          'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.',
+      ],
+      [
+        // Source: https://github.com/chaijs/chai-http?tab=readme-ov-file#license
+        'chai-http',
+        '(The MIT License)\n' +
+          '\n' +
+          'Copyright (c) Jake Luer jake@alogicalparadox.com\n' +
+          '\n' +
+          'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n' +
+          '\n' +
+          'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n' +
+          '\n' +
+          'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.',
+      ],
+      [
+        // Source: https://github.com/jaredwray/keyv?tab=readme-ov-file#license
+        'keyv',
+        'MIT © Jared Wray',
+      ],
+      ['undici', this.MIT_UNIDICI],
+      ['undici-types', this.MIT_UNIDICI],
+      ['micromark-core-commonmark', this.MIT_MICROMARK],
+      ['micromark-factory-destination', this.MIT_MICROMARK],
+      ['micromark-factory-label', this.MIT_MICROMARK],
+      ['micromark-factory-space', this.MIT_MICROMARK],
+      ['micromark-factory-title', this.MIT_MICROMARK],
+      ['micromark-factory-whitespace', this.MIT_MICROMARK],
+      ['micromark-util-character', this.MIT_MICROMARK],
+      ['micromark-util-chunked', this.MIT_MICROMARK],
+      ['micromark-util-classify-character', this.MIT_MICROMARK],
+      ['micromark-util-combine-extensions', this.MIT_MICROMARK],
+      ['micromark-util-decode-numeric-character-reference', this.MIT_MICROMARK],
+      ['micromark-util-decode-string', this.MIT_MICROMARK],
+      ['micromark-util-encode', this.MIT_MICROMARK],
+      ['micromark-util-html-tag-name', this.MIT_MICROMARK],
+      ['micromark-util-normalize-identifier', this.MIT_MICROMARK],
+      ['micromark-util-resolve-all', this.MIT_MICROMARK],
+      ['micromark-util-sanitize-uri', this.MIT_MICROMARK],
+      ['micromark-util-subtokenize', this.MIT_MICROMARK],
+      ['micromark-util-symbol', this.MIT_MICROMARK],
+      ['micromark-util-types', this.MIT_MICROMARK],
+      ['micromark', this.MIT_MICROMARK],
+      ['@rollup/rollup-linux-x64-gnu', this.MIT_ROLLUP],
+      ['@rollup/rollup-linux-x64-musl', this.MIT_ROLLUP],
+      ['@webassemblyjs/helper-api-error', this.MIT_WEBASSEMBLYJS],
+      ['@webassemblyjs/helper-numbers', this.MIT_WEBASSEMBLYJS],
+      ['@webassemblyjs/helper-wasm-bytecode', this.MIT_WEBASSEMBLYJS],
+      ['@webassemblyjs/ieee754', this.MIT_WEBASSEMBLYJS],
+      ['@webassemblyjs/utf8', this.MIT_WEBASSEMBLYJS],
+      ['postcss-media-query-parser', 'The MIT License (MIT)'], // see https://github.com/dryoma/postcss-media-query-parser#license
+      ['ts-deepmerge', 'ISC'], // see https://raw.githubusercontent.com/voodoocreation/ts-deepmerge/master/package.json
+      ['typeorm', this.MIT_TYPEORM],
+      [
+        'stream-buffers',
+        `This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or
+distribute this software, either in source code form or as a compiled
+binary, for any purpose, commercial or non-commercial, and by any
+means.
+
+In jurisdictions that recognize copyright laws, the author or authors
+of this software dedicate any and all copyright interest in the
+software to the public domain. We make this dedication for the benefit
+of the public at large and to the detriment of our heirs and
+successors. We intend this dedication to be an overt act of
+relinquishment in perpetuity of all present and future rights to this
+software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>`,
       ],
     ]);
   }

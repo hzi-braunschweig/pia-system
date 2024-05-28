@@ -9,7 +9,6 @@ int:
     # when https://gitlab.com/gitlab-org/gitlab-runner/-/issues/27215 is done we can get rid of the sleep
     - sleep 10
     - mkdir -p $FOLDER/tests/
-    - cp -r secrets/* $FOLDER
     - ln -s $NODE_PATH $FOLDER/node_modules
     - cd $FOLDER
     - npm run test.int
@@ -49,6 +48,12 @@ int:
     DB_FEEDBACKSTATISTIC_DB: pia_database
     DB_FEEDBACKSTATISTIC_HOST: databaseservice
     DB_FEEDBACKSTATISTIC_PORT: '5433'
+
+    DB_EVENTHISTORY_USER: eventhistoryserver
+    DB_EVENTHISTORY_PASSWORD: eventhistory
+    DB_EVENTHISTORY_DB: pia_database
+    DB_EVENTHISTORY_HOST: databaseservice
+    DB_EVENTHISTORY_PORT: '5433'
 
     DB_PERSONALDATA_USER: personaldataservice
     DB_PERSONALDATA_PASSWORD: personaldata
@@ -102,25 +107,24 @@ int:
     MESSAGEQUEUE_APP_PASSWORD: app
     MESSAGEQUEUE_PORT: '5672'
 
-    AUTHSERVER_PROTOCOL: http
     AUTHSERVER_HOST: authserver
     AUTHSERVER_PORT: 5000
   services:
     # don't use a variable for alias - it doesn't get resolved!
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.sftpserver:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.sftpserver:$IMAGE_ID
       alias: sftpserver
       command: ['ftpuser:ftppassword:::upload']
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database:$IMAGE_ID
       alias: databaseservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database.ipia:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database.ipia:$IMAGE_ID
       alias: ipiaservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database.ewpia:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.database.ewpia:$IMAGE_ID
       alias: ewpiaservice
 
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.messagequeue:$IMAGE_ID-with-faked-secrets
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.messagequeue:$IMAGE_ID
       alias: messagequeue
 
   artifacts:

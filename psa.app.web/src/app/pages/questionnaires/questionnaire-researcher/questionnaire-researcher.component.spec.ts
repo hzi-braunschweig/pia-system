@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { S } from '@angular/cdk/keycodes';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 import { AppModule } from '../../../app.module';
 import {
@@ -18,9 +19,10 @@ import { fakeAsync, tick } from '@angular/core/testing';
 import { QuestionnaireResearcherComponent } from './questionnaire-researcher.component';
 import { TranslateService } from '@ngx-translate/core';
 import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+  MatDialog,
+  MatDialogConfig,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MediaObserver } from '@angular/flex-layout';
 import { AlertService } from '../../../_services/alert.service';
 import {
@@ -28,7 +30,10 @@ import {
   createStudy,
 } from '../../../psa.app.core/models/instance.helper.spec';
 import { NEVER, of } from 'rxjs';
-import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
+import {
+  DialogPopUpComponent,
+  DialogPopUpData,
+} from '../../../_helpers/dialog-pop-up';
 import { DialogOkCancelComponent } from '../../../_helpers/dialog-ok-cancel';
 import {
   Condition,
@@ -201,14 +206,20 @@ describe('QuestionnaireResearcherComponent', () => {
       tick();
 
       // Assert
-      expect(dialog.open).toHaveBeenCalledOnceWith(DialogPopUpComponent, {
+      const params: MatDialogConfig<DialogPopUpData> = {
         width: '500px',
         data: {
           content: 'DIALOG.FAIL',
           values: { message: 'some error' },
           isSuccess: false,
+          showLinebreaks: true,
         },
-      });
+      };
+
+      expect(dialog.open).toHaveBeenCalledOnceWith(
+        DialogPopUpComponent,
+        params
+      );
     }));
   });
 
@@ -390,6 +401,7 @@ describe('QuestionnaireResearcherComponent', () => {
                 id: 1,
                 questionnaire_id: 1,
                 text: '',
+                help_text: '',
                 answer_options: [],
                 jump_step: 1,
                 condition_error: undefined,
@@ -424,6 +436,7 @@ describe('QuestionnaireResearcherComponent', () => {
                 id: 1,
                 questionnaire_id: 1,
                 text: '',
+                help_text: '',
                 jump_step: 1,
                 condition_error: undefined,
                 is_mandatory: false,
@@ -478,6 +491,7 @@ describe('QuestionnaireResearcherComponent', () => {
                 id: 1,
                 questionnaire_id: 1,
                 text: '',
+                help_text: '',
                 jump_step: 1,
                 condition_error: undefined,
                 is_mandatory: false,
@@ -509,6 +523,7 @@ describe('QuestionnaireResearcherComponent', () => {
                 id: 2,
                 questionnaire_id: 1,
                 text: '',
+                help_text: '',
                 jump_step: 1,
                 condition_error: undefined,
                 is_mandatory: false,

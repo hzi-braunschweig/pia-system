@@ -15,14 +15,16 @@ import {
   CannotUpdateAuthserverUsername,
   IdsAlreadyExistsError,
   PlannedProbandNotFoundError,
-  ProbandNotFoundError,
+  ParticipantNotFoundError,
   ProbandSaveError,
   PseudonymAlreadyExistsError,
   StudyNotFoundError,
+  ParticipantDeleteError,
 } from '../errors';
 import {
   CreateProbandRequest,
   CreateProbandResponse,
+  ProbandDataPatch,
   ProbandDto,
 } from '../models/proband';
 import { SecureRandomPasswordService } from './secureRandomPasswordService';
@@ -39,18 +41,45 @@ import { generateRandomPseudonym } from '../helpers/generateRandomPseudonym';
 import { PlannedProband } from '../entities/plannedProband';
 import { ProbandOrigin } from '@pia-system/lib-http-clients-internal';
 
+/**
+ * The type of deletion which is evaluated when deleting a proband.
+ * This is not equal to union type ProbandSelfDeletionType.
+ */
 export type ProbandDeletionType =
   | 'default' // delete all proband data but keep the pseudonym
   | 'keep_usage_data' // delete all proband data but keep usage data like logs and the pseudonym
   | 'full'; // fully delete all proband data
 
 /**
- * Probands may choose to delete their account and all health data (full) or
- * to delete their account and contact data but leave their health data.
+ * The type of deletion a proband can choose when deleting their own account.
+ * This is not equal to union type ProbandDeletionType.
+ *
+ * - 'full' deletes the account and all health data but keeps the pseudonym - equal to 'default' in ProbandDeletionType
+ * - 'contact' deletes the account and contact data but keeps all health data
  */
-export type ProbandAccountDeletionType = 'full' | 'contact';
+export type ProbandSelfDeletionType = 'full' | 'contact';
 
 export class ProbandService {
+  public static async getAllProbandsOfStudy(
+    studyName: string
+  ): Promise<ProbandDto[]> {
+    const probandAccountsList =
+      await ProbandAccountService.getProbandAccountsByStudyName(studyName);
+    const probandAccountsSet = new Set(
+      probandAccountsList.map((account) => account.username)
+    );
+
+    return (
+      await getRepository(Proband).find({ study: { name: studyName } })
+    ).map((proband) => ({
+      ...proband,
+      study: studyName,
+      accountStatus: probandAccountsSet.has(proband.pseudonym)
+        ? AccountStatus.ACCOUNT
+        : AccountStatus.NO_ACCOUNT,
+    }));
+  }
+
   public static async getProbandByPseudonymOrFail(
     pseudonym: string,
     studyAccess?: string[]
@@ -136,7 +165,7 @@ export class ProbandService {
         throw new ProbandSaveError('could not create the proband', e);
       });
 
-      await messageQueueService.sendProbandCreated(pseudonym);
+      await messageQueueService.sendProbandCreated(pseudonym, studyName);
     });
   }
 
@@ -151,7 +180,7 @@ export class ProbandService {
   public static async createProbandForRegistration(
     emailAsUsername: string
   ): Promise<string> {
-    const pseudonym: string = await getConnection().transaction(
+    const participant: Proband = await getConnection().transaction(
       async (entityManager) => {
         const probandRepo = entityManager.getRepository(Proband);
         const account = await ProbandAccountService.getProbandAccount(
@@ -184,15 +213,18 @@ export class ProbandService {
           throw new ProbandSaveError('could not save the proband', e);
         }
 
-        return newPseudonym;
+        return newProband;
       }
     );
 
     await this.logoutUser(emailAsUsername);
-    await this.updateAuthServerUsername(emailAsUsername, pseudonym);
-    await messageQueueService.sendProbandCreated(pseudonym);
+    await this.updateAuthServerUsername(emailAsUsername, participant.pseudonym);
+    await messageQueueService.sendProbandCreated(
+      participant.pseudonym,
+      participant.study?.name ?? ''
+    );
 
-    return pseudonym;
+    return participant.pseudonym;
   }
 
   /**
@@ -207,7 +239,7 @@ export class ProbandService {
    * @throws PlannedProbandNotFoundError if usePlannedProband is true but it cannot be found
    * @throws IdsAlreadyExistsError if usePlannedProband is false and ids exists for another proband
    * @throws ProbandSaveError
-   * @throws ProbandNotFoundError if usePlannedProband is true but no user with the ids exists
+   * @throws ParticipantNotFoundError if usePlannedProband is true but no user with the ids exists
    * @throws AccountCreateError
    */
   public static async createProbandWithAccount(
@@ -233,7 +265,7 @@ export class ProbandService {
         );
         if (existingPseudonymProband) {
           throw new PseudonymAlreadyExistsError(
-            'The pseudonym is already assigned'
+            'The pseudonym is already in use'
           );
         }
       } else {
@@ -276,7 +308,7 @@ export class ProbandService {
       if (usePlannedProband && newProbandData.ids) {
         // proband already exists so update proband with IDS
         if (!existingIdsProband) {
-          throw new ProbandNotFoundError(
+          throw new ParticipantNotFoundError(
             'The proband could not be found by the given ids'
           );
         }
@@ -304,9 +336,11 @@ export class ProbandService {
 
       // Apply compliance and other data
       newProband.complianceContact = true;
-      newProband.complianceBloodsamples = newProbandData.complianceBloodsamples;
-      newProband.complianceLabresults = newProbandData.complianceLabresults;
-      newProband.complianceSamples = newProbandData.complianceSamples;
+      newProband.complianceBloodsamples =
+        newProbandData.complianceBloodsamples ?? false;
+      newProband.complianceLabresults =
+        newProbandData.complianceLabresults ?? false;
+      newProband.complianceSamples = newProbandData.complianceSamples ?? false;
       newProband.studyCenter = newProbandData.studyCenter ?? null;
       newProband.examinationWave = newProbandData.examinationWave ?? null;
       newProband.ids = newProbandData.ids ?? null;
@@ -325,23 +359,53 @@ export class ProbandService {
       );
 
       if (probandCreated) {
-        await messageQueueService.sendProbandCreated(newProband.pseudonym);
+        await messageQueueService.sendProbandCreated(
+          newProband.pseudonym,
+          newProband.study.name
+        );
       }
       return { pseudonym: newProband.pseudonym, password };
     });
+  }
+
+  public static async updateProband(
+    pseudonym: string,
+    studyAccess: string[],
+    patch: ProbandDataPatch
+  ): Promise<ProbandDto> {
+    await getRepository(Proband).update(
+      {
+        pseudonym,
+        study: { name: In(studyAccess) },
+      },
+      patch
+    );
+    return await this.getProbandByPseudonymOrFail(pseudonym, studyAccess);
   }
 
   public static async revokeComplianceContact(
     pseudonym: string
   ): Promise<void> {
     await getManager().transaction(async (entityManager) => {
+      const studyName = await this.getStudyNameByProband(
+        pseudonym,
+        entityManager
+      );
+
+      if (!studyName) {
+        throw new ParticipantDeleteError(
+          `The participant ${pseudonym} was not found`
+        );
+      }
+
       await entityManager.getRepository(Proband).update(pseudonym, {
         complianceContact: false,
         status: ProbandStatus.DEACTIVATED,
         deactivatedAt: new Date(),
       });
+
       await ProbandAccountService.deleteProbandAccount(pseudonym);
-      await messageQueueService.sendProbandDeactivated(pseudonym);
+      await messageQueueService.sendProbandDeactivated(pseudonym, studyName);
     });
   }
 
@@ -407,16 +471,45 @@ export class ProbandService {
     );
   }
 
+  /**
+   * Returns the name of the study a proband or null if the proband does not exist.
+   */
+  private static async getStudyNameByProband(
+    pseudonym: string,
+    entityManager = getManager()
+  ): Promise<string | null> {
+    const proband = await entityManager
+      .getRepository(Proband)
+      .createQueryBuilder()
+      .where('pseudonym = :pseudonym', { pseudonym })
+      .select('study')
+      .getRawOne<{ study: string }>();
+
+    return proband?.study ?? null;
+  }
+
   private static async deleteWithTransaction(
     pseudonym: string,
     deletionType: ProbandDeletionType,
     options: RepositoryOptions
   ): Promise<void> {
+    const studyName = await this.getStudyNameByProband(pseudonym);
+
+    if (!studyName) {
+      throw new ParticipantDeleteError(
+        `The participant ${pseudonym} was not found`
+      );
+    }
+
     await postgresqlHelper.deleteProbandData(pseudonym, deletionType, options);
 
     await ProbandAccountService.deleteProbandAccount(pseudonym, false);
 
-    await messageQueueService.sendProbandDeleted(pseudonym, deletionType);
+    await messageQueueService.sendProbandDeleted(
+      pseudonym,
+      deletionType,
+      studyName
+    );
   }
 
   private static async generatePseudonym(study: Study): Promise<string> {

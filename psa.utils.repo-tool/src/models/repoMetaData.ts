@@ -35,4 +35,8 @@ export interface RepoMetaData {
    * npm-install stage
    */
   npmInstall: string[];
+  /**
+   * A List of all second level folders that contain a package.json with a 'build.openapi' script
+   */
+  openApi: string[];
 }

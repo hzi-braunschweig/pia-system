@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -55,6 +55,7 @@ const postgresqlHelper = (function () {
         'questionnaire_id',
         'questionnaire_version',
         'text',
+        'help_text',
         'position',
         'is_mandatory',
         'variable_name',
@@ -66,12 +67,13 @@ const postgresqlHelper = (function () {
       // Insert questionnaire
       return t
         .one(
-          'INSERT INTO questionnaires(version, study_id, name, type, no_questions, cycle_amount, cycle_unit, publish, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, notification_weekday, notification_interval, notification_interval_unit, activate_at_date, compliance_needed, expires_after_days, finalises_after_days, notify_when_not_filled, notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour, keep_answers) VALUES ($1:csv) RETURNING *',
+          'INSERT INTO questionnaires(version, study_id, name, custom_name, type, no_questions, cycle_amount, cycle_unit, publish, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, notification_weekday, notification_interval, notification_interval_unit, activate_at_date, compliance_needed, expires_after_days, finalises_after_days, notify_when_not_filled, notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour, keep_answers) VALUES ($1:csv) RETURNING *',
           [
             [
               1, // New, first version
               questionnaire.study_id,
               questionnaire.name,
+              questionnaire.custom_name,
               questionnaire.type,
               questionnaire.questions.length,
               questionnaire.cycle_amount,
@@ -121,6 +123,7 @@ const postgresqlHelper = (function () {
               questionnaire_id: questionnaireResult.id,
               questionnaire_version: questionnaireResult.version,
               text: question.text,
+              help_text: question.help_text,
               position: question.position,
               is_mandatory: question.is_mandatory,
               variable_name: question.variable_name,
@@ -357,6 +360,7 @@ const postgresqlHelper = (function () {
         'questionnaire_id',
         'questionnaire_version',
         'text',
+        'help_text',
         'position',
         'is_mandatory',
         'variable_name',
@@ -371,13 +375,14 @@ const postgresqlHelper = (function () {
       // Insert questionnaire
       return t
         .one(
-          'INSERT INTO questionnaires(id, version, study_id, name, type, no_questions, cycle_amount, cycle_unit, publish, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, notification_weekday, notification_interval, notification_interval_unit, activate_at_date, compliance_needed, expires_after_days, finalises_after_days, notify_when_not_filled, notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour, keep_answers) VALUES ($1:csv) RETURNING *',
+          'INSERT INTO questionnaires(id, version, study_id, name, custom_name, type, no_questions, cycle_amount, cycle_unit, publish, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, notification_weekday, notification_interval, notification_interval_unit, activate_at_date, compliance_needed, expires_after_days, finalises_after_days, notify_when_not_filled, notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour, keep_answers) VALUES ($1:csv) RETURNING *',
           [
             [
               id,
               version,
               questionnaire.study_id,
               questionnaire.name,
+              questionnaire.custom_name,
               questionnaire.type,
               questionnaire.questions.length,
               questionnaire.cycle_amount,
@@ -427,6 +432,7 @@ const postgresqlHelper = (function () {
               questionnaire_id: questionnaireResult.id,
               questionnaire_version: questionnaireResult.version,
               text: question.text,
+              help_text: question.help_text,
               position: question.position,
               is_mandatory: question.is_mandatory,
               variable_name: question.variable_name,
@@ -695,7 +701,7 @@ const postgresqlHelper = (function () {
           // Update questionnaire
           return t
             .one(
-              'UPDATE questionnaires SET study_id=$1, name=$2, type=$3, no_questions=$4, cycle_amount=$5, cycle_unit=$6, publish=$25, activate_after_days=$7, deactivate_after_days=$8, notification_tries=$9, notification_title=$10, notification_body_new=$11, notification_body_in_progress=$12, notification_weekday=$13, notification_interval=$14, notification_interval_unit=$15, activate_at_date=$16, compliance_needed=$17, expires_after_days=$18, finalises_after_days=$19, notify_when_not_filled=$22, notify_when_not_filled_time=$23, notify_when_not_filled_day=$24, cycle_per_day=$26, cycle_first_hour=$27, keep_answers=$28 WHERE id=$20 AND version=$21 RETURNING *',
+              'UPDATE questionnaires SET study_id=$1, name=$2, type=$3, no_questions=$4, cycle_amount=$5, cycle_unit=$6, publish=$25, activate_after_days=$7, deactivate_after_days=$8, notification_tries=$9, notification_title=$10, notification_body_new=$11, notification_body_in_progress=$12, notification_weekday=$13, notification_interval=$14, notification_interval_unit=$15, activate_at_date=$16, compliance_needed=$17, expires_after_days=$18, finalises_after_days=$19, notify_when_not_filled=$22, notify_when_not_filled_time=$23, notify_when_not_filled_day=$24, cycle_per_day=$26, cycle_first_hour=$27, keep_answers=$28, custom_name=$29  WHERE id=$20 AND version=$21 RETURNING *',
               [
                 questionnaire.study_id,
                 questionnaire.name,
@@ -741,6 +747,7 @@ const postgresqlHelper = (function () {
                   ? questionnaire.cycle_first_hour
                   : null,
                 questionnaire.keep_answers,
+                questionnaire.custom_name,
               ]
             )
             .then(async (questionnaireResult) => {
@@ -920,9 +927,10 @@ const postgresqlHelper = (function () {
                 }
                 if (foundQuestion !== null) {
                   const newQuestionResult = await t.one(
-                    'UPDATE questions SET text=$1, position=$2, is_mandatory=$3, variable_name=$4 WHERE id=$5 RETURNING *',
+                    'UPDATE questions SET text=$1, help_text=$2, position=$3, is_mandatory=$4, variable_name=$5 WHERE id=$6 RETURNING *',
                     [
                       foundQuestion.text,
+                      foundQuestion.help_text,
                       foundQuestion.position,
                       foundQuestion.is_mandatory,
                       foundQuestion.variable_name,
@@ -951,10 +959,11 @@ const postgresqlHelper = (function () {
               }
               for (let i = 0; i < newQuestions.length; i++) {
                 const newQuestionResult = await t.one(
-                  'INSERT INTO questions(questionnaire_id, text, position, is_mandatory, variable_name, questionnaire_version) VALUES($1, $2, $3, $4, $5, $6) RETURNING *',
+                  'INSERT INTO questions(questionnaire_id, text, help_text, position, is_mandatory, variable_name, questionnaire_version) VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING *',
                   [
                     id,
                     newQuestions[i].text,
+                    newQuestions[i].help_text,
                     newQuestions[i].position,
                     newQuestions[i].is_mandatory,
                     newQuestions[i].variable_name,

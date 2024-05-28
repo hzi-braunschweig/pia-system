@@ -10,11 +10,11 @@ import { ComplianceRadioComponent } from './compliance-radio.component';
 import { ComplianceService } from '../../../../psa.app.core/providers/compliance-service/compliance-service';
 import { AlertService } from '../../../../_services/alert.service';
 import { MockModule, MockProvider } from 'ng-mocks';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
+import { MatCardModule } from '@angular/material/card';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatDividerModule } from '@angular/material/divider';
-import { MatLegacyListModule as MatListModule } from '@angular/material/legacy-list';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
+import { MatListModule } from '@angular/material/list';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { ReactiveFormsModule } from '@angular/forms';
 import SpyObj = jasmine.SpyObj;
 

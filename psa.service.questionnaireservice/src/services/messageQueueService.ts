@@ -9,20 +9,18 @@ import {
   MessageQueueClient,
   MessageQueueTopic,
   Producer,
+  QuestionnaireInstanceReleasedMessage,
+  ProbandDeactivatedMessage,
 } from '@pia/lib-messagequeue';
-import {
-  MessagePayloadProbandDeactivated,
-  MessagePayloadQuestionnaireInstanceReleased,
-} from '../models/messagePayloads';
-import { QuestionnaireService } from './questionnaireService';
+import { QuestionnaireInstanceService } from './questionnaireInstanceService';
 
 export class MessageQueueService extends MessageQueueClient {
-  private questionnaireinstanceReleasedProducer?: Producer<MessagePayloadQuestionnaireInstanceReleased>;
+  private questionnaireinstanceReleasedProducer?: Producer<QuestionnaireInstanceReleasedMessage>;
 
   public static async onUserDeactivated(
-    message: MessagePayloadProbandDeactivated
+    message: ProbandDeactivatedMessage
   ): Promise<void> {
-    await QuestionnaireService.deleteInactiveForProbandQuestionnaireInstances(
+    await QuestionnaireInstanceService.deleteInactiveForProbandQuestionnaireInstances(
       message.pseudonym
     );
   }
@@ -32,20 +30,21 @@ export class MessageQueueService extends MessageQueueClient {
 
     await this.createConsumer(
       MessageQueueTopic.PROBAND_DEACTIVATED,
-      async (message: MessagePayloadProbandDeactivated) => {
+      async (message: ProbandDeactivatedMessage) => {
         await MessageQueueService.onUserDeactivated(message);
       }
     );
 
     this.questionnaireinstanceReleasedProducer =
-      await this.createProducer<MessagePayloadQuestionnaireInstanceReleased>(
+      await this.createProducer<QuestionnaireInstanceReleasedMessage>(
         MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED
       );
   }
 
   public async sendQuestionnaireInstanceReleased(
     id: number,
-    releaseVersion: number
+    releaseVersion: number,
+    studyName: string
   ): Promise<void> {
     if (!this.questionnaireinstanceReleasedProducer) {
       throw new Error('not connected to messagequeue');
@@ -53,6 +52,7 @@ export class MessageQueueService extends MessageQueueClient {
     await this.questionnaireinstanceReleasedProducer.publish({
       id,
       releaseVersion,
+      studyName,
     });
   }
 }

@@ -1,5 +1,5 @@
 FROM node:20.3.0-alpine@sha256:2d5e8a8a51bc341fd5f2eed6d91455c3a3d147e91a14298fc564b5dc519c1666 AS base
-RUN apk --update --no-cache add curl tzdata
+RUN apk --update --no-cache add curl tzdata bash
 
 USER node
 WORKDIR /usr/src/node-app/
@@ -101,13 +101,6 @@ ENV VERSION_INFO_GIT_HASH=$VERSION_INFO_GIT_HASH
 ARG VERSION_INFO_GIT_REF=-
 ENV VERSION_INFO_GIT_REF=$VERSION_INFO_GIT_REF
 
-# comma separated list (1.0.0.1,8.8.8.8)
-# use * to allow all ips
-ARG METRICS_IP_WHITELIST=-
-ENV METRICS_IP_WHITELIST=$METRICS_IP_WHITELIST
-
-ENV NODE_EXTRA_CA_CERTS=./ssl/ca.cert
-ENV PROTOCOL=https
 ENV PORT=4000
 ENV INTERNAL_PORT=5000
 
@@ -117,5 +110,6 @@ ENV NODE_OPTIONS=--unhandled-rejections=warn
 
 EXPOSE 4000
 
+COPY --chmod=0755 psa.utils.scripts/logs-masking/custom-entrypoint.sh /custom-entrypoint.sh
+ENTRYPOINT ["/custom-entrypoint.sh", "docker-entrypoint.sh"]
 CMD npm start
-HEALTHCHECK CMD curl --max-time 10 -k $PROTOCOL://localhost:$PORT/metrics | grep "^up 1"

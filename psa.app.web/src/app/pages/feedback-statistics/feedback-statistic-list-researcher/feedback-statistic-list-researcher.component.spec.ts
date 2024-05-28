@@ -17,20 +17,17 @@ import { FeedbackStatisticsService } from '../feedback-statistics.service';
 import { MockComponent, MockPipe, MockProvider } from 'ng-mocks';
 import { EMPTY, of, Subject } from 'rxjs';
 import { StudySelectComponent } from '../../../features/study-select/study-select.component';
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
+import { MatButtonModule } from '@angular/material/button';
 import { LoadingSpinnerComponent } from '../../../features/loading-spinner/loading-spinner.component';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { FeedbackStatisticComponent } from '../feedback-statistic/feedback-statistic.component';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
+import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { createFakeFeedbackStatisticDto } from '../create-fake-feedback-statistic-dto.spec';
 import { ReactiveFormsModule } from '@angular/forms';
 import SpyObj = jasmine.SpyObj;
 import { DialogDeleteComponent } from '../../../_helpers/dialog-delete';
-import {
-  MatLegacyDialog,
-  MatLegacyDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 describe('FeedbackStatisticListComponent', () => {
   let component: FeedbackStatisticListResearcherComponent;
@@ -40,7 +37,7 @@ describe('FeedbackStatisticListComponent', () => {
   let paramsSubject = new Subject<Params>();
   let feedbackStatisticsService: SpyObj<FeedbackStatisticsService>;
   let router: SpyObj<Router>;
-  let dialog: SpyObj<MatLegacyDialog>;
+  let dialog: SpyObj<MatDialog>;
   let translate: SpyObj<TranslateService>;
 
   beforeEach(async () => {
@@ -63,10 +60,10 @@ describe('FeedbackStatisticListComponent', () => {
 
     router = jasmine.createSpyObj('Router', ['navigate']);
 
-    dialog = jasmine.createSpyObj('MatLegacyDialog', ['open']);
+    dialog = jasmine.createSpyObj('MatDialog', ['open']);
     dialog.open.and.returnValue({
       afterClosed: () => of(true),
-    } as MatLegacyDialogRef<unknown>);
+    } as MatDialogRef<unknown>);
 
     translate = jasmine.createSpyObj('TranslateService', ['instant']);
     translate.instant.and.callFake((key: string) => key);
@@ -82,7 +79,7 @@ describe('FeedbackStatisticListComponent', () => {
         MockProvider(ActivatedRoute, activatedRoute),
         MockProvider(FeedbackStatisticsService, feedbackStatisticsService),
         MockProvider(Router, router),
-        MockProvider(MatLegacyDialog, dialog),
+        MockProvider(MatDialog, dialog),
         MockProvider(TranslateService, translate),
       ],
       imports: [

@@ -16,7 +16,7 @@ import { Subscription } from 'rxjs';
 import { CurrentUser } from '../../_services/current-user.service';
 import { filter, startWith } from 'rxjs/operators';
 import { MatSelectSearchModule } from '../mat-select-search/mat-select-search.module';
-import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
+import { MatSelectModule } from '@angular/material/select';
 import { TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 
@@ -38,6 +38,7 @@ const STUDY_SELECT_VALUE_ACCESSOR = {
     ReactiveFormsModule,
     TranslateModule,
   ],
+  styles: [':host > * { width: 100%; }'],
 })
 export class StudySelectComponent
   implements ControlValueAccessor, OnInit, OnDestroy

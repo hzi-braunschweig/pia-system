@@ -14,9 +14,9 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2017",
+    "target": "ES2022",
     "module": "es2020",
-    "lib": ["es2020", "dom", "dom.iterable"],
+    "lib": ["ES2022", "dom", "dom.iterable"],
     "paths": {
       "swiper_angular": ["node_modules/swiper/angular"]
     },

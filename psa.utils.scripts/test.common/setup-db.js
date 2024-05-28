@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -10,10 +10,8 @@ const sleep = util.promisify(setTimeout);
 
 const setupDb = {
   setup: async function ({
-    postgresImageBase,
     postgresImage,
     postgresPath,
-    postgresSecretsPath,
     postgresContainer,
     dbUser,
     dbPassword,
@@ -24,19 +22,12 @@ const setupDb = {
   }) {
     console.log('building ' + postgresContainer);
     await docker.build(
-      postgresImageBase,
-      postgresPath,
-      {},
-      postgresPath + '/Dockerfile'
-    );
-    await docker.build(
       postgresImage,
-      '..',
+      '../',
       {
-        BASE: postgresImageBase,
-        SRC_PATH: './secrets',
+        DIR: postgresPath,
       },
-      postgresSecretsPath + '/Dockerfile'
+      postgresPath + '/Dockerfile'
     );
     console.log(`setting up the postgres db to listen on port ${dbPort}`);
     await docker.rmf(postgresContainer);

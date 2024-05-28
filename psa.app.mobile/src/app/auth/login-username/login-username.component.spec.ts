@@ -40,7 +40,6 @@ describe('LoginUsernameComponent', () => {
   let market: SpyObj<Market>;
   let loadingCtrl: SpyObj<LoadingController>;
   let auth: SpyObj<AuthService>;
-  let toastPresenter: SpyObj<ToastPresenterService>;
   let alertCtrl: SpyObj<AlertController>;
   let alertElementSpy: SpyObj<HTMLIonAlertElement>;
   let router: SpyObj<Router>;
@@ -73,9 +72,7 @@ describe('LoginUsernameComponent', () => {
       router = TestBed.inject(Router) as SpyObj<Router>;
       menuCtrl = TestBed.inject(MenuController) as SpyObj<MenuController>;
       localeService = TestBed.inject(LocaleService) as SpyObj<LocaleService>;
-      toastPresenter = TestBed.inject(
-        ToastPresenterService
-      ) as SpyObj<ToastPresenterService>;
+      TestBed.inject(ToastPresenterService) as SpyObj<ToastPresenterService>;
       endpoint = TestBed.inject(EndpointService) as SpyObj<EndpointService>;
       endpoint.isCustomEndpoint.and.returnValue(false);
       endpoint.setEndpointForUser.and.returnValue(true);
@@ -268,7 +265,7 @@ describe('LoginUsernameComponent', () => {
     const usernameInput: HTMLIonInputElement =
       fixture.nativeElement.querySelector('[data-unit="input-username"]');
     usernameInput.value = username;
-    usernameInput.dispatchEvent(new Event('ionChange'));
+    usernameInput.dispatchEvent(new Event('ionInput'));
     fixture.detectChanges();
     expect(fixture.componentInstance.form.value.username).toEqual(username);
   }
@@ -324,7 +321,7 @@ describe('LoginUsernameComponent', () => {
       '[data-unit="input-custom-url"]'
     );
     urlInput.value = url;
-    urlInput.dispatchEvent(new Event('ionChange'));
+    urlInput.dispatchEvent(new Event('ionInput'));
     fixture.detectChanges();
     expect(fixture.componentInstance.form.value.customEndpointUrl).toEqual(url);
   }

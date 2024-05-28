@@ -53,7 +53,7 @@
       class="description"
       data-unit="description"
       [ngClass]="{ show: showDescription }"
-      [innerHTML]="feedbackStatisticDto?.description | markdown"
+      [innerHTML]="feedbackStatisticDto?.description | markdown | async"
     ></div>
   </ion-card-content>
   <ion-button fill="clear" (click)="showDescription = !showDescription">{{

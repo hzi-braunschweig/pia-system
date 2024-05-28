@@ -18,8 +18,8 @@ import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.GroupModel;
 import org.keycloak.models.RoleModel;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;

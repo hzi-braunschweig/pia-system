@@ -5,15 +5,16 @@
  */
 
 import Boom from '@hapi/boom';
+import { SystemComplianceType } from '@pia-system/lib-http-clients-internal';
 
 import { AccessToken, hasRealmRole } from '@pia/lib-service-core';
-import postgresqlHelper from '../services/postgresqlHelper';
 import { complianceserviceClient } from '../clients/complianceserviceClient';
+import { userserviceClient } from '../clients/userserviceClient';
+import { LabResultStatus, StudyStatus } from '../entities/labResult';
 import { LabResult } from '../models/LabResult';
 import { User } from '../models/user';
 import { LabResultImportHelper } from '../services/labResultImportHelper';
-import { userserviceClient } from '../clients/userserviceClient';
-import { SystemComplianceType } from '@pia-system/lib-http-clients-internal';
+import postgresqlHelper from '../services/postgresqlHelper';
 
 export class LaboratoryResultsInteractor {
   private static readonly TESTSTUDY_NAME = 'Teststudie';
@@ -233,7 +234,7 @@ export class LaboratoryResultsInteractor {
         pseudonym,
         result_id
       )) as LabResult | null;
-      if (!oldLabResult || oldLabResult.study_status === 'deleted') {
+      if (!oldLabResult || oldLabResult.study_status === StudyStatus.Deleted) {
         throw Boom.forbidden('Labresult does not exist');
       }
       if (labResult.remark && labResult.new_samples_sent !== undefined) {
@@ -265,8 +266,8 @@ export class LaboratoryResultsInteractor {
       )) as LabResult | null;
       if (
         !oldLabResult ||
-        oldLabResult.study_status === 'deleted' ||
-        oldLabResult.study_status === 'deactivated'
+        oldLabResult.study_status === StudyStatus.Deleted ||
+        oldLabResult.study_status === StudyStatus.Deactivated
       ) {
         throw Boom.forbidden('Labresult does not exist');
       }
@@ -282,7 +283,10 @@ export class LaboratoryResultsInteractor {
       if (!labResult.date_of_sampling) {
         throw Boom.forbidden('update params are missing');
       }
-      if (oldLabResult.status !== 'new' && oldLabResult.status !== 'inactive') {
+      if (
+        oldLabResult.status !== LabResultStatus.New &&
+        oldLabResult.status !== LabResultStatus.Inactive
+      ) {
         throw Boom.forbidden('swab was already sampled');
       }
       const hasSamplesCompliance =
@@ -333,7 +337,7 @@ export class LaboratoryResultsInteractor {
       user_id: user_id,
       order_id: null,
       date_of_sampling: new Date('2020-06-03T10:00').toISOString(),
-      status: 'analyzed',
+      status: LabResultStatus.Analyzed,
       remark: null,
       new_samples_sent: false,
       performing_doctor: null,

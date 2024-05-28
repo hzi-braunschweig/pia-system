@@ -3,6 +3,7 @@ export declare class LicenseTextCompleter {
     static GPL_2_0: string;
     static GPL_3_0: string;
     static LGPL_3_0: string;
+    static ISC: string;
     static MIT_ANGULAR: string;
     static MIT_ANGULAR_FIRE: string;
     static MIT_IONIC: string;
@@ -13,6 +14,11 @@ export declare class LicenseTextCompleter {
     static MIT_SINDRE_SORHUS: string;
     static MIT_JASMINE: string;
     static MIT_MOMENT_MINI: string;
+    static MIT_UNIDICI: string;
+    static MIT_MICROMARK: string;
+    static MIT_ROLLUP: string;
+    static MIT_WEBASSEMBLYJS: string;
+    static MIT_TYPEORM: string;
     static knownMissingLicenseTexts: Map<string, string> | undefined;
     private static initialize;
     static init(): Promise<void>;
@@ -20,5 +26,6 @@ export declare class LicenseTextCompleter {
     static get(packageName: string): string | undefined;
     private static runInit;
     private static fetchLicenses;
+    private static fetchLicenseText;
     private static createLicenseMap;
 }

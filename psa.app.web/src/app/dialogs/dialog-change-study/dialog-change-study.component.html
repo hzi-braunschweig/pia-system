@@ -27,7 +27,7 @@
               }
       }}
     </h5>
-    <mat-dialog-content align="start">
+    <mat-dialog-content>
       <div [ngClass]="{ 'field-container': data.study.pendingStudyChange }">
         <mat-form-field
           [ngClass]="{
@@ -35,11 +35,8 @@
             'study-form-field': data.study.pendingStudyChange
           }"
         >
-          <input
-            matInput
-            formControlName="description_to"
-            placeholder="{{ 'STUDIES.DESCRIPTION' | translate }}"
-          />
+          <mat-label>{{ 'STUDIES.DESCRIPTION' | translate }}</mat-label>
+          <input matInput formControlName="description_to" />
         </mat-form-field>
         <ng-container
           *ngIf="
@@ -66,11 +63,8 @@
             'study-form-field': data.study.pendingStudyChange
           }"
         >
-          <input
-            matInput
-            formControlName="sample_prefix_to"
-            placeholder="{{ 'STUDIES.SAMPLE_PREFIX' | translate }}"
-          />
+          <mat-label>{{ 'STUDIES.SAMPLE_PREFIX' | translate }}</mat-label>
+          <input matInput formControlName="sample_prefix_to" />
         </mat-form-field>
         <ng-container
           *ngIf="
@@ -97,11 +91,13 @@
             'study-form-field': data.study.pendingStudyChange
           }"
         >
+          <mat-label>{{
+            'STUDIES.SAMPLE_SUFFIX_LENGTH' | translate
+          }}</mat-label>
           <input
             matInput
             type="number"
             formControlName="sample_suffix_length_to"
-            placeholder="{{ 'STUDIES.SAMPLE_SUFFIX_LENGTH' | translate }}"
           />
         </mat-form-field>
         <ng-container
@@ -129,11 +125,8 @@
             'study-form-field': data.study.pendingStudyChange
           }"
         >
-          <input
-            matInput
-            formControlName="pseudonym_prefix_to"
-            placeholder="{{ 'STUDIES.PSEUDONYM_PREFIX' | translate }}"
-          />
+          <mat-label>{{ 'STUDIES.PSEUDONYM_PREFIX' | translate }}</mat-label>
+          <input matInput formControlName="pseudonym_prefix_to" />
         </mat-form-field>
         <ng-container
           *ngIf="
@@ -160,11 +153,13 @@
             'study-form-field': data.study.pendingStudyChange
           }"
         >
+          <mat-label>{{
+            'STUDIES.PSEUDONYM_SUFFIX_LENGTH' | translate
+          }}</mat-label>
           <input
             matInput
             type="number"
             formControlName="pseudonym_suffix_length_to"
-            placeholder="{{ 'STUDIES.PSEUDONYM_SUFFIX_LENGTH' | translate }}"
           />
           <mat-error
             *ngIf="form.controls['pseudonym_suffix_length_to'].hasError('min')"
@@ -472,10 +467,8 @@
         class="partner-form-field"
         *ngIf="!data.study.pendingStudyChange"
       >
-        <mat-select
-          placeholder="{{ 'DIALOG.USER_SAME_ROLE' | translate }}"
-          formControlName="requested_for"
-        >
+        <mat-label>{{ 'DIALOG.USER_SAME_ROLE' | translate }}</mat-label>
+        <mat-select formControlName="requested_for">
           <mat-select-search
             [formControl]="usernameFilterCtrl"
           ></mat-select-search>
@@ -492,7 +485,7 @@
       </mat-form-field>
     </mat-dialog-content>
 
-    <mat-dialog-actions align="end">
+    <mat-dialog-actions>
       <button mat-button (click)="onCancelClick()">
         {{ 'DIALOG.CANCEL' | translate }}
       </button>

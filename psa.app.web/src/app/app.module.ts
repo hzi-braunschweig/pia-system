@@ -16,16 +16,21 @@ import localeEn from '@angular/common/locales/en';
 import localeDeExtra from '@angular/common/locales/extra/de';
 
 import localeEnExtra from '@angular/common/locales/extra/en';
-import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core';
+import {
+  APP_INITIALIZER,
+  CUSTOM_ELEMENTS_SCHEMA,
+  LOCALE_ID,
+  NgModule,
+} from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { BrowserModule, Title } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { MarkdownModule } from 'ngx-markdown';
 import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
-import { NgxUsefulSwiperModule } from 'ngx-useful-swiper';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { DialogSelectForPartialDeletionComponent } from './dialogs/dialog-partial-deletion/select/dialog-select-for-partial-deletion.component';
@@ -42,6 +47,7 @@ import { DialogUserEditComponent } from './dialogs/user-edit-dialog/user-edit-di
 import { DialogUserStudyAccessComponent } from './dialogs/user-study-dialog/user-study-dialog';
 import { CollectiveLoginLettersComponent } from './features/collective-login-letters/collective-login-letters.component';
 import { CollectiveSampleLettersComponent } from './features/collective-sample-letters/collective-sample-letters.component';
+import { HintComponent } from './features/hint/hint.component';
 import { SideNavigationComponent } from './features/side-navigation/side-navigation.component';
 import { MaterialModule } from './material.module';
 import { ComplianceResearcherComponent } from './pages/compliance/compliance-researcher/compliance-researcher.component';
@@ -66,6 +72,7 @@ import { FileAnswerOptionComponent } from './pages/questionnaires/question-proba
 import { ImageAnswerOptionComponent } from './pages/questionnaires/question-proband/answer-options/image-answer-option/image-answer-option.component';
 import { TimestampAnswerOptionComponent } from './pages/questionnaires/question-proband/answer-options/timestamp-answer-option/timestamp-answer-option.component';
 import { QuestionProbandComponent } from './pages/questionnaires/question-proband/question-proband.component';
+import { QuestionTextComponent } from './pages/questionnaires/question-text/question-text.component';
 import {
   QuestionnaireInstancesComponent,
   ShowColumnDirective as ShowColumnDirectiveQuestionnaireInstances,
@@ -92,7 +99,6 @@ import { DialogInfoComponent } from './_helpers/dialog-info';
 import { DialogPopUpComponent } from './_helpers/dialog-pop-up';
 import { ScanSampleComponent } from './_helpers/dialog-scan-sample';
 import { DialogUserDataComponent } from './_helpers/dialog-user-data';
-import { DialogYesNoComponent } from './_helpers/dialog-yes-no';
 import { NotificationPresenter } from './_services/notification-presenter.service';
 import { AlertService } from './_services/alert.service';
 import { AuthenticationManager } from './_services/authentication-manager.service';
@@ -163,6 +169,7 @@ import { DialogMarkdownLabresultEditorComponent } from './dialogs/dialog-markdow
 import { ChartsModule } from '@pia-system/charts';
 import { DialogDeleteComponent } from './_helpers/dialog-delete';
 import { DialogOkCancelComponent } from './_helpers/dialog-ok-cancel';
+import { DialogYesNoComponent } from './dialogs/dialog-yes-no/dialog-yes-no';
 
 // === LOCALE ===
 // Setup ngx-translate
@@ -176,6 +183,7 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
 
 // === Module ===
 @NgModule({
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [
     BrowserModule,
     FormsModule,
@@ -185,7 +193,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     AppRoutingModule,
     ReactiveFormsModule,
     HttpClientModule,
-    NgxUsefulSwiperModule,
     FlexLayoutModule,
     NgxMaterialTimepickerModule,
     MarkdownModule.forRoot(),
@@ -212,6 +219,8 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     DialogDeleteComponent,
     DialogOkCancelComponent,
     DialogInfoComponent,
+    DialogYesNoComponent,
+    HintComponent,
   ],
   declarations: [
     AccessLevelPipe,
@@ -239,7 +248,6 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     DialogConfirmPartialDeletionComponent,
     DialogNewUserComponent,
     DialogNewPlannedProbandsComponent,
-    DialogYesNoComponent,
     DialogDeleteAccountHealthDataPermissionComponent,
     DialogDeleteAccountConfirmationComponent,
     DialogDeleteAccountSuccessComponent,
@@ -303,6 +311,7 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     RegistrationComponent,
     StudyProfessionalSummaryComponent,
     StudyComponent,
+    QuestionTextComponent,
   ],
   providers: [
     {
@@ -331,6 +340,13 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     { provide: DateAdapter, useClass: CustomDateAdapter },
     // Needed for Firebase Cloud Messaging
     { provide: VAPID_KEY, useValue: environment.vapidKey },
+    // Render multi line form field errors correctly
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: {
+        subscriptSizing: 'dynamic',
+      },
+    },
     AppDateAdapter,
     AlertService,
     AuthService,

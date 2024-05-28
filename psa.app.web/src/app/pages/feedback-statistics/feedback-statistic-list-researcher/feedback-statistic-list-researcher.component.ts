@@ -22,7 +22,7 @@ import { FeedbackStatisticsService } from '../feedback-statistics.service';
 import { filter } from 'rxjs/internal/operators/filter';
 import { DialogDeleteComponent } from '../../../_helpers/dialog-delete';
 import { TranslateService } from '@ngx-translate/core';
-import { MatLegacyDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-feedback-statistic-list-researcher',
@@ -39,7 +39,7 @@ export class FeedbackStatisticListResearcherComponent {
     private readonly activatedRoute: ActivatedRoute,
     private readonly feedbackStatisticsService: FeedbackStatisticsService,
     private readonly router: Router,
-    private readonly dialog: MatLegacyDialog,
+    private readonly dialog: MatDialog,
     private readonly translate: TranslateService
   ) {
     this.activatedRoute.params

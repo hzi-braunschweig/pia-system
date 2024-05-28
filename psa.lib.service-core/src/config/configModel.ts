@@ -9,21 +9,11 @@ export interface Connection {
   port: number;
 }
 
-export interface SecureConnection extends Connection {
-  tls: false | TlsSettings;
-}
-
-export type HttpProtocol = 'http' | 'https';
-
 export class HttpConnection implements Connection {
-  public constructor(
-    public protocol: HttpProtocol,
-    public host: string,
-    public port: number
-  ) {}
+  public constructor(public host: string, public port: number) {}
 
   public get url(): string {
-    return `${this.protocol}://${this.host}:${this.port}`;
+    return `http://${this.host}:${this.port}`;
   }
 }
 
@@ -31,7 +21,6 @@ export interface DatabaseConnection extends Connection {
   user: string;
   password: string;
   database: string;
-  ssl: SslSettings;
 }
 
 export interface MailserverConnection extends Connection {
@@ -83,27 +72,11 @@ export interface AuthClientSettings {
   secret: string;
 }
 
-export interface TlsSettings {
-  cert: Buffer;
-  key: Buffer;
-  rejectUnauthorized: true;
-}
-
-export interface SslCerts {
-  cert: Buffer;
-  key: Buffer;
-  ca: Buffer;
-}
-
-export interface SslSettings extends SslCerts {
-  rejectUnauthorized: boolean;
-}
-
 /**
  * Global schema of service configuration
  */
 export interface ServiceConfig {
-  public: SecureConnection;
+  public: Connection;
   internal?: Connection;
   database?: DatabaseConnection;
   services?: {

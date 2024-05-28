@@ -6,26 +6,26 @@
 
 import {
   ComponentFixture,
-  TestBed,
   fakeAsync,
+  TestBed,
   tick,
 } from '@angular/core/testing';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { TranslatePipe } from '@ngx-translate/core';
+import { FeedbackStatisticBarChartComponent } from '@pia-system/charts';
+import { add } from 'date-fns';
+import { MockComponent, MockPipe, MockProvider } from 'ng-mocks';
+import { MarkdownPipe } from 'ngx-markdown';
+import { CurrentUser } from '../../../_services/current-user.service';
+import { createFakeFeedbackStatisticDto } from '../create-fake-feedback-statistic-dto.spec';
 
 import {
   FeedbackStatisticComponent,
   RangeValueObject,
 } from './feedback-statistic.component';
-import { MatLegacyCardModule as MatCardModule } from '@angular/material/legacy-card';
-import { MockComponent, MockPipe, MockProvider } from 'ng-mocks';
-import { FeedbackStatisticBarChartComponent } from '@pia-system/charts';
-import { MarkdownPipe } from 'ngx-markdown';
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
-import { MatIconModule } from '@angular/material/icon';
-import { TranslatePipe } from '@ngx-translate/core';
-import { createFakeFeedbackStatisticDto } from '../create-fake-feedback-statistic-dto.spec';
 import SpyObj = jasmine.SpyObj;
-import { CurrentUser } from '../../../_services/current-user.service';
-import { add } from 'date-fns';
 
 const startDate = new Date('2023-01-01T00:00:00.000Z');
 
@@ -139,8 +139,6 @@ describe('FeedbackStatisticComponent', () => {
         component.rangeSelection.setValue(testCase.select);
 
         fixture.detectChanges();
-
-        console.log('-------------');
 
         expect(component.rangeSelection.value).toEqual(
           testCase.expect.rangeSelection

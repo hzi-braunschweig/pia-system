@@ -17,7 +17,6 @@ export interface PartialDeletionViewHeaderData {
 @Component({
   selector: 'app-dialog-view-partial-deletion',
   templateUrl: 'dialog-view-partial-deletion.component.html',
-  styleUrls: ['dialog-view-partial-deletion.component.scss'],
 })
 export class DialogViewPartialDeletionComponent {
   @Input() labResults: LabResult[] = [];

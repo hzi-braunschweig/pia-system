@@ -1,0 +1,8 @@
+{
+  "extends": "@pia/lib-service-core",
+  "compilerOptions": {
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "typeRoots": ["./src/global.d.ts"]
+  }
+}

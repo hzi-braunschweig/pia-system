@@ -6,8 +6,8 @@
 
 <mat-form-field>
   <mat-label>{{ label }}</mat-label>
-  <mat-chip-list #chipList>
-    <mat-chip
+  <mat-chip-grid #chipList>
+    <mat-chip-row
       *ngFor="let value of valuesFormControl.value"
       (removed)="remove(value)"
     >
@@ -15,7 +15,7 @@
       <button matChipRemove>
         <mat-icon>cancel</mat-icon>
       </button>
-    </mat-chip>
+    </mat-chip-row>
     <input
       type="text"
       matInput
@@ -29,7 +29,7 @@
       (matChipInputTokenEnd)="add($event)"
       (blur)="onTouched()"
     />
-  </mat-chip-list>
+  </mat-chip-grid>
   <mat-autocomplete #auto="matAutocomplete" (optionSelected)="select($event)">
     <mat-option
       class="mat-option-highlighted"
@@ -42,7 +42,11 @@
       {{ 'CONTACTS.SELECT_ALL' | translate }}
     </mat-option>
 
-    <mat-option *ngFor="let value of filteredValues | async" [value]="value">
+    <mat-option
+      data-e2e="option"
+      *ngFor="let value of filteredValues | async"
+      [value]="value"
+    >
       {{ value }}
     </mat-option>
   </mat-autocomplete>

@@ -7,7 +7,12 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router';
 import { FormArray } from '@angular/forms';
-import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
+import {
+  MockBuilder,
+  MockedComponentFixture,
+  MockRender,
+  ngMocks,
+} from 'ng-mocks';
 
 import {
   DisplayStatus,
@@ -15,7 +20,10 @@ import {
 } from './question-proband.component';
 import { AppModule } from '../../../app.module';
 import { QuestionnaireService } from '../../../psa.app.core/providers/questionnaire-service/questionnaire-service';
-import { QuestionnaireInstance } from '../../../psa.app.core/models/questionnaireInstance';
+import {
+  QuestionnaireInstance,
+  QuestionnaireStatus,
+} from '../../../psa.app.core/models/questionnaireInstance';
 import { Study } from '../../../psa.app.core/models/study';
 import { CurrentUser } from '../../../_services/current-user.service';
 import { AuthService } from '../../../psa.app.core/providers/auth-service/auth-service';
@@ -24,16 +32,15 @@ import { AlertService } from '../../../_services/alert.service';
 import { Questionnaire } from 'src/app/psa.app.core/models/questionnaire';
 import { SelectedProbandInfoService } from '../../../_services/selected-proband-info.service';
 import { Answer } from '../../../psa.app.core/models/answer';
-import { AnswerOption } from '../../../psa.app.core/models/answerOption';
-import { AnswerType } from '../../../psa.app.core/models/answerType';
-import { Question } from '../../../psa.app.core/models/question';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
-import { SwiperComponent } from 'ngx-useful-swiper';
 import { DOCUMENT } from '@angular/common';
 import { By } from '@angular/platform-browser';
+import { createQuestion } from '../../../psa.app.core/models/instance.helper.spec';
+import { Role } from '../../../psa.app.core/models/user';
+import { TranslatePipe } from '@ngx-translate/core';
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
-import { createQuestion } from '../../../psa.app.core/models/instance.helper.spec';
+import { SwiperContainer } from 'swiper/element';
 
 describe('QuestionProbandComponent', () => {
   let fixture: MockedComponentFixture;
@@ -99,6 +106,7 @@ describe('QuestionProbandComponent', () => {
       .mock(AuthService, authService)
       .mock(UserService, userService)
       .mock(SelectedProbandInfoService, selectedProbandInfoService)
+      .mock(TranslatePipe, (value) => value)
       .mock(DOCUMENT, document);
   });
 
@@ -114,8 +122,6 @@ describe('QuestionProbandComponent', () => {
   });
 
   describe('ngOnInit()', () => {
-    // beforeEach(async () => await component.ngOnInit());
-
     it('should load questionnaire', () => {
       expect(
         questionnaireService.getQuestionnaireInstance
@@ -183,7 +189,9 @@ describe('QuestionProbandComponent', () => {
         allowSlidePrev: true,
         allowSlideNext: false,
       });
-      component.questionSwiper = { swiper: swiperMock } as SwiperComponent;
+      component.questionSwiper = {
+        nativeElement: { swiper: swiperMock } as SwiperContainer,
+      };
 
       // Act
       await component.goToHistoryView();
@@ -195,6 +203,136 @@ describe('QuestionProbandComponent', () => {
         fixture.debugElement.query(By.css('[data-unit="history-view"]'))
       ).not.toBeNull();
     });
+  });
+
+  describe('show release button', () => {
+    const testCases: {
+      status: QuestionnaireStatus;
+      role: Role;
+      expected: {
+        buttonVisible: boolean;
+        label?:
+          | 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE1'
+          | 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE2';
+      };
+    }[] = [
+      {
+        status: 'active',
+        role: 'Proband',
+        expected: {
+          buttonVisible: true,
+          label: 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE1',
+        },
+      },
+      {
+        status: 'active',
+        role: 'Untersuchungsteam',
+        expected: {
+          buttonVisible: true,
+          label: 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE1',
+        },
+      },
+      {
+        status: 'active',
+        role: 'Forscher',
+        expected: {
+          buttonVisible: false,
+        },
+      },
+      {
+        status: 'in_progress',
+        role: 'Proband',
+        expected: {
+          buttonVisible: true,
+          label: 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE1',
+        },
+      },
+      {
+        status: 'in_progress',
+        role: 'Untersuchungsteam',
+        expected: {
+          buttonVisible: true,
+          label: 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE1',
+        },
+      },
+      {
+        status: 'in_progress',
+        role: 'Forscher',
+        expected: {
+          buttonVisible: false,
+        },
+      },
+      {
+        status: 'released_once',
+        role: 'Proband',
+        expected: {
+          buttonVisible: true,
+          label: 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE2',
+        },
+      },
+      {
+        status: 'released_once',
+        role: 'Forscher',
+        expected: {
+          buttonVisible: false,
+        },
+      },
+      {
+        status: 'released_twice',
+        role: 'Proband',
+        expected: {
+          buttonVisible: false,
+        },
+      },
+      {
+        status: 'released_twice',
+        role: 'Forscher',
+        expected: {
+          buttonVisible: false,
+        },
+      },
+      {
+        status: 'released',
+        role: 'Untersuchungsteam',
+        expected: {
+          buttonVisible: true,
+          label: 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE1',
+        },
+      },
+    ];
+
+    for (const testCase of testCases) {
+      it(`should ${
+        testCase.expected.buttonVisible ? 'show' : 'hide'
+      } the release button with correct label for status ${
+        testCase.status
+      } and role ${testCase.role}`, async () => {
+        // Arrange
+        user.hasRole.and.callFake((role: Role) => role === testCase.role);
+        questionnaireService.getQuestionnaireInstance.and.resolveTo(
+          createMockQuestionnaireInstance({
+            status: testCase.status,
+          })
+        );
+
+        // Act
+        await component.ngOnInit();
+        component.displayStatus = DisplayStatus.OVERVIEW;
+        fixture.detectChanges();
+
+        // Assert
+        const button = ngMocks.find('[data-unit="release-button"]', null);
+
+        if (testCase.expected.buttonVisible) {
+          expect(button).toBeTruthy();
+          expect(button.nativeElement.innerText.trim()).toEqual(
+            testCase.expected.label
+          );
+        } else {
+          expect(button).toBeNull();
+        }
+      });
+    }
   });
 
   function createStudy(): Study {
@@ -213,13 +351,15 @@ describe('QuestionProbandComponent', () => {
     } as Proband;
   }
 
-  function createMockQuestionnaireInstance(): QuestionnaireInstance {
+  function createMockQuestionnaireInstance(
+    overwrite: Partial<QuestionnaireInstance> = {}
+  ): QuestionnaireInstance {
     return {
       id: 1234,
       status: 'active',
       date_of_issue: new Date(),
       user_id: 'Testproband',
-      release_version: 1,
+      release_version: 0,
       questionnaire: {
         id: 1,
         name: 'TestQ',
@@ -235,6 +375,7 @@ describe('QuestionProbandComponent', () => {
           createQuestion({ id: 8 }),
         ],
       } as Questionnaire,
+      ...overwrite,
     } as QuestionnaireInstance;
   }
 

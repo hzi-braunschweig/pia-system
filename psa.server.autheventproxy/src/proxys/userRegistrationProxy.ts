@@ -7,17 +7,22 @@
 import * as amqp from 'amqplib';
 import { KeycloakRegisterEvent } from '../models/keycloakEvent';
 import { MessageQueueService } from '../services/messageQueueService';
-import { MessageQueueTopic, Producer } from '@pia/lib-messagequeue';
+import {
+  MessageQueueTopic,
+  Producer,
+  ProbandRegisteredMessage,
+} from '@pia/lib-messagequeue';
 import { EventProxy } from './eventProxy';
+import { ProxyOnMessageError } from '../errors';
 
 const TARGET_TOPIC = MessageQueueTopic.PROBAND_REGISTERED;
 
 export class UserRegistrationProxy extends EventProxy {
   public pattern =
     'KK.EVENT.CLIENT.*.SUCCESS.pia-proband-web-app-client.REGISTER';
-  private _producer: Producer<unknown> | null = null;
+  private _producer: Producer<ProbandRegisteredMessage> | null = null;
 
-  public set producer(value: Producer<unknown> | null) {
+  public set producer(value: Producer<ProbandRegisteredMessage> | null) {
     this._producer = value;
   }
 
@@ -36,7 +41,7 @@ export class UserRegistrationProxy extends EventProxy {
 
   public static async createProbandRegisteredProducer(
     messageQueueService: MessageQueueService
-  ): Promise<Producer<unknown>> {
+  ): Promise<Producer<ProbandRegisteredMessage>> {
     return await messageQueueService.createProducer(TARGET_TOPIC);
   }
 
@@ -48,24 +53,42 @@ export class UserRegistrationProxy extends EventProxy {
         return;
       }
 
-      const json = message.content.toString();
-
-      if (!json) {
-        return;
-      }
-
-      const event = JSON.parse(json) as KeycloakRegisterEvent;
-      const { username } = event.details;
-
-      this._producer
-        .publish({ username })
-        .then(() => {
-          console.log(`Event Processed | ${this.pattern} > ${TARGET_TOPIC}`);
-          channel.ack(message, false);
-        })
-        .catch(() => {
-          console.error(`Event Error | ${this.pattern} > ${TARGET_TOPIC}`);
-        });
+      this.forwardMessageToProducer(message)
+        .then(() => channel.ack(message, false))
+        .catch(console.error);
     };
+  }
+
+  private async forwardMessageToProducer(
+    message: amqp.ConsumeMessage
+  ): Promise<void> {
+    if (!this._producer) {
+      return;
+    }
+
+    const json = message.content.toString();
+
+    if (!json) {
+      return;
+    }
+
+    const event = JSON.parse(json) as KeycloakRegisterEvent;
+    const { username } = event.details;
+
+    try {
+      const studyName = await this.getStudyNameOfAccountOrFail(username);
+
+      await this._producer.publish({ username, studyName });
+
+      console.log(
+        `Event Processed | ${this.pattern} > ${TARGET_TOPIC} | ${username}`
+      );
+    } catch (e: unknown) {
+      throw new ProxyOnMessageError(
+        this.pattern,
+        TARGET_TOPIC,
+        e instanceof Error ? e : new Error('Unknown error')
+      );
+    }
   }
 }

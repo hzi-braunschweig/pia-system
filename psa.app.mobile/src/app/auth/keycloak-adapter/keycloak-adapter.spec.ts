@@ -4,12 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import {
-  discardPeriodicTasks,
-  fakeAsync,
-  flush,
-  tick,
-} from '@angular/core/testing';
+import { discardPeriodicTasks, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { PiaKeycloakAdapter } from './keycloak-adapter';
@@ -32,7 +27,9 @@ describe('PiaKeycloakAdapter', () => {
   let keycloakInstance: SpyObj<Keycloak>;
   let inAppBrowser: SpyObj<InAppBrowser>;
   let browser: SpyObj<InAppBrowserObject>;
-  let browserEvents$: Subject<InAppBrowserEvent>;
+  let browserEventsLoadStart$: Subject<InAppBrowserEvent>;
+  let browserEventsLoadError$: Subject<InAppBrowserEvent>;
+  let browserEventsExit$: Subject<InAppBrowserEvent>;
   let translate: SpyObj<TranslateService>;
   let http: SpyObj<HttpClient>;
 
@@ -72,7 +69,17 @@ describe('PiaKeycloakAdapter', () => {
       'hide',
       'on',
     ]);
-    browserEvents$ = new Subject();
+
+    browserEventsLoadStart$ = new Subject();
+    browserEventsLoadError$ = new Subject();
+    browserEventsExit$ = new Subject();
+
+    browser.on
+      .withArgs('loadstart')
+      .and.returnValue(browserEventsLoadStart$.asObservable());
+    browser.on.withArgs('loaderror').and.returnValue(browserEventsLoadError$);
+    browser.on.withArgs('exit').and.returnValue(browserEventsExit$);
+
     inAppBrowser.create.and.returnValue(browser);
 
     translate = jasmine.createSpyObj('TranslateService', ['instant']);
@@ -93,8 +100,6 @@ describe('PiaKeycloakAdapter', () => {
   describe('login', () => {
     it('should open an in-app browser with correct appearance', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, loaderror, exit)
-      browser.on.and.returnValues(browserEvents$.asObservable(), NEVER, NEVER);
 
       // Act
       adapter.login(
@@ -125,8 +130,6 @@ describe('PiaKeycloakAdapter', () => {
 
     it('should parse the event url and request an access token', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, loaderror, exit)
-      browser.on.and.returnValues(browserEvents$.asObservable(), NEVER, NEVER);
 
       // Act
       adapter.login(createKeycloakLoginOptions());
@@ -150,8 +153,6 @@ describe('PiaKeycloakAdapter', () => {
 
     it('should respect an existing oauth state', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, loaderror, exit)
-      browser.on.and.returnValues(browserEvents$.asObservable(), NEVER, NEVER);
       localStorage.setItem(
         'kc-callback-5678',
         JSON.stringify(createOAuthState())
@@ -179,8 +180,6 @@ describe('PiaKeycloakAdapter', () => {
 
     it('should treat "loaderror" event with correct redirect url as success', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, loaderror, exit)
-      browser.on.and.returnValues(NEVER, browserEvents$.asObservable(), NEVER);
 
       // Act
       adapter.login(createKeycloakLoginOptions());
@@ -196,8 +195,6 @@ describe('PiaKeycloakAdapter', () => {
 
     it('should treat "loaderror" event without redirect url as error', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, loaderror, exit)
-      browser.on.and.returnValues(NEVER, browserEvents$.asObservable(), NEVER);
       const errorSpy = jasmine.createSpy('error');
 
       // Act
@@ -215,12 +212,10 @@ describe('PiaKeycloakAdapter', () => {
 
     it('should throw login errors ', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, loaderror, exit)
-      browser.on.and.returnValues(NEVER, browserEvents$.asObservable(), NEVER);
       const errorSpy = jasmine.createSpy('error');
 
       // Act
-      adapter.login(createKeycloakLoginOptions()).error(errorSpy);
+      adapter.login(createKeycloakLoginOptions()).catch(errorSpy);
       sendBrowserEvent({
         type: 'loaderror',
         url: 'http://localhost?state=5678&error=access_denied&error_description=Access+denied',
@@ -240,8 +235,6 @@ describe('PiaKeycloakAdapter', () => {
 
     it('should throw with specific error message if browser was closed by the user', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, loaderror, exit)
-      browser.on.and.returnValues(NEVER, NEVER, browserEvents$.asObservable());
       const errorSpy = jasmine.createSpy('error');
 
       // Act
@@ -260,8 +253,6 @@ describe('PiaKeycloakAdapter', () => {
 
     it('should call onTokenExpired if expiration date has been reached', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, loaderror, exit)
-      browser.on.and.returnValues(browserEvents$.asObservable(), NEVER, NEVER);
       localStorage.setItem(
         'kc-callback-5678',
         JSON.stringify(createOAuthState())
@@ -288,8 +279,6 @@ describe('PiaKeycloakAdapter', () => {
   describe('logout', () => {
     it('should open an hidden in-app browser', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, loaderror)
-      browser.on.and.returnValues(browserEvents$.asObservable(), NEVER);
 
       // Act
       adapter.logout();
@@ -316,8 +305,6 @@ describe('PiaKeycloakAdapter', () => {
 
     it('should clear the session token and close the hidden browser', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, loaderror)
-      browser.on.and.returnValues(browserEvents$.asObservable(), NEVER);
 
       // Act
       adapter.logout();
@@ -333,8 +320,6 @@ describe('PiaKeycloakAdapter', () => {
 
     it('should treat "loaderror" event with correct redirect url as success', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, loaderror)
-      browser.on.and.returnValues(NEVER, browserEvents$.asObservable());
 
       // Act
       adapter.logout();
@@ -350,8 +335,6 @@ describe('PiaKeycloakAdapter', () => {
 
     it('should treat "loaderror" event with empty redirect url as success', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, loaderror)
-      browser.on.and.returnValues(NEVER, browserEvents$.asObservable());
 
       // Act
       adapter.logout();
@@ -367,8 +350,6 @@ describe('PiaKeycloakAdapter', () => {
 
     it('should treat "loaderror" event with invalid redirect url as error', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, loaderror, exit)
-      browser.on.and.returnValues(NEVER, browserEvents$.asObservable(), NEVER);
       const errorSpy = jasmine.createSpy('error');
 
       // Act
@@ -398,8 +379,6 @@ describe('PiaKeycloakAdapter', () => {
   describe('accountManagement', () => {
     it('should open the account console in an in-app browser without toolbar', fakeAsync(() => {
       // Arrange
-      // event subscription order: (loadstart, exit)
-      browser.on.and.returnValues(browserEvents$.asObservable(), NEVER);
 
       // Act
       adapter.accountManagement();
@@ -495,7 +474,20 @@ describe('PiaKeycloakAdapter', () => {
   }
 
   function sendBrowserEvent(event: Partial<InAppBrowserEvent>) {
-    browserEvents$.next(event as InAppBrowserEvent);
+    switch (event.type) {
+      case 'loadstart':
+        browserEventsLoadStart$.next(event as InAppBrowserEvent);
+        break;
+      case 'loaderror':
+        browserEventsLoadError$.next(event as InAppBrowserEvent);
+        break;
+      case 'exit':
+        browserEventsExit$.next(event as InAppBrowserEvent);
+        break;
+      default:
+        throw new Error(`event type ${event.type} not yet supported by test`);
+    }
+
     tick();
     discardPeriodicTasks();
   }

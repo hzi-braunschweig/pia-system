@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { SingleBar } from 'cli-progress';
 import * as path from 'path';
-
-import { RepoMetaData } from './models/repoMetaData';
+import { Color } from './color';
 
 import { Exec, ExecResult } from './exec';
-import { Color } from './color';
-import { SingleBar } from 'cli-progress';
 import { Helper } from './helper';
+
+import { RepoMetaData } from './models/repoMetaData';
 
 interface JobSpec {
   name: string;

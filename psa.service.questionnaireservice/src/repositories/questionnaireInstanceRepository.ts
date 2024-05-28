@@ -5,29 +5,25 @@
  */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
+import { RepositoryOptions } from '@pia/lib-service-core';
+import pgPromise from 'pg-promise';
+import { EntityRepository, Repository } from 'typeorm';
+import { FindOneOptions } from 'typeorm/find-options/FindOneOptions';
+import { db, getDbTransactionFromOptionsOrDbConnection } from '../db';
+import { QuestionnaireInstance } from '../entities/questionnaireInstance';
+import { QuestionnaireInstanceNotFoundError } from '../errors';
+import { Questionnaire, QuestionnaireType } from '../models/questionnaire';
 import {
   DbQuestionnaireInstance,
   QuestionnaireInstance as QuestionnaireInstanceDeprecated,
   QuestionnaireInstanceForPM,
   QuestionnaireInstanceStatus,
 } from '../models/questionnaireInstance';
+import { QuestionnaireFilterDeprecated } from '../services/questionnaireFilterDeprecated';
 import {
   QuestionnaireDbResult,
   RepositoryHelper as QuestionnaireRepositoryHelper,
 } from './questionnaireRepository';
-import { db, getDbTransactionFromOptionsOrDbConnection } from '../db';
-import {
-  CycleUnit,
-  Questionnaire,
-  QuestionnaireType,
-} from '../models/questionnaire';
-import pgPromise from 'pg-promise';
-import { RepositoryOptions } from '@pia/lib-service-core';
-import { QuestionnaireFilterDeprecated } from '../services/questionnaireFilterDeprecated';
-import { QuestionnaireInstanceNotFoundError } from '../errors';
-import { EntityRepository, Repository } from 'typeorm';
-import { QuestionnaireInstance } from '../entities/questionnaireInstance';
-import { FindOneOptions } from 'typeorm/find-options/FindOneOptions';
 import QueryResultError = pgPromise.errors.QueryResultError;
 import queryResultErrorCode = pgPromise.errors.queryResultErrorCode;
 
@@ -44,24 +40,24 @@ class RepositoryHelper {
   ): string {
     return (
       `SELECT ROW_TO_JSON(qi.*)   AS questionnaire_instance,
-                    ROW_TO_JSON(qa.*)   AS questionnaire,
-                    ROW_TO_JSON(c_qa.*) AS questionnaire_cond,
-                    ROW_TO_JSON(q.*)    AS question,
-                    ROW_TO_JSON(c_q.*)  AS question_cond,
-                    ROW_TO_JSON(ao.*)   AS answer_option,
-                    ROW_TO_JSON(c_ao.*) AS answer_option_cond
-             FROM questionnaire_instances AS qi
-                      JOIN questionnaires AS qa
-                           ON qi.questionnaire_id = qa.id AND qi.questionnaire_version = qa.version
-                      LEFT OUTER JOIN conditions AS c_qa
-                                      ON qa.id = c_qa.condition_questionnaire_id AND
-                                         qa.version = c_qa.condition_questionnaire_version
-                      LEFT OUTER JOIN questions AS q
-                                      ON qa.id = q.questionnaire_id AND qa.version = q.questionnaire_version
-                      LEFT OUTER JOIN conditions AS c_q ON q.id = c_q.condition_question_id
-                      LEFT OUTER JOIN answer_options ao ON q.id = ao.question_id
-                      LEFT OUTER JOIN conditions AS c_ao ON ao.id = c_ao.condition_answer_option_id
-            ` +
+              ROW_TO_JSON(qa.*)   AS questionnaire,
+              ROW_TO_JSON(c_qa.*) AS questionnaire_cond,
+              ROW_TO_JSON(q.*)    AS question,
+              ROW_TO_JSON(c_q.*)  AS question_cond,
+              ROW_TO_JSON(ao.*)   AS answer_option,
+              ROW_TO_JSON(c_ao.*) AS answer_option_cond
+       FROM questionnaire_instances AS qi
+                JOIN questionnaires AS qa
+                     ON qi.questionnaire_id = qa.id AND qi.questionnaire_version = qa.version
+                LEFT OUTER JOIN conditions AS c_qa
+                                ON qa.id = c_qa.condition_questionnaire_id AND
+                                   qa.version = c_qa.condition_questionnaire_version
+                LEFT OUTER JOIN questions AS q
+                                ON qa.id = q.questionnaire_id AND qa.version = q.questionnaire_version
+                LEFT OUTER JOIN conditions AS c_q ON q.id = c_q.condition_question_id
+                LEFT OUTER JOIN answer_options ao ON q.id = ao.question_id
+                LEFT OUTER JOIN conditions AS c_ao ON ao.id = c_ao.condition_answer_option_id
+      ` +
       filter +
       '\n' +
       order
@@ -320,76 +316,6 @@ export class QuestionnaireInstanceRepository {
     return actualQInstances;
   }
 
-  /**
-   * updates the questionnaire instance with the specified id
-   * @param id the id of the questionnaire instance to update
-   * @param status the new status of the questionnaire instance
-   * @param progress the new progress of the questionnaire instance
-   * @param release_version
-   */
-  public static async updateQuestionnaireInstance(
-    id: number,
-    status: QuestionnaireInstanceStatus | null,
-    progress: number,
-    release_version: number
-  ): Promise<QuestionnaireInstanceDeprecated> {
-    if (status === 'released_once') {
-      const questionnaire = await db.one<{ cycle_unit: CycleUnit }>(
-        'SELECT cycle_unit FROM questionnaires WHERE id=(SELECT questionnaire_id FROM questionnaire_instances WHERE id=$1) AND version=(SELECT questionnaire_version FROM questionnaire_instances WHERE id=$1)',
-        [id]
-      );
-      if (questionnaire.cycle_unit === 'spontan') {
-        return await db.one<QuestionnaireInstanceDeprecated>(
-          'UPDATE questionnaire_instances SET status=${status}, progress=${progress}, release_version=${release_version}, date_of_release_v1=${date_of_release}, date_of_issue=${date_of_release} WHERE id=${id} RETURNING *',
-          {
-            status: status,
-            progress: progress,
-            release_version: release_version,
-            date_of_release: new Date(),
-            id: id,
-          }
-        );
-      } else {
-        return await db.one<QuestionnaireInstanceDeprecated>(
-          'UPDATE questionnaire_instances SET status=${status}, progress=${progress}, release_version=${release_version}, date_of_release_v1=${date_of_release} WHERE id=${id} RETURNING *',
-          {
-            status: status,
-            progress: progress,
-            release_version: release_version,
-            date_of_release: new Date(),
-            id: id,
-          }
-        );
-      }
-    } else if (status === 'released_twice') {
-      return await db.one<QuestionnaireInstanceDeprecated>(
-        'UPDATE questionnaire_instances SET status=${status}, progress=${progress}, release_version=${release_version}, date_of_release_v2=${date_of_release} WHERE id=${id} RETURNING *',
-        {
-          status: status,
-          progress: progress,
-          release_version: release_version,
-          date_of_release: new Date(),
-          id: id,
-        }
-      );
-    } else if (!status) {
-      return await db.one<QuestionnaireInstanceDeprecated>(
-        'UPDATE questionnaire_instances SET progress=${progress} WHERE id=${id} RETURNING *',
-        { progress: progress, id: id }
-      );
-    } else {
-      return await db.one<QuestionnaireInstanceDeprecated>(
-        'UPDATE questionnaire_instances SET status=${status}, progress=${progress}, release_version=${release_version} WHERE id=${id} RETURNING *',
-        {
-          status: status,
-          progress: progress,
-          release_version: release_version,
-          id: id,
-        }
-      );
-    }
-  }
-
   public static async deleteQuestionnaireInstancesByQuestionnaireId(
     questionnaireId: number,
     questionnaireVersion: number,
@@ -440,11 +366,11 @@ export class QuestionnaireInstanceRepository {
   ): Promise<QuestionnaireInstanceDeprecated> {
     return db.one<QuestionnaireInstanceDeprecated>(
       `SELECT qi.*
-             FROM questionnaire_instances AS qi
-                      JOIN questionnaires q ON qi.questionnaire_id = q.id AND qi.questionnaire_version = q.version
-             WHERE qi.id = $(id)
-               AND qi.status != 'deleted'
-               AND q.type = $(role)`,
+       FROM questionnaire_instances AS qi
+                JOIN questionnaires q ON qi.questionnaire_id = q.id AND qi.questionnaire_version = q.version
+       WHERE qi.id = $(id)
+         AND qi.status != 'deleted'
+         AND q.type = $(role)`,
       { id, role }
     );
   }
@@ -452,7 +378,7 @@ export class QuestionnaireInstanceRepository {
 
 @EntityRepository(QuestionnaireInstance)
 export class CustomQuestionnaireInstanceRepository extends Repository<QuestionnaireInstance> {
-  private readonly withQuestionnaireRelations = [
+  private readonly questionnaireRelations = [
     'questionnaire',
     'questionnaire.condition',
     'questionnaire.questions',
@@ -461,23 +387,50 @@ export class CustomQuestionnaireInstanceRepository extends Repository<Questionna
     'questionnaire.questions.answerOptions.condition',
   ];
 
+  private readonly targetAnswerOptionRelations = [
+    // to be able to evaluate conditions, we need the targetAnswerOption
+    'questionnaire.questions.condition.targetAnswerOption',
+    'questionnaire.questions.answerOptions.condition.targetAnswerOption',
+  ];
+
   public async findOneOrFailByIdWithQuestionnaire(
     options: FindOneOptions<QuestionnaireInstance>
   ): Promise<QuestionnaireInstance> {
-    if (!options.relations) {
-      options.relations = [];
-    }
-    options.relations.push(...this.withQuestionnaireRelations);
+    this.addQuestionnaireRelations(options);
     return this.findOneOrFail(options);
   }
 
   public async findWithQuestionnaire(
     options: FindOneOptions<QuestionnaireInstance>
   ): Promise<QuestionnaireInstance[]> {
+    this.addQuestionnaireRelations(options);
+    return this.find(options);
+  }
+
+  public async findOneWithAllConditionRelations(
+    options: FindOneOptions<QuestionnaireInstance>
+  ): Promise<QuestionnaireInstance | undefined> {
+    this.addQuestionnaireRelations(options);
+    this.addRelationsToEvaluateConditions(options);
+
+    return this.findOne(options);
+  }
+
+  private addQuestionnaireRelations(
+    options: FindOneOptions<QuestionnaireInstance>
+  ): void {
     if (!options.relations) {
       options.relations = [];
     }
-    options.relations.push(...this.withQuestionnaireRelations);
-    return this.find(options);
+    options.relations.push(...this.questionnaireRelations);
+  }
+
+  private addRelationsToEvaluateConditions(
+    options: FindOneOptions<QuestionnaireInstance>
+  ): void {
+    if (!options.relations) {
+      options.relations = [];
+    }
+    options.relations.push(...this.targetAnswerOptionRelations);
   }
 }

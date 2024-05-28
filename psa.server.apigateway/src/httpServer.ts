@@ -5,7 +5,6 @@
  */
 
 import * as http from 'http';
-import * as https from 'https';
 import * as net from 'net';
 
 export interface ISsl {
@@ -16,22 +15,13 @@ export interface ISsl {
 export abstract class HttpServer<T> {
   private readonly httpServer: http.Server;
 
-  public constructor(ssl?: ISsl) {
-    if (ssl) {
-      this.httpServer = https.createServer<
-        typeof http.IncomingMessage,
-        typeof http.ServerResponse
-      >(ssl, (req, res) => {
-        this.handleRequest(req, res);
-      });
-    } else {
-      this.httpServer = http.createServer<
-        typeof http.IncomingMessage,
-        typeof http.ServerResponse
-      >((req, res) => {
-        this.handleRequest(req, res);
-      });
-    }
+  public constructor() {
+    this.httpServer = http.createServer<
+      typeof http.IncomingMessage,
+      typeof http.ServerResponse
+    >((req, res) => {
+      this.handleRequest(req, res);
+    });
   }
 
   public getAddress(): string | net.AddressInfo | null {

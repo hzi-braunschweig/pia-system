@@ -11,7 +11,7 @@ export interface StudyAccess {
     study_id: string;
     access_level: AccessLevel;
 }
-export type AccessLevel = 'read' | 'write' | 'admin';
+export declare type AccessLevel = 'read' | 'write' | 'admin';
 export interface ProbandInternalDto {
     pseudonym: string;
     study: string;
@@ -25,11 +25,12 @@ export interface ProbandInternalDto {
     ids: string | null;
     isTestProband: boolean;
 }
-export type ProbandRequestInternalDto = Omit<ProbandResponseInternalDto, 'pseudonym' | 'password' | 'study'>;
+export declare type ProbandRequestInternalDto = Omit<ProbandResponseInternalDto, 'pseudonym' | 'password' | 'study'>;
 export declare enum ProbandOrigin {
     SELF = "self",
     INVESTIGATOR = "investigator",
-    SORMAS = "sormas"
+    SORMAS = "sormas",
+    PUBLIC_API = "public_api"
 }
 export interface ProbandResponseInternalDto {
     pseudonym: string;

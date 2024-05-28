@@ -1,13 +1,16 @@
 # PIA Research Data Export
 
-This ZIP file contains data exported from PIA for one study. Based on the chosen export configuration it may contain one or more
+This ZIP file contains data exported from PIA for one study. Based on the chosen export configuration it may contain one
+or more
 of the following files:
 
-- `answers/answers_*.csv` - answers given by participants (recommended format) [(read more)](#answers-recommended-format)
+- `answers/answers_*.csv` - answers given by participants (recommended
+  format) [(read more)](#answers-recommended-format)
 - `answers.csv` - answers given by participants (old format) [(read more)](#answers-old-format)
 - `blood_samples.csv` - blood sample meta-data [(read more)](#blood-samples)
 - `codebook_*.csv` - meta-data of one questionnaire [(read more)](#codebook)
-- `files/*` - files uploaded by participants or study assistants as part of answering a questionnaire [(read more)](#files)
+- `files/*` - files uploaded by participants or study assistants as part of answering a
+  questionnaire [(read more)](#files)
 - `lab_results.csv` - laboratory results available in PIA [(read more)](#lab-results)
 - `questionnaire_settings_*.csv` - settings of the selected questionnaires [(read more)](#questionnaire-settings)
 - `samples.csv` - sample meta-data of nasal swab samples [(read more)](#samples)
@@ -23,18 +26,23 @@ CSV is a text-based format where each record is written on a separate row. Every
 CSV files can be opened with any text editor or spreadsheet application which supports **UTF-8 encoding**,
 like LibreOffice Calc, Microsoft Excel or Apple Numbers.
 
-However, **Excel on Windows might have difficulties if you open a CSV file**. Special characters might not be displayed correctly. If you encounter such problems, please refer to the “PIA Handbuch”. Briefly, open an empty excel file -> data -> “Externe Daten abrufen” -> “Aus Text”: The drop-down menu for “Dateiursprung” needs to display “65001 : Unicode (UTF-8)”.
+However, **Excel on Windows might have difficulties if you open a CSV file**. Special characters might not be displayed
+correctly. If you encounter such problems, please refer to the “PIA Handbuch”. Briefly, open an empty excel file ->
+data -> “Externe Daten abrufen” -> “Aus Text”: The drop-down menu for “Dateiursprung” needs to display “65001 :
+Unicode (UTF-8)”.
 
 ## Answers (recommended format)
 
-Answers are written into separate files for each questionnaire and each questionnaire version. Therefore, a questionnaire that has been changed 10 time, will produce 10 export files. The file name has the
+Answers are written into separate files for each questionnaire and each questionnaire version. Therefore, a
+questionnaire that has been changed 10 time, will produce 10 export files. The file name has the
 structure (square brackets enclose a variable value)
 
 ```
 answers_[questionnaire name]v[questionnaire version]_[questionnaire id]_[date of export]
 ```
 
-where the date of export is the current UTC date formatted as an [ISO 8601 date](https://de.wikipedia.org/wiki/ISO_8601) with the format `YYYY-MM-DDThhmm` ("T" is a delimiter). For example, CEST being 7 am is exported as 0500.
+where the date of export is the current UTC date formatted as an [ISO 8601 date](https://de.wikipedia.org/wiki/ISO_8601)
+with the format `YYYY-MM-DDThhmm` ("T" is a delimiter). For example, CEST being 7 am is exported as 0500.
 
 The following generally applies to the content of one answers file:
 
@@ -42,21 +50,25 @@ The following generally applies to the content of one answers file:
 - Each **row** contains **all answers to one specific questionnaire instance**.
 - A **questionnaire instance** is a single questionnaire which is, was or will be shown to the
   participant or study assistant. Its answers will always be released all at once or not at all. If the underlying
-  questionnaire is a questionnaire that is displayed continuously (e.g. spontaneous questionnaire) or cyclic, each appearance of the questionnaire is represented by a
+  questionnaire is a questionnaire that is displayed continuously (e.g. spontaneous questionnaire) or cyclic, each
+  appearance of the questionnaire is represented by a
   new instance.
 - As a result there might be **multiple rows for the same participant** in cyclic questionnaires.
 - The file contains rows for every questionnaire instance. A file does not contain answers the
-  participant or study assistant has entered but not yet released ("abschicken"). **Answers will only be exported if the questionnaire
+  participant or study assistant has entered but not yet released ("abschicken"). **Answers will only be exported if the
+  questionnaire
   instance is already released otherwise it will be marked as a missing** ([read more](#missings)).
 - The file contains [**fixed columns**](#fixed-columns) which appear in every answers export file and
   [**dynamic answer columns**](#dynamic-answer-columns) which appear based on the questionnaire structure.
 - Generally **all columns** by definition of a CSV are **strings** (text). Those strings have to be converted to a more
-  specific format (e.g. number, date, etc.) outside of PIA. However, the following conventions apply to the content of all
+  specific format (e.g. number, date, etc.) outside of PIA. However, the following conventions apply to the content of
+  all
   columns:
   - **Boolean** values are represented as `T` (= true) and `F` (= false)
   - **Dates** are represented as [ISO 8601 date](https://de.wikipedia.org/wiki/ISO_8601) with the format `YYYY-MM-DD`
   - **Dates with time** are represented as [ISO 8601 date](https://de.wikipedia.org/wiki/ISO_8601) with the format  
-    `YYYY-MM-DDThh:mm:ss±hh:mm` **with ± giving the deviation from universal time coordinated (UTC)** and "T" being a delimiter
+    `YYYY-MM-DDThh:mm:ss±hh:mm` **with ± giving the deviation from universal time coordinated (UTC)** and "T" being a
+    delimiter
 
 ### Fixed Columns
 
@@ -66,8 +78,10 @@ The following generally applies to the content of one answers file:
 - `questionnaire_id` - id of the questionnaire the answers belong to
 - `questionnaire_version` - version of the questionnaire the answers belong to (starting with 1)
 - `questionnaire_cycle` - the number of the iteration of a cyclic questionnaire (starting with 1)
-- `questionnaire_date_of_issue` - the date the questionnaire instance was issued to the participant ([ISO 8601 date with time zone](#answers-recommended-format))
-- `answer_date` - the date the questionnaire instance was last answered by the participant ([ISO 8601 date with time zone](#answers-recommended-format))
+- `questionnaire_date_of_issue` - the date the questionnaire instance was issued to the
+  participant ([ISO 8601 date with time zone](#answers-recommended-format))
+- `answer_date` - the date the questionnaire instance was last answered by the
+  participant ([ISO 8601 date with time zone](#answers-recommended-format))
 - `answer_status` - the status of the questionnaire instance ([read more](#answer-status))
 
 #### Answer Status
@@ -75,15 +89,19 @@ The following generally applies to the content of one answers file:
 The answer status provides information about the progress of the processing of a questionnaire instance by participants.
 The following values are possible:
 
-- `pending_participant_answer` - answers from the participant or study assistant are pending, i.e. there are no answers yet
+- `pending_participant_answer` - answers from the participant or study assistant are pending, i.e. there are no answers
+  yet
   - export of questionnaire instance will only contain missings ([read more](#missings))
-- `in_progress_participant_answer` - answers were given by the participant or study assistant but not yet released (“abgeschickt”)
+- `in_progress_participant_answer` - answers were given by the participant or study assistant but not yet released (
+  “abgeschickt”)
   - export of questionnaire instance will only contain missings ([read more](#missings))
-- `modifiable_participant_answer` - answers were released by the participant but can still be modified once (PIA allows answers by study participants to be modified once.)
+- `modifiable_participant_answer` - answers were released by the participant but can still be modified once (PIA allows
+  answers by study participants to be modified once.)
   - export contains released answers
 - `final_participant_answer` - answers were released twice and cannot be modified anymore
   - export contains latest released answers
-- `latest_study_assistant_answer` - last answer of a study assistant (study assistants can modify, i.e. release answers unlimited times)
+- `latest_study_assistant_answer` - last answer of a study assistant (study assistants can modify, i.e. release answers
+  unlimited times)
   - export contains latest released answers
 - `expired_answer` - the possibility to answer has expired before an answer was released
   - export of questionnaire instance will only contain missings ([read more](#missings))
@@ -91,11 +109,14 @@ The following values are possible:
 ### Dynamic Answer Columns
 
 The fixed columns are followed by the dynamic answer columns. The dynamic answer columns are **structured based on the
-questions/items within the underlying questionnaire**. Each column contains the answer to one question. In case of multiple
-choice questions the file contains one column for every answer option. In case of answer option "sample" the file contains two
+questions/items within the underlying questionnaire**. Each column contains the answer to one question. In case of
+multiple
+choice questions the file contains one column for every answer option. In case of answer option "sample" the file
+contains two
 columns - one for each sample id. In all other cases there is one column per question.
 
-A **detailed description of all dynamic answer columns** including its question texts, answer code to answer text mappings,
+A **detailed description of all dynamic answer columns** including its question texts, answer code to answer text
+mappings,
 validations and conditions can be found in the questionnaire's **codebook** ([read more](#codebook)).
 
 #### Column Names
@@ -123,7 +144,8 @@ e.g., 24_nas_swab_ProbenID2
 
 The **variable name** uniquely identifies a question or (if any) its answer options within a questionnaire,
 even across different questionnaire versions. It can be configured by researchers in the questionnaire editor.
-If no variable name is configured, a random label starting with auto\__ (_ sequence of 8 random digits) will be generated when creating or updating the questionnaire.
+If no variable name is configured, a random label starting with auto\__ (_ sequence of 8 random digits) will be
+generated when creating or updating the questionnaire.
 
 If a questionnaire was created or last updated **before the introduction of automatically generated variable names**
 (PIA version 1.32.0, Dec 2022), the format of the column names is as follows (square brackets enclose a variable value):
@@ -136,8 +158,10 @@ The same suffixes for multiple choice and sample questions apply as described ab
 
 #### Answer Values
 
-Whenever **predefined answer options** were provided for a question (e.g., yes, no, I don’t know), the answers given to that questions will be exported as
-**coded values**(e.g., 1, 0, 2). The mapping between coded values and the actual answer values is configured in the questionnaire
+Whenever **predefined answer options** were provided for a question (e.g., yes, no, I don’t know), the answers given to
+that questions will be exported as
+**coded values**(e.g., 1, 0, 2). The mapping between coded values and the actual answer values is configured in the
+questionnaire
 editor and displayed in the codebook ([read more](#codebook)).
 
 For **non-predefined answer options** the answer values will be exported **as string** with the following conventions:
@@ -146,7 +170,8 @@ For **non-predefined answer options** the answer values will be exported **as st
 - **Sample** will result in two columns, which contain the respective sample ID ([read more](#samples))
 - **Date** question columns will contain the date in the format `YYYY-MM-DD` (see [dates](#answers-recommended-format))
 - **Timestamp** question columns will contain the date in the format  
-  `YYYY-MM-DDThh:mm:ss±hh:mm` **with ± giving the deviation from universal time coordinated (UTC)** (see [dates with time](#answers-recommended-format))
+  `YYYY-MM-DDThh:mm:ss±hh:mm` **with ± giving the deviation from universal time coordinated (UTC)** (
+  see [dates with time](#answers-recommended-format))
 
 #### Missings
 
@@ -158,9 +183,11 @@ missing by special **missing codes**:
   but the answer to this item was not given (= real missing)
 - `-8888` (`notapplicable`) - The question could not be answered because it was hidden due to conditions in the
   underlying question or questionnaire (= legitimate/qualified missing)
-- `-7777` (`no_or_unobtainable`) - Only applicable to multiple-choice answers: The questionnaire instance was released by the participant or study assistant
+- `-7777` (`no_or_unobtainable`) - Only applicable to multiple-choice answers: The questionnaire instance was released
+  by the participant or study assistant
   but the answer to this item not given OR answered with `false`
-- `-6666` (`notreleased`) - The question might have been answered or might be empty but the questionnaire instance was never released (“abgeschickt”)
+- `-6666` (`notreleased`) - The question might have been answered or might be empty but the questionnaire instance was
+  never released (“abgeschickt”)
 
 **Missings will always be exported as code**, even if the corresponding question's answers would be exported as text
 otherwise.
@@ -175,7 +202,8 @@ There will be no entry for such cases in the export; even no missing code.
 
 ## Answers (old format)
 
-The `answers.csv` file contains the answers given to the questions of **one or more questionnaires**, based on the chosen
+The `answers.csv` file contains the answers given to the questions of **one or more questionnaires**, based on the
+chosen
 export configuration. The **usage of this format is not recommended anymore** as it misses information like the correct
 specification of missings or a corresponding codebook. This answers export format may be removed in a future version
 of PIA.
@@ -193,7 +221,10 @@ blood sample. The following columns are available:
 
 ## Codebook
 
-The codebook is a **detailed description of all questions, their answer options, code mappings, validations and conditions within** a questionnaire (conditions on other questionnaires are given in the file [`questionnaire_settings_*.csv`](#questionnaire-settings)). It is a valuable source of information to understand and evaluate the contents of the answers export.
+The codebook is a **detailed description of all questions, their answer options, code mappings, validations and
+conditions within** a questionnaire (conditions on other questionnaires are given in the
+file [`questionnaire_settings_*.csv`](#questionnaire-settings)). It is a valuable source of information to understand
+and evaluate the contents of the answers export.
 
 Codebooks are written into separate files for each questionnaire and questionnaire version. The file name has the
 structure:
@@ -219,19 +250,25 @@ The following columns are available in the codebook:
 - `questionnaire_id` - the questionnaire's id
 - `questionnaire_version` - the questionnaire's version
 - `questionnaire_name` - the questionnaire's name
-- `variable_name` - unique identifier for a question or (if any) its answer options (then attached automatically) ([read more](#column-names))
-- `column_name` - column name under which a question's answers can be found in the answers export ([read more](#column-names))
+- `variable_name` - unique identifier for a question or (if any) its answer options (then attached
+  automatically) ([read more](#column-names))
+- `column_name` - column name under which a question's answers can be found in the answers
+  export ([read more](#column-names))
 - `answer_position` - display position of the question or answer option in the questionnaire
 - `text_level_1` - a text preceding one or more questions
+- `help_text_level_1` - a help text preceding one or more questions adding any information probably needed to answer the
+  question(s) correctly
 - `text_level_2` - a text displayed next to the questions input column
-- `answer_option_text` - a text displayed next to the corresponding checkbox in case of multiple choice questions, empty otherwise
+- `answer_option_text` - a text displayed next to the corresponding checkbox in case of multiple choice questions, empty
+  otherwise
 - `answer_type` - the type of the question's answer ([read more](#answer-types))
 - `answer_category` - the category of a possible answer ([read more](#answer-categories))
 - `answer_category_code` - the code mapping of an answer category ([read more](#answer-categories))
 - `valid_min` - the minimum value of a numeric answer
 - `valid_max` - the maximum value of a numeric answer
 - `answer_required` - `T` if the question is mandatory, `F` otherwise
-- `condition_question` - `T` if a condition is configured for the question, i.e., if the question is only displayed given a certain condition applies, `F` otherwise
+- `condition_question` - `T` if a condition is configured for the question, i.e., if the question is only displayed
+  given a certain condition applies, `F` otherwise
 - `condition_question_type` - whether the condition originates from the same or another questionnaire
 - `condition_question_questionnaire_id` - the condition target questionnaire's id
 - `condition_question_questionnaire_version` - the condition target questionnaire's version
@@ -314,7 +351,8 @@ Each row represents one laboratory result observation. The following columns are
 
 ## Samples
 
-The `samples.csv` file contains meta-data of the nasal swamp samples that were collected during the study. Each row represents one
+The `samples.csv` file contains meta-data of the nasal swamp samples that were collected during the study. Each row
+represents one
 sample. The following columns are available:
 
 - `Proben_ID` - sample id 1
@@ -368,7 +406,8 @@ export. Each row represents one questionnaire. The following columns are availab
 - `compliance_samples_needed` - `T` if the questionnaire should only be displayed to participants who complied to take
   samples, `F` otherwise
 - `visibility` - `hidden` if the questionnaire should not be displayed to participants, `testprobands` if the
-  questionnaire should only be displayed to test participants, `allaudiences` if the questionnaire should be displayed to
+  questionnaire should only be displayed to test participants, `allaudiences` if the questionnaire should be displayed
+  to
   all participants of the study
 - `despite_end_signal` - `T` if answers to this questionnaire should be preserved after the final signal of SORMAS
   (only relevant if PIA is configured to connect to a SORMAS system), `F` otherwise
@@ -379,7 +418,8 @@ export. Each row represents one questionnaire. The following columns are availab
 - `condition_questionnaire_name` - the name of the questionnaire to which the condition relates
 - `condition_questionnaire_id` - the id of the questionnaire to which the condition relates
 - `condition_questionnaire_version` - the version of the questionnaire to which the condition relates
-- `condition_questionnaire_question_id` - the id of the question to which the condition relates (format: `q_[question id][answer option id]`)
+- `condition_questionnaire_question_id` - the id of the question to which the condition relates (
+  format: `q_[question id][answer option id]`)
 - `condition_questionnaire_question_column_name` - the column name of the question to which the condition relates and to
   which the question can be found in the codebook ([read more](#codebook)) and answers export ([read more](#answers))
 - `condition_questionnaire_question_operand` - the comparison operand (`<`/`>`/`<=`/`>=`/`==`/`\=`)
@@ -397,7 +437,8 @@ cycles are available:
 - `month` - the questionnaire appears every x months, where x is equal to the value of `cycle_amount`
 - `hour` - the questionnaire appears every x hours starting at time t, where x is equal to the value of `cycle_per_day`
   and t is equal to `cycle_first_at`
-- `spontan` - the questionnaire is always visible. After one questionnaire instance was released, a new one appears immediately
+- `spontan` - the questionnaire is always visible. After one questionnaire instance was released, a new one appears
+  immediately
 - `date` - the questionnaire appears only once at a specific date based on the `activate_at_date` setting
 
 ## Settings
@@ -410,8 +451,10 @@ one participant. The following columns are available:
 - `Testproband` - `Ja` if the participant is a test participant, `Nein` otherwise
 - `Einwilligung Ergebnismitteilung` - `Ja` if the participant externally agreed to receive the results of lab
   observations, `Nein` otherwise ([read more](#external-consents))
-- `Einwilligung Probenentnahme` - `Ja` if the participant externally agreed to take nasal swabs, `Nein` otherwise ([read more](#external-consents))
-- `Einwilligung Blutprobenentnahme` - `Ja` if the participant externally agreed to give blood samples, `Nein` otherwise ([read more](#external-consents))
+- `Einwilligung Probenentnahme` - `Ja` if the participant externally agreed to take nasal swabs, `Nein`
+  otherwise ([read more](#external-consents))
+- `Einwilligung Blutprobenentnahme` - `Ja` if the participant externally agreed to give blood samples, `Nein`
+  otherwise ([read more](#external-consents))
 
 ### External Consents
 

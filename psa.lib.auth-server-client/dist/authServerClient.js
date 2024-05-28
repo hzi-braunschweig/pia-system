@@ -21,8 +21,12 @@ class AuthServerClient extends keycloak_admin_client_1.default {
         this.reconnectInterval = reconnectInterval;
         this.connectionEvents = new events_1.EventEmitter();
         this.waitForConnection = undefined;
+        this.connected = false;
         this.accessTokenLifespan = FIFE_SECONDS * MILLI_PER_SECOND;
         this.realm = clientSettings.realm;
+    }
+    isConnected() {
+        return this.connected;
     }
     connect() {
         if (!this.waitForConnection) {
@@ -83,6 +87,7 @@ class AuthServerClient extends keycloak_admin_client_1.default {
     initConnectionHandling() {
         this.connectionEvents.on('connection_lost', () => {
             console.warn('lost connection to keycloak');
+            this.connected = false;
             try {
                 this.reconnect();
             }
@@ -92,6 +97,7 @@ class AuthServerClient extends keycloak_admin_client_1.default {
         });
         this.connectionEvents.on('connected', () => {
             console.info('connected to keycloak');
+            this.connected = true;
             try {
                 this.initRenewTokenHandling();
             }

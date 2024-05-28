@@ -5,36 +5,52 @@
  */
 
 import { Component, Inject } from '@angular/core';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 
 export interface DialogPopUpData {
   content: string;
   values?: object;
   isSuccess: boolean;
+  showLinebreaks?: boolean;
 }
 
 @Component({
   selector: 'app-dialog-pop-up',
+  styles: [
+    `
+      .mat-mdc-dialog-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .show-linebreaks {
+        white-space: pre-line;
+      }
+
+      .mat-icon {
+        display: block;
+        font-size: 80px;
+        width: 80px;
+        height: 80px;
+      }
+    `,
+  ],
   template: `
-    <div
-      style="display: flex; justify-content: center; font-size: 80px; margin-bottom: 25px;"
-    >
-      <mat-icon [inline]="true" style="color:#7aa228;" *ngIf="data.isSuccess">
+    <mat-dialog-content class="space-y">
+      <mat-icon style="color:#7aa228;" *ngIf="data.isSuccess">
         check_circle
       </mat-icon>
-      <mat-icon [inline]="true" style="color:#f44336;" *ngIf="!data.isSuccess">
+      <mat-icon style="color:#f44336;" *ngIf="!data.isSuccess">
         cancel
       </mat-icon>
-    </div>
-    <mat-dialog-content>
-      {{ data.content | translate: data.values }}
+      <p class="mat-body" [class.show-linebreaks]="data.showLinebreaks">
+        {{ data.content | translate: data.values }}
+      </p>
     </mat-dialog-content>
-    <mat-dialog-actions align="center">
-      <button mat-button color="primary" [mat-dialog-close] id="confirmbutton">
+    <mat-dialog-actions>
+      <button mat-button mat-dialog-close color="primary" id="confirmbutton">
         OK
       </button>
     </mat-dialog-actions>

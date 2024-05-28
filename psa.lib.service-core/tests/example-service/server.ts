@@ -11,6 +11,7 @@ import { config } from './config';
 
 export class Server {
   public static instance: Hapi.Server | undefined;
+  public static healthCheckResult = true;
 
   public static async init(): Promise<void> {
     Server.instance = new Hapi.Server({
@@ -25,7 +26,7 @@ export class Server {
       },
       app: {
         healthcheck: async (): Promise<boolean> => {
-          return Promise.resolve(true);
+          return Promise.resolve(this.healthCheckResult);
         },
       },
     });

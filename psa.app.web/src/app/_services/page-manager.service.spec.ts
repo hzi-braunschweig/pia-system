@@ -178,6 +178,11 @@ describe('PageManager', () => {
           path: ['deletelogs'],
           subpaths: ['deletelogs'],
         },
+        {
+          name: 'SIDENAV.PUBLIC_API',
+          path: ['public-api'],
+          subpaths: ['public-api'],
+        },
       ]);
     }));
 

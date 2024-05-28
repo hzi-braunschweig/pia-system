@@ -9,7 +9,7 @@ import chaiHttp from 'chai-http';
 import { StatusCodes } from 'http-status-codes';
 
 import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
-import { UserFileDto } from '../../src/models/userFile';
+import { UserFileResponse } from '../../src/models/userFile';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
 import { cleanup, setup } from './images.spec.data/setup.helper';
@@ -100,7 +100,9 @@ describe('/files', function () {
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body).to.have.property('file');
       expect(result.body).to.have.property('file_name');
-      expect((result.body as UserFileDto).file).to.equal(clockImageAsBase64);
+      expect((result.body as UserFileResponse).file).to.equal(
+        clockImageAsBase64
+      );
     });
 
     it('should return HTTP 200 and image id for UT if the instance is for UT and the study matches', async function () {
@@ -110,7 +112,9 @@ describe('/files', function () {
         .set(utHeader);
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body).to.have.property('file');
-      expect((result.body as UserFileDto).file).to.equal(clockImageAsBase64);
+      expect((result.body as UserFileResponse).file).to.equal(
+        clockImageAsBase64
+      );
     });
   });
 
@@ -125,7 +129,9 @@ describe('/files', function () {
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body).to.have.property('file');
       expect(result.body).to.have.property('file_name');
-      expect((result.body as UserFileDto).file).to.equal(clockImageAsBase64);
+      expect((result.body as UserFileResponse).file).to.equal(
+        clockImageAsBase64
+      );
     });
 
     it('should have name "clock.svg"', async function () {
@@ -133,7 +139,7 @@ describe('/files', function () {
         .request(apiAddress)
         .get('/files/99996')
         .set(probandHeader1);
-      expect((result.body as UserFileDto).file_name).to.equal('clock.svg');
+      expect((result.body as UserFileResponse).file_name).to.equal('clock.svg');
     });
 
     it('should return HTTP 403 if image does not belong to user ', async function () {

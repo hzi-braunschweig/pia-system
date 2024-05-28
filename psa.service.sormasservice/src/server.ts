@@ -5,7 +5,7 @@
  */
 
 import Hapi from '@hapi/hapi';
-import '@hapi/vision';
+import Vision from '@hapi/vision';
 import Ejs from 'ejs';
 import { MailService, registerPlugins } from '@pia/lib-service-core';
 import * as packageJson from '../package.json';
@@ -27,7 +27,6 @@ export class Server {
     this.instance = Hapi.server({
       host: config.public.host,
       port: config.public.port,
-      tls: config.public.tls,
       routes: {
         cors: { origin: ['*'] },
         timeout: {
@@ -71,6 +70,7 @@ export class Server {
         directory: __dirname + '/../resources/i18n',
       },
     });
+    await this.instance.register(Vision);
     this.instance.views({
       engines: {
         ejs: Ejs,

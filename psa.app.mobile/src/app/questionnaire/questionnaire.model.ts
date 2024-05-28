@@ -36,6 +36,7 @@ export interface Question {
   questionnaire_id: number;
   questionnaire_version: number;
   text: string;
+  help_text: string;
   variable_name: string;
   position: number;
   is_mandatory: boolean;

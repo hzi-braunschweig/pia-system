@@ -3,181 +3,187 @@
   ~
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
-
-<div class="filter-area">
-  <mat-form-field class="study-filter">
-    <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
-    <mat-select
-      disableOptionCentering
-      id="selectstudy"
-      (selectionChange)="onStudyChange()"
-      [(ngModel)]="activeFilter.studyName"
-      data-e2e="e2e-compliance-management-study-select"
-    >
-      <mat-option
-        *ngFor="let studyName of studyFilterValues"
-        [value]="studyName"
-      >
-        {{ studyName }}
-      </mat-option>
-    </mat-select>
-  </mat-form-field>
-
-  <mat-form-field class="free-text-filter">
-    <mat-label>{{ 'GENERAL.FILTER' | translate }}</mat-label>
-    <input
-      matInput
-      (keyup)="updateFilter()"
-      [(ngModel)]="activeFilter.searchString"
-    />
-  </mat-form-field>
-
-  <div class="test-proband-filter">
-    <label>
-      <small>{{ 'PROBANDEN.TESTPROBAND' | translate }}</small>
-    </label>
-    <mat-radio-group
-      (change)="updateFilter()"
-      [(ngModel)]="activeFilter.isTestproband"
-    >
-      <mat-radio-button [value]="'GENERAL.YES' | translate">
-        <small>{{ 'GENERAL.YES' | translate }}</small>
-      </mat-radio-button>
-      <mat-radio-button [value]="'GENERAL.NO' | translate">
-        <small>{{ 'GENERAL.NO' | translate }}</small>
-      </mat-radio-button>
-      <mat-radio-button [value]="null">
-        <small>{{ 'GENERAL.BOTH' | translate }}</small>
-      </mat-radio-button>
-    </mat-radio-group>
-  </div>
-</div>
-
-<div class="probands-list-container mat-elevation-z8">
-  <div class="table-container">
-    <table
-      mat-table
-      [dataSource]="dataSource"
-      matSortActive="username"
-      matSortDirection="asc"
-      matSort
-    >
-      <!-- Username Column -->
-      <ng-container matColumnDef="username">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'PROBAND.PSEUDONYM' | translate }}
-        </th>
-        <td mat-cell *matCellDef="let row">
-          {{ row.ids?.toLowerCase() === row.username ? '' : row.username }}
-        </td>
-      </ng-container>
-
-      <!-- IDS Column -->
-      <ng-container matColumnDef="ids">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'PROBAND.IDS' | translate }}
-        </th>
-        <td mat-cell *matCellDef="let row">{{ row.ids }}</td>
-      </ng-container>
-
-      <!-- Study Column -->
-      <ng-container matColumnDef="study">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'QUESTIONNAIRES_FORSCHER.STUDY_ID' | translate }}
-        </th>
-        <td
-          mat-cell
-          *matCellDef="let row"
-          data-e2e="e2e-compliance-management-study"
+<div class="space-y">
+  <mat-card class="utility-card">
+    <mat-card-content class="filter-area">
+      <mat-form-field class="study-filter">
+        <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
+        <mat-select
+          disableOptionCentering
+          id="selectstudy"
+          (selectionChange)="onStudyChange()"
+          [(ngModel)]="activeFilter.studyName"
+          data-e2e="e2e-compliance-management-study-select"
         >
-          {{ row.study }}
-        </td>
-      </ng-container>
+          <mat-option
+            *ngFor="let studyName of studyFilterValues"
+            [value]="studyName"
+            data-e2e="option"
+          >
+            {{ studyName }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
-      <!-- TestProband Column -->
-      <ng-container matColumnDef="is_test_proband">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'PROBAND.IS_TEST_PROBAND' | translate }}
-        </th>
-        <td mat-cell *matCellDef="let row">{{ row.is_test_proband }}</td>
-      </ng-container>
+      <mat-form-field class="free-text-filter">
+        <mat-label>{{ 'GENERAL.FILTER' | translate }}</mat-label>
+        <input
+          matInput
+          (keyup)="updateFilter()"
+          [(ngModel)]="activeFilter.searchString"
+        />
+      </mat-form-field>
 
-      <!-- Date of first login Column -->
-      <ng-container matColumnDef="first_logged_in_at">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'PROBANDEN.FIRST_LOGIN' | translate }}
-        </th>
-        <td mat-cell *matCellDef="let row">
-          {{ row.first_logged_in_at | date }}
-        </td>
-      </ng-container>
+      <div class="test-proband-filter">
+        <label>
+          <small>{{ 'PROBANDEN.TESTPROBAND' | translate }}</small>
+        </label>
+        <mat-radio-group
+          (change)="updateFilter()"
+          [(ngModel)]="activeFilter.isTestproband"
+        >
+          <mat-radio-button [value]="'GENERAL.YES' | translate">
+            <small>{{ 'GENERAL.YES' | translate }}</small>
+          </mat-radio-button>
+          <mat-radio-button [value]="'GENERAL.NO' | translate">
+            <small>{{ 'GENERAL.NO' | translate }}</small>
+          </mat-radio-button>
+          <mat-radio-button [value]="null">
+            <small>{{ 'GENERAL.BOTH' | translate }}</small>
+          </mat-radio-button>
+        </mat-radio-group>
+      </div>
+    </mat-card-content>
+  </mat-card>
 
-      <!-- Date of creation -->
-      <ng-container matColumnDef="created_at">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'PROBANDEN.CREATED_AT' | translate }}
-        </th>
-        <td mat-cell *matCellDef="let row">
-          {{ row.created_at | date }}
-        </td>
-      </ng-container>
-
-      <!-- Account status Column -->
-      <ng-container matColumnDef="accountStatus">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'PROBANDEN.ACCOUNT_STATUS' | translate }}
-        </th>
-        <td mat-cell *matCellDef="let row">{{ row.status }}</td>
-      </ng-container>
-
-      <!-- Account origin -->
-      <ng-container matColumnDef="origin">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'PROBANDEN.ORIGIN' | translate }}
-        </th>
-        <td mat-cell *matCellDef="let row">{{ row.origin }}</td>
-      </ng-container>
-
-      <ng-container
-        *ngFor="let action of entryActions | keyvalue"
-        [matColumnDef]="action.value.columnName"
-      >
-        <th mat-header-cell *matHeaderCellDef>
-          <div class="mobile">{{ action.value.header }}</div>
-        </th>
-        <td mat-cell *matCellDef="let row">
-          <ng-container *ngFor="let button of action.value.buttons">
-            <button
-              mat-button
-              *ngIf="isShown(row.userObject, button)"
-              color="accent"
-              [disabled]="isDisabled(row.userObject, button)"
-              (click)="button.eventEmitter.emit(row.userObject)"
-              data-e2e="e2e-compliance-management-show-consent-button"
-            >
-              <mat-icon>{{ button.icon }}</mat-icon>
-              <label>{{ button.label }}</label>
-            </button>
+  <mat-card>
+    <mat-card-content>
+      <div class="table-container">
+        <table
+          mat-table
+          [dataSource]="dataSource"
+          matSortActive="username"
+          matSortDirection="asc"
+          matSort
+        >
+          <!-- Username Column -->
+          <ng-container matColumnDef="username">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'PROBAND.PSEUDONYM' | translate }}
+            </th>
+            <td mat-cell *matCellDef="let row">
+              {{ row.ids?.toLowerCase() === row.username ? '' : row.username }}
+            </td>
           </ng-container>
-        </td>
-      </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-    </table>
-  </div>
-  <div
-    class="table-no-results"
-    *ngIf="!isLoading && dataSource.filteredData.length === 0"
-  >
-    {{ 'PROBANDEN.FILTER_NO_RESULTS' | translate }}
-  </div>
+          <!-- IDS Column -->
+          <ng-container matColumnDef="ids">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'PROBAND.IDS' | translate }}
+            </th>
+            <td mat-cell *matCellDef="let row">{{ row.ids }}</td>
+          </ng-container>
 
-  <mat-paginator
-    [length]="dataSource.data.length"
-    [pageIndex]="0"
-    [pageSize]="25"
-    [pageSizeOptions]="[5, 10, 25, 100]"
-  >
-  </mat-paginator>
+          <!-- Study Column -->
+          <ng-container matColumnDef="study">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'QUESTIONNAIRES_FORSCHER.STUDY_ID' | translate }}
+            </th>
+            <td
+              mat-cell
+              *matCellDef="let row"
+              data-e2e="e2e-compliance-management-study"
+            >
+              {{ row.study }}
+            </td>
+          </ng-container>
+
+          <!-- TestProband Column -->
+          <ng-container matColumnDef="is_test_proband">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'PROBAND.IS_TEST_PROBAND' | translate }}
+            </th>
+            <td mat-cell *matCellDef="let row">{{ row.is_test_proband }}</td>
+          </ng-container>
+
+          <!-- Date of first login Column -->
+          <ng-container matColumnDef="first_logged_in_at">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'PROBANDEN.FIRST_LOGIN' | translate }}
+            </th>
+            <td mat-cell *matCellDef="let row">
+              {{ row.first_logged_in_at | date }}
+            </td>
+          </ng-container>
+
+          <!-- Date of creation -->
+          <ng-container matColumnDef="created_at">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'PROBANDEN.CREATED_AT' | translate }}
+            </th>
+            <td mat-cell *matCellDef="let row">
+              {{ row.created_at | date }}
+            </td>
+          </ng-container>
+
+          <!-- Account status Column -->
+          <ng-container matColumnDef="accountStatus">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'PROBANDEN.ACCOUNT_STATUS' | translate }}
+            </th>
+            <td mat-cell *matCellDef="let row">{{ row.status }}</td>
+          </ng-container>
+
+          <!-- Account origin -->
+          <ng-container matColumnDef="origin">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'PROBANDEN.ORIGIN' | translate }}
+            </th>
+            <td mat-cell *matCellDef="let row">{{ row.origin }}</td>
+          </ng-container>
+
+          <ng-container
+            *ngFor="let action of entryActions | keyvalue"
+            [matColumnDef]="action.value.columnName"
+          >
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="mobile">{{ action.value.header }}</div>
+            </th>
+            <td mat-cell *matCellDef="let row">
+              <ng-container *ngFor="let button of action.value.buttons">
+                <button
+                  mat-button
+                  *ngIf="isShown(row.userObject, button)"
+                  color="accent"
+                  [disabled]="isDisabled(row.userObject, button)"
+                  (click)="button.eventEmitter.emit(row.userObject)"
+                  data-e2e="e2e-compliance-management-show-consent-button"
+                >
+                  <mat-icon>{{ button.icon }}</mat-icon>
+                  <label>{{ button.label }}</label>
+                </button>
+              </ng-container>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+      <div
+        class="table-no-results"
+        *ngIf="!isLoading && dataSource.filteredData.length === 0"
+      >
+        {{ 'PROBANDEN.FILTER_NO_RESULTS' | translate }}
+      </div>
+
+      <mat-paginator
+        [length]="dataSource.data.length"
+        [pageIndex]="0"
+        [pageSize]="25"
+        [pageSizeOptions]="[5, 10, 25, 100]"
+      >
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
 </div>

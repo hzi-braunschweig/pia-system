@@ -8,37 +8,12 @@ Analyzer service watches and reacts to db changes
 
 ## Getting Started
 
-### Requirements
+### Development
 
-- Linux, MacOS
-- nodejs
-- npm
-- docker
-- docker-compose
-
-### Installation
-
-Analyzer service is installed and started in a docker container.
-
-### Build and Run
-
-Use `start.sh` to automatically build and start the analyzer service in a docker container
-
-```
-cd pia-ansible/local
-./start.sh start analyzerservice
-```
+See [development documentation](../docs/development.md).
 
 ### Test
 
 - Install dependencies `npm install`
 - Run integration tests `npm run test.int`
 - Run unit tests `npm run test.unit`
-
-## Docs and Debug
-
-- View service logs `./start.sh logs analyzerservice`
-
-## Problems and Solutions
-
-- Add first problem/solution

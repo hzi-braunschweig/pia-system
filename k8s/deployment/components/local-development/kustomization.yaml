@@ -1,0 +1,120 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+components:
+  - ../no-servicemonitor
+  - ../no-modysservice
+  - ../no-sormasservice
+  - ../no-precheck
+  - ../example-pia-config
+
+patches:
+  - target:
+      kind: PersistentVolumeClaim
+    patch: |-
+      - op: replace
+        path: /spec/storageClassName
+        value: local-path
+
+  # use lower cpu requests in local environment
+  - target:
+      kind: StatefulSet
+    patch: |-
+      - op: replace
+        path: "/spec/template/spec/containers/0/resources/requests/cpu"
+        value: "200m"
+
+  - target:
+      kind: Ingress
+      name: apigateway
+    patch: |-
+      - op: replace
+        path: "/spec/rules/0/host"
+        value: "pia-app"
+      - op: replace
+        path: "/spec/tls/0/hosts/0"
+        value: "pia-app"
+
+  # for the mailhog ingress
+  - target:
+      kind: Ingress
+      name: mailhog
+    patch: |-
+      - op: replace
+        path: "/spec/rules/0/host"
+        value: "mail-pia-app"
+      - op: replace
+        path: "/spec/tls/0/hosts/0"
+        value: "mail-pia-app"
+
+  # disable http authentication for local development and E2E tests
+  - target:
+      kind: Deployment
+      name: mailserver
+    patch: |-
+      - op: remove
+        path: "/spec/template/spec/containers/0/args"
+
+  - target:
+      kind: Secret
+    patch: |-
+      - op: replace
+        path: "/metadata/labels"
+        value:
+          app: "pia"
+
+  # Allows access to keycloak admin console
+  - target:
+      kind: Deployment
+      name: apigateway
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: apigateway
+      spec:
+        template:
+          spec:
+            containers:
+              - name: main
+                env:
+                  - name: IS_DEVELOPMENT_SYSTEM
+                    value: 'true'
+
+  # Allows 'DEV' as a valid pseudonym prefix
+  - target:
+      kind: Deployment
+      name: userservice
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: userservice
+      spec:
+        template:
+          spec:
+            containers:
+              - name: main
+                env:
+                  - name: IS_DEVELOPMENT_SYSTEM
+                    value: 'true'
+
+  # Allow keycloak direct access grant for E2E tests
+  - target:
+      kind: Deployment
+      name: authserver
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: authserver
+      spec:
+        template:
+          spec:
+            containers:
+              - name: main
+                env:
+                  - name: IS_DEVELOPMENT_SYSTEM
+                    value: 'true'
+                  - name: IS_DIRECT_ACCESS_GRANT_ENABLED
+                    value: 'true'

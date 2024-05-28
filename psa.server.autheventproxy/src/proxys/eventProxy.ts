@@ -6,6 +6,8 @@
 
 import * as amqp from 'amqplib';
 import { MessageQueueService } from '../services/messageQueueService';
+import { StudyOfParticipantNotFound } from '../errors';
+import { probandAuthClient } from '../clients/authServerClient';
 
 /**
  * This base class defines the necessary methods to implement an event proxy.
@@ -44,5 +46,41 @@ export class EventProxy {
     _channel: amqp.Channel
   ): (message: amqp.ConsumeMessage | null) => void {
     throw new Error(`Please implement onMessage() method`);
+  }
+
+  /**
+   * Helper method to get the study name of a participants account
+   * @param username
+   * @protected
+   */
+  protected async getStudyNameOfAccountOrFail(
+    username: string
+  ): Promise<string> {
+    const users = await probandAuthClient.users.find({
+      username,
+      realm: probandAuthClient.realm,
+    });
+
+    const user = users.find((u) => u.username === username);
+
+    if (!user?.id) {
+      throw new StudyOfParticipantNotFound(username);
+    }
+
+    const groups = (
+      await probandAuthClient.users.listGroups({
+        id: user.id,
+        briefRepresentation: true,
+        realm: probandAuthClient.realm,
+      })
+    )
+      .filter((group) => !!group.name)
+      .map((group) => group.name);
+
+    if (groups.length === 0 || groups[0] === undefined) {
+      throw new StudyOfParticipantNotFound(username);
+    }
+
+    return groups[0];
   }
 }

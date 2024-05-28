@@ -7,18 +7,16 @@
 <div *ngIf="form">
   <form [formGroup]="form" (ngSubmit)="submit()">
     <h1 mat-dialog-title>{{ 'STUDIES.CHANGE_ACCESS_LEVEL' | translate }}</h1>
-    <mat-dialog-content>
-      <div fxFlex>
-        <span>
-          {{ 'LOGIN.USERNAME' | translate }}: <br />
-          {{ username }}
-        </span>
-      </div>
-      <mat-form-field fxFlex>
+    <mat-dialog-content class="full-width-children">
+      <mat-form-field>
+        <mat-label>{{ 'LOGIN.USERNAME' | translate }}</mat-label>
+        <input disabled matInput [value]="username" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'DIALOG.ACCESS_LEVEL' | translate }}</mat-label>
         <mat-select
           disableOptionCentering
           id="changeaccesslevel"
-          placeholder="{{ 'DIALOG.ACCESS_LEVEL' | translate }}"
           formControlName="accessLevel"
         >
           <mat-option *ngFor="let access of accesses" [value]="access.value">
@@ -27,7 +25,7 @@
         </mat-select>
       </mat-form-field>
     </mat-dialog-content>
-    <mat-dialog-actions align="end">
+    <mat-dialog-actions>
       <button mat-button type="button" (click)="dialogRef.close()">
         {{ 'DIALOG.CANCEL' | translate }}
       </button>
@@ -35,6 +33,7 @@
         id="confirmbutton"
         mat-button
         type="submit"
+        color="primary"
         [disabled]="!form.valid"
       >
         {{ 'DIALOG.REGISTER' | translate }}

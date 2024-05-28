@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 import { AppModule } from '../../../app.module';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { SampleManagementComponent } from './sample-management.component';
 import { CurrentUser } from '../../../_services/current-user.service';
@@ -22,9 +23,9 @@ import {
   createPersonalData,
   createProband,
 } from '../../../psa.app.core/models/instance.helper.spec';
-import { MatLegacyFormFieldModule as MatFormFieldModule } from '@angular/material/legacy-form-field';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
-import { MatLegacyPaginatorModule as MatPaginatorModule } from '@angular/material/legacy-paginator';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { FormControl } from '@angular/forms';
 import SpyObj = jasmine.SpyObj;
@@ -87,6 +88,7 @@ describe('SampleManagementComponent', () => {
       .keep(MatInputModule)
       .keep(MatPaginatorModule)
       .keep(MatSortModule)
+      .keep(BreakpointObserver)
       .mock(CurrentUser, currentUser)
       .mock(ProbandService, probandService)
       .mock(Router, router)
@@ -133,20 +135,5 @@ describe('SampleManagementComponent', () => {
         );
       });
     }
-  });
-
-  it('should adjust header columns according to screen size', async () => {
-    const changes = from(
-      Array.from(component.mediaColumnMap.keys()).map((mqAlias) => [
-        new MediaChange(null, null, mqAlias),
-      ])
-    );
-    mediaObserver.asObservable.and.returnValue(changes);
-    mediaObserver.isActive.and.returnValue(true);
-
-    component.initializeCols();
-
-    const cols = await firstValueFrom(component.cols.pipe(toArray()));
-    expect(cols).toEqual([5, ...Array.from(component.mediaColumnMap.values())]);
   });
 });

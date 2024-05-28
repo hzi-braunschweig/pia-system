@@ -243,6 +243,10 @@ export function mockGetProfessionalAccountsByStudyName(
             username: 'forscher3@example.com',
             id: '7',
           },
+          {
+            username: 'service-account-foo-bar',
+            id: '100',
+          },
         ],
       ],
       [

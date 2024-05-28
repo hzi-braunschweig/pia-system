@@ -1,0 +1,36 @@
+{
+  "entryFile": "src/index.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/controllers/public/*Controller.ts"],
+  "spec": {
+    "outputDirectory": "spec",
+    "specFileBaseName": "openapi",
+    "specVersion": 3,
+    "yaml": true,
+    "basePath": "/api/v1",
+    "version": "1",
+    "tags": [
+      {
+        "name": "Participants",
+        "description": "Operations related to the participant resource.\n\nA participant can answer questionnaire instances and is always part of exactly one study."
+      }
+    ],
+    "securityDefinitions": {
+      "jwt-public": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "/api/v1/auth/realms/pia-admin-realm/protocol/openid-connect/token",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  },
+  "routes": {
+    "middleware": "hapi",
+    "routesDir": "src",
+    "routesFileName": "publicRoutes.generated.ts",
+    "authenticationModule": "./src/auth.ts"
+  }
+}

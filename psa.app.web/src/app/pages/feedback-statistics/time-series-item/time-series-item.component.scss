@@ -4,6 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+:host {
+  display: block;
+}
+
 .time-series-card {
   background-color: rgba(0, 0, 0, 0.04);
 }
@@ -17,8 +21,9 @@
 }
 
 .color-option-field {
-  display: inline-block;
+  display: block;
   width: 100%;
+  min-width: 30px;
   height: 30px;
   border-radius: 5px;
 

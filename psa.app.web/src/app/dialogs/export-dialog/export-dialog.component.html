@@ -8,49 +8,48 @@
 
 <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
   <h1 mat-dialog-title>{{ 'DIALOG.FILTER_DATA' | translate }}</h1>
-  <mat-dialog-content>
+  <mat-dialog-content class="space-y">
+    <div>{{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_DATE' | translate }}</div>
     <div class="grid-container">
-      <span>{{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_DATE' | translate }}</span>
-
-      <span
-        >{{ 'DIALOG.FROM' | translate }}
-        <mat-form-field>
-          <input
-            matInput
-            [max]="currentDate"
-            [matDatepicker]="picker_start"
-            formControlName="start_date"
-            placeholder="{{ 'QUESTIONNAIRE_FORSCHER.DATE_EMPTY' | translate }}"
-            (dateChange)="onStartDateChange()"
-          />
-          <mat-datepicker-toggle
-            matSuffix
-            [for]="picker_start"
-          ></mat-datepicker-toggle>
-          <mat-datepicker #picker_start></mat-datepicker>
-        </mat-form-field>
-      </span>
-
-      <span
-        >{{ 'DIALOG.TO' | translate }}
-        <mat-form-field>
-          <input
-            matInput
-            [min]="form.controls['start_date'].value"
-            [max]="currentDate"
-            [matDatepicker]="picker_end"
-            formControlName="end_date"
-            placeholder="{{ 'QUESTIONNAIRE_FORSCHER.DATE_EMPTY' | translate }}"
-          />
-          <mat-datepicker-toggle
-            matSuffix
-            [for]="picker_end"
-          ></mat-datepicker-toggle>
-          <mat-datepicker #picker_end></mat-datepicker>
-        </mat-form-field>
-      </span>
-
-      <mat-form-field fxFlex>
+      <mat-form-field>
+        <mat-label>{{ 'DIALOG.FROM' | translate }}</mat-label>
+        <input
+          matInput
+          [max]="currentDate"
+          [matDatepicker]="picker_start"
+          formControlName="start_date"
+          (dateChange)="onStartDateChange()"
+        />
+        <mat-hint>{{
+          'QUESTIONNAIRE_FORSCHER.DATE_EMPTY' | translate
+        }}</mat-hint>
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="picker_start"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #picker_start></mat-datepicker>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'DIALOG.TO' | translate }}</mat-label>
+        <input
+          matInput
+          [min]="form.controls['start_date'].value"
+          [max]="currentDate"
+          [matDatepicker]="picker_end"
+          formControlName="end_date"
+        />
+        <mat-hint>{{
+          'QUESTIONNAIRE_FORSCHER.DATE_EMPTY' | translate
+        }}</mat-hint>
+        <mat-datepicker-toggle
+          matSuffix
+          [for]="picker_end"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #picker_end></mat-datepicker>
+      </mat-form-field>
+    </div>
+    <div class="grid-container">
+      <mat-form-field>
         <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
         <mat-select id="selectstudy" formControlName="study_name">
           <mat-option
@@ -69,19 +68,19 @@
         </mat-error>
       </mat-form-field>
 
-      <mat-form-field fxFlex>
+      <mat-form-field>
+        <mat-label>{{ 'SIDENAV.QUESTIONNAIRES' | translate }}</mat-label>
         <mat-select
           id="selectquestionnaire"
           [multiple]="true"
-          placeholder="{{ 'SIDENAV.QUESTIONNAIRES' | translate }}"
           formControlName="questionnaires"
         >
           <mat-select-search
             [formControl]="questionnaireFilterCtrl"
           ></mat-select-search>
-          <app-mat-option-select-all>{{
-            'CONTACTS.SELECT_ALL' | translate
-          }}</app-mat-option-select-all>
+          <app-mat-option-select-all
+            >{{ 'CONTACTS.SELECT_ALL' | translate }}
+          </app-mat-option-select-all>
           <mat-option
             *ngFor="let questionnaire of questionnairesForSelection | async"
             [value]="{ id: questionnaire.id, version: questionnaire.version }"
@@ -99,17 +98,14 @@
       </mat-form-field>
 
       <mat-form-field fxFlex>
-        <mat-select
-          id="selectproband"
-          placeholder="{{ 'SIDENAV.PROBANDS' | translate }}"
-          formControlName="probands"
-        >
+        <mat-label>{{ 'SIDENAV.PROBANDS' | translate }}</mat-label>
+        <mat-select id="selectproband" formControlName="probands">
           <mat-select-search
             [formControl]="probandFilterCtrl"
           ></mat-select-search>
-          <mat-option value="allProbandsCheckbox">{{
-            'CONTACTS.ALL_PROBANDS' | translate
-          }}</mat-option>
+          <mat-option value="allProbandsCheckbox"
+            >{{ 'CONTACTS.ALL_PROBANDS' | translate }}
+          </mat-option>
           <mat-option
             *ngFor="let proband of probandsForSelection | async"
             [value]="proband.pseudonym"
@@ -125,24 +121,22 @@
           {{ 'DIALOG.PROBAND_REQUIRED' | translate }}
         </mat-error>
       </mat-form-field>
-
-      <ul>
-        <li
-          *ngFor="let checkbox of exportCheckboxes; let i = index"
-          formArrayName="exports"
-        >
-          <mat-checkbox [formControlName]="i">
-            {{ checkbox.name | translate }}
-          </mat-checkbox>
-        </li>
-      </ul>
     </div>
-
-    <p class="dialog-export-hint" *ngIf="isLoading">
+    <app-hint class="dialog-export-hint" *ngIf="isLoading">
       {{ 'DIALOG.EXPORT_HINT' | translate }}
-    </p>
+    </app-hint>
+    <ul class="export-selection">
+      <li
+        *ngFor="let checkbox of exportCheckboxes; let i = index"
+        formArrayName="exports"
+      >
+        <mat-checkbox [formControlName]="i">
+          {{ checkbox.name | translate }}
+        </mat-checkbox>
+      </li>
+    </ul>
   </mat-dialog-content>
-  <mat-dialog-actions align="end">
+  <mat-dialog-actions>
     <button mat-button type="button" (click)="dialogRef.close()">
       {{ 'DIALOG.CANCEL' | translate }}
     </button>

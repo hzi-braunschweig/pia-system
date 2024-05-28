@@ -5,7 +5,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { NotificationDto } from '../psa.app.core/models/notification';
 import { CurrentUser } from './current-user.service';

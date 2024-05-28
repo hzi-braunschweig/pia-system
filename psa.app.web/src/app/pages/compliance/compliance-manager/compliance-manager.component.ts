@@ -5,20 +5,22 @@
  */
 
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import {
   DialogViewComplianceComponent,
   DialogViewComplianceComponentData,
 } from '../compliance-view-dialog/dialog-view-compliance.component';
-import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
+import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatTableDataSource } from '@angular/material/table';
 import { AlertService } from '../../../_services/alert.service';
 import { ProbandsListEntryActionConfig } from '../../../features/probands-list/probands-list.component';
 import { ComplianceAgreement } from '../../../psa.app.core/models/compliance';
 import { CompliancesFilter } from './compliances-filter';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { ComplianceService } from '../../../psa.app.core/providers/compliance-service/compliance-service';
+import { HttpEvent, HttpResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-compliance-manager',
@@ -118,6 +120,38 @@ export class ComplianceManagerComponent implements OnInit {
       autoFocus: true,
       disableClose: false,
       data: dialogData,
+    });
+  }
+
+  downloadAllCompliances(): void {
+    if (!this.activeFilter.studyName) {
+      throw new Error('No study selected');
+    }
+
+    this.isLoading = true;
+
+    const responseStream = this.complianceService.getExportData(
+      this.activeFilter.studyName
+    );
+
+    this.saveExportFile(responseStream);
+  }
+
+  saveExportFile(responseStream: Observable<HttpEvent<Blob>>): void {
+    responseStream.subscribe({
+      next: (response: HttpResponse<Blob>) => {
+        const downloadLink = document.createElement('a');
+        downloadLink.href = window.URL.createObjectURL(response.body);
+        downloadLink.setAttribute('download', 'export.zip');
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.alertService.errorObject(error);
+        this.isLoading = false;
+      },
     });
   }
 }

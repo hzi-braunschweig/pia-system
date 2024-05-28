@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import {
   ComplianceAgreement,
@@ -15,7 +15,7 @@ import {
   GenericFieldDescription,
 } from '../../models/compliance';
 import { TemplateSegment } from '../../models/Segments';
-import { firstValueFrom } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -150,6 +150,17 @@ export class ComplianceService {
   getComplianceAgreementPdfById(studyName: string, complianceId: number): void {
     this.getPdfFromUrl(
       `${this.apiUrl}${studyName}/agree-pdf/instance/${complianceId}`
+    );
+  }
+
+  getExportData(studyName: string): Observable<HttpEvent<Blob>> {
+    return this.http.post(
+      `${this.apiUrl}${studyName}/agree/export`,
+      {},
+      {
+        responseType: 'blob',
+        observe: 'response',
+      }
     );
   }
 

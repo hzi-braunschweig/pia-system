@@ -12,10 +12,7 @@ import {
   QueryList,
   ViewChildren,
 } from '@angular/core';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { AlertService } from '../../_services/alert.service';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
@@ -24,6 +21,7 @@ import { PlannedProband } from 'src/app/psa.app.core/models/plannedProband';
 @Component({
   selector: 'new-planned-probands-dialog',
   templateUrl: 'new-planned-probands-dialog.component.html',
+  styleUrls: ['new-planned-probands-dialog.component.scss'],
 })
 export class DialogNewPlannedProbandsComponent
   implements OnInit, AfterViewInit
@@ -113,10 +111,6 @@ export class DialogNewPlannedProbandsComponent
     emptyIndices.forEach((index) => {
       this.removePlannedProband(index);
     });
-  }
-
-  closeDialog(): void {
-    this.dialogRef.close(null);
   }
 
   closeDialogAndPrint(): void {

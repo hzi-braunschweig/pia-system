@@ -13,8 +13,8 @@ import {
 } from 'ng-mocks';
 import { AppModule } from '../../../app.module';
 import { fakeAsync } from '@angular/core/testing';
-import { MatLegacyPaginator as MatPaginator } from '@angular/material/legacy-paginator';
-import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 import { QuestionnaireInstance } from '../../../psa.app.core/models/questionnaireInstance';
 import { mock } from 'ts-mockito';
 import { Router } from '@angular/router';

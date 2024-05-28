@@ -24,18 +24,20 @@
     <p>{{ 'GENERAL.LOADING' | translate }}</p>
   </div>
 
-  <ion-slides
+  <swiper-container
+    #swiper
     *ngIf="form"
-    [options]="slidesOptions"
-    (ionSlideDidChange)="afterSlideChange()"
-    (ionSlideWillChange)="beforeSlideChange()"
-    (ionSlidesDidLoad)="afterSlideInit()"
+    watch-overflow="false"
+    [modules]="swiperModules"
+    (swiperslidechangetransitionend)="afterSlideChange()"
+    (swiperbeforeslidechangestart)="beforeSlideChange()"
+    (swiperinit)="afterSlideInit()"
   >
     <ng-container *ngIf="!hasQuestionnaireStatus('released_twice')">
       <ng-container
         *ngFor="let question of questionnaireInstance?.questionnaire?.questions; index as questionIndex"
       >
-        <ion-slide *ngIf="isConditionMet(question)">
+        <swiper-slide *ngIf="isConditionMet(question)">
           <div class="pia-slide-content">
             <ion-card>
               <ion-card-header
@@ -44,11 +46,11 @@
                 <ion-card-subtitle *ngIf="question.is_mandatory" color="medium"
                   >Pflichtangabe</ion-card-subtitle
                 >
-                <markdown
-                  ngPreserveWhitespaces
-                  [data]="question.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+                <app-questionnaire-question-text
+                  [text]="question.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+                  [helpText]="question.help_text"
                 >
-                </markdown>
+                </app-questionnaire-question-text>
               </ion-card-header>
               <ion-list>
                 <ng-container
@@ -207,11 +209,11 @@
 
             <div class="pia-fab-button-spacer"></div>
           </div>
-        </ion-slide>
+        </swiper-slide>
       </ng-container>
     </ng-container>
 
-    <ion-slide>
+    <swiper-slide>
       <div class="pia-slide-content">
         <ion-text color="tertiary-pale">
           <h1 class="ion-margin-bottom">
@@ -242,11 +244,11 @@
             *ngIf="isConditionMet(question)"
             class="pia-questionnaire-question pia-questionnaire-question-header"
           >
-            <markdown
-              ngPreserveWhitespaces
-              [data]="question.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+            <app-questionnaire-question-text
+              [text]="question.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
+              [helpText]="question.help_text"
             >
-            </markdown>
+            </app-questionnaire-question-text>
           </ion-card-header>
           <ion-list *ngIf="isConditionMet(question)">
             <ng-container
@@ -307,8 +309,8 @@
         </ion-card>
         <div class="pia-fab-button-spacer"></div>
       </div>
-    </ion-slide>
-  </ion-slides>
+    </swiper-slide>
+  </swiper-container>
 
   <ion-fab
     vertical="bottom"
@@ -316,7 +318,10 @@
     slot="fixed"
     *ngIf="canGoToPrevious"
   >
-    <ion-fab-button color="tertiary" (click)="slides?.slidePrev()">
+    <ion-fab-button
+      color="tertiary"
+      (click)="swiperContainer?.nativeElement.swiper.slidePrev()"
+    >
       <ion-icon name="chevron-back"></ion-icon>
     </ion-fab-button>
   </ion-fab>

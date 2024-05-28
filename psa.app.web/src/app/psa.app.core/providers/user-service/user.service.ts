@@ -15,6 +15,7 @@ import {
   StudyWelcomeMailTemplateRequestDto,
   StudyWelcomeMailTemplateResponseDto,
 } from '../../models/studyWelcomeMail';
+import { Observable } from 'rxjs';
 
 export interface GetProfessionalAccountsFilters {
   studyName?: string;
@@ -75,7 +76,11 @@ export class UserService {
   }
 
   getStudies(): Promise<Study[]> {
-    return this.http.get<Study[]>(`${this.apiUrl}/studies`).toPromise();
+    return this.getStudies$().toPromise();
+  }
+
+  getStudies$(): Observable<Study[]> {
+    return this.http.get<Study[]>(`${this.apiUrl}/studies`);
   }
 
   postStudy(postData: object): Promise<Study> {

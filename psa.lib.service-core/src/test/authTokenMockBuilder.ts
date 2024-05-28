@@ -41,7 +41,7 @@ export class AuthTokenMockBuilder {
    * by Keycloak. Nevertheless, some properties are missing for
    * simplicity.
    */
-  private static createTokenPayload({
+  public static createTokenPayload({
     username,
     roles,
     studies,
@@ -51,13 +51,13 @@ export class AuthTokenMockBuilder {
       exp: 1700000000,
       iat: 1700000000,
       auth_time: 1700000000,
-      iss: 'https://localhost/api/v1/auth/realms/pia-realm',
+      iss: 'http://localhost/api/v1/auth/realms/pia-realm',
       aud: 'account',
       typ: 'Bearer',
       azp: 'pia-web-app-client',
       preferred_username: username,
       email_verified: false,
-      'allowed-origins': ['https://localhost'],
+      'allowed-origins': ['http://localhost'],
       realm_access: {
         roles,
       },

@@ -5,10 +5,7 @@
  */
 
 import { Component, Inject, OnInit } from '@angular/core';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../psa.app.core/providers/user-service/user.service';
 import { Study } from '../../psa.app.core/models/study';

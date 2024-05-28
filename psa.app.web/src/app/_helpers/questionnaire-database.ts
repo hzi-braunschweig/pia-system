@@ -27,8 +27,7 @@ export class QuestionnaireDatabase {
 
   deleteQuestionnaire(id: number, version: number): void {
     this.questionnaireService.deleteQuestionnaire(id, version).then(
-      (result: any) => {
-        const succesText = result.body;
+      () => {
         const copiedData = this.data;
         const index = copiedData.findIndex(
           (d) => d.id === id && d.version === version

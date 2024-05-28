@@ -4,39 +4,32 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-.filter-area {
-  margin-bottom: 15px;
-  display: flex;
-  flex: 1 1;
-  flex-direction: row;
-  gap: 20px;
-  align-items: center;
+:host {
+  display: block;
+}
 
-  .study-filter {
-    max-width: 150px;
+.test-proband-filter {
+  padding-bottom: var(--pia-space-x);
+
+  label {
+    margin-right: 10px;
   }
-  .free-text-filter {
-    max-width: 250px;
-  }
-  .test-proband-filter {
-    label {
-      margin-right: 10px;
-    }
-    .mat-radio-button {
-      margin-right: 10px;
-      small {
-        margin-left: -5px;
-      }
+
+  .mat-mdc-radio-button {
+    margin-right: 10px;
+
+    small {
+      margin-left: -5px;
     }
   }
 }
 
 // ensure, cells have a spacing in between
 mat-cell,
-.mat-cell,
+.mat-mdc-cell,
 mat-footer-cell,
-.mat-footer-cell,
+.mat-mdc-footer-cell,
 mat-header-cell,
-.mat-header-cell {
+.mat-mdc-header-cell {
   padding: 0.5rem;
 }

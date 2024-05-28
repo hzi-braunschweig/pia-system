@@ -5,6 +5,7 @@
  */
 
 import Hapi from '@hapi/hapi';
+import { RegisterRoutes } from './publicRoutes.generated';
 import {
   registerPlugins,
   registerAuthStrategies,
@@ -26,7 +27,6 @@ export class Server {
     this.instance = Hapi.server({
       host: config.public.host,
       port: config.public.port,
-      tls: config.public.tls,
       routes: {
         cors: { origin: ['*'] },
         timeout: {
@@ -70,6 +70,8 @@ export class Server {
       routes: defaultInternalRoutesPaths,
       isInternal: true,
     });
+
+    RegisterRoutes(this.instance);
 
     await this.instance.start();
     this.instance.log(

@@ -11,7 +11,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ContactProbandComponent } from './contact-proband.component';
 import { createProband } from '../../../psa.app.core/models/instance.helper.spec';
 import { NotificationService } from '../../../psa.app.core/providers/notification-service/notification-service';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { CurrentUser } from '../../../_services/current-user.service';
 import { ProbandService } from '../../../psa.app.core/providers/proband-service/proband.service';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';

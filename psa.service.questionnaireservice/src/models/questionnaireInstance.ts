@@ -4,12 +4,32 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { ResourceID } from './customTypes';
 import {
+  CustomName,
   DbQuestionnaireForPM,
-  QuestionnaireDto,
   Questionnaire,
+  QuestionnaireDto,
 } from './questionnaire';
 
+/**
+ * Identifies a questionnaire instance by either its ID or the custom name
+ * of its related questionnaire.
+ *
+ * A custom name can only be a valid identifier of unique questionnaire instance,
+ * when the cycle unit of its related questionnaire is 'once'.
+ *
+ * @example "456 or asthma_medical_trail"
+ */
+export type QuestionnaireInstanceIdentifier = ResourceID | CustomName;
+
+/**
+ * Defines the current state of a questionnaire instance.
+ * `released` is only valid for questionnaires of type `for_study_assistant`.
+ * `released_once` and `released_twice` is only valid for questionnaires of type `for_participant`.
+ *
+ * @example "released"
+ */
 export type QuestionnaireInstanceStatus =
   | 'inactive'
   | 'active'
@@ -46,6 +66,7 @@ export interface QuestionnaireInstanceForPM extends DbQuestionnaireInstance {
 }
 
 export interface QuestionnaireInstanceDto {
+  /** @isInt **/
   id: number;
   studyId: string | null;
   questionnaireName: string;
@@ -53,10 +74,25 @@ export interface QuestionnaireInstanceDto {
   dateOfIssue: Date;
   dateOfReleaseV1: Date | null;
   dateOfReleaseV2: Date | null;
+  /** @isInt **/
   cycle: number;
   status: QuestionnaireInstanceStatus;
   notificationsScheduled: boolean | null;
+  /**
+   * Current progress in percent. Ranges from 0 to 100.
+   * @isInt
+   * @example "49"
+   */
   progress: number | null;
+  /**
+   * Version counter, increasing with each release.
+   * @isInt
+   * @example "1"
+   */
   releaseVersion: number | null;
   questionnaire?: QuestionnaireDto;
 }
+
+export type PatchQuestionnaireInstanceDto = Partial<
+  Pick<QuestionnaireInstanceDto, 'status' | 'progress' | 'releaseVersion'>
+>;

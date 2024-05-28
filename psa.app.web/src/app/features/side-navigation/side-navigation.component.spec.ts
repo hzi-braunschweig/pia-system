@@ -20,10 +20,7 @@ import { SelectedProbandInfoService } from '../../_services/selected-proband-inf
 import { BehaviorSubject, Subject } from 'rxjs';
 import { SelectedProbandData } from '../../psa.app.core/models/selectedProbandData';
 import { MatSidenav } from '@angular/material/sidenav';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DialogOkCancelComponent } from '../../_helpers/dialog-ok-cancel';
 import { CurrentUser } from '../../_services/current-user.service';
 import { Role } from '../../psa.app.core/models/user';

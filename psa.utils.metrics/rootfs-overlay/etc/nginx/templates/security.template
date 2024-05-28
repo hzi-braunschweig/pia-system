@@ -1,4 +1,0 @@
-ssl on;
-ssl_certificate /ssl/metrics.cert;
-ssl_certificate_key /ssl/metrics.key;
-server_name _;

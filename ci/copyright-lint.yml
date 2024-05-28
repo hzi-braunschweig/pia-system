@@ -11,6 +11,7 @@ copyright-lint:
     name: fsfe/reuse@sha256:888418362aa2a8ebea12d8dbfb41fa8eeabd0c423f42df7e3968af4cbb8d2ef1
     entrypoint: ['/bin/sh', '-c']
   script:
+    - rm VERSION
     - rm -rf psa.lib.auth-server-client/dist
     - rm -rf psa.lib.charts/dist
     - rm -rf psa.lib.hapi-i18n-plugin/dist
@@ -21,7 +22,6 @@ copyright-lint:
     - rm -rf psa.lib.templatepipeline/dist
     - rm -rf psa.app.web/licenses
     - rm -rf psa.app.mobile/licenses
-    - rm -rf secrets
     - rm -rf psa.app.mobile/src/assets
     - rm THIRD_PARTY_LICENSES
     - find . -name "*.md" -type f -delete
@@ -58,6 +58,7 @@ copyright-lint:
     - find . -name "*.ejs" -type f -delete
     - find . -name "inventory" -type f -delete
     - find . -name "*.yml" -type f -delete
+    - find . -name "*.yaml" -type f -delete
     - find . -name "karma.conf.js" -type f -delete
     - find . -name "sql" -type f -delete
     - find . -name "sql_vacuum_full" -type f -delete
@@ -65,6 +66,8 @@ copyright-lint:
     - find . -name "template.dockerfile" -type f -delete
     - find . -name ".nsprc" -type f -delete
     - find . -name "CITATION.cff" -type f -delete
+    - find . -name "*.generated.*" -type f -delete
+    - find . -name "bake.hcl" -type f -delete
     - reuse lint
   rules:
     - if: $CI_MERGE_REQUEST_IID

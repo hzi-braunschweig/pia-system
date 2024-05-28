@@ -6,22 +6,20 @@
     "lint": "eslint .",
     "build": "tsc -p tsconfig.build.json",
     "help": "node ./dist/index.js --help",
-    "start": "PUPPETEER_SKIP_DOWNLOAD=1 TARGET_FILE=../ci/generated.yml REPO_DIR=../ node ./dist/index.js",
-    "generate": "npm start -- generate",
+    "start": "PUPPETEER_SKIP_DOWNLOAD=1 REPO_DIR=../ node ./dist/index.js",
+    "generate": "TARGET_FILE=../ci/generated.yml npm start -- generate",
+    "generate-hcl": "npm start -- generate-hcl",
     "update": "npm start -- update",
     "outdated": "npm start -- outdated",
     "audit": "npm start -- audit",
-    "scan-routes": "npm start -- scan-routes",
+    "postopenapi": "openapi-merge-cli",
     "test": "npm start -- test"
   },
   "dependencies": {
     "chalk": "^4.1.2",
     "cli-progress": "^3.11.2",
     "commander": "^9.4.1",
-    "csv-stringify": "^6.2.1",
     "license-checker": "^25.0.1",
-    "node-fetch": "^2.6.7",
-    "openapi3-ts": "^3.1.1",
     "yaml": "^2.1.3"
   },
   "devDependencies": {

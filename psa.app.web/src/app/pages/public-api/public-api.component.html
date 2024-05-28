@@ -1,0 +1,136 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2023 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
+<div class="jumbotron">
+  <h3>API</h3>
+  <div class="grid-container-2cols">
+    <div class="space-y">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>
+            {{ 'PUBLIC_API.CLIENTS' | translate }}
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-actions>
+          <button
+            mat-button
+            color="primary"
+            (click)="addApiClient()"
+            data-unit="add-client-button"
+          >
+            <mat-icon inline="true">add</mat-icon>
+            {{ 'PUBLIC_API.ADD' | translate }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
+
+      <div class="space-y">
+        <ng-container *ngIf="apiClients | async as clients">
+          <mat-card *ngIf="clients.length <= 0" data-unit="empty-hint">
+            <mat-card-content>
+              <p
+                [innerHtml]="'PUBLIC_API.EMPTY_HINT' | translate"
+                class="margin-top-0"
+              ></p>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card *ngFor="let client of clients" data-unit="client-card">
+            <mat-card-header class="margin-bottom-15">
+              <mat-card-title
+                ><strong>{{ client.name }}</strong></mat-card-title
+              >
+              <mat-card-subtitle
+                >{{
+                  'PUBLIC_API.CREATED_AT'
+                    | translate: { date: client.createdAt | date }
+                }}
+              </mat-card-subtitle>
+            </mat-card-header>
+            <mat-card-content>
+              <mat-form-field class="margin-right-15 extended-width">
+                <mat-label>{{ 'PUBLIC_API.CLIENT_ID' | translate }}</mat-label>
+                <input
+                  matInput
+                  disabled
+                  [value]="client.clientId"
+                  data-unit="client-id-input"
+                />
+                <button
+                  matSuffix
+                  mat-icon-button
+                  color="primary"
+                  [matTooltip]="'PUBLIC_API.COPY_CLIENT_ID' | translate"
+                  [cdkCopyToClipboard]="client.clientId"
+                >
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              </mat-form-field>
+              <mat-form-field class="extended-width">
+                <mat-label>{{ 'PUBLIC_API.SECRET' | translate }}</mat-label>
+                <input
+                  [type]="showSecret(client.clientId) ? 'text' : 'password'"
+                  matInput
+                  disabled
+                  [value]="client.secret"
+                  data-unit="client-secret-input"
+                />
+                <button
+                  matSuffix
+                  mat-icon-button
+                  color="primary"
+                  [matTooltip]="'PUBLIC_API.SHOW_SECRET' | translate"
+                  (click)="toggleShowSecret(client.clientId)"
+                  data-unit="show-secret-button"
+                >
+                  <mat-icon *ngIf="showSecret">visibility_off</mat-icon>
+                  <mat-icon *ngIf="!showSecret">visibility</mat-icon>
+                </button>
+                <button
+                  matSuffix
+                  mat-icon-button
+                  color="primary"
+                  [matTooltip]="'PUBLIC_API.COPY_SECRET' | translate"
+                  [cdkCopyToClipboard]="client.secret"
+                >
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              </mat-form-field>
+
+              <br />
+              <strong>{{ 'PUBLIC_API.STUDY_ACCESS' | translate }}</strong>
+              <mat-chip-listbox>
+                <mat-chip-option
+                  *ngFor="let study of client.studies"
+                  selectable="false"
+                >
+                  <mat-icon matChipAvatar>check</mat-icon>
+                  {{ study }}
+                </mat-chip-option>
+              </mat-chip-listbox>
+            </mat-card-content>
+            <mat-card-actions>
+              <button
+                mat-button
+                color="warn"
+                (click)="deleteApiClient(client.clientId)"
+                data-unit="delete-client-button"
+              >
+                <mat-icon inline="true">delete</mat-icon>
+                {{ 'PUBLIC_API.DELETE' | translate }}
+              </button>
+            </mat-card-actions>
+          </mat-card>
+        </ng-container>
+      </div>
+    </div>
+
+    <app-event-history-settings
+      (loading)="setLoading($event)"
+    ></app-event-history-settings>
+  </div>
+</div>

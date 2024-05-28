@@ -36,9 +36,6 @@ const options = {
   registry: process.env.DOCKER_REGISTRY || 'registry.gitlab.com',
 };
 
-// Create the secrets
-require('../test.common/secrets');
-
 let qpiaConfig = qpia.configure(options);
 let ipiaConfig = ipia.configure(options);
 let ewpiaConfig = ewpia.configure(options);

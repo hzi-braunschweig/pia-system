@@ -1,4 +1,4 @@
-FROM maven:3.8.6-jdk-11@sha256:805f366910aea2a91ed263654d23df58bd239f218b2f9562ff51305be81fa215 as extension-builder
+FROM maven:3.8.5-openjdk-17@sha256:62e6a9e10fb57f3019adeea481339c999930e7363f2468d1f51a7c0be4bca26d as extension-builder
 
 ARG DIR=.
 
@@ -32,11 +32,11 @@ RUN npm ci \
 FROM curlimages/curl@sha256:4a3396ae573c44932d06ba33f8696db4429c419da87cbdc82965ee96a37dd0af AS dl-keycloak-config-cli
 
 WORKDIR /dl
-RUN curl -L -o ./keycloak-config-cli.jar https://github.com/adorsys/keycloak-config-cli/releases/download/v5.3.1/keycloak-config-cli-19.0.1.jar
+RUN curl -L -o ./keycloak-config-cli.jar https://github.com/adorsys/keycloak-config-cli/releases/download/v5.12.0/keycloak-config-cli-23.0.7.jar
 
 ################################################################
 
-FROM quay.io/keycloak/keycloak:19.0.1@sha256:fb6be1665f2939ca123b5fee0d6d8e06a3d99ba1e5224b5b1cf0eb48168f1ef6
+FROM quay.io/keycloak/keycloak:23.0.7@sha256:14e99d6f5dd0516a5bdc82537b732cb85469ecdb15ad7fe5f11ff67521544db8
 
 ARG DIR=.
 
@@ -49,13 +49,10 @@ WORKDIR /
 
 ENV PATH="/opt/keycloak/bin:${PATH}"
 
-# check that the start file is present in the image
-# so that we get an build error if something essential has changed
-RUN echo "e8df29daf195842156b3473088cec350  /opt/keycloak/bin/kc.sh" | md5sum -c
-
 # check if the included themes have changed as we copied the themes
 # language files to create our own custom language keys
-RUN echo "9349ef4a1a231bf36c2dbf110fe6a1eb  /opt/keycloak/lib/lib/main/org.keycloak.keycloak-themes-19.0.1.jar" | md5sum -c
+RUN echo "11242fa4585d60e32a2280472c7b78db  /opt/keycloak/lib/lib/main/org.keycloak.keycloak-themes-23.0.7.jar" | md5sum -c
+
 
 COPY --from=extension-builder /build/target/*.jar /opt/keycloak/providers
 COPY ${DIR}/extensions/*.jar /opt/keycloak/providers
@@ -68,4 +65,5 @@ COPY ${DIR}/templates/* /templates/
 
 EXPOSE 4000
 
-ENTRYPOINT [ "/start.sh" ]
+COPY --chmod=0755 psa.utils.scripts/logs-masking/custom-entrypoint.sh /custom-entrypoint.sh
+ENTRYPOINT ["/start.sh"]

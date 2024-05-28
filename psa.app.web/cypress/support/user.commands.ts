@@ -6,13 +6,14 @@
 
 import Chainable = Cypress.Chainable;
 import * as mimelib from 'mimelib';
-import totp from 'totp-generator';
+import { TOTP } from 'totp-generator';
 import { getRandomId } from './helper.commands';
 import {
   CreateProbandRequest,
   ProbandOrigin,
 } from '../../src/app/psa.app.core/models/proband';
 import { setupTotpForSysAdmin } from './totp';
+import JQueryWithSelector = Cypress.JQueryWithSelector;
 
 export interface UserCredentials {
   username: string;
@@ -58,19 +59,43 @@ export function loginProfessional(user: UserCredentials): Chainable<string> {
 
 export function loginSysAdmin(): Chainable<string> {
   return cy.fixture('users').then((users) =>
-    cy.task('readFileMaybe', '.e2e-totp-secret').then((totpSecretOrNull) => {
-      if (totpSecretOrNull === null) {
-        return setupTotpForSysAdmin().then(() => loginSysAdmin());
-      }
-      return login(
-        {
-          ...users.existing.SysAdmin,
-          totp: totp(totpSecretOrNull),
-        },
-        'admin'
-      );
-    })
+    cy
+      .task('readFileMaybe', '.e2e-totp-secret')
+      .then((totpSecretOrNull: string | null) => {
+        if (totpSecretOrNull === null) {
+          return setupTotpForSysAdmin().then(() => loginSysAdmin());
+        }
+
+        const { otp } = TOTP.generate(totpSecretOrNull);
+
+        return login(
+          {
+            ...users.existing.SysAdmin,
+            totp: otp,
+          },
+          'admin'
+        );
+      })
   );
+}
+
+export function logoutParticipant(): Chainable<
+  JQueryWithSelector<HTMLElement>
+> {
+  cy.contains('Abmelden').click();
+  // participant logout needs confirmation
+  cy.get('[data-e2e="dialog-button-accept"]').click();
+  // wait for logout to finish with all redirects
+  return cy.get('[data-e2e="login-input-username"]').should('exist');
+}
+
+export function logoutProfessional(): Chainable<
+  JQueryWithSelector<HTMLElement>
+> {
+  cy.contains('Abmelden').click();
+  // professional logout needs no confirmation, we just need to click the button
+  // wait for logout to finish with all redirects
+  return cy.get('[data-e2e="login-input-username"]').should('exist');
 }
 
 export type StudyAccessLevel = 'read' | 'write' | 'admin';
@@ -286,7 +311,7 @@ export function fetchPasswordResetLinkForUserFromMailHog(
     .request({
       method: 'GET',
       url:
-        (Cypress.env('MAILSERVER_BASEURL') || 'http://localhost:8025') +
+        (Cypress.env('MAILSERVER_BASEURL') || 'https://mail-pia-app') +
         `/api/v2/search?kind=to&query=${username}&start=0&limit=1`,
     })
     .then((result) => {
@@ -305,7 +330,7 @@ export function fetchPasswordForUserFromMailHog(
     .request({
       method: 'GET',
       url:
-        (Cypress.env('MAILSERVER_BASEURL') || 'http://localhost:8025') +
+        (Cypress.env('MAILSERVER_BASEURL') || 'https://mail-pia-app') +
         `/api/v2/search?kind=to&query=${username}&start=0&limit=1`,
     })
     .then((result) => {
@@ -328,7 +353,7 @@ function fetchFromMailHogWithRetry(
     .request({
       method: 'GET',
       url:
-        (Cypress.env('MAILSERVER_BASEURL') || 'http://localhost:8025') +
+        (Cypress.env('MAILSERVER_BASEURL') || 'https://mail-pia-app') +
         `/api/v2/search?kind=to&query=${username}&start=0&limit=1`,
     })
     .then((result) => {

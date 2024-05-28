@@ -6,9 +6,9 @@
 
 import { NgModule } from '@angular/core';
 import { MatSelectSearchComponent } from './mat-select-search.component';
-import { MatLegacyButtonModule as MatButtonModule } from '@angular/material/legacy-button';
+import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
+import { MatInputModule } from '@angular/material/input';
 import { CommonModule } from '@angular/common';
 
 @NgModule({

@@ -1,0 +1,39 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+secretGenerator:
+  - name: pia-config
+    options:
+      disableNameSuffixHash: true
+    type: kubernetes.io/opaque
+    literals:
+      - webappUrl=https://pia-app
+      - externalProtocol=https
+      - externalPort=443
+      - externalHost=pia-app
+      - mailServerHostName=mailserver
+      - mailServerPort=1025
+      - mailServerUserName=pia@some-faked-domain-that-hopefully-will-never-exist.faked
+      - mailServerPassword=emailpassword
+      - mailServerRequireTls=false
+      - mailServerFromAddress=pia@some-faked-domain-that-hopefully-will-never-exist.faked
+      - mailServerFromName=PIA
+      - probandTermsOfServiceUrl=https://localhost/fake-tos
+      - probandPolicyUrl=https://localhost/fake-policy
+      - modysBaseUrl=http://localhost:99999
+      - modysUserName=modysuser
+      - modysPassword=modyspassword
+      - modysStudy=Teststudy with MODYS
+      - modysIdentifierTypeId=1
+      - modysRequestConcurrency=5
+      - isSormasEnabled=false
+      # the default language, unless another language is explicitly set. Possible values:
+      # de-CH, de-DE, en-US
+      - defaultLanguage=de-DE
+      - userPasswordLength=8
+      # firebase credential
+      - firebasePrivateKeyBase64=LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUJWZ0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQVVBd2dnRThBZ0VBQWtFQXlUbGhkdFo0OGFteE9KZTAKMXN0aUZPWTdqdmw0YlRMSU9SMGtYREFlSXZ1SFM3ZHQwQ3ZERmVJYVl2VUhUSk02eGlFSUgrWW9rWko3VDk0MgpwTzJ2Y3dJREFRQUJBa0FOY2ZzVU1MSjJHMHVQSjN2YTJrNGNiV0hQWk5YcUhmbUk3MnlOaUYyTElyc0FwSzI1CmZCZzFqcTc2bVpvRTdGdnVCVnZxWmZUZW9Sa1dXNHNmQ2E2UkFpRUE3MytMSEVrOHhBSjhNcThsOWo1Wkw5RmkKeS9FbEJyZXhoYk5GZUZFS09Vc0NJUURYRnJxMUlvSXBBelh2ay9qamJPbENMZWFpbnNYYUZkeUljRTRQbk52eAplUUloQU85WVFGYkJYa2ZveitQN0krNEYreTJOakxXUnhkWUR5Qlo4eFVWcmY5TW5BaUVBbE5zYUpEblpzdUNSCjkxaUZLNEE0ZnFDZHVYWUFuOG41Y2tPbkFvOGdlS0VDSVFDT1MyUmx0WThla0NGOVhxWW4zamt2eTRhME8vTlgKekxMU2hQQmtFQy95RXc9PQotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg==
+      - firebaseProjectId=dummy
+      - firebaseClientEmail=dummy
+      # password is "test"
+      - mailhogAuth=pia:$2a$04$qxRo.ftFoNep7ld/5jfKtuBTnGqff/fZVyj53mUC5sVf9dtDLAi/S

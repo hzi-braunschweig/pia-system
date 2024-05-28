@@ -17,6 +17,7 @@ export interface CodebookDbRow {
   answeroption_values: string[];
   values_code: number[];
   question_text: string;
+  help_text: string;
   answer_type_id: AnswerType;
   restriction_min: number;
   restriction_max: number;

@@ -17,5 +17,6 @@ var ProbandOrigin;
     ProbandOrigin["SELF"] = "self";
     ProbandOrigin["INVESTIGATOR"] = "investigator";
     ProbandOrigin["SORMAS"] = "sormas";
+    ProbandOrigin["PUBLIC_API"] = "public_api";
 })(ProbandOrigin = exports.ProbandOrigin || (exports.ProbandOrigin = {}));
 //# sourceMappingURL=proband.js.map

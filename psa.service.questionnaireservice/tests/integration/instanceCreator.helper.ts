@@ -38,7 +38,9 @@ function createQuestion(overwrite: Partial<Question> = {}): Question {
     isMandatory: true,
     position: 1,
     text: 'How do you feel?',
+    helpText: '',
     condition: null,
+    variableName: '',
     answerOptions: [createAnswerOption()],
     ...overwrite,
   };
@@ -92,6 +94,7 @@ export function createQuestionnaire(
     version: 1,
     studyId: 'QTestStudy',
     name: 'ApiTestQuestionnaire',
+    customName: null,
     noQuestions: 2,
     cycleAmount: 1,
     cycleUnit: 'week',

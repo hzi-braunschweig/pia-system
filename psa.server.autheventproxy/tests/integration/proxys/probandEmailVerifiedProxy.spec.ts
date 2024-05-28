@@ -11,7 +11,13 @@ import { AuthEventProxyServer } from '../../../src/server';
 import { KeycloakGenericEvent } from '../../../src/models/keycloakEvent';
 import { ProxyTestTool } from './proxyTestTool';
 import { config } from '../../../src/config';
-import * as sinon from 'sinon';
+import { createSandbox } from 'sinon';
+import { afterEach } from 'mocha';
+import {
+  ProbandEmailVerifiedMessage,
+  MessageQueueTopic,
+} from '@pia/lib-messagequeue';
+import { mockAuthClientResponse } from './utils';
 
 function encodeContent(
   content: Partial<KeycloakGenericEvent> | Record<string, string>
@@ -20,7 +26,9 @@ function encodeContent(
 }
 
 describe('Keycloak EmailVerified Proxy', () => {
+  const sandbox = createSandbox();
   const server = new AuthEventProxyServer();
+
   let proxyTestTool: ProxyTestTool;
   let keycloakChannel: amqp.Channel;
 
@@ -38,57 +46,88 @@ describe('Keycloak EmailVerified Proxy', () => {
     await proxyTestTool.close();
   });
 
-  describe('Publish', () => {
-    it('should publish new events to correct topic', async () => {
-      const { channel, queue } = await proxyTestTool.createChannelWithQueue(
-        'proband.email_verified',
-        'email-verify'
-      );
+  afterEach(() => {
+    sandbox.restore();
+  });
 
-      publishKeycloakRegisterEvent(
-        'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-web-app-client.VERIFY_EMAIL',
-        'test-1234567890'
-      );
+  it('should publish new events to correct topic', async () => {
+    const { channel, queue } = await proxyTestTool.createChannelWithQueue(
+      MessageQueueTopic.PROBAND_EMAIL_VERIFIED,
+      'email-verify'
+    );
+    const username = 'test-1234567890';
+    const studyName = 'test study';
 
-      let message: amqp.GetMessage | false = false;
-      const start = Date.now();
-      while (!message) {
-        if (Date.now() - start > 1000) {
-          throw new Error('failed to receive message within timeout');
-        }
-        message = await channel.get(queue.queue);
+    mockAuthClientResponse(sandbox, username, [studyName]);
+
+    publishKeycloakRegisterEvent(
+      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-web-app-client.VERIFY_EMAIL',
+      username
+    );
+
+    let message: amqp.GetMessage | false = false;
+    const start = Date.now();
+    while (!message) {
+      if (Date.now() - start > 1000) {
+        throw new Error('failed to receive message within timeout');
       }
+      message = await channel.get(queue.queue);
+    }
 
-      const content = JSON.parse(
-        (message as unknown as amqp.ConsumeMessage).content.toString()
-      ) as {
-        message: { pseudonym: string };
-      };
-      expect(content).to.have.property('message');
-      expect(content.message).to.have.property('pseudonym');
-      expect(content.message.pseudonym).to.equal('test-1234567890');
-    });
+    const content = JSON.parse(
+      (message as unknown as amqp.ConsumeMessage).content.toString()
+    ) as {
+      message: ProbandEmailVerifiedMessage;
+    };
 
-    it('should not publish an event if the message does not contain a username', async () => {
-      const { channel, queue } = await proxyTestTool.createChannelWithQueue(
-        'proband.email_verified',
-        'email-verify'
-      );
+    expect(content).to.have.property('message');
+    expect(content.message).to.have.property('pseudonym');
+    expect(content.message.pseudonym).to.equal(username);
+    expect(content.message.studyName).to.equal(studyName);
+  });
 
-      const errorLogSpy = sinon.spy(console, 'error');
+  it('should not publish an event if the study was determinable', async () => {
+    const { channel, queue } = await proxyTestTool.createChannelWithQueue(
+      MessageQueueTopic.PROBAND_EMAIL_VERIFIED,
+      'email-verify'
+    );
 
-      const messagePromise = channel.get(queue.queue);
-      publishKeycloakRegisterEvent(
-        'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-web-app-client.VERIFY_EMAIL',
-        undefined
-      );
+    const errorLogSpy = sandbox.spy(console, 'error');
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
+    mockAuthClientResponse(sandbox);
 
-      const message = await messagePromise;
-      expect(errorLogSpy.calledOnce).to.be.true;
-      expect(message).to.be.false;
-    });
+    publishKeycloakRegisterEvent(
+      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-web-app-client.VERIFY_EMAIL',
+      'test-1234567890'
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(errorLogSpy.calledOnce).to.be.true;
+    expect(await channel.get(queue.queue)).to.be.false;
+  });
+
+  it('should not publish an event if the message does not contain a username', async () => {
+    const { channel, queue } = await proxyTestTool.createChannelWithQueue(
+      MessageQueueTopic.PROBAND_EMAIL_VERIFIED,
+      'email-verify'
+    );
+
+    const errorLogSpy = sandbox.spy(console, 'error');
+    const messagePromise = channel.get(queue.queue);
+
+    mockAuthClientResponse(sandbox);
+
+    publishKeycloakRegisterEvent(
+      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-web-app-client.VERIFY_EMAIL',
+      undefined
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const message = await messagePromise;
+    expect(errorLogSpy.calledOnce).to.be.true;
+    expect(message).to.be.false;
   });
 
   function publishKeycloakRegisterEvent(

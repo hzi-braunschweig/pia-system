@@ -2,6 +2,7 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "outDir": "../out-tsc/cypress",
+    "sourceMap": false,
     "types": ["cypress", "node", "cypress-file-upload"]
   },
   "include": ["**/*.ts"],

@@ -7,17 +7,25 @@
 import * as amqp from 'amqplib';
 import { KeycloakVerifyEmailEvent } from '../models/keycloakEvent';
 import { MessageQueueService } from '../services/messageQueueService';
-import { MessageQueueTopic, Producer } from '@pia/lib-messagequeue';
+import {
+  MessageQueueTopic,
+  Producer,
+  ProbandEmailVerifiedMessage,
+} from '@pia/lib-messagequeue';
 import { EventProxy } from './eventProxy';
+import {
+  PseudonymInKeycloakEventNotFound,
+  ProxyOnMessageError,
+} from '../errors';
 
 const TARGET_TOPIC = MessageQueueTopic.PROBAND_EMAIL_VERIFIED;
 
 export class ProbandEmailVerifiedProxy extends EventProxy {
   public pattern =
     'KK.EVENT.CLIENT.*.SUCCESS.pia-proband-web-app-client.VERIFY_EMAIL';
-  private _producer: Producer<unknown> | null = null;
+  private _producer: Producer<ProbandEmailVerifiedMessage> | null = null;
 
-  public set producer(value: Producer<unknown> | null) {
+  public set producer(value: Producer<ProbandEmailVerifiedMessage> | null) {
     this._producer = value;
   }
 
@@ -36,7 +44,7 @@ export class ProbandEmailVerifiedProxy extends EventProxy {
 
   public static async createProbandEmailVerifiedProducer(
     messageQueueService: MessageQueueService
-  ): Promise<Producer<unknown>> {
+  ): Promise<Producer<ProbandEmailVerifiedMessage>> {
     return await messageQueueService.createProducer(TARGET_TOPIC);
   }
 
@@ -48,37 +56,56 @@ export class ProbandEmailVerifiedProxy extends EventProxy {
         return;
       }
 
-      const json = message.content.toString();
+      this.forwardMessageToProducer(message)
+        .then(() => channel.ack(message, false))
+        .catch((e: Error) => {
+          if (e instanceof PseudonymInKeycloakEventNotFound) {
+            channel.nack(message, false, false);
+          }
 
-      if (!json) {
-        return;
-      }
-
-      const event = JSON.parse(json) as KeycloakVerifyEmailEvent;
-      const username = (
-        event.details.username as string | undefined
-      )?.toLowerCase();
-
-      if (username !== undefined) {
-        this._producer
-          .publish({ pseudonym: username })
-          .then(() => {
-            console.log(
-              `Event Processed | ${this.pattern} > ${TARGET_TOPIC} | ${username}`
-            );
-            channel.ack(message, false);
-          })
-          .catch(() => {
-            console.error(
-              `Event Error | ${this.pattern} > ${TARGET_TOPIC} | ${username}`
-            );
-          });
-      } else {
-        console.error(
-          `Event Error | ${this.pattern} > ${TARGET_TOPIC} | username is undefined`
-        );
-        channel.nack(message, false, false);
-      }
+          console.error(e);
+        });
     };
+  }
+
+  private async forwardMessageToProducer(
+    message: amqp.ConsumeMessage
+  ): Promise<void> {
+    if (!this._producer) {
+      return;
+    }
+
+    const json = message.content.toString();
+
+    if (!json) {
+      return;
+    }
+
+    const event = JSON.parse(json) as KeycloakVerifyEmailEvent;
+
+    try {
+      const pseudonym = this.getPseudonymOrFail(event);
+      const studyName = await this.getStudyNameOfAccountOrFail(pseudonym);
+
+      await this._producer.publish({ pseudonym: pseudonym, studyName });
+
+      console.log(
+        `Event Processed | ${this.pattern} > ${TARGET_TOPIC} | ${pseudonym}`
+      );
+    } catch (e: unknown) {
+      throw new ProxyOnMessageError(
+        this.pattern,
+        TARGET_TOPIC,
+        e instanceof Error ? e : new Error('Unknown error')
+      );
+    }
+  }
+
+  private getPseudonymOrFail(event: KeycloakVerifyEmailEvent): string {
+    const pseudonym = event.details.username;
+    if (pseudonym === undefined) {
+      throw new PseudonymInKeycloakEventNotFound('Username is undefined');
+    }
+    return pseudonym;
   }
 }

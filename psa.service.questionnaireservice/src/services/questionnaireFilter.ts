@@ -5,16 +5,16 @@
  */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-import { QuestionnaireDto } from '../models/questionnaire';
-import { QuestionnaireInstanceDto } from '../models/questionnaireInstance';
-import { AnswerDto } from '../models/answer';
-import { ConditionDto, ConditionType } from '../models/condition';
 import { endOfDay } from 'date-fns';
-import { QuestionCleaner } from './questionCleaner';
-import { ConditionChecker } from './conditionChecker';
+import { assert } from 'ts-essentials';
 import { getRepository, In, LessThanOrEqual } from 'typeorm';
 import { Answer } from '../entities/answer';
-import { assert } from 'ts-essentials';
+import { AnswerDto, PartialAnswerDto } from '../models/answer';
+import { ConditionDto, ConditionType } from '../models/condition';
+import { QuestionnaireDto } from '../models/questionnaire';
+import { QuestionnaireInstanceDto } from '../models/questionnaireInstance';
+import { ConditionChecker } from './conditionChecker';
+import { QuestionCleaner } from './questionCleaner';
 
 export class QuestionnaireFilter {
   private conditionTargetAnswers: Map<number, AnswerDto> = new Map<
@@ -22,15 +22,22 @@ export class QuestionnaireFilter {
     AnswerDto
   >();
 
-  private constructor(private readonly qInstance: QuestionnaireInstanceDto) {}
+  private constructor(
+    private readonly qInstance: QuestionnaireInstanceDto,
+    private readonly internalAnswers: PartialAnswerDto[] = []
+  ) {}
 
   /**
    * Filters the questionnaires question in place
    */
   public static async filterQuestionnaireOfInstance(
-    qInstance: QuestionnaireInstanceDto
+    qInstance: QuestionnaireInstanceDto,
+    answers: PartialAnswerDto[] = []
   ): Promise<void> {
-    await new QuestionnaireFilter(qInstance).runFilterQuestionnaireOfInstance();
+    await new QuestionnaireFilter(
+      qInstance,
+      answers
+    ).runFilterQuestionnaireOfInstance();
   }
 
   private async runFilterQuestionnaireOfInstance(): Promise<void> {
@@ -85,11 +92,30 @@ export class QuestionnaireFilter {
     if (
       condition &&
       (condition.type === ConditionType.EXTERNAL ||
-        condition.type === ConditionType.INTERNAL_LAST)
+        condition.type === ConditionType.INTERNAL_LAST ||
+        (this.internalAnswers.length > 0 &&
+          condition.type === ConditionType.INTERNAL_THIS))
     ) {
-      const answer =
+      let answer: PartialAnswerDto | undefined;
+
+      if (
         condition.targetAnswerOption &&
-        this.conditionTargetAnswers.get(condition.targetAnswerOption.id);
+        condition.type === ConditionType.INTERNAL_THIS
+      ) {
+        answer = this.internalAnswers.find(
+          (a) => a.answerOption?.id === condition.targetAnswerOption?.id
+        );
+
+        // if the answer was not provided, the condition must be false
+        if (answer === undefined) {
+          return false;
+        }
+      } else if (condition.targetAnswerOption) {
+        answer = this.conditionTargetAnswers.get(
+          condition.targetAnswerOption.id
+        );
+      }
+
       if (answer) {
         return ConditionChecker.isConditionMet(
           answer,

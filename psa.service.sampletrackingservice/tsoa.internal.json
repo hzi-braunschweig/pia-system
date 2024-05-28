@@ -1,0 +1,30 @@
+{
+  "entryFile": "src/index.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/controllers/internal/*Controller.ts"],
+  "spec": {
+    "outputDirectory": "spec",
+    "specFileBaseName": "openapi.internal",
+    "specVersion": 3,
+    "yaml": true,
+    "basePath": "/api/v1",
+    "version": "1",
+    "tags": [],
+    "securityDefinitions": {
+      "jwt-public": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "/api/v1/auth/realms/pia-admin-realm/protocol/openid-connect/token",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  },
+  "routes": {
+    "middleware": "hapi",
+    "routesDir": "src",
+    "routesFileName": "internalRoutes.generated.ts"
+  }
+}

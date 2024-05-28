@@ -6,7 +6,7 @@
 
 import { NgModule } from '@angular/core';
 import { LoadingSpinnerComponent } from './loading-spinner.component';
-import { MatLegacyProgressSpinnerModule as MatProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @NgModule({
   imports: [MatProgressSpinnerModule],

@@ -107,7 +107,10 @@ export abstract class AccountService {
         roles: [role],
       });
     } catch (error) {
-      throw new AccountCreateError('Could not create the account', error);
+      throw new AccountCreateError(
+        'An error occurred while trying to create the account',
+        error
+      );
     }
   }
 
@@ -200,11 +203,23 @@ export abstract class AccountService {
     });
   }
 
+  /**
+   * Type guard to test if a user representation is safe to use.
+   *
+   * Users created for public API clients are not safe user representations.
+   * This method checks if the username indicates the user being a client service account.
+   *
+   * @param user - the user representation to test
+   */
   protected static isSafeUserRepresentation(
     this: void,
     user: UserRepresentation
   ): user is SafeUserRepresentation {
-    return !!user.id && !!user.username;
+    return (
+      !!user.id &&
+      !!user.username &&
+      !user.username.startsWith('service-account-')
+    );
   }
 
   protected static isSafeGroupRepresentation(

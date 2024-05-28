@@ -11,7 +11,7 @@ import {
   tick,
 } from '@angular/core/testing';
 import { MediaChange, MediaObserver } from '@angular/flex-layout';
-import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateService } from '@ngx-translate/core';
 import { MockBuilder } from 'ng-mocks';
 import { of } from 'rxjs';
@@ -65,7 +65,7 @@ describe('AppComponent', () => {
         'this is a dev system',
         'X',
         {
-          panelClass: ['error'],
+          panelClass: ['snack-bar-error'],
           duration: 10000,
         }
       );

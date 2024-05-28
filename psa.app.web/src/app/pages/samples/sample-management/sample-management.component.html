@@ -5,74 +5,56 @@
   -->
 
 <app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
-<div class="jumbotron" data-e2e="e2e-sample-management-component">
-  <!-- Fragoboegen filtern -->
-  <div class="questionnaire-header">
-    <mat-grid-list [cols]="cols | async" rowHeight="85px">
-      <mat-grid-tile>
-        <mat-form-field>
-          <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
-          <mat-select
-            id="selectstudy"
-            [formControl]="studyName"
-            data-e2e="e2e-sample-management-study-select"
-          >
-            <mat-option
-              *ngFor="let studyName of currentUser.studies"
-              [value]="studyName"
-            >
-              {{ studyName }}
-            </mat-option>
-          </mat-select>
-          <mat-error
-            *ngIf="studyName.touched && studyName.hasError('required')"
-          >
-            {{ 'DIALOG.STUDY_REQUIRED' | translate }}
-          </mat-error>
-        </mat-form-field>
-      </mat-grid-tile>
-      <mat-grid-tile>
-        <mat-form-field>
-          <input
-            matInput
-            #filter
-            placeholder="{{ 'GENERAL.FILTER' | translate }}"
-          />
-        </mat-form-field>
-      </mat-grid-tile>
-      <mat-grid-tile>
-        <mat-checkbox
-          [(ngModel)]="needsMaterialFilterCheckbox"
-          (change)="showOnlyProbandsWhoNeedsMaterial()"
-          color="primary"
-          >{{ 'SAMPLE_MANAGEMENT.MATERIAL_REQUIRED' | translate }}</mat-checkbox
+<div
+  class="jumbotron space-y"
+  data-e2e="e2e-sample-management-component"
+  [ngStyle]="cols | async"
+>
+  <mat-card class="utility-card">
+    <mat-card-content>
+      <mat-form-field>
+        <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
+        <mat-select
+          id="selectstudy"
+          [formControl]="studyName"
+          data-e2e="e2e-sample-management-study-select"
         >
-      </mat-grid-tile>
-      <mat-grid-tile>
-        <button
-          mat-raised-button
-          color="primary"
-          [disabled]="selection.selected.length === 0"
-          (click)="createLetters()"
-        >
-          {{ 'SAMPLE_MANAGEMENT.CREATE_COLLECTIVE_LETTERS' | translate }}
-        </button>
-      </mat-grid-tile>
-      <mat-grid-tile>
-        <mat-form-field>
-          <input
-            matInput
-            #filterInputSampleID
-            placeholder="{{ 'Proben-ID filtern' | translate }}"
-            (keyup.enter)="filterTableWithProbenID(filterInputSampleID.value)"
-            [formControl]="sample_id"
-          />
-          <mat-error *ngIf="sample_id.hasError('sampleWrongFormat')"
-            >{{ 'SAMPLES.WRONG_SAMPLE_FORMAT' | translate }}
-          </mat-error>
+          <mat-option
+            data-e2e="option"
+            *ngFor="let studyName of currentUser.studies"
+            [value]="studyName"
+          >
+            {{ studyName }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="studyName.touched && studyName.hasError('required')">
+          {{ 'DIALOG.STUDY_REQUIRED' | translate }}
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'GENERAL.FILTER' | translate }}</mat-label>
+        <input matInput #filter />
+      </mat-form-field>
+      <mat-checkbox
+        [(ngModel)]="needsMaterialFilterCheckbox"
+        (change)="showOnlyProbandsWhoNeedsMaterial()"
+        color="primary"
+        >{{ 'SAMPLE_MANAGEMENT.MATERIAL_REQUIRED' | translate }}
+      </mat-checkbox>
+      <mat-form-field>
+        <mat-label>{{ 'Proben-ID filtern' | translate }}</mat-label>
+        <input
+          matInput
+          #filterInputSampleID
+          (keyup.enter)="filterTableWithProbenID(filterInputSampleID.value)"
+          [formControl]="sample_id"
+        />
+        <mat-error *ngIf="sample_id.hasError('sampleWrongFormat')"
+          >{{ 'SAMPLES.WRONG_SAMPLE_FORMAT' | translate }}
+        </mat-error>
+        <div matSuffix style="display: flex; flex-wrap: nowrap">
           <button
             mat-icon-button
-            matSuffix
             *ngIf="filterInputSampleID.value"
             (click)="filterTableWithProbenID('')"
           >
@@ -80,7 +62,6 @@
           </button>
           <button
             mat-icon-button
-            matSuffix
             *ngIf="filterInputSampleID.value"
             (click)="
               sample_id.valid &&
@@ -89,125 +70,138 @@
           >
             <mat-icon>spellcheck</mat-icon>
           </button>
-        </mat-form-field>
-      </mat-grid-tile>
-    </mat-grid-list>
-  </div>
+        </div>
+      </mat-form-field>
+    </mat-card-content>
 
-  <div class="probands-container mat-elevation-z8">
-    <mat-table
-      #table
-      [dataSource]="dataSource"
-      matSortActive="username"
-      matSortDirection="asc"
-      matSort
-    >
-      <!-- Checkbox Column -->
-      <ng-container matColumnDef="select">
-        <mat-header-cell *matHeaderCellDef>
-          <mat-checkbox
-            (change)="$event ? masterToggle() : null"
-            [checked]="selection.hasValue() && isAllSelected()"
-            [indeterminate]="selection.hasValue() && !isAllSelected()"
-          >
-          </mat-checkbox>
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row">
-          <mat-checkbox
-            (click)="$event.stopPropagation()"
-            (change)="$event ? selection.toggle(row) : null"
-            [checked]="selection.isSelected(row)"
-          >
-          </mat-checkbox>
-        </mat-cell>
-      </ng-container>
+    <mat-card-actions>
+      <button
+        mat-button
+        color="primary"
+        [disabled]="selection.selected.length === 0"
+        (click)="createLetters()"
+      >
+        {{ 'SAMPLE_MANAGEMENT.CREATE_COLLECTIVE_LETTERS' | translate }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
 
-      <!-- L3 Needs Material Column -->
-      <ng-container matColumnDef="needs_material" matSortStart>
-        <mat-header-cell
-          *matHeaderCellDef
-          mat-sort-header
-          class="material-column"
-        ></mat-header-cell>
-        <mat-cell *matCellDef="let row" class="material-column">
-          <mat-icon *ngIf="row.needs_material">priority_high</mat-icon>
-        </mat-cell>
-      </ng-container>
+  <mat-card class="probands-container">
+    <mat-card-content>
+      <mat-table
+        #table
+        [dataSource]="dataSource"
+        matSortActive="username"
+        matSortDirection="asc"
+        matSort
+      >
+        <!-- Checkbox Column -->
+        <ng-container matColumnDef="select">
+          <mat-header-cell *matHeaderCellDef>
+            <mat-checkbox
+              (change)="$event ? masterToggle() : null"
+              [checked]="selection.hasValue() && isAllSelected()"
+              [indeterminate]="selection.hasValue() && !isAllSelected()"
+            >
+            </mat-checkbox>
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row" class="select-column">
+            <mat-checkbox
+              (click)="$event.stopPropagation()"
+              (change)="$event ? selection.toggle(row) : null"
+              [checked]="selection.isSelected(row)"
+            >
+            </mat-checkbox>
+          </mat-cell>
+        </ng-container>
 
-      <!-- L3 Pseudonym Column -->
-      <ng-container matColumnDef="username" matSortStart>
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'SAMPLE_MANAGEMENT.L3_PSEUDONYM' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row"> {{ row.username }} </mat-cell>
-      </ng-container>
+        <!-- L3 Needs Material Column -->
+        <ng-container matColumnDef="needs_material" matSortStart>
+          <mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="material-column"
+          ></mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <mat-icon class="needs-material-icon">priority_high</mat-icon>
+          </mat-cell>
+        </ng-container>
 
-      <!-- IDS Column -->
-      <ng-container matColumnDef="ids" matSortStart>
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'SAMPLE_MANAGEMENT.IDS' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row"> {{ row.ids }} </mat-cell>
-      </ng-container>
+        <!-- L3 Pseudonym Column -->
+        <ng-container matColumnDef="username">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'SAMPLE_MANAGEMENT.L3_PSEUDONYM' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row"> {{ row.username }}</mat-cell>
+        </ng-container>
 
-      <!-- Lastname Column -->
-      <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'SAMPLE_MANAGEMENT.NACHNAME' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row"> {{ row.name }} </mat-cell>
-      </ng-container>
+        <!-- IDS Column -->
+        <ng-container matColumnDef="ids">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'SAMPLE_MANAGEMENT.IDS' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row"> {{ row.ids }}</mat-cell>
+        </ng-container>
 
-      <!-- Firstname Column -->
-      <ng-container matColumnDef="vorname">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'SAMPLE_MANAGEMENT.VORNAME' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row"> {{ row.vorname }} </mat-cell>
-      </ng-container>
+        <!-- Lastname Column -->
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'SAMPLE_MANAGEMENT.NACHNAME' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row"> {{ row.name }}</mat-cell>
+        </ng-container>
 
-      <!-- Status Column -->
-      <ng-container matColumnDef="status">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'PROBANDEN.ACCOUNT_STATUS' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row">
-          {{ row.status | translate }}
-        </mat-cell>
-      </ng-container>
+        <!-- Firstname Column -->
+        <ng-container matColumnDef="vorname">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'SAMPLE_MANAGEMENT.VORNAME' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row"> {{ row.vorname }}</mat-cell>
+        </ng-container>
 
-      <ng-container matColumnDef="view">
-        <mat-header-cell *matHeaderCellDef>
-          {{ 'SAMPLE_MANAGEMENT.DETAILS' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row">
-          <button
-            id="viewicon"
-            #view
-            mat-icon-button
-            (click)="
-              onClickViewSampleListForUser(
-                row.username ? row.username : row.ids,
-                row.status
-              )
-            "
-            [disabled]="row.status === 'STUDIES.STATUS_DELETED'"
-          >
-            <mat-icon>visibility</mat-icon>
-          </button>
-        </mat-cell>
-      </ng-container>
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'PROBANDEN.ACCOUNT_STATUS' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            {{ row.status | translate }}
+          </mat-cell>
+        </ng-container>
 
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns"> </mat-row>
-    </mat-table>
+        <ng-container matColumnDef="view">
+          <mat-header-cell *matHeaderCellDef>
+            {{ 'SAMPLE_MANAGEMENT.DETAILS' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <button
+              id="viewicon"
+              #view
+              mat-icon-button
+              (click)="
+                onClickViewSampleListForUser(
+                  row.username ? row.username : row.ids,
+                  row.status
+                )
+              "
+              [disabled]="row.status === 'STUDIES.STATUS_DELETED'"
+            >
+              <mat-icon>visibility</mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
 
-    <mat-paginator
-      #paginator
-      [pageIndex]="0"
-      [pageSize]="25"
-      [pageSizeOptions]="[5, 10, 25, 100]"
-    >
-    </mat-paginator>
-  </div>
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      </mat-table>
+
+      <mat-paginator
+        #paginator
+        [pageIndex]="0"
+        [pageSize]="25"
+        [pageSizeOptions]="[5, 10, 25, 100]"
+      >
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
 </div>

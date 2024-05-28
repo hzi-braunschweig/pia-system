@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import totp from 'totp-generator';
+import { TOTP } from 'totp-generator';
 
 import { generateRandomStudy, login, logout } from '../../support/commands';
 import {
@@ -75,9 +75,9 @@ describe('Release Test, role: "SysAdmin", Studies', () => {
       .then((credentials) => login(credentials.username, credentials.password));
 
     cy.readFile('.e2e-totp-secret').then((totpSecret) => {
-      const token = totp(totpSecret);
+      const { otp } = TOTP.generate(totpSecret);
 
-      cy.get('#otp').type(token);
+      cy.get('#otp').type(otp);
 
       cy.get('#kc-login').click();
     });

@@ -20,7 +20,7 @@ import {
   MAT_DATE_LOCALE,
 } from '@angular/material/core';
 import {
-  APP_DATE_FORMATS,
+  APP_DATE_FORMATS_SHORT,
   AppDateAdapter,
 } from '../../../_helpers/date-adapter';
 import { AbstractFeedbackStatisticConfigurationComponent } from '../abstract-feedback-statistic-configuration.component';
@@ -49,7 +49,7 @@ export interface AnswerOptionValue {
     },
     {
       provide: MAT_DATE_FORMATS,
-      useValue: APP_DATE_FORMATS,
+      useValue: APP_DATE_FORMATS_SHORT,
     },
   ],
 })

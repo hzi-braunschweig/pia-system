@@ -65,7 +65,7 @@ describe('NotificationService', () => {
     auth = jasmine.createSpyObj('AuthService', ['isAuthenticated'], {
       isAuthenticated$: isAuthenticatedSubject.asObservable(),
     });
-    auth.isAuthenticated.and.resolveTo(true);
+    auth.isAuthenticated.and.returnValue(true);
 
     TestBed.configureTestingModule({
       providers: [
@@ -134,7 +134,7 @@ describe('NotificationService', () => {
     }));
 
     it('should present undelivered messages', fakeAsync(() => {
-      auth.isAuthenticated.and.resolveTo(false);
+      auth.isAuthenticated.and.returnValue(false);
       service.initPushNotifications('test-1234');
       tick();
       onMessageReceivedSubject.next({

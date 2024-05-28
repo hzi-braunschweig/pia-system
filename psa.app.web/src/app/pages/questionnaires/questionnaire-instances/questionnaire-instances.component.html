@@ -4,155 +4,161 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
-<div class="jumbotron">
-  <div fxLayout="row wrap">
-    <div fxFlex="50" fxLayoutAlign="start center">
-      <button mat-button id="arrowback" (click)="backClicked()">
-        <mat-icon>arrow_back_ios</mat-icon>
-      </button>
-    </div>
-    <div>
-      <mat-form-field floatPlaceholder="never">
-        <input
-          matInput
-          #filter
-          placeholder="{{ 'QUESTIONNAIRES_FORSCHER.FILTER' | translate }}"
-        />
+<div class="jumbotron space-y">
+  <h3>
+    <button mat-icon-button id="arrowback" (click)="backClicked()">
+      <mat-icon>arrow_back_ios</mat-icon>
+    </button>
+    {{ username }}
+  </h3>
+  <mat-card class="utility-card">
+    <mat-card-content>
+      <mat-form-field>
+        <mat-label
+          >{{ 'QUESTIONNAIRES_FORSCHER.FILTER' | translate }}
+        </mat-label>
+        <input matInput #filter />
       </mat-form-field>
-    </div>
-  </div>
+    </mat-card-content>
+  </mat-card>
 
   <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
 
-  <div class="questionnaire-container mat-elevation-z8">
-    <mat-table
-      #table
-      [dataSource]="dataSource"
-      matSortActive="status"
-      matSortDirection="asc"
-      matSort
-    >
-      <!-- ID Column -->
-      <ng-container matColumnDef="questionnaire_id">
-        <mat-header-cell
-          *matHeaderCellDef
-          mat-sort-header
-          appShowColumn
-          showInput="none"
-        >
-          {{ 'QUESTIONNAIRES_PROBAND.QUESTIONNAIRE_ID' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row" appShowColumn showInput="none">
-          {{ row.questionnaire_id }}
-        </mat-cell>
-      </ng-container>
-
-      <!-- Studie Column -->
-      <ng-container matColumnDef="study_id">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'QUESTIONNAIRES_FORSCHER.STUDY_ID' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row"> {{ row.study_id }} </mat-cell>
-      </ng-container>
-
-      <!-- Name Column -->
-      <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef mat-sort-header class="column name">
-          {{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_NAME' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row" class="column name">
-          {{ row.questionnaire_name }}
-        </mat-cell>
-      </ng-container>
-
-      <!-- Date Column -->
-      <ng-container matColumnDef="date">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'QUESTIONNAIRES_PROBAND.DATE' | translate }}</mat-header-cell
-        >
-        <mat-cell *matCellDef="let row">
-          {{
-            row.questionnaire.cycle_unit == 'hour'
-              ? (row.date_of_issue | date: 'medium')
-              : (row.date_of_issue | date: 'mediumDate')
-          }}
-        </mat-cell>
-      </ng-container>
-
-      <!-- Status Column -->
-      <ng-container matColumnDef="status" matSortStart>
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'QUESTIONNAIRES_PROBAND.STATUS' | translate }}</mat-header-cell
-        >
-        <mat-cell *matCellDef="let row">
-          <span *ngIf="row.status == 'active'">{{
-            'STUDIES.STATUS_ACTIVE' | translate
-          }}</span>
-          <span *ngIf="row.status == 'in_progress'">{{
-            'QUESTIONNAIRES_FORSCHER.IN_PROGRESS' | translate
-          }}</span>
-          <span *ngIf="row.status == 'released_once'">{{
-            'LOGS.Q_RELEASED_ONCE' | translate
-          }}</span>
-          <span *ngIf="row.status == 'released_twice'">{{
-            'LOGS.Q_RELEASED_TWICE' | translate
-          }}</span>
-          <span *ngIf="row.status == 'released'">{{
-            'LOGS.Q_RELEASED_ONCE' | translate
-          }}</span>
-          <span *ngIf="row.status == 'expired'">{{
-            'QUESTIONNAIRES_FORSCHER.EXPIRED' | translate
-          }}</span>
-        </mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="edit">
-        <mat-header-cell
-          *matHeaderCellDef
-          fxFlex="2 0 40px"
-          fxLayoutAlign="center center"
-        ></mat-header-cell>
-        <mat-cell
-          *matCellDef="let row"
-          fxFlex="2 0 40px"
-          fxLayoutAlign="center center"
-        >
-          <button
-            id="overviewicon"
-            #delete
-            mat-icon-button
-            (click)="viewAnswers(row.questionnaire_id, row.id, row.status)"
-            *ngIf="
-              user.hasRole('Forscher') &&
-              (row.status === 'released' ||
-                row.status === 'released_once' ||
-                row.status === 'released_twice')
-            "
+  <mat-card>
+    <mat-card-content>
+      <mat-table
+        #table
+        [dataSource]="dataSource"
+        matSortActive="status"
+        matSortDirection="asc"
+        matSort
+      >
+        <!-- ID Column -->
+        <ng-container matColumnDef="questionnaire_id">
+          <mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            appShowColumn
+            showInput="none"
           >
-            <mat-icon>visibility</mat-icon>
-          </button>
-        </mat-cell>
-      </ng-container>
+            {{ 'QUESTIONNAIRES_PROBAND.QUESTIONNAIRE_ID' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row" appShowColumn showInput="none">
+            {{ row.questionnaire_id }}
+          </mat-cell>
+        </ng-container>
 
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-    </mat-table>
+        <!-- Studie Column -->
+        <ng-container matColumnDef="study_id">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'QUESTIONNAIRES_FORSCHER.STUDY_ID' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row"> {{ row.study_id }}</mat-cell>
+        </ng-container>
 
-    <div
-      class="table-no-results"
-      *ngIf="!isLoading"
-      [style.display]="dataSource.renderedData.length == 0 ? '' : 'none'"
-    >
-      {{ 'QUESTIONNAIRES_FORSCHER.FILTER_NO_RESULTS' | translate }}
-    </div>
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+          <mat-header-cell
+            *matHeaderCellDef
+            mat-sort-header
+            class="column name"
+          >
+            {{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_NAME' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row" class="column name">
+            {{ row.questionnaire_name }}
+          </mat-cell>
+        </ng-container>
 
-    <mat-paginator
-      #paginator
-      [length]="dataSource.filteredData.length"
-      [pageIndex]="0"
-      [pageSize]="25"
-      [pageSizeOptions]="[5, 10, 25, 100]"
-    >
-    </mat-paginator>
-  </div>
+        <!-- Date Column -->
+        <ng-container matColumnDef="date">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'QUESTIONNAIRES_PROBAND.DATE' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            {{
+              row.questionnaire.cycle_unit == 'hour'
+                ? (row.date_of_issue | date: 'medium')
+                : (row.date_of_issue | date: 'mediumDate')
+            }}
+          </mat-cell>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status" matSortStart>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'QUESTIONNAIRES_PROBAND.STATUS' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <span *ngIf="row.status == 'active'">{{
+              'STUDIES.STATUS_ACTIVE' | translate
+            }}</span>
+            <span *ngIf="row.status == 'in_progress'">{{
+              'QUESTIONNAIRES_FORSCHER.IN_PROGRESS' | translate
+            }}</span>
+            <span *ngIf="row.status == 'released_once'">{{
+              'LOGS.Q_RELEASED_ONCE' | translate
+            }}</span>
+            <span *ngIf="row.status == 'released_twice'">{{
+              'LOGS.Q_RELEASED_TWICE' | translate
+            }}</span>
+            <span *ngIf="row.status == 'released'">{{
+              'LOGS.Q_RELEASED_ONCE' | translate
+            }}</span>
+            <span *ngIf="row.status == 'expired'">{{
+              'QUESTIONNAIRES_FORSCHER.EXPIRED' | translate
+            }}</span>
+          </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="edit">
+          <mat-header-cell
+            *matHeaderCellDef
+            fxFlex="2 0 40px"
+            fxLayoutAlign="center center"
+          ></mat-header-cell>
+          <mat-cell
+            *matCellDef="let row"
+            fxFlex="2 0 40px"
+            fxLayoutAlign="center center"
+          >
+            <button
+              id="overviewicon"
+              #delete
+              mat-icon-button
+              (click)="viewAnswers(row.questionnaire_id, row.id, row.status)"
+              *ngIf="
+                user.hasRole('Forscher') &&
+                (row.status === 'released' ||
+                  row.status === 'released_once' ||
+                  row.status === 'released_twice')
+              "
+            >
+              <mat-icon>visibility</mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      </mat-table>
+
+      <div
+        class="table-no-results"
+        *ngIf="!isLoading"
+        [style.display]="dataSource.renderedData.length == 0 ? '' : 'none'"
+      >
+        {{ 'QUESTIONNAIRES_FORSCHER.FILTER_NO_RESULTS' | translate }}
+      </div>
+
+      <mat-paginator
+        #paginator
+        [length]="dataSource.filteredData.length"
+        [pageIndex]="0"
+        [pageSize]="25"
+        [pageSizeOptions]="[5, 10, 25, 100]"
+      >
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
 </div>

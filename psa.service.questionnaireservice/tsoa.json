@@ -1,0 +1,44 @@
+{
+  "entryFile": "src/index.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": ["src/controllers/**/*Controller.ts"],
+  "spec": {
+    "outputDirectory": "spec",
+    "specFileBaseName": "openapi",
+    "specVersion": 3,
+    "yaml": true,
+    "basePath": "/api/v1",
+    "version": "1",
+    "tags": [
+      {
+        "name": "Questionnaires",
+        "description": "Operations related to the questionnaires resource.\n\nA questionnaire provides the blueprint for one or many instances of said questionnaire. It contains meta information (e.g. name, schedule, version) and defines the structure, content, and validation rules in form of questions and answer options. It is managed by the researcher role and not shown to participants directly."
+      },
+      {
+        "name": "Questionnaire Instances",
+        "description": "Operations regarding the questionnaire instances resource.\n\nQuestionnaire instances are shown to participants. This resource is actually answered by participants. Each questionnaire instance is valid for a time span specified in the underlying questionnaire and always belongs to exactly one participant."
+      },
+      {
+        "name": "Answers",
+        "description": "Operations related to the answers resource.\n\nAn answer is the actual value provided by a specific participant to a specific question in a questionnaire instance."
+      }
+    ],
+    "securityDefinitions": {
+      "jwt-public": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "/api/v1/auth/realms/pia-admin-realm/protocol/openid-connect/token",
+            "scopes": {}
+          }
+        }
+      }
+    }
+  },
+  "routes": {
+    "middleware": "hapi",
+    "routesDir": "src",
+    "routesFileName": "publicRoutes.generated.ts",
+    "authenticationModule": "./src/auth.ts"
+  }
+}

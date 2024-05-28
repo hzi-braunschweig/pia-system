@@ -11,7 +11,7 @@ import { Questionnaire } from '../../entities/questionnaire';
 import { AnswerDataFilter } from '../../models/answer';
 import { Answer } from '../../entities/answer';
 import { AnswerDataTransform } from '../../services/internal/answerDataTransform';
-import { StreamTimeout } from '../../helpers/streamTimeout';
+import { StreamTimeout } from '@pia/lib-service-core';
 import { Transform } from 'stream';
 
 export class InternalQuestionnaireInteractor {

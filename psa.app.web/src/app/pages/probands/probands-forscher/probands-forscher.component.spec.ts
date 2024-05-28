@@ -6,10 +6,7 @@
 
 import { ComponentFixture, fakeAsync } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
 import { MockBuilder, MockInstance, MockRender } from 'ng-mocks';
 import { Subject } from 'rxjs';

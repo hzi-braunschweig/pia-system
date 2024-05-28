@@ -15,8 +15,7 @@ import {
   QuestionnaireInstanceStatus,
 } from '../models/questionnaireInstance';
 import { QuestionnaireInstanceRepository } from '../repositories/questionnaireInstanceRepository';
-
-import { messageQueueService } from '../services/messageQueueService';
+import { QuestionnaireInstanceService } from '../services/questionnaireInstanceService';
 
 /**
  * @description interactor that handles questionnaire instance requests based on users permissions
@@ -175,135 +174,75 @@ export class QuestionnaireInstancesInteractor {
     id: number,
     status: QuestionnaireInstanceStatus | null,
     progress: number,
-    release_version: number
+    releaseVersion: number | null
   ): Promise<QuestionnaireInstanceDeprecated> {
     switch (getPrimaryRealmRole(decodedToken)) {
       case 'Proband': {
         const currentInstance =
-          await QuestionnaireInstanceRepository.getQuestionnaireInstanceForProband(
-            id
-          ).catch((err) => {
+          await QuestionnaireInstanceService.getQuestionnaireInstance(id, {
+            questionnaireType: 'for_probands',
+            excludeStatus: 'deleted',
+          }).catch((err) => {
             console.log(err);
             throw new Error(
               'Could not update questionnaire instance, because it does not exist'
             );
           });
-        if (currentInstance.user_id !== decodedToken.username) {
+
+        if (currentInstance.pseudonym !== decodedToken.username) {
           throw new Error(
             'Could not update questionnaire instance, because user has no access'
           );
         }
-        if (
-          status &&
-          !this.isAllowedStatusTransitionForProband(
-            currentInstance.status,
-            status
-          )
-        ) {
-          throw new Error(
-            'Could not update questionnaire instance, wrong status transition'
-          );
-        }
-        const result =
-          await QuestionnaireInstanceRepository.updateQuestionnaireInstance(
-            id,
-            status,
-            progress,
-            release_version
-          ).catch((err) => {
-            console.log(err);
-            throw new Error(
-              'Could not update questionnaire instance: internal DB error'
-            );
-          });
 
-        if (status === 'released_once' || status === 'released_twice') {
-          await messageQueueService.sendQuestionnaireInstanceReleased(
-            id,
-            release_version
+        return await QuestionnaireInstanceService.patchInstance(
+          currentInstance,
+          {
+            ...(status ? { status } : {}),
+            ...(releaseVersion ? { releaseVersion } : {}),
+            progress,
+          },
+          true
+        ).catch((err) => {
+          console.log(err);
+          throw new Error(
+            'Could not update questionnaire instance: internal DB error'
           );
-        }
-        return result;
+        });
       }
       case 'Untersuchungsteam': {
         const currentInstance =
-          await QuestionnaireInstanceRepository.getQuestionnaireInstanceForInvestigator(
-            id
-          ).catch((err) => {
+          await QuestionnaireInstanceService.getQuestionnaireInstance(id, {
+            questionnaireType: 'for_research_team',
+            excludeStatus: 'deleted',
+          }).catch((err) => {
             console.log(err);
             throw new Error(
               'Could not get questionnaire instance, because it does not exist or UT has no access'
             );
           });
-        if (
-          status &&
-          !this.isAllowedStatusTransitionForInvestigator(
-            currentInstance.status,
-            status
-          )
-        ) {
-          throw new Error(
-            'Could not update questionnaire instance, wrong status transition'
-          );
-        }
-        assertStudyAccess(currentInstance.study_id, decodedToken);
 
-        const result =
-          await QuestionnaireInstanceRepository.updateQuestionnaireInstance(
-            id,
-            status,
+        assertStudyAccess(currentInstance.studyId, decodedToken);
+
+        return await QuestionnaireInstanceService.patchInstance(
+          currentInstance,
+          {
+            ...(status ? { status } : {}),
+            ...(releaseVersion ? { releaseVersion } : {}),
             progress,
-            release_version
-          ).catch((err) => {
-            console.log(err);
-            throw new Error(
-              'Could not update questionnaire instance: internal DB error'
-            );
-          });
-        if (status === 'released') {
-          await messageQueueService.sendQuestionnaireInstanceReleased(
-            id,
-            release_version
+          },
+          true
+        ).catch((err) => {
+          console.log(err);
+          throw new Error(
+            'Could not update questionnaire instance: internal DB error'
           );
-        }
-        return result;
+        });
       }
       default:
         throw new Error(
           'Could not update questionnaire instance: Unknown or wrong role'
         );
-    }
-  }
-
-  private static isAllowedStatusTransitionForProband(
-    oldStatus: QuestionnaireInstanceStatus,
-    newStatus: QuestionnaireInstanceStatus
-  ): boolean {
-    switch (oldStatus) {
-      case 'active':
-        return newStatus === 'in_progress' || newStatus === 'released_once';
-      case 'in_progress':
-        return newStatus === 'released_once';
-      case 'released_once':
-        return newStatus === 'released_twice';
-      default:
-        return false;
-    }
-  }
-
-  private static isAllowedStatusTransitionForInvestigator(
-    oldStatus: QuestionnaireInstanceStatus,
-    newStatus: QuestionnaireInstanceStatus
-  ): boolean {
-    switch (oldStatus) {
-      case 'active':
-        return newStatus === 'in_progress' || newStatus === 'released';
-      case 'in_progress':
-        return newStatus === 'released';
-      case 'released':
-        return newStatus === 'released';
-      default:
-        return false;
     }
   }
 }

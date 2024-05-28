@@ -9,7 +9,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DialogDeleteAccountSuccessComponent } from './dialog-delete-account-success.component';
 import { MockBuilder } from 'ng-mocks';
 import { AppModule } from '../../app.module';
-import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { TranslatePipe } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 

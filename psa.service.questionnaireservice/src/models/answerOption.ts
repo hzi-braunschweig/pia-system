@@ -42,6 +42,8 @@ export enum AnswerType {
   File = 10,
 }
 
+export type AnswerTypeKeys = keyof typeof AnswerType;
+
 /**
  * @deprecated
  */

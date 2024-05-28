@@ -38,7 +38,7 @@ java -jar /keycloak-config-cli.jar \
     --import.var-substitution.prefix=[[ \
     --import.var-substitution.suffix=]] \
     --keycloak.availability-check.enabled=true \
-    --keycloak.url=https://localhost:4000/ \
+    --keycloak.url=http://localhost:4000/ \
     --keycloak.user=${KEYCLOAK_ADMIN} \
     --keycloak.password=${KEYCLOAK_ADMIN_PASSWORD} \
     --keycloak.ssl-verify=false

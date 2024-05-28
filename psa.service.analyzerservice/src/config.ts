@@ -7,19 +7,12 @@
 import {
   ConfigUtils,
   GlobalConfig,
-  SslCerts,
   SupersetOfServiceConfig,
 } from '@pia/lib-service-core';
 
-const SSL_CERTS: SslCerts = {
-  cert: ConfigUtils.getFileContent('./ssl/an.cert'),
-  key: ConfigUtils.getFileContent('./ssl/an.key'),
-  ca: ConfigUtils.getFileContent('./ssl/ca.cert'),
-};
-
 const conf = {
-  public: GlobalConfig.getPublic(SSL_CERTS, 'analyzerservice'),
-  database: GlobalConfig.getQPia(SSL_CERTS),
+  public: GlobalConfig.getPublic('analyzerservice'),
+  database: GlobalConfig.getQPia(),
   isTestMode: ConfigUtils.getEnvVariable('IS_TEST_MODE', 'false') === 'true',
   timeZone: GlobalConfig.timeZone,
   notificationTime: {

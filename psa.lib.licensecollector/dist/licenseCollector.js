@@ -137,6 +137,8 @@ LicenseCollector.LICENSE_WHITELIST_PROD = [
     'MPL-2.0',
     'Unlicense',
     'WTFPL',
+    'BlueOak-1.0.0',
+    'Unicode-DFS-2016',
 ];
 LicenseCollector.LICENSE_WHITELIST_PROD_AND_DEV = [
     ...LicenseCollector.LICENSE_WHITELIST_PROD,

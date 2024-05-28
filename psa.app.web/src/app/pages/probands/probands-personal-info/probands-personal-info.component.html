@@ -6,302 +6,314 @@
 
 <app-loading-spinner *ngIf="isLoading" cover="true"></app-loading-spinner>
 
-<div class="jumbotron">
-  <div class="grid-container">
-    <mat-form-field>
-      <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
-      <mat-select
-        disableOptionCentering
-        id="selectstudy"
-        (selectionChange)="initTable()"
-        [(ngModel)]="currentStudy"
+<div class="jumbotron space-y">
+  <mat-card class="utility-card">
+    <mat-card-content class="grid-container">
+      <mat-form-field>
+        <mat-label>{{ 'GENERAL.SELECT_STUDY' | translate }}</mat-label>
+        <mat-select
+          disableOptionCentering
+          id="selectstudy"
+          (selectionChange)="initTable()"
+          [(ngModel)]="currentStudy"
+        >
+          <mat-option *ngFor="let studie of studies" [value]="studie">
+            {{ studie.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ 'DIALOG.FILTER' | translate }}</mat-label>
+        <input matInput (keyup)="applyFilter()" [(ngModel)]="filterKeyword" />
+      </mat-form-field>
+    </mat-card-content>
+    <mat-card-actions>
+      <button id="resetFilter" mat-button (click)="resetFilter()">
+        {{ 'PROBANDEN.RESET_FILTER' | translate }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card>
+    <mat-card-content>
+      <mat-table
+        [dataSource]="dataSource"
+        matSortActive="pseudonym"
+        matSortDirection="asc"
+        matSort
       >
-        <mat-option *ngFor="let studie of studies" [value]="studie">
-          {{ studie.name }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-    <mat-form-field>
-      <input
-        matInput
-        (keyup)="applyFilter()"
-        [(ngModel)]="filterKeyword"
-        placeholder="{{ 'DIALOG.FILTER' | translate }}"
-      />
-    </mat-form-field>
-    <button
-      id="resetFilter"
-      mat-raised-button
-      color="primary"
-      (click)="resetFilter()"
-    >
-      {{ 'PROBANDEN.RESET_FILTER' | translate }}
-    </button>
-  </div>
+        <!-- Username Column -->
+        <ng-container matColumnDef="pseudonym">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'PROBAND.PSEUDONYM' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            {{ row.pseudonym }}
+          </mat-cell>
+        </ng-container>
 
-  <div class="probands-container mat-elevation-z8">
-    <mat-table
-      [dataSource]="dataSource"
-      matSortActive="pseudonym"
-      matSortDirection="asc"
-      matSort
-    >
-      <!-- Username Column -->
-      <ng-container matColumnDef="pseudonym">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'PROBAND.PSEUDONYM' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row">
-          {{ row.pseudonym }}
-        </mat-cell>
-      </ng-container>
+        <!-- IDS Column -->
+        <ng-container matColumnDef="ids">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'PROBAND.IDS' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row"> {{ row.ids }}</mat-cell>
+        </ng-container>
 
-      <!-- IDS Column -->
-      <ng-container matColumnDef="ids">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'PROBAND.IDS' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row"> {{ row.ids }} </mat-cell>
-      </ng-container>
+        <!-- Firstname Column -->
+        <ng-container matColumnDef="firstname">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'GENERAL.FIRST_NAME' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            {{ row.firstname }}
+          </mat-cell>
+        </ng-container>
 
-      <!-- Firstname Column -->
-      <ng-container matColumnDef="firstname">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'GENERAL.FIRST_NAME' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row">
-          {{ row.firstname }}
-        </mat-cell>
-      </ng-container>
+        <!-- Lastname Column -->
+        <ng-container matColumnDef="lastname">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'GENERAL.NAME' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            {{ row.lastname }}
+          </mat-cell>
+        </ng-container>
 
-      <!-- Lastname Column -->
-      <ng-container matColumnDef="lastname">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'GENERAL.NAME' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row">
-          {{ row.lastname }}
-        </mat-cell>
-      </ng-container>
+        <ng-container matColumnDef="edit">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <button
+              mat-icon-button
+              (click)="editPersonalData(row.proband.pseudonym)"
+              [disabled]="!row.proband.complianceContact"
+            >
+              <mat-icon>mode_edit</mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
 
-      <ng-container matColumnDef="edit">
-        <mat-header-cell *matHeaderCellDef></mat-header-cell>
-        <mat-cell *matCellDef="let row">
-          <button
-            mat-icon-button
-            (click)="editPersonalData(row.proband.pseudonym)"
-            [disabled]="!row.proband.complianceContact"
-          >
-            <mat-icon>mode_edit</mat-icon>
-          </button>
-        </mat-cell>
-      </ng-container>
+        <!-- AccountStatus Column -->
+        <ng-container matColumnDef="accountStatus">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>
+            {{ 'PROBANDEN.ACCOUNT_STATUS' | translate }}
+          </mat-header-cell>
+          <mat-cell *matCellDef="let row" class="account-status-column">
+            <span
+              [matTooltip]="getTranslatedAccountStatusTooltipText(row.proband)"
+            >
+              {{ row.accountStatus | translate }}
+              <ng-container *ngIf="row.pendingProbandDeletion">
+                -
+                {{ 'PROBANDEN.STATUS_PROBAND_DELETION_REQUESTED' | translate }}
+              </ng-container>
+              <ng-container *ngIf="row.pendingPersonalDataDeletion">
+                -
+                {{
+                  'PROBANDEN.STATUS_PERSONAL_DATA_DELETION_REQUESTED'
+                    | translate
+                }}
+              </ng-container>
+              <ng-container *ngIf="row.pendingComplianceChange">
+                -
+                {{ 'PROBANDEN.STATUS_COMPLIANCE_CHANGE_REQUESTED' | translate }}
+              </ng-container>
+            </span>
+          </mat-cell>
+        </ng-container>
 
-      <!-- AccountStatus Column -->
-      <ng-container matColumnDef="accountStatus">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>
-          {{ 'PROBANDEN.ACCOUNT_STATUS' | translate }}
-        </mat-header-cell>
-        <mat-cell *matCellDef="let row" class="account-status-column">
-          <span
-            [matTooltip]="getTranslatedAccountStatusTooltipText(row.proband)"
-          >
-            {{ row.accountStatus | translate }}
-            <ng-container *ngIf="row.pendingProbandDeletion">
-              - {{ 'PROBANDEN.STATUS_PROBAND_DELETION_REQUESTED' | translate }}
-            </ng-container>
-            <ng-container *ngIf="row.pendingPersonalDataDeletion">
-              -
-              {{
-                'PROBANDEN.STATUS_PERSONAL_DATA_DELETION_REQUESTED' | translate
-              }}
-            </ng-container>
-            <ng-container *ngIf="row.pendingComplianceChange">
-              - {{ 'PROBANDEN.STATUS_COMPLIANCE_CHANGE_REQUESTED' | translate }}
-            </ng-container>
-          </span>
-        </mat-cell>
-      </ng-container>
+        <!-- Show questionnaire instances -->
+        <ng-container matColumnDef="view_answers">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <button
+              mat-button
+              color="accent"
+              (click)="viewQuestionnaireInstancesForUser(row.proband.pseudonym)"
+              [disabled]="row.proband.status === 'deleted'"
+            >
+              <mat-icon>visibility</mat-icon>
+              {{ 'SIDENAV.QUESTIONNAIRES' | translate }}
+            </button>
+          </mat-cell>
+        </ng-container>
 
-      <!-- Show questionnaire instances -->
-      <ng-container matColumnDef="view_answers">
-        <mat-header-cell *matHeaderCellDef></mat-header-cell>
-        <mat-cell *matCellDef="let row">
-          <button
-            mat-button
-            color="accent"
-            (click)="viewQuestionnaireInstancesForUser(row.proband.pseudonym)"
-            [disabled]="row.proband.status === 'deleted'"
-          >
-            <mat-icon>visibility</mat-icon>
-            {{ 'SIDENAV.QUESTIONNAIRES' | translate }}
-          </button>
-        </mat-cell>
-      </ng-container>
+        <!-- Delete proband column -->
+        <ng-container matColumnDef="delete">
+          <mat-header-cell *matHeaderCellDef></mat-header-cell>
+          <mat-cell *matCellDef="let row">
+            <!-- Total opposition buttons -->
+            <button
+              mat-icon-button
+              (click)="openDialog(row.proband, 'general')"
+              [disabled]="row.proband.status === 'deleted'"
+              matTooltip="{{ 'PROBANDEN.DELETE_PROBAND' | translate }}"
+              *ngIf="
+                currentStudy.has_total_opposition && !row.pendingProbandDeletion
+              "
+            >
+              <mat-icon>delete</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="
+                confirmProbandDeletion(
+                  row.pendingProbandDeletion,
+                  row.proband?.study
+                )
+              "
+              matTooltip="{{
+                'PROBANDEN.CONFIRM_TOTAL_OPPOSITION' | translate
+              }}"
+              *ngIf="
+                currentStudy.has_total_opposition &&
+                row.pendingProbandDeletion &&
+                row.pendingProbandDeletion.requested_for === currentUsername
+              "
+            >
+              <mat-icon>check_circle_outline</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="
+                cancelTotalOpposition(
+                  row.pendingProbandDeletion.id,
+                  row.pendingProbandDeletion.for_id
+                )
+              "
+              matTooltip="{{ 'PROBANDEN.CANCEL_TOTAL_OPPOSITION' | translate }}"
+              *ngIf="
+                currentStudy.has_total_opposition &&
+                row.pendingProbandDeletion &&
+                row.pendingProbandDeletion.requested_for !== currentUsername
+              "
+            >
+              <mat-icon>highlight_off_outlined</mat-icon>
+            </button>
 
-      <!-- Delete proband column -->
-      <ng-container matColumnDef="delete">
-        <mat-header-cell *matHeaderCellDef></mat-header-cell>
-        <mat-cell *matCellDef="let row">
-          <!-- Total opposition buttons -->
-          <button
-            mat-icon-button
-            (click)="openDialog(row.proband, 'general')"
-            [disabled]="row.proband.status === 'deleted'"
-            matTooltip="{{ 'PROBANDEN.DELETE_PROBAND' | translate }}"
-            *ngIf="
-              currentStudy.has_total_opposition && !row.pendingProbandDeletion
-            "
-          >
-            <mat-icon>delete</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            (click)="
-              confirmProbandDeletion(
-                row.pendingProbandDeletion,
-                row.proband?.study
-              )
-            "
-            matTooltip="{{ 'PROBANDEN.CONFIRM_TOTAL_OPPOSITION' | translate }}"
-            *ngIf="
-              currentStudy.has_total_opposition &&
-              row.pendingProbandDeletion &&
-              row.pendingProbandDeletion.requested_for === currentUsername
-            "
-          >
-            <mat-icon>check_circle_outline</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            (click)="
-              cancelTotalOpposition(
-                row.pendingProbandDeletion.id,
-                row.pendingProbandDeletion.for_id
-              )
-            "
-            matTooltip="{{ 'PROBANDEN.CANCEL_TOTAL_OPPOSITION' | translate }}"
-            *ngIf="
-              currentStudy.has_total_opposition &&
-              row.pendingProbandDeletion &&
-              row.pendingProbandDeletion.requested_for !== currentUsername
-            "
-          >
-            <mat-icon>highlight_off_outlined</mat-icon>
-          </button>
+            <!-- Communication ban buttons -->
+            <button
+              mat-icon-button
+              (click)="openDialog(row.proband, 'personal')"
+              [disabled]="!row.proband.complianceContact"
+              matTooltip="{{ 'PROBANDEN.DELETE_CONTACT' | translate }}"
+              *ngIf="
+                currentStudy.has_partial_opposition &&
+                !row.pendingPersonalDataDeletion
+              "
+            >
+              <mat-icon>voice_over_off</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="
+                confirmCommunicationBan(
+                  row.pendingPersonalDataDeletion,
+                  row.proband?.study
+                )
+              "
+              matTooltip="{{
+                'PROBANDEN.CONFIRM_COMMUNICATION_BAN' | translate
+              }}"
+              *ngIf="
+                currentStudy.has_partial_opposition &&
+                row.pendingPersonalDataDeletion &&
+                row.pendingPersonalDataDeletion.requested_for ===
+                  currentUsername
+              "
+            >
+              <mat-icon>check_circle_outline</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="
+                cancelCommunicationBan(
+                  row.pendingPersonalDataDeletion.proband_id
+                )
+              "
+              matTooltip="{{
+                'PROBANDEN.CANCEL_COMMUNICATION_BAN' | translate
+              }}"
+              *ngIf="
+                currentStudy.has_partial_opposition &&
+                row.pendingPersonalDataDeletion &&
+                row.pendingPersonalDataDeletion.requested_for !==
+                  currentUsername
+              "
+            >
+              <mat-icon>highlight_off_outlined</mat-icon>
+            </button>
 
-          <!-- Communication ban buttons -->
-          <button
-            mat-icon-button
-            (click)="openDialog(row.proband, 'personal')"
-            [disabled]="!row.proband.complianceContact"
-            matTooltip="{{ 'PROBANDEN.DELETE_CONTACT' | translate }}"
-            *ngIf="
-              currentStudy.has_partial_opposition &&
-              !row.pendingPersonalDataDeletion
-            "
-          >
-            <mat-icon>voice_over_off</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            (click)="
-              confirmCommunicationBan(
-                row.pendingPersonalDataDeletion,
-                row.proband?.study
-              )
-            "
-            matTooltip="{{ 'PROBANDEN.CONFIRM_COMMUNICATION_BAN' | translate }}"
-            *ngIf="
-              currentStudy.has_partial_opposition &&
-              row.pendingPersonalDataDeletion &&
-              row.pendingPersonalDataDeletion.requested_for === currentUsername
-            "
-          >
-            <mat-icon>check_circle_outline</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            (click)="
-              cancelCommunicationBan(row.pendingPersonalDataDeletion.proband_id)
-            "
-            matTooltip="{{ 'PROBANDEN.CANCEL_COMMUNICATION_BAN' | translate }}"
-            *ngIf="
-              currentStudy.has_partial_opposition &&
-              row.pendingPersonalDataDeletion &&
-              row.pendingPersonalDataDeletion.requested_for !== currentUsername
-            "
-          >
-            <mat-icon>highlight_off_outlined</mat-icon>
-          </button>
+            <!-- Compliance change buttons -->
+            <button
+              mat-icon-button
+              (click)="openComplianceChangeDialog(row.proband)"
+              [disabled]="
+                row.proband.status === 'deleted' ||
+                row.proband.accountStatus === 'no_account'
+              "
+              matTooltip="{{ 'PROBANDEN.CHANGE_COMPLIANCES' | translate }}"
+              *ngIf="
+                currentStudy.has_compliance_opposition &&
+                !row.pendingComplianceChange
+              "
+            >
+              <mat-icon>playlist_add_check</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="
+                openPendingComplianceChangeDialog(row.pendingComplianceChange)
+              "
+              [disabled]="
+                row.proband.status === 'deleted' ||
+                row.proband.accountStatus === 'no_account'
+              "
+              matTooltip="{{ 'PROBANDEN.CONFIRM_COMPLIANCES' | translate }}"
+              *ngIf="
+                currentStudy.has_compliance_opposition &&
+                row.pendingComplianceChange &&
+                row.pendingComplianceChange.requested_for === currentUsername
+              "
+            >
+              <mat-icon>check_circle_outline</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              (click)="
+                cancelPendingComplianceChange(
+                  row.pendingComplianceChange.id,
+                  row.pendingComplianceChange.proband_id
+                )
+              "
+              [disabled]="
+                row.proband.status === 'deleted' ||
+                row.proband.accountStatus === 'no_account'
+              "
+              matTooltip="{{
+                'PROBANDEN.CANCEL_COMPLIANCE_CHANGE' | translate
+              }}"
+              *ngIf="
+                currentStudy.has_compliance_opposition &&
+                row.pendingComplianceChange &&
+                row.pendingComplianceChange.requested_for !== currentUsername
+              "
+            >
+              <mat-icon>highlight_off_outlined</mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
 
-          <!-- Compliance change buttons -->
-          <button
-            mat-icon-button
-            (click)="openComplianceChangeDialog(row.proband)"
-            [disabled]="
-              row.proband.status === 'deleted' ||
-              row.proband.accountStatus === 'no_account'
-            "
-            matTooltip="{{ 'PROBANDEN.CHANGE_COMPLIANCES' | translate }}"
-            *ngIf="
-              currentStudy.has_compliance_opposition &&
-              !row.pendingComplianceChange
-            "
-          >
-            <mat-icon>playlist_add_check</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            (click)="
-              openPendingComplianceChangeDialog(row.pendingComplianceChange)
-            "
-            [disabled]="
-              row.proband.status === 'deleted' ||
-              row.proband.accountStatus === 'no_account'
-            "
-            matTooltip="{{ 'PROBANDEN.CONFIRM_COMPLIANCES' | translate }}"
-            *ngIf="
-              currentStudy.has_compliance_opposition &&
-              row.pendingComplianceChange &&
-              row.pendingComplianceChange.requested_for === currentUsername
-            "
-          >
-            <mat-icon>check_circle_outline</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            (click)="
-              cancelPendingComplianceChange(
-                row.pendingComplianceChange.id,
-                row.pendingComplianceChange.proband_id
-              )
-            "
-            [disabled]="
-              row.proband.status === 'deleted' ||
-              row.proband.accountStatus === 'no_account'
-            "
-            matTooltip="{{ 'PROBANDEN.CANCEL_COMPLIANCE_CHANGE' | translate }}"
-            *ngIf="
-              currentStudy.has_compliance_opposition &&
-              row.pendingComplianceChange &&
-              row.pendingComplianceChange.requested_for !== currentUsername
-            "
-          >
-            <mat-icon>highlight_off_outlined</mat-icon>
-          </button>
-        </mat-cell>
-      </ng-container>
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+      </mat-table>
 
-      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns"> </mat-row>
-    </mat-table>
-
-    <mat-paginator
-      [length]="dataSource.filteredData.length"
-      [pageSize]="25"
-      [pageSizeOptions]="[5, 10, 25, 100]"
-    >
-    </mat-paginator>
-  </div>
+      <mat-paginator
+        [length]="dataSource.filteredData.length"
+        [pageSize]="25"
+        [pageSizeOptions]="[5, 10, 25, 100]"
+      >
+      </mat-paginator>
+    </mat-card-content>
+  </mat-card>
 </div>

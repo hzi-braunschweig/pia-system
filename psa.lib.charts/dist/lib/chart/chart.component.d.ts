@@ -16,5 +16,5 @@ export declare class ChartComponent implements OnChanges, AfterViewInit {
     private applyResponsiveConfiguration;
     private configurePlugin;
     static ɵfac: i0.ɵɵFactoryDeclaration<ChartComponent, never>;
-    static ɵcmp: i0.ɵɵComponentDeclaration<ChartComponent, "pia-chart", never, { "config": "config"; }, {}, never, never, false>;
+    static ɵcmp: i0.ɵɵComponentDeclaration<ChartComponent, "pia-chart", never, { "config": { "alias": "config"; "required": false; }; }, {}, never, never, false, never>;
 }

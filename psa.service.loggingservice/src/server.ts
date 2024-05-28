@@ -11,7 +11,6 @@ import {
   defaultPublicRoutesPaths,
   registerAuthStrategies,
   registerPlugins,
-  SecureConnection,
 } from '@pia/lib-service-core';
 
 import packageJson from '../package.json';
@@ -61,12 +60,11 @@ export class Server {
   }
 
   private static extractServerOptions(
-    connection: Connection | SecureConnection
+    connection: Connection
   ): Hapi.ServerOptions {
     return {
       host: connection.host,
       port: connection.port,
-      tls: 'tls' in connection ? connection.tls : false,
       routes: {
         cors: { origin: ['*'] },
         timeout: {

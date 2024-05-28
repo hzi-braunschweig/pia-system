@@ -6,24 +6,24 @@
 
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { MatPseudoCheckboxState } from '@angular/material/core';
-import { MatLegacySelect as MatSelect } from '@angular/material/legacy-select';
+import { MatSelect } from '@angular/material/select';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-mat-option-select-all',
   template: `
-    <div class="mat-option" (click)="onSelectAll()">
+    <div class="mat-mdc-option mdc-list-item" (click)="onSelectAll()">
       <mat-pseudo-checkbox
         [state]="state"
         class="mat-option-pseudo-checkbox"
       ></mat-pseudo-checkbox>
-      <span class="mat-option-text"><ng-content></ng-content></span>
+      <span class="mdc-list-item__primary-text"><ng-content></ng-content></span>
     </div>
   `,
   styles: [
     `
-      .mat-option {
+      .mat-mdc-option {
         border-bottom: 1px solid #ccc;
         height: 3.5em;
         line-height: 3.5em;
