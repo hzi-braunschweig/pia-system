@@ -89,6 +89,12 @@ export class HttpClient {
     additionalOptions: RequestOptions,
     body?: unknown
   ): Promise<T | string | null | void> {
+    // workaround for:
+    // https://github.com/node-fetch/node-fetch/issues/1735
+    // see also:
+    // https://codebase.helmholtz.cloud/pia-eresearch-system/pia/-/issues/327
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
     const options: Required<RequestOptions> = {
       ...HttpClient.defaultRequestOptions,
       ...additionalOptions,

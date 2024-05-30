@@ -50,6 +50,7 @@ class HttpClient {
         return this.fetch('DELETE', url, {});
     }
     async fetch(method, url, additionalOptions, body) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
         const options = {
             ...HttpClient.defaultRequestOptions,
             ...additionalOptions,
