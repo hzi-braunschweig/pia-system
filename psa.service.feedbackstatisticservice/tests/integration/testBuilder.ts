@@ -245,8 +245,12 @@ class TestHelper {
       await mqc.connect();
 
       try {
-        const producer = await mqc.createProducer<void>(topic);
-        await producer.publish();
+        const producer = await mqc.createProducer(topic);
+        await producer.publish(
+          topic === MessageQueueTopic.FEEDBACKSTATISTIC_CONFIGURATION_UPDATED
+            ? { configurationId: 1 }
+            : undefined
+        );
       } finally {
         await mqc.disconnect();
       }

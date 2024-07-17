@@ -150,10 +150,7 @@ describe('Internal: delete proband data', () => {
       let deletionType: ProbandDeletionType | undefined;
       await messageQueueService.createConsumer(
         MessageQueueTopic.PROBAND_DELETED,
-        async (message: {
-          pseudonym: string;
-          deletionType: ProbandDeletionType;
-        }) => {
+        async (message) => {
           pseudonym = message.pseudonym;
           deletionType = message.deletionType;
           return Promise.resolve();

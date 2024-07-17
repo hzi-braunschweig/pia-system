@@ -24,14 +24,26 @@
   justify-content: flex-start;
 }
 
-.mat-icon {
-  margin: 0 10px;
-}
-
 ::ng-deep .mat-mdc-tooltip {
   font-size: 14px;
 }
 
 .account-status-column {
   text-align: start;
+}
+
+.table-container {
+  width: 100%;
+}
+
+mat-table {
+  width: max-content;
+}
+
+.fit-content {
+  min-width: fit-content;
+}
+
+.word-break-all {
+  word-break: break-all;
 }

@@ -58,12 +58,6 @@ $theme: mat.define-light-theme(
   $primary: map-get($theme, primary);
   $accent: map-get($theme, accent);
 
-  // bigger text for panel title
-  .mat-expansion-panel-header {
-    font-size: 15px;
-    font-weight: normal;
-  }
-
   // more padding for button
   .mat-mdc-button {
     padding-left: 16px !important;
@@ -82,7 +76,7 @@ $theme: mat.define-light-theme(
 
   // spacing below input fields with subscriptSizing: 'dynamic' enabled
   .mat-mdc-form-field-subscript-dynamic-size {
-    min-height: 1.6rem;
+    min-height: var(--form-field-subscription-size-dynamic);
   }
 
   .mat-mdc-select-panel {
@@ -168,4 +162,5 @@ $theme: mat.define-light-theme(
   --color-primary: #{mat.get-color-from-palette($primary, 500)};
   --color-accent: #{mat.get-color-from-palette($accent, 500)};
   --color-warn: #{mat.get-color-from-palette($warn, 500)};
+  --form-field-subscription-size-dynamic: 1.6rem;
 }

@@ -10,7 +10,7 @@ VALUES ('QTestStudy1'),
        ('QTestStudy3');
 
 INSERT INTO probands (pseudonym, ids, study, origin)
-VALUES ('qtest-1111', NULL, 'QTestStudy1', 'investigator'),
+VALUES ('test01-1111', NULL, 'QTestStudy1', 'investigator'),
        ('qtest-2222', NULL, 'QTestStudy2', 'investigator'),
        ('qtest-3333', NULL, 'QTestStudy2', 'investigator'),
        ('qtest-4444', NULL, 'QTestStudy1', 'investigator'),

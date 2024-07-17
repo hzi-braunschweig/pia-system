@@ -7,7 +7,7 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node --insecure-http-parser src/index.js",
     "test.int": "DOTENV_CONFIG_PATH=tests/test.env nyc mocha -r '../psa.utils.scripts/test.int/setup.hook' 'tests/integration/**/*.spec.{js,ts}' --timeout 30000 --exit",
-    "test.unit": "IGNORE_MISSING_CONFIG=1 nyc mocha 'src/**/*.spec.{js,ts}' --timeout 5000",
+    "test.unit": "IGNORE_MISSING_CONFIG=1 nyc mocha 'src/**/*.spec.{js,ts}' --timeout 5000 --exit",
     "lint": "eslint ."
   },
   "dependencies": {

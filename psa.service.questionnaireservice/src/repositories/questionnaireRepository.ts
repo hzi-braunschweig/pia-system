@@ -176,7 +176,7 @@ export class QuestionnaireRepository {
   ): Promise<Questionnaire[]> {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
     const filter = `WHERE qa.study_id IN ($(ids:csv))`;
-    const order = `ORDER BY qa.id, q.position, ao.position`;
+    const order = `ORDER BY qa.sort_order, qa.id, q.position, ao.position`;
     const query = RepositoryHelper.createQuestionnaireQuery(filter, order);
     const result = await db.many<QuestionnaireDbResult>(query, { ids });
     return Array.from(

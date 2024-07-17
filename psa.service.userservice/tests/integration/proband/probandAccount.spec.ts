@@ -225,7 +225,7 @@ describe('/probands/{pseudonym}/account', () => {
         };
 
         const probandDeleted =
-          MessageQueueTestUtils.injectMessageProcessedAwaiter<ProbandDeletedMessage>(
+          MessageQueueTestUtils.injectMessageProcessedAwaiter(
             mqc,
             MessageQueueTopic.PROBAND_DELETED,
             testSandbox
@@ -343,7 +343,7 @@ describe('/probands/{pseudonym}/account', () => {
         };
 
         const probandDeactivated =
-          MessageQueueTestUtils.injectMessageProcessedAwaiter<ProbandDeactivatedMessage>(
+          MessageQueueTestUtils.injectMessageProcessedAwaiter(
             mqc,
             MessageQueueTopic.PROBAND_DEACTIVATED,
             testSandbox

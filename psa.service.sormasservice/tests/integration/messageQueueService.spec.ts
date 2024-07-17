@@ -16,6 +16,7 @@ import {
   MessageQueueTopic,
   Producer,
   ComplianceCreatedMessage,
+  ProbandDeletedMessage,
 } from '@pia/lib-messagequeue';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
@@ -69,9 +70,7 @@ describe('message queue service', function () {
           testSandbox
         );
 
-      producer = await mqc.createProducer<ComplianceCreatedMessage>(
-        MessageQueueTopic.COMPLIANCE_CREATED
-      );
+      producer = await mqc.createProducer(MessageQueueTopic.COMPLIANCE_CREATED);
 
       fetchMock
         .get('express:/user/users/test-pseudonym/ids', 'test-ids')
@@ -109,11 +108,11 @@ describe('message queue service', function () {
     let processedProbandDeleted: ReturnType<
       typeof MessageQueueTestUtils.injectMessageProcessedAwaiter
     >;
-    let producer: Producer<ComplianceCreatedMessage>;
+    let producer: Producer<ProbandDeletedMessage>;
 
     beforeEach(async () => {
       processedProbandDeleted =
-        MessageQueueTestUtils.injectMessageProcessedAwaiter<ComplianceCreatedMessage>(
+        MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
           MessageQueueTopic.PROBAND_DELETED,
           testSandbox
@@ -133,6 +132,7 @@ describe('message queue service', function () {
       // Arrange
       // Act
       await producer.publish({
+        deletionType: 'full',
         pseudonym: 'test-pseudonym',
         studyName: 'Any Study',
       });
@@ -171,6 +171,7 @@ describe('message queue service', function () {
 
       // Act
       await producer.publish({
+        deletionType: 'full',
         pseudonym: pseudonym,
         studyName: 'Any Study',
       });

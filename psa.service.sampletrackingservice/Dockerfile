@@ -8,10 +8,12 @@ ARG DIR=.
 COPY $DIR/package*.json ./
 #copy dependencies' package.json
 COPY --chown=node:node psa.lib.service-core/package*.json ../psa.lib.service-core/
+COPY --chown=node:node psa.lib.publicapi/package*.json ../psa.lib.publicapi/
 COPY --chown=node:node psa.lib.http-clients-internal/package*.json ../psa.lib.http-clients-internal/
 
 #copy dependencies' source
 COPY --chown=node:node psa.lib.service-core/dist ../psa.lib.service-core/dist
+COPY --chown=node:node psa.lib.publicapi/src/ ../psa.lib.publicapi/src
 COPY --chown=node:node psa.lib.http-clients-internal/dist ../psa.lib.http-clients-internal/dist
 
 ################################################################

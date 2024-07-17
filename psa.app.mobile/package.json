@@ -1,7 +1,7 @@
 {
   "name": "app-mobile",
   "description": "PIA mobile app",
-  "version": "1.37.4",
+  "version": "1.38.2",
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "prestart:browser": "npm run licenses",
@@ -23,7 +23,7 @@
     "test.unit": "ng test --no-watch --no-progress --browsers=ChromeHeadlessCI",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "licenses": "licensecollector --format json --target ./src/assets/licenses.json --onlyProduction --assertValidLicenseTexts --excludePackages '@pia-system/charts@1.0.0;@ngx-translate/core@15.0.0;@ngx-translate/http-loader@8.0.0'"
+    "licenses": "licensecollector --format json --target ./src/assets/licenses.json --onlyProduction --assertValidLicenseTexts --excludePackages '@pia-system/charts@1.0.0'"
   },
   "private": true,
   "dependencies": {

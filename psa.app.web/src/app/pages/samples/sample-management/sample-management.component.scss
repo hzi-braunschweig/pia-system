@@ -8,41 +8,20 @@
   --grid-template-columns: repeat(var(--columns), 1fr);
 }
 
-.probands-container {
+.container {
   display: flex;
   flex-direction: column;
   min-width: 300px;
   opacity: 0.8;
 }
 
-.mat-column-select,
-.mat-column-needs_material {
-  flex: 0 1 auto;
-}
-
 .needs-material-icon {
-  color: red;
-  font-weight: bold;
-}
+  th & {
+    color: #ccc;
+  }
 
-.probands-header {
-  min-height: 56px;
-  max-height: 56px;
-  display: flex;
-  align-items: center;
-  padding: 8px 24px 0;
-  font-size: 20px;
-  justify-content: space-between;
-  border-bottom: 1px solid transparent;
-}
-
-.mat-mdc-cell {
-  display: flex;
-  justify-content: flex-start;
-  text-align: start;
-}
-
-.mat-mdc-header-cell {
-  display: flex;
-  justify-content: flex-start;
+  td & {
+    color: red;
+    font-weight: bold;
+  }
 }

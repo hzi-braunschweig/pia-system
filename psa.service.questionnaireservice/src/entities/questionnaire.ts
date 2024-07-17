@@ -21,7 +21,13 @@ import {
 import { Condition } from './condition';
 import { Question } from './question';
 
-@Entity()
+@Entity({
+  orderBy: {
+    sortOrder: 'ASC',
+    id: 'ASC',
+    version: 'ASC',
+  },
+})
 export class Questionnaire implements QuestionnaireDto {
   /**
    * @isInt
@@ -43,6 +49,12 @@ export class Questionnaire implements QuestionnaireDto {
 
   @Column({ type: 'varchar', nullable: true })
   public customName!: string | null;
+
+  /**
+   * @isInt
+   */
+  @Column({ type: 'smallint', nullable: true })
+  public sortOrder!: number | null;
 
   /**
    * @isInt
@@ -97,6 +109,9 @@ export class Questionnaire implements QuestionnaireDto {
 
   @Column({ type: 'varchar', nullable: true })
   public notificationIntervalUnit!: string | null;
+
+  @Column()
+  public notificationLinkToOverview!: boolean;
 
   @Column({ type: 'date', nullable: true })
   public activateAtDate!: Date | null;

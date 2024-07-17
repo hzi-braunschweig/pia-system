@@ -17,8 +17,9 @@ export interface BaseNotificationDto {
 
 export interface QuestionnaireNotificationDto extends BaseNotificationDto {
   notification_type: 'qReminder';
-  questionnaire_id: string;
-  questionnaire_version: string;
+  data: {
+    linkToOverview: boolean;
+  };
 }
 
 export interface SampleNotificationDto extends BaseNotificationDto {

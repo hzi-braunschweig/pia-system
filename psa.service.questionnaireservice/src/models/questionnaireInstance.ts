@@ -46,6 +46,7 @@ export interface DbQuestionnaireInstance {
   questionnaire_id: number;
   questionnaire_version: number;
   questionnaire_name: string;
+  sort_order: number | null;
   user_id: string | null;
   date_of_issue: Date;
   date_of_release_v1: Date | null;
@@ -70,6 +71,12 @@ export interface QuestionnaireInstanceDto {
   id: number;
   studyId: string | null;
   questionnaireName: string;
+  /**
+   * Instances with lower numbers should be displayed first when presenting to participants.
+   * Null values should be displayed at the end, ordered by ID.
+   * @isInt
+   */
+  sortOrder: number | null;
   pseudonym: string | null;
   dateOfIssue: Date;
   dateOfReleaseV1: Date | null;

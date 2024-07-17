@@ -40,6 +40,7 @@ export class QuestionnairesResearcherComponent implements OnInit {
     'id',
     'version',
     'study_id',
+    'sort_order',
     'name',
     'no_questions',
     'active',

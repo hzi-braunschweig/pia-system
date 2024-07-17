@@ -151,6 +151,7 @@ describe('message queue service', () => {
 
     await producer.publish({
       pseudonym: 'qtest-proband1',
+      studyName: 'Study',
     });
     await once(endOfMessageHandlingEmitter, endOfProbandDeactivated);
 
@@ -204,6 +205,8 @@ describe('message queue service', () => {
 
     await producer.publish({
       pseudonym: 'qtest-proband1',
+      studyName: 'Study',
+      deletionType: 'default',
     });
     await once(endOfMessageHandlingEmitter, endOfProbandDeleted);
 

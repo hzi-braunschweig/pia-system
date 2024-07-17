@@ -40,6 +40,7 @@ export abstract class NodeJSService extends Chart {
         }
       >;
       noProbes?: boolean;
+      replicas?: number;
     }
   ) {
     super(scope, serviceName);
@@ -71,7 +72,7 @@ export abstract class NodeJSService extends Chart {
         automountToken: false,
       }),
 
-      replicas: 1,
+      replicas: options?.replicas ?? 2,
       containers: [
         {
           image: configuration.getImage(

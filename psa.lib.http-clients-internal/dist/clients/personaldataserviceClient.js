@@ -16,6 +16,12 @@ class PersonaldataserviceClient extends serviceClient_1.ServiceClient {
             returnNullWhenNotFound: true,
         });
     }
+    async getPersonalData(studyName) {
+        return await this.httpClient.get(`/personal/personalData/study/${encodeURIComponent(studyName)}`);
+    }
+    async getPendingPersonalDataDeletions(studyName) {
+        return await this.httpClient.get(`/personal/studies/${encodeURIComponent(studyName)}/pendingdeletions`);
+    }
     async deletePersonalDataOfUser(pseudonym) {
         return await this.httpClient.delete(`/personal/personalData/proband/${pseudonym}`);
     }

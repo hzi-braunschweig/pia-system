@@ -86,7 +86,7 @@ describe('MessageQueueService', () => {
 
       producer = await mqc.createProducer(topic);
       processedProbandEmailVerified =
-        MessageQueueTestUtils.injectMessageProcessedAwaiter<ProbandEmailVerifiedMessage>(
+        MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
           topic,
           testSandbox
@@ -155,7 +155,7 @@ describe('MessageQueueService', () => {
     beforeEach(async () => {
       producer = await mqc.createProducer(topic);
       processedProbandRegistered =
-        MessageQueueTestUtils.injectMessageProcessedAwaiter<ProbandRegisteredMessage>(
+        MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
           topic,
           testSandbox

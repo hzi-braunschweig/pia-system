@@ -56,6 +56,12 @@ export const questionnaireRequestPayload = Joi.object<Questionnaire>({
     .pattern(/^\d+$/, { invert: true })
     .allow(null)
     .example('test_questionnaire_custom_name'),
+  sort_order: Joi.number()
+    .integer()
+    .description('lower numbers are displayed first, null at the end')
+    .optional()
+    .allow(null)
+    .example(1),
   type: Joi.string()
     .required()
     .default('for_probands')
@@ -149,6 +155,7 @@ export const questionnaireRequestPayload = Joi.object<Questionnaire>({
     .allow('')
     .allow(null)
     .valid('days', 'hours'),
+  notification_link_to_overview: Joi.bool().optional().default(false),
   activate_at_date: Joi.date()
     .description('the date of activation for a set date questionnaire')
     .allow(null)

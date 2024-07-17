@@ -50,6 +50,39 @@ describe('Internal: /personalData', () => {
     fetchMock.restore();
   });
 
+  describe('GET /personal/personalData/study/{studyName}', () => {
+    it('should return HTTP 200 with personal data for the probands of the study', async () => {
+      // Act
+      const result = await chai
+        .request(apiAddress)
+        .get('/personalData/study/QTestStudy1');
+
+      // Assert
+      expect(result, result.text).to.have.status(StatusCodes.OK);
+      expect(result.body).to.be.an('array').that.has.lengthOf(1);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(result.body[0]).to.deep.equal({
+        anrede: '',
+        comment: 'Proband hat neue Adresse',
+        email: 'test1@example.com',
+        haus_nr: '666',
+        landkreis: 'NRW',
+        name: '',
+        ort: 'Bonn',
+        plz: '66666',
+        pseudonym: 'qtest-proband2',
+        strasse: 'Teststr.',
+        study: 'QTestStudy1',
+        telefon_dienst: '7654321',
+        telefon_mobil: '01559876543',
+        telefon_privat: '1234567',
+        titel: '',
+        vorname: '',
+      });
+    });
+  });
+
   describe('GET /personal/personalData/proband/{pseudonym}', () => {
     it('should return HTTP 200 with the email', async () => {
       // Act

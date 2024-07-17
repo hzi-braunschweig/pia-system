@@ -50,7 +50,7 @@ export class MessageQueueService extends MessageQueueClient {
 
     await this.createConsumer(
       MessageQueueTopic.FEEDBACKSTATISTIC_CONFIGURATION_UPDATED,
-      async (message: FeedbackStatisticConfigurationUpdatedMessage) =>
+      async (message) =>
         await MessageQueueService.onConfigurationUpdated(
           message.configurationId
         )
@@ -63,8 +63,7 @@ export class MessageQueueService extends MessageQueueClient {
 
     await this.createConsumer(
       MessageQueueTopic.STUDY_DELETED,
-      async (message: StudyDeletedMessage) =>
-        await MessageQueueService.onStudyDeleted(message)
+      async (message) => await MessageQueueService.onStudyDeleted(message)
     );
   }
 

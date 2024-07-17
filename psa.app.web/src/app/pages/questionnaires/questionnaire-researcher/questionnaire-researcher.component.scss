@@ -5,39 +5,42 @@
  */
 
 @use '@angular/material' as mat;
+@use 'custom-theme' as theme;
 
 $warning-color: mat.get-color-from-palette(mat.$yellow-palette, 500);
 
 /* Structure */
 .grid-container {
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  --grid-template-columns-repeat: auto-fit;
+  --grid-template-columns: repeat(
+    var(--grid-template-columns-repeat),
+    minmax(200px, 1fr)
+  );
 
-  .double-input {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    grid-column-gap: var(--grid-layout-gap);
-  }
-}
-
-.condition-card {
-  .grid-container {
-    --grid-template-columns: repeat(
-      var(--grid-columns-question-condition),
-      1fr
-    );
-
-    .sub-question {
-      --grid-template-columns: subgrid;
+  @media screen and (max-width: 1279px) {
+    &.responsive {
+      --grid-template-columns-repeat: auto-fit !important;
     }
   }
 }
 
-.questionnaire-conditions {
-  --grid-template-columns: repeat(
-    var(--grid-columns-questionnaire-condition),
-    1fr
-  );
+.wrapping-flex-container {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--grid-layout-gap);
+}
 
+.card-title {
+  @include mat.typography-level(theme.$typography, 'subtitle-1');
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  height: var(--mat-form-field-container-height);
+}
+
+.questionnaire-conditions {
   button {
     display: inline;
     float: right;
@@ -46,6 +49,17 @@ $warning-color: mat.get-color-from-palette(mat.$yellow-palette, 500);
 
 .question-expansion-panel {
   background-color: #d9ecf5;
+  --mat-expansion-header-text-size: 1rem;
+  --mat-expansion-header-text-weight: normal;
+  --mat-expansion-header-text-line-height: 1.4;
+}
+
+.question-expansion-panel-title {
+  .truncate-text {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
 }
 
 form {
@@ -54,21 +68,19 @@ form {
   }
 }
 
-.questionnaire-card {
-  .study-notifications-options {
-    width: 100%;
-    font-size: 0.8em;
+.study-notifications-options {
+  width: 100%;
+  font-size: 0.8em;
 
-    input[type='text'] {
-      cursor: pointer;
-      pointer-events: all;
-      width: 3em;
-    }
+  input[type='text'] {
+    cursor: pointer;
+    pointer-events: all;
+    width: 3em;
+  }
 
-    .mat-mdc-form-field {
-      width: 150px;
-      text-align: center;
-    }
+  .mat-mdc-form-field {
+    width: 150px;
+    text-align: center;
   }
 }
 
@@ -77,12 +89,6 @@ form {
 
   .list-group {
     margin-bottom: 10px;
-  }
-
-  .question-panel-title {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
   }
 
   .mat-expansion-panel {

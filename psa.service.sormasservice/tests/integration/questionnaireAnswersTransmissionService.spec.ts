@@ -13,10 +13,11 @@ import {
   MessageQueueClient,
   MessageQueueTestUtils,
   Producer,
+  MessageQueueTopic,
+  QuestionnaireInstanceReleasedMessage,
 } from '@pia/lib-messagequeue';
 
 import { config } from '../../src/config';
-import { MessagePayloadQuestionnaireInstanceReleased } from '../../src/models/messagePayloads';
 import { messageQueueService } from '../../src/services/messageQueueService';
 import { Server } from '../../src/server';
 import {
@@ -77,25 +78,24 @@ describe('QuestionnaireAnswersTransmissionService integration', function () {
   });
 
   describe('onQuestionnaireInstanceReleased', () => {
-    let producer: Producer<MessagePayloadQuestionnaireInstanceReleased>;
+    let producer: Producer<QuestionnaireInstanceReleasedMessage>;
     const user = {
       pseudonym: 'qtest-1234567890',
       ids: 'test-uuid',
     };
-    let processedQuestionnaireInstanceReleased: Promise<void>;
+    let processedQuestionnaireInstanceReleased: Promise<unknown>;
 
     beforeEach(async () => {
       processedQuestionnaireInstanceReleased =
         MessageQueueTestUtils.injectMessageProcessedAwaiter(
           messageQueueService,
-          'questionnaire_instance.released',
+          MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
           testSandbox
         );
 
-      producer =
-        await mqc.createProducer<MessagePayloadQuestionnaireInstanceReleased>(
-          'questionnaire_instance.released'
-        );
+      producer = await mqc.createProducer(
+        MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED
+      );
     });
 
     afterEach(async () => {
@@ -105,7 +105,14 @@ describe('QuestionnaireAnswersTransmissionService integration', function () {
     it('should be triggered by questionnaire_instance.released', async () => {
       // Arrange
       // Act
-      await producer.publish({ id: 9100, releaseVersion: 1 });
+      await producer.publish({
+        id: 9100,
+        releaseVersion: 1,
+        status: 'released_once',
+        pseudonym: user.pseudonym,
+        studyName: config.sormas.study,
+        questionnaire: { id: 1, customName: 'Test Questionnaire' },
+      });
       await processedQuestionnaireInstanceReleased;
     });
     // it('should find and NOT upload bad questionnaire instances', async () => {});
@@ -150,7 +157,14 @@ describe('QuestionnaireAnswersTransmissionService integration', function () {
         .mock(sormasUploadRequest);
 
       // Act
-      await producer.publish({ id: qi.id, releaseVersion: version });
+      await producer.publish({
+        id: qi.id,
+        releaseVersion: version,
+        status: 'released_once',
+        pseudonym: user.pseudonym,
+        studyName: config.sormas.study,
+        questionnaire: { id: 1, customName: 'Test Questionnaire' },
+      });
       await processedQuestionnaireInstanceReleased;
 
       // Assert
@@ -236,7 +250,14 @@ describe('QuestionnaireAnswersTransmissionService integration', function () {
         .mock(sormasUploadRequest);
 
       // Act
-      await producer.publish({ id: qi.id, releaseVersion: version });
+      await producer.publish({
+        id: qi.id,
+        releaseVersion: version,
+        status: 'released_once',
+        pseudonym: user.pseudonym,
+        studyName: config.sormas.study,
+        questionnaire: { id: 1, customName: 'Test Questionnaire' },
+      });
       await processedQuestionnaireInstanceReleased;
 
       // Assert
@@ -317,7 +338,14 @@ describe('QuestionnaireAnswersTransmissionService integration', function () {
         .mock(answersRequest);
 
       // Act
-      await producer.publish({ id: qi.id, releaseVersion: version });
+      await producer.publish({
+        id: qi.id,
+        releaseVersion: version,
+        status: 'released_once',
+        pseudonym: user.pseudonym,
+        studyName: config.sormas.study,
+        questionnaire: { id: 1, customName: 'Test Questionnaire' },
+      });
       await processedQuestionnaireInstanceReleased;
 
       // Assert

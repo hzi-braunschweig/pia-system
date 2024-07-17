@@ -4,8 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import * as Boom from '@hapi/boom';
 import { PersonalDataService } from '../../services/personalDataService';
 import { PersonalData, PersonalDataReq } from '../../models/personalData';
+import { userserviceClient } from '../../clients/userserviceClient';
 
 export class InternalPersonalDataInteractor {
   /**
@@ -16,8 +18,16 @@ export class InternalPersonalDataInteractor {
     personalData: PersonalDataReq,
     skipUpdateAccount: boolean
   ): Promise<PersonalData> {
+    const proband = await userserviceClient.getProband(pseudonym);
+    if (!proband) {
+      throw Boom.notFound('proband does not exist');
+    }
     return PersonalDataService.createOrUpdate(
-      pseudonym,
+      {
+        pseudonym,
+        complianceContact: proband.complianceContact,
+        study: proband.study,
+      },
       personalData,
       skipUpdateAccount
     );

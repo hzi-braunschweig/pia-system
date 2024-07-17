@@ -13,13 +13,6 @@ describe('Config', () => {
     expect(config.system.isDevelopment).to.be.false;
   });
 
-  it('should not add route to deploymentservice by default', () => {
-    const route = config.routes.find(
-      (r) => r.upstream.host === 'deploymentservice'
-    );
-    expect(route).to.be.undefined;
-  });
-
   it('should forbid service /metrics by default', () => {
     const route = config.responseRoutes
       .filter(

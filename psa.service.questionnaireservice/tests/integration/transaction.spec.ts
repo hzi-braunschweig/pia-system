@@ -90,7 +90,7 @@ describe('transaction for "PATCH /admin/{study}/questionnaires/{id}/{version}"',
     expect(questionnaireInstancesFromDatabase).to.deep.equal([{ id: 140300 }]);
   });
 
-  it('should not deactive the questionnaire if deleting specific questionnaire_instances fails', async function () {
+  it('should not deactivate the questionnaire if deleting specific questionnaire_instances fails', async function () {
     sinon
       .stub(
         QuestionnaireInstanceRepository,

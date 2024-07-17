@@ -250,7 +250,7 @@ export function deleteProfessionalUser(username): Chainable {
   );
 }
 
-export function deleteProband(username, studyId: string): Chainable {
+export function deleteProband(username: string, studyId: string): Chainable {
   return cy.fixture('users').then((users) =>
     cy
       .createProfessionalUser(users.new.ProbandenManager, studyId)

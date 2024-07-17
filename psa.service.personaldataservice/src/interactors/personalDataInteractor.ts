@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import Boom from '@hapi/boom';
+import * as Boom from '@hapi/boom';
 import { AccessToken, assertStudyAccess } from '@pia/lib-service-core';
 
 import { userserviceClient } from '../clients/userserviceClient';
@@ -47,13 +47,24 @@ export class PersonalDataInteractor {
     pseudonym: string,
     personalData: PersonalDataReq
   ): Promise<PersonalData> {
-    const studyOfProband = await userserviceClient.getStudyOfProband(pseudonym);
+    const proband = await userserviceClient.getProband(pseudonym);
+    if (!proband) {
+      throw Boom.notFound('proband does not exist');
+    }
+    const studyOfProband = proband.study;
     if (!studyOfProband) {
       throw Boom.notFound('Could not find study of proband');
     }
 
     assertStudyAccess(studyOfProband, decodedToken);
 
-    return PersonalDataService.createOrUpdate(pseudonym, personalData);
+    return PersonalDataService.createOrUpdate(
+      {
+        pseudonym,
+        complianceContact: proband.complianceContact,
+        study: proband.study,
+      },
+      personalData
+    );
   }
 }

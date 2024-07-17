@@ -189,10 +189,6 @@ export class QuestionnaireResearcherComponent implements OnInit {
   };
 
   isLoading = true;
-  responsiveColumns: {
-    '--grid-columns-question-condition'?: number;
-    '--grid-columns-questionnaire-condition'?: number;
-  } = {};
 
   canDeactivate(): Observable<boolean> | boolean {
     return this.myForm ? !this.myForm.dirty : true;
@@ -273,7 +269,6 @@ export class QuestionnaireResearcherComponent implements OnInit {
       }
 
       this.initVariableNameWarning();
-      this.onResize();
     } catch (err) {
       this.alertService.errorObject(err);
     }
@@ -685,11 +680,13 @@ export class QuestionnaireResearcherComponent implements OnInit {
   public async initForm(questionnaire?: Questionnaire): Promise<void> {
     let name: string;
     let custom_name: string;
+    let sort_order: number;
     let activate_after_days: number;
     if (questionnaire) {
       this.canImportQuestionnaire = false;
       name = questionnaire.name;
       custom_name = questionnaire.custom_name;
+      sort_order = questionnaire.sort_order;
       this.type = questionnaire.type;
       this.study_id = questionnaire.study_id;
       await this.selectStudy(this.study_id);
@@ -787,6 +784,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     } else {
       name = '';
       custom_name = '';
+      sort_order = null;
       this.study_id = null;
       this.type = null;
       this.cycle_amount = null;
@@ -821,6 +819,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
           // the string should not consist of numbers only
           Validators.pattern('^[^\\d]*\\d*[^\\d]+.*$'),
         ]),
+        sort_order: new FormControl(sort_order),
         type: new FormControl(this.type, Validators.required),
         study_id: new FormControl(this.study_id, Validators.required),
         cycle_amount: new FormControl(this.cycle_amount, Validators.required),
@@ -868,6 +867,9 @@ export class QuestionnaireResearcherComponent implements OnInit {
         notification_body_in_progress: new FormControl(
           this.notification_body_in_progress,
           Validators.required
+        ),
+        notification_link_to_overview: new FormControl(
+          questionnaire?.notification_link_to_overview ?? false
         ),
         compliance_needed: new FormControl(this.compliance_needed),
         notify_when_not_filled: new FormControl(this.notify_when_not_filled),
@@ -2603,7 +2605,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
       }
     }
 
-    // Disable condition_question_id because it should not be send with request
+    // Disable condition_question_id because it should not be sent with request
     if (form.controls.condition !== undefined) {
       form.controls.condition.controls.condition_question_id.disable();
     }
@@ -3174,32 +3176,6 @@ export class QuestionnaireResearcherComponent implements OnInit {
       }
     }
     return null;
-  }
-
-  onResize(event?): void {
-    const width: number = event ? event.target.innerWidth : window.innerWidth;
-    if (width <= 700) {
-      this.settingsCols = 3;
-    } else if (width <= 850) {
-      this.settingsCols = 6;
-      this.conditionCols = 1;
-    } else if (width <= 1000) {
-      this.settingsCols = 9;
-      this.conditionCols = 2;
-    } else if (width <= 1150) {
-      this.settingsCols = 12;
-      this.conditionCols = 3;
-    } else if (width <= 1350) {
-      this.conditionCols = 4;
-    } else {
-      this.settingsCols = 15;
-      this.conditionCols = 5;
-    }
-
-    this.responsiveColumns = {
-      '--grid-columns-questionnaire-condition': this.settingsCols,
-      '--grid-columns-question-condition': this.conditionCols,
-    };
   }
 
   preventExpansion(event: Event): void {

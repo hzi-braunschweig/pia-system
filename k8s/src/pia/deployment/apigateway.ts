@@ -34,7 +34,6 @@ import { NotificationService } from './notificationservice';
 import { SampleTrackingService } from './sampletrackingservice';
 import { FeedbackStatisticService } from './feedbackstatisticservice';
 import { SormasService } from './sormasservice';
-import { DeploymentService } from './deploymentservice';
 import { IngressWithIngressClassName } from '../../k8s/ingressWithIngressClassName';
 
 export class ApiGateway extends Chart {
@@ -57,7 +56,6 @@ export class ApiGateway extends Chart {
       sampleTrackingService,
       feedbackStatisticService,
       sormasService,
-      deploymentService,
       publicApiServer,
       eventHistoryServer,
     }: {
@@ -74,7 +72,6 @@ export class ApiGateway extends Chart {
       sampleTrackingService: SampleTrackingService;
       feedbackStatisticService: FeedbackStatisticService;
       sormasService: SormasService;
-      deploymentService: DeploymentService;
       publicApiServer: PublicApiServer;
       eventHistoryServer: EventHistoryServer;
     }
@@ -105,7 +102,6 @@ export class ApiGateway extends Chart {
       'feedbackstatisticservice'
     );
     assert.strictEqual(sormasService.service.name, 'sormasservice');
-    assert.strictEqual(deploymentService.service.name, 'deploymentservice');
     assert.strictEqual(publicApiServer.service.name, 'publicapiserver');
     assert.strictEqual(eventHistoryServer.service.name, 'eventhistoryserver');
 
@@ -119,7 +115,7 @@ export class ApiGateway extends Chart {
         automountToken: false,
       }),
 
-      replicas: 1,
+      replicas: 2,
 
       containers: [
         {
@@ -139,7 +135,6 @@ export class ApiGateway extends Chart {
             COMPLIANCESERVICE_PORT: complianceService.service.port,
             ANALYZERSERVICE_PORT: analyzerService.service.port,
             SORMASSERVICE_PORT: sormasService.service.port,
-            DEPLOYMENTSERVICE_PORT: deploymentService.service.port,
             FEEDBACKSTATISTICSERVICE_PORT:
               feedbackStatisticService.service.port,
             AUTHSERVER_PORT: authServer.service.port,

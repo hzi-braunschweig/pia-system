@@ -28,6 +28,7 @@ export interface Questionnaire {
   notificationWeekday: string | null;
   notificationInterval: number | null;
   notificationIntervalUnit: string | null;
+  notificationLinkToOverview: boolean;
   activateAtDate: Date | null;
   complianceNeeded: boolean | null;
   expiresAfterDays: number;

@@ -16,6 +16,7 @@ import {
   MessageQueueClient,
   MessageQueueTopic,
   QuestionnaireInstanceReleasedMessage,
+  QuestionnaireInstanceAnsweringStartedMessage,
 } from '@pia/lib-messagequeue';
 import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 import chai, { expect } from 'chai';
@@ -58,6 +59,8 @@ import {
   questionnaireInstance_100101,
   questionnaireInstance_110100,
   questionnaireInstance_110101,
+  questionnaireInstance_120101,
+  questionnaireInstance_130101,
 } from './questionnaireInstances.spec.data/questionnaireInstanceResponses';
 import {
   cleanup,
@@ -87,7 +90,7 @@ const questionnaires = {
     stya0000000001: {
       questionnaire_a: {
         studyName: 'Study A',
-        pseudonym: 'stya-0000000001',
+        pseudonym: 'stya01-0000000001',
         questionnaireCustomName: 'questionnaire_a',
         instanceId: 100100,
         id: 100,
@@ -95,14 +98,14 @@ const questionnaires = {
       // has predefined answers up to release version 3
       questionnaire_b: {
         studyName: 'Study A',
-        pseudonym: 'stya-0000000001',
+        pseudonym: 'stya01-0000000001',
         questionnaireCustomName: 'questionnaire_b',
         instanceId: 110101,
         id: 110,
       },
       does_not_exist: {
         studyName: 'Study A',
-        pseudonym: 'stya-0000000001',
+        pseudonym: 'stya01-0000000001',
         questionnaireCustomName: 'does_not_exist',
         instanceId: 123,
       },
@@ -112,14 +115,14 @@ const questionnaires = {
     styb0000000001: {
       questionnaire_a: {
         studyName: 'Study B',
-        pseudonym: 'styb-0000000001',
+        pseudonym: 'styb01-0000000001',
         questionnaireCustomName: 'questionnaire_a',
         instanceId: 200100,
         id: 200,
       },
       questionnaire_a_released_once: {
         studyName: 'Study B',
-        pseudonym: 'styb-0000000001',
+        pseudonym: 'styb01-0000000001',
         questionnaireCustomName: 'questionnaire_a',
         instanceId: 200101,
         id: 200,
@@ -130,7 +133,7 @@ const questionnaires = {
     styx0000000001: {
       questionnaire_a: {
         studyName: 'Study X',
-        pseudonym: 'styx-0000000001',
+        pseudonym: 'styx01-0000000001',
         questionnaireCustomName: 'questionnaire_a',
         instanceId: 123,
       },
@@ -160,7 +163,10 @@ describe(pathQuestionnaireInstances, () => {
   const testSandbox = createSandbox();
 
   const mqc = new MessageQueueClient(config.servers.messageQueue);
-  let messageQueueHistory: QuestionnaireInstanceReleasedMessage[] = [];
+  let releasedMessageQueueHistory: QuestionnaireInstanceReleasedMessage[] = [];
+  let progressedMessageQueueHistory: QuestionnaireInstanceAnsweringStartedMessage[] =
+    [];
+
   let sampletrackingserviceClientStub: sinon.SinonStub;
   let userserviceClientStub: sinon.SinonStub;
 
@@ -169,8 +175,15 @@ describe(pathQuestionnaireInstances, () => {
     await mqc.connect(true);
     await mqc.createConsumer(
       MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
-      async (message: QuestionnaireInstanceReleasedMessage) => {
-        messageQueueHistory.push(message);
+      async (message) => {
+        releasedMessageQueueHistory.push(message);
+        return Promise.resolve();
+      }
+    );
+    await mqc.createConsumer(
+      MessageQueueTopic.QUESTIONNAIRE_INSTANCE_ANSWERING_STARTED,
+      async (message) => {
+        progressedMessageQueueHistory.push(message);
         return Promise.resolve();
       }
     );
@@ -237,7 +250,8 @@ describe(pathQuestionnaireInstances, () => {
       );
 
     AuthServerMock.adminRealm().returnValid();
-    messageQueueHistory = [];
+    releasedMessageQueueHistory = [];
+    progressedMessageQueueHistory = [];
     await setup();
   });
 
@@ -250,10 +264,12 @@ describe(pathQuestionnaireInstances, () => {
   });
 
   describe(`GET /`, () => {
-    it('should return 200 and all questionnaire instances', async function () {
+    it('should return 200 and all questionnaire instances in correct order', async function () {
       const expectedResponse: PlainGetQuestionnaireInstanceResponseDto[] = [
-        questionnaireInstance_100100,
         questionnaireInstance_110101,
+        questionnaireInstance_120101,
+        questionnaireInstance_130101,
+        questionnaireInstance_100100,
       ];
 
       const response = await http
@@ -274,79 +290,83 @@ describe(pathQuestionnaireInstances, () => {
       const testCases = [
         // status query
         {
-          pseudonym: 'stya-0000000001',
+          pseudonym: 'stya01-0000000001',
           query: `?status=active`,
-          expectedResponse: [questionnaireInstance_100100],
+          expectedResponse: [
+            questionnaireInstance_120101,
+            questionnaireInstance_130101,
+            questionnaireInstance_100100,
+          ],
         },
         {
-          pseudonym: 'styb-0000000001',
+          pseudonym: 'styb01-0000000001',
           query: `?status=active`,
           expectedResponse: [],
         },
         {
-          pseudonym: 'stya-0000000001',
+          pseudonym: 'stya01-0000000001',
           query: `?status=released_once`,
           expectedResponse: [],
         },
         {
-          pseudonym: 'styb-0000000001',
+          pseudonym: 'styb01-0000000001',
           query: `?status=released_once`,
           expectedResponse: [questionnaireInstance_110100],
         },
         {
-          pseudonym: 'styb-0000000001',
+          pseudonym: 'styb01-0000000001',
           query: `?status=in_progress`,
           expectedResponse: [questionnaireInstance_100101],
         },
         // questionnaireCustomName query
         {
-          pseudonym: 'stya-0000000001',
+          pseudonym: 'stya01-0000000001',
           query: `?questionnaireCustomName=questionnaire_a`,
           expectedResponse: [questionnaireInstance_100100],
         },
         {
-          pseudonym: 'stya-0000000001',
+          pseudonym: 'stya01-0000000001',
           query: `?questionnaireCustomName=questionnaire_b`,
           expectedResponse: [questionnaireInstance_110101],
         },
         {
-          pseudonym: 'styb-0000000001',
+          pseudonym: 'styb01-0000000001',
           query: `?questionnaireCustomName=questionnaire_a`,
           expectedResponse: [questionnaireInstance_100101],
         },
         {
-          pseudonym: 'stya-0000000001',
-          query: `?questionnaireCustomName=questionnaire_c`,
+          pseudonym: 'stya01-0000000001',
+          query: `?questionnaireCustomName=nothing`,
           expectedResponse: [],
         },
         {
-          pseudonym: 'styb-0000000001',
+          pseudonym: 'styb01-0000000001',
           query: `?questionnaireCustomName=questionnaire_b`,
           expectedResponse: [questionnaireInstance_110100],
         },
         // combined query parameters
         {
-          pseudonym: 'stya-0000000001',
+          pseudonym: 'stya01-0000000001',
           query: `?questionnaireCustomName=questionnaire_a&status=active`,
           expectedResponse: [questionnaireInstance_100100],
         },
         {
-          pseudonym: 'stya-0000000001',
+          pseudonym: 'stya01-0000000001',
           query: `?questionnaireCustomName=questionnaire_a&status=in_progress`,
           expectedResponse: [],
         },
         {
-          pseudonym: 'stya-0000000001',
+          pseudonym: 'stya01-0000000001',
           query: `?questionnaireCustomName=questionnaire_b&status=in_progress`,
           expectedResponse: [questionnaireInstance_110101],
         },
         {
-          pseudonym: 'styb-0000000001',
+          pseudonym: 'styb01-0000000001',
           query: `?questionnaireCustomName=questionnaire_a&status=in_progress`,
           expectedResponse: [questionnaireInstance_100101],
         },
         {
-          pseudonym: 'styb-0000000001',
+          pseudonym: 'styb01-0000000001',
           query: `?questionnaireCustomName=questionnaire_b&status=in_progress`,
           expectedResponse: [],
         },
@@ -445,18 +465,31 @@ describe(pathQuestionnaireInstances, () => {
 
         await setQuestionnaireType(segments.id, 'for_probands');
 
-        const expectedMessages: QuestionnaireInstanceReleasedMessage[] = [
-          {
-            id: segments.instanceId,
-            releaseVersion: 1,
-            studyName: segments.studyName,
-          },
-          {
-            id: segments.instanceId,
-            releaseVersion: 2,
-            studyName: segments.studyName,
-          },
-        ];
+        const expectedReleasedMessages: QuestionnaireInstanceReleasedMessage[] =
+          [
+            {
+              id: segments.instanceId,
+              releaseVersion: 1,
+              studyName: segments.studyName,
+              pseudonym: segments.pseudonym,
+              status: 'released_once',
+              questionnaire: {
+                id: segments.id,
+                customName: segments.questionnaireCustomName,
+              },
+            },
+            {
+              id: segments.instanceId,
+              releaseVersion: 2,
+              studyName: segments.studyName,
+              pseudonym: segments.pseudonym,
+              status: 'released_twice',
+              questionnaire: {
+                id: segments.id,
+                customName: segments.questionnaireCustomName,
+              },
+            },
+          ];
 
         // Act
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -487,35 +520,53 @@ describe(pathQuestionnaireInstances, () => {
           expect(response).to.have.status(StatusCodes.OK);
         }
 
-        const messagesHaveBeenReceived = (): boolean =>
-          messageQueueHistory.length >= expectedMessages.length;
+        await waitForMessageQueue(expectedReleasedMessages.length, 0);
 
-        await waitForConditionToBeTrue(messagesHaveBeenReceived, 3);
-
-        expect(messageQueueHistory).to.deep.equal(expectedMessages);
+        expect(releasedMessageQueueHistory).to.deep.equal(
+          expectedReleasedMessages
+        );
       });
 
       it('questionnaire instance for research team was released and increase release version', async function () {
         // Arrange
         const segments = questionnaires.StudyA.stya0000000001.questionnaire_b;
         const status: QuestionnaireInstanceStatus = 'released';
-        const expectedMessages: QuestionnaireInstanceReleasedMessage[] = [
-          {
-            id: segments.instanceId,
-            releaseVersion: 1,
-            studyName: segments.studyName,
-          },
-          {
-            id: segments.instanceId,
-            releaseVersion: 2,
-            studyName: segments.studyName,
-          },
-          {
-            id: segments.instanceId,
-            releaseVersion: 3,
-            studyName: segments.studyName,
-          },
-        ];
+        const expectedReleasedMessages: QuestionnaireInstanceReleasedMessage[] =
+          [
+            {
+              id: segments.instanceId,
+              releaseVersion: 1,
+              studyName: segments.studyName,
+              pseudonym: segments.pseudonym,
+              status: 'released',
+              questionnaire: {
+                id: segments.id,
+                customName: segments.questionnaireCustomName,
+              },
+            },
+            {
+              id: segments.instanceId,
+              releaseVersion: 2,
+              studyName: segments.studyName,
+              pseudonym: segments.pseudonym,
+              status: 'released',
+              questionnaire: {
+                id: segments.id,
+                customName: segments.questionnaireCustomName,
+              },
+            },
+            {
+              id: segments.instanceId,
+              releaseVersion: 3,
+              studyName: segments.studyName,
+              pseudonym: segments.pseudonym,
+              status: 'released',
+              questionnaire: {
+                id: segments.id,
+                customName: segments.questionnaireCustomName,
+              },
+            },
+          ];
 
         // Act
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -543,12 +594,58 @@ describe(pathQuestionnaireInstances, () => {
           expect(response).to.have.status(StatusCodes.OK);
         }
 
-        const messagesHaveBeenReceived = (): boolean =>
-          messageQueueHistory.length >= expectedMessages.length;
+        await waitForMessageQueue(expectedReleasedMessages.length, 0);
 
-        await waitForConditionToBeTrue(messagesHaveBeenReceived, 3);
+        expect(releasedMessageQueueHistory).to.deep.equal(
+          expectedReleasedMessages
+        );
+      });
 
-        expect(messageQueueHistory).to.deep.equal(expectedMessages);
+      it('questionnaire instance was released and progress must be updated', async function () {
+        // Arrange
+        const segments = questionnaires.StudyA.stya0000000001.questionnaire_b;
+        const status: QuestionnaireInstanceStatus = 'released';
+        const expectedReleasedMessages: QuestionnaireInstanceReleasedMessage[] =
+          [
+            {
+              id: segments.instanceId,
+              releaseVersion: 1,
+              studyName: segments.studyName,
+              pseudonym: segments.pseudonym,
+              status,
+              questionnaire: {
+                id: segments.id,
+                customName: segments.questionnaireCustomName,
+              },
+            },
+          ];
+
+        // Act
+        // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+        const expectedResponse: PatchQuestionnaireInstanceResponseDto = {
+          status,
+          releaseVersion: 1,
+          progress: 100,
+        };
+
+        AuthServerMock.adminRealm().returnValid();
+        const response = await http
+          .patch(sprintPath(pathQuestionnaireInstance, segments))
+          .set(apiClientHeader)
+          .send({ status });
+
+        // Assert
+        expect(response.body).to.deep.equal(
+          expectedResponse,
+          `Release version ${String(expectedResponse.releaseVersion)}`
+        );
+        expect(response).to.have.status(StatusCodes.OK);
+
+        await waitForMessageQueue(expectedReleasedMessages.length, 0);
+
+        expect(releasedMessageQueueHistory).to.deep.equal(
+          expectedReleasedMessages
+        );
       });
 
       it('questionnaire instance for proband was released twice and copy answers to next version', async () => {
@@ -612,18 +709,31 @@ describe(pathQuestionnaireInstances, () => {
 
           await setQuestionnaireType(segments.id, 'for_probands');
 
-          const expectedMessages: QuestionnaireInstanceReleasedMessage[] = [
-            {
-              id: segments.instanceId,
-              releaseVersion: 1,
-              studyName: segments.studyName,
-            },
-            {
-              id: segments.instanceId,
-              releaseVersion: 2,
-              studyName: segments.studyName,
-            },
-          ];
+          const expectedReleasedMessages: QuestionnaireInstanceReleasedMessage[] =
+            [
+              {
+                id: segments.instanceId,
+                releaseVersion: 1,
+                studyName: segments.studyName,
+                pseudonym: segments.pseudonym,
+                status: 'released_once',
+                questionnaire: {
+                  id: segments.id,
+                  customName: segments.questionnaireCustomName,
+                },
+              },
+              {
+                id: segments.instanceId,
+                releaseVersion: 2,
+                studyName: segments.studyName,
+                pseudonym: segments.pseudonym,
+                status: 'released_twice',
+                questionnaire: {
+                  id: segments.id,
+                  customName: segments.questionnaireCustomName,
+                },
+              },
+            ];
 
           // Act
           // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -659,12 +769,11 @@ describe(pathQuestionnaireInstances, () => {
             expect(response).to.have.status(StatusCodes.OK);
           }
 
-          const messagesHaveBeenReceived = (): boolean =>
-            messageQueueHistory.length >= expectedMessages.length;
+          await waitForMessageQueue(expectedReleasedMessages.length, 0);
 
-          await waitForConditionToBeTrue(messagesHaveBeenReceived, 3);
-
-          expect(messageQueueHistory).to.deep.equal(expectedMessages);
+          expect(releasedMessageQueueHistory).to.deep.equal(
+            expectedReleasedMessages
+          );
         });
       });
     });
@@ -1050,15 +1159,11 @@ describe(pathQuestionnaireInstances, () => {
         // Arrange
         const expectedStatus: QuestionnaireInstanceStatus = 'in_progress';
         const answers: PostAnswerRequestDto[] = getCompletePostAnswersRequest();
+        const segments = questionnaires.StudyA.stya0000000001.questionnaire_a;
 
         // Act
         const response = await http
-          .post(
-            sprintPath(
-              pathQuestionnaireInstanceAnswers,
-              questionnaires.StudyA.stya0000000001.questionnaire_a
-            )
-          )
+          .post(sprintPath(pathQuestionnaireInstanceAnswers, segments))
           .set(apiClientHeader)
           .send(answers);
 
@@ -1069,16 +1174,9 @@ describe(pathQuestionnaireInstances, () => {
 
         const qi = await getConnection()
           .getRepository(QuestionnaireInstance)
-          .findOne(
-            questionnaires.StudyA.stya0000000001.questionnaire_a.instanceId,
-            {
-              relations: [
-                'answers',
-                'answers.question',
-                'answers.answerOption',
-              ],
-            }
-          );
+          .findOne(segments.instanceId, {
+            relations: ['answers', 'answers.question', 'answers.answerOption'],
+          });
 
         expect(qi.status).to.equal(expectedStatus);
         expect(qi.releaseVersion).to.equal(0);
@@ -1130,6 +1228,20 @@ describe(pathQuestionnaireInstances, () => {
         ];
 
         // Act
+        const expectedMessages: QuestionnaireInstanceAnsweringStartedMessage[] =
+          [
+            {
+              id: segments.instanceId,
+              studyName: segments.studyName,
+              pseudonym: segments.pseudonym,
+              status: 'in_progress',
+              questionnaire: {
+                id: segments.id,
+                customName: segments.questionnaireCustomName,
+              },
+            },
+          ];
+
         // eslint-disable-next-line @typescript-eslint/no-magic-numbers
         for (const testCase of testCases) {
           AuthServerMock.adminRealm().returnValid();
@@ -1146,6 +1258,10 @@ describe(pathQuestionnaireInstances, () => {
 
           expect(qi.progress).to.equal(testCase.expectedProgress);
         }
+
+        await waitForMessageQueue(0, expectedMessages.length);
+
+        expect(progressedMessageQueueHistory).to.deep.equal(expectedMessages);
       });
 
       it('and update existing answers while keeping status "in_progress"', async () => {
@@ -2037,4 +2153,17 @@ describe(pathQuestionnaireInstances, () => {
       });
     });
   });
+
+  async function waitForMessageQueue(
+    minReleasedMessages: number,
+    minProgressedMessages: number
+  ): Promise<void> {
+    await waitForConditionToBeTrue(
+      (): boolean =>
+        releasedMessageQueueHistory.length >= minReleasedMessages &&
+        progressedMessageQueueHistory.length >= minProgressedMessages,
+      5,
+      300
+    );
+  }
 });

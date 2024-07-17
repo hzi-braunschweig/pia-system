@@ -12,13 +12,19 @@ import { addHours, isValid } from 'date-fns';
 import { NotificationHelper } from '../services/notificationHelper';
 
 import { FcmToken } from '../models/fcmToken';
-import { DbNotificationSchedules, Notification } from '../models/notification';
+import {
+  DbNotificationSchedules,
+  Notification,
+  NotificationResponse,
+  QuestionnaireNotificationResponse,
+} from '../models/notification';
 import { QuestionnaireInstance } from '../models/questionnaireInstance';
 
 import { questionnaireserviceClient } from '../clients/questionnaireserviceClient';
 import { assert } from 'ts-essentials';
 import StatusCodes from 'http-status-codes';
 import { userserviceClient } from '../clients/userserviceClient';
+import { NotificationContentStrategies } from '../strategies';
 
 /**
  * interactor that handles notification requests based on users permissions
@@ -68,14 +74,7 @@ export class NotificationInteractor {
   public static async getNotification(
     decodedToken: Partial<AccessToken>,
     notificationId: number
-  ): Promise<{
-    notification_type: 'qReminder' | 'sample' | 'custom';
-    reference_id: string;
-    title: string | null;
-    body: string | null;
-    questionnaire_id?: number;
-    questionnaire_version?: number;
-  }> {
+  ): Promise<NotificationResponse | QuestionnaireNotificationResponse> {
     let resultNotificationByID: DbNotificationSchedules;
     try {
       resultNotificationByID = (await postgresqlHelper.getNotificationById(
@@ -96,65 +95,49 @@ export class NotificationInteractor {
 
     assert(typeof resultNotificationByID.reference_id === 'string');
 
-    switch (resultNotificationByID.notification_type) {
-      case 'qReminder': {
-        let qInstance: QuestionnaireInstance;
-        try {
-          qInstance = await questionnaireserviceClient.getQuestionnaireInstance(
-            Number.parseInt(resultNotificationByID.reference_id)
-          );
-        } catch (err) {
-          if (
-            err instanceof Boom.Boom &&
-            err.output.statusCode === StatusCodes.NOT_FOUND
-          ) {
-            throw Boom.notFound('Could not get questionnaire instance');
-          }
-          throw err;
-        }
+    const strategy =
+      NotificationContentStrategies[resultNotificationByID.notification_type];
 
-        if (qInstance.questionnaire.questions.length === 0) {
-          throw Boom.notFound('Conditions of questionnaire are not fulfilled');
-        }
-
-        let notification_body;
-        if (qInstance.status === 'active') {
-          notification_body = qInstance.questionnaire.notificationBodyNew;
-        } else {
-          notification_body =
-            qInstance.questionnaire.notificationBodyInProgress;
-        }
-        await postgresqlHelper.deleteScheduledNotification(notificationId);
-        return {
-          notification_type: resultNotificationByID.notification_type,
-          reference_id: resultNotificationByID.reference_id,
-          title: qInstance.questionnaire.notificationTitle,
-          body: notification_body,
-          questionnaire_id: qInstance.questionnaire.id,
-          questionnaire_version: qInstance.questionnaire.version,
-        };
-      }
-      case 'sample': {
-        await postgresqlHelper.deleteScheduledNotification(notificationId);
-        return {
-          notification_type: resultNotificationByID.notification_type,
-          reference_id: resultNotificationByID.reference_id,
-          title: 'Neuer Laborbericht!',
-          body: 'Eine Ihrer Proben wurde analysiert, klicken Sie direkt auf diese Nachricht um das Ergebnis zu öffnen.',
-        };
-      }
-      case 'custom': {
-        await postgresqlHelper.deleteScheduledNotification(notificationId);
-        return {
-          notification_type: resultNotificationByID.notification_type,
-          reference_id: resultNotificationByID.reference_id,
-          title: resultNotificationByID.title,
-          body: resultNotificationByID.body,
-        };
-      }
-      default:
-        throw Boom.notFound('Got notification of unknown type');
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!strategy) {
+      throw Boom.notFound('Got notification of unknown type');
     }
+
+    let qInstance: QuestionnaireInstance | null = null;
+
+    if (resultNotificationByID.notification_type === 'qReminder') {
+      try {
+        qInstance = await questionnaireserviceClient.getQuestionnaireInstance(
+          Number.parseInt(resultNotificationByID.reference_id)
+        );
+      } catch (err) {
+        if (
+          err instanceof Boom.Boom &&
+          err.output.statusCode === StatusCodes.NOT_FOUND
+        ) {
+          throw Boom.notFound('Could not get questionnaire instance');
+        }
+        throw err;
+      }
+
+      if (qInstance.questionnaire.questions.length === 0) {
+        throw Boom.notFound('Conditions of questionnaire are not fulfilled');
+      }
+    }
+
+    strategy.initialize(qInstance ?? resultNotificationByID);
+
+    await postgresqlHelper.deleteScheduledNotification(notificationId);
+
+    const additionalData = strategy.getAdditionalData();
+
+    return {
+      notification_type: resultNotificationByID.notification_type,
+      reference_id: resultNotificationByID.reference_id,
+      title: strategy.getInAppTitle(),
+      body: strategy.getInAppText(),
+      ...(additionalData ? { data: additionalData } : {}),
+    };
   }
 
   private static async processNotificationForRecipient(

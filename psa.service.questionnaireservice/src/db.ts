@@ -32,6 +32,8 @@ import { UserFile } from './entities/userFile';
 import { RenameLabelToVariableName1668436755983 } from './migrations/1668436755983-RenameLabelToVariableName';
 import { AddCustomName1705593083327 } from './migrations/1705593083327-AddCustomName';
 import { AddHelpText1710161762375 } from './migrations/1710161762375-AddHelpText';
+import { AddNotificationLinkToOverview1718963386491 } from './migrations/1718963386491-AddNotificationLinkToOverview';
+import { AddSortOrder1718022737421 } from './migrations/1718022737421-AddSortOrder';
 
 const pgp = pgPromise({ capSQL: true, noLocking: config.isTestMode });
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -87,6 +89,8 @@ const typeOrmOptions: ConnectionOptions = {
     RenameLabelToVariableName1668436755983,
     AddCustomName1705593083327,
     AddHelpText1710161762375,
+    AddNotificationLinkToOverview1718963386491,
+    AddSortOrder1718022737421,
   ],
   logging: false,
   extra: { poolSize: 100 },

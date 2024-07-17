@@ -22,6 +22,7 @@
     "@hapi/hapi": "~21.1.0",
     "@pia-system/lib-http-clients-internal": "file:../psa.lib.http-clients-internal",
     "@pia/lib-messagequeue": "file:../psa.lib.messagequeue",
+    "@pia/lib-publicapi": "file:../psa.lib.publicapi",
     "@pia/lib-service-core": "file:../psa.lib.service-core",
     "archiver": "^5.3.1",
     "csv-stringify": "^6.2.1",

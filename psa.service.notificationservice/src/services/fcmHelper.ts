@@ -5,9 +5,12 @@
  */
 
 import fbAdmin, { FirebaseError } from 'firebase-admin';
-import { MarkRequired } from 'ts-essentials';
-
+import { TokenMessage } from 'firebase-admin/lib/messaging/messaging-api';
 import { config } from '../config';
+import {
+  FirebaseMessageRejectedError,
+  FirebaseMessageUnknownError,
+} from '../errors';
 
 export class FcmHelper {
   /**
@@ -26,25 +29,17 @@ export class FcmHelper {
    * @param fcmToken the token of the user to send the message to
    * @param notificationId the notification id to send
    * @param badgeNumber the number to show as badge
+   * @returns the fcm id of the message sent
    */
   public static async sendDefaultNotification(
     this: void,
     fcmToken: string,
     notificationId: number,
     badgeNumber?: number
-  ): Promise<
-    Partial<fbAdmin.messaging.MessagingDevicesResponse> & {
-      error?: FirebaseError;
-      exception: unknown;
-    }
-  > {
+  ): Promise<string> {
     const title = 'PIA - Sie haben eine neue Nachricht.';
     const body = 'Bitte tippen Sie auf diese Meldung, um Sie anzuzeigen.';
-
-    const payload: MarkRequired<
-      fbAdmin.messaging.MessagingPayload,
-      'notification'
-    > = {
+    const message: TokenMessage = {
       notification: {
         title,
         body,
@@ -55,22 +50,48 @@ export class FcmHelper {
         body,
         notification_foreground: 'true',
       },
+      token: fcmToken,
     };
 
     if (typeof badgeNumber === 'number') {
-      payload.notification.badge = badgeNumber.toString();
+      message.apns = {
+        payload: {
+          aps: {
+            badge: badgeNumber,
+          },
+        },
+      };
+      message.android = {
+        notification: {
+          notificationCount: badgeNumber,
+        },
+      };
     }
 
     try {
-      const result = await fbAdmin.messaging().sendToDevice(fcmToken, payload);
-
-      if (result.failureCount > 0) {
-        return { error: result.results[0]?.error, exception: undefined };
-      } else {
-        return { ...result, error: undefined, exception: undefined };
+      return await FcmHelper.getFirebaseMessaging().send(message);
+    } catch (error: unknown) {
+      if (FcmHelper.isFirebaseError(error)) {
+        if (error.code == 'messaging/registration-token-not-registered') {
+          throw new FirebaseMessageRejectedError(error);
+        }
+        throw new FirebaseMessageUnknownError(error);
       }
-    } catch (exception) {
-      return { exception: exception, error: undefined };
+
+      throw error;
     }
+  }
+
+  public static getFirebaseMessaging(): fbAdmin.messaging.Messaging {
+    return fbAdmin.messaging();
+  }
+
+  private static isFirebaseError(error: unknown): error is FirebaseError {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      (error as Partial<FirebaseError>).code !== undefined
+    );
   }
 }

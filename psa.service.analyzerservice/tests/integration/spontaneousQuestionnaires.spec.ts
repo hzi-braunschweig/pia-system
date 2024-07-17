@@ -16,6 +16,7 @@ import {
 } from './spontaneousQuestionnaires.spec.data/setup.helper';
 import { dbWait } from './helper';
 import { QuestionnaireInstance } from '../../src/models/questionnaireInstance';
+import { Questionnaire } from '../../src/models/questionnaire';
 
 const pgp = pg_promise({ capSQL: true });
 
@@ -113,7 +114,7 @@ describe('Spontaneous questionnaire instance creation', function () {
         expectedQuestionnaireInstanceCountBefore
       );
 
-      await createQuestionnaire({ version: 2 });
+      await createQuestionnaire({ version: 2, sort_order: 0 });
       const replacedQIs = await db.many(
         'SELECT * FROM questionnaire_instances WHERE questionnaire_id = 99999'
       );
@@ -155,6 +156,10 @@ describe('Spontaneous questionnaire instance creation', function () {
       expect(q1_1?.status).to.equal('released_once');
       expect(q1_2?.status).to.equal('active');
       expect(q2_1?.status).to.equal('active');
+
+      expect(q1_1?.sort_order).to.equal(0);
+      expect(q1_2?.sort_order).to.equal(0);
+      expect(q2_1?.sort_order).to.equal(0);
     });
 
     it('should replace all questionnaire instances of an old version but keep the answered', async function () {
@@ -180,7 +185,7 @@ describe('Spontaneous questionnaire instance creation', function () {
       expect(withNewQI.length).to.equal(
         expectedQuestionnaireInstanceCountAfter
       );
-      await createQuestionnaire({ version: 2 });
+      await createQuestionnaire({ version: 2, sort_order: 0 });
 
       // Assert
       const replacedQIs: QuestionnaireInstance[] = await db.many(
@@ -207,15 +212,18 @@ describe('Spontaneous questionnaire instance creation', function () {
       expect(q1_1?.status).to.equal('released_once');
       expect(q1_2?.status).to.equal('active');
       expect(q2_1?.status).to.equal('active');
+      expect(q1_1?.sort_order).to.equal(1);
+      expect(q1_2?.sort_order).to.equal(0);
     });
   });
 
-  const questionnaireCs = new pgp.helpers.ColumnSet(
+  const questionnaireCs = new pgp.helpers.ColumnSet<Questionnaire>(
     [
       'id',
       'version',
       'study_id',
       'name',
+      'sort_order',
       'no_questions',
       'cycle_amount',
       'cycle_unit',
@@ -240,6 +248,7 @@ describe('Spontaneous questionnaire instance creation', function () {
       study_id: 'ApiTestStudie',
       name: 'Test spontaneous Questionnaire',
       no_questions: 1,
+      sort_order: 1,
       cycle_amount: null,
       cycle_unit: 'spontan',
       activate_after_days: 0,

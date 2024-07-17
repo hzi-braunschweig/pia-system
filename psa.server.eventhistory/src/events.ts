@@ -13,6 +13,10 @@ import {
   ComplianceCreatedMessage,
   QuestionnaireInstanceReleasedMessage,
   ProbandLoggedInMessage,
+  QuestionnaireInstanceCreatedMessage,
+  QuestionnaireInstanceActivatedMessage,
+  QuestionnaireInstanceAnsweringStartedMessage,
+  QuestionnaireInstanceExpiredMessage,
 } from '@pia/lib-messagequeue';
 
 /**
@@ -26,10 +30,29 @@ export const SupportedTopics = [
   MessageQueueTopic.PROBAND_DEACTIVATED,
   MessageQueueTopic.PROBAND_EMAIL_VERIFIED,
   MessageQueueTopic.COMPLIANCE_CREATED,
+  MessageQueueTopic.QUESTIONNAIRE_INSTANCE_CREATED,
+  MessageQueueTopic.QUESTIONNAIRE_INSTANCE_ACTIVATED,
+  MessageQueueTopic.QUESTIONNAIRE_INSTANCE_ANSWERING_STARTED,
   MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
+  MessageQueueTopic.QUESTIONNAIRE_INSTANCE_EXPIRED,
 ] as const;
 
 export type EventType = typeof SupportedTopics[number];
+
+/**
+ * Event types:
+ * - `proband.created` - proband was created
+ * - `proband.deleted` - proband's data was deleted
+ * - `proband.deactivated` - proband was deactivated and should not receive any new questionnaires
+ * - `proband.logged_in` - proband logged in
+ * - `proband.email_verified` - proband successfully verified their email after registration
+ * - `compliance.created` - compliance was filled out by proband
+ * - `questionnaire_instance.created` - questionnaire instance was created
+ * - `questionnaire_instance.activated` - questionnaire instance was activated
+ * - `questionnaire_instance.answering_started` - questionnaire instance was started to be answered
+ * - `questionnaire_instance.released` - questionnaire instance moved to any "released*" status
+ * - `questionnaire_instance.expired` - questionnaire instance has expired
+ */
 export type EventTypeString = `${typeof SupportedTopics[number]}`;
 
 export type SupportedMessages =
@@ -39,4 +62,8 @@ export type SupportedMessages =
   | ProbandDeactivatedMessage
   | ProbandEmailVerifiedMessage
   | ComplianceCreatedMessage
-  | QuestionnaireInstanceReleasedMessage;
+  | QuestionnaireInstanceCreatedMessage
+  | QuestionnaireInstanceActivatedMessage
+  | QuestionnaireInstanceAnsweringStartedMessage
+  | QuestionnaireInstanceReleasedMessage
+  | QuestionnaireInstanceExpiredMessage;

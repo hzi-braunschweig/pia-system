@@ -31,7 +31,7 @@
 <ion-footer *ngIf="!complianceTextEmpty()">
   <ion-button
     style="margin: 10px"
-    *ngIf="!showAppUsageHint && !complianceSent"
+    *ngIf="!complianceSent"
     (click)="submitCompliance()"
     >{{ 'GENERAL.SAVE' | translate }}</ion-button
   >

@@ -14,6 +14,7 @@ import { QuestionnaireInstancesService } from './questionnaireInstancesService';
 import {
   QuestionnaireInstance,
   QuestionnaireInstanceNew,
+  QuestionnaireInstanceQuestionnairePair,
 } from '../models/questionnaireInstance';
 import { db } from '../db';
 import { Answer } from '../models/answer';
@@ -24,6 +25,7 @@ import { AnswerOption } from '../models/answerOption';
 import { asyncForEach } from '@pia/lib-service-core';
 import { LoggingService } from './loggingService';
 import { ProbandsRepository } from '../repositories/probandsRepository';
+import { messageQueueService } from './messageQueueService';
 
 const pgp = pg();
 
@@ -42,6 +44,7 @@ export class NotificationHandlers {
   private static readonly csQuestionnaireInstances = new pgp.helpers.ColumnSet(
     [
       'study_id',
+      'sort_order',
       'questionnaire_id',
       'questionnaire_version',
       'questionnaire_name',
@@ -272,7 +275,8 @@ export class NotificationHandlers {
     }
 
     await db.tx(async function (t) {
-      const qInstancesToAdd: QuestionnaireInstanceNew[] = [];
+      const qInstancesToAdd: QuestionnaireInstanceQuestionnairePair<QuestionnaireInstanceNew>[] =
+        [];
       const activeQInstancesFromExternalConditionsToBeQueued: QuestionnaireInstanceNew[] =
         [];
 
@@ -314,12 +318,14 @@ export class NotificationHandlers {
         instance_new.status === 'released_once' &&
         questionnaireOfInstance.cycle_unit === 'spontan'
       ) {
-        qInstancesToAdd.push(
-          QuestionnaireInstancesService.createNextQuestionnaireInstance(
-            questionnaireOfInstance,
-            instance_new
-          )
-        );
+        qInstancesToAdd.push({
+          questionnaire: questionnaireOfInstance,
+          questionnaireInstance:
+            QuestionnaireInstancesService.createNextQuestionnaireInstance(
+              questionnaireOfInstance,
+              instance_new
+            ),
+        });
       } else if (answersWithConditionOfOtherQuestionnaires.length < 1) {
         // No conditions to check, stop here
         return;
@@ -407,7 +413,12 @@ export class NotificationHandlers {
                   user,
                   false
                 );
-              qInstancesToAdd.push(...newInstances);
+              qInstancesToAdd.push(
+                ...QuestionnaireInstancesService.pairQuestionnaireInstancesWithQuestionnaire(
+                  newInstances,
+                  questionnaire
+                )
+              );
               if (questionnaire.type === 'for_probands') {
                 newInstances.forEach(function (newInstance) {
                   if (newInstance.status === 'active') {
@@ -449,7 +460,12 @@ export class NotificationHandlers {
                     user,
                     false
                   );
-                qInstancesToAdd.push(...newInstances);
+                qInstancesToAdd.push(
+                  ...QuestionnaireInstancesService.pairQuestionnaireInstancesWithQuestionnaire(
+                    newInstances,
+                    questionnaire
+                  )
+                );
                 if (questionnaire.type === 'for_probands') {
                   newInstances.forEach(function (newInstance) {
                     if (newInstance.status === 'active') {
@@ -512,12 +528,14 @@ export class NotificationHandlers {
                 conditionTargetAnswerOption.answer_type_id
               )
             ) {
-              qInstancesToAdd.push(
-                QuestionnaireInstancesService.createNextQuestionnaireInstance(
-                  questionnaire,
-                  instance_new
-                )
-              );
+              qInstancesToAdd.push({
+                questionnaire,
+                questionnaireInstance:
+                  QuestionnaireInstancesService.createNextQuestionnaireInstance(
+                    questionnaire,
+                    instance_new
+                  ),
+              });
             } else if (
               // eslint-disable-next-line @typescript-eslint/no-magic-numbers
               answerVersion === 2 &&
@@ -543,12 +561,14 @@ export class NotificationHandlers {
                   conditionTargetAnswerOption.answer_type_id
                 )
               ) {
-                qInstancesToAdd.push(
-                  QuestionnaireInstancesService.createNextQuestionnaireInstance(
-                    questionnaire,
-                    instance_new
-                  )
-                );
+                qInstancesToAdd.push({
+                  questionnaire,
+                  questionnaireInstance:
+                    QuestionnaireInstancesService.createNextQuestionnaireInstance(
+                      questionnaire,
+                      instance_new
+                    ),
+                });
               }
             }
           }
@@ -557,14 +577,12 @@ export class NotificationHandlers {
 
       // Insert questionnaire instances
       if (qInstancesToAdd.length > 0) {
-        const qQuestionnaireInstances =
-          pgp.helpers.insert(
-            qInstancesToAdd,
-            NotificationHandlers.csQuestionnaireInstances
-          ) + 'RETURNING *';
-        const insertedInstances: QuestionnaireInstance[] = await t.manyOrNone(
-          qQuestionnaireInstances
-        );
+        const insertedInstances =
+          await NotificationHandlers.createQuestionnaireInstances(
+            t,
+            qInstancesToAdd
+          );
+
         NotificationHandlers.logger.info(
           `Added ${insertedInstances.length} questionnaire instances to db for conditional questionnaires for user: ${instance_new.user_id}`
         );
@@ -664,7 +682,8 @@ export class NotificationHandlers {
     );
 
     if (probands.length > 0) {
-      let qInstances: QuestionnaireInstanceNew[] = [];
+      const qInstances: QuestionnaireInstanceQuestionnairePair<QuestionnaireInstanceNew>[] =
+        [];
       await asyncForEach(probands, async (proband) => {
         if (!proband.compliance_samples && questionnaire.compliance_needed) {
           return;
@@ -678,6 +697,7 @@ export class NotificationHandlers {
         }
 
         // Do not create instances to be filled out by probands for deactivated probands
+        // Questionnaires for study assistant should still be created
         if (
           !NotificationHandlers.isUserActiveInStudy(proband) &&
           questionnaire.type === 'for_probands'
@@ -768,16 +788,19 @@ export class NotificationHandlers {
           }
         }
 
-        qInstances = qInstances.concat(
-          QuestionnaireInstancesService.createQuestionnaireInstances(
-            questionnaire,
-            proband,
-            NotificationHandlers.hasInternalCondition(qCondition)
+        qInstances.push(
+          ...QuestionnaireInstancesService.pairQuestionnaireInstancesWithQuestionnaire(
+            QuestionnaireInstancesService.createQuestionnaireInstances(
+              questionnaire,
+              proband,
+              NotificationHandlers.hasInternalCondition(qCondition)
+            ),
+            questionnaire
           )
         );
       });
 
-      await NotificationHandlers.createQuestionnaireInstances(qInstances, t);
+      await NotificationHandlers.createQuestionnaireInstances(t, qInstances);
       NotificationHandlers.logger.info(
         `Added ${
           qInstances.length
@@ -810,29 +833,38 @@ export class NotificationHandlers {
         return;
       }
 
-      const qInstances: QuestionnaireInstanceNew[] = questionnaires
-        .filter((questionnaire) => {
-          if (
-            NotificationHandlers.hasExternalCondition(questionnaire) ||
-            (!user.compliance_samples && questionnaire.compliance_needed)
-          ) {
-            return false;
-          }
-          return !(
-            questionnaire.publish === 'hidden' ||
-            (questionnaire.publish === 'testprobands' && !user.is_test_proband)
+      const qInstances: QuestionnaireInstanceQuestionnairePair<QuestionnaireInstanceNew>[] =
+        questionnaires
+          .filter((questionnaire) => {
+            if (
+              NotificationHandlers.hasExternalCondition(questionnaire) ||
+              (!user.compliance_samples && questionnaire.compliance_needed)
+            ) {
+              return false;
+            }
+            return !(
+              questionnaire.publish === 'hidden' ||
+              (questionnaire.publish === 'testprobands' &&
+                !user.is_test_proband)
+            );
+          })
+          .flatMap((questionnaire) =>
+            QuestionnaireInstancesService.createQuestionnaireInstances(
+              questionnaire,
+              user,
+              NotificationHandlers.hasInternalCondition(questionnaire),
+              onlyLoginDependantOnes
+            ).map(
+              (
+                questionnaireInstance
+              ): QuestionnaireInstanceQuestionnairePair<QuestionnaireInstanceNew> => ({
+                questionnaireInstance,
+                questionnaire,
+              })
+            )
           );
-        })
-        .flatMap((questionnaire) => {
-          return QuestionnaireInstancesService.createQuestionnaireInstances(
-            questionnaire,
-            user,
-            NotificationHandlers.hasInternalCondition(questionnaire),
-            onlyLoginDependantOnes
-          );
-        });
 
-      await NotificationHandlers.createQuestionnaireInstances(qInstances, t);
+      await NotificationHandlers.createQuestionnaireInstances(t, qInstances);
       NotificationHandlers.logger.info(
         `Added ${qInstances.length} questionnaire instances to db for user ${user.pseudonym}`
       );
@@ -840,17 +872,38 @@ export class NotificationHandlers {
   }
 
   private static async createQuestionnaireInstances(
-    qInstances: QuestionnaireInstanceNew[],
-    t: ITask<unknown>
-  ): Promise<void> {
+    t: ITask<unknown>,
+    instancesWithQuestionnaires: QuestionnaireInstanceQuestionnairePair<QuestionnaireInstanceNew>[]
+  ): Promise<QuestionnaireInstance[]> {
     // Insert questionnaire instances
-    if (qInstances.length > 0) {
+    if (instancesWithQuestionnaires.length > 0) {
       const qQuestionnaireInstances = pgp.helpers.insert(
-        qInstances,
+        instancesWithQuestionnaires.map((dto) => dto.questionnaireInstance),
         NotificationHandlers.csQuestionnaireInstances
       );
-      await t.manyOrNone(qQuestionnaireInstances);
+      const result = await t.manyOrNone<QuestionnaireInstance>(
+        qQuestionnaireInstances + 'RETURNING *'
+      );
+
+      for (const instance of result) {
+        const questionnaire = instancesWithQuestionnaires.find(
+          (dto) =>
+            dto.questionnaireInstance.questionnaire_id ===
+              instance.questionnaire_id &&
+            dto.questionnaireInstance.questionnaire_version ===
+              instance.questionnaire_version
+        )!.questionnaire;
+
+        await messageQueueService.sendQuestionnaireInstanceCreated(
+          instance,
+          questionnaire
+        );
+      }
+
+      return result;
     }
+
+    return [];
   }
 
   private static hasInternalCondition(

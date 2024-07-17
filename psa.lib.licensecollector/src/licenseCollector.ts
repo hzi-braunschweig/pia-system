@@ -37,6 +37,9 @@ export class LicenseCollector {
     'BlueOak-1.0.0',
     // permitted by lawyer request as of 2023-11-28
     'Unicode-DFS-2016',
+    // @ngx-translate/* packages are licensed under MIT but the package.json does not contain the correct license
+    // @see https://github.com/ngx-translate/core/issues/1443
+    'Custom: LICENSE',
   ];
 
   private static readonly LICENSE_WHITELIST_PROD_AND_DEV = [

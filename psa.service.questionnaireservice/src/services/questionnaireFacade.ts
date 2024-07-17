@@ -24,12 +24,12 @@ import {
 } from '../errors';
 import { PartialAnswerDto } from '../models/answer';
 import { StudyName } from '../models/customTypes';
-import { Pseudonym } from '../models/pseudonym';
 import { CustomName } from '../models/questionnaire';
 import { QuestionnaireInstanceStatus } from '../models/questionnaireInstance';
 import { AnswerService } from './answerService';
 import { AnswerValidatorService } from './answerValidatorService';
 import { QuestionnaireInstanceService } from './questionnaireInstanceService';
+import { Pseudonym } from '@pia/lib-publicapi';
 
 export class QuestionnaireFacade {
   public static async getQuestionnaireInstances(
@@ -56,6 +56,7 @@ export class QuestionnaireFacade {
       questionnaireVersion: instance.questionnaire.version,
       questionnaireCustomName: instance.questionnaire.customName,
       questionnaireName: instance.questionnaireName,
+      sortOrder: instance.sortOrder,
       pseudonym: instance.pseudonym,
       dateOfIssue: instance.dateOfIssue,
       dateOfReleaseV1: instance.dateOfReleaseV1,

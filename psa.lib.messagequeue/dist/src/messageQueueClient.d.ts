@@ -1,6 +1,7 @@
 import { MessageQueueClientConnection } from './messageQueueClientConnection';
 import { HandleMessageArgs } from './messageQueueClientInternals';
 import { MessageQueueTopic } from './messageQueueTopics';
+import { MessageTopicMap } from './messageQueueMessage';
 export interface Producer<M> {
     publish: (message: M) => Promise<boolean>;
 }
@@ -13,9 +14,9 @@ export declare class MessageQueueClient extends MessageQueueClientConnection {
         username: string;
         password: string;
     });
-    createProducer<M>(topic: MessageQueueTopic): Promise<Producer<M>>;
+    createProducer<M extends MessageTopicMap[T], T extends MessageQueueTopic>(topic: T): Promise<Producer<M>>;
     removeQueue(topic: MessageQueueTopic): Promise<void>;
     removeQueues(topics: MessageQueueTopic[]): Promise<void>;
-    createConsumer<M>(topic: MessageQueueTopic, onMessage: HandleMessageArgs<M>['onMessage']): Promise<void>;
+    createConsumer<T extends MessageQueueTopic, M extends MessageTopicMap[T]>(topic: T, onMessage: HandleMessageArgs<M>['onMessage']): Promise<void>;
     private handleMessage;
 }

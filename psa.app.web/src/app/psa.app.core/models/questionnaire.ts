@@ -11,13 +11,22 @@ export class QuestionnaireListResponse {
   links: { self: { href: string } };
 }
 
+export type CycleUnit =
+  | 'once'
+  | 'day'
+  | 'week'
+  | 'month'
+  | 'hour'
+  | 'spontan'
+  | 'date';
+
 export interface Questionnaire {
   id: number;
   study_id: string;
   active: boolean; // used to activate/deactivate the questionnaire as a whole
   no_questions: number;
   cycle_amount: number;
-  cycle_unit: string;
+  cycle_unit: CycleUnit;
   cycle_per_day?: number;
   cycle_first_hour?: number;
   publish: string;
@@ -31,11 +40,13 @@ export interface Questionnaire {
   deactivate_after_days: number;
   name: string;
   custom_name: string | null;
+  sort_order: number | null;
   type: string;
   notification_tries: number;
   notification_title: string;
   notification_body_new: string;
   notification_body_in_progress: string;
+  notification_link_to_overview: boolean;
   questions: Question[];
   condition: Condition;
   condition_error: string;

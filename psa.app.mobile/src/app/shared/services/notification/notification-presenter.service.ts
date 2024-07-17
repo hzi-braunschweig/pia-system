@@ -5,7 +5,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { AlertController } from '@ionic/angular';
+import { AlertController, AlertOptions } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 
@@ -31,10 +31,12 @@ export class NotificationPresenterService {
 
       switch (notification.notification_type) {
         case 'qReminder': {
-          await this.showAlert(notification, [
-            'questionnaire',
-            notification.reference_id,
-          ]);
+          await this.showAlert(
+            notification,
+            notification.data.linkToOverview
+              ? ['questionnaire']
+              : ['questionnaire', notification.reference_id]
+          );
           break;
         }
         case 'sample': {
@@ -62,9 +64,10 @@ export class NotificationPresenterService {
     notification: NotificationDto,
     navigateTo: string[] = null
   ) {
-    const alertOptions = {
+    const alertOptions: AlertOptions = {
       header: notification.title,
       message: notification.body,
+      cssClass: 'pia-push-notification-alert',
       buttons: [
         {
           text: this.translate.instant('GENERAL.CLOSE'),

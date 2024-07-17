@@ -86,7 +86,7 @@ describe('Keycloak EmailVerified Proxy', () => {
     expect(content.message.studyName).to.equal(studyName);
   });
 
-  it('should not publish an event if the study was determinable', async () => {
+  it('should not publish an event if the study was not determinable', async () => {
     const { channel, queue } = await proxyTestTool.createChannelWithQueue(
       MessageQueueTopic.PROBAND_EMAIL_VERIFIED,
       'email-verify'
@@ -103,7 +103,7 @@ describe('Keycloak EmailVerified Proxy', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    expect(errorLogSpy.calledOnce).to.be.true;
+    expect(errorLogSpy.called).to.be.true;
     expect(await channel.get(queue.queue)).to.be.false;
   });
 

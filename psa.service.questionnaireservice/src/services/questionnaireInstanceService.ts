@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { Pseudonym } from '@pia/lib-publicapi';
 import {
   FindConditions,
   getConnection,
@@ -12,7 +13,6 @@ import {
   In,
   Not,
 } from 'typeorm';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { Answer } from '../entities/answer';
 import {
   hasQuestionnaireRelation,
@@ -25,7 +25,6 @@ import {
   QuestionnaireInstanceNotFoundError,
 } from '../errors';
 import { StudyName } from '../models/customTypes';
-import { Pseudonym } from '../models/pseudonym';
 import { CustomName, QuestionnaireType } from '../models/questionnaire';
 import {
   PatchQuestionnaireInstanceDto,
@@ -35,6 +34,7 @@ import {
 import { CustomQuestionnaireInstanceRepository } from '../repositories/questionnaireInstanceRepository';
 import { messageQueueService } from './messageQueueService';
 import { QuestionnaireFilter } from './questionnaireFilter';
+import isInstanceWithNarrowedStatus from '../helpers/isInstanceWithNarrowedStatus';
 
 export class QuestionnaireInstanceService {
   public static async getQuestionnaireInstances(
@@ -254,48 +254,28 @@ export class QuestionnaireInstanceService {
     dto: PatchQuestionnaireInstanceDto,
     returnRaw = false
   ): Promise<QuestionnaireInstanceDeprecated | QuestionnaireInstance> {
-    if (dto.status && !this.isAllowedStatusTransition(instance, dto.status)) {
-      throw new InvalidStatusTransitionError(instance.status, dto.status);
-    }
-
-    let result: QuestionnaireInstance | QuestionnaireInstanceDeprecated;
-
     const queryRunner = getConnection().createQueryRunner();
     await queryRunner.startTransaction();
 
     try {
-      const updateResult = await getRepository(QuestionnaireInstance)
-        .createQueryBuilder()
-        .update(instance)
-        .set(this.getFieldsToUpdateForRelease(instance, dto))
-        .whereEntity(instance)
-        .returning('*')
-        .execute();
+      // TypeORM does update the instance object in place, therefore we need to
+      // create a detached copy, to be able to check for changes later on.
+      const previousInstance = structuredClone(instance);
 
-      const patchedInstance = getRepository(QuestionnaireInstance).create(
-        updateResult.generatedMaps
-      )[0];
+      const patchedInstance = await this.updateInstance(
+        instance,
+        dto,
+        returnRaw
+      );
 
-      if (updateResult.affected === 0 || !patchedInstance) {
-        throw new Error(
-          `Questionnaire instance with ID "${instance.id}" could not be patched`
-        );
-      }
-
-      await this.sendMessageOnRelease(instance);
+      // At this point, the instance object has been updated.
+      // As updates lead to other fields to change, we use the updated instance object to
+      // 1. check if all conditions for sending messages apply
+      // 2. use the updated instance as the final payload for the messages to be sent
+      await this.sendMessagesOnUpdate(previousInstance, instance);
       await queryRunner.commitTransaction();
 
-      if (
-        returnRaw &&
-        Array.isArray(updateResult.raw) &&
-        updateResult.raw.length === 1
-      ) {
-        result = updateResult.raw[0] as QuestionnaireInstanceDeprecated;
-      } else {
-        result = patchedInstance;
-      }
-
-      return result;
+      return patchedInstance;
     } catch (e: unknown) {
       await queryRunner.rollbackTransaction();
       throw e;
@@ -331,29 +311,23 @@ export class QuestionnaireInstanceService {
 
   public static async updateProgress(
     instance: QuestionnaireInstance
-  ): Promise<QuestionnaireInstanceStatus> {
+  ): Promise<void> {
     const statusesToUpdate: QuestionnaireInstanceStatus[] = [
       'active',
       'in_progress',
     ];
 
-    const status: QueryDeepPartialEntity<QuestionnaireInstance> =
-      statusesToUpdate.includes(instance.status)
-        ? { status: 'in_progress' }
-        : {};
+    const status = statusesToUpdate.includes(instance.status)
+      ? 'in_progress'
+      : null;
+    const progress = await this.calculateProgress(instance);
 
-    const result = await getRepository(QuestionnaireInstance).update(instance, {
-      ...status,
-      progress: await this.calculateProgress(instance),
-    });
-
-    if (result.affected === 0) {
-      throw new Error(
-        `Questionnaire instance with ID "${instance.id}" was not found to update progress and update status`
-      );
+    if (progress != instance.progress) {
+      await this.patchInstance(instance, {
+        ...(status ? { status } : {}),
+        progress,
+      });
     }
-
-    return instance.status;
   }
 
   public static determineReleaseVersion(
@@ -433,6 +407,103 @@ export class QuestionnaireInstanceService {
     return Math.round((answersCompletedCount / answers.length) * 100);
   }
 
+  /**
+   * Does check of the instance
+   */
+  private static async sendMessagesOnUpdate(
+    previousInstance: QuestionnaireInstance,
+    updatedInstance: QuestionnaireInstance
+  ): Promise<void> {
+    const isStatusChanging = previousInstance.status !== updatedInstance.status;
+
+    if (
+      isStatusChanging &&
+      isInstanceWithNarrowedStatus(updatedInstance, ['in_progress'])
+    ) {
+      await messageQueueService.sendQuestionnaireInstanceAnsweringStarted(
+        updatedInstance
+      );
+    }
+
+    if (
+      (isStatusChanging &&
+        isInstanceWithNarrowedStatus(updatedInstance, [
+          'released',
+          'released_once',
+          'released_twice',
+        ])) ||
+      // We also want to send a message on successive releases which are only
+      // indicated by an increased release version in combination with status `released`.
+      (previousInstance.releaseVersion !== updatedInstance.releaseVersion &&
+        isInstanceWithNarrowedStatus(updatedInstance, ['released']))
+    ) {
+      await messageQueueService.sendQuestionnaireInstanceReleased(
+        updatedInstance
+      );
+    }
+  }
+
+  private static async updateInstance(
+    instance: QuestionnaireInstance,
+    dto: PatchQuestionnaireInstanceDto,
+    returnRaw: true
+  ): Promise<QuestionnaireInstanceDeprecated>;
+
+  private static async updateInstance(
+    instance: QuestionnaireInstance,
+    dto: PatchQuestionnaireInstanceDto,
+    returnRaw: false
+  ): Promise<QuestionnaireInstance>;
+
+  // We need this additional overload because TypeScript cannot narrow the union type of returnRaw
+  // when drilling the same argument from the calling function, which also uses overloads.
+  private static async updateInstance(
+    instance: QuestionnaireInstance,
+    dto: PatchQuestionnaireInstanceDto,
+    returnRaw: boolean
+  ): Promise<QuestionnaireInstance | QuestionnaireInstanceDeprecated>;
+
+  private static async updateInstance(
+    instance: QuestionnaireInstance,
+    dto: PatchQuestionnaireInstanceDto,
+    returnRaw = false
+  ): Promise<QuestionnaireInstance | QuestionnaireInstanceDeprecated> {
+    this.validateStatusTransition(instance, dto.status);
+
+    const updateResult = await getRepository(QuestionnaireInstance)
+      .createQueryBuilder()
+      .update(instance)
+      .set(this.getFieldsToUpdateForRelease(instance, dto))
+      .whereEntity(instance)
+      .returning('*')
+      .execute();
+
+    if (updateResult.affected === 0) {
+      throw new Error(
+        `Questionnaire instance with ID "${instance.id}" could not be updated`
+      );
+    }
+
+    if (
+      Array.isArray(updateResult.raw) &&
+      updateResult.raw.length === 1 &&
+      returnRaw
+    ) {
+      return updateResult.raw[0] as QuestionnaireInstanceDeprecated;
+    }
+
+    return instance;
+  }
+
+  private static validateStatusTransition(
+    instance: QuestionnaireInstance,
+    newStatus: QuestionnaireInstanceStatus | undefined
+  ): void {
+    if (newStatus && !this.isAllowedStatusTransition(instance, newStatus)) {
+      throw new InvalidStatusTransitionError(instance.status, newStatus);
+    }
+  }
+
   private static getFieldsToUpdateForRelease(
     instance: Partial<QuestionnaireInstance>,
     dto: PatchQuestionnaireInstanceDto
@@ -454,23 +525,5 @@ export class QuestionnaireInstanceService {
     }
 
     return updatedFields;
-  }
-
-  private static async sendMessageOnRelease(
-    instance: Pick<
-      QuestionnaireInstance,
-      'id' | 'status' | 'releaseVersion' | 'studyId'
-    >
-  ): Promise<void> {
-    const shouldSend = ['released', 'released_once', 'released_twice'].includes(
-      instance.status
-    );
-    if (shouldSend) {
-      await messageQueueService.sendQuestionnaireInstanceReleased(
-        instance.id,
-        instance.releaseVersion ?? 0,
-        instance.studyId
-      );
-    }
   }
 }

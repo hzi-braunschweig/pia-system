@@ -20,6 +20,7 @@ export interface QuestionnaireInternalDto {
     notificationWeekday: Weekday | null;
     notificationInterval: number | null;
     notificationIntervalUnit: string | null;
+    notificationLinkToOverview: boolean;
     activateAtDate: Date | null;
     complianceNeeded: boolean | null;
     expiresAfterDays: number;

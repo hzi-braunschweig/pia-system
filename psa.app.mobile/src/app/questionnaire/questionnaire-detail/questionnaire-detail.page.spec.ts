@@ -71,7 +71,7 @@ describe('QuestionnaireDetailPage', () => {
     questionnnaireClient.getStudy.and.resolveTo(createStudy());
     questionnnaireClient.getAnswers.and.resolveTo(createAnswers());
 
-    TestBed.configureTestingModule({
+    await TestBed.configureTestingModule({
       declarations: [
         QuestionnaireDetailPage,
         MockPipe(TranslatePipe),
@@ -410,6 +410,7 @@ function createQuestionnaireInstance(): QuestionnaireInstance {
     study_id: 'Staff Test',
     questionnaire_id: 528,
     questionnaire_name: 'Required Validierung',
+    sort_order: null,
     user_id: 'Rtest-2264859154',
     date_of_issue: '2021-10-21T00:00:00.000Z',
     date_of_release_v1: null,

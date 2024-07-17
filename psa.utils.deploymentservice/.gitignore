@@ -1,5 +1,0 @@
-node_modules/
-export.sql
-dist/
-tests/reports/
-.nyc_output/

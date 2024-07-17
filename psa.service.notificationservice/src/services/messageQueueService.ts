@@ -7,10 +7,6 @@
 import { MessageQueueClient, MessageQueueTopic } from '@pia/lib-messagequeue';
 import { config } from '../config';
 import * as postgresqlHelper from './postgresqlHelper';
-import {
-  MessagePayloadProbandDeactivated,
-  MessagePayloadProbandDeleted,
-} from '../models/messagePayloads';
 
 export class MessageQueueService extends MessageQueueClient {
   public static async onProbandDeactivated(pseudonym: string): Promise<void> {
@@ -26,13 +22,13 @@ export class MessageQueueService extends MessageQueueClient {
 
     await this.createConsumer(
       MessageQueueTopic.PROBAND_DEACTIVATED,
-      async (message: MessagePayloadProbandDeactivated) =>
+      async (message) =>
         await MessageQueueService.onProbandDeactivated(message.pseudonym)
     );
 
     await this.createConsumer(
       MessageQueueTopic.PROBAND_DELETED,
-      async (message: MessagePayloadProbandDeleted) =>
+      async (message) =>
         await MessageQueueService.onProbandDeleted(message.pseudonym)
     );
   }

@@ -22,6 +22,7 @@ export interface QuestionnaireInstance {
   questionnaire_id: number;
   questionnaire_name: string;
   questionnaire_version: number;
+  sort_order: number | null;
   no_questions: number;
   no_answers: number;
   user_id: string;

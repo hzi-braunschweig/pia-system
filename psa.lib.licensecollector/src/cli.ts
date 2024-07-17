@@ -114,10 +114,14 @@ class Program {
         '################################################################################\n' +
         `# ${license.packageName} (${license.licenses.toString()})${repo}\n` +
         '################################################################################\n\n' +
-        `${license.licenseText}` +
+        `${this.removeCarriageReturns(license.licenseText)}` +
         '\n\n';
     }
     return thirdPartyLicenses;
+  }
+
+  private static removeCarriageReturns(licenseText: string): string {
+    return licenseText.replace(/\r/g, '');
   }
 }
 

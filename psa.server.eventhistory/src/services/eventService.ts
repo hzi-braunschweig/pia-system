@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Event, EventEntity } from '../entity/event';
+import { Event } from '../entity/event';
 import { EventRepository } from '../repositories/eventRepository';
 import { EventType } from '../events';
 import { DeepPartial } from 'typeorm';
@@ -15,10 +15,8 @@ export class EventService {
     from?: Date;
     to?: Date;
     type?: EventType;
-  }): Promise<EventEntity[]> {
-    return (await EventRepository.findByFilter(
-      filter
-    )) as unknown as EventEntity[];
+  }): Promise<Event[]> {
+    return (await EventRepository.findByFilter(filter)) as unknown as Event[];
   }
 
   public static async saveEvent(event: DeepPartial<Event>): Promise<Event> {

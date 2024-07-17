@@ -16,7 +16,7 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "es2020",
-    "lib": ["ES2022", "dom", "dom.iterable"],
+    "lib": ["ES2023", "dom", "dom.iterable"],
     "paths": {
       "swiper_angular": ["node_modules/swiper/angular"]
     },

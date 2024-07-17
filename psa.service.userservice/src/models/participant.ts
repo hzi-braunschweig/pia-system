@@ -4,19 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { Pseudonym } from '@pia/lib-publicapi';
 import { AccountStatus } from './accountStatus';
-
-/**
- * The pseudonym is the unique identifier of a participant.
- * It consists of a prefix and a suffix. The prefix maps
- * to exactly one study. The suffix consists only of integers
- * and is unique within the study. There is no specific
- * limitation for the length of the prefix and the suffix.
- *
- * @pattern ^[a-z]+-[0-9]+$
- * @example "abcd-1234"
- */
-export type Pseudonym = string;
 
 /**
  * The participant's status within the study

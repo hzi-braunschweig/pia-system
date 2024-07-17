@@ -50,21 +50,21 @@ export class MessageQueueService extends MessageQueueClient {
 
     await this.createConsumer(
       MessageQueueTopic.COMPLIANCE_CREATED,
-      async (message: ComplianceCreatedMessage) => {
+      async (message) => {
         await MessageQueueService.onComplianceCreated(message);
       }
     );
 
     await this.createConsumer(
       MessageQueueTopic.PROBAND_DELETED,
-      async (message: ProbandDeletedMessage) => {
+      async (message) => {
         await MessageQueueService.onProbandDeleted(message);
       }
     );
 
     await this.createConsumer(
       MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
-      async (message: QuestionnaireInstanceReleasedMessage) => {
+      async (message) => {
         await MessageQueueService.onQuestionnaireInstanceReleased(message);
       }
     );

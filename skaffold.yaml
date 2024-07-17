@@ -134,12 +134,6 @@ build:
         dockerfile: psa.service.userservice/Dockerfile
         buildArgs:
           DIR: psa.service.userservice
-    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.utils.deploymentservice
-      context: .
-      docker:
-        dockerfile: psa.utils.deploymentservice/Dockerfile
-        buildArgs:
-          DIR: psa.utils.deploymentservice
     - image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.publicapi
       context: .
       docker:

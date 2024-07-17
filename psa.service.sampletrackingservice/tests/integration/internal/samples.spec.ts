@@ -261,7 +261,7 @@ describe('/study/{studyName}/participants/{pseudonym}/samples', () => {
           error: getReasonPhrase(expectedStatusCode),
           statusCode: expectedStatusCode,
           message:
-            "Payload is invalid:\npseudonym: INVALID_PSEUDONYM --> Not match in '^[a-z]+-[0-9]+$'",
+            "Payload is invalid:\npseudonym: INVALID_PSEUDONYM --> Not match in '^[a-z0-9]+-[0-9]+$'",
         });
       });
 

@@ -19,7 +19,10 @@ export class ProxyOnMessageError extends Error {
 export class PseudonymInKeycloakEventNotFound extends Error {}
 
 export class StudyOfParticipantNotFound extends Error {
-  public constructor(public readonly pseudonym: string) {
-    super(`Study of participant not found: ${pseudonym}`);
+  public constructor(
+    public readonly pseudonym: string,
+    public readonly reason: 'UserNotPresent' | 'GroupNotPresent'
+  ) {
+    super(`Study of participant not found: ${pseudonym} (${reason})`);
   }
 }

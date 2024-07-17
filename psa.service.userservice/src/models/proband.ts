@@ -8,6 +8,7 @@ import { Proband } from '../entities/proband';
 import { ExternalCompliance } from './externalCompliance';
 import { AccountStatus } from './accountStatus';
 import { ProbandStatus } from './probandStatus';
+import { PersonalDataInternalDtoGet } from '@pia-system/lib-http-clients-internal';
 
 // Create Proband
 
@@ -80,3 +81,13 @@ export function isProbandStatusPatch(
   const patch = check as Partial<ProbandStatusPatch>;
   return typeof check === 'object' && typeof patch.status === 'string';
 }
+
+export type ProbandDataForExportDto = ProbandDto &
+  Partial<PersonalDataInternalDtoGet> &
+  Partial<{
+    pending_compliance_change_labresults_to: boolean;
+    pending_compliance_change_samples_to: boolean;
+    pending_compliance_change_bloodsamples_to: boolean;
+    pending_personal_data_deletion: boolean;
+    pending_proband_deletion: boolean;
+  }>;

@@ -291,7 +291,7 @@ describe('/admin/studies/{studyName}/probands|probandsIDS', () => {
       const pseudonym = 'qtest-proband_new1';
       const studyName = 'QTestStudy1';
       const probandCreated =
-        MessageQueueTestUtils.injectMessageProcessedAwaiter<ProbandCreatedMessage>(
+        MessageQueueTestUtils.injectMessageProcessedAwaiter(
           mqc,
           MessageQueueTopic.PROBAND_CREATED,
           testSandbox
@@ -510,7 +510,7 @@ describe('/admin/studies/{studyName}/probands|probandsIDS', () => {
       };
 
       const probandCreated =
-        MessageQueueTestUtils.injectMessageProcessedAwaiter<ProbandCreatedMessage>(
+        MessageQueueTestUtils.injectMessageProcessedAwaiter(
           mqc,
           MessageQueueTopic.PROBAND_CREATED,
           testSandbox

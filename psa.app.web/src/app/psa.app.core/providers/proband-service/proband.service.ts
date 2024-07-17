@@ -11,6 +11,7 @@ import { PendingComplianceChange } from '../../models/pendingComplianceChange';
 import { PendingProbandDeletion } from '../../models/pendingDeletion';
 import { ProbandToContact } from '../../models/probandToContact';
 import { map } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class ProbandService {
@@ -54,6 +55,19 @@ export class ProbandService {
     return this.http
       .get<Proband[]>(`${this.apiUrl}studies/${studyName}/probands`)
       .toPromise();
+  }
+
+  /**
+   * Get a zip containing the idat of all probands of a study
+   */
+  public getProbandsExport(
+    studyName: string
+  ): Promise<{ probandsExport: string }> {
+    return firstValueFrom(
+      this.http.get<{ probandsExport: string }>(
+        `${this.apiUrl}studies/${studyName}/probands/export`
+      )
+    );
   }
 
   /**

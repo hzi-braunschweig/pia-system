@@ -1,12 +1,18 @@
 INSERT INTO studies (name, description, status, has_answers_notify_feature, has_answers_notify_feature_by_mail,
                      pm_email, hub_email)
-VALUES ('ApiTestStudie', 'ApiTestStudie Beschreibung', 'active', true, true, 'pm@pia.test', 'hub@pia.test');
+VALUES ('ApiTestStudie', 'ApiTestStudie Beschreibung', 'active', true, true, 'never@used.local', 'never@used.local'),
+       ('DailyAggEmail', 'Study does triggers statistic email', 'active', true, true, 'pm@pia.test',
+        'hub@pia.test');
 
 INSERT INTO probands (pseudonym, study, compliance_labresults)
-VALUES ('qtest-proband1', 'ApiTesStudie', TRUE),
-       ('qtest-proband2', 'ApiTesStudie', TRUE),
-       ('qtest-proband3', 'ApiTesStudie', TRUE),
-       ('qtest-proband4', 'ApiTesStudie', TRUE);
+VALUES ('qtest-proband1', 'ApiTesStudie', true),
+       ('qtest-proband2', 'ApiTesStudie', true),
+       ('qtest-proband3', 'ApiTesStudie', true),
+       ('qtest-proband4', 'ApiTesStudie', true),
+       ('agg-001', 'Daily Aggregator Email Study', false),
+       ('agg-002', 'Daily Aggregator Email Study', false),
+       ('agg-003', 'Daily Aggregator Email Study', false)
+;
 
 INSERT INTO fcm_tokens (pseudonym, token, study)
 VALUES ('qtest-proband1', 'testtoken-1', 'ApiTestStudie'),
@@ -18,40 +24,12 @@ INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycl
                             notification_body_in_progress, notification_weekday, notification_interval,
                             notification_interval_unit, activate_at_date, compliance_needed, notify_when_not_filled,
                             notify_when_not_filled_time, notify_when_not_filled_day)
-VALUES (99998,
-        'ApiTestStudie',
-        'ApiTestQuestionnaire 2',
-        2,
-        1,
-        'spontan',
-        1,
-        365,
-        3,
-        'PIA Fragebogen',
-        'NeuNachricht',
-        'AltNachricht',
-        null,
-        null,
-        null,
-        null,
-        true, true, '00:00', 0),
-       (99999,
-        'ApiTestStudie',
-        'ApiTestQuestionnaire',
-        2,
-        1,
-        'week',
-        1,
-        365,
-        3,
-        'PIA Fragebogen',
-        'NeuNachricht',
-        'AltNachricht',
-        null,
-        null,
-        null,
-        null,
-        true, true, '00:00', 0);
+VALUES (99998, 'ApiTestStudie', 'ApiTestQuestionnaire 2', 2, 1, 'spontan', 1, 365, 3, 'PIA Fragebogen', 'NeuNachricht',
+        'AltNachricht', null, null, null, null, true, true, '00:00', 0),
+       (99999, 'ApiTestStudie', 'ApiTestQuestionnaire', 2, 1, 'week', 1, 365, 3, 'PIA Fragebogen', 'NeuNachricht',
+        'AltNachricht', null, null, null, null, true, true, '00:00', 0),
+       (1000, 'DailyAggEmail', 'DailyAggEmailQuestionnaire', 2, 1, 'week', 1, 365, 3, 'PIA Fragebogen', 'NeuNachricht',
+        'AltNachricht', null, null, null, null, true, true, '00:00', 0);
 
 INSERT INTO questions (id, questionnaire_id, text, position, is_mandatory)
 VALUES (99991, 99999, 'Haben Sie Fieber?', 1, true),
@@ -74,36 +52,21 @@ VALUES (99991, 99991, '', 1, '{true, false, false}', '{"Ja", "Nein", "Keine Anga
 
 INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue,
                                      date_of_release_v1, date_of_release_v2, cycle, status)
-VALUES (9999996,
-        'ApiTestStudie',
-        99999,
-        'ApiTestQuestionnaire',
-        'qtest-proband1',
-        '08.08.2017',
-        null,
-        null,
-        1,
+VALUES (9999996, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'qtest-proband1', '08.08.2017', null, null, 1,
         'active'),
-       (9999997,
-        'ApiTestStudie',
-        99999,
-        'ApiTestQuestionnaire',
-        'qtest-proband1',
-        '08.08.2017',
-        null,
-        null,
-        1,
+       (9999997, 'ApiTestStudie', 99999, 'ApiTestQuestionnaire', 'qtest-proband1', '08.08.2017', null, null, 1,
         'in_progress'),
-       (9999998,
-        'ApiTestStudie',
-        99998,
-        'ApiTestQuestionnaire',
-        'qtest-proband1',
-        '01.08.2017',
-        '06.08.2017',
-        null,
-        2,
-        'released_once');
+       (9999998, 'ApiTestStudie', 99998, 'ApiTestQuestionnaire', 'qtest-proband1', '01.08.2017', '06.08.2017', null, 2,
+        'released_once'),
+       (1001, 'DailyAggEmail', 1000, 'DailyAggEmailQuestionnaire', 'agg-001', '01.08.2017', '06.08.2017', null, 2,
+        'released_once'),
+       (1002, 'DailyAggEmail', 1000, 'DailyAggEmailQuestionnaire', 'agg-002', '01.08.2017', '06.08.2017', null, 2,
+        'released_once'),
+       (1003, 'DailyAggEmail', 1000, 'DailyAggEmailQuestionnaire', 'agg-003', '01.08.2017', '06.08.2017', null, 2,
+        'released_once'),
+       (1004, 'DailyAggEmail', 1000, 'DailyAggEmailQuestionnaire', 'agg-004', '01.08.2017', '06.08.2017', null, 2,
+        'released_once')
+;
 
 INSERT INTO conditions (id, condition_type, condition_answer_option_id, condition_question_id,
                         condition_questionnaire_id,
@@ -131,8 +94,8 @@ INSERT INTO notification_schedules
 VALUES (99996, 'qtest-proband1', '2019-07-09 09:56:00', 'qReminder', 99995, null, null),
        (99997, 'qtest-proband1', '2019-07-09 09:56:00', 'qReminder', 9999996, null, null),
        (99998, 'qtest-proband1', '2019-07-09 09:56:00', 'sample', 'LAB_RESULT-9999999999', null, null),
-       (99999, 'qtest-proband1', '2019-07-09 09:56:00', 'custom', '', 'I am custom title', 'Here is custom body'),
-       (99991, 'qtest-proband1', '2019-07-09 09:56:00', 'questionnaires_stats_aggregator', '', 'I am custom title', 'Here is custom body');
+       (99999, 'qtest-proband1', '2019-07-09 09:56:00', 'custom', '', 'I am a custom title', E'Here is\ncustom body'),
+       (99991, 'qtest-proband1', '2019-07-09 09:56:00', 'questionnaires_stats_aggregator', 'test@example.local', 'Questionnaire stats aggregator', E'Statistics for\na questionnaire');
 
 INSERT INTO lab_results (id, user_id, order_id, date_of_sampling, status, remark, new_samples_sent, performing_doctor,
                          dummy_sample_id)
@@ -145,4 +108,11 @@ VALUES ('LAB_RESULT-9999999999',
         false,
         'Dr. House',
         null);
+
+INSERT INTO users_to_contact (user_id, created_at, not_filledout_questionnaire_instances,
+                              notable_answer_questionnaire_instances)
+VALUES ('agg-001', now(), '{1001}', '{1001}'),
+       ('agg-002', now(), '{1002}', '{}'),
+       ('agg-003', now(), '{1003}', '{1003}')
+;
 

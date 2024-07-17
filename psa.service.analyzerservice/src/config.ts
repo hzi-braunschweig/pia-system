@@ -15,8 +15,9 @@ const conf = {
   database: GlobalConfig.getQPia(),
   isTestMode: ConfigUtils.getEnvVariable('IS_TEST_MODE', 'false') === 'true',
   timeZone: GlobalConfig.timeZone,
+  // the configured time is relative to the configured timezone
   notificationTime: {
-    hours: 8, // in the time zone configured above
+    hours: 8,
     minutes: 0,
   },
   servers: {

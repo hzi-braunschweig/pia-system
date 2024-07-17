@@ -18,6 +18,7 @@ import { Compliance, ComplianceText, sequelize } from '../../src/db';
 import { messageQueueService } from '../../src/services/messageQueueService';
 import { config } from '../../src/config';
 import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
+import { MessageQueueTopic } from '@pia/lib-messagequeue';
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -147,8 +148,8 @@ describe('Compliance API with MessageQueue', () => {
     it('should return http 200 and update if compliance_text exists', async () => {
       let pseudonym: string | undefined;
       await messageQueueService.createConsumer(
-        'compliance.created',
-        async (message: { pseudonym: string }) => {
+        MessageQueueTopic.COMPLIANCE_CREATED,
+        async (message) => {
           pseudonym = message.pseudonym;
           return Promise.resolve();
         }
@@ -175,10 +176,10 @@ describe('Compliance API with MessageQueue', () => {
           study: 'QTeststudie1',
         },
       });
-      expect(new Date(complDb.timestamp as Date).getTime()).to.be.greaterThan(
+      expect(new Date(complDb?.timestamp as Date).getTime()).to.be.greaterThan(
         now - 1
       );
-      expect(complDb.complianceText).to.equal(compl.complianceText);
+      expect(complDb?.complianceText).to.equal(compl.complianceText);
 
       while (pseudonym !== 'qtest-proband1') {
         await delay(DELAY_TIME);

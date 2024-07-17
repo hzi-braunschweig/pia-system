@@ -41,6 +41,7 @@ import { DialogYesNoComponent } from '../../../dialogs/dialog-yes-no/dialog-yes-
 import { filter } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 import { DatePipe } from '@angular/common';
+import { FileDownloadService } from 'src/app/_services/file-download.service';
 
 export interface DialogChangeComplianceData {
   has_four_eyes_opposition: boolean;
@@ -111,7 +112,8 @@ export class ProbandsPersonalInfoComponent implements OnInit {
     private activatedRoute: ActivatedRoute,
     private accountStatusPipe: AccountStatusPipe,
     private translate: TranslateService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private fileDownloadService: FileDownloadService
   ) {
     const probandIdToDelete =
       this.activatedRoute.snapshot.queryParamMap.get('probandIdToDelete');
@@ -738,6 +740,28 @@ export class ProbandsPersonalInfoComponent implements OnInit {
 
   public viewQuestionnaireInstancesForUser(pseudonym: string): void {
     void this.router.navigate(['/questionnaireInstances/', pseudonym]);
+  }
+
+  public async downloadProbandsOfStudy() {
+    if (!this.currentStudy) {
+      throw new Error('No study selected');
+    }
+
+    this.isLoading = true;
+
+    try {
+      const response = await this.probandService.getProbandsExport(
+        this.currentStudy.name
+      );
+
+      this.fileDownloadService.downloadCsv(
+        response.probandsExport,
+        'probands.csv'
+      );
+    } catch (e) {
+      this.alertService.errorObject(e);
+    }
+    this.isLoading = false;
   }
 
   private showResultDialog(data): void {

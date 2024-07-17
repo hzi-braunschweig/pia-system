@@ -86,94 +86,100 @@
     </mat-card-actions>
   </mat-card>
 
-  <mat-card class="probands-container">
+  <mat-card class="container">
     <mat-card-content>
-      <mat-table
+      <table
         #table
         [dataSource]="dataSource"
+        mat-table
         matSortActive="username"
         matSortDirection="asc"
         matSort
       >
         <!-- Checkbox Column -->
         <ng-container matColumnDef="select">
-          <mat-header-cell *matHeaderCellDef>
+          <th mat-header-cell *matHeaderCellDef>
             <mat-checkbox
               (change)="$event ? masterToggle() : null"
               [checked]="selection.hasValue() && isAllSelected()"
               [indeterminate]="selection.hasValue() && !isAllSelected()"
             >
             </mat-checkbox>
-          </mat-header-cell>
-          <mat-cell *matCellDef="let row" class="select-column">
+          </th>
+          <td mat-cell *matCellDef="let row" class="select-column">
             <mat-checkbox
               (click)="$event.stopPropagation()"
               (change)="$event ? selection.toggle(row) : null"
               [checked]="selection.isSelected(row)"
             >
             </mat-checkbox>
-          </mat-cell>
+          </td>
         </ng-container>
 
         <!-- L3 Needs Material Column -->
-        <ng-container matColumnDef="needs_material" matSortStart>
-          <mat-header-cell
-            *matHeaderCellDef
-            mat-sort-header
-            class="material-column"
-          ></mat-header-cell>
-          <mat-cell *matCellDef="let row">
+        <ng-container matColumnDef="needs_material">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
             <mat-icon class="needs-material-icon">priority_high</mat-icon>
-          </mat-cell>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            @if (row.needs_material) {
+            <mat-icon
+              class="needs-material-icon"
+              data-unit="needs-material-indicator"
+            >
+              priority_high
+            </mat-icon>
+            }
+          </td>
         </ng-container>
 
         <!-- L3 Pseudonym Column -->
         <ng-container matColumnDef="username">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
             {{ 'SAMPLE_MANAGEMENT.L3_PSEUDONYM' | translate }}
-          </mat-header-cell>
-          <mat-cell *matCellDef="let row"> {{ row.username }}</mat-cell>
+          </th>
+          <td mat-cell *matCellDef="let row">{{ row.username }}</td>
         </ng-container>
 
         <!-- IDS Column -->
         <ng-container matColumnDef="ids">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
             {{ 'SAMPLE_MANAGEMENT.IDS' | translate }}
-          </mat-header-cell>
-          <mat-cell *matCellDef="let row"> {{ row.ids }}</mat-cell>
+          </th>
+          <td mat-cell *matCellDef="let row">{{ row.ids }}</td>
         </ng-container>
 
         <!-- Lastname Column -->
         <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
             {{ 'SAMPLE_MANAGEMENT.NACHNAME' | translate }}
-          </mat-header-cell>
-          <mat-cell *matCellDef="let row"> {{ row.name }}</mat-cell>
+          </th>
+          <td mat-cell *matCellDef="let row">{{ row.name }}</td>
         </ng-container>
 
         <!-- Firstname Column -->
         <ng-container matColumnDef="vorname">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
             {{ 'SAMPLE_MANAGEMENT.VORNAME' | translate }}
-          </mat-header-cell>
-          <mat-cell *matCellDef="let row"> {{ row.vorname }}</mat-cell>
+          </th>
+          <td mat-cell *matCellDef="let row">{{ row.vorname }}</td>
         </ng-container>
 
         <!-- Status Column -->
         <ng-container matColumnDef="status">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
             {{ 'PROBANDEN.ACCOUNT_STATUS' | translate }}
-          </mat-header-cell>
-          <mat-cell *matCellDef="let row">
+          </th>
+          <td mat-cell *matCellDef="let row">
             {{ row.status | translate }}
-          </mat-cell>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="view">
-          <mat-header-cell *matHeaderCellDef>
+          <th mat-header-cell *matHeaderCellDef>
             {{ 'SAMPLE_MANAGEMENT.DETAILS' | translate }}
-          </mat-header-cell>
-          <mat-cell *matCellDef="let row">
+          </th>
+          <td mat-cell *matCellDef="let row">
             <button
               id="viewicon"
               #view
@@ -188,12 +194,12 @@
             >
               <mat-icon>visibility</mat-icon>
             </button>
-          </mat-cell>
+          </td>
         </ng-container>
 
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
-      </mat-table>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
 
       <mat-paginator
         #paginator

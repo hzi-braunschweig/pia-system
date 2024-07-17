@@ -6,7 +6,7 @@
 
 <app-loading-spinner cover="true" *ngIf="isLoading"></app-loading-spinner>
 
-<div class="jumbotron" [ngStyle]="responsiveColumns">
+<div class="jumbotron">
   <div *ngIf="myForm" class="space-y">
     <ngx-material-timepicker
       #picker
@@ -75,6 +75,17 @@
             </mat-form-field>
             <mat-form-field>
               <mat-label
+                >{{ 'QUESTIONNAIRE_FORSCHER.SORT_ORDER' | translate }}
+              </mat-label>
+              <input
+                matInput
+                type="number"
+                formControlName="sort_order"
+                data-e2e="e2e-questionnaire-sort-order-input"
+              />
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label
                 >{{
                   'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_CUSTOM_NAME' | translate
                 }}
@@ -134,37 +145,23 @@
           </div>
         </mat-card-content>
       </mat-card>
-      <mat-card class="utility-card questionnaire-card">
-        <mat-card-content class="space-y">
-          <div class="grid-container">
+
+      <!-- questionnaire cycle and visbility -->
+      <mat-card class="utility-card space-y">
+        <mat-card-header>
+          <mat-card-title class="card-title">
+            {{ 'QUESTIONNAIRE_FORSCHER.SETTINGS' | translate }}
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="grid-container" style="--grid-template-columns-repeat: 1">
             <ng-container
               *ngIf="myForm.controls['type'].value != 'for_research_team'"
-              class="not-research-team"
             >
-              <div class="double-input">
-                <mat-form-field
-                  *ngIf="
-                    myForm.controls['cycle_unit'].value != 'once' &&
-                    myForm.controls['cycle_unit'].value != 'date' &&
-                    myForm.controls['cycle_unit'].value != 'spontan'
-                  "
-                >
-                  <mat-label
-                    >{{ 'QUESTIONNAIRE_FORSCHER.CYCLE_AMOUNT' | translate }}
-                  </mat-label>
-                  <input
-                    id="cycleamountinput"
-                    matInput
-                    (keyup)="setDeactivateMinDays()"
-                    type="number"
-                    formControlName="cycle_amount"
-                  />
-                  <mat-error
-                    *ngIf="myForm.controls['cycle_amount'].hasError('min')"
-                  >
-                    {{ 'QUESTIONNAIRE_FORSCHER.JUMP_STEP_MIN' | translate }}
-                  </mat-error>
-                </mat-form-field>
+              <div
+                class="grid-container responsive"
+                style="--grid-template-columns-repeat: 4"
+              >
                 <mat-form-field>
                   <mat-label
                     >{{ 'QUESTIONNAIRE_FORSCHER.CYCLE_UNIT' | translate }}
@@ -190,501 +187,301 @@
                     {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
                   </mat-error>
                 </mat-form-field>
-              </div>
-
-              <!-- cycle per day and start hour controls, only if cycle_unit=hour -->
-              <div
-                *ngIf="myForm.controls['cycle_unit'].value == 'hour'"
-                class="double-input"
-              >
-                <mat-form-field>
-                  <mat-label
-                    >{{ 'QUESTIONNAIRE_FORSCHER.CYCLE_PER_DAY' | translate }}
-                  </mat-label>
-                  <mat-select
-                    disableOptionCentering
-                    formControlName="cycle_per_day"
-                  >
-                    <mat-option
-                      data-e2e="option"
-                      *ngFor="let hour of hoursPerDay"
-                      [value]="hour"
-                    >
-                      {{ hour }}
-                    </mat-option>
-                  </mat-select>
-                  <mat-error
-                    *ngIf="
-                      myForm.controls['cycle_per_day'].hasError('required')
-                    "
-                  >
-                    {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
-                  </mat-error>
-                </mat-form-field>
-                <mat-form-field>
-                  <mat-label
-                    >{{ 'QUESTIONNAIRE_FORSCHER.CYCLE_FIRST_HOUR' | translate }}
-                  </mat-label>
-                  <mat-select
-                    disableOptionCentering
-                    formControlName="cycle_first_hour"
-                  >
-                    <mat-option
-                      *ngFor="let hourOfDay of hoursOfDay"
-                      [value]="hourOfDay.value"
-                      data-e2e="option"
-                    >
-                      {{ hourOfDay.viewValue }}
-                      {{ 'QUESTIONNAIRE_FORSCHER.O_CLOCK' | translate }}
-                    </mat-option>
-                  </mat-select>
-                  <mat-error
-                    *ngIf="
-                      myForm.controls['cycle_first_hour'].hasError('required')
-                    "
-                  >
-                    {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
-                  </mat-error>
-                </mat-form-field>
-              </div>
-
-              <mat-form-field
-                *ngIf="myForm.controls['cycle_unit'].value == 'date'"
-              >
-                <mat-label
-                  >{{ 'QUESTIONNAIRE_FORSCHER.DATEPICKER' | translate }}
-                </mat-label>
-                <input
-                  formControlName="activate_at_date"
-                  matInput
-                  [matDatepicker]="picker"
-                  (dateChange)="onDateChange($event)"
-                  [readonly]="true"
-                />
-                <mat-datepicker-toggle
-                  matSuffix
-                  [for]="picker"
-                ></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-                <mat-error
-                  *ngIf="
-                    myForm.controls['activate_at_date'].hasError('required')
-                  "
-                >
-                  {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
-                </mat-error>
-              </mat-form-field>
-
-              <mat-form-field
-                *ngIf="myForm.controls['cycle_unit'].value != 'date'"
-              >
-                <mat-label
-                  >{{
-                    'QUESTIONNAIRE_FORSCHER.ACTIVATE_AFTER_DAYS' | translate
-                  }}
-                </mat-label>
-                <input
-                  id="activateafterdaysinput"
-                  matInput
-                  type="number"
-                  formControlName="activate_after_days"
-                  data-e2e="e2e-activate-after-days-input"
-                />
-                <mat-error
-                  *ngIf="
-                    myForm.controls['activate_after_days'].hasError('required')
-                  "
-                >
-                  {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
-                </mat-error>
-                <mat-error
-                  *ngIf="myForm.controls['activate_after_days'].hasError('min')"
-                >
-                  {{
-                    'QUESTIONNAIRE_FORSCHER.ACTIVATE_AFTER_DAYS_MIN' | translate
-                  }}
-                </mat-error>
-              </mat-form-field>
-
-              <mat-form-field
-                *ngIf="
-                  myForm.controls['cycle_unit'].value != 'once' &&
-                  myForm.controls['cycle_unit'].value != 'date' &&
-                  myForm.controls['cycle_unit'].value != 'spontan'
-                "
-              >
-                <mat-label
-                  >{{
-                    'QUESTIONNAIRE_FORSCHER.DEACTIVATE_AFTER_DAYS' | translate
-                  }}
-                </mat-label>
-                <input
-                  id="deactivateafterdaysinput"
-                  matInput
-                  type="number"
-                  formControlName="deactivate_after_days"
-                />
-                <mat-error
-                  *ngIf="
-                    myForm.controls['deactivate_after_days'].hasError(
-                      'required'
-                    )
-                  "
-                >
-                  {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
-                </mat-error>
-                <mat-error
-                  *ngIf="
-                    myForm.controls['deactivate_after_days'].hasError('min')
-                  "
-                >
-                  {{
-                    'QUESTIONNAIRE_FORSCHER.DEACTIVE_AFTER_DAYS_MIN'
-                      | translate: translationData
-                  }}
-                </mat-error>
-              </mat-form-field>
-              <mat-error
-                *ngIf="myForm.hasError('questionnaireInstanceCount')"
-                class="error-outside-of-form-field"
-              >
-                {{
-                  'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_INSTANCE_COUNT_ERROR'
-                    | translate: translationData
-                }}
-              </mat-error>
-
-              <mat-form-field
-                *ngIf="myForm.controls['cycle_unit'].value != 'spontan'"
-              >
-                <mat-label
-                  >{{ 'QUESTIONNAIRE_FORSCHER.EXPIRES_AFTER_DAYS' | translate }}
-                </mat-label>
-                <input
-                  id="expires_after_days"
-                  matInput
-                  type="number"
-                  formControlName="expires_after_days"
-                />
-                <mat-error
-                  *ngIf="
-                    myForm.controls['expires_after_days'].hasError('required')
-                  "
-                >
-                  {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
-                </mat-error>
-                <mat-error
-                  *ngIf="myForm.controls['expires_after_days'].hasError('min')"
-                >
-                  {{
-                    'QUESTIONNAIRE_FORSCHER.EXPIRES_AFTER_DAYS_MIN' | translate
-                  }}
-                </mat-error>
-              </mat-form-field>
-
-              <mat-form-field>
-                <mat-label
-                  >{{
-                    'QUESTIONNAIRE_FORSCHER.FINALISES_AFTER_DAYS' | translate
-                  }}
-                </mat-label>
-                <input
-                  id="finalises_after_days"
-                  matInput
-                  type="number"
-                  formControlName="finalises_after_days"
-                />
-                <mat-error
-                  *ngIf="
-                    myForm.controls['finalises_after_days'].hasError('required')
-                  "
-                >
-                  {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
-                </mat-error>
-                <mat-error
-                  *ngIf="
-                    myForm.controls['finalises_after_days'].hasError('min')
-                  "
-                >
-                  {{
-                    'QUESTIONNAIRE_FORSCHER.FINALISES_AFTER_DAYS_MIN'
-                      | translate
-                  }}
-                </mat-error>
-              </mat-form-field>
-
-              <ng-container
-                *ngIf="myForm.controls['cycle_unit'].value != 'spontan'"
-              >
-                <mat-form-field>
-                  <mat-label
-                    >{{
-                      'QUESTIONNAIRE_FORSCHER.NOTIFICATION_TRIES' | translate
-                    }}
-                  </mat-label>
-                  <input
-                    id="notification_tries"
-                    matInput
-                    type="number"
-                    min="0"
-                    (click)="setNotificationControls()"
-                    (keyup)="setNotificationControls()"
-                    formControlName="notification_tries"
-                    data-e2e="e2e-notification-tries"
-                  />
-                  <mat-error
-                    *ngIf="
-                      myForm.controls['notification_tries'].hasError('required')
-                    "
-                  >
-                    {{
-                      'QUESTIONNAIRE_FORSCHER.NOTIFICATION_TRIES_REQUIRED'
-                        | translate
-                    }}
-                  </mat-error>
-                </mat-form-field>
-
-                <!-- notification weekday -->
                 <mat-form-field
                   *ngIf="
-                    myForm.controls['notification_tries'].value > 0 &&
-                    (myForm.controls['cycle_unit'].value == 'week' ||
-                      myForm.controls['cycle_unit'].value == 'month')
+                    myForm.controls['cycle_unit'].value != 'once' &&
+                    myForm.controls['cycle_unit'].value != 'date' &&
+                    myForm.controls['cycle_unit'].value != 'spontan'
                   "
                 >
                   <mat-label
-                    >{{ 'QUESTIONNAIRE_FORSCHER.NOTIFICATION_DAY' | translate }}
+                    >{{ 'QUESTIONNAIRE_FORSCHER.CYCLE_AMOUNT' | translate }}
                   </mat-label>
-                  <mat-select
-                    disableOptionCentering
-                    id="notification_weekday"
+                  <input
+                    id="cycleamountinput"
                     matInput
-                    formControlName="notification_weekday"
-                    [(value)]="selectedWeekday"
+                    (keyup)="setDeactivateMinDays()"
+                    type="number"
+                    formControlName="cycle_amount"
+                  />
+                  <mat-error
+                    *ngIf="myForm.controls['cycle_amount'].hasError('min')"
                   >
-                    <mat-option data-e2e="option" value="monday"
-                      >{{ 'QUESTIONNAIRE_FORSCHER.MONDAY' | translate }}
-                    </mat-option>
-                    <mat-option data-e2e="option" value="tuesday"
-                      >{{ 'QUESTIONNAIRE_FORSCHER.TUESDAY' | translate }}
-                    </mat-option>
-                    <mat-option data-e2e="option" value="wednesday"
-                      >{{ 'QUESTIONNAIRE_FORSCHER.WEDNESDAY' | translate }}
-                    </mat-option>
-                    <mat-option data-e2e="option" value="thursday"
-                      >{{ 'QUESTIONNAIRE_FORSCHER.THURSDAY' | translate }}
-                    </mat-option>
-                    <mat-option data-e2e="option" value="friday"
-                      >{{ 'QUESTIONNAIRE_FORSCHER.FRIDAY' | translate }}
-                    </mat-option>
-                    <mat-option data-e2e="option" value="saturday"
-                      >{{ 'QUESTIONNAIRE_FORSCHER.SATURDAY' | translate }}
-                    </mat-option>
-                    <mat-option data-e2e="option" value="sunday"
-                      >{{ 'QUESTIONNAIRE_FORSCHER.SUNDAY' | translate }}
-                    </mat-option>
-
-                    <mat-error
-                      *ngIf="
-                        myForm.controls['notification_weekday'].hasError(
-                          'required'
-                        )
-                      "
-                    >
-                      {{
-                        'QUESTIONNAIRE_FORSCHER.NOTIFICATION_WEEKDAY_REQUIRED'
-                          | translate
-                      }}
-                    </mat-error>
-                  </mat-select>
+                    {{ 'QUESTIONNAIRE_FORSCHER.JUMP_STEP_MIN' | translate }}
+                  </mat-error>
+                </mat-form-field>
+                <mat-form-field
+                  *ngIf="myForm.controls['cycle_unit'].value == 'date'"
+                >
+                  <mat-label
+                    >{{ 'QUESTIONNAIRE_FORSCHER.DATEPICKER' | translate }}
+                  </mat-label>
+                  <input
+                    formControlName="activate_at_date"
+                    matInput
+                    [matDatepicker]="picker"
+                    (dateChange)="onDateChange($event)"
+                    [readonly]="true"
+                  />
+                  <mat-datepicker-toggle
+                    matSuffix
+                    [for]="picker"
+                  ></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                  <mat-error
+                    *ngIf="
+                      myForm.controls['activate_at_date'].hasError('required')
+                    "
+                  >
+                    {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+                  </mat-error>
                 </mat-form-field>
 
-                <!-- notification interval -->
-                <div
-                  class="double-input"
-                  *ngIf="
-                    myForm.controls['notification_tries'].value > 1 &&
-                    (myForm.controls['cycle_unit'].value == 'hour' ||
-                      myForm.controls['cycle_unit'].value == 'day' ||
-                      myForm.controls['cycle_unit'].value == 'week' ||
-                      myForm.controls['cycle_unit'].value == 'month')
-                  "
+                <!-- cycle per day and start hour controls, only if cycle_unit=hour -->
+                <ng-container
+                  *ngIf="myForm.controls['cycle_unit'].value == 'hour'"
                 >
                   <mat-form-field>
                     <mat-label
-                      >{{ 'QUESTIONNAIRE_FORSCHER.INTERVAL' | translate }}
-                    </mat-label>
-                    <input
-                      id="notification_interval"
-                      matInput
-                      formControlName="notification_interval"
-                      type="number"
-                      min="0"
-                    />
-                    <mat-error
-                      *ngIf="
-                        myForm.controls['notification_interval'].hasError(
-                          'required'
-                        )
-                      "
-                    >
-                      {{
-                        'QUESTIONNAIRE_FORSCHER.NOTIFICATION_INTERVAL_REQUIRED'
-                          | translate
-                      }}
-                    </mat-error>
-                  </mat-form-field>
-
-                  <mat-form-field>
-                    <mat-label
-                      >{{ 'QUESTIONNAIRE_FORSCHER.UNIT' | translate }}
+                      >{{ 'QUESTIONNAIRE_FORSCHER.CYCLE_PER_DAY' | translate }}
                     </mat-label>
                     <mat-select
                       disableOptionCentering
-                      id="notification_interval_unit"
-                      matInput
-                      formControlName="notification_interval_unit"
-                      [(value)]="selectedUnit"
+                      formControlName="cycle_per_day"
                     >
                       <mat-option
-                        *ngIf="
-                          myForm.controls['cycle_unit'].value == 'week' ||
-                          myForm.controls['cycle_unit'].value == 'month'
-                        "
-                        value="days"
                         data-e2e="option"
-                        >{{ 'QUESTIONNAIRE_FORSCHER.DAYS' | translate }}
-                      </mat-option>
-                      <mat-option value="hours"
-                        >{{ 'QUESTIONNAIRE_FORSCHER.HOURS' | translate }}
-                      </mat-option>
-
-                      <mat-error
-                        *ngIf="
-                          myForm.controls[
-                            'notification_interval_unit'
-                          ].hasError('required')
-                        "
+                        *ngFor="let hour of hoursPerDay"
+                        [value]="hour"
                       >
-                        {{
-                          'QUESTIONNAIRE_FORSCHER.NOTIFICATION_INTERVAL_UNIT_REQUIRED'
-                            | translate
-                        }}
-                      </mat-error>
+                        {{ hour }}
+                      </mat-option>
                     </mat-select>
+                    <mat-error
+                      *ngIf="
+                        myForm.controls['cycle_per_day'].hasError('required')
+                      "
+                    >
+                      {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+                    </mat-error>
                   </mat-form-field>
-                </div>
-
+                  <mat-form-field>
+                    <mat-label
+                      >{{
+                        'QUESTIONNAIRE_FORSCHER.CYCLE_FIRST_HOUR' | translate
+                      }}
+                    </mat-label>
+                    <mat-select
+                      disableOptionCentering
+                      formControlName="cycle_first_hour"
+                    >
+                      <mat-option
+                        *ngFor="let hourOfDay of hoursOfDay"
+                        [value]="hourOfDay.value"
+                        data-e2e="option"
+                      >
+                        {{ hourOfDay.viewValue }}
+                        {{ 'QUESTIONNAIRE_FORSCHER.O_CLOCK' | translate }}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error
+                      *ngIf="
+                        myForm.controls['cycle_first_hour'].hasError('required')
+                      "
+                    >
+                      {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+                    </mat-error>
+                  </mat-form-field>
+                </ng-container>
+              </div>
+              <div
+                class="grid-container responsive"
+                style="--grid-template-columns-repeat: 4"
+              >
                 <mat-form-field
-                  *ngIf="myForm.controls['notification_tries'].value != 0"
+                  *ngIf="myForm.controls['cycle_unit'].value != 'date'"
                 >
                   <mat-label
                     >{{
-                      'QUESTIONNAIRE_FORSCHER.NOTIFICATION_TITLE' | translate
+                      'QUESTIONNAIRE_FORSCHER.ACTIVATE_AFTER_DAYS' | translate
                     }}
                   </mat-label>
                   <input
-                    id="notification_title"
+                    id="activateafterdaysinput"
                     matInput
-                    formControlName="notification_title"
-                    data-e2e="e2e-notification-title"
+                    type="number"
+                    formControlName="activate_after_days"
+                    data-e2e="e2e-activate-after-days-input"
                   />
                   <mat-error
                     *ngIf="
-                      myForm.controls['notification_title'].hasError('required')
+                      myForm.controls['activate_after_days'].hasError(
+                        'required'
+                      )
+                    "
+                  >
+                    {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+                  </mat-error>
+                  <mat-error
+                    *ngIf="
+                      myForm.controls['activate_after_days'].hasError('min')
                     "
                   >
                     {{
-                      'QUESTIONNAIRE_FORSCHER.NOTIFICATION_TITLE_REQUIRED'
+                      'QUESTIONNAIRE_FORSCHER.ACTIVATE_AFTER_DAYS_MIN'
                         | translate
                     }}
                   </mat-error>
                 </mat-form-field>
 
                 <mat-form-field
-                  *ngIf="myForm.controls['notification_tries'].value != 0"
+                  *ngIf="
+                    myForm.controls['cycle_unit'].value != 'once' &&
+                    myForm.controls['cycle_unit'].value != 'date' &&
+                    myForm.controls['cycle_unit'].value != 'spontan'
+                  "
                 >
                   <mat-label
                     >{{
-                      'QUESTIONNAIRE_FORSCHER.NOTIFICATION_BODY_NEW' | translate
+                      'QUESTIONNAIRE_FORSCHER.DEACTIVATE_AFTER_DAYS' | translate
                     }}
                   </mat-label>
                   <input
-                    id="notification_body_new"
+                    id="deactivateafterdaysinput"
                     matInput
-                    formControlName="notification_body_new"
-                    data-e2e="e2e-notification-body-new"
+                    type="number"
+                    formControlName="deactivate_after_days"
                   />
                   <mat-error
                     *ngIf="
-                      myForm.controls['notification_body_new'].hasError(
+                      myForm.controls['deactivate_after_days'].hasError(
                         'required'
                       )
                     "
                   >
-                    {{
-                      'QUESTIONNAIRE_FORSCHER.NOTIFICATION_BODY_NEW_REQUIRED'
-                        | translate
-                    }}
+                    {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
                   </mat-error>
-                </mat-form-field>
-
-                <mat-form-field
-                  *ngIf="myForm.controls['notification_tries'].value != 0"
-                >
-                  <mat-label
-                    >{{
-                      'QUESTIONNAIRE_FORSCHER.NOTIFICATION_BODY_IN_PROGRESS'
-                        | translate
-                    }}
-                  </mat-label>
-                  <input
-                    id="notification_body_in_progress"
-                    matInput
-                    formControlName="notification_body_in_progress"
-                    data-e2e="e2e-notification-body-in-progress"
-                  />
                   <mat-error
                     *ngIf="
-                      myForm.controls['notification_body_in_progress'].hasError(
-                        'required'
-                      )
+                      myForm.controls['deactivate_after_days'].hasError('min')
                     "
                   >
                     {{
-                      'QUESTIONNAIRE_FORSCHER.NOTIFICATION_BODY_IN_PROGRESS_REQUIRED'
+                      'QUESTIONNAIRE_FORSCHER.DEACTIVE_AFTER_DAYS_MIN'
                         | translate: translationData
                     }}
                   </mat-error>
                 </mat-form-field>
-              </ng-container>
-            </ng-container>
-            <mat-checkbox formControlName="compliance_needed">
-              {{ 'QUESTIONNAIRE_FORSCHER.COMPLIANCE_NEEDED' | translate }}
-            </mat-checkbox>
-            <mat-form-field
-              *ngIf="myForm.controls['type'].value != 'for_research_team'"
-            >
-              <mat-label
-                >{{ 'QUESTIONNAIRE_FORSCHER.PUBLISHINGSTATE' | translate }}
-              </mat-label>
-              <mat-select
-                disableOptionCentering
-                id="publishselect"
-                formControlName="publish"
-                data-e2e="e2e-publishing-state-select"
-              >
-                <mat-option
-                  *ngFor="let publishOption of publishOptions"
-                  [value]="publishOption.value"
-                  data-e2e="option"
+                <mat-error
+                  *ngIf="myForm.hasError('questionnaireInstanceCount')"
+                  class="error-outside-of-form-field"
                 >
-                  {{ publishOption.viewValue | translate }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
+                  {{
+                    'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_INSTANCE_COUNT_ERROR'
+                      | translate: translationData
+                  }}
+                </mat-error>
 
+                <mat-form-field
+                  *ngIf="myForm.controls['cycle_unit'].value != 'spontan'"
+                >
+                  <mat-label
+                    >{{
+                      'QUESTIONNAIRE_FORSCHER.EXPIRES_AFTER_DAYS' | translate
+                    }}
+                  </mat-label>
+                  <input
+                    id="expires_after_days"
+                    matInput
+                    type="number"
+                    formControlName="expires_after_days"
+                  />
+                  <mat-error
+                    *ngIf="
+                      myForm.controls['expires_after_days'].hasError('required')
+                    "
+                  >
+                    {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+                  </mat-error>
+                  <mat-error
+                    *ngIf="
+                      myForm.controls['expires_after_days'].hasError('min')
+                    "
+                  >
+                    {{
+                      'QUESTIONNAIRE_FORSCHER.EXPIRES_AFTER_DAYS_MIN'
+                        | translate
+                    }}
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label
+                    >{{
+                      'QUESTIONNAIRE_FORSCHER.FINALISES_AFTER_DAYS' | translate
+                    }}
+                  </mat-label>
+                  <input
+                    id="finalises_after_days"
+                    matInput
+                    type="number"
+                    formControlName="finalises_after_days"
+                  />
+                  <mat-error
+                    *ngIf="
+                      myForm.controls['finalises_after_days'].hasError(
+                        'required'
+                      )
+                    "
+                  >
+                    {{ 'QUESTIONNAIRE_FORSCHER.VALUE_REQUIRED' | translate }}
+                  </mat-error>
+                  <mat-error
+                    *ngIf="
+                      myForm.controls['finalises_after_days'].hasError('min')
+                    "
+                  >
+                    {{
+                      'QUESTIONNAIRE_FORSCHER.FINALISES_AFTER_DAYS_MIN'
+                        | translate
+                    }}
+                  </mat-error>
+                </mat-form-field>
+              </div>
+            </ng-container>
+            <div
+              class="grid-container responsive"
+              style="--grid-template-columns-repeat: 4"
+            >
+              <mat-checkbox
+                formControlName="compliance_needed"
+                class="checkbox"
+              >
+                {{ 'QUESTIONNAIRE_FORSCHER.COMPLIANCE_NEEDED' | translate }}
+              </mat-checkbox>
+              <mat-form-field
+                *ngIf="myForm.controls['type'].value != 'for_research_team'"
+              >
+                <mat-label
+                  >{{ 'QUESTIONNAIRE_FORSCHER.PUBLISHINGSTATE' | translate }}
+                </mat-label>
+                <mat-select
+                  disableOptionCentering
+                  id="publishselect"
+                  formControlName="publish"
+                  data-e2e="e2e-publishing-state-select"
+                >
+                  <mat-option
+                    *ngFor="let publishOption of publishOptions"
+                    [value]="publishOption.value"
+                    data-e2e="option"
+                  >
+                    {{ publishOption.viewValue | translate }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
           <div
             class="study-notifications-options"
             [hidden]="
@@ -729,6 +526,277 @@
                   | translate
               }}
             </mat-error>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- notifications -->
+      <mat-card
+        *ngIf="
+          myForm.controls.type.value != 'for_research_team' &&
+          myForm.controls.cycle_unit.value != 'spontan'
+        "
+        style="--grid-template-columns: 1fr"
+        class="utility-card space-y"
+      >
+        <mat-card-header>
+          <mat-card-title class="card-title">
+            {{ 'QUESTIONNAIRE_FORSCHER.NOTIFICATIONS' | translate }}
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div
+            class="grid-container responsive"
+            style="--grid-template-columns-repeat: 4"
+          >
+            <mat-form-field>
+              <mat-label
+                >{{ 'QUESTIONNAIRE_FORSCHER.NOTIFICATION_TRIES' | translate }}
+              </mat-label>
+              <input
+                id="notification_tries"
+                matInput
+                type="number"
+                min="0"
+                (click)="setNotificationControls()"
+                (keyup)="setNotificationControls()"
+                formControlName="notification_tries"
+                data-e2e="e2e-notification-tries"
+              />
+              <mat-error
+                *ngIf="
+                  myForm.controls['notification_tries'].hasError('required')
+                "
+              >
+                {{
+                  'QUESTIONNAIRE_FORSCHER.NOTIFICATION_TRIES_REQUIRED'
+                    | translate
+                }}
+              </mat-error>
+            </mat-form-field>
+            <!-- notification weekday -->
+            <mat-form-field
+              *ngIf="
+                myForm.controls['notification_tries'].value > 0 &&
+                (myForm.controls['cycle_unit'].value == 'week' ||
+                  myForm.controls['cycle_unit'].value == 'month')
+              "
+            >
+              <mat-label
+                >{{ 'QUESTIONNAIRE_FORSCHER.NOTIFICATION_DAY' | translate }}
+              </mat-label>
+              <mat-select
+                disableOptionCentering
+                id="notification_weekday"
+                matInput
+                formControlName="notification_weekday"
+                [(value)]="selectedWeekday"
+              >
+                <mat-option data-e2e="option" value="monday"
+                  >{{ 'QUESTIONNAIRE_FORSCHER.MONDAY' | translate }}
+                </mat-option>
+                <mat-option data-e2e="option" value="tuesday"
+                  >{{ 'QUESTIONNAIRE_FORSCHER.TUESDAY' | translate }}
+                </mat-option>
+                <mat-option data-e2e="option" value="wednesday"
+                  >{{ 'QUESTIONNAIRE_FORSCHER.WEDNESDAY' | translate }}
+                </mat-option>
+                <mat-option data-e2e="option" value="thursday"
+                  >{{ 'QUESTIONNAIRE_FORSCHER.THURSDAY' | translate }}
+                </mat-option>
+                <mat-option data-e2e="option" value="friday"
+                  >{{ 'QUESTIONNAIRE_FORSCHER.FRIDAY' | translate }}
+                </mat-option>
+                <mat-option data-e2e="option" value="saturday"
+                  >{{ 'QUESTIONNAIRE_FORSCHER.SATURDAY' | translate }}
+                </mat-option>
+                <mat-option data-e2e="option" value="sunday"
+                  >{{ 'QUESTIONNAIRE_FORSCHER.SUNDAY' | translate }}
+                </mat-option>
+
+                <mat-error
+                  *ngIf="
+                    myForm.controls['notification_weekday'].hasError('required')
+                  "
+                >
+                  {{
+                    'QUESTIONNAIRE_FORSCHER.NOTIFICATION_WEEKDAY_REQUIRED'
+                      | translate
+                  }}
+                </mat-error>
+              </mat-select>
+            </mat-form-field>
+
+            <!-- notification interval -->
+            <ng-container
+              *ngIf="
+                myForm.controls['notification_tries'].value > 1 &&
+                (myForm.controls['cycle_unit'].value == 'once' ||
+                  myForm.controls['cycle_unit'].value == 'hour' ||
+                  myForm.controls['cycle_unit'].value == 'day' ||
+                  myForm.controls['cycle_unit'].value == 'week' ||
+                  myForm.controls['cycle_unit'].value == 'month')
+              "
+            >
+              <mat-form-field class="field">
+                <mat-label
+                  >{{ 'QUESTIONNAIRE_FORSCHER.INTERVAL' | translate }}
+                </mat-label>
+                <input
+                  id="notification_interval"
+                  matInput
+                  formControlName="notification_interval"
+                  type="number"
+                  min="0"
+                />
+                <mat-error
+                  *ngIf="
+                    myForm.controls['notification_interval'].hasError(
+                      'required'
+                    )
+                  "
+                >
+                  {{
+                    'QUESTIONNAIRE_FORSCHER.NOTIFICATION_INTERVAL_REQUIRED'
+                      | translate
+                  }}
+                </mat-error>
+              </mat-form-field>
+              <mat-form-field class="field">
+                <mat-label
+                  >{{ 'QUESTIONNAIRE_FORSCHER.UNIT' | translate }}
+                </mat-label>
+                <mat-select
+                  disableOptionCentering
+                  id="notification_interval_unit"
+                  matInput
+                  formControlName="notification_interval_unit"
+                  [(value)]="selectedUnit"
+                >
+                  <mat-option
+                    *ngIf="
+                      myForm.controls['cycle_unit'].value == 'once' ||
+                      myForm.controls['cycle_unit'].value == 'week' ||
+                      myForm.controls['cycle_unit'].value == 'month'
+                    "
+                    value="days"
+                    data-e2e="option"
+                    >{{ 'QUESTIONNAIRE_FORSCHER.DAYS' | translate }}
+                  </mat-option>
+                  <mat-option
+                    value="hours"
+                    *ngIf="myForm.controls.cycle_unit.value != 'once'"
+                    >{{ 'QUESTIONNAIRE_FORSCHER.HOURS' | translate }}
+                  </mat-option>
+                </mat-select>
+                <mat-error
+                  *ngIf="
+                    myForm.controls['notification_interval_unit'].hasError(
+                      'required'
+                    )
+                  "
+                >
+                  {{
+                    'QUESTIONNAIRE_FORSCHER.NOTIFICATION_INTERVAL_UNIT_REQUIRED'
+                      | translate
+                  }}
+                </mat-error>
+              </mat-form-field>
+            </ng-container>
+          </div>
+          <div class="grid-container">
+            <mat-form-field
+              *ngIf="myForm.controls['notification_tries'].value != 0"
+            >
+              <mat-label
+                >{{ 'QUESTIONNAIRE_FORSCHER.NOTIFICATION_TITLE' | translate }}
+              </mat-label>
+              <input
+                id="notification_title"
+                matInput
+                formControlName="notification_title"
+                data-e2e="e2e-notification-title"
+              />
+              <mat-error
+                *ngIf="
+                  myForm.controls['notification_title'].hasError('required')
+                "
+              >
+                {{
+                  'QUESTIONNAIRE_FORSCHER.NOTIFICATION_TITLE_REQUIRED'
+                    | translate
+                }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field
+              *ngIf="myForm.controls['notification_tries'].value != 0"
+            >
+              <mat-label
+                >{{
+                  'QUESTIONNAIRE_FORSCHER.NOTIFICATION_BODY_NEW' | translate
+                }}
+              </mat-label>
+              <input
+                id="notification_body_new"
+                matInput
+                formControlName="notification_body_new"
+                data-e2e="e2e-notification-body-new"
+              />
+              <mat-error
+                *ngIf="
+                  myForm.controls['notification_body_new'].hasError('required')
+                "
+              >
+                {{
+                  'QUESTIONNAIRE_FORSCHER.NOTIFICATION_BODY_NEW_REQUIRED'
+                    | translate
+                }}
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field
+              *ngIf="myForm.controls['notification_tries'].value != 0"
+            >
+              <mat-label
+                >{{
+                  'QUESTIONNAIRE_FORSCHER.NOTIFICATION_BODY_IN_PROGRESS'
+                    | translate
+                }}
+              </mat-label>
+              <input
+                id="notification_body_in_progress"
+                matInput
+                formControlName="notification_body_in_progress"
+                data-e2e="e2e-notification-body-in-progress"
+              />
+              <mat-error
+                *ngIf="
+                  myForm.controls['notification_body_in_progress'].hasError(
+                    'required'
+                  )
+                "
+              >
+                {{
+                  'QUESTIONNAIRE_FORSCHER.NOTIFICATION_BODY_IN_PROGRESS_REQUIRED'
+                    | translate: translationData
+                }}
+              </mat-error>
+            </mat-form-field>
+            <mat-checkbox
+              formControlName="notification_link_to_overview"
+              class="checkbox"
+              matTooltipPosition="below"
+              [matTooltip]="
+                'QUESTIONNAIRE_FORSCHER.NOTIFICATION_LINK_TO_OVERVIEW_HINT'
+                  | translate
+              "
+            >
+              {{
+                'QUESTIONNAIRE_FORSCHER.NOTIFICATION_LINK_TO_OVERVIEW'
+                  | translate
+              }}
+            </mat-checkbox>
           </div>
         </mat-card-content>
       </mat-card>
@@ -791,7 +859,7 @@
             </span>
           </div>
           <div
-            class="grid-container questionnaire-conditions"
+            class="wrapping-flex-container questionnaire-conditions"
             formGroupName="condition"
           >
             <mat-form-field>
@@ -899,8 +967,7 @@
                   [title]="question.text | stripMarkdown"
                 >
                   {{ 'QUESTIONNAIRE_FORSCHER.QUESTION_ABBREVIATION' | translate
-                  }}{{ question.position }}:
-                  {{ question.text | stripMarkdown }}
+                  }}{{ question.position }}: {{ question.text | stripMarkdown }}
                 </mat-option>
               </mat-select>
             </mat-form-field>
@@ -934,8 +1001,7 @@
                     'QUESTIONNAIRE_FORSCHER.SUB-QUESTION_ABBREVIATION'
                       | translate
                   }}
-                  {{ answer_option.position }}:
-                  {{ answer_option.text }}
+                  {{ answer_option.position }}: {{ answer_option.text }}
                 </mat-option>
               </mat-select>
             </mat-form-field>
@@ -1170,8 +1236,8 @@
                   data-e2e="e2e-question-expansion-panel"
                 >
                   <mat-expansion-panel-header>
-                    <mat-panel-title>
-                      <div class="question-panel-title">
+                    <mat-panel-title class="question-expansion-panel-title">
+                      <div class="truncate-text">
                         {{ 'QUESTIONNAIRE_FORSCHER.QUESTION' | translate }} :
                         {{
                           myForm.controls['questions'].controls[i].controls[
@@ -1442,7 +1508,7 @@
                     </button>
 
                     <mat-card
-                      *ngIf="question.controls['has_condition'].value == true"
+                      *ngIf="question.controls['has_condition'].value === true"
                       class="condition-card"
                     >
                       <mat-card-header>
@@ -1488,7 +1554,10 @@
                         </button>
                       </mat-card-header>
                       <mat-card-content>
-                        <div class="grid-container" formGroupName="condition">
+                        <div
+                          class="wrapping-flex-container"
+                          formGroupName="condition"
+                        >
                           <mat-form-field>
                             <mat-label
                               >{{
@@ -2160,7 +2229,8 @@
 
                               <mat-card
                                 *ngIf="
-                                  answer.controls['has_condition'].value == true
+                                  answer.controls['has_condition'].value ===
+                                  true
                                 "
                                 class="condition-card"
                               >
@@ -2214,7 +2284,7 @@
                                 <mat-card-content>
                                   <div
                                     formGroupName="condition"
-                                    class="grid-container"
+                                    class="wrapping-flex-container"
                                   >
                                     <mat-form-field>
                                       <mat-label
@@ -2364,8 +2434,7 @@
                                           {{
                                             'QUESTIONNAIRE_FORSCHER.QUESTION_ABBREVIATION'
                                               | translate
-                                          }}{{ question.position }}
-                                          :
+                                          }}{{ question.position }} :
                                           {{ question.text | stripMarkdown }}
                                         </mat-option>
                                       </mat-select>
@@ -2424,8 +2493,7 @@
                                           {{
                                             'QUESTIONNAIRE_FORSCHER.SUB-QUESTION_ABBREVIATION'
                                               | translate
-                                          }}{{ answer_option.position }}
-                                          :
+                                          }}{{ answer_option.position }} :
                                           {{ answer_option.text }}
                                         </mat-option>
                                       </mat-select>

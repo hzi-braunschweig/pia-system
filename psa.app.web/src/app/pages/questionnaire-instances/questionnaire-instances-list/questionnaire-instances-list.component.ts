@@ -10,11 +10,9 @@ import { MatSort } from '@angular/material/sort';
 import { Router } from '@angular/router';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
 import { DataService } from '../../../_services/data.service';
-import {
-  QuestionnaireInstance,
-  QuestionnaireStatus,
-} from '../../../psa.app.core/models/questionnaireInstance';
+import { QuestionnaireInstance } from '../../../psa.app.core/models/questionnaireInstance';
 import { MatTableDataSource } from '@angular/material/table';
+import { compareQuestionnaireInstances } from './compare-questionnaire-instances';
 
 @Component({
   selector: 'app-questionnaire-instances-list',
@@ -36,9 +34,10 @@ export class QuestionnaireInstancesListComponent implements OnInit {
     if (!questionnaireInstances) {
       return;
     }
-    const instancesResult = questionnaireInstances.sort(
-      QuestionnaireInstancesListComponent.compareQuestionnaireInstances
+    const instancesResult = questionnaireInstances.toSorted(
+      compareQuestionnaireInstances
     );
+
     this.qDatasourceSpontan.data = instancesResult.filter(
       QuestionnaireInstancesListComponent.isForSpontanList
     );
@@ -48,13 +47,6 @@ export class QuestionnaireInstancesListComponent implements OnInit {
     );
   }
 
-  private static readonly order = new Map<QuestionnaireStatus, number>([
-    ['in_progress', 1],
-    ['active', 2],
-    ['released', 3],
-    ['released_once', 3],
-    ['released_twice', 3],
-  ]);
   readonly displayedColumns: string[] = [
     'status',
     'questionnaire_name',
@@ -73,27 +65,6 @@ export class QuestionnaireInstancesListComponent implements OnInit {
       instance.questionnaire.cycle_unit === 'spontan' &&
       (instance.status === 'active' || instance.status === 'in_progress')
     );
-  }
-
-  private static compareQuestionnaireInstances(
-    a: QuestionnaireInstance,
-    b: QuestionnaireInstance
-  ): number {
-    if (
-      QuestionnaireInstancesListComponent.order.get(a.status) !==
-      QuestionnaireInstancesListComponent.order.get(b.status)
-    ) {
-      return (
-        QuestionnaireInstancesListComponent.order.get(a.status) -
-        QuestionnaireInstancesListComponent.order.get(b.status)
-      );
-    }
-    if (a.date_of_issue > b.date_of_issue) {
-      return -1;
-    } else if (a.date_of_issue < b.date_of_issue) {
-      return 1;
-    }
-    return 0;
   }
 
   ngOnInit(): void {

@@ -14,6 +14,7 @@ import {
 } from '../../src/app/psa.app.core/models/proband';
 import Chainable = Cypress.Chainable;
 import { Study } from './study.commands';
+import { Credentials } from './sample-tracking.commands';
 
 const short = require('short-uuid');
 const translator = short();
@@ -120,6 +121,10 @@ export function changePassword(oldPass, newPass): void {
   });
 
   cy.get('[data-e2e="login-submit-button"]').click();
+}
+
+export function loginWithCred(cred: Credentials) {
+  return login(cred.username, cred.password);
 }
 
 export function createConsentForStudy(consent, studyId, token?): Chainable {

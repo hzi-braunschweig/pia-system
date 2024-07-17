@@ -9,6 +9,7 @@ import { PersonalData, PersonalDataReq } from '../../models/personalData';
 
 import { InternalPersonalDataInteractor } from '../../interactors/internal/internalPersonalDataInteractor';
 import { handleError } from '../../handleError';
+import { PersonalDataInteractor } from '../../interactors/personalDataInteractor';
 
 export class InternalPersonalDataHandler {
   /**
@@ -50,5 +51,16 @@ export class InternalPersonalDataHandler {
     return InternalPersonalDataInteractor.getPersonalDataEmail(
       request.params['username'] as string
     ).catch((err: Error) => handleError(request, 'Could get email:', err));
+  };
+
+  /**
+   * Get personal data for all probands of a study
+   */
+  public static readonly getAllOfStudy: Lifecycle.Method = async (request) => {
+    return PersonalDataInteractor.getPersonalDataOfAllProbands([
+      request.params['studyName'] as string,
+    ]).catch((err: Error) =>
+      handleError(request, 'Could not get personal data from DB:', err)
+    );
   };
 }

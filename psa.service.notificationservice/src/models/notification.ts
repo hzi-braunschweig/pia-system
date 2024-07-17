@@ -14,11 +14,31 @@ export interface DbNotificationSchedules {
   body: string | null;
 }
 
-export type NotificationType = 'qReminder' | 'sample' | 'custom';
+export type NotificationType =
+  | 'qReminder'
+  | 'sample'
+  | 'custom'
+  | 'questionnaires_stats_aggregator';
 
 export interface Notification {
   date?: Date;
   recipients: string[];
   title: string;
   body: string;
+}
+
+export interface NotificationResponse {
+  notification_type: Omit<NotificationType, 'questionnaires_stats_aggregator'>;
+  reference_id: string;
+  title: string | null;
+  body: string | null;
+  data?: Record<string, unknown>;
+}
+
+export interface QuestionnaireNotificationResponse
+  extends NotificationResponse {
+  notification_type: 'qReminder';
+  data: {
+    linkToOverview: boolean;
+  };
 }

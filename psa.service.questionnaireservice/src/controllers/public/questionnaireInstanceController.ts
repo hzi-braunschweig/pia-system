@@ -5,6 +5,7 @@
  */
 
 import { Boom } from '@hapi/boom';
+import { Pseudonym } from '@pia/lib-publicapi';
 
 import { publicApiSecurity } from '@pia/lib-service-core';
 import { ValidateError } from '@tsoa/runtime';
@@ -36,7 +37,6 @@ import {
   StudyNotFoundError,
 } from '../../errors';
 import { StudyName } from '../../models/customTypes';
-import { Pseudonym } from '../../models/pseudonym';
 import { CustomName } from '../../models/questionnaire';
 import {
   QuestionnaireInstanceIdentifier,

@@ -31,6 +31,7 @@ export interface Questionnaire {
   study_id: string;
   name: string;
   custom_name: string | null;
+  sort_order: number | null;
   no_questions: number;
   cycle_amount: number;
   cycle_unit: CycleUnit;
@@ -41,8 +42,8 @@ export interface Questionnaire {
   notification_body_new: string;
   notification_body_in_progress: string;
   notification_weekday: Weekday | null;
-  notification_interval: number;
-  notification_interval_unit: 'days' | 'hours';
+  notification_interval: number | null;
+  notification_interval_unit: 'days' | 'hours' | null;
   activate_at_date: string;
   compliance_needed: boolean;
   expires_after_days: number;

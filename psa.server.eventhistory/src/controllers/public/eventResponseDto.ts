@@ -5,8 +5,8 @@
  */
 
 import { EventTypeString } from '../../events';
-import { EventEntity } from '../../entity/event';
+import { Event } from '../../entity/event';
 
-export type EventResponseDto = Omit<EventEntity, 'type'> & {
+export type EventResponseDto = Omit<Event, 'type'> & {
   type: EventTypeString;
 };

@@ -112,6 +112,11 @@ const routes: Routes = [
     pathMatch: 'full',
   },
   {
+    path: 'extlink/questionnaires/user',
+    redirectTo: 'questionnaires/user',
+    pathMatch: 'full',
+  },
+  {
     path: 'questionnaires/user',
     component: QuestionnaireInstancesListForProbandComponent,
     canActivate: mapToCanActivate([AuthGuard, ComplianceGuard]),
@@ -213,11 +218,6 @@ const routes: Routes = [
     canActivate: mapToCanActivate([AuthGuard]),
     canDeactivate: [PendingChangesGuard],
     data: { authorizedRoles: ['Forscher'] },
-    pathMatch: 'full',
-  },
-  {
-    path: 'extlink/questionnaire/:id/:instanceId',
-    redirectTo: 'questionnaire/:id/:instanceId',
     pathMatch: 'full',
   },
   {

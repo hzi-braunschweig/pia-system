@@ -13,14 +13,15 @@ import { Server } from '../../../src/server';
 import { config } from '../../../src/config';
 import { ProbandStatusPatch } from '../../../src/models/proband';
 import { ProbandStatus } from '../../../src/models/probandStatus';
+import * as sinon from 'sinon';
 import { SinonStubbedInstance } from 'sinon';
 import { Users } from '@keycloak/keycloak-admin-client/lib/resources/users';
 import { probandAuthClient } from '../../../src/clients/authServerClient';
 import { MailService } from '@pia/lib-service-core';
-import * as sinon from 'sinon';
 import {
   MessageQueueClient,
   MessageQueueTestUtils,
+  MessageQueueTopic,
 } from '@pia/lib-messagequeue';
 
 chai.use(chaiHttp);
@@ -36,7 +37,7 @@ describe('Internal: patch proband', function () {
   before(async function () {
     await Server.init();
     await mqc.connect(true);
-    await mqc.createConsumer('proband.deactivated', async () =>
+    await mqc.createConsumer(MessageQueueTopic.PROBAND_DEACTIVATED, async () =>
       Promise.resolve()
     );
   });
@@ -105,7 +106,7 @@ describe('Internal: patch proband', function () {
         const probandDeactivated =
           MessageQueueTestUtils.injectMessageProcessedAwaiter(
             mqc,
-            'proband.deactivated',
+            MessageQueueTopic.PROBAND_DEACTIVATED,
             testSandbox
           );
 
@@ -140,7 +141,7 @@ describe('Internal: patch proband', function () {
         const probandDeactivated =
           MessageQueueTestUtils.injectMessageProcessedAwaiter(
             mqc,
-            'proband.deactivated',
+            MessageQueueTopic.PROBAND_DEACTIVATED,
             testSandbox
           );
 

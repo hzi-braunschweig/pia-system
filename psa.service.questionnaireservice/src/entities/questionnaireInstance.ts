@@ -19,11 +19,14 @@ import {
 import { Questionnaire } from './questionnaire';
 import { Answer } from './answer';
 
-@Entity()
+@Entity({
+  orderBy: {
+    sortOrder: 'ASC',
+    id: 'ASC',
+  },
+})
 export class QuestionnaireInstance implements QuestionnaireInstanceDto {
-  /**
-   * @isInt
-   */
+  /** @isInt */
   @PrimaryColumn()
   public id!: number;
 
@@ -43,6 +46,10 @@ export class QuestionnaireInstance implements QuestionnaireInstanceDto {
   @Column()
   public questionnaireName!: string;
 
+  /** @isInt */
+  @Column({ type: 'smallint', nullable: true })
+  public sortOrder!: number | null;
+
   @Column({ name: 'user_id' })
   public pseudonym!: string;
 
@@ -55,9 +62,7 @@ export class QuestionnaireInstance implements QuestionnaireInstanceDto {
   @Column({ type: 'timestamp', nullable: true })
   public dateOfReleaseV2!: Date | null;
 
-  /**
-   * @isInt
-   */
+  /** @isInt */
   @Column()
   public cycle!: number;
 
@@ -67,15 +72,11 @@ export class QuestionnaireInstance implements QuestionnaireInstanceDto {
   @Column({ type: 'boolean', nullable: true })
   public notificationsScheduled!: boolean | null;
 
-  /**
-   * @isInt
-   */
+  /** @isInt */
   @Column({ type: 'integer', nullable: true })
   public progress!: number | null;
 
-  /**
-   * @isInt
-   */
+  /** @isInt */
   @Column({ type: 'integer', nullable: true })
   public releaseVersion!: number | null;
 

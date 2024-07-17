@@ -13,15 +13,15 @@ VALUES ('Study A'),
        ('Study X');
 
 INSERT INTO probands (pseudonym, ids, study)
-VALUES ('stya-0000000001', NULL, 'Study A'),
+VALUES ('stya01-0000000001', NULL, 'Study A'),
        ('stya-0000000002', NULL, 'Study A'),
-       ('styb-0000000001', NULL, 'Study B'),
-       ('styx-0000000001', NULL, 'Study X');
+       ('styb01-0000000001', NULL, 'Study B'),
+       ('styx01-0000000001', NULL, 'Study X');
 
 --
 -- Questionnaires
 --
-INSERT INTO questionnaires (id, study_id, name, custom_name, no_questions, cycle_amount, cycle_unit,
+INSERT INTO questionnaires (id, study_id, name, custom_name, sort_order, no_questions, cycle_amount, cycle_unit,
                             activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
                             notification_body_in_progress, notification_weekday, notification_interval,
@@ -30,16 +30,18 @@ INSERT INTO questionnaires (id, study_id, name, custom_name, no_questions, cycle
                             notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour,
                             keep_answers)
 
-VALUES (100, 'Study A', 'Questionnaire A', 'questionnaire_a', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
+VALUES (100, 'Study A', 'Questionnaire A', 'questionnaire_a', NULL, 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
         NULL, FALSE, 1, 1, '2024-01-19', 'for_research_team', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
-       (110, 'Study A', 'Questionnaire B', 'questionnaire_b', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
+       (110, 'Study A', 'Questionnaire B', 'questionnaire_b', 10, 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
         NULL, FALSE, 1, 1, '2024-01-19', 'for_research_team', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
-       (200, 'Study B', 'Questionnaire A', 'questionnaire_a', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
-        NULL, FALSE, 1,
-        1, '2024-01-19', 'for_research_team', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
-       (300, 'Study X', 'Questionnaire X', 'questionnaire_a', 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
-        NULL, FALSE, 1,
-        1, '2024-01-19', 'for_research_team', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE);
+       (120, 'Study A', 'Questionnaire C', 'questionnaire_c', 20, 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
+        NULL, FALSE, 1, 1, '2024-01-19', 'for_research_team', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
+       (130, 'Study A', 'Questionnaire D', 'questionnaire_d', 30, 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
+        NULL, FALSE, 1, 1, '2024-01-19', 'for_research_team', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
+       (200, 'Study B', 'Questionnaire A', 'questionnaire_a', NULL, 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
+        NULL, FALSE, 1, 1, '2024-01-19', 'for_research_team', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
+       (300, 'Study X', 'Questionnaire X', 'questionnaire_a', NULL, 2, 1, 'once', 0, 1, 0, '', '', '', '', 0, '',
+        NULL, FALSE, 1, 1, '2024-01-19', 'for_research_team', 1, 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE);
 
 INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, variable_name, questionnaire_version)
 VALUES
@@ -49,6 +51,10 @@ VALUES
     (100300, 100, 'Question #3', 3, FALSE, 'question_3', 1),
     -- Study A | Questionnaire B
     (110100, 110, 'Question #1', 1, FALSE, 'not_mandatory', 1),
+    -- Study A | Questionnaire C
+    (120100, 120, 'Question #1', 1, FALSE, 'not_mandatory', 1),
+    -- Study A | Questionnaire D
+    (130100, 130, 'Question #1', 1, FALSE, 'not_mandatory', 1),
     -- Study B | Questionnaire A
     (200100, 200, 'Question #1', 1, TRUE, 'question_1', 1),
     (200200, 200, 'Question #2', 2, TRUE, 'question_2', 1),
@@ -82,6 +88,11 @@ VALUES
      'answer_option_12'),
     -- Study A | Questionnaire B | Question not mandatory
     (1101001, 110100, 'Single Choice', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, 'answer_option_1'),
+    -- Study A | Questionnaire C | Question not mandatory
+    (1201001, 120100, 'Single Choice', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, 'answer_option_1'),
+    -- Study A | Questionnaire D | Question not mandatory
+    (1301001, 130100, 'Single Choice', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, 'answer_option_1'),
+    -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
     -- Study B | Questionnaire A | Question #1
     (2001001, 200100, 'Single Choice', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, 'answer_option_1'),
     (2001002, 200100, 'Multiple Choice', 2, '{f,f,f}', '{"Keine Angabe",Ja,Nein}', '{99,1,0}', 2, FALSE, NULL, NULL,
@@ -108,29 +119,36 @@ INSERT INTO conditions (condition_type, condition_answer_option_id, condition_qu
 VALUES ('internal_this', 1001011, null, null, '==', 'Ja', 1001006, 100, 'AND', 1, 1),
        ('internal_this', null, 100300, null, '==', 'Ja;Nein', 1001002, 100, 'AND', 1, 1);
 
-INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, user_id, date_of_issue,
+INSERT INTO questionnaire_instances (id, study_id, questionnaire_id, questionnaire_name, sort_order, user_id, date_of_issue,
                                      date_of_release_v1, date_of_release_v2, cycle, status, notifications_scheduled,
                                      progress, release_version, questionnaire_version)
 VALUES
-    -- Study A | stya-0000000001 | Questionnaire A
-    (100100, 'Study A', 100, 'Questionnaire A', 'stya-0000000001', '2024-01-19 07:00:00.000000',
+    -- Study A | stya01-0000000001 | Questionnaire A-D with sorting
+    (100100, 'Study A', 100, 'Questionnaire A', NULL, 'stya01-0000000001', '2024-01-19 07:00:00.000000',
      NULL, NULL, 1, 'active', FALSE, 0, 0, 1),
-    -- Study A | styb-0000000001 | Questionnaire A
-    (100101, 'Study A', 100, 'Questionnaire A', 'styb-0000000001', '2024-01-19 07:00:00.000000',
+    -- Study A | styb01-0000000001 | Questionnaire A
+    (100101, 'Study A', 100, 'Questionnaire A', NULL, 'styb01-0000000001', '2024-01-19 07:00:00.000000',
      NULL, NULL, 1, 'in_progress', FALSE, 60, 0, 1),
     -- Study A | stya-0000000002 | Questionnaire A
-    (100102, 'Study A', 100, 'Questionnaire A', 'stya-0000000002', '2024-02-19 07:00:00.000000',
+    (100102, 'Study A', 100, 'Questionnaire A', NULL, 'stya-0000000002', '2024-02-19 07:00:00.000000',
      NULL, NULL, 1, 'active', FALSE, 0, 0, 1),
-    -- Study A | styb-0000000001 | Questionnaire B
-    (110100, 'Study A', 110, 'Questionnaire B', 'styb-0000000001', '2024-02-20 17:00:00.000000',
+    -- Study A | styb01-0000000001 | Questionnaire B
+    (110100, 'Study A', 110, 'Questionnaire B', 10, 'styb01-0000000001', '2024-02-20 17:00:00.000000',
      '2024-02-22T11:00:00.0000000', NULL, 1, 'released_once', FALSE, 100, 1, 1),
-    -- Study A | stya-0000000001 | Questionnaire B
-    (110101, 'Study A', 110, 'Questionnaire B', 'stya-0000000001', '2024-01-19 07:00:00.000000',
+    -- Study A | stya01-0000000001 | Questionnaire B
+    (110101, 'Study A', 110, 'Questionnaire B', 10, 'stya01-0000000001', '2024-01-19 07:00:00.000000',
      NULL, NULL, 1, 'in_progress', FALSE, 60, 0, 1),
-    -- Study B | styb-0000000001 | Questionnaire A
-    (200100, 'Study B', 200, 'Questionnaire A', 'styb-0000000001', '2024-01-19 07:00:00.000000',
+    -- Study A | stya01-0000000001 | Questionnaire C
+    (120101, 'Study A', 120, 'Questionnaire C', 20, 'stya01-0000000001', '2024-01-19 07:00:00.000000',
+     NULL, NULL, 1, 'active', FALSE, 0, 0, 1),
+    -- Study A | stya01-0000000001 | Questionnaire D
+    (130101, 'Study A', 130, 'Questionnaire D', 30, 'stya01-0000000001', '2024-01-19 07:00:00.000000',
+     NULL, NULL, 1, 'active', FALSE, 0, 0, 1),
+    -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+    -- Study B | styb01-0000000001 | Questionnaire A
+    (200100, 'Study B', 200, 'Questionnaire A', NULL, 'styb01-0000000001', '2024-01-19 07:00:00.000000',
      NULL, NULL, 1, 'in_progress', FALSE, 60, 0, 1),
-    (200101, 'Study B', 200, 'Questionnaire A', 'styb-0000000001', '2024-01-19 07:00:00.000000',
+    (200101, 'Study B', 200, 'Questionnaire A', NULL, 'styb01-0000000001', '2024-01-19 07:00:00.000000',
      '2024-02-22T11:00:00.0000000', NULL, 1, 'released_once', FALSE, 80, 0, 1)
 ;
 

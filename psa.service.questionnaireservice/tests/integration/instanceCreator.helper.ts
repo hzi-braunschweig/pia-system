@@ -107,6 +107,7 @@ export function createQuestionnaire(
     notificationWeekday: null,
     notificationInterval: null,
     notificationIntervalUnit: null,
+    notificationLinkToOverview: true,
     activateAtDate: null,
     complianceNeeded: true,
     expiresAfterDays: 5,

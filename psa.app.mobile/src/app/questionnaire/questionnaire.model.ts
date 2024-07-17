@@ -4,6 +4,15 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+export type CycleUnit =
+  | 'once'
+  | 'day'
+  | 'week'
+  | 'month'
+  | 'hour'
+  | 'spontan'
+  | 'date';
+
 export interface Study {
   name: string;
   has_rna_samples?: boolean;
@@ -19,7 +28,7 @@ export interface Questionnaire {
   name: string;
   no_questions: number;
   cycle_amount: number;
-  cycle_unit: string;
+  cycle_unit: CycleUnit;
   activate_after_days: number;
   deactivate_after_days: number;
   notification_tries: number;
@@ -107,6 +116,7 @@ export interface QuestionnaireInstance {
   study_id: string;
   questionnaire_id: number;
   questionnaire_name: string;
+  sort_order: number | null;
   user_id: string;
   date_of_issue: string;
   date_of_release_v1: string;

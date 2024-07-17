@@ -20,7 +20,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Pick_QuestionnaireInstance.Exclude_keyofQuestionnaireInstance.questionnaire-or-answers-or-studyId__": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"integer","required":true},"questionnaireName":{"dataType":"string","required":true},"pseudonym":{"dataType":"string","required":true},"dateOfIssue":{"dataType":"datetime","required":true},"dateOfReleaseV1":{"dataType":"datetime","required":true},"dateOfReleaseV2":{"dataType":"datetime","required":true},"cycle":{"dataType":"integer","required":true},"status":{"ref":"QuestionnaireInstanceStatus","required":true},"notificationsScheduled":{"dataType":"boolean","required":true},"progress":{"dataType":"integer","required":true},"releaseVersion":{"dataType":"integer","required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"integer","required":true},"questionnaireName":{"dataType":"string","required":true},"sortOrder":{"dataType":"integer","required":true},"pseudonym":{"dataType":"string","required":true},"dateOfIssue":{"dataType":"datetime","required":true},"dateOfReleaseV1":{"dataType":"datetime","required":true},"dateOfReleaseV2":{"dataType":"datetime","required":true},"cycle":{"dataType":"integer","required":true},"status":{"ref":"QuestionnaireInstanceStatus","required":true},"notificationsScheduled":{"dataType":"boolean","required":true},"progress":{"dataType":"integer","required":true},"releaseVersion":{"dataType":"integer","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Omit_QuestionnaireInstance.questionnaire-or-answers-or-studyId_": {
@@ -75,7 +75,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Pseudonym": {
         "dataType": "refAlias",
-        "type": {"dataType":"string","validators":{"pattern":{"value":"^[a-z]+-[0-9]+$"}}},
+        "type": {"dataType":"string","validators":{"pattern":{"value":"^[a-z0-9]+-[0-9]+$"}}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Pick_QuestionnaireInstanceDto.status-or-releaseVersion-or-progress_": {

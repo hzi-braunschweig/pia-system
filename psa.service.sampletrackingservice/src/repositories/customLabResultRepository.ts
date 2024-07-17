@@ -11,7 +11,8 @@ import {
   LabResultDummyIdDoesNotMatch,
   LabResultNotFound,
 } from '../errors';
-import { Pseudonym, SampleId } from '../models/customTypes';
+import { SampleId } from '../models/customTypes';
+import { Pseudonym } from '@pia/lib-publicapi';
 
 @EntityRepository(LabResult)
 export class CustomLabResultRepository extends Repository<LabResult> {

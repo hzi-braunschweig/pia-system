@@ -19,55 +19,56 @@ VALUES ('ApiTestStudy1', 'qtest-forscher1', 'write'),
        ('ApiTestStudy3', 'qtest-forscher1', 'write');
 
 -- Questionnaires
--- HINT: The number in this setup file has a design for easier usage: <study_number>00<questionnaire><question-position><answer_option-position>(<version>)
-INSERT INTO questionnaires (id, version, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
+-- HINT: The number in this setup file has a design for easier usage:
+-- <study_number>00<questionnaire><question-position><answer_option-position>(<version>)
+INSERT INTO questionnaires (id, version, sort_order, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
                             notification_body_in_progress, notification_weekday, notification_interval,
                             notification_interval_unit, activate_at_date, compliance_needed, expires_after_days,
                             finalises_after_days, created_at, type)
-VALUES (100100, 1, 'ApiTestStudy1', 'ApiImageTestQuestionnaire2', 2, 1, 'week', 1, 365, 3, 'PIA Fragebogen',
+VALUES (100100, 1, NULL, 'ApiTestStudy1', 'ApiImageTestQuestionnaire2', 2, 1, 'week', 1, 365, 3, 'PIA Fragebogen',
         'NeuNachricht', 'AltNachricht', NULL, NULL, NULL, NULL, TRUE, 5, 2, CURRENT_DATE, 'for_research_team');
-INSERT INTO questionnaires (id, version, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
+INSERT INTO questionnaires (id, version, sort_order, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
                             notification_body_in_progress, notification_weekday, notification_interval,
                             notification_interval_unit, activate_at_date, compliance_needed)
-VALUES (100200, 1, 'ApiTestStudy1', 'ApiTestQuestionnaire2v1', 2, 1, 'week', 1, 365, 3, 'PIA Fragebogen',
+VALUES (100200, 1, NULL, 'ApiTestStudy1', 'ApiTestQuestionnaire2v1', 2, 1, 'week', 1, 365, 3, 'PIA Fragebogen',
         'NeuNachricht',
         'AltNachricht', NULL, NULL, NULL, NULL, TRUE);
-INSERT INTO questionnaires (id, version, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
+INSERT INTO questionnaires (id, version, sort_order, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
                             notification_body_in_progress, notification_weekday, notification_interval,
                             notification_interval_unit, activate_at_date, compliance_needed)
-VALUES (100200, 2, 'ApiTestStudy1', 'ApiTestQuestionnaire2v2', 2, 1, 'week', 1, 365, 3, 'PIA Fragebogen',
+VALUES (100200, 2, 4, 'ApiTestStudy1', 'ApiTestQuestionnaire2v2', 2, 1, 'week', 1, 365, 3, 'PIA Fragebogen',
         'NeuNachricht',
         'AltNachricht', NULL, NULL, NULL, NULL, TRUE);
-INSERT INTO questionnaires (id, version, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
+INSERT INTO questionnaires (id, version, sort_order, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
                             notification_body_in_progress, notification_weekday, notification_interval,
                             notification_interval_unit, activate_at_date, compliance_needed, expires_after_days,
                             finalises_after_days, created_at, type)
-VALUES (100300, 1, 'ApiTestStudy1', 'ApiTestQuestionnaire', 1, 1, 'week', 1, 365, 13, 'PIA Fragebogen', 'NeuNachricht',
+VALUES (100300, 1, 3, 'ApiTestStudy1', 'ApiTestQuestionnaire', 1, 1, 'week', 1, 365, 13, 'PIA Fragebogen', 'NeuNachricht',
         'AltNachricht', NULL, NULL, NULL, NULL, TRUE, 1, 1, CURRENT_DATE, 'for_research_team');
-INSERT INTO questionnaires (id, version, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
+INSERT INTO questionnaires (id, version, sort_order, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
                             notification_body_in_progress)
-VALUES (100400, 1, 'ApiTestStudy1', 'ApiTestQuestionnaire4', 2, 1, 'week', 1, 365, 3, 'PIA Fragebogen', 'NeuNachricht',
+VALUES (100400, 1, 3, 'ApiTestStudy1', 'ApiTestQuestionnaire4', 2, 1, 'week', 1, 365, 3, 'PIA Fragebogen', 'NeuNachricht',
         'AltNachricht');
-INSERT INTO questionnaires (id, version, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
+INSERT INTO questionnaires (id, version, sort_order, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
                             notification_body_in_progress)
-VALUES (100500, 1, 'ApiTestStudy1', 'ApiTestQuestionnaire5', 1, 1, 'day', 1, 365, 3, 'PIA Fragebogen', 'NeuNachricht',
+VALUES (100500, 1, 2, 'ApiTestStudy1', 'ApiTestQuestionnaire5', 1, 1, 'day', 1, 365, 3, 'PIA Fragebogen', 'NeuNachricht',
         'AltNachricht');
-INSERT INTO questionnaires (id, version, study_id, name, custom_name, no_questions, cycle_amount, cycle_unit, activate_after_days,
+INSERT INTO questionnaires (id, version, sort_order, study_id, name, custom_name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
                             notification_body_in_progress)
-VALUES (100600, 1, 'ApiTestStudy1', 'ApiTestQuestionnaire6', 'already_in_use', 1, 1, 'day', 1, 365, 3, 'PIA Fragebogen', 'NeuNachricht',
+VALUES (100600, 1, 1, 'ApiTestStudy1', 'ApiTestQuestionnaire6', 'already_in_use', 1, 1, 'day', 1, 365, 3, 'PIA Fragebogen', 'NeuNachricht',
         'AltNachricht');
 
-INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
+INSERT INTO questionnaires (id, sort_order, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
                             notification_body_in_progress)
-VALUES (200100, 'ApiTestStudy2', 'ApiTestConditionTargetQuestionnaire', 1, NULL, 'once', 1, 50, 3,
+VALUES (200100, NULL, 'ApiTestStudy2', 'ApiTestConditionTargetQuestionnaire', 1, NULL, 'once', 1, 50, 3,
         'PIA Fragebogen Target',
         'NeuNachrichtTarget', 'AltNachrichtTarget');
 INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
@@ -76,10 +77,10 @@ INSERT INTO questionnaires (id, study_id, name, no_questions, cycle_amount, cycl
 VALUES (200200, 'ApiTestStudy2', 'ApiTestConditionSourceQuestionnaire', 1, 1, 'week', 1, 365, 3, 'PIA Fragebogen',
         'NeuNachrichtSource', 'AltNachrichtSource');
 
-INSERT INTO questionnaires (id, version, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
+INSERT INTO questionnaires (id, version, sort_order, study_id, name, no_questions, cycle_amount, cycle_unit, activate_after_days,
                             deactivate_after_days, notification_tries, notification_title, notification_body_new,
                             notification_body_in_progress)
-VALUES (200300, 1, 'ApiTestStudy2', 'ApiTestGeneratedVariableNames', 1, NULL, 'once', 1, 365, 0,
+VALUES (200300, 1, NULL, 'ApiTestStudy2', 'ApiTestGeneratedVariableNames', 1, NULL, 'once', 1, 365, 0,
         '', '', '');
 
 

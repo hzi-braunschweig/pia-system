@@ -20,6 +20,16 @@ export class ProbandsHandler {
     );
   };
 
+  public static readonly getExport: Lifecycle.Method = async (request) => {
+    const csv = await ProbandsInteractor.getExport(
+      request.params['studyName'] as string
+    );
+
+    return {
+      probandsExport: csv,
+    };
+  };
+
   /**
    * Creates the proband if it does not exist
    */

@@ -28,7 +28,7 @@ export class WebappServer extends Chart {
         automountToken: false,
       }),
 
-      replicas: 1,
+      replicas: 2,
 
       containers: [
         {

@@ -21,6 +21,7 @@ import { UserService } from '../../../psa.app.core/providers/user-service/user.s
 import { ComplianceService } from '../../../psa.app.core/providers/compliance-service/compliance-service';
 import { HttpEvent, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { FileDownloadService } from 'src/app/_services/file-download.service';
 
 @Component({
   selector: 'app-compliance-manager',
@@ -32,7 +33,8 @@ export class ComplianceManagerComponent implements OnInit {
     private readonly dialog: MatDialog,
     private readonly complianceService: ComplianceService,
     private readonly userService: UserService,
-    private readonly alertService: AlertService
+    private readonly alertService: AlertService,
+    private fileDownloadService: FileDownloadService
   ) {}
 
   @ViewChild(MatPaginator, { static: true })
@@ -140,11 +142,7 @@ export class ComplianceManagerComponent implements OnInit {
   saveExportFile(responseStream: Observable<HttpEvent<Blob>>): void {
     responseStream.subscribe({
       next: (response: HttpResponse<Blob>) => {
-        const downloadLink = document.createElement('a');
-        downloadLink.href = window.URL.createObjectURL(response.body);
-        downloadLink.setAttribute('download', 'export.zip');
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
+        this.fileDownloadService.downloadFile(response.body);
 
         this.isLoading = false;
       },

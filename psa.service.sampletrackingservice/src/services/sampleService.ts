@@ -10,8 +10,9 @@ import { complianceserviceClient } from '../clients/complianceserviceClient';
 import { SampleDto } from '../controllers/internal/dtos/sampleDto';
 import { LabResult } from '../entities/labResult';
 import { ParticipantComplianceIsMissing } from '../errors';
-import { Pseudonym, SampleId } from '../models/customTypes';
+import { SampleId } from '../models/customTypes';
 import { CustomLabResultRepository } from '../repositories/customLabResultRepository';
+import { Pseudonym } from '@pia/lib-publicapi';
 
 export class SampleService {
   public static async patchSample(

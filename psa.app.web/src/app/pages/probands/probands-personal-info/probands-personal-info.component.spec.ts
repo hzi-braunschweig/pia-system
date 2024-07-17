@@ -28,7 +28,7 @@ import {
 } from '../../../psa.app.core/models/instance.helper.spec';
 import { AlertService } from '../../../_services/alert.service';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
 import { DialogDeletePartnerComponent } from '../../../_helpers/dialog-delete-partner';
 import { Proband } from '../../../psa.app.core/models/proband';
@@ -37,6 +37,7 @@ import { CurrentUser } from '../../../_services/current-user.service';
 import { DatePipe } from '@angular/common';
 import { TranslateService } from '@ngx-translate/core';
 import SpyObj = jasmine.SpyObj;
+import { By } from '@angular/platform-browser';
 
 describe('ProbandsPersonalInfoComponent', () => {
   let fixture: MockedComponentFixture;
@@ -79,6 +80,7 @@ describe('ProbandsPersonalInfoComponent', () => {
       'getProbands',
       'getPendingComplianceChanges',
       'getPendingProbandDeletions',
+      'getProbandsExport',
     ]);
     alertService = jasmine.createSpyObj('AlertService', ['errorObject']);
     alertService.errorObject.and.callFake(console.error);
@@ -150,6 +152,29 @@ describe('ProbandsPersonalInfoComponent', () => {
       expect(component).toBeDefined();
       expect(userService.getStudies).toHaveBeenCalled();
       expect(alertService.errorObject).not.toHaveBeenCalled();
+    });
+
+    describe('export proband data', () => {
+      it('should export the proband data if download button is clicked', () => {
+        const downloadButton = fixture.debugElement.query(
+          By.css('[data-e2e="download-probands-button"]')
+        );
+        probandService.getProbandsExport.and.returnValue(
+          Promise.resolve({ probandsExport: 'test' })
+        );
+
+        downloadButton.nativeElement.click();
+        expect(probandService.getProbandsExport).toHaveBeenCalledOnceWith(
+          'study1'
+        );
+      });
+
+      it('should throw an error if no study is selected', async () => {
+        component.currentStudy = null;
+        await expectAsync(component.downloadProbandsOfStudy()).toBeRejectedWith(
+          new Error('No study selected')
+        );
+      });
     });
   });
 

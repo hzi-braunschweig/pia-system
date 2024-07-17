@@ -81,7 +81,7 @@ describe('/public/studies/{studyName}/participants', () => {
       mockGetProbandAccountsByStudyName(
         testSandbox,
         ['QTestStudy1'],
-        ['qtest-1111', 'qtest-2222', 'qtest-3333']
+        ['test01-1111', 'qtest-2222', 'qtest-3333']
       )
     );
 
@@ -144,9 +144,9 @@ describe('/public/studies/{studyName}/participants', () => {
       const expectedParticipantCount = 2;
       expect(response.body).to.have.length(expectedParticipantCount);
 
-      const proband1 = response.body.find((p) => p.pseudonym === 'qtest-1111');
+      const proband1 = response.body.find((p) => p.pseudonym === 'test01-1111');
       expect(proband1).to.deep.equal({
-        pseudonym: 'qtest-1111',
+        pseudonym: 'test01-1111',
         ids: null,
         study: 'QTestStudy1',
         status: 'active',
@@ -178,7 +178,7 @@ describe('/public/studies/{studyName}/participants', () => {
 
   describe('GET /public/studies/{studyName}/participants/{pseudonym}', () => {
     beforeEach(() =>
-      mockGetProbandAccount(testSandbox, 'qtest-1111', 'QTestStudy1')
+      mockGetProbandAccount(testSandbox, 'test01-1111', 'QTestStudy1')
     );
 
     it('should return 401 if no auth token is appended', async () => {
@@ -188,7 +188,7 @@ describe('/public/studies/{studyName}/participants', () => {
       // Act
       const response = await chai
         .request(apiAddress)
-        .get(`/public/studies/${studyName}/participants/qtest-1111`);
+        .get(`/public/studies/${studyName}/participants/test01-1111`);
 
       // Assert
       expect(response).to.have.status(StatusCodes.UNAUTHORIZED);
@@ -203,7 +203,7 @@ describe('/public/studies/{studyName}/participants', () => {
       // Act
       const response = await chai
         .request(apiAddress)
-        .get(`/public/studies/${studyName}/participants/qtest-1111`)
+        .get(`/public/studies/${studyName}/participants/test01-1111`)
         .set(apiClientHeader);
 
       // Assert
@@ -217,7 +217,7 @@ describe('/public/studies/{studyName}/participants', () => {
       // Act
       const response = await chai
         .request(apiAddress)
-        .get(`/public/studies/${studyName}/participants/qtest-1111`)
+        .get(`/public/studies/${studyName}/participants/test01-1111`)
         .set(apiClientHeader);
 
       // Assert
@@ -245,13 +245,13 @@ describe('/public/studies/{studyName}/participants', () => {
       // Act
       const response: { body: ParticipantDto[] } = await chai
         .request(apiAddress)
-        .get(`/public/studies/${studyName}/participants/qtest-1111`)
+        .get(`/public/studies/${studyName}/participants/test01-1111`)
         .set(apiClientHeader);
 
       // Assert
       expect(response).to.have.status(StatusCodes.OK);
       expect(response.body).to.deep.equal({
-        pseudonym: 'qtest-1111',
+        pseudonym: 'test01-1111',
         ids: null,
         study: 'QTestStudy1',
         status: 'active',
@@ -357,7 +357,7 @@ describe('/public/studies/{studyName}/participants', () => {
         .request(apiAddress)
         .post(`/public/studies/${studyName}/participants`)
         .set(apiClientHeader)
-        .send(createParticipantRequest({ pseudonym: 'qtest-1111' }));
+        .send(createParticipantRequest({ pseudonym: 'test01-1111' }));
 
       // Assert
       expect(result).to.have.status(StatusCodes.CONFLICT);
@@ -396,7 +396,7 @@ describe('/public/studies/{studyName}/participants', () => {
         statusCode: 422,
         error: 'Unprocessable Entity',
         message:
-          "Payload is invalid:\nparticipant.pseudonym: QTest-0001 --> Not match in '^[a-z]+-[0-9]+$'",
+          "Payload is invalid:\nparticipant.pseudonym: QTest-0001 --> Not match in '^[a-z0-9]+-[0-9]+$'",
       });
     });
 
@@ -496,7 +496,7 @@ describe('/public/studies/{studyName}/participants', () => {
 
   describe('PATCH /public/studies/{studyName}/participants/{pseudonym}', () => {
     beforeEach(() =>
-      mockGetProbandAccount(testSandbox, 'qtest-1111', 'QTestStudy1')
+      mockGetProbandAccount(testSandbox, 'test01-1111', 'QTestStudy1')
     );
 
     it('should return 401 if no auth token is appended', async () => {
@@ -506,7 +506,7 @@ describe('/public/studies/{studyName}/participants', () => {
       // Act
       const response = await chai
         .request(apiAddress)
-        .patch(`/public/studies/${studyName}/participants/qtest-1111`)
+        .patch(`/public/studies/${studyName}/participants/test01-1111`)
         .send({ studyCenter: 'new_sz' });
 
       // Assert
@@ -522,7 +522,7 @@ describe('/public/studies/{studyName}/participants', () => {
       // Act
       const response = await chai
         .request(apiAddress)
-        .patch(`/public/studies/${studyName}/participants/qtest-1111`)
+        .patch(`/public/studies/${studyName}/participants/test01-1111`)
         .send({ studyCenter: 'new_sz' })
         .set(apiClientHeader);
 
@@ -537,7 +537,7 @@ describe('/public/studies/{studyName}/participants', () => {
       // Act
       const response = await chai
         .request(apiAddress)
-        .patch(`/public/studies/${studyName}/participants/qtest-1111`)
+        .patch(`/public/studies/${studyName}/participants/test01-1111`)
         .send({ studyCenter: 'new_sz' })
         .set(apiClientHeader);
 
@@ -582,14 +582,14 @@ describe('/public/studies/{studyName}/participants', () => {
       // Act
       const response: { body: ParticipantDto[] } = await chai
         .request(apiAddress)
-        .patch(`/public/studies/${studyName}/participants/qtest-1111`)
+        .patch(`/public/studies/${studyName}/participants/test01-1111`)
         .send({ studyCenter: 'new_sz' })
         .set(apiClientHeader);
 
       // Assert
       expect(response).to.have.status(StatusCodes.OK);
       expect(response.body).to.deep.equal({
-        pseudonym: 'qtest-1111',
+        pseudonym: 'test01-1111',
         ids: null,
         study: 'QTestStudy1',
         status: 'active',
@@ -610,14 +610,14 @@ describe('/public/studies/{studyName}/participants', () => {
       // Act
       const response: { body: ParticipantDto[] } = await chai
         .request(apiAddress)
-        .patch(`/public/studies/${studyName}/participants/qtest-1111`)
+        .patch(`/public/studies/${studyName}/participants/test01-1111`)
         .send({ isTestParticipant: true })
         .set(apiClientHeader);
 
       // Assert
       expect(response).to.have.status(StatusCodes.OK);
       expect(response.body).to.deep.equal({
-        pseudonym: 'qtest-1111',
+        pseudonym: 'test01-1111',
         ids: null,
         study: 'QTestStudy1',
         status: 'active',
@@ -634,7 +634,7 @@ describe('/public/studies/{studyName}/participants', () => {
 
   describe('DELETE /public/studies/{studyName}/participants/{pseudonym}', () => {
     beforeEach(() =>
-      mockGetProbandAccount(testSandbox, 'qtest-1111', 'QTestStudy1')
+      mockGetProbandAccount(testSandbox, 'test01-1111', 'QTestStudy1')
     );
 
     it('should return 401 if no auth token is appended', async () => {
@@ -644,7 +644,7 @@ describe('/public/studies/{studyName}/participants', () => {
       // Act
       const response = await chai
         .request(apiAddress)
-        .delete(`/public/studies/${studyName}/participants/qtest-1111`);
+        .delete(`/public/studies/${studyName}/participants/test01-1111`);
 
       // Assert
       expect(response).to.have.status(StatusCodes.UNAUTHORIZED);
@@ -659,7 +659,7 @@ describe('/public/studies/{studyName}/participants', () => {
       // Act
       const response = await chai
         .request(apiAddress)
-        .delete(`/public/studies/${studyName}/participants/qtest-1111`)
+        .delete(`/public/studies/${studyName}/participants/test01-1111`)
         .set(apiClientHeader);
 
       // Assert
@@ -673,7 +673,7 @@ describe('/public/studies/{studyName}/participants', () => {
       // Act
       const response = await chai
         .request(apiAddress)
-        .delete(`/public/studies/${studyName}/participants/qtest-1111`)
+        .delete(`/public/studies/${studyName}/participants/test01-1111`)
         .set(apiClientHeader);
 
       // Assert
@@ -701,17 +701,17 @@ describe('/public/studies/{studyName}/participants', () => {
       // Act
       const response: { body: ParticipantDto[] } = await chai
         .request(apiAddress)
-        .delete(`/public/studies/${studyName}/participants/qtest-1111`)
+        .delete(`/public/studies/${studyName}/participants/test01-1111`)
         .set(apiClientHeader);
 
       // Assert
       expect(response).to.have.status(StatusCodes.NO_CONTENT);
 
       const participant = await getRepository(Proband).findOne({
-        where: { pseudonym: 'qtest-1111' },
+        where: { pseudonym: 'test01-1111' },
       });
       expect(participant).to.contain({
-        pseudonym: 'qtest-1111',
+        pseudonym: 'test01-1111',
         status: 'deleted',
       });
     });
@@ -724,7 +724,7 @@ describe('/public/studies/{studyName}/participants', () => {
       const response: { body: ParticipantDto[] } = await chai
         .request(apiAddress)
         .delete(
-          `/public/studies/${studyName}/participants/qtest-1111?deletionType=full`
+          `/public/studies/${studyName}/participants/test01-1111?deletionType=full`
         )
         .set(apiClientHeader);
 
@@ -732,7 +732,7 @@ describe('/public/studies/{studyName}/participants', () => {
       expect(response).to.have.status(StatusCodes.NO_CONTENT);
 
       const participant = await getRepository(Proband).findOne({
-        where: { pseudonym: 'qtest-1111' },
+        where: { pseudonym: 'test01-1111' },
       });
       expect(participant).to.be.undefined;
     });

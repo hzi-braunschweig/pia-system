@@ -12,7 +12,7 @@
   "scripts": {
     "lint": "eslint .",
     "build": "tsc -p tsconfig.build.json",
-    "test.unit": "nyc mocha src/**/*.spec.ts tests/**/*.spec.ts"
+    "test.unit": "nyc mocha src/**/*.spec.ts tests/**/*.spec.ts --exit"
   },
   "dependencies": {
     "dompurify": "^2.4.1",

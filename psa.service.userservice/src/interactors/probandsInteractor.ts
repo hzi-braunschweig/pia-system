@@ -32,6 +32,10 @@ export class ProbandsInteractor {
     return await ProbandService.getAllProbandsOfStudy(studyName);
   }
 
+  public static async getExport(studyName: string): Promise<string> {
+    return await ProbandService.getExport(studyName);
+  }
+
   public static async createProband(
     studyName: string,
     probandRequest: CreateProbandRequest

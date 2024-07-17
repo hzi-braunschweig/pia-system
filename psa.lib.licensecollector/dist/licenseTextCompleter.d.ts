@@ -3,7 +3,6 @@ export declare class LicenseTextCompleter {
     static GPL_2_0: string;
     static GPL_3_0: string;
     static LGPL_3_0: string;
-    static ISC: string;
     static MIT_ANGULAR: string;
     static MIT_ANGULAR_FIRE: string;
     static MIT_IONIC: string;

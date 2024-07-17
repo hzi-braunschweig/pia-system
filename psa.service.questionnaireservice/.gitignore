@@ -30,8 +30,8 @@ ssl
 tests/private.key
 
 # Build
+.nx/
 dist/
 spec/
 
 resources/README.pdf
-

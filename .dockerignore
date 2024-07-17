@@ -12,6 +12,7 @@ psa.app.web/out-tsc
 psa.lib.templatepipeline/.local-chromium
 
 # Common Stuff
+**/.angular
 **/.gitignore
 **/node_modules
 **/Dockerfile

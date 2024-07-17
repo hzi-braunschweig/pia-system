@@ -36,124 +36,135 @@
 
   <mat-card>
     <mat-card-content>
-      <table
-        mat-table
-        #table
-        [dataSource]="dataSource"
-        matSortActive="id"
-        matSortDirection="asc"
-        matSort
-      >
-        <!-- ID Column -->
-        <ng-container matColumnDef="id" matSortStart>
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
-          <td mat-cell *matCellDef="let row">{{ row.id }}</td>
-        </ng-container>
+      <div class="table-container">
+        <table
+          mat-table
+          #table
+          [dataSource]="dataSource"
+          matSortActive="sort_order"
+          matSortDirection="asc"
+          matSort
+        >
+          <!-- ID Column -->
+          <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+            <td mat-cell *matCellDef="let row">{{ row.id }}</td>
+          </ng-container>
 
-        <!-- Version Column -->
-        <ng-container matColumnDef="version">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>
-            {{ 'QUESTIONNAIRES_FORSCHER.VERSION' | translate }}
-          </th>
-          <td
-            mat-cell
-            *matCellDef="let row"
-            data-e2e="e2e-questionnaire-version"
-          >
-            {{ row.version }}
-          </td>
-        </ng-container>
-
-        <!-- Study Column -->
-        <ng-container matColumnDef="study_id">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>
-            {{ 'QUESTIONNAIRES_FORSCHER.STUDY_ID' | translate }}
-          </th>
-          <td mat-cell *matCellDef="let row" data-e2e="e2e-study-name">
-            {{ row.study_id }}
-          </td>
-        </ng-container>
-
-        <!-- Name Column -->
-        <ng-container matColumnDef="name">
-          <th
-            mat-header-cell
-            *matHeaderCellDef
-            mat-sort-header
-            class="column name"
-          >
-            {{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_NAME' | translate }}
-          </th>
-          <td
-            mat-cell
-            *matCellDef="let row"
-            class="column name"
-            data-e2e="e2e-questionnaire-name"
-          >
-            {{ row.name }}
-          </td>
-        </ng-container>
-
-        <!-- Numer of questions Column -->
-        <ng-container matColumnDef="no_questions">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>
-            {{ 'QUESTIONNAIRES_FORSCHER.QUESTIONS_NUMBER' | translate }}
-          </th>
-          <td mat-cell *matCellDef="let row">
-            {{ row.no_questions }}
-          </td>
-        </ng-container>
-
-        <!-- Active Column -->
-        <ng-container matColumnDef="active">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>
-            {{ 'QUESTIONNAIRES_FORSCHER.ACTIVE_STATUS' | translate }}
-          </th>
-          <td mat-cell *matCellDef="let row">
-            <ng-container *ngIf="row.active">
-              {{ 'QUESTIONNAIRES_FORSCHER.ACTIVE' | translate }}
-            </ng-container>
-            <ng-container *ngIf="!row.active">
-              {{ 'QUESTIONNAIRES_FORSCHER.NOT_ACTIVE' | translate }}
-            </ng-container>
-          </td>
-        </ng-container>
-
-        <!-- Updated At Column -->
-        <ng-container matColumnDef="updated_at">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>
-            {{ 'QUESTIONNAIRES_FORSCHER.UPDATED_AT' | translate }}
-          </th>
-          <td mat-cell *matCellDef="let row">
-            {{ row.updated_at | date: 'dd.MM.yyyy HH:mm:ss' }}
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="delete">
-          <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let row">
-            <button
-              id="deleteicon"
-              mat-icon-button
-              (click)="openDialog(row.id, row.version)"
+          <!-- Version Column -->
+          <ng-container matColumnDef="version">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'QUESTIONNAIRES_FORSCHER.VERSION' | translate }}
+            </th>
+            <td
+              mat-cell
+              *matCellDef="let row"
+              data-e2e="e2e-questionnaire-version"
             >
-              <mat-icon>delete</mat-icon>
-            </button>
-            <button
-              id="editicon"
-              #delete
-              mat-icon-button
-              (click)="editQuestionnaire(row.id, row.version)"
+              {{ row.version }}
+            </td>
+          </ng-container>
+
+          <!-- Study Column -->
+          <ng-container matColumnDef="study_id">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'QUESTIONNAIRES_FORSCHER.STUDY_ID' | translate }}
+            </th>
+            <td mat-cell *matCellDef="let row" data-e2e="e2e-study-name">
+              {{ row.study_id }}
+            </td>
+          </ng-container>
+
+          <!-- Sort Order Column -->
+          <ng-container matColumnDef="sort_order" matSortStart>
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'QUESTIONNAIRES_FORSCHER.SORT_ORDER' | translate }}
+            </th>
+            <td mat-cell *matCellDef="let row">
+              {{ row.sort_order }}
+            </td>
+          </ng-container>
+
+          <!-- Name Column -->
+          <ng-container matColumnDef="name">
+            <th
+              mat-header-cell
+              *matHeaderCellDef
+              mat-sort-header
+              class="column name"
             >
-              <mat-icon>mode_edit</mat-icon>
-            </button>
-          </td>
-        </ng-container>
+              {{ 'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_NAME' | translate }}
+            </th>
+            <td
+              mat-cell
+              *matCellDef="let row"
+              class="column name"
+              data-e2e="e2e-questionnaire-name"
+            >
+              {{ row.name }}
+            </td>
+          </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      </table>
+          <!-- Numer of questions Column -->
+          <ng-container matColumnDef="no_questions">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'QUESTIONNAIRES_FORSCHER.QUESTIONS_NUMBER' | translate }}
+            </th>
+            <td mat-cell *matCellDef="let row">
+              {{ row.no_questions }}
+            </td>
+          </ng-container>
 
+          <!-- Active Column -->
+          <ng-container matColumnDef="active">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'QUESTIONNAIRES_FORSCHER.ACTIVE_STATUS' | translate }}
+            </th>
+            <td mat-cell *matCellDef="let row">
+              <ng-container *ngIf="row.active">
+                {{ 'QUESTIONNAIRES_FORSCHER.ACTIVE' | translate }}
+              </ng-container>
+              <ng-container *ngIf="!row.active">
+                {{ 'QUESTIONNAIRES_FORSCHER.NOT_ACTIVE' | translate }}
+              </ng-container>
+            </td>
+          </ng-container>
+
+          <!-- Updated At Column -->
+          <ng-container matColumnDef="updated_at">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>
+              {{ 'QUESTIONNAIRES_FORSCHER.UPDATED_AT' | translate }}
+            </th>
+            <td mat-cell *matCellDef="let row">
+              {{ row.updated_at | date: 'dd.MM.yyyy HH:mm:ss' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="delete">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let row">
+              <button
+                id="deleteicon"
+                mat-icon-button
+                (click)="openDialog(row.id, row.version)"
+              >
+                <mat-icon>delete</mat-icon>
+              </button>
+              <button
+                id="editicon"
+                #delete
+                mat-icon-button
+                (click)="editQuestionnaire(row.id, row.version)"
+              >
+                <mat-icon>mode_edit</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
       <div
         class="table-no-results"
         *ngIf="!isLoading"

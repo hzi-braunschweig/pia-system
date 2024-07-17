@@ -24,7 +24,6 @@ export class QuestionnaireInstancesListForProbandComponent implements OnInit {
 
   constructor(
     private questionnaireService: QuestionnaireService,
-    private activatedRoute: ActivatedRoute,
     private alertService: AlertService
   ) {}
 

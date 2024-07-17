@@ -10,6 +10,7 @@ import { MessageQueueClientConnection } from './messageQueueClientConnection';
 import { MessageQueueClientHelper } from './messageQueueClientHelper';
 import { HandleMessageArgs } from './messageQueueClientInternals';
 import { MessageQueueTopic } from './messageQueueTopics';
+import { MessageTopicMap } from './messageQueueMessage';
 
 export interface Producer<M> {
   publish: (message: M) => Promise<boolean>;
@@ -80,9 +81,10 @@ export class MessageQueueClient extends MessageQueueClientConnection {
    * for every message you want to send!
    * Otherwise, we will get a memory leak!
    */
-  public async createProducer<M>(
-    topic: MessageQueueTopic
-  ): Promise<Producer<M>> {
+  public async createProducer<
+    M extends MessageTopicMap[T],
+    T extends MessageQueueTopic
+  >(topic: T): Promise<Producer<M>> {
     if (!this.connection) {
       throw new Error('not connected');
     }
@@ -166,10 +168,10 @@ export class MessageQueueClient extends MessageQueueClientConnection {
    * If the message callback throws an exception, the message will get
    * rescheduled once!
    */
-  public async createConsumer<M>(
-    topic: MessageQueueTopic,
-    onMessage: HandleMessageArgs<M>['onMessage']
-  ): Promise<void> {
+  public async createConsumer<
+    T extends MessageQueueTopic,
+    M extends MessageTopicMap[T]
+  >(topic: T, onMessage: HandleMessageArgs<M>['onMessage']): Promise<void> {
     if (!this.connection) {
       throw new Error('not connected');
     }

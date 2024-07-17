@@ -7,6 +7,7 @@
 import { MessageQueueClient } from './messageQueueClient';
 import { HandleMessageArgs } from './messageQueueClientInternals';
 import { MessageQueueTopic } from './messageQueueTopics';
+import { MessageTopicMap } from './messageQueueMessage';
 
 type HandleMessage = (args: HandleMessageArgs<unknown>) => Promise<void>;
 
@@ -31,9 +32,12 @@ export class MessageQueueTestUtils {
    * A helper function that can be used to wait until a message of a topic is processed.
    * Only use this in integration tests!
    */
-  public static async injectMessageProcessedAwaiter<M>(
+  public static async injectMessageProcessedAwaiter<
+    T extends MessageQueueTopic,
+    M extends MessageTopicMap[T]
+  >(
     messageQueueClient: MessageQueueClient,
-    topic: MessageQueueTopic,
+    topic: T,
     sandbox?: Sandbox
   ): Promise<{ message: M; timestamp: number }> {
     return new Promise<{ message: M; timestamp: number }>((resolve) => {

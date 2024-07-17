@@ -22,18 +22,27 @@ export class AnalyzerService extends NodeJSService {
       messageQueue: MessageQueue;
     }
   ) {
-    super(scope, configuration, 'analyzerservice', {
-      QPIA_HOST: qpiaService.service.name,
-      QPIA_PORT: qpiaService.service.port,
-      QPIA_USER: configuration.variables.qpia.user,
-      QPIA_PASSWORD: configuration.variables.qpia.password,
-      QPIA_DB: configuration.variables.qpia.db,
+    super(
+      scope,
+      configuration,
+      'analyzerservice',
+      {
+        QPIA_HOST: qpiaService.service.name,
+        QPIA_PORT: qpiaService.service.port,
+        QPIA_USER: configuration.variables.qpia.user,
+        QPIA_PASSWORD: configuration.variables.qpia.password,
+        QPIA_DB: configuration.variables.qpia.db,
 
-      MESSAGEQUEUE_HOST: messageQueue.service.name,
-      MESSAGEQUEUE_PORT: messageQueue.service.port,
-      MESSAGEQUEUE_APP_PASSWORD:
-        configuration.variables.messageQueue.appPassword,
-      MESSAGEQUEUE_APP_USER: configuration.variables.messageQueue.appUser,
-    });
+        MESSAGEQUEUE_HOST: messageQueue.service.name,
+        MESSAGEQUEUE_PORT: messageQueue.service.port,
+        MESSAGEQUEUE_APP_PASSWORD:
+          configuration.variables.messageQueue.appPassword,
+        MESSAGEQUEUE_APP_USER: configuration.variables.messageQueue.appUser,
+      },
+      {
+        // is currently not scalable because its using a scheduler and listening for db events
+        replicas: 1,
+      }
+    );
   }
 }

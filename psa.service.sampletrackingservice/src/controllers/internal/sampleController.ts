@@ -14,9 +14,10 @@ import {
   LabResultNotFound,
   ParticipantComplianceIsMissing,
 } from '../../errors';
-import { Pseudonym, SampleId } from '../../models/customTypes';
+import { SampleId } from '../../models/customTypes';
 import { SampleService } from '../../services/sampleService';
 import { SampleDto } from './dtos/sampleDto';
+import { Pseudonym } from '@pia/lib-publicapi';
 
 @Route('study/{studyName}/participants/{pseudonym}/samples')
 @Tags('Samples')

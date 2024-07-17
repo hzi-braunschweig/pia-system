@@ -14,3 +14,7 @@ export interface PersonalDataInternalDto {
     email?: string;
     comment?: string;
 }
+export declare type PersonalDataInternalDtoGet = Required<PersonalDataInternalDto> & {
+    pseudonym: string;
+    study: string;
+};

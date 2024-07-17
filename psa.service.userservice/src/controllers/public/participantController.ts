@@ -26,7 +26,6 @@ import {
   ParticipantDto,
   ParticipantStatus,
   PatchParticipantRequestDto,
-  Pseudonym,
 } from '../../models/participant';
 import { StatusCodes } from 'http-status-codes';
 import { EntityNotFoundError } from 'typeorm';
@@ -46,6 +45,7 @@ import {
 import { ProbandService } from '../../services/probandService';
 import { Boom } from '@hapi/boom';
 import { publicApiSecurity } from '@pia/lib-service-core';
+import { Pseudonym } from '@pia/lib-publicapi';
 
 @Route('public/studies/{studyName}/participants')
 @Tags('Participants')

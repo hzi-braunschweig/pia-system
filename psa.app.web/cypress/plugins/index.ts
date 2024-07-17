@@ -5,7 +5,8 @@
  */
 
 const cypressLogToOutput = require('cypress-log-to-output');
-const { rm, existsSync, readFileSync } = require('fs');
+const { existsSync, readFileSync } = require('fs');
+const { rm } = require('fs/promises');
 
 export default function nodeEvents(
   on: Cypress.PluginEvents,
@@ -14,38 +15,20 @@ export default function nodeEvents(
   cypressLogToOutput.install(on);
 
   // Remove video files if tests pass to avoid additional execution time by compressing it
-  on('after:spec', (spec, results) => {
-    return new Promise((resolve, reject) => {
-      if (results.stats.failures === 0 && results.video) {
-        rm(results.video, { force: true }, (err) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(null);
-          }
-        });
-      } else {
-        resolve(null);
-      }
-    });
+  on('after:spec', async (spec, results) => {
+    if (results.stats.failures === 0 && results.video) {
+      await rm(results.video, { force: true });
+    }
   });
 
   on('task', {
-    deleteFolder(folderName: string): Promise<null> {
-      return new Promise((resolve, reject) => {
-        rm(
-          folderName,
-          { maxRetries: 10, recursive: true, force: true },
-          (err) => {
-            if (err) {
-              console.error(err);
-              reject(err);
-            } else {
-              resolve(null);
-            }
-          }
-        );
-      });
+    async deleteFolder(folderName: string): Promise<null> {
+      await rm(folderName, { maxRetries: 10, recursive: true, force: true });
+      return null;
+    },
+    async deleteFileIfExists(filePath: string): Promise<null> {
+      await rm(filePath, { force: true });
+      return null;
     },
     readFileMaybe(filename: string): string | null {
       if (existsSync(filename)) {

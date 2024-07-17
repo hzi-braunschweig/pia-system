@@ -100,3 +100,17 @@ export async function txWait(queries: Query[]): Promise<void> {
   });
   await promise;
 }
+
+export async function waitForConditionToBeTrue(
+  conditionFn: () => boolean,
+  tries = 3,
+  timeout = 50
+): Promise<void> {
+  return new Promise<void>((resolve) => {
+    let count = 0;
+    const handler = (): unknown =>
+      conditionFn() || count > tries ? resolve() : count++;
+
+    setInterval(handler, timeout);
+  });
+}

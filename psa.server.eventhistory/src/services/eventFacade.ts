@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { EventEntity } from '../entity/event';
 import { ConfigurationService } from './configurationService';
 import { EventService } from './eventService';
 import { RequestWithUser } from '../models/requestWithUser';
@@ -14,6 +13,7 @@ import {
 } from '../errors';
 import { StudyName } from '@pia/lib-publicapi';
 import { EventTypeString, EventType } from '../events';
+import { EventResponseDto } from '../controllers/public/eventResponseDto';
 
 export class EventFacade {
   public static async getEvents(
@@ -24,7 +24,7 @@ export class EventFacade {
       to?: Date;
       type?: EventTypeString;
     } = {}
-  ): Promise<EventEntity[]> {
+  ): Promise<EventResponseDto[]> {
     await this.assertEnabledEventHistory();
 
     const allowedStudies = this.getAllowedStudiesFromRequest(request).filter(
@@ -35,12 +35,12 @@ export class EventFacade {
       throw new ClientHasNoAccessToStudyError();
     }
 
-    return await EventService.getEvents({
+    return (await EventService.getEvents({
       studyNames: allowedStudies,
       from: filter.from,
       to: filter.to,
       type: filter.type as unknown as EventType,
-    });
+    })) as unknown as EventResponseDto[];
   }
 
   private static async assertEnabledEventHistory(): Promise<void> {

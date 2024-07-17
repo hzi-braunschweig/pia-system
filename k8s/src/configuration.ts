@@ -18,6 +18,32 @@ import * as fs from 'fs';
 
 export type Variables = Record<string, string | boolean | number | EnvValue>;
 
+const PIA_IMAGES: string[] = [
+  'k8s',
+  'psa.database',
+  'psa.database.ewpia',
+  'psa.database.ipia',
+  'psa.server.messagequeue',
+  'psa.server.auth',
+  'psa.app.web',
+  'psa.service.userservice',
+  'psa.service.loggingservice',
+  'psa.service.personaldataservice',
+  'psa.service.modysservice',
+  'psa.service.complianceservice',
+  'psa.service.sampletrackingservice',
+  'psa.server.publicapi',
+  'psa.server.eventhistory',
+  'psa.service.questionnaireservice',
+  'psa.service.analyzerservice',
+  'psa.service.notificationservice',
+  'psa.service.feedbackstatisticservice',
+  'psa.service.sormasservice',
+  'psa.server.apigateway',
+  'psa.server.autheventproxy',
+  'psa.server.mailserver',
+];
+
 export class Configuration extends Chart {
   public readonly configSecret = Secret.fromSecretName(
     this,
@@ -273,7 +299,14 @@ export class Configuration extends Chart {
   }
 
   public getImage(name: string): string {
+    if (!PIA_IMAGES.includes(name)) {
+      throw new Error(`please add ${name} to PIA_IMAGES before using it`);
+    }
     return `registry.hzdr.de/pia-eresearch-system/pia/${name}:${this.piaVersion}`;
+  }
+
+  public getAllImages(): string[] {
+    return PIA_IMAGES.map((image) => this.getImage(image));
   }
 
   public getMetadata(): ApiObjectMetadata {

@@ -34,6 +34,7 @@ export class Precheck extends Chart {
         annotations: {
           'argocd.argoproj.io/hook': 'PreSync',
           'argocd.argoproj.io/hook-delete-policy': 'BeforeHookCreation',
+          'linkerd.io/inject': 'false',
         },
       },
       podMetadata: configuration.getMetadata(),
@@ -81,5 +82,30 @@ export class Precheck extends Chart {
         },
       ],
     });
+
+    for (const image of configuration.getAllImages()) {
+      this.job.addInitContainer({
+        image,
+        command: ['true'],
+
+        imagePullPolicy: ImagePullPolicy.IF_NOT_PRESENT,
+        securityContext: {
+          ...configuration.getDefaultSecurityContext(),
+          user: 1000,
+          group: 1000,
+        },
+
+        resources: {
+          cpu: {
+            request: Cpu.units(0.1),
+            limit: Cpu.units(1),
+          },
+          memory: {
+            request: Size.mebibytes(16),
+            limit: Size.mebibytes(16),
+          },
+        },
+      });
+    }
   }
 }

@@ -5,7 +5,11 @@
  */
 
 import { ServiceClient } from '../core/serviceClient';
-import { PersonalDataInternalDto } from '../dtos/personalData';
+import { PendingPersonalDataDeletion } from '../dtos/pendingDeletion';
+import {
+  PersonalDataInternalDto,
+  PersonalDataInternalDtoGet,
+} from '../dtos/personalData';
 
 export class PersonaldataserviceClient extends ServiceClient {
   /**
@@ -27,7 +31,7 @@ export class PersonaldataserviceClient extends ServiceClient {
   }
 
   /**
-   * Deletes the personal data of the proband based on the given username
+   * Gets the email of the proband based on the given username
    */
   public async getPersonalDataEmail(pseudonym: string): Promise<string | null> {
     return await this.httpClient.get(
@@ -36,6 +40,28 @@ export class PersonaldataserviceClient extends ServiceClient {
         responseType: 'text',
         returnNullWhenNotFound: true,
       }
+    );
+  }
+
+  /**
+   * Gets the personal data of all probands of the given study
+   */
+  public async getPersonalData(
+    studyName: string
+  ): Promise<PersonalDataInternalDtoGet[]> {
+    return await this.httpClient.get(
+      `/personal/personalData/study/${encodeURIComponent(studyName)}`
+    );
+  }
+
+  /**
+   * Gets the pending deletions of all probands of the given study
+   */
+  public async getPendingPersonalDataDeletions(
+    studyName: string
+  ): Promise<PendingPersonalDataDeletion[]> {
+    return await this.httpClient.get(
+      `/personal/studies/${encodeURIComponent(studyName)}/pendingdeletions`
     );
   }
 

@@ -7,7 +7,6 @@
 import Boom from '@hapi/boom';
 import { runTransaction } from '../db';
 import { PersonalDataRepository } from '../repositories/personalDataRepository';
-import { userserviceClient } from '../clients/userserviceClient';
 import { PersonalData, PersonalDataReq } from '../models/personalData';
 import { probandAuthClient } from '../clients/authServerClient';
 import { assert } from 'ts-essentials';
@@ -21,39 +20,42 @@ export class PersonalDataService {
    * @param skipUpdateAccount  if true, the email address will not be updated in the probands account
    */
   public static async createOrUpdate(
-    pseudonym: string,
+    proband: {
+      pseudonym: string;
+      complianceContact: boolean;
+      study: string;
+    },
     personalData: PersonalDataReq,
     skipUpdateAccount = false
   ): Promise<PersonalData> {
-    const proband = await userserviceClient.getProband(pseudonym);
-    if (!proband) {
-      throw Boom.notFound('proband does not exist');
-    }
     if (!proband.complianceContact) {
       throw Boom.forbidden('proband has refused to be contacted');
     }
     return runTransaction(async (transaction) => {
       const existingPersonalData = await PersonalDataRepository.getPersonalData(
-        pseudonym,
+        proband.pseudonym,
         { transaction }
       );
       let result: PersonalData;
       if (existingPersonalData) {
         result = await PersonalDataRepository.updatePersonalData(
-          pseudonym,
+          proband.pseudonym,
           personalData,
           { transaction }
         );
       } else {
         result = await PersonalDataRepository.createPersonalData(
-          pseudonym,
+          proband.pseudonym,
           proband.study,
           personalData,
           { transaction }
         );
       }
       if (!skipUpdateAccount && personalData.email) {
-        await this.updateAccountMailAddress(pseudonym, personalData.email);
+        await this.updateAccountMailAddress(
+          proband.pseudonym,
+          personalData.email
+        );
       }
       return result;
     });

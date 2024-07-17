@@ -13,19 +13,16 @@ import {
   MessageQueueClient,
   MessageQueueTopic,
   MessageQueueMessage,
+  MessageTopicMap,
 } from '@pia/lib-messagequeue';
 import { EventHistoryServer } from '../../src/server';
 import { Event } from '../../src/entity/event';
 import { messageQueueService } from '../../src/services/messageQueueService';
-import {
-  SupportedTopics,
-  EventType,
-  SupportedMessages,
-} from '../../src/events';
+import { SupportedTopics, EventType } from '../../src/events';
 
-interface TestCase {
-  topic: EventType;
-  message: SupportedMessages;
+interface TestCase<T extends EventType> {
+  topic: T;
+  message: MessageTopicMap[T];
 }
 
 describe('save events', () => {
@@ -46,36 +43,84 @@ describe('save events', () => {
     await dataSource.getRepository(Event).clear();
   });
 
-  const testCasesSuccess: TestCase[] = [
-    {
-      topic: MessageQueueTopic.PROBAND_LOGGED_IN,
-      message: { pseudonym: 'stdya-000000001', studyName: 'Study A' },
-    },
-    {
-      topic: MessageQueueTopic.PROBAND_CREATED,
-      message: { pseudonym: 'stdya-000000001', studyName: 'Study A' },
-    },
-    {
-      topic: MessageQueueTopic.PROBAND_DELETED,
-      message: { pseudonym: 'stdya-000000001', studyName: 'Study A' },
-    },
-    {
-      topic: MessageQueueTopic.PROBAND_DEACTIVATED,
-      message: { pseudonym: 'stdya-000000001', studyName: 'Study A' },
-    },
-    {
-      topic: MessageQueueTopic.PROBAND_EMAIL_VERIFIED,
-      message: { pseudonym: 'stdya-000000001', studyName: 'Study A' },
-    },
-    {
-      topic: MessageQueueTopic.COMPLIANCE_CREATED,
-      message: { pseudonym: 'stdya-000000001', studyName: 'Study A' },
-    },
-    {
-      topic: MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
-      message: { id: 1, releaseVersion: 1, studyName: 'Study A' },
-    },
-  ];
+  const testCasesSuccess = [
+    createEvent(MessageQueueTopic.PROBAND_LOGGED_IN, {
+      pseudonym: 'stdya-000000001',
+      studyName: 'Study A',
+    }),
+    createEvent(MessageQueueTopic.PROBAND_CREATED, {
+      pseudonym: 'stdya-000000001',
+      studyName: 'Study A',
+    }),
+    createEvent(MessageQueueTopic.PROBAND_DELETED, {
+      pseudonym: 'stdya-000000001',
+      studyName: 'Study A',
+      deletionType: 'default',
+    }),
+    createEvent(MessageQueueTopic.PROBAND_DEACTIVATED, {
+      pseudonym: 'stdya-000000001',
+      studyName: 'Study A',
+    }),
+    createEvent(MessageQueueTopic.PROBAND_EMAIL_VERIFIED, {
+      pseudonym: 'stdya-000000001',
+      studyName: 'Study A',
+    }),
+    createEvent(MessageQueueTopic.COMPLIANCE_CREATED, {
+      pseudonym: 'stdya-000000001',
+      studyName: 'Study A',
+    }),
+    createEvent(MessageQueueTopic.QUESTIONNAIRE_INSTANCE_CREATED, {
+      id: 1,
+      studyName: 'Study A',
+      pseudonym: 'stdya-000000001',
+      status: 'inactive',
+      questionnaire: {
+        id: 1,
+        customName: 'Questionnaire A',
+      },
+    }),
+    createEvent(MessageQueueTopic.QUESTIONNAIRE_INSTANCE_ACTIVATED, {
+      id: 1,
+      studyName: 'Study A',
+      pseudonym: 'stdya-000000001',
+      status: 'active',
+      questionnaire: {
+        id: 1,
+        customName: 'Questionnaire A',
+      },
+    }),
+    createEvent(MessageQueueTopic.QUESTIONNAIRE_INSTANCE_ANSWERING_STARTED, {
+      id: 1,
+      studyName: 'Study A',
+      pseudonym: 'stdya-000000001',
+      status: 'in_progress',
+      questionnaire: {
+        id: 1,
+        customName: 'Questionnaire A',
+      },
+    }),
+    createEvent(MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED, {
+      id: 1,
+      studyName: 'Study A',
+      pseudonym: 'stdya-000000001',
+      status: 'released',
+      releaseVersion: 1,
+      questionnaire: {
+        id: 1,
+        customName: 'Questionnaire A',
+      },
+    }),
+    createEvent(MessageQueueTopic.QUESTIONNAIRE_INSTANCE_EXPIRED, {
+      id: 1,
+      studyName: 'Study A',
+      pseudonym: 'stdya-000000001',
+      status: 'expired',
+      questionnaire: {
+        id: 1,
+        customName: 'Questionnaire A',
+      },
+    }),
+  ] as const;
 
   context('test cases', () => {
     it('should include all topics recognized as events', () => {
@@ -120,5 +165,15 @@ describe('save events', () => {
     await producer.publish(message);
 
     await promisedMessage;
+  }
+
+  function createEvent<T extends EventType>(
+    topic: T,
+    message: MessageTopicMap[T]
+  ): TestCase<T> {
+    return {
+      topic,
+      message,
+    };
   }
 });

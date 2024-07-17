@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "start": "node --insecure-http-parser src/index.js",
-    "test.int": "DOTENV_CONFIG_PATH=tests/test.env nyc mocha -r '../psa.utils.scripts/test.int/setup.hook' 'tests/integration/**/*.spec.{js,ts}' --timeout 30000",
+    "test.int": "DOTENV_CONFIG_PATH=tests/test.env nyc mocha -r '../psa.utils.scripts/test.int/setup.hook' 'tests/integration/**/*.spec.{js,ts}' --timeout 30000 --exit",
     "test.unit": "IGNORE_MISSING_CONFIG=1 IS_TEST_MODE=true nyc mocha 'src/**/*.spec.ts' --timeout 10000",
     "lint": "eslint ."
   },

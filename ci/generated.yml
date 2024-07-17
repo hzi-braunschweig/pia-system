@@ -15,8 +15,8 @@
       psa.service.sormasservice psa.service.userservice psa.test.data
       psa.utils.ci-analyze-secret-report psa.utils.ci-git-mirror
       psa.utils.ci-release-image psa.utils.ci-thirdparty-license-collector
-      psa.utils.codeformatter psa.utils.coverage psa.utils.deploymentservice
-      psa.utils.e2e-runner psa.utils.repo-tool
+      psa.utils.codeformatter psa.utils.coverage psa.utils.e2e-runner
+      psa.utils.repo-tool
     lint: k8s psa.app.mobile psa.app.web psa.lib.auth-server-client psa.lib.charts
       psa.lib.hapi-i18n-plugin psa.lib.http-clients-internal
       psa.lib.licensecollector psa.lib.messagequeue psa.lib.publicapi
@@ -27,8 +27,7 @@
       psa.service.modysservice psa.service.notificationservice
       psa.service.personaldataservice psa.service.questionnaireservice
       psa.service.sampletrackingservice psa.service.sormasservice
-      psa.service.userservice psa.test.data psa.utils.deploymentservice
-      psa.utils.repo-tool
+      psa.service.userservice psa.test.data psa.utils.repo-tool
     install: k8s psa.app.mobile psa.app.web psa.lib.auth-server-client
       psa.lib.charts psa.lib.hapi-i18n-plugin psa.lib.http-clients-internal
       psa.lib.licensecollector psa.lib.messagequeue psa.lib.publicapi
@@ -39,23 +38,22 @@
       psa.service.modysservice psa.service.notificationservice
       psa.service.personaldataservice psa.service.questionnaireservice
       psa.service.sampletrackingservice psa.service.sormasservice
-      psa.service.userservice psa.test.data psa.utils.deploymentservice
-      psa.utils.repo-tool
+      psa.service.userservice psa.test.data psa.utils.repo-tool
     unit: k8s psa.app.mobile psa.app.web psa.lib.auth-server-client psa.lib.charts
       psa.lib.hapi-i18n-plugin psa.lib.http-clients-internal
       psa.lib.licensecollector psa.lib.service-core psa.lib.templatepipeline
       psa.server.apigateway psa.service.analyzerservice
       psa.service.complianceservice psa.service.feedbackstatisticservice
-      psa.service.modysservice psa.service.questionnaireservice
-      psa.service.sampletrackingservice psa.service.sormasservice
-      psa.service.userservice psa.utils.deploymentservice
+      psa.service.modysservice psa.service.notificationservice
+      psa.service.questionnaireservice psa.service.sampletrackingservice
+      psa.service.sormasservice psa.service.userservice
     int: psa.lib.messagequeue psa.lib.service-core psa.server.autheventproxy
       psa.server.eventhistory psa.server.publicapi psa.service.analyzerservice
       psa.service.complianceservice psa.service.feedbackstatisticservice
       psa.service.loggingservice psa.service.modysservice
       psa.service.notificationservice psa.service.personaldataservice
       psa.service.questionnaireservice psa.service.sampletrackingservice
-      psa.service.sormasservice psa.service.userservice
+      psa.service.userservice
   array:
     int:
       - psa.lib.messagequeue
@@ -72,7 +70,6 @@
       - psa.service.personaldataservice
       - psa.service.questionnaireservice
       - psa.service.sampletrackingservice
-      - psa.service.sormasservice
       - psa.service.userservice
     e2e:
       - sysadmin
@@ -84,6 +81,7 @@
       - forscher4
       - forscher5
       - ewmanager
+      - probandenmanager
     unit:
       - k8s
       - psa.app.mobile
@@ -100,11 +98,11 @@
       - psa.service.complianceservice
       - psa.service.feedbackstatisticservice
       - psa.service.modysservice
+      - psa.service.notificationservice
       - psa.service.questionnaireservice
       - psa.service.sampletrackingservice
       - psa.service.sormasservice
       - psa.service.userservice
-      - psa.utils.deploymentservice
     lint:
       - k8s
       - psa.app.mobile
@@ -134,7 +132,6 @@
       - psa.service.sormasservice
       - psa.service.userservice
       - psa.test.data
-      - psa.utils.deploymentservice
       - psa.utils.repo-tool
     openapi:
       - psa.server.eventhistory

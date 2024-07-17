@@ -95,6 +95,61 @@ describe('PersonaldataserviceClient', () => {
     });
   });
 
+  describe('getPersonalData', () => {
+    it('should call personaldataservice to get probands data', async () => {
+      // Arrange
+      const studyName = 'TestStudy';
+      fetchMock.get(
+        {
+          url: `express:/personal/personalData/study/${studyName}`,
+        },
+        {
+          status: StatusCodes.OK,
+          body: [],
+        }
+      );
+
+      const result = await client.getPersonalData(studyName);
+
+      // Assert
+      expect(
+        fetchMock.called(`express:/personal/personalData/study/${studyName}`, {
+          method: 'GET',
+        })
+      ).to.be.true;
+      expect(result).to.eql([]);
+    });
+  });
+
+  describe('getPendingPersonalDataDeletions', () => {
+    it('should call personaldataservice to get pending personal data deletions', async () => {
+      // Arrange
+      const studyName = 'TestStudy';
+      fetchMock.get(
+        {
+          url: `express:/personal/studies/${studyName}/pendingdeletions`,
+        },
+        {
+          status: StatusCodes.OK,
+          body: [],
+        }
+      );
+
+      const result = await client.getPendingPersonalDataDeletions(studyName);
+
+      // Assert
+      expect(
+        fetchMock.called(
+          `express:/personal/studies/${studyName}/pendingdeletions`,
+          {
+            method: 'GET',
+          }
+        )
+      ).to.be.true;
+      expect(result).to.eql([]);
+    });
+  });
+
   describe('getPersonalDataEmail', () => {
     it('should call personaldataservice to get a probands email', async () => {
       // Arrange

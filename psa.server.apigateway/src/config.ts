@@ -251,17 +251,6 @@ const routes: ProxyRouteConfig[] = [
   },
 ];
 
-if (isDevelopment) {
-  routes.push({
-    path: '/deployment/',
-    upstream: {
-      host: 'deploymentservice',
-      path: '/deployment/',
-      port: ConfigUtils.getEnvVariableInt('DEPLOYMENTSERVICE_PORT'),
-    },
-  });
-}
-
 if (!isDevelopment) {
   const responses: ResponseRouteConfig[] = routes.map((route) => {
     return {

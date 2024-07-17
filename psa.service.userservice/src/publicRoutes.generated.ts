@@ -16,7 +16,7 @@ import type { Request, RouteOptionsPreAllOptions } from '@hapi/hapi';
 const models: TsoaRoute.Models = {
     "Pseudonym": {
         "dataType": "refAlias",
-        "type": {"dataType":"string","validators":{"pattern":{"value":"^[a-z]+-[0-9]+$"}}},
+        "type": {"dataType":"string","validators":{"pattern":{"value":"^[a-z0-9]+-[0-9]+$"}}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ParticipantStatus": {

@@ -4,13 +4,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { createSandbox } from 'sinon';
+import { createSandbox, match, SinonStub } from 'sinon';
 import chai, { expect } from 'chai';
 
 import { QuestionnaireInstancesService } from './questionnaireInstancesService';
 import { addDays, addHours, startOfToday, subDays } from 'date-fns';
 import { db } from '../db';
-import { Questionnaire } from '../models/questionnaire';
+import {
+  Questionnaire,
+  QuestionnaireType,
+  CycleUnit,
+} from '../models/questionnaire';
 import { Proband } from '../models/proband';
 import { Answer } from '../models/answer';
 import { Condition } from '../models/condition';
@@ -18,6 +22,11 @@ import sinonChai from 'sinon-chai';
 import { zonedTimeToUtc } from 'date-fns-tz';
 import { config } from '../config';
 import * as mockdate from 'mockdate';
+import {
+  BaseQuestionnaireInstance,
+  QuestionnaireInstanceStatus,
+} from '../models/questionnaireInstance';
+import { MessageQueueService } from './messageQueueService';
 
 chai.use(sinonChai);
 
@@ -30,97 +39,348 @@ describe('questionnaireInstancesService', function () {
   });
 
   describe('checkAndUpdateQuestionnaireInstancesStatus', function () {
-    it('should not activate qis if their date is in the future', async function () {
-      const qInstances = [
-        {
-          id: 1,
-          study_id: 1,
-          questionnaire_id: 1,
-          questionnaire_name: 'Testname',
-          user_id: 'Testuser',
-          date_of_issue: addDays(startOfToday(), 1),
-          status: 'inactive',
-        },
-        {
-          id: 2,
-          study_id: 1,
-          questionnaire_id: 1,
-          questionnaire_name: 'Testname',
-          user_id: 'Testuser',
-          date_of_issue: addDays(startOfToday(), 2),
-          status: 'inactive',
-        },
-      ];
-      const dbStub = stubDb(qInstances);
+    context('set active', () => {
+      it('should not activate questionnaire instances if their date is in the future', async function () {
+        const qInstances = [
+          createBaseQuestionnaireInstance({
+            id: 1,
+            questionnaire_id: 1,
+            questionnaire_name: 'Testname',
+            user_id: 'Testuser',
+            date_of_issue: addDays(startOfToday(), 1),
+            status: 'inactive',
+          }),
+          createBaseQuestionnaireInstance({
+            id: 2,
+            questionnaire_id: 1,
+            questionnaire_name: 'Testname',
+            user_id: 'Testuser',
+            date_of_issue: addDays(startOfToday(), 2),
+            status: 'inactive',
+          }),
+        ];
+        const dbStub = stubDb(qInstances);
 
-      await QuestionnaireInstancesService.checkAndUpdateQuestionnaireInstancesStatus();
+        const updateSpy = sandbox.spy(
+          QuestionnaireInstancesService,
+          'updateQuestionnaireInstances'
+        );
 
-      expect(dbStub.manyOrNone).to.have.callCount(1);
-      expect(dbStub.many).to.have.callCount(0);
+        const messageStub = stubMessageMethod(
+          'sendQuestionnaireInstanceActivated'
+        );
+
+        await QuestionnaireInstancesService.checkAndUpdateQuestionnaireInstancesStatus();
+
+        expect(dbStub.manyOrNone).to.have.callCount(1);
+        expect(dbStub.many).to.have.callCount(0);
+        expect(updateSpy).to.not.have.been.called;
+        expect(messageStub).to.not.have.been.called;
+      });
+
+      it('should activate all questionnaire instances if all their dates are in the past or today', async function () {
+        const qInstances = [
+          createBaseQuestionnaireInstance({
+            id: 1,
+            questionnaire_id: 1,
+            questionnaire_name: 'Testname',
+            user_id: 'Testuser',
+            date_of_issue: subDays(startOfToday(), 1),
+            status: 'inactive',
+          }),
+          createBaseQuestionnaireInstance({
+            id: 2,
+            questionnaire_id: 1,
+            questionnaire_name: 'Testname',
+            user_id: 'Testuser',
+            date_of_issue: startOfToday(),
+            status: 'inactive',
+          }),
+        ] as const;
+        const dbStub = stubDb(
+          qInstances as unknown as BaseQuestionnaireInstance[]
+        );
+
+        const updateSpy = sandbox.spy(
+          QuestionnaireInstancesService,
+          'updateQuestionnaireInstances'
+        );
+
+        const messageStub = stubMessageMethod(
+          'sendQuestionnaireInstanceActivated'
+        );
+
+        await QuestionnaireInstancesService.checkAndUpdateQuestionnaireInstancesStatus();
+
+        expect(dbStub.manyOrNone).to.have.callCount(1);
+        expect(dbStub.many).to.have.callCount(1);
+        expect(dbStub.many).to.have.been.calledWith(
+          '2WHERE v.id = t.id RETURNING *'
+        );
+
+        expect(updateSpy).to.have.been.calledWith(match.any, [
+          {
+            questionnaireInstance: match({
+              id: 1,
+              status: 'active',
+            }),
+            questionnaire: {
+              id: 1,
+              custom_name: 'CustomName',
+            },
+          },
+          {
+            questionnaireInstance: match({
+              id: 2,
+              status: 'active',
+            }),
+            questionnaire: {
+              id: 1,
+              custom_name: 'CustomName',
+            },
+          },
+        ]);
+
+        expect(messageStub).to.have.been.calledWith(
+          match({
+            id: qInstances[0].id,
+            status: 'active',
+            study_id: qInstances[0].study_id,
+            user_id: qInstances[0].user_id,
+          }),
+          match({
+            id: qInstances[0].questionnaire_id,
+            custom_name: qInstances[0].questionnaire_custom_name,
+          })
+        );
+        // expect(messageStub).to.have.been.calledWith(
+        //   match({
+        //     id: qInstances[1].id,
+        //     status: 'active',
+        //     study_id: qInstances[1].study_id,
+        //     user_id: qInstances[1].user_id,
+        //   }),
+        //   match({
+        //     id: qInstances[1].questionnaire_id,
+        //     custom_name: qInstances[1].questionnaire_custom_name,
+        //   })
+        // );
+      });
+
+      it('should activate only the questionnaire instances which dates are in the past or today', async function () {
+        const qInstances = [
+          createBaseQuestionnaireInstance({
+            id: 1,
+            questionnaire_id: 1,
+            questionnaire_name: 'Testname',
+            user_id: 'Testuser',
+            date_of_issue: subDays(startOfToday(), 1),
+            status: 'inactive',
+          }),
+          createBaseQuestionnaireInstance({
+            id: 2,
+            questionnaire_id: 1,
+            questionnaire_name: 'Testname',
+            user_id: 'Testuser',
+            date_of_issue: addDays(startOfToday(), 1),
+            status: 'inactive',
+          }),
+        ] as const;
+
+        const dbStub = stubDb(
+          qInstances as unknown as BaseQuestionnaireInstance[]
+        );
+
+        const updateSpy = sandbox.spy(
+          QuestionnaireInstancesService,
+          'updateQuestionnaireInstances'
+        );
+
+        const messageStub = stubMessageMethod(
+          'sendQuestionnaireInstanceActivated'
+        );
+
+        await QuestionnaireInstancesService.checkAndUpdateQuestionnaireInstancesStatus();
+
+        expect(dbStub.manyOrNone).to.have.callCount(1);
+        expect(dbStub.many).to.have.callCount(1);
+        expect(dbStub.many).to.have.been.calledWith(
+          '1WHERE v.id = t.id RETURNING *'
+        );
+        expect(updateSpy).to.have.been.calledWith(match.any, [
+          {
+            questionnaireInstance: match({
+              id: 1,
+              status: 'active',
+            }),
+            questionnaire: {
+              id: 1,
+              custom_name: 'CustomName',
+            },
+          },
+        ]);
+        expect(messageStub).to.have.been.calledWith(
+          match({
+            id: qInstances[0].id,
+            status: 'active',
+            study_id: qInstances[0].study_id,
+            user_id: qInstances[0].user_id,
+          }),
+          match({
+            id: qInstances[0].questionnaire_id,
+            custom_name: qInstances[0].questionnaire_custom_name,
+          })
+        );
+      });
     });
 
-    it('should activate all qis if all their dates are in the past or today', async function () {
-      const qInstances = [
+    context('set expired', () => {
+      const statusToNeverExpire: QuestionnaireInstanceStatus[] = [
+        'expired',
+        'deleted',
+        'released_once',
+        'released_twice',
+        'released',
+      ];
+
+      const statusAllowsToExpire: QuestionnaireInstanceStatus[] = [
+        'inactive',
+        'active',
+        'in_progress',
+      ];
+
+      const testMatrix: {
+        status: QuestionnaireInstanceStatus[];
+        type: QuestionnaireType[];
+        cycleUnit: CycleUnit[];
+        expectUpdate: boolean;
+      }[] = [
+        // should allow expiration
         {
-          id: 1,
-          study_id: 1,
-          questionnaire_id: 1,
-          questionnaire_name: 'Testname',
-          user_id: 'Testuser',
-          date_of_issue: subDays(startOfToday(), 1),
-          status: 'inactive',
+          status: statusAllowsToExpire,
+          type: ['for_probands'],
+          cycleUnit: ['day', 'week', 'month', 'week', 'hour', 'once'],
+          expectUpdate: true,
         },
+        // status should block expiration
         {
-          id: 2,
-          study_id: 1,
-          questionnaire_id: 1,
-          questionnaire_name: 'Testname',
-          user_id: 'Testuser',
-          date_of_issue: startOfToday(),
-          status: 'inactive',
+          status: statusToNeverExpire,
+          type: ['for_research_team', 'for_probands'],
+          cycleUnit: [
+            'spontan',
+            'day',
+            'week',
+            'month',
+            'week',
+            'hour',
+            'once',
+          ],
+          expectUpdate: false,
+        },
+        // type should block expiration
+        {
+          status: statusAllowsToExpire,
+          type: ['for_research_team'],
+          cycleUnit: [
+            'spontan',
+            'day',
+            'week',
+            'month',
+            'week',
+            'hour',
+            'once',
+          ],
+          expectUpdate: false,
+        },
+        // cycleUnit should block expiration
+        {
+          status: statusAllowsToExpire,
+          cycleUnit: ['spontan'],
+          type: ['for_research_team', 'for_probands'],
+          expectUpdate: false,
         },
       ];
-      const dbStub = stubDb(qInstances);
 
-      await QuestionnaireInstancesService.checkAndUpdateQuestionnaireInstancesStatus();
+      for (const test of testMatrix) {
+        for (const status of test.status) {
+          for (const type of test.type) {
+            for (const cycleUnit of test.cycleUnit) {
+              const caseNot = test.expectUpdate ? '' : 'not ';
 
-      expect(dbStub.manyOrNone).to.have.callCount(1);
-      expect(dbStub.many).to.have.callCount(1);
-      expect(dbStub.many).to.have.been.calledWith(
-        '2WHERE v.id = t.id RETURNING *'
-      );
-    });
+              it(`should ${caseNot}expire when type: '${type}', status: '${status}', cycleUnit: '${cycleUnit}'`, async () => {
+                const baseProps: Pick<
+                  BaseQuestionnaireInstance,
+                  'date_of_issue' | 'expires_after_days'
+                > = {
+                  date_of_issue: subDays(startOfToday(), 2),
+                  expires_after_days: 2,
+                };
 
-    it('should activate only the qis whos dates are in the past or today', async function () {
-      const qInstances = [
-        {
-          id: 1,
-          study_id: 1,
-          questionnaire_id: 1,
-          questionnaire_name: 'Testname',
-          user_id: 'Testuser',
-          date_of_issue: subDays(startOfToday(), 1),
-          status: 'inactive',
-        },
-        {
-          id: 2,
-          study_id: 1,
-          questionnaire_id: 1,
-          questionnaire_name: 'Testname',
-          user_id: 'Testuser',
-          date_of_issue: addDays(startOfToday(), 1),
-          status: 'inactive',
-        },
-      ];
-      const dbStub = stubDb(qInstances);
+                const instance = createBaseQuestionnaireInstance({
+                  id: 1,
+                  status,
+                  type,
+                  cycle_unit: cycleUnit,
+                  ...baseProps,
+                });
 
-      await QuestionnaireInstancesService.checkAndUpdateQuestionnaireInstancesStatus();
+                stubDb([instance]);
+                const updateSpy = sandbox.spy(
+                  QuestionnaireInstancesService,
+                  'updateQuestionnaireInstances'
+                );
 
-      expect(dbStub.manyOrNone).to.have.callCount(1);
-      expect(dbStub.many).to.have.callCount(1);
-      expect(dbStub.many).to.have.been.calledWith(
-        '1WHERE v.id = t.id RETURNING *'
-      );
+                const messageStub = stubMessageMethod(
+                  'sendQuestionnaireInstanceExpired'
+                );
+
+                // needs to be stubbed, as it might try to send an activation message
+                stubMessageMethod('sendQuestionnaireInstanceActivated');
+
+                await QuestionnaireInstancesService.checkAndUpdateQuestionnaireInstancesStatus();
+
+                const expectedArg = [
+                  {
+                    questionnaireInstance: match({
+                      id: instance.id,
+                      status: 'expired',
+                    }),
+                    questionnaire: {
+                      id: instance.questionnaire_id,
+                      custom_name: instance.questionnaire_custom_name,
+                    },
+                  },
+                ];
+
+                if (test.expectUpdate) {
+                  expect(updateSpy).to.have.been.calledWith(
+                    match.any,
+                    expectedArg
+                  );
+                  expect(messageStub).to.have.been.calledWith(
+                    match({
+                      id: instance.id,
+                      status: 'expired',
+                      study_id: instance.study_id,
+                      user_id: instance.user_id,
+                    }),
+                    match({
+                      id: instance.questionnaire_id,
+                      custom_name: instance.questionnaire_custom_name,
+                    })
+                  );
+                } else {
+                  expect(updateSpy).to.not.have.been.calledWith(
+                    match.any,
+                    expectedArg
+                  );
+                  expect(messageStub).to.not.have.been.called;
+                }
+              });
+            }
+          }
+        }
+      }
     });
   });
 
@@ -1051,14 +1311,14 @@ describe('questionnaireInstancesService', function () {
   });
 
   describe('isExpired', () => {
-    it('should return false if questionnaire expiration date is not reached', () => {
+    it('should return false if expiration date is not reached', () => {
       // Arrange
       const curDate = new Date();
       const dateOfIssue = subDays(new Date(), 15);
       const expires_after_days = 30;
 
       // Act
-      const result = QuestionnaireInstancesService.isExpired(
+      const result = QuestionnaireInstancesService.isDateExpiredAfterDays(
         curDate,
         dateOfIssue,
         expires_after_days
@@ -1067,14 +1327,14 @@ describe('questionnaireInstancesService', function () {
       expect(result).to.equal(false);
     });
 
-    it('should return true if questionnaire expiration date is reached', () => {
+    it('should return true if expiration date is reached', () => {
       // Arrange
       const curDate = new Date();
       const dateOfIssue = subDays(new Date(), 31);
       const expires_after_days = 30;
 
       // Act
-      const result = QuestionnaireInstancesService.isExpired(
+      const result = QuestionnaireInstancesService.isDateExpiredAfterDays(
         curDate,
         dateOfIssue,
         expires_after_days
@@ -1111,6 +1371,7 @@ describe('questionnaireInstancesService', function () {
       id: 99999,
       study_id: 'Study1',
       name: 'TestQuestionnaire1',
+      custom_name: 'TestQuestionnaire',
       no_questions: 2,
       cycle_amount: 0,
       cycle_unit: 'once',
@@ -1140,6 +1401,29 @@ describe('questionnaireInstancesService', function () {
       keep_answers: false,
       active: true,
       ...questionnaire,
+    };
+  }
+
+  function createBaseQuestionnaireInstance(
+    override: Partial<BaseQuestionnaireInstance> = {}
+  ): BaseQuestionnaireInstance {
+    return {
+      id: 1,
+      questionnaire_name: 'Testname',
+      questionnaire_custom_name: 'CustomName',
+      study_id: 'Study1',
+      questionnaire_id: 1,
+      questionnaire_version: 1,
+      user_id: 'Testuser',
+      type: 'for_probands',
+      status: 'inactive',
+      cycle_unit: 'day',
+      date_of_issue: startOfToday(),
+      finalises_after_days: 0,
+      expires_after_days: 2,
+      date_of_release_v1: null,
+      ids: '',
+      ...override,
     };
   }
 
@@ -1192,5 +1476,13 @@ describe('questionnaireInstancesService', function () {
       },
     };
     return dbStub;
+  }
+
+  function stubMessageMethod(
+    method: keyof typeof MessageQueueService.prototype
+  ): SinonStub {
+    return sandbox
+      .stub(MessageQueueService.prototype, method)
+      .callsFake(async () => Promise.resolve());
   }
 });

@@ -55,7 +55,7 @@ export class HomeComponent implements OnInit {
       );
       this.notification.present(notification);
     } catch (err) {
-      console.log('Could load notification with id:', notificationId, err);
+      console.log('Could not load notification with id:', notificationId, err);
     }
   }
 }

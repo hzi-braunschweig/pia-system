@@ -26,6 +26,7 @@ import { HttpEvent, HttpResponse } from '@angular/common/http';
 import { Proband } from '../../psa.app.core/models/proband';
 import { CurrentUser } from '../../_services/current-user.service';
 import { ProbandService } from '../../psa.app.core/providers/proband-service/proband.service';
+import { FileDownloadService } from 'src/app/_services/file-download.service';
 
 interface StudyQuestionnaire {
   id: number;
@@ -116,7 +117,8 @@ export class DialogExportDataComponent implements OnInit {
     private probandService: ProbandService,
     private alertService: AlertService,
     private questionnaireService: QuestionnaireService,
-    private currentUser: CurrentUser
+    private currentUser: CurrentUser,
+    private fileDownloadService: FileDownloadService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -167,11 +169,7 @@ export class DialogExportDataComponent implements OnInit {
   saveExportFile(responseStream: Observable<HttpEvent<Blob>>): void {
     responseStream.subscribe({
       next: (response: HttpResponse<Blob>) => {
-        const downloadLink = document.createElement('a');
-        downloadLink.href = window.URL.createObjectURL(response.body);
-        downloadLink.setAttribute('download', 'export.zip');
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
+        this.fileDownloadService.downloadFile(response.body);
 
         this.isLoading = false;
       },

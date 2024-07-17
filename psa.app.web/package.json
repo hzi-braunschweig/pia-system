@@ -25,7 +25,8 @@
     "e2e.ci.forscher4": "LANG=de_DE.UTF-8 cypress run --browser chrome --env MAILSERVER_BASEURL=$MAILSERVER_BASEURL --spec cypress/e2e/Release_Test_Forscher/Tab_Study_Labresult_Text.cy.ts --reporter junit --reporter-options 'mochaFile=tests/reports/xunit-e2e-report.xml,toConsole=true'",
     "e2e.ci.forscher5": "LANG=de_DE.UTF-8 cypress run --browser chrome --env MAILSERVER_BASEURL=$MAILSERVER_BASEURL --spec cypress/e2e/Release_Test_Forscher/Tab_Study_Welcome_Text.cy.ts --reporter junit --reporter-options 'mochaFile=tests/reports/xunit-e2e-report.xml,toConsole=true'",
     "e2e.ci.ewmanager": "LANG=de_DE.UTF-8 cypress run --browser chrome --env MAILSERVER_BASEURL=$MAILSERVER_BASEURL --spec cypress/e2e/Release_Test_EinwilligungsManager/Tab_Consent.cy.ts --reporter junit --reporter-options 'mochaFile=tests/reports/xunit-e2e-report.xml,toConsole=true'",
-    "licenses": "licensecollector --format json --target ./src/assets/licenses.json --onlyProduction --assertValidLicenseTexts --excludePackages @pia-system/charts@1.0.0"
+    "e2e.ci.probandenmanager": "LANG=de_DE.UTF-8 cypress run --browser chrome --env MAILSERVER_BASEURL=$MAILSERVER_BASEURL --spec cypress/e2e/Release_Test_ProbandenManager/*.cy.ts --reporter junit --reporter-options 'mochaFile=tests/reports/xunit-e2e-report.xml,toConsole=true'",
+    "licenses": "licensecollector --format json --target ./src/assets/licenses.json --onlyProduction --assertValidLicenseTexts --excludePackages '@pia-system/charts@1.0.0;@pia-system'"
   },
   "private": true,
   "dependencies": {

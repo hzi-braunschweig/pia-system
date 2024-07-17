@@ -1,6 +1,6 @@
 group "default" {
   targets = [ 
-"k8s", "psa_app_mobile", "psa_app_web", "psa_database", "psa_database_ewpia", "psa_database_ipia", "psa_lib_auth-server-client", "psa_lib_charts", "psa_lib_hapi-i18n-plugin", "psa_lib_http-clients-internal", "psa_lib_licensecollector", "psa_lib_messagequeue", "psa_lib_publicapi", "psa_lib_service-core", "psa_lib_templatepipeline", "psa_server_apigateway", "psa_server_auth", "psa_server_autheventproxy", "psa_server_eventhistory", "psa_server_mailserver", "psa_server_messagequeue", "psa_server_publicapi", "psa_server_sftpserver", "psa_service_analyzerservice", "psa_service_complianceservice", "psa_service_feedbackstatisticservice", "psa_service_loggingservice", "psa_service_modysservice", "psa_service_notificationservice", "psa_service_personaldataservice", "psa_service_questionnaireservice", "psa_service_sampletrackingservice", "psa_service_sormasservice", "psa_service_userservice", "psa_test_data", "psa_utils_ci-analyze-secret-report", "psa_utils_ci-git-mirror", "psa_utils_ci-release-image", "psa_utils_ci-thirdparty-license-collector", "psa_utils_codeformatter", "psa_utils_coverage", "psa_utils_deploymentservice", "psa_utils_e2e-runner", "psa_utils_repo-tool"
+"k8s", "psa_app_mobile", "psa_app_web", "psa_database", "psa_database_ewpia", "psa_database_ipia", "psa_lib_auth-server-client", "psa_lib_charts", "psa_lib_hapi-i18n-plugin", "psa_lib_http-clients-internal", "psa_lib_licensecollector", "psa_lib_messagequeue", "psa_lib_publicapi", "psa_lib_service-core", "psa_lib_templatepipeline", "psa_server_apigateway", "psa_server_auth", "psa_server_autheventproxy", "psa_server_eventhistory", "psa_server_mailserver", "psa_server_messagequeue", "psa_server_publicapi", "psa_server_sftpserver", "psa_service_analyzerservice", "psa_service_complianceservice", "psa_service_feedbackstatisticservice", "psa_service_loggingservice", "psa_service_modysservice", "psa_service_notificationservice", "psa_service_personaldataservice", "psa_service_questionnaireservice", "psa_service_sampletrackingservice", "psa_service_sormasservice", "psa_service_userservice", "psa_test_data", "psa_utils_ci-analyze-secret-report", "psa_utils_ci-git-mirror", "psa_utils_ci-release-image", "psa_utils_ci-thirdparty-license-collector", "psa_utils_codeformatter", "psa_utils_coverage", "psa_utils_e2e-runner", "psa_utils_repo-tool"
   ]
 }
 
@@ -476,17 +476,6 @@ target "psa_utils_coverage" {
   tags = [ "${IMAGE_REGISTRY}/psa.utils.coverage:${TAG}" ]
   args = {
     DIR = "psa.utils.coverage"
-    VERSION_INFO_PIPELINE_ID = "${VERSION_INFO_PIPELINE_ID}"
-    VERSION_INFO_GIT_HASH = "${VERSION_INFO_GIT_HASH}"
-    VERSION_INFO_GIT_REF = "${VERSION_INFO_GIT_REF}"
-  }
-}
-target "psa_utils_deploymentservice" {
-  context = "."
-  dockerfile = "psa.utils.deploymentservice/Dockerfile"
-  tags = [ "${IMAGE_REGISTRY}/psa.utils.deploymentservice:${TAG}" ]
-  args = {
-    DIR = "psa.utils.deploymentservice"
     VERSION_INFO_PIPELINE_ID = "${VERSION_INFO_PIPELINE_ID}"
     VERSION_INFO_GIT_HASH = "${VERSION_INFO_GIT_HASH}"
     VERSION_INFO_GIT_REF = "${VERSION_INFO_GIT_REF}"

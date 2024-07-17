@@ -19,7 +19,7 @@ const route: ServerRoute = {
     validate: {
       params: Joi.object({
         username: Joi.string()
-          .description('the probands username to delete data for')
+          .description('the probands username to get data for')
           .required(),
       }).unknown(),
     },

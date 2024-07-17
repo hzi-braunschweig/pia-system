@@ -58,7 +58,7 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
   imports: [
     BrowserModule,
     HttpClientModule,
-    IonicModule.forRoot(),
+    IonicModule.forRoot({ swipeBackEnabled: false }),
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

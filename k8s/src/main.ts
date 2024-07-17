@@ -29,7 +29,6 @@ import { NotificationService } from './pia/deployment/notificationservice';
 import { SampleTrackingService } from './pia/deployment/sampletrackingservice';
 import { FeedbackStatisticService } from './pia/deployment/feedbackstatisticservice';
 import { SormasService } from './pia/deployment/sormasservice';
-import { DeploymentService } from './pia/deployment/deploymentservice';
 import { IService } from './k8s/service';
 import { MailServer } from './pia/deployment/mailserver';
 import { Precheck } from './pia/precheck';
@@ -180,11 +179,6 @@ export class MainChart extends Chart {
       questionnaireService,
     });
 
-    const deploymentService = new DeploymentService(this, config, {
-      qpiaService,
-      ipiaService,
-    });
-
     const apigateway = new ApiGateway(this, config, {
       webappServer,
       authServer,
@@ -199,7 +193,6 @@ export class MainChart extends Chart {
       sampleTrackingService,
       feedbackStatisticService,
       sormasService,
-      deploymentService,
       publicApiServer,
       eventHistoryServer,
     });
@@ -231,7 +224,6 @@ export class MainChart extends Chart {
       sampleTrackingService,
       feedbackStatisticService,
       sormasService,
-      deploymentService,
       publicApiServer,
       eventHistoryServer,
       apigateway,

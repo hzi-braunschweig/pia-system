@@ -135,7 +135,6 @@ e2e:
     SORMASSERVICE_HOST: sormasservice
     SORMASSERVICE_INTERNAL_PORT: 5000
     SORMASSERVICE_PORT: 4000
-    DEPLOYMENTSERVICE_PORT: 4000
 
     USERSERVICE_HOST: userservice
     USERSERVICE_INTERNAL_PORT: 5001
@@ -309,5 +308,3 @@ e2e:
     # run e2e tests for renovate automatically
     - if: $CI_MERGE_REQUEST_IID && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^renovate/
     - if: $CI_COMMIT_BRANCH =~ /^release/
-      # remove ASAP
-      allow_failure: true

@@ -45,6 +45,7 @@ describe('Internal: Questionnaire', () => {
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body.id).to.equal(1234);
       expect(result.body.version).to.equal(1);
+      expect(result.body.notificationLinkToOverview).to.equal(true);
       expect(result.body.questions).to.have.length(2);
       expect(result.body.questions[0].answerOptions).to.have.length(5);
     });

@@ -55,10 +55,13 @@ class Program {
                 '################################################################################\n' +
                     `# ${license.packageName} (${license.licenses.toString()})${repo}\n` +
                     '################################################################################\n\n' +
-                    `${license.licenseText}` +
+                    `${this.removeCarriageReturns(license.licenseText)}` +
                     '\n\n';
         }
         return thirdPartyLicenses;
+    }
+    static removeCarriageReturns(licenseText) {
+        return licenseText.replace(/\r/g, '');
     }
 }
 void Program.main();

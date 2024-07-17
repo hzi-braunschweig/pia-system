@@ -342,7 +342,7 @@ export class QuestionnaireInstanceRepository {
     const filter = `WHERE qi.user_id = $(user_id)
                          AND qi.status IN ($(status:csv))
                          AND qa.type IN ($(type:csv))`;
-    const order = `ORDER BY qi.id, q.position, ao.position`;
+    const order = `ORDER BY qi.sort_order, qi.id, q.position, ao.position`;
     const query =
       RepositoryHelper.createQuestionnaireInstanceWithQuestionnaireQuery(
         filter,

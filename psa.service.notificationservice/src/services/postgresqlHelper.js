@@ -329,7 +329,7 @@ const postgresqlHelper = (function () {
 
   async function insertContactProbandRecordForNotAnswered(data) {
     const retUserId = await db.one(
-      'SELECT user_id FROM questionnaire_instances ' + 'WHERE id=$1',
+      'SELECT user_id FROM questionnaire_instances WHERE id=$1',
       [data.questionnaireInstanceId]
     );
     const userId = retUserId.user_id;

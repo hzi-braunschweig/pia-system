@@ -39,6 +39,7 @@ export interface DbQuestionnaire extends DbQuestionnaireForPM {
   version: number;
   study_id: string;
   custom_name: CustomName | null;
+  sort_order: number | null;
   name: string;
   no_questions: number;
   cycle_amount: number | null;
@@ -52,6 +53,7 @@ export interface DbQuestionnaire extends DbQuestionnaireForPM {
   notification_weekday: string | null;
   notification_interval: number | null;
   notification_interval_unit: string | null;
+  notification_link_to_overview: boolean;
   activate_at_date: Date | null;
   compliance_needed: boolean | null;
   expires_after_days: number;
@@ -78,72 +80,53 @@ export interface Questionnaire extends DbQuestionnaire {
 }
 
 export interface QuestionnaireDto {
-  /**
-   * @isInt
-   */
+  /** @isInt */
   id: number;
-  /**
-   * @isInt
-   */
+  /** @isInt */
   version: number;
   studyId: string;
   customName: CustomName | null;
+  /** @isInt */
+  sortOrder: number | null;
   name: string;
-  /**
-   * @isInt
-   */
+  /** @isInt */
   noQuestions: number;
-  /**
-   * @isInt
-   */
+  /** @isInt */
   cycleAmount: number | null;
   cycleUnit: CycleUnit | null;
-  /**
-   * @isInt
-   */
+  /** @isInt */
   activateAfterDays: number;
-  /**
-   * @isInt
-   */
+  /** @isInt */
   deactivateAfterDays: number;
-  /**
-   * @isInt
-   */
+  /** @isInt */
   notificationTries: number;
   notificationTitle: string;
   notificationBodyNew: string;
   notificationBodyInProgress: string;
   notificationWeekday: string | null;
   /**
-   * @isInt
+   * If set to `true`, notifications for participants will link to the overview
+   * of their instances instead of the instance itself.
    */
+  notificationLinkToOverview: boolean;
+  /** @isInt */
   notificationInterval: number | null;
   notificationIntervalUnit: string | null;
   activateAtDate: Date | null;
   complianceNeeded: boolean | null;
-  /**
-   * @isInt
-   */
+  /** @isInt */
   expiresAfterDays: number;
-  /**
-   * @isInt
-   */
+  /** @isInt */
   finalisesAfterDays: number;
   type: QuestionnaireType | null;
   publish: string | null;
   notifyWhenNotFilled: boolean | null;
   notifyWhenNotFilledTime: string | null;
-  /**
-   * @isInt
-   */
+  /** @isInt */
   notifyWhenNotFilledDay: number | null;
-  /**
-   * @isInt
-   */
+  /** @isInt */
   cyclePerDay: number | null;
-  /**
-   * @isInt
-   */
+  /** @isInt */
   cycleFirstHour: number | null;
   keepAnswers: boolean | null;
   active: boolean;
@@ -166,6 +149,7 @@ export interface QuestionnaireResponse extends DbQuestionnaire {
 export interface QuestionnaireRequest {
   study_id: string;
   cycle_amount: number;
+  sort_order: number | null;
   activate_at_date?: Date;
   cycle_unit: CycleUnit;
   cycle_per_day?: number | null;
@@ -185,6 +169,7 @@ export interface QuestionnaireRequest {
   notification_title: string;
   notification_body_new: string;
   notification_body_in_progress: string;
+  notification_link_to_overview?: boolean;
   questions?: QuestionRequest[];
   condition?: ConditionRequest;
   notification_weekday?: string | null;

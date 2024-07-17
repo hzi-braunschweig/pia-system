@@ -44,21 +44,7 @@ export class LoginWebAppProxy extends EventProxy {
     return await messageQueueService.createProducer(TARGET_TOPIC);
   }
 
-  public onMessage(
-    channel: amqp.Channel
-  ): (message: amqp.ConsumeMessage | null) => void {
-    return (message: amqp.ConsumeMessage | null) => {
-      if (!message) {
-        return;
-      }
-
-      this.forwardMessageToProducer(message)
-        .then(() => channel.ack(message, false))
-        .catch(console.error);
-    };
-  }
-
-  private async forwardMessageToProducer(
+  protected async forwardMessageToProducer(
     message: amqp.ConsumeMessage
   ): Promise<void> {
     if (!this._producer) {

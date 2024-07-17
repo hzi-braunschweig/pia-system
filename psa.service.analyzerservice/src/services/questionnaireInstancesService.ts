@@ -16,17 +16,13 @@ import {
   startOfToday,
 } from 'date-fns';
 import { db, pgp } from '../db';
-import {
-  CycleUnit,
-  Questionnaire,
-  QuestionnaireType,
-  Weekday,
-} from '../models/questionnaire';
+import { CycleUnit, Questionnaire, Weekday } from '../models/questionnaire';
 import {
   BaseQuestionnaireInstance,
   QuestionnaireInstance,
   QuestionnaireInstanceNew,
   QuestionnaireInstanceStatus,
+  QuestionnaireInstanceQuestionnairePair,
 } from '../models/questionnaireInstance';
 import { Proband } from '../models/proband';
 import { Answer } from '../models/answer';
@@ -35,11 +31,11 @@ import { AnswerType } from '../models/answerOption';
 import { LoggingService } from './loggingService';
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 import { config } from '../config';
-
-interface QuestionnaireInstanceStatusWithIdentifier {
-  id: number;
-  status: QuestionnaireInstanceStatus;
-}
+import { ITask } from 'pg-promise';
+import {
+  messageQueueService,
+  QuestionnaireInstanceMessageFn,
+} from './messageQueueService';
 
 interface CycleSettings {
   cycleUnit: CycleUnit;
@@ -75,10 +71,10 @@ export class QuestionnaireInstancesService {
     { table: 'answers' }
   );
 
-  private static readonly csQuestionnaireInstances = new pgp.helpers.ColumnSet(
-    ['?id', 'status'],
-    { table: 'questionnaire_instances' }
-  );
+  private static readonly csQuestionnaireInstancesStatus =
+    new pgp.helpers.ColumnSet(['?id', 'status'], {
+      table: 'questionnaire_instances',
+    });
 
   /**
    * Activates all questionnaire instances that have to be activated
@@ -93,13 +89,15 @@ export class QuestionnaireInstancesService {
                        qi.status,
                        qi.date_of_release_v1,
                        qi.user_id,
+                       qi.study_id,
                        questionnaires.cycle_unit,
                        questionnaires.expires_after_days,
                        questionnaires.finalises_after_days,
                        questionnaires.type,
-                       questionnaires.id        AS questionnaire_id,
-                       qi.questionnaire_version AS questionnaire_version,
-                       questionnaires.name      AS questionnaire_name
+                       questionnaires.id          AS questionnaire_id,
+                       qi.questionnaire_version   AS questionnaire_version,
+                       questionnaires.name        AS questionnaire_name,
+                       questionnaires.custom_name AS questionnaire_custom_name
                 FROM questionnaire_instances AS qi
                          JOIN questionnaires
                               ON qi.questionnaire_id = questionnaires.id AND
@@ -108,7 +106,7 @@ export class QuestionnaireInstancesService {
                        status = 'released_once')
                   AND date_of_issue <= NOW()`);
 
-      const vQuestionnaireInstances: QuestionnaireInstanceStatusWithIdentifier[] =
+      const vQuestionnaireInstances: QuestionnaireInstanceQuestionnairePair<BaseQuestionnaireInstance>[] =
         [];
       const instanceIdsToExpire: number[] = [];
       const instanceIdsToReleaseTwice: number[] = [];
@@ -125,17 +123,17 @@ export class QuestionnaireInstancesService {
             (qInstance.status === 'inactive' ||
               qInstance.status === 'active' ||
               qInstance.status === 'in_progress') &&
-            QuestionnaireInstancesService.isExpired(
-              curDate,
-              qInstance.date_of_issue,
-              qInstance.expires_after_days
-            ) &&
-            qInstance.cycle_unit !== 'spontan' &&
-            qInstance.type === 'for_probands'
+            this.isQuestionnaireInstanceExpired(qInstance)
           ) {
             vQuestionnaireInstances.push({
-              id: qInstance.id,
-              status: 'expired',
+              questionnaireInstance: {
+                ...qInstance,
+                status: 'expired',
+              },
+              questionnaire: {
+                id: qInstance.questionnaire_id,
+                custom_name: qInstance.questionnaire_custom_name,
+              },
             });
             instanceIdsToExpire.push(qInstance.id);
           }
@@ -145,8 +143,14 @@ export class QuestionnaireInstancesService {
             qInstance.date_of_issue <= curDate
           ) {
             vQuestionnaireInstances.push({
-              id: qInstance.id,
-              status: 'active',
+              questionnaireInstance: {
+                ...qInstance,
+                status: 'active',
+              },
+              questionnaire: {
+                id: qInstance.questionnaire_id,
+                custom_name: qInstance.questionnaire_custom_name,
+              },
             });
           }
 
@@ -190,13 +194,7 @@ export class QuestionnaireInstancesService {
           }
         }
         if (vQuestionnaireInstances.length > 0) {
-          const qUpdateQuestionnaireInstances = `${
-            pgp.helpers.update(
-              vQuestionnaireInstances,
-              QuestionnaireInstancesService.csQuestionnaireInstances
-            ) as string
-          }WHERE v.id = t.id RETURNING *`;
-          await t.many(qUpdateQuestionnaireInstances);
+          await this.updateQuestionnaireInstances(t, vQuestionnaireInstances);
         }
         if (instanceIdsToExpire.length > 0) {
           deletedQueues = await t.manyOrNone(
@@ -238,21 +236,40 @@ export class QuestionnaireInstancesService {
       cycleSettings
     );
     const dateOfIssue = zonedTimeToUtc(zonedDateOfIssue, config.timeZone);
-    return {
+    const nextInstance: QuestionnaireInstanceNew = {
       study_id: instance.study_id,
       questionnaire_id: instance.questionnaire_id,
       questionnaire_version: instance.questionnaire_version,
       questionnaire_name: instance.questionnaire_name,
+      sort_order: instance.sort_order,
       user_id: instance.user_id,
       date_of_issue: dateOfIssue,
       cycle: instance.cycle + 1,
-      status: this.getQuestionnaireInstanceStatus(
-        dateOfIssue,
-        questionnaire.expires_after_days,
-        questionnaire.cycle_unit,
-        questionnaire.type
-      ),
+      status: 'inactive', // placeholder until we determine the real status
     };
+
+    nextInstance.status = this.getQuestionnaireInstanceStatus({
+      ...nextInstance,
+      expires_after_days: questionnaire.expires_after_days,
+      cycle_unit: questionnaire.cycle_unit,
+      type: questionnaire.type,
+    });
+
+    return nextInstance;
+  }
+
+  public static pairQuestionnaireInstancesWithQuestionnaire<
+    T extends QuestionnaireInstanceNew
+  >(
+    questionnaireInstances: T[],
+    questionnaire: Questionnaire
+  ): QuestionnaireInstanceQuestionnairePair<T>[] {
+    return questionnaireInstances.map(
+      (questionnaireInstance): QuestionnaireInstanceQuestionnairePair<T> => ({
+        questionnaireInstance,
+        questionnaire,
+      })
+    );
   }
 
   /**
@@ -271,21 +288,28 @@ export class QuestionnaireInstancesService {
       onlyLoginDependantOnes
     )
       .map((zonedIssueDate) => zonedTimeToUtc(zonedIssueDate, config.timeZone))
-      .map((issueDate, index) => ({
-        study_id: questionnaire.study_id,
-        questionnaire_id: questionnaire.id,
-        questionnaire_version: questionnaire.version,
-        questionnaire_name: questionnaire.name,
-        user_id: user.pseudonym,
-        date_of_issue: issueDate,
-        cycle: index + 1,
-        status: this.getQuestionnaireInstanceStatus(
-          issueDate,
-          questionnaire.expires_after_days,
-          questionnaire.cycle_unit,
-          questionnaire.type
-        ),
-      }));
+      .map((issueDate, index) => {
+        const newInstance: QuestionnaireInstanceNew = {
+          study_id: questionnaire.study_id,
+          questionnaire_id: questionnaire.id,
+          questionnaire_version: questionnaire.version,
+          questionnaire_name: questionnaire.name,
+          sort_order: questionnaire.sort_order,
+          user_id: user.pseudonym,
+          date_of_issue: issueDate,
+          cycle: index + 1,
+          status: 'inactive',
+        };
+
+        newInstance.status = this.getQuestionnaireInstanceStatus({
+          ...newInstance,
+          expires_after_days: questionnaire.expires_after_days,
+          cycle_unit: questionnaire.cycle_unit,
+          type: questionnaire.type,
+        });
+
+        return newInstance;
+      });
   }
 
   /**
@@ -540,16 +564,76 @@ export class QuestionnaireInstancesService {
   /**
    * Returns true if either the expiration date is reached
    */
-  public static isExpired(
-    curDate: Date,
-    dateOfIssue: Date,
-    expires_after_days: number
+  public static isDateExpiredAfterDays(
+    current: Date,
+    start: Date,
+    daysUntilExpiration: number
   ): boolean {
-    const questionnaireExpirationDate = addDays(
-      dateOfIssue,
-      expires_after_days
+    const expirationDate = addDays(start, daysUntilExpiration);
+    return expirationDate < current;
+  }
+
+  public static isQuestionnaireInstanceExpired(
+    instance: Pick<
+      BaseQuestionnaireInstance,
+      'date_of_issue' | 'expires_after_days' | 'cycle_unit' | 'type'
+    >
+  ): boolean {
+    return (
+      instance.cycle_unit !== 'spontan' &&
+      instance.type === 'for_probands' &&
+      this.isDateExpiredAfterDays(
+        new Date(),
+        instance.date_of_issue,
+        instance.expires_after_days
+      )
     );
-    return questionnaireExpirationDate < curDate;
+  }
+
+  public static async updateQuestionnaireInstances(
+    t: ITask<unknown>,
+    instancesWithQuestionnaires: QuestionnaireInstanceQuestionnairePair<
+      Pick<BaseQuestionnaireInstance, 'id' | 'study_id' | 'user_id' | 'status'>
+    >[]
+  ): Promise<void> {
+    const fieldsOnly = instancesWithQuestionnaires.map((dto) => ({
+      id: dto.questionnaireInstance.id,
+      status: dto.questionnaireInstance.status,
+    }));
+    const qUpdateQuestionnaireInstances = pgp.helpers.update(
+      fieldsOnly,
+      QuestionnaireInstancesService.csQuestionnaireInstancesStatus
+    ) as string;
+
+    await t.many(
+      `${qUpdateQuestionnaireInstances}WHERE v.id = t.id RETURNING *`
+    );
+
+    for (const dto of instancesWithQuestionnaires) {
+      const sendMessage = this.getSendMessageMethod(
+        dto.questionnaireInstance.status
+      );
+      if (sendMessage) {
+        await sendMessage(dto.questionnaireInstance, dto.questionnaire);
+      }
+    }
+  }
+
+  private static getSendMessageMethod(
+    status: QuestionnaireInstanceStatus
+  ): QuestionnaireInstanceMessageFn | null {
+    switch (status) {
+      case 'active':
+        return messageQueueService.sendQuestionnaireInstanceActivated.bind(
+          messageQueueService
+        );
+      case 'expired':
+        return messageQueueService.sendQuestionnaireInstanceExpired.bind(
+          messageQueueService
+        );
+      default:
+        return null;
+    }
   }
 
   /**
@@ -799,18 +883,14 @@ export class QuestionnaireInstancesService {
   }
 
   private static getQuestionnaireInstanceStatus(
-    dateOfIssue: Date,
-    expiresAfterDays: number,
-    cycleUnit: CycleUnit,
-    questionnaireType: QuestionnaireType
+    instance: Pick<
+      BaseQuestionnaireInstance,
+      'date_of_issue' | 'expires_after_days' | 'cycle_unit' | 'type'
+    >
   ): QuestionnaireInstanceStatus {
     const curDate = new Date();
-    if (dateOfIssue <= curDate) {
-      if (
-        this.isExpired(curDate, dateOfIssue, expiresAfterDays) &&
-        cycleUnit !== 'spontan' &&
-        questionnaireType === 'for_probands'
-      ) {
+    if (instance.date_of_issue <= curDate) {
+      if (this.isQuestionnaireInstanceExpired(instance)) {
         return 'expired';
       } else {
         return 'active';

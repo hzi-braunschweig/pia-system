@@ -11,6 +11,8 @@ import {
 } from '@pia/lib-service-core';
 import { ServiceAccount } from 'firebase-admin/lib/credential';
 
+const DEFAULT_SCHEDULE_NOTIFICATION_SENDING_MAX_PARALLEL = 100;
+
 function getFirebaseCredentials(): ServiceAccount {
   const privateKey = Buffer.from(
     ConfigUtils.getEnvVariable('FIREBASE_PRIVATE_KEY_BASE64'),
@@ -50,6 +52,10 @@ const conf = {
     hours: 8, // in the time zone configured above
     minutes: 0,
   },
+  scheduleNotificationSendingMaxParallel: ConfigUtils.getEnvVariableInt(
+    'SCHEDULE_NOTIFICATION_SENDING_MAX_PARALLEL',
+    DEFAULT_SCHEDULE_NOTIFICATION_SENDING_MAX_PARALLEL
+  ),
 };
 
 export const config: SupersetOfServiceConfig<typeof conf> = conf;

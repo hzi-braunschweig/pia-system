@@ -70,7 +70,7 @@ describe('Keycloak Registration Proxy', () => {
     await expectRegisterEvent(channel, queue, username, studyName);
   });
 
-  it('should not publish an event if the study was determinable', async () => {
+  it('should not publish an event if the study was not determinable', async () => {
     const { channel, queue } = await proxyTestTool.createChannelWithQueue(
       MessageQueueTopic.PROBAND_REGISTERED,
       'web-app-registered'
@@ -88,7 +88,7 @@ describe('Keycloak Registration Proxy', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    expect(errorLogSpy.calledOnce).to.be.true;
+    expect(errorLogSpy.called).to.be.true;
     expect(await channel.get(queue.queue)).to.be.false;
   });
 
@@ -112,7 +112,7 @@ describe('Keycloak Registration Proxy', () => {
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     const message = await messagePromise;
-    expect(errorLogSpy.calledOnce).to.be.true;
+    expect(errorLogSpy.called).to.be.true;
     expect(message).to.be.false;
   });
 

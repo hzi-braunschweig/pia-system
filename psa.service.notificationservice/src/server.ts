@@ -21,23 +21,15 @@ import { db } from './db';
 import { config } from './config';
 import { NotificationHelper } from './services/notificationHelper';
 import { FcmHelper } from './services/fcmHelper';
-import { QuestionnaireCronjobs } from './cronjobs/questionnaireCronjobs';
 import { LabResult } from './models/labResult';
 import { DbQuestionnaireInstance } from './models/questionnaireInstance';
 import { messageQueueService } from './services/messageQueueService';
-
-interface Cancelable {
-  cancel: () => void;
-}
+import { Cronjobs } from './cronjobs';
+import { Cancelable } from './models/cancelable';
 
 export class Server {
-  // This Export is needed in the integration tests
-  public static checkForNotFilledQuestionnairesJobs: Cancelable;
-
   private static server: Hapi.Server;
-  private static instanceNotificationCreationJob: Cancelable;
-  private static notificationSendingJob: Cancelable;
-  private static dailySampleReportMailsJob: Cancelable;
+  private static cronjobs: Cancelable[];
   private static listeningDbClient: ListeningDbClient<unknown>;
 
   public static async init(): Promise<void> {
@@ -69,7 +61,6 @@ export class Server {
     await this.server.start();
     this.server.log(['startup'], `Server running at ${this.server.info.uri}`);
 
-    // Start scheduled jobs
     MailService.initService(config.servers.mailserver);
 
     this.listeningDbClient = new ListeningDbClient(db);
@@ -78,23 +69,14 @@ export class Server {
     });
     await this.listeningDbClient.connect();
     await messageQueueService.connect();
-    // Starting cronJobs once the database service connection is made
-    this.checkForNotFilledQuestionnairesJobs = QuestionnaireCronjobs.start();
     FcmHelper.initFBAdmin();
-    this.instanceNotificationCreationJob =
-      NotificationHelper.scheduleInstanceNotificationCreation();
-    this.notificationSendingJob =
-      NotificationHelper.scheduleNotificationSending();
-    this.dailySampleReportMailsJob =
-      NotificationHelper.scheduleDailySampleReportMails();
+
+    // Start cronjobs after service has been initialized
+    this.cronjobs = Cronjobs.map((job) => job.start());
   }
 
   public static async stop(): Promise<void> {
-    this.checkForNotFilledQuestionnairesJobs.cancel();
-
-    this.instanceNotificationCreationJob.cancel();
-    this.notificationSendingJob.cancel();
-    this.dailySampleReportMailsJob.cancel();
+    this.cronjobs.forEach((job) => job.cancel());
 
     await messageQueueService.disconnect();
     await this.listeningDbClient.disconnect();
@@ -138,11 +120,7 @@ export class Server {
             return;
           }
           console.log(
-            "Processed '" +
-              msg.channel +
-              "' notification for table '" +
-              pl.table +
-              "'"
+            `Processed '${msg.channel}' notification for table '${pl.table}'`
           );
         } catch (e) {
           console.error(e);

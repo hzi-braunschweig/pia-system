@@ -67,13 +67,14 @@ const postgresqlHelper = (function () {
       // Insert questionnaire
       return t
         .one(
-          'INSERT INTO questionnaires(version, study_id, name, custom_name, type, no_questions, cycle_amount, cycle_unit, publish, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, notification_weekday, notification_interval, notification_interval_unit, activate_at_date, compliance_needed, expires_after_days, finalises_after_days, notify_when_not_filled, notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour, keep_answers) VALUES ($1:csv) RETURNING *',
+          'INSERT INTO questionnaires(version, study_id, name, custom_name, sort_order, type, no_questions, cycle_amount, cycle_unit, publish, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, notification_weekday, notification_interval, notification_interval_unit, notification_link_to_overview, activate_at_date, compliance_needed, expires_after_days, finalises_after_days, notify_when_not_filled, notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour, keep_answers) VALUES ($1:csv) RETURNING *',
           [
             [
               1, // New, first version
               questionnaire.study_id,
               questionnaire.name,
               questionnaire.custom_name,
+              questionnaire.sort_order,
               questionnaire.type,
               questionnaire.questions.length,
               questionnaire.cycle_amount,
@@ -88,6 +89,7 @@ const postgresqlHelper = (function () {
               questionnaire.notification_weekday,
               questionnaire.notification_interval,
               questionnaire.notification_interval_unit,
+              questionnaire.notification_link_to_overview,
               questionnaire.activate_at_date
                 ? questionnaire.activate_at_date
                 : null,
@@ -375,7 +377,7 @@ const postgresqlHelper = (function () {
       // Insert questionnaire
       return t
         .one(
-          'INSERT INTO questionnaires(id, version, study_id, name, custom_name, type, no_questions, cycle_amount, cycle_unit, publish, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, notification_weekday, notification_interval, notification_interval_unit, activate_at_date, compliance_needed, expires_after_days, finalises_after_days, notify_when_not_filled, notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour, keep_answers) VALUES ($1:csv) RETURNING *',
+          'INSERT INTO questionnaires(id, version, study_id, name, custom_name, sort_order, type, no_questions, cycle_amount, cycle_unit, publish, activate_after_days, deactivate_after_days, notification_tries, notification_title, notification_body_new, notification_body_in_progress, notification_weekday, notification_interval, notification_interval_unit, notification_link_to_overview, activate_at_date, compliance_needed, expires_after_days, finalises_after_days, notify_when_not_filled, notify_when_not_filled_time, notify_when_not_filled_day, cycle_per_day, cycle_first_hour, keep_answers) VALUES ($1:csv) RETURNING *',
           [
             [
               id,
@@ -383,6 +385,7 @@ const postgresqlHelper = (function () {
               questionnaire.study_id,
               questionnaire.name,
               questionnaire.custom_name,
+              questionnaire.sort_order,
               questionnaire.type,
               questionnaire.questions.length,
               questionnaire.cycle_amount,
@@ -397,6 +400,7 @@ const postgresqlHelper = (function () {
               questionnaire.notification_weekday,
               questionnaire.notification_interval,
               questionnaire.notification_interval_unit,
+              questionnaire.notification_link_to_overview,
               questionnaire.activate_at_date
                 ? questionnaire.activate_at_date
                 : null,
@@ -701,7 +705,7 @@ const postgresqlHelper = (function () {
           // Update questionnaire
           return t
             .one(
-              'UPDATE questionnaires SET study_id=$1, name=$2, type=$3, no_questions=$4, cycle_amount=$5, cycle_unit=$6, publish=$25, activate_after_days=$7, deactivate_after_days=$8, notification_tries=$9, notification_title=$10, notification_body_new=$11, notification_body_in_progress=$12, notification_weekday=$13, notification_interval=$14, notification_interval_unit=$15, activate_at_date=$16, compliance_needed=$17, expires_after_days=$18, finalises_after_days=$19, notify_when_not_filled=$22, notify_when_not_filled_time=$23, notify_when_not_filled_day=$24, cycle_per_day=$26, cycle_first_hour=$27, keep_answers=$28, custom_name=$29  WHERE id=$20 AND version=$21 RETURNING *',
+              'UPDATE questionnaires SET study_id=$1, name=$2, type=$3, no_questions=$4, cycle_amount=$5, cycle_unit=$6, publish=$25, activate_after_days=$7, deactivate_after_days=$8, notification_tries=$9, notification_title=$10, notification_body_new=$11, notification_body_in_progress=$12, notification_weekday=$13, notification_interval=$14, notification_interval_unit=$15, activate_at_date=$16, compliance_needed=$17, expires_after_days=$18, finalises_after_days=$19, notify_when_not_filled=$22, notify_when_not_filled_time=$23, notify_when_not_filled_day=$24, cycle_per_day=$26, cycle_first_hour=$27, keep_answers=$28, custom_name=$29, notification_link_to_overview=$30, sort_order=$31 WHERE id=$20 AND version=$21 RETURNING *',
               [
                 questionnaire.study_id,
                 questionnaire.name,
@@ -748,6 +752,8 @@ const postgresqlHelper = (function () {
                   : null,
                 questionnaire.keep_answers,
                 questionnaire.custom_name,
+                questionnaire.notification_link_to_overview,
+                questionnaire.sort_order,
               ]
             )
             .then(async (questionnaireResult) => {

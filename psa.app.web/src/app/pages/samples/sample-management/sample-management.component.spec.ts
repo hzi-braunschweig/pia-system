@@ -5,7 +5,12 @@
  */
 
 import { BreakpointObserver } from '@angular/cdk/layout';
-import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
+import {
+  MockBuilder,
+  MockedComponentFixture,
+  MockRender,
+  ngMocks,
+} from 'ng-mocks';
 import { AppModule } from '../../../app.module';
 import { MatDialog } from '@angular/material/dialog';
 import { fakeAsync, tick } from '@angular/core/testing';
@@ -17,8 +22,8 @@ import { SampleTrackingService } from '../../../psa.app.core/providers/sample-tr
 import { DataService } from '../../../_services/data.service';
 import { PersonalDataService } from '../../../psa.app.core/providers/personaldata-service/personaldata-service';
 import { AccountStatusPipe } from '../../../pipes/account-status.pipe';
-import { MediaChange, MediaObserver } from '@angular/flex-layout';
-import { firstValueFrom, from, NEVER, toArray } from 'rxjs';
+import { MediaObserver } from '@angular/flex-layout';
+import { NEVER } from 'rxjs';
 import {
   createPersonalData,
   createProband,
@@ -28,6 +33,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { FormControl } from '@angular/forms';
+import { MatTableModule } from '@angular/material/table';
 import SpyObj = jasmine.SpyObj;
 
 describe('SampleManagementComponent', () => {
@@ -56,6 +62,7 @@ describe('SampleManagementComponent', () => {
         pseudonym: 'test-3',
         ids: 'TEST-3',
         study: 'Teststudy1',
+        needsMaterial: true,
       }),
     ]);
     router = jasmine.createSpyObj<Router>('Router', ['navigate']);
@@ -89,6 +96,7 @@ describe('SampleManagementComponent', () => {
       .keep(MatPaginatorModule)
       .keep(MatSortModule)
       .keep(BreakpointObserver)
+      .keep(MatTableModule)
       .mock(CurrentUser, currentUser)
       .mock(ProbandService, probandService)
       .mock(Router, router)
@@ -104,6 +112,7 @@ describe('SampleManagementComponent', () => {
     // Create component
     fixture = MockRender(SampleManagementComponent);
     component = fixture.point.componentInstance;
+    fixture.detectChanges();
     tick(); // wait for ngOnInit to finish
   }));
 
@@ -113,6 +122,19 @@ describe('SampleManagementComponent', () => {
     tick();
     expect(probandService.getProbands).toHaveBeenCalledOnceWith('Teststudy1');
     expect(component.dataSource.data.length).toEqual(3);
+  }));
+
+  it('should show indicator when participant needs material', fakeAsync(() => {
+    component.studyName.setValue('Teststudy1');
+    tick();
+    fixture.detectChanges();
+
+    const indicator = ngMocks.findAll(
+      fixture.debugElement,
+      '[data-unit="needs-material-indicator"]'
+    );
+
+    expect(indicator.length).toEqual(1);
   }));
 
   describe('validateSampleID', () => {

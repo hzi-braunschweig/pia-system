@@ -12,7 +12,6 @@ resources:
   - internal-secrets.yaml
 
 components:
-  - ../../components/no-deploymentservice # Do not remove this for production environments
   - ../../components/no-mailhog # Do not remove this for production environments
   - ../../components/no-servicemonitor # Remove, if you plan to use Prometheus
   - ../../components/no-modysservice # Remove, if you plan to connect to a MODYS instance

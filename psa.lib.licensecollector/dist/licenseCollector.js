@@ -139,6 +139,7 @@ LicenseCollector.LICENSE_WHITELIST_PROD = [
     'WTFPL',
     'BlueOak-1.0.0',
     'Unicode-DFS-2016',
+    'Custom: LICENSE',
 ];
 LicenseCollector.LICENSE_WHITELIST_PROD_AND_DEV = [
     ...LicenseCollector.LICENSE_WHITELIST_PROD,

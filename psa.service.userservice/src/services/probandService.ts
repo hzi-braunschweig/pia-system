@@ -7,7 +7,10 @@
 import { ITask } from 'pg-promise';
 
 import { runTransaction } from '../db';
-import postgresqlHelper from './postgresqlHelper';
+import postgresqlHelper, {
+  getPendingComplianceChangesOfStudy,
+  getPendingProbandDeletionsOfStudy,
+} from './postgresqlHelper';
 import { messageQueueService } from './messageQueueService';
 import {
   AccountLogoutError,
@@ -24,6 +27,7 @@ import {
 import {
   CreateProbandRequest,
   CreateProbandResponse,
+  ProbandDataForExportDto,
   ProbandDataPatch,
   ProbandDto,
 } from '../models/proband';
@@ -39,7 +43,15 @@ import assert from 'assert';
 import { FindConditions } from 'typeorm/find-options/FindConditions';
 import { generateRandomPseudonym } from '../helpers/generateRandomPseudonym';
 import { PlannedProband } from '../entities/plannedProband';
-import { ProbandOrigin } from '@pia-system/lib-http-clients-internal';
+import {
+  PersonalDataInternalDtoGet,
+  ProbandOrigin,
+} from '@pia-system/lib-http-clients-internal';
+import { personaldataserviceClient } from '../clients/personaldataserviceClient';
+import { PendingComplianceChange } from '../models/pendingComplianceChange';
+import { PendingProbandDeletionDto } from '../models/pendingDeletion';
+import { PendingPersonalDataDeletion } from '@pia-system/lib-http-clients-internal/dist/dtos/pendingDeletion';
+import { stringify } from 'csv-stringify';
 
 /**
  * The type of deletion which is evaluated when deleting a proband.
@@ -78,6 +90,99 @@ export class ProbandService {
         ? AccountStatus.ACCOUNT
         : AccountStatus.NO_ACCOUNT,
     }));
+  }
+
+  public static async getExport(studyName: string): Promise<string> {
+    const probandsOfStudy = await this.getAllProbandsOfStudy(studyName);
+    const pendingComplianceChanges = (await getPendingComplianceChangesOfStudy(
+      studyName
+    )) as PendingComplianceChange[];
+    const pendingProbandDeletions = (await getPendingProbandDeletionsOfStudy(
+      studyName
+    )) as PendingProbandDeletionDto[];
+    const allPersonalData = await personaldataserviceClient.getPersonalData(
+      studyName
+    );
+    const pendingPersonalDataDeletions =
+      await personaldataserviceClient.getPendingPersonalDataDeletions(
+        studyName
+      );
+
+    const pendingComplianceChangesMap = pendingComplianceChanges.reduce(
+      (map, item) => map.set(item.proband_id, item),
+      new Map<string, PendingComplianceChange>()
+    );
+    const pendingPersonalDataDeletionsMap = pendingPersonalDataDeletions.reduce(
+      (map, item) => map.set(item.proband_id, item),
+      new Map<string, PendingPersonalDataDeletion>()
+    );
+    const personalDataMap = allPersonalData.reduce(
+      (map, item) => map.set(item.pseudonym, item),
+      new Map<string, PersonalDataInternalDtoGet>()
+    );
+    const pendingProbandDeletionsMap = pendingProbandDeletions.reduce(
+      (map, item) => map.set(item.for_id, item),
+      new Map<string, PendingProbandDeletionDto>()
+    );
+
+    const table: ProbandDataForExportDto[] = [];
+    for (const proband of probandsOfStudy) {
+      const personalData = personalDataMap.get(proband.pseudonym);
+      const pendingComplianceChange = pendingComplianceChangesMap.get(
+        proband.pseudonym
+      );
+      const pendingPersonalDataDeletion = pendingPersonalDataDeletionsMap.get(
+        proband.pseudonym
+      );
+      const pendingProbandDeletion = pendingProbandDeletionsMap.get(
+        proband.pseudonym
+      );
+
+      table.push({
+        pseudonym: proband.pseudonym,
+        study: proband.study,
+        anrede: personalData?.anrede,
+        titel: personalData?.titel,
+        name: personalData?.name,
+        vorname: personalData?.vorname,
+        strasse: personalData?.strasse,
+        haus_nr: personalData?.haus_nr,
+        plz: personalData?.plz,
+        landkreis: personalData?.landkreis,
+        ort: personalData?.ort,
+        telefon_privat: personalData?.telefon_privat,
+        telefon_dienst: personalData?.telefon_dienst,
+        telefon_mobil: personalData?.telefon_mobil,
+        email: personalData?.email,
+        comment: personalData?.comment,
+        ids: proband.ids,
+        status: proband.status,
+        studyCenter: proband.studyCenter,
+        examinationWave: proband.examinationWave,
+        needsMaterial: proband.needsMaterial,
+        firstLoggedInAt: proband.firstLoggedInAt,
+        complianceContact: proband.complianceContact,
+        complianceLabresults: proband.complianceLabresults,
+        complianceSamples: proband.complianceSamples,
+        complianceBloodsamples: proband.complianceBloodsamples,
+        isTestProband: proband.isTestProband,
+        accountStatus: proband.accountStatus,
+        deactivatedAt: proband.deactivatedAt,
+        deletedAt: proband.deletedAt,
+        pending_compliance_change_labresults_to:
+          pendingComplianceChange?.compliance_labresults_to,
+        pending_compliance_change_samples_to:
+          pendingComplianceChange?.compliance_samples_to,
+        pending_compliance_change_bloodsamples_to:
+          pendingComplianceChange?.compliance_bloodsamples_to,
+        pending_personal_data_deletion: pendingPersonalDataDeletion
+          ? true
+          : undefined,
+        pending_proband_deletion: pendingProbandDeletion ? true : undefined,
+      });
+    }
+
+    return await this.convertArrayToCSV(table);
   }
 
   public static async getProbandByPseudonymOrFail(
@@ -548,5 +653,25 @@ export class ProbandService {
     } catch (e) {
       throw new AccountLogoutError('logging user out failed', e);
     }
+  }
+
+  private static async convertArrayToCSV(
+    data: ProbandDataForExportDto[]
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      stringify(data, { header: true, delimiter: ';' }, (err, output) => {
+        if (err) {
+          if (err instanceof Error) {
+            reject(err);
+          } else {
+            reject(
+              new Error('Error at converting array to csv using stringify')
+            );
+          }
+        } else {
+          resolve(output);
+        }
+      });
+    });
   }
 }

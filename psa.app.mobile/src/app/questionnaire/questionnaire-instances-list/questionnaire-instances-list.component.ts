@@ -9,6 +9,7 @@ import {
   QuestionnaireInstance,
   QuestionnaireStatus,
 } from '../questionnaire.model';
+import { compareQuestionnaireInstances } from './compare-questionnaire-instances';
 
 @Component({
   selector: 'app-questionnaire-instances-list',
@@ -34,8 +35,8 @@ export class QuestionnaireInstancesListComponent {
     if (!questionnaireInstances) {
       return;
     }
-    const instancesResult = questionnaireInstances.sort(
-      this.compareQuestionnaireInstances
+    const instancesResult = questionnaireInstances.toSorted(
+      compareQuestionnaireInstances
     );
     this.spontanQuestionnaireInstances = instancesResult.filter(
       this.isForSpontanList
@@ -57,26 +58,5 @@ export class QuestionnaireInstancesListComponent {
       instance.questionnaire.cycle_unit === 'spontan' &&
       (instance.status === 'active' || instance.status === 'in_progress')
     );
-  }
-
-  private compareQuestionnaireInstances(
-    a: QuestionnaireInstance,
-    b: QuestionnaireInstance
-  ): number {
-    if (
-      QuestionnaireInstancesListComponent.order.get(a.status) !==
-      QuestionnaireInstancesListComponent.order.get(b.status)
-    ) {
-      return (
-        QuestionnaireInstancesListComponent.order.get(a.status) -
-        QuestionnaireInstancesListComponent.order.get(b.status)
-      );
-    }
-    if (a.date_of_issue > b.date_of_issue) {
-      return -1;
-    } else if (a.date_of_issue < b.date_of_issue) {
-      return 1;
-    }
-    return 0;
   }
 }

@@ -9,13 +9,11 @@ import {
   MessageQueueClient,
   MessageQueueTopic,
   QuestionnaireInstanceReleasedMessage,
+  MessageQueueTestUtils,
+  QuestionnaireInstanceAnsweringStartedMessage,
 } from '@pia/lib-messagequeue';
 
-import {
-  AuthServerMock,
-  AuthTokenMockBuilder,
-  GlobalConfig,
-} from '@pia/lib-service-core';
+import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 import chai, { expect } from 'chai';
 import chaiHttp from 'chai-http';
 import { StatusCodes } from 'http-status-codes';
@@ -27,6 +25,7 @@ import {
   cleanup,
   setup,
 } from './questionnaireInstances.spec.data/setup.helper';
+import { createSandbox } from 'sinon';
 
 chai.use(chaiHttp);
 
@@ -74,21 +73,39 @@ const utHeader2 = AuthTokenMockBuilder.createAuthHeader({
 });
 
 describe('/questionnaireInstances', function () {
+  const testSandbox = createSandbox();
+  const mqc = new MessageQueueClient(config.servers.messageQueue);
+
   before(async () => {
     await Server.init();
     await setup();
+    await mqc.connect(true);
   });
 
   after(async () => {
+    await mqc.disconnect();
     await Server.stop();
     await cleanup();
   });
 
-  beforeEach(() => {
+  beforeEach(async () => {
     AuthServerMock.adminRealm().returnValid();
     AuthServerMock.probandRealm().returnValid();
+
+    // Listen to the message queue
+    await mqc.createConsumer(
+      MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
+      async () => Promise.resolve()
+    );
+    await mqc.createConsumer(
+      MessageQueueTopic.QUESTIONNAIRE_INSTANCE_ANSWERING_STARTED,
+      async () => Promise.resolve()
+    );
   });
-  afterEach(AuthServerMock.cleanAll);
+  afterEach(() => {
+    AuthServerMock.cleanAll();
+    testSandbox.restore();
+  });
 
   describe('PUT /admin/questionnaireInstance/{id}', function () {
     it('should return HTTP 403 if a Forscher tries', async () => {
@@ -167,6 +184,22 @@ describe('/questionnaireInstances', function () {
     it('should return HTTP 200 with the put QI if a UT tries to set status to in_progress', async () => {
       // Arrange
       const questionnaireInstanceId = 7777771;
+      const qiAnsweringStarted =
+        MessageQueueTestUtils.injectMessageProcessedAwaiter(
+          mqc,
+          MessageQueueTopic.QUESTIONNAIRE_INSTANCE_ANSWERING_STARTED,
+          testSandbox
+        );
+      const expectedMessage: QuestionnaireInstanceAnsweringStartedMessage = {
+        id: questionnaireInstanceId,
+        studyName: 'ApiTestStudie',
+        pseudonym: 'qtest-studie-proband1',
+        status: 'in_progress',
+        questionnaire: {
+          id: questionnaireInstanceId,
+          customName: 'ApiTestQuestionnaire7777771',
+        },
+      };
 
       // Act
       const result = await chai
@@ -198,11 +231,28 @@ describe('/questionnaireInstances', function () {
           },
         },
       });
+      expect((await qiAnsweringStarted).message).to.deep.equal(expectedMessage);
     });
 
     it('should return HTTP 200 with the put QI if a UT tries to set status to released', async () => {
       // Arrange
       const questionnaireInstanceId = 7777771;
+      const qiReleased = MessageQueueTestUtils.injectMessageProcessedAwaiter(
+        mqc,
+        MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
+        testSandbox
+      );
+      const expectedMessage: QuestionnaireInstanceReleasedMessage = {
+        id: questionnaireInstanceId,
+        studyName: 'ApiTestStudie',
+        pseudonym: 'qtest-studie-proband1',
+        status: 'released',
+        releaseVersion: 1,
+        questionnaire: {
+          id: questionnaireInstanceId,
+          customName: 'ApiTestQuestionnaire7777771',
+        },
+      };
 
       // Act
       const result = await chai
@@ -235,47 +285,7 @@ describe('/questionnaireInstances', function () {
           },
         },
       });
-    });
-
-    it('should post to the messagequeue when the set status got set to released for UT', function (done) {
-      // Arrange
-      const questionnaireInstanceId = 7777771;
-      const testMessageQueueService = new MessageQueueClient(
-        GlobalConfig.getMessageQueue('testservice')
-      );
-
-      void testMessageQueueService
-        .connect()
-        .then(async () => {
-          return testMessageQueueService.createConsumer(
-            MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
-            async (message: QuestionnaireInstanceReleasedMessage) => {
-              // Assert #2
-              expect(message.id).to.eql(questionnaireInstanceId);
-              expect(message.studyName).to.eql('ApiTestStudie');
-
-              await testMessageQueueService.disconnect();
-              done();
-            }
-          );
-        })
-        // Act
-        .then(async () => {
-          return chai
-            .request(apiAddress)
-            .put(
-              '/admin/questionnaireInstances/' +
-                questionnaireInstanceId.toString()
-            )
-            .set(utHeader)
-            .send({
-              status: 'released',
-              progress: 15,
-              release_version: 1,
-            });
-        })
-        // Assert #1
-        .then((result) => expect(result).to.have.status(200));
+      expect((await qiReleased).message).to.deep.equal(expectedMessage);
     });
 
     it('should return HTTP 200 with the put QI if a UT tries to set status to released again and increment release_version', async () => {
@@ -441,6 +451,22 @@ describe('/questionnaireInstances', function () {
     it('should return HTTP 200 with the put QI if a Proband tries to set status to in_progress', async () => {
       // Arrange
       const questionnaireInstanceId = 99998;
+      const qiAnsweringStarted =
+        MessageQueueTestUtils.injectMessageProcessedAwaiter(
+          mqc,
+          MessageQueueTopic.QUESTIONNAIRE_INSTANCE_ANSWERING_STARTED,
+          testSandbox
+        );
+      const expectedMessage: QuestionnaireInstanceAnsweringStartedMessage = {
+        id: questionnaireInstanceId,
+        studyName: 'ApiTestStudie',
+        pseudonym: 'qtest-studie-proband1',
+        status: 'in_progress',
+        questionnaire: {
+          id: 99999,
+          customName: 'ApiTestQuestionnaire99999',
+        },
+      };
 
       // Act
       const result = await chai
@@ -470,6 +496,7 @@ describe('/questionnaireInstances', function () {
           },
         },
       });
+      expect((await qiAnsweringStarted).message).to.deep.equal(expectedMessage);
     });
 
     it('should return HTTP 200 with the put QI if a Proband tries to set status to released_once', async () => {
@@ -580,6 +607,22 @@ describe('/questionnaireInstances', function () {
     it('should return HTTP 200 with the put QI if a Proband tries to set status to released_twice', async () => {
       // Arrange
       const questionnaireInstanceId = 99998;
+      const qiReleased = MessageQueueTestUtils.injectMessageProcessedAwaiter(
+        mqc,
+        MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
+        testSandbox
+      );
+      const expectedMessage: QuestionnaireInstanceReleasedMessage = {
+        id: 99998,
+        studyName: 'ApiTestStudie',
+        pseudonym: 'qtest-studie-proband1',
+        status: 'released_twice',
+        releaseVersion: 2,
+        questionnaire: {
+          id: 99999,
+          customName: 'ApiTestQuestionnaire99999',
+        },
+      };
 
       // Act
       const result = await chai
@@ -612,39 +655,7 @@ describe('/questionnaireInstances', function () {
       expect(result.body.date_of_release_v2).to.not.equal(
         result.body.date_of_release_v1
       );
-    });
-
-    it('should post to the messagequeue when the set status got set to released for proband', function (done) {
-      const testMessageQueueService = new MessageQueueClient(
-        GlobalConfig.getMessageQueue('testservice')
-      );
-      void testMessageQueueService
-        .connect()
-        .then(async () => {
-          return testMessageQueueService.createConsumer(
-            MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED,
-            async (message: QuestionnaireInstanceReleasedMessage) => {
-              expect(message.id).to.eql(99995);
-              expect(message.studyName).to.eql('ApiTestStudie');
-              await testMessageQueueService.disconnect();
-              done();
-            }
-          );
-        })
-        .then(async () => {
-          return chai
-            .request(apiAddress)
-            .put('/questionnaireInstances/99995')
-            .set(probandHeader1)
-            .send({
-              status: 'released_twice',
-              progress: 15,
-            });
-        })
-        .then((result) =>
-          // Assert
-          expect(result).to.have.status(200)
-        );
+      expect((await qiReleased).message).to.deep.equal(expectedMessage);
     });
 
     it('should return HTTP 404 if a Proband tries to set status to released_once when it is released_twice', async () => {
@@ -705,7 +716,7 @@ describe('/questionnaireInstances', function () {
       expect(result.body.links.self.href).to.equal('/questionnaireInstances');
     });
 
-    it('should return HTTP 200 with all QIs for a Proband', async () => {
+    it('should return HTTP 200 with all QIs for a participant in correct order', async () => {
       // Arrange
       // Act
       const result = await chai
@@ -726,6 +737,21 @@ describe('/questionnaireInstances', function () {
         undefined
       );
       expect(result.body.links.self.href).to.equal('/questionnaireInstances');
+      expect(
+        result.body.questionnaireInstances.map(
+          (qi: QuestionnaireInstanceDeprecated) => ({
+            id: qi.id,
+            sortOrder: qi.sort_order,
+          })
+        )
+      ).to.eql([
+        { id: 99999, sortOrder: 1 },
+        { id: 99995, sortOrder: 2 },
+        { id: 99996, sortOrder: 3 },
+        { id: 99998, sortOrder: 4 },
+        { id: 55555, sortOrder: null },
+        { id: 55556, sortOrder: null },
+      ]);
     });
 
     it('should return HTTP 200 with all QIs and correctly filtered questionnaire data for a Proband', async () => {
@@ -886,7 +912,7 @@ describe('/questionnaireInstances', function () {
       expect(result.body.links.self.href).to.equal('/questionnaireInstances');
     });
 
-    it('should return HTTP 200 with all QIs for the proband which are for UT for UT', async () => {
+    it('should return HTTP 200 with all QIs for the proband which are for UT', async () => {
       // Arrange
       const pseudonym = 'qtest-studie-proband1';
 

@@ -220,7 +220,10 @@ describe('/questionnaires', function () {
     });
 
     it('should return HTTP 200 with the posted questionnaire if the request is valid', async function () {
-      const questionnaireRequest = getValidQuestionnaire1();
+      const questionnaireRequest = {
+        ...getValidQuestionnaire1(),
+        sort_order: 1,
+      };
       const result = await chai
         .request(apiAddress)
         .post('/admin/questionnaires')
@@ -494,7 +497,7 @@ describe('/questionnaires', function () {
       );
     });
 
-    it('should return HTTP 200 with the posted questionnaire of cycle_unit =  spontan', async function () {
+    it('should return HTTP 200 with the posted questionnaire of cycle_unit = spontan', async function () {
       const questionnaireRequest = getValidQuestionnaireSpontan();
       const result = await chai
         .request(apiAddress)
@@ -824,8 +827,10 @@ describe('/questionnaires', function () {
     });
 
     it('should return HTTP 200 and automatically generate variable names, when previous version had variable names set for every question', async () => {
-      const questionnaireRequest =
-        getValidQuestionnaireWithGeneratedVariableNames();
+      const questionnaireRequest = {
+        ...getValidQuestionnaireWithGeneratedVariableNames(),
+        sort_order: 1,
+      };
 
       questionnaireRequest.questions.push({
         text: 'Fragen die Variablennamen erhalten sollten',
@@ -870,6 +875,7 @@ describe('/questionnaires', function () {
       expect(body.questions[1].answer_options[1].variable_name).to.match(
         generatedLabelRegex
       );
+      expect(body.sort_order).to.eq(questionnaireRequest.sort_order);
     });
     context('variable names', () => {
       it('should return HTTP 200 and keep empty variable names, when previous version had not set variable names for every question', async () => {
@@ -1338,6 +1344,7 @@ describe('/questionnaires', function () {
       changedQuestionnaire.name = 'TestfragebogenVersion2';
       changedQuestionnaire.cycle_amount = 2;
       changedQuestionnaire.cycle_unit = 'month';
+      changedQuestionnaire.sort_order = 1;
       changedQuestionnaire.questions = [
         {
           text: 'Version2 question',
@@ -1399,11 +1406,11 @@ describe('/questionnaires', function () {
             existingQuestionnaire2v1.version.toString()
         )
         .set(forscherHeader1);
-      const unchangedVerion1 = getExistingQuestionnaire2v1();
+      const unchangedVersion1 = getExistingQuestionnaire2v1();
       expect(result2).to.have.status(StatusCodes.OK);
 
       checkIfResponseMatchesRequestQuestionnaire(
-        unchangedVerion1,
+        unchangedVersion1,
         result2.body,
         true
       );
@@ -1445,7 +1452,7 @@ describe('/questionnaires', function () {
   });
 
   describe('GET /admin/questionnaires', function () {
-    it('should return HTTP 200 with the correct questionnaires for Forscher', async function () {
+    it('should return HTTP 200 with the correct questionnaires, in correct order for Forscher', async function () {
       const result = await chai
         .request(apiAddress)
         .get('/admin/questionnaires')
@@ -1467,6 +1474,21 @@ describe('/questionnaires', function () {
       expect(questionnairesResponse.links.self.href).to.equal(
         '/questionnaires'
       );
+      expect(
+        questionnairesResponse.questionnaires.map((qi: Questionnaire) => ({
+          id: qi.id,
+          version: qi.version,
+          sortOrder: qi.sort_order,
+        }))
+      ).to.eql([
+        { id: 100600, version: 1, sortOrder: 1 },
+        { id: 100500, version: 1, sortOrder: 2 },
+        { id: 100300, version: 1, sortOrder: 3 },
+        { id: 100400, version: 1, sortOrder: 3 },
+        { id: 100200, version: 2, sortOrder: 4 },
+        { id: 100100, version: 1, sortOrder: null },
+        { id: 100200, version: 1, sortOrder: null },
+      ]);
     });
 
     it('should return HTTP 200 and empty array if database query failed', async function () {
@@ -2082,6 +2104,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
     study_id: 'ApiTestStudy1',
     name: 'ApiTestQuestionnaire2v1',
     custom_name: null,
+    sort_order: null,
     type: 'for_probands',
     cycle_amount: 1,
     cycle_unit: 'week',
@@ -2219,6 +2242,7 @@ function getExistingQuestionnaire2v1(): QuestionnaireRequest {
 function getExistingQuestionnaire2v2(): QuestionnaireRequest {
   const questionnaire = getExistingQuestionnaire2v1();
   questionnaire.name = 'ApiTestQuestionnaire2v2';
+  questionnaire.sort_order = 4;
   questionnaire.questions.forEach((q) => {
     q.id++;
     q.answer_options.forEach((a) => {
@@ -2233,6 +2257,7 @@ function getExistingQuestionnaire4(): QuestionnaireRequest {
     study_id: 'ApiTestStudy1',
     name: 'ApiTestQuestionnaire4',
     custom_name: null,
+    sort_order: 3,
     type: 'for_probands',
     cycle_amount: 1,
     cycle_unit: 'week',
@@ -2329,6 +2354,7 @@ function getConditionSourceQuestionnaire(): QuestionnaireRequest {
     study_id: 'ApiTestStudy2',
     name: 'ApiTestConditionSourceQuestionnaire',
     custom_name: null,
+    sort_order: null,
     cycle_amount: 1,
     cycle_unit: 'week',
     activate_after_days: 1,
@@ -2340,6 +2366,7 @@ function getConditionSourceQuestionnaire(): QuestionnaireRequest {
     notification_weekday: null,
     notification_interval: null,
     notification_interval_unit: null,
+    notification_link_to_overview: false,
     compliance_needed: false,
     expires_after_days: 5,
     finalises_after_days: 2,
@@ -2499,6 +2526,7 @@ function getMissingFieldQuestionnaire(): Partial<QuestionnaireRequest> {
     notification_weekday: 'monday',
     notification_interval: 1,
     notification_interval_unit: 'days',
+    notification_link_to_overview: true,
     questions: [
       {
         text: 'Welche Symptome haben Sie?',
@@ -2550,6 +2578,7 @@ function getValidQuestionnaire1(): QuestionnaireRequest {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname1',
     custom_name: 'valid_questionnaire_1',
+    sort_order: null,
     type: 'for_probands',
     cycle_amount: 7,
     cycle_unit: 'hour',
@@ -2566,6 +2595,7 @@ function getValidQuestionnaire1(): QuestionnaireRequest {
     notification_weekday: 'monday',
     notification_interval: 1,
     notification_interval_unit: 'days',
+    notification_link_to_overview: true,
     activate_at_date: startOfToday(),
     compliance_needed: true,
     expires_after_days: 5,
@@ -2656,6 +2686,7 @@ function getValidQuestionnaire2(): QuestionnaireRequest {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname2',
     custom_name: null,
+    sort_order: null,
     type: 'for_research_team',
     cycle_amount: 1,
     cycle_unit: 'once',
@@ -2670,6 +2701,7 @@ function getValidQuestionnaire2(): QuestionnaireRequest {
     notification_weekday: '',
     notification_interval: 0,
     notification_interval_unit: '',
+    notification_link_to_overview: true,
     expires_after_days: 5,
     questions: [
       {
@@ -2735,6 +2767,7 @@ function getValidQuestionnaireWithVariableNames(): QuestionnaireRequest {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname1',
     custom_name: null,
+    sort_order: null,
     type: 'for_probands',
     cycle_amount: 7,
     cycle_unit: 'hour',
@@ -2751,6 +2784,7 @@ function getValidQuestionnaireWithVariableNames(): QuestionnaireRequest {
     notification_weekday: 'monday',
     notification_interval: 1,
     notification_interval_unit: 'days',
+    notification_link_to_overview: true,
     activate_at_date: startOfToday(),
     compliance_needed: true,
     expires_after_days: 5,
@@ -2798,6 +2832,7 @@ function getValidQuestionnaireWithGeneratedVariableNames(): QuestionnaireRequest
     study_id: 'ApiTestStudy2',
     name: 'ApiTestGeneratedVariableNames',
     custom_name: null,
+    sort_order: null,
     type: 'for_research_team',
     cycle_amount: 1,
     cycle_unit: 'once',
@@ -2812,6 +2847,7 @@ function getValidQuestionnaireWithGeneratedVariableNames(): QuestionnaireRequest
     notification_weekday: '',
     notification_interval: 0,
     notification_interval_unit: '',
+    notification_link_to_overview: true,
     expires_after_days: 5,
     questions: [
       {
@@ -2846,6 +2882,7 @@ function getQuestionnaireImported(): QuestionnaireRequest {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname5',
     custom_name: null,
+    sort_order: null,
     type: 'for_probands',
     cycle_amount: 1,
     cycle_unit: 'week',
@@ -2859,6 +2896,7 @@ function getQuestionnaireImported(): QuestionnaireRequest {
     notification_weekday: 'monday',
     notification_interval: 1,
     notification_interval_unit: 'days',
+    notification_link_to_overview: true,
     expires_after_days: 5,
     questions: [
       {
@@ -2924,6 +2962,7 @@ function getValidQuestionnaireEmptyQuestion(): QuestionnaireRequest {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname3',
     custom_name: null,
+    sort_order: 3,
     type: 'for_probands',
     cycle_amount: 1,
     cycle_unit: 'week',
@@ -2937,6 +2976,7 @@ function getValidQuestionnaireEmptyQuestion(): QuestionnaireRequest {
     notification_weekday: 'monday',
     notification_interval: 1,
     notification_interval_unit: 'hours',
+    notification_link_to_overview: true,
     expires_after_days: 5,
     questions: [
       {
@@ -2964,6 +3004,7 @@ function getWrongNotificationQuestionnaire(): QuestionnaireRequest {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname3',
     custom_name: null,
+    sort_order: null,
     type: 'for_probands',
     cycle_amount: 1,
     cycle_unit: 'week',
@@ -2977,6 +3018,7 @@ function getWrongNotificationQuestionnaire(): QuestionnaireRequest {
     notification_weekday: 'notaweekday',
     notification_interval: 1,
     notification_interval_unit: 'hours',
+    notification_link_to_overview: true,
     expires_after_days: 5,
     questions: [
       {
@@ -3004,6 +3046,7 @@ function getValidQuestionnaireSpontan(): QuestionnaireRequest {
     study_id: 'ApiTestStudy1',
     name: 'Testfragebogenname4',
     custom_name: null,
+    sort_order: null,
     type: 'for_probands',
     cycle_amount: 0,
     cycle_unit: 'spontan',
@@ -3017,6 +3060,7 @@ function getValidQuestionnaireSpontan(): QuestionnaireRequest {
     notification_weekday: '',
     notification_interval: 0,
     notification_interval_unit: '',
+    notification_link_to_overview: true,
     questions: [
       {
         text: 'Welche Symptome haben Sie?1',

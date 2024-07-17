@@ -45,7 +45,7 @@ export class PersonalDataService {
   }
 
   /**
-   * Get personal data for every proband in the database
+   * Get personal data for every proband in the database of all studies to which the user has access
    * @return Pesonal data for every proband in the database
    */
   public async getPersonalDataAll(): Promise<PersonalData[]> {

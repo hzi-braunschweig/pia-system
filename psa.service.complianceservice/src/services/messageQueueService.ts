@@ -17,7 +17,7 @@ class MessageQueueService extends MessageQueueClient {
 
   public async connect(): Promise<void> {
     await super.connect();
-    this.complianceCreate = await this.createProducer<ComplianceCreatedMessage>(
+    this.complianceCreate = await this.createProducer(
       MessageQueueTopic.COMPLIANCE_CREATED
     );
   }

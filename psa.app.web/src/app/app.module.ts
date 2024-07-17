@@ -170,6 +170,7 @@ import { ChartsModule } from '@pia-system/charts';
 import { DialogDeleteComponent } from './_helpers/dialog-delete';
 import { DialogOkCancelComponent } from './_helpers/dialog-ok-cancel';
 import { DialogYesNoComponent } from './dialogs/dialog-yes-no/dialog-yes-no';
+import { FileDownloadService } from './_services/file-download.service';
 
 // === LOCALE ===
 // Setup ngx-translate
@@ -368,6 +369,7 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     DatePipe,
     CurrentUser,
     NotificationPresenter,
+    FileDownloadService,
   ],
   bootstrap: [AppComponent],
 })

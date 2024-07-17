@@ -12,8 +12,6 @@ import {
   ProbandDeactivatedMessage,
   ProbandCreatedMessage,
   StudyDeletedMessage,
-  ProbandEmailVerifiedMessage,
-  ProbandRegisteredMessage,
 } from '@pia/lib-messagequeue';
 import { config } from '../config';
 import { ProbandDeletionType, ProbandService } from './probandService';
@@ -27,29 +25,27 @@ export class MessageQueueService extends MessageQueueClient {
 
   public async connect(): Promise<void> {
     await super.connect();
-    this.probandDeleted = await this.createProducer<ProbandDeletedMessage>(
+    this.probandDeleted = await this.createProducer(
       MessageQueueTopic.PROBAND_DELETED
     );
-    this.probandDeactivated =
-      await this.createProducer<ProbandDeactivatedMessage>(
-        MessageQueueTopic.PROBAND_DEACTIVATED
-      );
-    this.probandCreated = await this.createProducer<ProbandCreatedMessage>(
+    this.probandDeactivated = await this.createProducer(
+      MessageQueueTopic.PROBAND_DEACTIVATED
+    );
+    this.probandCreated = await this.createProducer(
       MessageQueueTopic.PROBAND_CREATED
     );
-    this.studyDeleted = await this.createProducer<StudyDeletedMessage>(
+    this.studyDeleted = await this.createProducer(
       MessageQueueTopic.STUDY_DELETED
     );
 
     await this.createConsumer(
       MessageQueueTopic.PROBAND_EMAIL_VERIFIED,
-      async (message: ProbandEmailVerifiedMessage) =>
-        await this.onProbandEmailVerified(message.pseudonym)
+      async (message) => await this.onProbandEmailVerified(message.pseudonym)
     );
 
     await this.createConsumer(
       MessageQueueTopic.PROBAND_REGISTERED,
-      async (message: ProbandRegisteredMessage) => {
+      async (message) => {
         await ProbandService.createProbandForRegistration(message.username);
       }
     );

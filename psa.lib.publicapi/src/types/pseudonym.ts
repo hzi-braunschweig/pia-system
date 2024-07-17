@@ -11,7 +11,7 @@
  * and is unique within the study. There is no specific
  * limitation for the length of the prefix and the suffix.
  *
- * @pattern ^[a-z]+-[0-9]+$
- * @example "abcd-1234"
+ * @pattern ^[a-z0-9]+-[0-9]+$
+ * @example "abcd12-1234"
  */
 export type Pseudonym = string;

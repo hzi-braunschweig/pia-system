@@ -11,7 +11,7 @@ import * as util from 'util';
 
 import { MessageQueueClient } from '../../src/messageQueueClient';
 import { MessageQueueClientHelper } from '../../src/messageQueueClientHelper';
-import { MessageQueueTopic } from '../../src';
+import { MessageQueueTopic, ProbandCreatedMessage } from '../../src';
 
 const delay = util.promisify(setTimeout);
 
@@ -201,11 +201,14 @@ describe('MessageQueueClient functionality', () => {
 
     try {
       interface Arguments {
-        message: { x: string };
+        message: ProbandCreatedMessage;
         timestamp: Date;
       }
 
-      const expectedMessage = { x: 'dummy' };
+      const expectedMessage: ProbandCreatedMessage = {
+        pseudonym: 'test',
+        studyName: 'test',
+      };
       const producer = await mq1.createProducer(topic);
 
       let resolver: (value: Arguments | PromiseLike<Arguments>) => void;
@@ -214,13 +217,10 @@ describe('MessageQueueClient functionality', () => {
         (resolve) => (resolver = resolve)
       );
 
-      await mq2.createConsumer(
-        topic,
-        async (message: { x: string }, timestamp: Date) => {
-          resolver({ message, timestamp });
-          return Promise.resolve();
-        }
-      );
+      await mq2.createConsumer(topic, async (message, timestamp: Date) => {
+        resolver({ message, timestamp });
+        return Promise.resolve();
+      });
 
       producer.publish(expectedMessage).catch(console.error);
 
@@ -254,7 +254,10 @@ describe('MessageQueueClient functionality', () => {
         return Promise.resolve();
       });
 
-      await producer.publish({});
+      await producer.publish({
+        pseudonym: 'test',
+        studyName: 'test',
+      });
 
       while (received !== EXPECTED_NUMBER_OF_MESSAGES) {
         await delay(DELAY_TIME);
@@ -302,7 +305,10 @@ describe('MessageQueueClient functionality', () => {
 
       const count = 10;
       for (let i = 0; i < count; i++) {
-        await producer.publish({});
+        await producer.publish({
+          pseudonym: 'test',
+          studyName: 'test',
+        });
       }
 
       while (receivedA !== count || receivedB !== count) {
@@ -334,7 +340,10 @@ describe('MessageQueueClient functionality', () => {
         return Promise.reject(new Error('test error'));
       });
 
-      await producer.publish({});
+      await producer.publish({
+        pseudonym: 'test',
+        studyName: 'test',
+      });
 
       while (received !== EXPECTED_NUMBER_OF_MESSAGES) {
         await delay(DELAY_TIME);
@@ -378,7 +387,10 @@ describe('MessageQueueClient functionality', () => {
     await mq2.connect();
     try {
       const producer = await mq2.createProducer(topic);
-      await producer.publish({ id: 0 });
+      await producer.publish({
+        pseudonym: 'test',
+        studyName: 'test',
+      });
 
       while ((await queryMessageCount()) !== EXPECTED_NUMBER_OF_MESSAGES) {
         await delay(DELAY_TIME);
@@ -417,7 +429,10 @@ describe('MessageQueueClient functionality', () => {
     await mq2.connect();
     try {
       const producer = await mq2.createProducer(topic);
-      await producer.publish({ id: 0 });
+      await producer.publish({
+        pseudonym: 'test',
+        studyName: 'test',
+      });
 
       while ((await queryMessageCount()) !== 1) {
         await delay(DELAY_TIME);
@@ -486,7 +501,10 @@ describe('MessageQueueClient functionality', () => {
     await mq2.connect();
     try {
       const producer = await mq2.createProducer(topic);
-      await producer.publish({});
+      await producer.publish({
+        pseudonym: 'test',
+        studyName: 'test',
+      });
 
       while ((await queryMessageCount()) !== 1) {
         await delay(DELAY_TIME);
@@ -532,7 +550,10 @@ describe('MessageQueueClient functionality', () => {
       });
 
       const producer = await mq2.createProducer(topic);
-      await producer.publish({});
+      await producer.publish({
+        pseudonym: 'test',
+        studyName: 'test',
+      });
 
       while (
         (await queryMessageCount(

@@ -98,6 +98,7 @@ export interface QuestionForm {
 export interface QuestionnaireForm {
   name: FormControl<string>;
   custom_name: FormControl<string>;
+  sort_order: FormControl<number>;
   type: FormControl<string>;
   study_id: FormControl<string>;
   cycle_amount: FormControl<number>;
@@ -116,6 +117,7 @@ export interface QuestionnaireForm {
   notification_interval_unit: FormControl<string>;
   notification_body_new: FormControl<string>;
   notification_body_in_progress: FormControl<string>;
+  notification_link_to_overview: FormControl<boolean>;
   compliance_needed: FormControl<boolean>;
   notify_when_not_filled: FormControl<boolean>;
   notify_when_not_filled_time: FormControl<string>;

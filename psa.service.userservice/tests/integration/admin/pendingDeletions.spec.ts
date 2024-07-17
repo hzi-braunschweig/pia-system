@@ -1693,10 +1693,11 @@ describe('/admin/pendingDeletions', function () {
 
       it('should send the "study.deleted" message', async () => {
         // Arrange
-        let studyName: string;
+        let studyName = '';
+
         await messageQueueService.createConsumer(
           MessageQueueTopic.STUDY_DELETED,
-          async (message: { studyName: string }) => {
+          async (message) => {
             studyName = message.studyName;
             return Promise.resolve();
           }
