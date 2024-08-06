@@ -141,7 +141,36 @@ export class QuestionnaireInstanceService {
         },
       })
     ).map((instance) => instance.id);
+
+    // delete would fail with a zero length array
+    if (instanceIdsToDelete.length === 0) {
+      return;
+    }
+
     await getRepository(QuestionnaireInstance).delete(instanceIdsToDelete);
+  }
+
+  public static async expireQuestionnaireInstances(
+    pseudonym: string,
+    status: QuestionnaireInstanceStatus[],
+    questionnaireType: QuestionnaireType
+  ): Promise<void> {
+    const idsToUpdate = (
+      await getRepository(QuestionnaireInstance).find({
+        relations: ['questionnaire'],
+        where: {
+          pseudonym,
+          status: In<QuestionnaireInstanceStatus>(status),
+          questionnaire: {
+            type: questionnaireType,
+          },
+        },
+      })
+    ).map((instance) => instance.id);
+
+    await getRepository(QuestionnaireInstance).update(idsToUpdate, {
+      status: 'expired',
+    });
   }
 
   public static async get(id: number): Promise<QuestionnaireInstance>;

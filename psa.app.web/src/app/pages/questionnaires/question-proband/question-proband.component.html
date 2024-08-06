@@ -38,7 +38,6 @@
     </ul>
     <mat-divider></mat-divider>
     <button
-      id="navigationbutton"
       mat-button
       (click)="goToAnswersView(true)"
       data-e2e="e2e-navigation-button"
@@ -48,7 +47,6 @@
     </button>
     <button
       *ngIf="user.hasRole('Untersuchungsteam')"
-      id="navigationbutton2"
       mat-button
       (click)="goToHistoryView()"
     >
@@ -100,17 +98,13 @@
         </mat-menu>
       </div>
       <div>
-        <button
-          id="navigationbutton"
-          mat-button
-          (click)="goToAnswersView(true)"
-        >
+        <button mat-button (click)="goToAnswersView(true)">
           {{ 'QUESTIONNAIRES_PROBAND.PREVIEW_ANSWERS' | translate }}
           <mat-icon>forward</mat-icon>
         </button>
       </div>
       <div *ngIf="user.hasRole('Untersuchungsteam')">
-        <button id="navigationbutton2" mat-button (click)="goToHistoryView()">
+        <button mat-button (click)="goToHistoryView()">
           {{ 'QUESTIONNAIRES_PROBAND.HISTORY_LINK' | translate }}
           <mat-icon>forward</mat-icon>
         </button>
@@ -179,6 +173,7 @@
                       "
                     >
                       <div formGroupName="{{ j }}">
+                        @if (answer.controls['show_answer_option'].value) {
                         <div
                           *ngIf="answer.controls['text'].value"
                           class="answer-option-hint"
@@ -610,6 +605,7 @@
                             >
                           </app-file-answer-option>
                         </div>
+                        }
                       </div>
                     </div>
                   </div>

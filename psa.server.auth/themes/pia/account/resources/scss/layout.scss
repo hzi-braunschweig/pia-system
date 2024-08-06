@@ -20,7 +20,7 @@
 #nav-link-personal-info,
 #nav-link-applications,
 #nav-link-resources,
-// We don't want to show the welcome message, which has no unique identifier on its wrapper
+  // We don't want to show the welcome message, which has no unique identifier on its wrapper
 .pf-c-page__main-section.pf-m-limit-width.pf-m-light.pf-m-shadow-bottom {
   display: none;
 }
@@ -75,6 +75,7 @@
 #landingLoggedInUser {
   display: none;
 }
+
 #landingMobileKebab {
   display: none;
 }
@@ -138,5 +139,33 @@ h3 {
   #signOutButton,
   #landingSignOutButton {
     display: none !important;
+  }
+}
+
+// title with buttons for list of active devices breaks on mobile
+#main_react_container
+  > div
+  > main
+  > section.pf-c-page__main-section.pf-m-light.pf-m-fill
+  > div
+  > div.pf-l-split__item.pf-m-fill {
+  // we expand the title so all buttons will wrap onto the next line
+  flex-basis: 100%;
+  margin-bottom: 1rem;
+}
+
+#main_react_container
+  > div
+  > main
+  > section.pf-c-page__main-section.pf-m-light.pf-m-fill
+  > div {
+  // allow wrapping of buttons to next line
+  flex-wrap: wrap;
+  // place these buttons to the right, above the list
+  justify-content: end;
+  gap: 0.5rem;
+
+  > .pf-l-split__item {
+    margin: 0 !important;
   }
 }

@@ -18,5 +18,6 @@ var MessageQueueTopic;
     MessageQueueTopic["QUESTIONNAIRE_INSTANCE_RELEASED"] = "questionnaire_instance.released";
     MessageQueueTopic["QUESTIONNAIRE_INSTANCE_EXPIRED"] = "questionnaire_instance.expired";
     MessageQueueTopic["STUDY_DELETED"] = "study.deleted";
+    MessageQueueTopic["JOB_EVENTHISTORY_CLEANUP_EVENTS"] = "job.eventhistory.cleanup_events";
 })(MessageQueueTopic = exports.MessageQueueTopic || (exports.MessageQueueTopic = {}));
 //# sourceMappingURL=messageQueueTopics.js.map

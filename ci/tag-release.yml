@@ -25,17 +25,23 @@ tag-release:
         skopeo inspect docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID
       done
     - >
-      for JOB in $JOBS_DOCKER; do
-        if skopeo inspect docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
-      done
+      if [ "$IGNORE_EXISTING_RELEASE_IMAGES" != "1" ]; then
+        for JOB in $JOBS_DOCKER; do
+          if skopeo inspect docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
+        done
+      fi
     - >
-      for JOB in $JOBS_DOCKER; do
-        if skopeo inspect docker://$CI_RELEASE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
-      done
+      if [ "$IGNORE_EXISTING_RELEASE_IMAGES" != "1" ]; then
+        for JOB in $JOBS_DOCKER; do
+          if skopeo inspect docker://$CI_RELEASE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
+        done
+      fi
     - >
-      for JOB in $JOBS_DOCKER; do
-        if skopeo inspect docker://$CI_ARCHIVE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
-      done
+      if [ "$IGNORE_EXISTING_RELEASE_IMAGES" != "1" ]; then
+        for JOB in $JOBS_DOCKER; do
+          if skopeo inspect docker://$CI_ARCHIVE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
+        done
+      fi
     - >
       for JOB in $JOBS_DOCKER; do
         skopeo copy docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG

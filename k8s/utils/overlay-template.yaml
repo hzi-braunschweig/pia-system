@@ -82,7 +82,10 @@ images:
     newName: {dockerRegistryPath}/psa.server.publicapi
     newTag: {dockerImageTag}
   - name: registry.hzdr.de/pia-eresearch-system/pia/psa.server.eventhistory
-    newName: {dockerRegistryPath}/psa.service.eventhistory
+    newName: {dockerRegistryPath}/psa.server.eventhistory
+    newTag: {dockerImageTag}
+  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.server.jobscheduler
+    newName: {dockerRegistryPath}/psa.server.jobscheduler
     newTag: {dockerImageTag}
 
 secretGenerator:

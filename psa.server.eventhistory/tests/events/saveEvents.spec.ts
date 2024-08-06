@@ -9,16 +9,14 @@ import { expect } from 'chai';
 import { config } from '../../src/config';
 import { dataSource } from '../../src/db';
 import {
-  MessageQueueTestUtils,
   MessageQueueClient,
   MessageQueueTopic,
-  MessageQueueMessage,
   MessageTopicMap,
 } from '@pia/lib-messagequeue';
 import { EventHistoryServer } from '../../src/server';
 import { Event } from '../../src/entity/event';
-import { messageQueueService } from '../../src/services/messageQueueService';
 import { SupportedTopics, EventType } from '../../src/events';
+import { produceMessage } from '../utils';
 
 interface TestCase<T extends EventType> {
   topic: T;
@@ -135,7 +133,7 @@ describe('save events', () => {
   context('receiving messages', () => {
     for (const { topic, message } of testCasesSuccess) {
       it(`should save message from topic "${topic}" as an event`, async () => {
-        await produceMessage(topic, message);
+        await produceMessage(mqc, topic, message);
 
         const { studyName, ...payload } = message;
 
@@ -151,21 +149,6 @@ describe('save events', () => {
       });
     }
   });
-
-  async function produceMessage(
-    topic: MessageQueueTopic,
-    message: MessageQueueMessage
-  ): Promise<void> {
-    const promisedMessage = MessageQueueTestUtils.injectMessageProcessedAwaiter(
-      messageQueueService,
-      topic
-    );
-
-    const producer = await mqc.createProducer(topic);
-    await producer.publish(message);
-
-    await promisedMessage;
-  }
 
   function createEvent<T extends EventType>(
     topic: T,

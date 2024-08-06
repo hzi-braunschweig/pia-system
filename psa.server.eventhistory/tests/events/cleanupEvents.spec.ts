@@ -1,43 +1,48 @@
-/* eslint-disable @typescript-eslint/no-magic-numbers,@typescript-eslint/no-non-null-assertion */
 /*
  * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+/* eslint-disable @typescript-eslint/no-magic-numbers,@typescript-eslint/no-non-null-assertion */
 import { expect } from 'chai';
 import { useFakeTimers } from 'sinon';
-import { RemoveOldEventsCommand } from '../../src/cli/removeOldEventsCommand';
-import { dataSourceOptions } from '../../src/db';
+import { dataSource } from '../../src/db';
 import { Event } from '../../src/entity/event';
-import { MessageQueueTopic } from '@pia/lib-messagequeue';
+import { MessageQueueClient, MessageQueueTopic } from '@pia/lib-messagequeue';
 import { Configuration } from '../../src/entity/configuration';
 import { subDays } from 'date-fns';
-import { DataSource } from 'typeorm';
+import { config } from '../../src/config';
+import { produceMessage } from '../utils';
+import { EventHistoryServer } from '../../src/server';
+import { EventRepository } from '../../src/repositories/eventRepository';
 
-describe('cli remove-old-events', function () {
-  const dataSource = new DataSource(dataSourceOptions);
-  const clock: sinon.SinonFakeTimers = useFakeTimers(
-    new Date(2024, 1, 1, 1, 0, 0, 0)
-  );
+describe('Cleanup event ', () => {
+  const mqc = new MessageQueueClient(config.servers.messageQueue);
+  const server = new EventHistoryServer();
 
-  beforeEach(async function () {
-    await dataSource.initialize();
-  });
+  const currentDate = new Date(2024, 1, 15, 1, 0, 0, 0);
+  const clock: sinon.SinonFakeTimers = useFakeTimers(currentDate);
 
-  afterEach(async function () {
-    await dataSource.destroy();
-  });
-
-  beforeEach(async function () {
-    await dataSource.getRepository(Event).clear();
+  before(async () => {
+    await mqc.connect(true);
+    await server.init();
     await dataSource.getRepository(Configuration).save([
       { id: 'retentionTimeInDays', value: 2 },
       { id: 'active', value: true },
     ]);
   });
 
-  afterEach(function () {
+  after(async () => {
+    await mqc.disconnect();
+    await server.stop();
+  });
+
+  beforeEach(async () => {
+    await EventRepository.clear();
+  });
+
+  afterEach(() => {
     clock.restore();
   });
 
@@ -46,17 +51,23 @@ describe('cli remove-old-events', function () {
     await setupEventsForPastDays();
 
     // Act
-    await RemoveOldEventsCommand();
+    await produceMessage(
+      mqc,
+      MessageQueueTopic.JOB_EVENTHISTORY_CLEANUP_EVENTS
+    );
 
     // Assert
     const remainingEvents = await dataSource.getRepository(Event).find({
       order: { timestamp: 'DESC' },
     });
 
-    expect(remainingEvents.map((e) => e.id)).to.deep.equal(
-      [4, 5, 6],
-      'remaining events do not match the latest three'
-    );
+    expect(remainingEvents.length).to.equal(3);
+
+    for (let day = 0; day < 3; day++) {
+      expect(remainingEvents[day]!.timestamp).to.deep.equal(
+        subDays(currentDate, day)
+      );
+    }
   });
 
   it('should exit when event history is disabled by not configuring it', async () => {
@@ -65,7 +76,10 @@ describe('cli remove-old-events', function () {
     await dataSource.getRepository(Configuration).delete({});
 
     // Act
-    await RemoveOldEventsCommand();
+    await produceMessage(
+      mqc,
+      MessageQueueTopic.JOB_EVENTHISTORY_CLEANUP_EVENTS
+    );
 
     // Assert
     const remainingEvents = await dataSource.getRepository(Event).count();
@@ -80,7 +94,10 @@ describe('cli remove-old-events', function () {
       .update('active', { value: false });
 
     // Act
-    await RemoveOldEventsCommand();
+    await produceMessage(
+      mqc,
+      MessageQueueTopic.JOB_EVENTHISTORY_CLEANUP_EVENTS
+    );
 
     // Assert
     const remainingEvents = await dataSource.getRepository(Event).count();
@@ -90,9 +107,9 @@ describe('cli remove-old-events', function () {
   async function setupEventsForPastDays(): Promise<void> {
     const events: Partial<Event>[] = [];
 
-    for (let days = 0; days < 7; days++) {
+    for (let day = 0; day < 7; day++) {
       events.push({
-        timestamp: subDays(new Date(), days),
+        timestamp: subDays(currentDate, day),
         type: MessageQueueTopic.PROBAND_LOGGED_IN,
         studyName: 'Study',
         payload: {

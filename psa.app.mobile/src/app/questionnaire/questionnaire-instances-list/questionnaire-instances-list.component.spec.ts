@@ -6,7 +6,7 @@
 
 import { QuestionnaireInstancesListComponent } from './questionnaire-instances-list.component';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { fakeAsync } from '@angular/core/testing';
+import { fakeAsync, flush, tick } from '@angular/core/testing';
 import { mock } from 'ts-mockito';
 import {
   QuestionnaireInstance,
@@ -14,6 +14,7 @@ import {
   CycleUnit,
 } from '../questionnaire.model';
 import { QuestionnaireModule } from '../questionnaire.module';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 interface QuestionnaireInstancesListComponentParams {
   questionnaireInstances: QuestionnaireInstance[];
@@ -26,7 +27,10 @@ describe('QuestionnaireInstancesListComponent', () => {
   >;
 
   beforeEach(async () => {
-    await MockBuilder(QuestionnaireInstancesListComponent, QuestionnaireModule);
+    await MockBuilder(
+      QuestionnaireInstancesListComponent,
+      QuestionnaireModule
+    ).keep(ScrollingModule);
   });
 
   describe('no supplied list of questionnaire instances', () => {
@@ -114,6 +118,7 @@ describe('QuestionnaireInstancesListComponent', () => {
         '[data-unit="unit-questionnaire-instances-list-other"]'
       );
       expect(qITableOther).not.toBeNull();
+      flush();
     }));
   });
   describe('with list of spontan questionnaire instances', () => {
@@ -167,6 +172,7 @@ describe('QuestionnaireInstancesListComponent', () => {
         '[data-unit="unit-questionnaire-instances-list-other"]'
       );
       expect(qITableOther).not.toBeNull();
+      flush();
     }));
 
     it('should sort and categorize on demand questionnaire instances', () => {
@@ -186,6 +192,39 @@ describe('QuestionnaireInstancesListComponent', () => {
       );
       expect(regularInstancesIds).toEqual([5, 4, 3, 2, 1, 10, 9, 8, 6, 7]);
     });
+
+    it('should calculate and set the height of the virtual scroll viewport', fakeAsync(() => {
+      fixture.detectChanges();
+
+      // Arrange
+      const viewportHeight = 640;
+      const topListBottomPosition = 100;
+
+      // Set the viewport, as it is used to calculate the height of the virtual scroll viewport
+      viewport.set(320, viewportHeight);
+
+      // Set the listTopQuestionnaireInstances, as it is used to calculate the height of the virtual scroll viewport
+      fixture.point.componentInstance.listTopQuestionnaireInstances = {
+        nativeElement: {
+          getBoundingClientRect: () => ({
+            bottom: topListBottomPosition,
+          }),
+        },
+      };
+
+      // Act: wait for the timeout used in ngAfterViewInit
+      tick(105);
+
+      // Assert: the height of the virtual scroll viewport should be the remaining space of the viewport
+      const scrollViewport = fixture.nativeElement.querySelector(
+        'cdk-virtual-scroll-viewport'
+      ) as HTMLElement;
+
+      // The hardcoded value of 15 is the buffer height, used by the component
+      expect(scrollViewport.getBoundingClientRect().height).toEqual(
+        viewportHeight - topListBottomPosition - 15
+      );
+    }));
   });
 
   function mockQuestionnaire(

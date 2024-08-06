@@ -26,6 +26,11 @@ export class MessageQueueService extends MessageQueueClient {
     await QuestionnaireInstanceService.deleteInactiveForProbandQuestionnaireInstances(
       message.pseudonym
     );
+    await QuestionnaireInstanceService.expireQuestionnaireInstances(
+      message.pseudonym,
+      ['active', 'in_progress'],
+      'for_probands'
+    );
   }
 
   public async connect(): Promise<void> {

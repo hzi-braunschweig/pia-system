@@ -7,7 +7,7 @@ WORKDIR /build
 
 COPY ${DIR}/extensions/keycloak-study-registration/ ./
 
-RUN mvn clean package -Dmaven.test.skip=true
+RUN --mount=type=cache,target=/root/.m2 mvn clean package -Dmaven.test.skip=true
 
 ################################################################
 
@@ -32,11 +32,20 @@ RUN npm ci \
 FROM curlimages/curl@sha256:4a3396ae573c44932d06ba33f8696db4429c419da87cbdc82965ee96a37dd0af AS dl-keycloak-config-cli
 
 WORKDIR /dl
-RUN curl -L -o ./keycloak-config-cli.jar https://github.com/adorsys/keycloak-config-cli/releases/download/v5.12.0/keycloak-config-cli-23.0.7.jar
+#
+# `keycloak-config-cli-24.0.1.jar` is the latest version, which is compatible with Java 17.
+# `keycloak-config-cli-24.0.5.jar` requires Java 21, which is not supported by the official Keycloak docker image.
+#
+# The project is using the Keycloak version number to express against which Keycloak version the tool is tested in thier CI.
+# Therefore there is no harm in using `keycloak-config-cli` for Keycloak in version 24.0.1 with Keycloak in version 24.0.5,
+# as long as the minor version does not change how Keycloak is configured or new features are introduced.
+#
+RUN curl -L -o ./keycloak-config-cli.jar https://github.com/adorsys/keycloak-config-cli/releases/download/v5.12.0/keycloak-config-cli-24.0.1.jar
+RUN echo "48069c527b3c26f3fc56299cb518e410d324ee7a16abb9276c920f013ae7b46d keycloak-config-cli.jar" | sha256sum -c
 
 ################################################################
 
-FROM quay.io/keycloak/keycloak:23.0.7@sha256:14e99d6f5dd0516a5bdc82537b732cb85469ecdb15ad7fe5f11ff67521544db8
+FROM quay.io/keycloak/keycloak:24.0.5@sha256:c916c668a5cd589948c3310ab31ffcfc5da55f0e546028f2f606419ce17c6ad8
 
 ARG DIR=.
 
@@ -48,11 +57,6 @@ COPY --from=theme-builder /build/themes/ /opt/keycloak/themes/
 WORKDIR /
 
 ENV PATH="/opt/keycloak/bin:${PATH}"
-
-# check if the included themes have changed as we copied the themes
-# language files to create our own custom language keys
-RUN echo "11242fa4585d60e32a2280472c7b78db  /opt/keycloak/lib/lib/main/org.keycloak.keycloak-themes-23.0.7.jar" | md5sum -c
-
 
 COPY --from=extension-builder /build/target/*.jar /opt/keycloak/providers
 COPY ${DIR}/extensions/*.jar /opt/keycloak/providers

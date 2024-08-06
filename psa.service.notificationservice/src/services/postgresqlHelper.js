@@ -182,6 +182,13 @@ const postgresqlHelper = (function () {
     );
   }
 
+  async function deleteScheduledNotificationByUserId(userId) {
+    return await db.none(
+      'DELETE FROM notification_schedules WHERE user_id=$1',
+      [userId]
+    );
+  }
+
   async function postponeNotificationByInstanceId(id) {
     await db.none(
       "UPDATE notification_schedules SET send_on = send_on + INTERVAL '1' DAY WHERE reference_id=$1 AND notification_type='qReminder'",
@@ -586,6 +593,15 @@ const postgresqlHelper = (function () {
      */
     deleteScheduledNotificationByInstanceId:
       deleteScheduledNotificationByInstanceId,
+
+    /**
+     * @function
+     * @description deletes the notification schedules associated with a userId
+     * @memberof module:postgresqlHelper
+     * @param {string} userId the userId
+     * @returns {Promise} a resolved promise in case of success or a rejected promise otherwise
+     */
+    deleteScheduledNotificationByUserId: deleteScheduledNotificationByUserId,
 
     /**
      * @function

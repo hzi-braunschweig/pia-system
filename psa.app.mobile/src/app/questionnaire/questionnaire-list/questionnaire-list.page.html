@@ -10,13 +10,13 @@
   <ion-segment (ionChange)="switchTab($event)" [value]="selectedStatus">
     <ion-segment-button value="open">
       <ion-label
-        >{{ 'QUESTIONNAIRES.OPEN_QUESTIONNAIRES' | translate }}</ion-label
-      >
+        >{{ 'QUESTIONNAIRES.OPEN_QUESTIONNAIRES' | translate }}
+      </ion-label>
     </ion-segment-button>
     <ion-segment-button value="closed">
       <ion-label
-        >{{ 'QUESTIONNAIRES.CLOSED_QUESTIONNAIRES' | translate }}</ion-label
-      >
+        >{{ 'QUESTIONNAIRES.CLOSED_QUESTIONNAIRES' | translate }}
+      </ion-label>
     </ion-segment-button>
   </ion-segment>
   <app-questionnaire-instances-list

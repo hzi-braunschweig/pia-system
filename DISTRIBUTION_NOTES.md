@@ -2,6 +2,18 @@
 
 This file contains notes about changes that operation teams need to be aware of when updating PIA.
 
+## 1.39 (Keycloak v24)
+
+- Keycloak is updated to v24
+- Passwords will be rehashed on first login after update, as the password policy now complies to current OWASP criteria
+  - This might cause increased CPU usage on first logins after updating and server response times might be slower
+    during this time
+- New indexes are created for tables `authserver.user_attribute` and `authserver.fed_user_attribute` on iPIA
+  - if these tables have more than 300.000 rows, these indexes will _not be created during schema migration_
+    - `authserver` logs will provide a query to create the indexes manually if needed
+    - Keep in mind that creating these indexes might take a long time and lock these tables
+- See the Keycloak upgrading guide for more information
+
 ## 1.38 (Sending questionnaire reminders in parallel)
 
 - Reminder emails and push notifications for questionnaires are now send in parallel
@@ -58,53 +70,36 @@ migration step 1:
 - check, that no username exists in both upper and lower case in **qPIA**:
 
 ```sql
-SELECT count
-FROM (SELECT UPPER(username) as up_username, count(*) as count
-      FROM accounts
-      GROUP BY up_username
-      HAVING count(*) > 1) as up_usernames;
+SELECT count FROM (SELECT UPPER(username) as up_username, count(*) as count FROM accounts GROUP BY up_username HAVING count(*) > 1) as up_usernames;
 ```
 
 - check, that no pseudonym exists in both upper and lower case in **qPIA**:
 
 ```sql
-SELECT count
-FROM (SELECT UPPER(pseudonym) as up_pseudonym, count(*) as count
-      FROM probands
-      GROUP BY up_pseudonym
-      HAVING count(*) > 1) as up_pseudonyms;
+SELECT count FROM (SELECT UPPER(pseudonym) as up_pseudonym, count(*) as count FROM probands GROUP BY up_pseudonym HAVING count(*) > 1) as up_pseudonyms;
 ```
 
 In case the second step of the migration fails, you can retry it or roll back:
 
-- to retry the migration for users that were not migrated successfully, apply the following sql on **qPIA** before
-  restarting the `userservice`:
+- to retry the migration for users that were not migrated successfully, apply the following sql on **qPIA** before restarting the `userservice`:
 
 ```sql
-UPDATE accounts
-SET is_migrated=NULL
-WHERE is_migrated = false;
+UPDATE accounts SET is_migrated=NULL WHERE is_migrated=false;
 ```
 
-- to rollback the migration delete everything in the `authserver` schema on **iPIA** and use the following sql on **qPIA
-  **:
+- to rollback the migration delete everything in the `authserver` schema on **iPIA** and use the following sql on **qPIA**:
 
 ```sql
-DELETE
-FROM db_migrations
-WHERE NAME = '/migrations/1639043781__pia-392_add_accounts_migrated.sql';
-ALTER TABLE accounts
-    DROP column IF EXISTS is_migrated;
+DELETE FROM db_migrations WHERE NAME ='/migrations/1639043781__pia-392_add_accounts_migrated.sql';
+ALTER TABLE accounts DROP column IF EXISTS is_migrated;
 ```
 
-- ansible variable `pia_expose_postgres_ports` must be `false` on **qPIA** and **iPIA** hosts for release and production
-  systems
+- ansible variable `pia_expose_postgres_ports` must be `false` on **qPIA** and **iPIA** hosts for release and production systems
 - ansible variable `pia_is_direct_access_grant_enabled` has been added and should be set to `false` on PIA-Prod
 - the `pia_ip_check_enabled` and `pia_cert_check_enabled` ansible variables are not used anymore and should be removed
 - the NatCoEdc integration has been removed
   - PIA is not allowed to be included as an iFrame in NatCoEdc anymore
-  - Therefore the following URLs should be removed from the variables `pia_x_frame_options`
-    and `pia_content_security_policy`:
+  - Therefore the following URLs should be removed from the variables `pia_x_frame_options` and `pia_content_security_policy`:
     - https://edc.hgw.nationale-kohorte.de/
     - https://edc-hd.nationale-kohorte.de/
   - Also, `pia_api_key` must be removed from any configuration
@@ -122,8 +117,7 @@ ALTER TABLE accounts
 
 ## 1.29
 
-- the `pia_sormas_on_pia_password` variable is expected to be secure and not guessable. Please make sure that it has a
-  length of 32 random characters.
+- the `pia_sormas_on_pia_password` variable is expected to be secure and not guessable. Please make sure that it has a length of 32 random characters.
 - new SORMAS integration:
   - The complete flow between SORMAS and PIA was refactored in order to comply to an existing standard API
   - The following properties need to be configured in SORMAS to work properly with PIA:
@@ -136,8 +130,7 @@ ALTER TABLE accounts
     - PIA_ON_SORMAS_PASSWORD (OLD)
     - SORMAS_STUDY (NEW)
       - the name of the study which is used on that stage
-      - can be found via databaseservice with the following DB query, which should show only one
-        result: `SELECT name FROM studies;`
+      - can be found via databaseservice with the following DB query, which should show only one result: `SELECT name FROM studies;`
       - if multiple results are returned, this has to be resolved together with the HZI
     - SORMAS_ON_PIA_TOKEN_VALIDITY_TIMEOUT (NEW)
       - should be synchronized with SORMAS symptomdiary token caching duration
@@ -148,8 +141,7 @@ ALTER TABLE accounts
       - the default language for the whole application.
       - DEFAULT: de-DE
       - OTHER OPTIONS: en-US, de-CH, fr-CH, it-CH
-- the users status and account status will be migrated. Usually there should not be any problem on migration but to make
-  it sure before doing the update, please check if there is any unexpected state in those columns:
+- the users status and account status will be migrated. Usually there should not be any problem on migration but to make it sure before doing the update, please check if there is any unexpected state in those columns:
 
 ```sql
 -- there should only exist expected states as the account_status. If this query returns a row please fix that entry.
@@ -163,8 +155,7 @@ FROM users
 WHERE study_status NOT IN ('active', 'deletion_pending', 'deleted', 'deactivated');
 ```
 
-- the study a proband is assigned to will now be exactly one by database design. Therefore, make sure each proband has
-  exactly one study:
+- the study a proband is assigned to will now be exactly one by database design. Therefore, make sure each proband has exactly one study:
 
 ```sql
 SELECT u.username, json_agg(su.study_id) as studies
@@ -180,13 +171,11 @@ HAVING COUNT(su.study_id) <> 1;
 - a SQL script needs to be executed prior to updating to this version on the HZI PROD instance
   - the script will be sent to the deployer in a secure manner as it contains sensitive data
   - the script will clean up specific probands' study accesses in order to allow only one study access per proband
-  - this is a preparation for future changes after which it will not be possible to have probands with access to
-    multiple studies
+  - this is a preparation for future changes after which it will not be possible to have probands with access to multiple studies
 
 ## 1.27
 
-- the `pia_ip_check_enabled` and `pia_cert_check_enabled` ansible variables have been added and should be set to `true`
-  for PIA-Prod.
+- the `pia_ip_check_enabled` and `pia_cert_check_enabled` ansible variables have been added and should be set to `true` for PIA-Prod.
 
 The output of `docker logs authservice` should contain enabled `ipCheckEnabled` and `certCheckEnabled`:
 
@@ -200,8 +189,7 @@ The output of `docker logs authservice` should contain enabled `ipCheckEnabled` 
 ## 1.25.1
 
 - the ansible configuration variable `pia_mhh_ftpservice_allow_old_ssh2_kex` has to be set to `true` for PIA-Prod
-- please check if the connections to the HZI ftpservice are working and if there is a KEX problem, please
-  set `pia_hzi_ftpservice_allow_old_ssh2_kex` to `true`
+- please check if the connections to the HZI ftpservice are working and if there is a KEX problem, please set `pia_hzi_ftpservice_allow_old_ssh2_kex` to `true`
 
 ## 1.25
 
@@ -252,14 +240,12 @@ The output of `docker logs authservice` should contain enabled `ipCheckEnabled` 
 ## 1.19
 
 - messagequeue got added
-  - monitoring via metrics proxy `/messagequeue/metrics` alerting required for `rabbitmq_queue_messages` when the
-    message count continues to increase (should stay near to zero).
+  - monitoring via metrics proxy `/messagequeue/metrics` alerting required for `rabbitmq_queue_messages` when the message count continues to increase (should stay near to zero).
 - services are running as user `node` not as `root` for better security.
   - make sure every access on mounted files is possible.
   - INTERNAL_PORT cannot be under 1024
 - psa.lib.service-core added
-  - The warning "validateAccessToken: AccessToken will be checked without database access. This is not allowed for
-    services with qPIA DB access!" may appear in the logs on service start. This is okay for the following services:
+  - The warning "validateAccessToken: AccessToken will be checked without database access. This is not allowed for services with qPIA DB access!" may appear in the logs on service start. This is okay for the following services:
     - personaldataservice
     - complianceservice
     - loggingservice
@@ -287,8 +273,7 @@ The output of `docker logs authservice` should contain enabled `ipCheckEnabled` 
   - all contacts-related tables will be dropped (as PIA only duplicates MODYS data, but does not need them)
   - table `t_participant` will be renamed to the more intuitive name `personal_data`
   - `deletion_logs` will be moved to loggingservice via a NodeJS based migration script
-  - `personal_data` and `pending_deletions` will be cleaned up to only contain data of probands existing in qPIA via a
-    NodeJS based migration script
+  - `personal_data` and `pending_deletions` will be cleaned up to only contain data of probands existing in qPIA via a NodeJS based migration script
   - The NodeJS based migration scripts will be executed with detailed logging prior to the service startup
     - IMPORTANT: please make sure to save this log, and note the number of deleted rows, displayed like this:
       `Study Column migration: migrated X personal_data rows and deleted Y rows'`
@@ -299,19 +284,15 @@ The output of `docker logs authservice` should contain enabled `ipCheckEnabled` 
   - no iPIA service will continue to access the qPIA DB
   - access to iPIA data from now on is only possible via the personaldata REST API
 
-- `VACUUM FULL` gets executed as a cron job inside the database services (qPIA, ewPIA, iPIA). The job can take some time
-  to complete. It is planned to be sheduled to run every sunday on 23:45. But currently it is effectivly disabled (next
-  run 2026-03-01).
+- `VACUUM FULL` gets executed as a cron job inside the database services (qPIA, ewPIA, iPIA). The job can take some time to complete. It is planned to be sheduled to run every sunday on 23:45. But currently it is effectivly disabled (next run 2026-03-01).
   - use `jobber log` inside the container to get a log of the last jobs
   - use `jobber list` inside the container to show a status
   - use `jobber test VacuumFull` inside the container to manually trigger the job
-  - It is not certain that it won't cause problems on the first runs! It must be trigger after the next update while
-    someone is able to watch it and the time it takes should be measured!
+  - It is not certain that it won't cause problems on the first runs! It must be trigger after the next update while someone is able to watch it and the time it takes should be measured!
 
 ## 1.16
 
-- the ansible variables `pia_ewpia_password`, `pia_ipia_password`, `pia_qpia_password` and `pia_db_log_password` are
-  generated by the playbook and should not be overwritten.
+- the ansible variables `pia_ewpia_password`, `pia_ipia_password`, `pia_qpia_password` and `pia_db_log_password` are generated by the playbook and should not be overwritten.
 
 ## 1.15
 

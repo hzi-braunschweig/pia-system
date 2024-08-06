@@ -7,7 +7,8 @@
 import { Event } from '../entity/event';
 import { EventRepository } from '../repositories/eventRepository';
 import { EventType } from '../events';
-import { DeepPartial } from 'typeorm';
+import { DeepPartial, LessThan } from 'typeorm';
+import { subDays } from 'date-fns';
 
 export class EventService {
   public static async getEvents(filter: {
@@ -25,5 +26,24 @@ export class EventService {
 
   public static async clearEvents(): Promise<void> {
     return EventRepository.clear();
+  }
+
+  public static async cleanupEvents(retentionTimeInDays: number): Promise<{
+    countEventsInitial: number;
+    countRemovedEvents: number;
+    referenceDate: Date;
+  }> {
+    const eventsCount = await EventRepository.count();
+
+    const retentionDate = subDays(new Date(), retentionTimeInDays);
+    const result = await EventRepository.delete({
+      timestamp: LessThan(retentionDate),
+    });
+
+    return {
+      countEventsInitial: eventsCount,
+      countRemovedEvents: result.affected ?? 0,
+      referenceDate: retentionDate,
+    };
   }
 }

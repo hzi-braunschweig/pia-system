@@ -13,5 +13,6 @@ export declare enum MessageQueueTopic {
     QUESTIONNAIRE_INSTANCE_ANSWERING_STARTED = "questionnaire_instance.answering_started",
     QUESTIONNAIRE_INSTANCE_RELEASED = "questionnaire_instance.released",
     QUESTIONNAIRE_INSTANCE_EXPIRED = "questionnaire_instance.expired",
-    STUDY_DELETED = "study.deleted"
+    STUDY_DELETED = "study.deleted",
+    JOB_EVENTHISTORY_CLEANUP_EVENTS = "job.eventhistory.cleanup_events"
 }

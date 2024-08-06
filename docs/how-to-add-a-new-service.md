@@ -37,7 +37,7 @@ For the service to be reachable from the outside, the routes to that service hav
 
 ## Dockerfile
 
-In the privacy policy of PIA we have strict rules regarding the logs of emails and ip adresses. To prevent the logging of emails and ip adresses we have a bash masking script [generate-internal-secrets](../psa.utils.scripts/logs-masking/custom-entrypoint.sh). The script has to be copied to the docker image and run in the `ENTRYPOINT` of the dockerfile. Furthermore, `bash` needs to be installed in the dockerfile (if not already included). The script takes the original entrypoint file of the docker image as a first parameter (see e.g. [Dockerfile](../psa.service.userservice/Dockerfile).).
+In the privacy policy of PIA we have strict rules regarding the logs of emails and ip addresses. To prevent the logging of emails and ip addresses we have a bash masking script [generate-internal-secrets](../psa.utils.scripts/logs-masking/custom-entrypoint.sh). The script has to be copied to the docker image and run in the `ENTRYPOINT` of the dockerfile. Furthermore, `bash` and `sed` (GNU version of sed that support `-u` option) needs to be installed in the dockerfile (if not already included). The script takes the original entrypoint file of the docker image as a first parameter (see e.g. [Dockerfile](../psa.service.userservice/Dockerfile).).
 
 ## Internal Library Dependencies
 

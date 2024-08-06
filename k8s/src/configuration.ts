@@ -42,6 +42,7 @@ const PIA_IMAGES: string[] = [
   'psa.server.apigateway',
   'psa.server.autheventproxy',
   'psa.server.mailserver',
+  'psa.server.jobscheduler',
 ];
 
 export class Configuration extends Chart {

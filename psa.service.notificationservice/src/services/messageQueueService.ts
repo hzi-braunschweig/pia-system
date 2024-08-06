@@ -11,10 +11,12 @@ import * as postgresqlHelper from './postgresqlHelper';
 export class MessageQueueService extends MessageQueueClient {
   public static async onProbandDeactivated(pseudonym: string): Promise<void> {
     await postgresqlHelper.removeFCMTokenForPseudonym(pseudonym);
+    await postgresqlHelper.deleteScheduledNotificationByUserId(pseudonym);
   }
 
   public static async onProbandDeleted(pseudonym: string): Promise<void> {
     await postgresqlHelper.removeFCMTokenForPseudonym(pseudonym);
+    await postgresqlHelper.deleteScheduledNotificationByUserId(pseudonym);
   }
 
   public async connect(): Promise<void> {

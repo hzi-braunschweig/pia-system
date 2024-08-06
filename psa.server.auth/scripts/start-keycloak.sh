@@ -23,7 +23,8 @@ kc.sh \
     --hostname-strict-backchannel=true \
     --hostname-strict-https=${STRICT_HTTPS} \
     --http-port=4000 \
-    --proxy=edge \
+    --http-enabled=true \
+    --proxy-headers=xforwarded \
     --db=postgres \
     --db-username=${DB_AUTHSERVER_USER} \
     --db-password=${DB_AUTHSERVER_PASSWORD} \

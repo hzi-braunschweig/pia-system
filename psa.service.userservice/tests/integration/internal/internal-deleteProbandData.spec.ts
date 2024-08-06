@@ -64,6 +64,7 @@ describe('Internal: delete proband data', () => {
         { username: 'qtest-proband1', id: '1234' },
         { username: 'qtest-deleteme_fully', id: '4321' },
         { username: 'qtest-deleteme', id: '9876' },
+        { username: 'qtest-deleteme_keep_usage_data', id: '6789' },
       ]);
       authClientUsersMock.del.resolves();
 
@@ -140,6 +141,33 @@ describe('Internal: delete proband data', () => {
 
       expect(authClientUsersMock.del).to.be.calledOnceWith({
         id: '4321',
+        realm: 'pia-proband-realm',
+      });
+    });
+
+    it('should delete the proband from the database, but keep the questionnaire answers', async () => {
+      //Arrange
+      const pseudonym = 'qtest-deleteme_keep_usage_data';
+
+      //Act
+      const result = await chai
+        .request(internalApiAddress)
+        .delete(`/user/users/${pseudonym}?keepUsageData=true`);
+
+      const instance = (await db.oneOrNone(
+        'SELECT * FROM questionnaire_instances WHERE questionnaire_instances.id = 223456'
+      )) as unknown;
+      const answers = await db.manyOrNone<{ value: string }>(
+        'SELECT * FROM answers WHERE answers.questionnaire_instance_id = 223456'
+      );
+      // Assert
+      expect(result).to.have.status(StatusCodes.NO_CONTENT);
+      expect(instance).to.exist;
+      expect(answers).to.have.lengthOf(1);
+      expect(answers[0]?.value).to.equal('some answer value');
+
+      expect(authClientUsersMock.del).to.be.calledOnceWith({
+        id: '6789',
         realm: 'pia-proband-realm',
       });
     });

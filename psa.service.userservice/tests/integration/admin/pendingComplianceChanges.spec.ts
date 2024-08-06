@@ -18,6 +18,7 @@ import {
   AuthServerMock,
   AuthTokenMockBuilder,
   MailService,
+  Response,
 } from '@pia/lib-service-core';
 
 import { db } from '../../../src/db';
@@ -90,6 +91,11 @@ const pmHeader4 = AuthTokenMockBuilder.createAuthHeader({
   roles: ['ProbandenManager'],
   username: 'pm4@apitest.de',
   studies: ['ApiTestStudie4'],
+});
+const pmHeader5 = AuthTokenMockBuilder.createAuthHeader({
+  roles: ['ProbandenManager'],
+  username: 'pm3@apitest.de',
+  studies: ['ApiTestStudie2'],
 });
 
 describe('/admin/pendingComplianceChanges', function () {
@@ -246,6 +252,114 @@ describe('/admin/pendingComplianceChanges', function () {
     });
   });
 
+  describe('GET /admin/studies/{studyName}/pendingcompliancechanges', function () {
+    beforeEach(async () => {
+      await setupGet();
+    });
+
+    afterEach(async () => {
+      await cleanup();
+    });
+
+    it('should return HTTP 403 when a proband tries', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .get('/admin/studies/ApiTestStudie1/pendingcompliancechanges')
+        .set(probandHeader1);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return HTTP 403 when a forscher tries', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .get('/admin/studies/ApiTestStudie1/pendingcompliancechanges')
+        .set(forscherHeader1);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return HTTP 403 when a ut tries', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .get('/admin/studies/ApiTestStudie1/pendingcompliancechanges')
+        .set(utHeader1);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return HTTP 403 when a sysadmin tries', async function () {
+      const result = await chai
+        .request(apiAddress)
+        .get('/admin/studies/ApiTestStudie1/pendingcompliancechanges')
+        .set(sysadminHeader1);
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
+    });
+
+    it('should return HTTP 200 with the pending compliance change for pm who is requested_by', async function () {
+      const id = 1234560;
+      const expectedLength = 2;
+      const result: Response<PendingComplianceChange[]> = await chai
+        .request(apiAddress)
+        .get('/admin/studies/ApiTestStudie1/pendingcompliancechanges')
+        .set(pmHeader2);
+      expect(result.body).to.have.lengthOf(expectedLength);
+      const response = result.body[0];
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(response?.id).to.equal(id);
+      expect(response?.requested_by).to.equal('pm1@apitest.de');
+      expect(response?.requested_for).to.equal('pm2@apitest.de');
+      expect(response?.proband_id).to.equal('qtest-api-proband1');
+      expect(response?.compliance_labresults_from).to.equal(false);
+      expect(response?.compliance_labresults_to).to.equal(true);
+      expect(response?.compliance_samples_from).to.equal(false);
+      expect(response?.compliance_samples_to).to.equal(true);
+      expect(response?.compliance_bloodsamples_from).to.equal(false);
+      expect(response?.compliance_bloodsamples_to).to.equal(true);
+    });
+
+    it('should return HTTP 200 with the pending compliance change for pm who is requested_for', async function () {
+      const id = 1234560;
+      const expectedLength = 2;
+      const result: Response<PendingComplianceChange[]> = await chai
+        .request(apiAddress)
+        .get('/admin/studies/ApiTestStudie1/pendingcompliancechanges')
+        .set(pmHeader2);
+      expect(result.body).to.have.lengthOf(expectedLength);
+      const response = result.body[0];
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(response?.id).to.equal(id);
+      expect(response?.requested_by).to.equal('pm1@apitest.de');
+      expect(response?.requested_for).to.equal('pm2@apitest.de');
+      expect(response?.proband_id).to.equal('qtest-api-proband1');
+      expect(response?.compliance_labresults_from).to.equal(false);
+      expect(response?.compliance_labresults_to).to.equal(true);
+      expect(response?.compliance_samples_from).to.equal(false);
+      expect(response?.compliance_samples_to).to.equal(true);
+      expect(response?.compliance_bloodsamples_from).to.equal(false);
+      expect(response?.compliance_bloodsamples_to).to.equal(true);
+    });
+
+    it('should return HTTP 200 with the pending compliance change for pm who is requested_by without email address', async function () {
+      const id = 1234561;
+      const expectedLength = 2;
+      const result: Response<PendingComplianceChange[]> = await chai
+        .request(apiAddress)
+        .get('/admin/studies/ApiTestStudie1/pendingcompliancechanges')
+        .set(pmHeader3);
+      expect(result.body).to.have.lengthOf(expectedLength);
+      const response = result.body[1];
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(response?.id).to.equal(id);
+      expect(response?.requested_by).to.equal('qtest-pm_no_email');
+      expect(response?.requested_for).to.equal('pm2@apitest.de');
+      expect(response?.proband_id).to.equal('qtest-api-proband1');
+      expect(response?.compliance_labresults_from).to.equal(false);
+      expect(response?.compliance_labresults_to).to.equal(true);
+      expect(response?.compliance_samples_from).to.equal(false);
+      expect(response?.compliance_samples_to).to.equal(true);
+      expect(response?.compliance_bloodsamples_from).to.equal(false);
+      expect(response?.compliance_bloodsamples_to).to.equal(true);
+    });
+  });
+
   describe('POST /admin/pendingcompliancechanges', function () {
     beforeEach(async () => {
       await setupPost();
@@ -267,6 +381,14 @@ describe('/admin/pendingComplianceChanges', function () {
       requested_for: 'pm2@apitest.de',
       proband_id: 'qtest-api-proband1',
       compliance_labresults_to: false,
+    };
+
+    const pDValid3 = {
+      requested_for: 'pm4@apitest.de',
+      proband_id: 'qtest-api-proband2',
+      compliance_labresults_to: true,
+      compliance_samples_to: false,
+      compliance_bloodsamples_to: true,
     };
 
     const pDwrongFor = {
@@ -599,7 +721,6 @@ describe('/admin/pendingComplianceChanges', function () {
       expect(response.compliance_samples_from).to.equal(true);
       expect(response.compliance_bloodsamples_from).to.equal(true);
     });
-
     it('should return HTTP 200 and create pending compliance change with a view missing params', async function () {
       // Arrange
       mockGetProfessionalAccount(testSandbox, {
@@ -629,6 +750,32 @@ describe('/admin/pendingComplianceChanges', function () {
       expect(response.compliance_labresults_from).to.equal(true);
       expect(response.compliance_samples_from).to.equal(true);
       expect(response.compliance_bloodsamples_from).to.equal(true);
+    });
+    it('should return HTTP 200 and create pending compliance change with no four eyes opposition', async function () {
+      // Arrange
+      mockGetProfessionalAccount(testSandbox, {
+        username: 'pm4@apitest.de',
+        role: 'ProbandenManager',
+        studies: ['ApiTestStudie2'],
+      });
+
+      // Act
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/pendingcompliancechanges')
+        .set(pmHeader5)
+        .send(pDValid3);
+
+      // Assert
+      const response = result.body as PendingComplianceChange;
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(response.requested_by).to.equal('pm3@apitest.de');
+      expect(response.requested_for).to.equal('pm4@apitest.de');
+      expect(response.proband_id).to.equal('qtest-api-proband2');
+
+      expect(response.compliance_labresults_to).to.equal(true);
+      expect(response.compliance_samples_to).to.equal(false);
+      expect(response.compliance_bloodsamples_to).to.equal(true);
     });
   });
 

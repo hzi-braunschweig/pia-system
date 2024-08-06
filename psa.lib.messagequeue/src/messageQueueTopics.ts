@@ -5,6 +5,7 @@
  */
 
 export enum MessageQueueTopic {
+  // Events
   COMPLIANCE_CREATED = 'compliance.created', //	compliance was filled out by proband
 
   FEEDBACKSTATISTIC_CONFIGURATION_UPDATED = 'feedbackstatistic_configuration.updated', // feedback statistic configuration got created or updated
@@ -24,4 +25,7 @@ export enum MessageQueueTopic {
   QUESTIONNAIRE_INSTANCE_EXPIRED = 'questionnaire_instance.expired', //	questionnaire instance has expired
 
   STUDY_DELETED = 'study.deleted', // study was deleted
+
+  // Jobs
+  JOB_EVENTHISTORY_CLEANUP_EVENTS = 'job.eventhistory.cleanup_events', // cleanup old events in eventhistory
 }

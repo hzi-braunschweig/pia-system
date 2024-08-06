@@ -87,9 +87,7 @@ public class StudyFormAction implements FormAction {
 
         RoleModel role = formContext.getSession().roles().getRealmRole(formContext.getRealm(), "Proband");
         formContext.getUser().grantRole(role);
-
-        AuthenticationSessionModel authenticationSession = formContext.getSession().getContext().getAuthenticationSession();
-        authenticationSession.addRequiredAction(VerifyEmailWithUsernameAcknowledgement.PROVIDER_ID);
+        formContext.getUser().addRequiredAction(VerifyEmailWithUsernameAcknowledgement.PROVIDER_ID);
     }
 
     @Override

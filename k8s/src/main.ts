@@ -33,6 +33,7 @@ import { IService } from './k8s/service';
 import { MailServer } from './pia/deployment/mailserver';
 import { Precheck } from './pia/precheck';
 import { PiaNamespace } from './pia/deployment/namespace';
+import { JobScheduler } from './pia/deployment/jobscheduler';
 
 export class MainChart extends Chart {
   public allCharts: Chart[];
@@ -69,6 +70,10 @@ export class MainChart extends Chart {
       port: 5000,
     };
 
+    const jobScheduler = new JobScheduler(this, config, {
+      messageQueue,
+    });
+
     const userService = new UserService(this, config, {
       messageQueue,
       qpiaService,
@@ -82,6 +87,7 @@ export class MainChart extends Chart {
       authServer,
       userService,
     });
+
     const personalDataService = new PersonaldataService(this, config, {
       ipiaService,
       messageQueue,
@@ -229,6 +235,7 @@ export class MainChart extends Chart {
       apigateway,
       autheventproxy,
       mailserver,
+      jobScheduler,
     ];
   }
 }

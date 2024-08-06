@@ -9,9 +9,8 @@
     "styles:build:account": "sass --no-source-map themes/pia/account/resources/scss/layout.scss:themes/pia/account/resources/public/layout.css",
     "styles:cleanup": "rm -rf themes/pia/login/resources/css themes/pia/account/resources/css",
     "styles:postcsss": "postcss themes/pia/login/resources/css/styles.css themes/pia/account/resources/css/styles.css --replace",
-    "theme:docker-cp": "docker cp ./themes authserver:/opt/keycloak/ && docker exec -it --user root authserver bash -c \"chown -R keycloak:root /opt/keycloak/themes/\"",
     "theme:build": "npm run styles:cleanup && npm run styles:build && npm run styles:postcsss",
-    "theme:build-local": "npm run get-browserlist && npm run theme:build && npm run theme:docker-cp",
+    "theme:build-local": "npm run get-browserlist && npm run theme:build",
     "get-browserlist": "cp ../psa.app.web/.browserslistrc ./"
   },
   "author": "",

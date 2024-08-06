@@ -41,7 +41,7 @@ spec:
             - precheck
             - /internal-secrets
             - /pia-config
-          image: registry.hzdr.de/pia-eresearch-system/pia/k8s:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/k8s:1.38.1
           imagePullPolicy: IfNotPresent
           name: main
           resources:
@@ -70,7 +70,7 @@ spec:
       initContainers:
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/k8s:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/k8s:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-0
           resources:
@@ -89,7 +89,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-1
           resources:
@@ -108,7 +108,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ewpia:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ewpia:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-2
           resources:
@@ -127,7 +127,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ipia:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ipia:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-3
           resources:
@@ -146,7 +146,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.messagequeue:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.messagequeue:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-4
           resources:
@@ -165,7 +165,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.auth:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.auth:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-5
           resources:
@@ -184,7 +184,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.app.web:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.app.web:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-6
           resources:
@@ -203,7 +203,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.userservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.userservice:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-7
           resources:
@@ -222,7 +222,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.loggingservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.loggingservice:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-8
           resources:
@@ -241,7 +241,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.personaldataservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.personaldataservice:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-9
           resources:
@@ -260,7 +260,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.modysservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.modysservice:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-10
           resources:
@@ -279,7 +279,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.complianceservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.complianceservice:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-11
           resources:
@@ -298,7 +298,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sampletrackingservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sampletrackingservice:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-12
           resources:
@@ -317,7 +317,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.publicapi:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.publicapi:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-13
           resources:
@@ -336,7 +336,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.eventhistory:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.eventhistory:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-14
           resources:
@@ -355,7 +355,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.questionnaireservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.questionnaireservice:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-15
           resources:
@@ -374,7 +374,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.analyzerservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.analyzerservice:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-16
           resources:
@@ -393,7 +393,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.notificationservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.notificationservice:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-17
           resources:
@@ -412,7 +412,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.feedbackstatisticservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.feedbackstatisticservice:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-18
           resources:
@@ -431,7 +431,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sormasservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sormasservice:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-19
           resources:
@@ -450,7 +450,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.apigateway:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.apigateway:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-20
           resources:
@@ -469,7 +469,7 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.autheventproxy:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.autheventproxy:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-21
           resources:
@@ -488,9 +488,28 @@ spec:
             runAsUser: 1000
         - command:
             - "true"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.mailserver:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.mailserver:1.38.1
           imagePullPolicy: IfNotPresent
           name: init-22
+          resources:
+            limits:
+              cpu: "1"
+              memory: 16Mi
+            requests:
+              cpu: "0.1"
+              memory: 16Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+        - command:
+            - "true"
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.jobscheduler:1.38.1
+          imagePullPolicy: IfNotPresent
+          name: init-23
           resources:
             limits:
               cpu: "1"
@@ -619,7 +638,7 @@ spec:
                 secretKeyRef:
                   key: eventhistoryserver_db.password
                   name: internal-secrets
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database:1.38.1
           imagePullPolicy: IfNotPresent
           name: main
           ports:
@@ -732,7 +751,7 @@ spec:
                   name: internal-secrets
             - name: POSTGRES_DB
               value: pia_database
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ewpia:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ewpia:1.38.1
           imagePullPolicy: IfNotPresent
           name: main
           ports:
@@ -859,7 +878,7 @@ spec:
                 secretKeyRef:
                   key: authserver_db.password
                   name: internal-secrets
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ipia:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.database.ipia:1.38.1
           imagePullPolicy: IfNotPresent
           name: main
           ports:
@@ -974,7 +993,7 @@ spec:
                   name: internal-secrets
             - name: RABBITMQ_NODENAME
               value: rabbit@messagequeue
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.messagequeue:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.messagequeue:1.38.1
           imagePullPolicy: IfNotPresent
           name: messagequeue
           ports:
@@ -1186,7 +1205,7 @@ spec:
                 secretKeyRef:
                   key: userPasswordLength
                   name: pia-config
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.auth:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.auth:1.38.1
           imagePullPolicy: IfNotPresent
           name: main
           ports:
@@ -1281,7 +1300,7 @@ spec:
                 secretKeyRef:
                   key: isSormasEnabled
                   name: pia-config
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.app.web:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.app.web:1.38.1
           imagePullPolicy: IfNotPresent
           name: main
           ports:
@@ -1462,7 +1481,7 @@ spec:
                   name: internal-secrets
             - name: IS_DEVELOPMENT_SYSTEM
               value: "false"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.userservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.userservice:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -1630,7 +1649,7 @@ spec:
               value: internal-userservice
             - name: USERSERVICE_INTERNAL_PORT
               value: "5000"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.loggingservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.loggingservice:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -1853,7 +1872,7 @@ spec:
                   name: internal-secrets
             - name: DB_PERSONALDATA_DB
               value: pia_database
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.personaldataservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.personaldataservice:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -2030,7 +2049,7 @@ spec:
               value: internal-personaldataservice
             - name: PERSONALDATASERVICE_INTERNAL_PORT
               value: "5000"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.modysservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.modysservice:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -2219,7 +2238,7 @@ spec:
                 secretKeyRef:
                   key: authserver_admin_token_introspection_client_secret.password
                   name: internal-secrets
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.complianceservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.complianceservice:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -2410,7 +2429,7 @@ spec:
                 secretKeyRef:
                   key: authserver_admin_token_introspection_client_secret.password
                   name: internal-secrets
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.questionnaireservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.questionnaireservice:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -2573,7 +2592,7 @@ spec:
                   name: internal-secrets
             - name: MESSAGEQUEUE_APP_USER
               value: app
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.analyzerservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.analyzerservice:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -2815,7 +2834,7 @@ spec:
                 secretKeyRef:
                   key: firebaseClientEmail
                   name: pia-config
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.notificationservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.notificationservice:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -3023,7 +3042,7 @@ spec:
                 secretKeyRef:
                   key: authserver_admin_token_introspection_client_secret.password
                   name: internal-secrets
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sampletrackingservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sampletrackingservice:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -3206,7 +3225,7 @@ spec:
                 secretKeyRef:
                   key: authserver_admin_token_introspection_client_secret.password
                   name: internal-secrets
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.feedbackstatisticservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.feedbackstatisticservice:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -3467,7 +3486,7 @@ spec:
                 secretKeyRef:
                   key: authserver_admin_token_introspection_client_secret.password
                   name: internal-secrets
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sormasservice:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.sormasservice:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -3618,7 +3637,7 @@ spec:
                 secretKeyRef:
                   key: authserver_admin_token_introspection_client_secret.password
                   name: internal-secrets
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.publicapi:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.publicapi:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -3788,7 +3807,7 @@ spec:
                 secretKeyRef:
                   key: authserver_admin_token_introspection_client_secret.password
                   name: internal-secrets
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.eventhistory:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.eventhistory:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -3890,86 +3909,6 @@ spec:
     matchLabels:
       service-name: eventhistoryserver
 ---
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  labels:
-    app: pia
-  name: eventhistoryserver-remove-old-events
-spec:
-  concurrencyPolicy: Forbid
-  failedJobsHistoryLimit: 1
-  jobTemplate:
-    spec:
-      template:
-        metadata:
-          labels:
-            app: pia
-            cdk8s.io/metadata.addr: pia-eventhistoryserver-remove-old-events-c8c7910b
-        spec:
-          automountServiceAccountToken: false
-          containers:
-            - args:
-                - npm
-                - run
-                - cli
-                - --
-                - remove-old-events
-              env:
-                - name: DB_EVENTHISTORY_HOST
-                  value: qpiaservice
-                - name: DB_EVENTHISTORY_PORT
-                  value: "5432"
-                - name: DB_EVENTHISTORY_USER
-                  value: eventhistoryserver
-                - name: DB_EVENTHISTORY_PASSWORD
-                  valueFrom:
-                    secretKeyRef:
-                      key: eventhistoryserver_db.password
-                      name: internal-secrets
-                - name: DB_EVENTHISTORY_DB
-                  value: pia_database
-                - name: IGNORE_MISSING_CONFIG
-                  value: "1"
-                - name: NO_UPDATE_NOTIFIER
-                  value: "1"
-              image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.eventhistory:1.38.0
-              imagePullPolicy: IfNotPresent
-              name: main
-              resources:
-                limits:
-                  cpu: "2"
-                  memory: 4096Mi
-                requests:
-                  cpu: "0.1"
-                  memory: 64Mi
-              securityContext:
-                allowPrivilegeEscalation: false
-                privileged: false
-                readOnlyRootFilesystem: true
-                runAsGroup: 1000
-                runAsNonRoot: true
-                runAsUser: 1000
-              volumeMounts:
-                - mountPath: /home/node/.npm
-                  name: npm-dir-remove-old-events
-          dnsPolicy: ClusterFirst
-          hostNetwork: false
-          restartPolicy: Never
-          securityContext:
-            fsGroupChangePolicy: Always
-            runAsNonRoot: true
-          setHostnameAsFQDN: false
-          terminationGracePeriodSeconds: 30
-          volumes:
-            - emptyDir: {}
-              name: npm-dir-remove-old-events
-      ttlSecondsAfterFinished: 172800
-  schedule: 0 0 * * *
-  startingDeadlineSeconds: 10
-  successfulJobsHistoryLimit: 3
-  suspend: false
----
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -4047,7 +3986,7 @@ spec:
               value: http
             - name: EXTERNAL_PORT
               value: "80"
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.apigateway:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.apigateway:1.38.1
           imagePullPolicy: IfNotPresent
           name: main
           ports:
@@ -4179,7 +4118,7 @@ spec:
                   name: internal-secrets
             - name: AUTHSERVER_MESSAGEQUEUE_EXCHANGE
               value: keycloak.events
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.autheventproxy:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.autheventproxy:1.38.1
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -4318,7 +4257,7 @@ spec:
       containers:
         - args:
             - -auth-file=/auth.config
-          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.mailserver:1.38.0
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.mailserver:1.38.1
           imagePullPolicy: IfNotPresent
           name: main
           ports:
@@ -4409,4 +4348,154 @@ spec:
     - hosts:
         - mailhog
       secretName: ingress-mailhog-tls
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app: pia
+  name: jobscheduler
+automountServiceAccountToken: false
+imagePullSecrets:
+  - name: docker-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pia
+  name: jobscheduler
+spec:
+  minReadySeconds: 0
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      cdk8s.io/metadata.addr: pia-jobscheduler-deployment-c8940db3
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pia
+        cdk8s.io/metadata.addr: pia-jobscheduler-deployment-c8940db3
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - env:
+            - name: MESSAGEQUEUE_HOST
+              value: messagequeue
+            - name: MESSAGEQUEUE_PORT
+              value: "5672"
+            - name: MESSAGEQUEUE_APP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: messagequeue_app.password
+                  name: internal-secrets
+            - name: MESSAGEQUEUE_APP_USER
+              value: app
+          image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.jobscheduler:1.38.1
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          name: main
+          ports:
+            - containerPort: 4000
+              name: http
+            - containerPort: 5000
+              name: http-internal
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4096Mi
+            requests:
+              cpu: "0.1"
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1000
+            runAsNonRoot: true
+            runAsUser: 1000
+          volumeMounts:
+            - mountPath: /home/node/.npm
+              name: npm-dir
+            - mountPath: /tmp
+              name: tmp-dir
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: false
+      hostNetwork: false
+      restartPolicy: Always
+      securityContext:
+        fsGroupChangePolicy: Always
+        runAsNonRoot: true
+      serviceAccountName: jobscheduler
+      setHostnameAsFQDN: false
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - emptyDir: {}
+          name: npm-dir
+        - emptyDir: {}
+          name: tmp-dir
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+    service-name: jobscheduler
+  name: jobscheduler
+spec:
+  externalIPs: []
+  ports:
+    - name: http
+      port: 4000
+  selector:
+    cdk8s.io/metadata.addr: pia-jobscheduler-deployment-c8940db3
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pia
+  name: internal-jobscheduler
+spec:
+  externalIPs: []
+  ports:
+    - name: http-internal
+      port: 5000
+  selector:
+    cdk8s.io/metadata.addr: pia-jobscheduler-deployment-c8940db3
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    app: pia
+    release: kube-prometheus-stack
+  name: jobscheduler
+spec:
+  endpoints:
+    - path: /metrics
+      port: http
+      scheme: http
+  selector:
+    matchLabels:
+      service-name: jobscheduler
 

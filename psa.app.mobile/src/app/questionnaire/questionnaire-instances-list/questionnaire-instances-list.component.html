@@ -11,36 +11,40 @@
 </div>
 
 <ion-list lines="full" *ngIf="!isEmpty()">
-  <ion-item-group
-    *ngIf="spontanQuestionnaireInstances.length"
-    data-unit="unit-questionnaire-instances-list-spontan"
-  >
-    <ion-item
-      button
-      *ngFor="let qInstance of spontanQuestionnaireInstances; index as i"
-      [routerLink]="['/questionnaire', qInstance.id]"
+  <div #listTopQuestionnaireInstances>
+    <ion-item-group
+      *ngIf="spontanQuestionnaireInstances.length"
+      data-unit="unit-questionnaire-instances-list-spontan"
     >
-      <ion-icon name="megaphone" slot="start"></ion-icon>
+      <ion-item
+        button
+        *ngFor="let qInstance of spontanQuestionnaireInstances; index as i"
+        [routerLink]="['/questionnaire', qInstance.id]"
+      >
+        <ion-icon name="megaphone" slot="start"></ion-icon>
 
-      <ion-label>
-        <h2>{{ qInstance.questionnaire_name }}</h2>
-        <app-questionnaire-progress-bar
-          [progress]="qInstance.progress"
-          [status]="qInstance.status"
-        ></app-questionnaire-progress-bar>
-      </ion-label>
+        <ion-label>
+          <h2>{{ qInstance.questionnaire_name }}</h2>
+          <app-questionnaire-progress-bar
+            [progress]="qInstance.progress"
+            [status]="qInstance.status"
+          ></app-questionnaire-progress-bar>
+        </ion-label>
 
-      <ion-icon name="create" slot="end"></ion-icon>
-    </ion-item>
-    <ion-item-divider color="light"></ion-item-divider>
-  </ion-item-group>
-
+        <ion-icon name="create" slot="end"></ion-icon>
+      </ion-item>
+      <ion-item-divider color="light"></ion-item-divider>
+    </ion-item-group>
+  </div>
   <ion-item-group
     *ngIf="otherQuestionnaireInstances.length"
     data-unit="unit-questionnaire-instances-list-other"
   >
     <cdk-virtual-scroll-viewport
+      #scrollViewport
       itemSize="100"
+      minBufferPx="200"
+      maxBufferPx="400"
       class="questionnaire-instances-viewport"
     >
       <ion-item
@@ -52,8 +56,8 @@
           *ngIf="qInstance.status === 'active'"
           slot="start"
           color="tertiary"
-          >{{ 'QUESTIONNAIRES.NEW' | translate }}</ion-badge
-        >
+          >{{ 'QUESTIONNAIRES.NEW' | translate }}
+        </ion-badge>
 
         <ion-icon
           *ngIf="qInstance.status === 'released_once'"

@@ -16,7 +16,6 @@ See the theme section in the [Server Developer Guide](https://www.keycloak.org/d
 ## Overriding the built-in templates
 
 While creating custom themes especially when overriding templates it may be useful to use the built-in templates as
-a reference. These can be found within the theme directory of `../lib/lib/main/org.keycloak.keycloak-themes-16.1.1.jar`, which can be opened using any
-standard ZIP archive tool.
+a reference. These can be found and downloaded in the maven repository https://mvnrepository.com/artifact/org.keycloak/keycloak-themes.
 
 **Built-in themes should not be modified directly, instead a custom theme should be created.**

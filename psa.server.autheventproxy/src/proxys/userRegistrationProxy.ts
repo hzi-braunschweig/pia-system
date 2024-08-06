@@ -59,9 +59,9 @@ export class UserRegistrationProxy extends EventProxy {
     }
 
     const event = JSON.parse(json) as KeycloakRegisterEvent;
-    const { username } = event.details;
 
     try {
+      const username = event.details.username.toLowerCase();
       const studyName = await this.getStudyNameOfAccountOrFail(username);
 
       await this._producer.publish({ username, studyName });

@@ -43,9 +43,11 @@ export class HomeComponent implements OnInit {
       .pipe(filter((params) => params.notification_id))
       .subscribe((params) => this.presentNotification(params.notification_id));
 
-    this.welcomeText = (
-      await this.questionnaireService.getStudyWelcomeText(this.user.study)
-    )?.welcome_text;
+    if (this.user.isProband()) {
+      this.welcomeText = (
+        await this.questionnaireService.getStudyWelcomeText(this.user.study)
+      )?.welcome_text;
+    }
   }
 
   public async presentNotification(notificationId: string): Promise<void> {

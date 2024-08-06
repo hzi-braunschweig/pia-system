@@ -17,7 +17,14 @@ import {
   ProbandDeactivatedMessage,
 } from '@pia/lib-messagequeue';
 import { config } from '../../src/config';
-import { getManager, getRepository, Not, Repository } from 'typeorm';
+import {
+  FindOperator,
+  getManager,
+  getRepository,
+  In,
+  Not,
+  Repository,
+} from 'typeorm';
 import { Questionnaire } from '../../src/entities/questionnaire';
 import {
   createQuestionnaire,
@@ -26,6 +33,7 @@ import {
 import { QuestionnaireInstance } from '../../src/entities/questionnaireInstance';
 import { expect } from 'chai';
 import { QuestionnaireInstanceStatus } from '../../src/models/questionnaireInstance';
+import { QuestionnaireType } from '../../src/models/questionnaire';
 
 describe('MessageQueueService', () => {
   const testSandbox = createSandbox();
@@ -78,78 +86,46 @@ describe('MessageQueueService', () => {
       );
 
       await getManager().transaction(async (manager) => {
-        const q1 = await manager.save(
+        const qForProbands = await manager.save(
           Questionnaire,
           createQuestionnaire({ id: 9100 })
         );
-        const q2 = await manager.save(
+
+        const qForResearchTeam = await manager.save(
           Questionnaire,
           createQuestionnaire({ id: 9200, type: 'for_research_team' })
         );
-        await manager.save(
-          QuestionnaireInstance,
-          createQuestionnaireInstance({
-            id: 19100,
-            questionnaire: q1,
-            status: 'active',
-            pseudonym: pseudonym1,
-          })
-        );
-        await manager.save(
-          QuestionnaireInstance,
-          createQuestionnaireInstance({
-            id: 29100,
-            questionnaire: q1,
-            status: 'inactive',
-            pseudonym: pseudonym1,
-          })
-        );
-        await manager.save(
-          QuestionnaireInstance,
-          createQuestionnaireInstance({
-            id: 39200,
-            questionnaire: q2,
-            status: 'in_progress',
-            pseudonym: pseudonym1,
-          })
-        );
-        await manager.save(
-          QuestionnaireInstance,
-          createQuestionnaireInstance({
-            id: 49200,
-            questionnaire: q2,
-            status: 'released_twice',
-            pseudonym: pseudonym1,
-          })
-        );
-        await manager.save(
-          QuestionnaireInstance,
-          createQuestionnaireInstance({
-            id: 59200,
-            questionnaire: q2,
-            status: 'inactive',
-            pseudonym: pseudonym1,
-          })
-        );
-        await manager.save(
-          QuestionnaireInstance,
-          createQuestionnaireInstance({
-            id: 69200,
-            questionnaire: q2,
-            status: 'released_twice',
-            pseudonym: pseudonym2,
-          })
-        );
-        await manager.save(
-          QuestionnaireInstance,
-          createQuestionnaireInstance({
-            id: 79100,
-            questionnaire: q1,
-            status: 'inactive',
-            pseudonym: pseudonym2,
-          })
-        );
+
+        const allStatus: QuestionnaireInstanceStatus[] = [
+          'active',
+          'in_progress',
+          'released_once',
+          'released_twice',
+          'expired',
+          'inactive',
+        ];
+
+        // Generate for each participant, each questionnaire type and each status a questionnaire instance
+        for (const questionnaire of [qForProbands, qForResearchTeam]) {
+          for (const pseudonym of [pseudonym1, pseudonym2]) {
+            for (const status of allStatus) {
+              await manager.save(
+                QuestionnaireInstance,
+                createQuestionnaireInstance({
+                  id: undefined,
+                  questionnaire,
+                  status,
+                  pseudonym,
+                })
+              );
+            }
+          }
+        }
       });
+    });
+
+    afterEach(async () => {
+      await qiRepo.delete({});
     });
 
     it('should delete inactive "for_proband" questionnaire instances of the deactivated pseudonym', async () => {
@@ -211,5 +187,95 @@ describe('MessageQueueService', () => {
       expect(nonInactiveOfP1Before).to.be.equal(nonInactiveOfP1After);
       expect(allOfP2Before).to.equal(allOfP2After);
     });
+
+    it('should expire active and in progress "for_proband" questionnaire instances of the deactivated pseudonym', async () => {
+      // Arrange
+      const expectedInstancesCountFromOtherParticipant = await countInstances(
+        pseudonym2,
+        In(['active', 'in_progress'])
+      );
+      const expectedExpiredInstancesCount = await countInstances(
+        pseudonym1,
+        In(['active', 'in_progress', 'expired']),
+        'for_probands'
+      );
+      const expectedReleasedInstancesCount = await countInstances(
+        pseudonym1,
+        In(['released_once', 'released_twice'])
+      );
+      const expectedInstancesForResearchTeamCount = await countInstances(
+        pseudonym1,
+        In(['active', 'in_progress', 'expired']),
+        'for_research_team'
+      );
+      const expectedRemainingInstancesCount =
+        expectedReleasedInstancesCount + expectedInstancesForResearchTeamCount;
+
+      // Act
+      await producer.publish({
+        pseudonym: pseudonym1,
+        studyName: 'QTestStudy',
+      });
+
+      // Assert
+      await once(endOfMessageHandlingEmitter, endOfUserDeactivated);
+
+      const countExpiredForProbands = await countInstances(
+        pseudonym1,
+        'expired',
+        'for_probands'
+      );
+      expect(countExpiredForProbands).to.equal(
+        expectedExpiredInstancesCount,
+        'all instances which were active and in progress should be expired'
+      );
+
+      const countExpiredForResearchTeam = await countInstances(
+        pseudonym1,
+        'expired',
+        'for_research_team'
+      );
+      expect(countExpiredForResearchTeam).to.equal(
+        1,
+        'the initial expired instance should still exist'
+      );
+
+      const countNotExpired = await countInstances(
+        pseudonym1,
+        Not<QuestionnaireInstanceStatus>('expired')
+      );
+      expect(countNotExpired).to.equal(
+        expectedRemainingInstancesCount,
+        'all not expired instances should still exist'
+      );
+
+      const countFromOtherParticipant = await countInstances(
+        pseudonym2,
+        In(['active', 'in_progress'])
+      );
+      expect(countFromOtherParticipant).to.equal(
+        expectedInstancesCountFromOtherParticipant,
+        'no instances from other participants have expired'
+      );
+    });
   });
+
+  async function countInstances(
+    pseudonym: string,
+    status:
+      | FindOperator<QuestionnaireInstanceStatus>
+      | QuestionnaireInstanceStatus
+      | null
+      | void,
+    type: QuestionnaireType | void
+  ): Promise<number> {
+    return qiRepo.count({
+      relations: ['questionnaire'],
+      where: {
+        pseudonym,
+        ...(status ? { status } : {}),
+        ...(type ? { questionnaire: { type } } : {}),
+      },
+    });
+  }
 });

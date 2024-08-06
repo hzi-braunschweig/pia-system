@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { MessageQueueClient } from '@pia/lib-messagequeue';
+import { MessageQueueClient, MessageQueueTopic } from '@pia/lib-messagequeue';
 import { config } from '../config';
 import { SupportedTopics, SupportedMessages, EventType } from '../events';
 import { EventService } from './eventService';
+import { ConfigurationService } from './configurationService';
 
 export class MessageQueueService extends MessageQueueClient {
   public async connect(): Promise<void> {
@@ -20,6 +21,13 @@ export class MessageQueueService extends MessageQueueClient {
         topic,
         async (message: SupportedMessages, timestamp: Date) =>
           this.saveMessageAsEvent(topic, message, timestamp)
+      )
+    );
+
+    consumers.push(
+      this.createConsumer(
+        MessageQueueTopic.JOB_EVENTHISTORY_CLEANUP_EVENTS,
+        async () => this.cleanupEvents()
       )
     );
 
@@ -42,6 +50,24 @@ export class MessageQueueService extends MessageQueueClient {
       studyName,
       payload,
     });
+  }
+
+  private async cleanupEvents(): Promise<void> {
+    const historyConfig = await ConfigurationService.getConfig();
+
+    if (!historyConfig?.active || !historyConfig.retentionTimeInDays) {
+      return Promise.resolve();
+    }
+
+    const result = await EventService.cleanupEvents(
+      historyConfig.retentionTimeInDays
+    );
+
+    console.log(
+      `Removed ${String(result.countRemovedEvents)}/${
+        result.countEventsInitial
+      } events, older than ${result.referenceDate.toISOString()}`
+    );
   }
 }
 

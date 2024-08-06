@@ -40,7 +40,7 @@ export class AnalyzerService extends NodeJSService {
         MESSAGEQUEUE_APP_USER: configuration.variables.messageQueue.appUser,
       },
       {
-        // is currently not scalable because its using a scheduler and listening for db events
+        // is currently not scalable because it is using a scheduler and listening for db events
         replicas: 1,
       }
     );

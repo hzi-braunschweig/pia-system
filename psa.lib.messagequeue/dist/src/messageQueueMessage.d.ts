@@ -102,4 +102,5 @@ export interface MessageTopicMap {
     [MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED]: QuestionnaireInstanceReleasedMessage;
     [MessageQueueTopic.FEEDBACKSTATISTIC_CONFIGURATION_UPDATED]: FeedbackStatisticConfigurationUpdatedMessage;
     [MessageQueueTopic.FEEDBACKSTATISTIC_OUTDATED]: void;
+    [MessageQueueTopic.JOB_EVENTHISTORY_CLEANUP_EVENTS]: void;
 }

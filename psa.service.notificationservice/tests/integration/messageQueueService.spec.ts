@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-magic-numbers,@typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 /*
  * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
@@ -14,7 +14,7 @@ import fetchMocker from 'fetch-mock';
 import { StatusCodes } from 'http-status-codes';
 
 import { FcmHelper } from '../../src/services/fcmHelper';
-import { cleanup, setup } from './multipleToken.spec.data/setup.helper';
+import { cleanup, setup } from './messageQueueService.spec.data/setup.helper';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
 import { MessageQueueClient, MessageQueueTopic } from '@pia/lib-messagequeue';
@@ -22,6 +22,8 @@ import { EventEmitter, once } from 'events';
 import { MessageQueueService } from '../../src/services/messageQueueService';
 import { HttpClient } from '@pia-system/lib-http-clients-internal';
 import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
+import { DbNotificationSchedules } from '../../src/models/notification';
+import { db } from '../../src/db';
 
 interface FcmToken {
   fcm_token: string;
@@ -168,6 +170,25 @@ describe('message queue service', () => {
     expect(FcmHelperMock.sendDefaultNotification.callCount).to.equal(0);
   });
 
+  it('should delete messages scheduled for participant, when a proband is deactivated', async () => {
+    // Arrange
+    const producer = await mqc.createProducer(
+      MessageQueueTopic.PROBAND_DEACTIVATED
+    );
+
+    // Act
+    await producer.publish({
+      pseudonym: 'qtest-proband1',
+      studyName: 'Study',
+    });
+
+    // Assert
+    await once(endOfMessageHandlingEmitter, endOfProbandDeactivated);
+
+    const schedule = await getNotificationScheduleFor('qtest-proband1');
+    expect(schedule.length).to.equal(0);
+  });
+
   it('onProbandDeleted should delete the user token', async () => {
     fetchMock.get('express:/user/users/qtest-proband1', StatusCodes.NOT_FOUND);
 
@@ -222,4 +243,33 @@ describe('message queue service', () => {
 
     expect(FcmHelperMock.sendDefaultNotification.callCount).to.equal(0);
   });
+
+  it('should delete messages scheduled for participant, when a proband is deleted', async () => {
+    // Arrange
+    const producer = await mqc.createProducer(
+      MessageQueueTopic.PROBAND_DELETED
+    );
+
+    // Act
+    await producer.publish({
+      pseudonym: 'qtest-proband1',
+      studyName: 'Study',
+      deletionType: 'default',
+    });
+
+    // Assert
+    await once(endOfMessageHandlingEmitter, endOfProbandDeleted);
+
+    const schedule = await getNotificationScheduleFor('qtest-proband1');
+    expect(schedule.length).to.equal(0);
+  });
+
+  async function getNotificationScheduleFor(
+    pseudonym: string
+  ): Promise<DbNotificationSchedules[]> {
+    return db.manyOrNone<DbNotificationSchedules>(
+      'SELECT * FROM notification_schedules WHERE user_id = $1',
+      [pseudonym]
+    );
+  }
 });

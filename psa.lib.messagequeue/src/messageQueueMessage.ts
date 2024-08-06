@@ -144,4 +144,6 @@ export interface MessageTopicMap {
 
   [MessageQueueTopic.FEEDBACKSTATISTIC_CONFIGURATION_UPDATED]: FeedbackStatisticConfigurationUpdatedMessage;
   [MessageQueueTopic.FEEDBACKSTATISTIC_OUTDATED]: void;
+
+  [MessageQueueTopic.JOB_EVENTHISTORY_CLEANUP_EVENTS]: void;
 }

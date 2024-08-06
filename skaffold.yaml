@@ -146,6 +146,12 @@ build:
         dockerfile: psa.server.eventhistory/Dockerfile
         buildArgs:
           DIR: psa.server.eventhistory
+    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.server.jobscheduler
+      context: .
+      docker:
+        dockerfile: psa.server.jobscheduler/Dockerfile
+        buildArgs:
+          DIR: psa.server.jobscheduler
 manifests:
   kustomize:
     paths:

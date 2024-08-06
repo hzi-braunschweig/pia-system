@@ -26,7 +26,7 @@
   "resetPasswordAllowed": true,
   "bruteForceProtected": true,
   "failureFactor": 10,
-  "passwordPolicy": "passwordHistory(1) and hashIterations(100000) and hashAlgorithm(pbkdf2-sha512) and length([[env:USER_PASSWORD_LENGTH]]) and maxLength(80) and digits(1) and specialChars(1) and lowerCase(1) and upperCase(1) and notUsername(undefined)",
+  "passwordPolicy": "passwordHistory(1) and length([[env:USER_PASSWORD_LENGTH]]) and maxLength(80) and digits(1) and specialChars(1) and lowerCase(1) and upperCase(1) and notUsername(undefined)",
   "smtpServer": {
     "password": "[[env:MAIL_PASSWORD]]",
     "starttls": "[[env:MAIL_REQUIRE_TLS]]",
@@ -98,9 +98,9 @@
       "config": {}
     },
     {
-      "alias": "terms_and_conditions",
+      "alias": "TERMS_AND_CONDITIONS",
       "name": "Terms and Conditions",
-      "providerId": "terms_and_conditions",
+      "providerId": "TERMS_AND_CONDITIONS",
       "enabled": false,
       "defaultAction": false,
       "priority": 20,
@@ -125,6 +125,15 @@
       "config": {}
     },
     {
+      "alias": "VERIFY_EMAIL",
+      "name": "Verify Email",
+      "providerId": "VERIFY_EMAIL",
+      "enabled": false,
+      "defaultAction": false,
+      "priority": 50,
+      "config": {}
+    },
+    {
       "alias": "VERIFY_EMAIL_WITH_USERNAME_ACKNOWLEDGEMENT",
       "name": "Verify Email With Username Acknowledgement",
       "providerId": "VERIFY_EMAIL_WITH_USERNAME_ACKNOWLEDGEMENT",
@@ -140,6 +149,42 @@
       "enabled": false,
       "defaultAction": false,
       "priority": 60,
+      "config": {}
+    },
+    {
+      "alias": "webauthn-register",
+      "name": "Webauthn Register",
+      "providerId": "webauthn-register",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 70,
+      "config": {}
+    },
+    {
+      "alias": "webauthn-register-passwordless",
+      "name": "Webauthn Register Passwordless",
+      "providerId": "webauthn-register-passwordless",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 80,
+      "config": {}
+    },
+    {
+      "alias": "VERIFY_PROFILE",
+      "name": "Verify Profile",
+      "providerId": "VERIFY_PROFILE",
+      "enabled": false,
+      "defaultAction": false,
+      "priority": 90,
+      "config": {}
+    },
+    {
+      "alias": "delete_credential",
+      "name": "Delete Credential",
+      "providerId": "delete_credential",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 100,
       "config": {}
     },
     {
@@ -389,5 +434,17 @@
         }
       ]
     }
-  ]
+  ],
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "config": {
+          "kc.user.profile.config": [
+            "{\"attributes\":[{\"name\":\"username\",\"displayName\":\"${username}\",\"validations\":{\"length\":{\"min\":3,\"max\":255},\"username-prohibited-characters\":{},\"up-username-not-idn-homograph\":{}},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"email\",\"displayName\":\"${email}\",\"validations\":{\"email\":{},\"length\":{\"max\":255}},\"required\":{\"roles\":[\"user\"]},\"permissions\":{\"view\":[\"admin\",\"user\"],\"edit\":[\"admin\",\"user\"]},\"multivalued\":false},{\"name\":\"study\",\"displayName\":\"Study\",\"validations\":{},\"annotations\":{},\"permissions\":{\"view\":[\"admin\"],\"edit\":[\"admin\"]},\"group\":\"pia-metadata\",\"multivalued\":false},{\"name\":\"piaTosConfirm\",\"displayName\":\"Confirmed PIA Terms and Conditions\",\"validations\":{},\"annotations\":{},\"permissions\":{\"view\":[\"admin\"],\"edit\":[\"user\"]},\"group\":\"pia-metadata\",\"multivalued\":false},{\"name\":\"piaPolicyConfirm\",\"displayName\":\"Confirmed Privacy Policy\",\"validations\":{},\"annotations\":{},\"permissions\":{\"view\":[\"admin\"],\"edit\":[\"user\"]},\"group\":\"pia-metadata\",\"multivalued\":false}],\"groups\":[{\"name\":\"pia-metadata\",\"displayHeader\":\"User data specific to PIA\",\"displayDescription\":\"\",\"annotations\":{}}]}"
+          ]
+        }
+      }
+    ]
+  }
 }

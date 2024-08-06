@@ -10,13 +10,10 @@
     min-width: 36px;
   }
 }
+
 .ios {
   ion-icon[slot='start'],
   ion-badge[slot='start'] {
     min-width: 44px;
   }
-}
-
-.questionnaire-instances-viewport {
-  height: 600px;
 }

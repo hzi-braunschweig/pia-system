@@ -63,6 +63,7 @@ See [messageQueueTopics.ts](./src/messageQueueTopics.ts) for a list of all exist
 | `study.deleted`                           | Published when a study was deleted                                                     |
 | `feedbackstatistic_configuration.updated` | Published when a feedbackstatistic configuration got created or updated                |
 | `feedbackstatistic.outdated`              | Published when feedbackstatistic data should be recalculated                           |
+| `job.eventhistory.cleanup_events`         | Published when the job to cleanup events in the event history should be triggered      |
 
 ## Message payloads
 

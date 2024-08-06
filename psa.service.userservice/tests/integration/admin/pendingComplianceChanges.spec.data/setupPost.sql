@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-INSERT INTO studies (name)
-VALUES ('ApiTestStudie1'),
-       ('ApiTestStudie2');
+INSERT INTO studies (name, has_four_eyes_opposition)
+VALUES ('ApiTestStudie1', true),
+       ('ApiTestStudie2', false);
 
 INSERT INTO probands (pseudonym, compliance_labresults, compliance_samples, compliance_bloodsamples, study, origin)
 VALUES ('qtest-api-proband1', TRUE, TRUE, TRUE, 'ApiTestStudie1', 'investigator'),
@@ -21,9 +21,11 @@ VALUES ('ApiTestStudie1', 'forscher1@apitest.de', 'write'),
        ('ApiTestStudie1', 'pm1@apitest.de', 'write'),
        ('ApiTestStudie1', 'pm2@apitest.de', 'write'),
        ('ApiTestStudie1', 'qtest-pm_no_email', 'write'),
+       ('ApiTestStudie2', 'pm3@apitest.de', 'write'),
        ('ApiTestStudie2', 'pm4@apitest.de', 'write');
 
 INSERT INTO pending_compliance_changes (id, requested_by, requested_for, proband_id, compliance_labresults_from,
                                         compliance_labresults_to, compliance_samples_from, compliance_samples_to,
                                         compliance_bloodsamples_from, compliance_bloodsamples_to)
-VALUES (1234560, 'pm1@apitest.de', 'pm2@apitest.de', 'qtest-api-proband3', FALSE, TRUE, FALSE, TRUE, FALSE, TRUE);
+VALUES (1234560, 'pm1@apitest.de', 'pm2@apitest.de', 'qtest-api-proband3', FALSE, TRUE, FALSE, TRUE, FALSE, TRUE),
+       (1234561, 'pm3@apitest.de', 'pm4@apitest.de', 'qtest-api-proband2', FALSE, TRUE, FALSE, TRUE, FALSE, TRUE);

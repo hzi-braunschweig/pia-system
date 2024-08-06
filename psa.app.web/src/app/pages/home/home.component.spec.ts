@@ -95,6 +95,15 @@ describe('HomeComponent', () => {
       expect(router.navigate).toHaveBeenCalledWith(['study']);
     }));
 
+    it('should not try to show welcome text if user has professional role', fakeAsync(() => {
+      user.isProfessional.and.returnValue(true);
+      user.isProband.and.returnValue(false);
+
+      createComponent();
+
+      expect(questionnaireService.getStudyWelcomeText).not.toHaveBeenCalled();
+    }));
+
     it('should request notification on param changes', fakeAsync(() => {
       // Arrange
       createComponent();

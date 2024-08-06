@@ -6,8 +6,8 @@
       psa.lib.licensecollector psa.lib.messagequeue psa.lib.publicapi
       psa.lib.service-core psa.lib.templatepipeline psa.server.apigateway
       psa.server.auth psa.server.autheventproxy psa.server.eventhistory
-      psa.server.mailserver psa.server.messagequeue psa.server.publicapi
-      psa.server.sftpserver psa.service.analyzerservice
+      psa.server.jobscheduler psa.server.mailserver psa.server.messagequeue
+      psa.server.publicapi psa.server.sftpserver psa.service.analyzerservice
       psa.service.complianceservice psa.service.feedbackstatisticservice
       psa.service.loggingservice psa.service.modysservice
       psa.service.notificationservice psa.service.personaldataservice
@@ -21,24 +21,26 @@
       psa.lib.hapi-i18n-plugin psa.lib.http-clients-internal
       psa.lib.licensecollector psa.lib.messagequeue psa.lib.publicapi
       psa.lib.service-core psa.lib.templatepipeline psa.server.apigateway
-      psa.server.autheventproxy psa.server.eventhistory psa.server.publicapi
-      psa.service.analyzerservice psa.service.complianceservice
-      psa.service.feedbackstatisticservice psa.service.loggingservice
-      psa.service.modysservice psa.service.notificationservice
-      psa.service.personaldataservice psa.service.questionnaireservice
-      psa.service.sampletrackingservice psa.service.sormasservice
-      psa.service.userservice psa.test.data psa.utils.repo-tool
+      psa.server.autheventproxy psa.server.eventhistory psa.server.jobscheduler
+      psa.server.publicapi psa.service.analyzerservice
+      psa.service.complianceservice psa.service.feedbackstatisticservice
+      psa.service.loggingservice psa.service.modysservice
+      psa.service.notificationservice psa.service.personaldataservice
+      psa.service.questionnaireservice psa.service.sampletrackingservice
+      psa.service.sormasservice psa.service.userservice psa.test.data
+      psa.utils.repo-tool
     install: k8s psa.app.mobile psa.app.web psa.lib.auth-server-client
       psa.lib.charts psa.lib.hapi-i18n-plugin psa.lib.http-clients-internal
       psa.lib.licensecollector psa.lib.messagequeue psa.lib.publicapi
       psa.lib.service-core psa.lib.templatepipeline psa.server.apigateway
-      psa.server.autheventproxy psa.server.eventhistory psa.server.publicapi
-      psa.service.analyzerservice psa.service.complianceservice
-      psa.service.feedbackstatisticservice psa.service.loggingservice
-      psa.service.modysservice psa.service.notificationservice
-      psa.service.personaldataservice psa.service.questionnaireservice
-      psa.service.sampletrackingservice psa.service.sormasservice
-      psa.service.userservice psa.test.data psa.utils.repo-tool
+      psa.server.autheventproxy psa.server.eventhistory psa.server.jobscheduler
+      psa.server.publicapi psa.service.analyzerservice
+      psa.service.complianceservice psa.service.feedbackstatisticservice
+      psa.service.loggingservice psa.service.modysservice
+      psa.service.notificationservice psa.service.personaldataservice
+      psa.service.questionnaireservice psa.service.sampletrackingservice
+      psa.service.sormasservice psa.service.userservice psa.test.data
+      psa.utils.repo-tool
     unit: k8s psa.app.mobile psa.app.web psa.lib.auth-server-client psa.lib.charts
       psa.lib.hapi-i18n-plugin psa.lib.http-clients-internal
       psa.lib.licensecollector psa.lib.service-core psa.lib.templatepipeline
@@ -48,18 +50,19 @@
       psa.service.questionnaireservice psa.service.sampletrackingservice
       psa.service.sormasservice psa.service.userservice
     int: psa.lib.messagequeue psa.lib.service-core psa.server.autheventproxy
-      psa.server.eventhistory psa.server.publicapi psa.service.analyzerservice
-      psa.service.complianceservice psa.service.feedbackstatisticservice
-      psa.service.loggingservice psa.service.modysservice
-      psa.service.notificationservice psa.service.personaldataservice
-      psa.service.questionnaireservice psa.service.sampletrackingservice
-      psa.service.userservice
+      psa.server.eventhistory psa.server.jobscheduler psa.server.publicapi
+      psa.service.analyzerservice psa.service.complianceservice
+      psa.service.feedbackstatisticservice psa.service.loggingservice
+      psa.service.modysservice psa.service.notificationservice
+      psa.service.personaldataservice psa.service.questionnaireservice
+      psa.service.sampletrackingservice psa.service.userservice
   array:
     int:
       - psa.lib.messagequeue
       - psa.lib.service-core
       - psa.server.autheventproxy
       - psa.server.eventhistory
+      - psa.server.jobscheduler
       - psa.server.publicapi
       - psa.service.analyzerservice
       - psa.service.complianceservice
@@ -119,6 +122,7 @@
       - psa.server.apigateway
       - psa.server.autheventproxy
       - psa.server.eventhistory
+      - psa.server.jobscheduler
       - psa.server.publicapi
       - psa.service.analyzerservice
       - psa.service.complianceservice

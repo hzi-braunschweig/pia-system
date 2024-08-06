@@ -12,6 +12,7 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
+  AfterContentChecked,
 } from '@angular/core';
 import { Observable } from 'rxjs';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
@@ -126,7 +127,7 @@ interface ConditionFormValue {
   ],
 })
 export class QuestionProbandComponent
-  implements ComponentCanDeactivate, OnInit, OnDestroy
+  implements ComponentCanDeactivate, OnInit, AfterContentChecked, OnDestroy
 {
   public myForm: FormGroup;
   public questionnaireInstanceId: number | undefined;
@@ -230,6 +231,18 @@ export class QuestionProbandComponent
       this.alertService.errorObject(err);
     }
     this.isLoading = false;
+  }
+
+  public ngAfterContentChecked(): void {
+    // We need to wait for the content to have a state where `isLoading` is true.
+    // If `isLoading` is false, the swiper element is not rendered and therefore not available.
+    if (!this.isLoading && this.questionSwiper) {
+      // We disable pointer events being able to "swipe" the slides.
+      // Angular Material form elements are also using pointer events. The swiper will catch and not propagate
+      // them, while the pointer is being moved. This results in small movements during a click not activating or
+      // deactivating form elements.
+      this.questionSwiper.nativeElement.swiper.allowTouchMove = false;
+    }
   }
 
   public ngOnDestroy(): void {

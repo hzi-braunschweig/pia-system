@@ -21,6 +21,7 @@ import {
   loginProfessional,
   UserCredentials,
 } from '../../../support/user.commands';
+import { expectLocation } from '../../../support/helper.commands';
 
 const short = require('short-uuid');
 const translator = short();
@@ -35,6 +36,8 @@ const newPassword = ',dYv3zg;r:CB';
 
 const probandAppUrl = '/';
 const adminAppUrl = '/admin/';
+const probandAuthFormUrl =
+  '/api/v1/auth/realms/pia-proband-realm/protocol/openid-connect/auth';
 
 describe('Release Test, role: "Proband", Tab: Contact', () => {
   beforeEach(() => {
@@ -78,7 +81,7 @@ describe('Release Test, role: "Proband", Tab: Contact', () => {
       .as('probandCred');
   });
 
-  it('it should display message "Derzeit sind keine Kontaktinformationen für diese Studie verfügbar."', () => {
+  it('should display message "Derzeit sind keine Kontaktinformationen für diese Studie verfügbar."', () => {
     cy.visit(probandAppUrl);
 
     cy.get<UserCredentials>('@probandCred').then((cred) => {
@@ -168,10 +171,10 @@ describe('Release Test, role: "Proband", Tab: Contact', () => {
       // necessary wait, otherwise the side menu rerenders and the element is  - in some circumstances - not clickable anymore
       cy.contains('[data-e2e="e2e-sidenav-content"]', 'Laborergebnisse');
       cy.get('[data-e2e="e2e-sidenav-content"]').click();
-      cy.contains('[data-e2e="e2e-sidenav-content"]', 'Abmelden')
-        .contains('Abmelden')
-        .click();
-      cy.get('#confirmButton').click();
+      cy.get('[data-e2e="e2e-logout"]').click();
+      cy.get('[data-e2e="dialog-button-accept"]').click();
+
+      expectLocation(probandAuthFormUrl);
 
       cy.get<UserCredentials>('@pmCred').then((cred) => {
         cy.visit(adminAppUrl);

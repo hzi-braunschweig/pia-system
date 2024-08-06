@@ -11,5 +11,5 @@ MASKING_REGEX='s/([0-9]{1,3}(\.[0-9]{1,3}){3})/xxx.xxx.xxx.xxxx/g; s/(\w{4}:){3,
 PATH_TO_ENTRYPOINT_SCRIPT="$1"
 shift 
 
-exec "$PATH_TO_ENTRYPOINT_SCRIPT" "$@" 2> >(sed -E "$MASKING_REGEX" >&2) | sed -E "$MASKING_REGEX"
+exec "$PATH_TO_ENTRYPOINT_SCRIPT" "$@" 2> >(sed -u -E "$MASKING_REGEX" >&2) | sed -u -E "$MASKING_REGEX"
 
