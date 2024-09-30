@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -24,7 +24,7 @@ import {
   PendingDeletionDb,
   PendingDeletionReq,
 } from '../../src/models/pendingDeletion';
-import { PersonalData } from '../../src/models/personalData';
+import { PersonalDataDb } from '../../src/models/personalDataDb';
 import { assert } from 'ts-essentials';
 import { SystemLogInternalDto } from '@pia-system/lib-http-clients-internal/src';
 
@@ -544,7 +544,7 @@ describe('/admin/pendingDeletions', function () {
         expectedId
       );
       expect(pendingDeletion).to.be.null;
-      const personalData = await db.oneOrNone<PersonalData>(
+      const personalData = await db.oneOrNone<PersonalDataDb>(
         'SELECT * FROM personal_data WHERE pseudonym=$1',
         'qtest-proband1'
       );
@@ -565,7 +565,7 @@ describe('/admin/pendingDeletions', function () {
         expectedId
       );
       expect(pendingDeletion).to.be.null;
-      const personalData = await db.oneOrNone<PersonalData>(
+      const personalData = await db.oneOrNone<PersonalDataDb>(
         'SELECT * FROM personal_data WHERE pseudonym=$1',
         'qtest-proband1'
       );
@@ -586,7 +586,7 @@ describe('/admin/pendingDeletions', function () {
         expectedId
       );
       expect(pendingDeletion).to.be.null;
-      const personalData = await db.oneOrNone<PersonalData>(
+      const personalData = await db.oneOrNone<PersonalDataDb>(
         'SELECT * FROM personal_data WHERE pseudonym=$1',
         'qtest-proband1'
       );

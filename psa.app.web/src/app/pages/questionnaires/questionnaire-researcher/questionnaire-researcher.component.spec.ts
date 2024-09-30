@@ -26,6 +26,8 @@ import {
 import { MediaObserver } from '@angular/flex-layout';
 import { AlertService } from '../../../_services/alert.service';
 import {
+  createAnswerOption,
+  createQuestion,
   createQuestionnaire,
   createStudy,
 } from '../../../psa.app.core/models/instance.helper.spec';
@@ -39,8 +41,13 @@ import {
   Condition,
   ConditionType,
 } from '../../../psa.app.core/models/questionnaire';
+import { By } from '@angular/platform-browser';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
 import createSpyObj = jasmine.createSpyObj;
 import SpyObj = jasmine.SpyObj;
+import { AnswerType } from 'src/app/psa.app.core/models/answerType';
 
 describe('QuestionnaireResearcherComponent', () => {
   let fixture: MockedComponentFixture;
@@ -582,5 +589,56 @@ describe('QuestionnaireResearcherComponent', () => {
         ).not.toBeUndefined();
       }));
     });
+  });
+
+  describe('use_autocomplete checkbox', () => {
+    it('should display the checkbox when answer_type_id is 1', fakeAsync(() => {
+      const questionnaire = createQuestionnaire({
+        questions: [
+          {
+            ...createQuestion(),
+            answer_options: [
+              createAnswerOption({
+                id: 1,
+                answer_type_id: AnswerType.SingleSelect,
+                variable_name: 'test',
+              }),
+            ],
+          },
+        ],
+      });
+
+      component.initForm(questionnaire);
+      tick();
+      fixture.detectChanges();
+      const checkbox = fixture.debugElement.query(
+        By.css('mat-checkbox[formControlName="use_autocomplete"]')
+      );
+      expect(checkbox).toBeTruthy();
+    }));
+
+    it('should not display the checkbox when answer_type_id is not 1', fakeAsync(() => {
+      const questionnaire = createQuestionnaire({
+        questions: [
+          {
+            ...createQuestion(),
+            answer_options: [
+              createAnswerOption({
+                id: 1,
+                answer_type_id: AnswerType.Text,
+                variable_name: 'test',
+              }),
+            ],
+          },
+        ],
+      });
+      component.initForm(questionnaire);
+      tick();
+      fixture.detectChanges();
+      const checkbox = fixture.debugElement.query(
+        By.css('mat-checkbox[formControlName="use_autocomplete"]')
+      );
+      expect(checkbox).toBeFalsy();
+    }));
   });
 });

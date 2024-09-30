@@ -16,8 +16,6 @@ import {
   CycleUnit,
 } from '../models/questionnaire';
 import { Proband } from '../models/proband';
-import { Answer } from '../models/answer';
-import { Condition } from '../models/condition';
 import sinonChai from 'sinon-chai';
 import { zonedTimeToUtc } from 'date-fns-tz';
 import { config } from '../config';
@@ -406,11 +404,11 @@ describe('questionnaireInstancesService', function () {
       );
 
       expect(res.length).to.equal(3);
-      expect(res[0]?.study_id).to.equal('Study1');
-      expect(res[0]?.questionnaire_id).to.equal(99999);
-      expect(res[0]?.questionnaire_name).to.equal('TestQuestionnaire1');
-      expect(res[0]?.user_id).to.equal('Testuser1');
-      expect(res[0]?.date_of_issue.toString()).to.equal(
+      expect(res[0]?.studyId).to.equal('Study1');
+      expect(res[0]?.questionnaireId).to.equal(99999);
+      expect(res[0]?.questionnaireName).to.equal('TestQuestionnaire1');
+      expect(res[0]?.pseudonym).to.equal('Testuser1');
+      expect(res[0]?.dateOfIssue.toString()).to.equal(
         zonedTimeToUtc(
           addHours(addDays(date, 0), 8),
           config.timeZone
@@ -418,11 +416,11 @@ describe('questionnaireInstancesService', function () {
       );
       expect(res[0]?.status).to.equal('active');
 
-      expect(res[1]?.study_id).to.equal('Study1');
-      expect(res[1]?.questionnaire_id).to.equal(99999);
-      expect(res[1]?.questionnaire_name).to.equal('TestQuestionnaire1');
-      expect(res[1]?.user_id).to.equal('Testuser1');
-      expect(res[1]?.date_of_issue.toString()).to.equal(
+      expect(res[1]?.studyId).to.equal('Study1');
+      expect(res[1]?.questionnaireId).to.equal(99999);
+      expect(res[1]?.questionnaireName).to.equal('TestQuestionnaire1');
+      expect(res[1]?.pseudonym).to.equal('Testuser1');
+      expect(res[1]?.dateOfIssue.toString()).to.equal(
         zonedTimeToUtc(
           addHours(addDays(date, 1), 8),
           config.timeZone
@@ -430,11 +428,11 @@ describe('questionnaireInstancesService', function () {
       );
       // the status of the second instance may change with the time that the test is executed
 
-      expect(res[2]?.study_id).to.equal('Study1');
-      expect(res[2]?.questionnaire_id).to.equal(99999);
-      expect(res[2]?.questionnaire_name).to.equal('TestQuestionnaire1');
-      expect(res[2]?.user_id).to.equal('Testuser1');
-      expect(res[2]?.date_of_issue.toString()).to.equal(
+      expect(res[2]?.studyId).to.equal('Study1');
+      expect(res[2]?.questionnaireId).to.equal(99999);
+      expect(res[2]?.questionnaireName).to.equal('TestQuestionnaire1');
+      expect(res[2]?.pseudonym).to.equal('Testuser1');
+      expect(res[2]?.dateOfIssue.toString()).to.equal(
         zonedTimeToUtc(
           addHours(addDays(date, 2), 8),
           config.timeZone
@@ -466,11 +464,11 @@ describe('questionnaireInstancesService', function () {
       );
 
       expect(res.length).to.equal(1);
-      expect(res[0]?.study_id).to.equal('Study1');
-      expect(res[0]?.questionnaire_id).to.equal(99999);
-      expect(res[0]?.questionnaire_name).to.equal('TestQuestionnaire1');
-      expect(res[0]?.user_id).to.equal('Testuser1');
-      expect(res[0]?.date_of_issue.toString()).to.equal(
+      expect(res[0]?.studyId).to.equal('Study1');
+      expect(res[0]?.questionnaireId).to.equal(99999);
+      expect(res[0]?.questionnaireName).to.equal('TestQuestionnaire1');
+      expect(res[0]?.pseudonym).to.equal('Testuser1');
+      expect(res[0]?.dateOfIssue.toString()).to.equal(
         zonedTimeToUtc(
           addHours(addDays(date, 1), 8),
           config.timeZone
@@ -502,29 +500,29 @@ describe('questionnaireInstancesService', function () {
       );
 
       expect(res.length).to.equal(3);
-      expect(res[0]?.study_id).to.equal('Study1');
-      expect(res[0]?.questionnaire_id).to.equal(99999);
-      expect(res[0]?.questionnaire_name).to.equal('TestQuestionnaire1');
-      expect(res[0]?.user_id).to.equal('Testuser1');
-      expect(res[0]?.date_of_issue.toString()).to.equal(
+      expect(res[0]?.studyId).to.equal('Study1');
+      expect(res[0]?.questionnaireId).to.equal(99999);
+      expect(res[0]?.questionnaireName).to.equal('TestQuestionnaire1');
+      expect(res[0]?.pseudonym).to.equal('Testuser1');
+      expect(res[0]?.dateOfIssue.toString()).to.equal(
         new Date(Date.UTC(2021, 2, 27, 7)).toString()
       );
       expect(res[0]?.status).to.equal('expired');
 
-      expect(res[1]?.study_id).to.equal('Study1');
-      expect(res[1]?.questionnaire_id).to.equal(99999);
-      expect(res[1]?.questionnaire_name).to.equal('TestQuestionnaire1');
-      expect(res[1]?.user_id).to.equal('Testuser1');
-      expect(res[1]?.date_of_issue.toString()).to.equal(
+      expect(res[1]?.studyId).to.equal('Study1');
+      expect(res[1]?.questionnaireId).to.equal(99999);
+      expect(res[1]?.questionnaireName).to.equal('TestQuestionnaire1');
+      expect(res[1]?.pseudonym).to.equal('Testuser1');
+      expect(res[1]?.dateOfIssue.toString()).to.equal(
         new Date(Date.UTC(2021, 2, 28, 6)).toString()
       );
       expect(res[1]?.status).to.equal('expired');
 
-      expect(res[2]?.study_id).to.equal('Study1');
-      expect(res[2]?.questionnaire_id).to.equal(99999);
-      expect(res[2]?.questionnaire_name).to.equal('TestQuestionnaire1');
-      expect(res[2]?.user_id).to.equal('Testuser1');
-      expect(res[2]?.date_of_issue.toString()).to.equal(
+      expect(res[2]?.studyId).to.equal('Study1');
+      expect(res[2]?.questionnaireId).to.equal(99999);
+      expect(res[2]?.questionnaireName).to.equal('TestQuestionnaire1');
+      expect(res[2]?.pseudonym).to.equal('Testuser1');
+      expect(res[2]?.dateOfIssue.toString()).to.equal(
         new Date(Date.UTC(2021, 2, 29, 6)).toString()
       );
       expect(res[2]?.status).to.equal('expired');
@@ -551,762 +549,32 @@ describe('questionnaireInstancesService', function () {
       );
 
       expect(res.length).to.equal(3);
-      expect(res[0]?.study_id).to.equal('Study1');
-      expect(res[0]?.questionnaire_id).to.equal(99999);
-      expect(res[0]?.questionnaire_name).to.equal('TestQuestionnaire1');
-      expect(res[0]?.user_id).to.equal('Testuser1');
-      expect(res[0]?.date_of_issue.toString()).to.equal(
+      expect(res[0]?.studyId).to.equal('Study1');
+      expect(res[0]?.questionnaireId).to.equal(99999);
+      expect(res[0]?.questionnaireName).to.equal('TestQuestionnaire1');
+      expect(res[0]?.pseudonym).to.equal('Testuser1');
+      expect(res[0]?.dateOfIssue.toString()).to.equal(
         new Date(Date.UTC(2020, 9, 24, 6)).toString()
       );
       expect(res[0]?.status).to.equal('expired');
 
-      expect(res[1]?.study_id).to.equal('Study1');
-      expect(res[1]?.questionnaire_id).to.equal(99999);
-      expect(res[1]?.questionnaire_name).to.equal('TestQuestionnaire1');
-      expect(res[1]?.user_id).to.equal('Testuser1');
-      expect(res[1]?.date_of_issue.toString()).to.equal(
+      expect(res[1]?.studyId).to.equal('Study1');
+      expect(res[1]?.questionnaireId).to.equal(99999);
+      expect(res[1]?.questionnaireName).to.equal('TestQuestionnaire1');
+      expect(res[1]?.pseudonym).to.equal('Testuser1');
+      expect(res[1]?.dateOfIssue.toString()).to.equal(
         new Date(Date.UTC(2020, 9, 25, 7)).toString()
       );
       expect(res[1]?.status).to.equal('expired');
 
-      expect(res[2]?.study_id).to.equal('Study1');
-      expect(res[2]?.questionnaire_id).to.equal(99999);
-      expect(res[2]?.questionnaire_name).to.equal('TestQuestionnaire1');
-      expect(res[2]?.user_id).to.equal('Testuser1');
-      expect(res[2]?.date_of_issue.toString()).to.equal(
+      expect(res[2]?.studyId).to.equal('Study1');
+      expect(res[2]?.questionnaireId).to.equal(99999);
+      expect(res[2]?.questionnaireName).to.equal('TestQuestionnaire1');
+      expect(res[2]?.pseudonym).to.equal('Testuser1');
+      expect(res[2]?.dateOfIssue.toString()).to.equal(
         new Date(Date.UTC(2020, 9, 26, 7)).toString()
       );
       expect(res[2]?.status).to.equal('expired');
-    });
-  });
-
-  describe('isConditionMet', function () {
-    it('1 answer value, 1 condition value, operand ===, no link, positive example', function () {
-      const answer = createAnswer('Ja');
-      const condition = createCondition({
-        condition_value: 'Ja',
-        condition_operand: '==',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 1 condition value, operand ===, no link, negative example', function () {
-      const answer = createAnswer('Ja');
-      const condition = createCondition({
-        condition_value: 'Nein',
-        condition_operand: '==',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('3 answer values, 1 condition value, operand ===, no link, positive example', function () {
-      const answer = createAnswer('ans1;ans2;ans3');
-      const condition = createCondition({
-        condition_value: 'ans2',
-        condition_operand: '==',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('3 answer values, 1 condition value, operand ===, no link, negative example', function () {
-      const answer = createAnswer('ans1;ans2;ans3');
-      const condition = createCondition({
-        condition_value: 'ans4',
-        condition_operand: '==',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 3 condition values, operand ===, no link, positive example', function () {
-      const answer = createAnswer('ans1');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3',
-        condition_operand: '==',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 3 condition values, operand ===, no link, negative example', function () {
-      const answer = createAnswer('ans1');
-      const condition = createCondition({
-        condition_value: 'ans2;ans3;ans4',
-        condition_operand: '==',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 3 condition values, operand ===, OR link, positive example', function () {
-      const answer = createAnswer('ans1');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3',
-        condition_operand: '==',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 3 condition values, operand ===, OR link, negative example', function () {
-      const answer = createAnswer('ans1');
-      const condition = createCondition({
-        condition_value: 'ans2;ans3;ans4',
-        condition_operand: '==',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 3 condition values, operand ===, AND link, negative example', function () {
-      const answer = createAnswer('ans1');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3',
-        condition_operand: '==',
-        condition_link: 'AND',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 3 condition values, operand ===, XOR link, positive example', function () {
-      const answer = createAnswer('ans1');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3',
-        condition_operand: '==',
-        condition_link: 'XOR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('3 answer values, 3 condition values, operand ===, no link, positive example', function () {
-      const answer = createAnswer('ans2;ans4;ans5');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3',
-        condition_operand: '==',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('3 answer values, 3 condition values, operand ===, no link, negative example', function () {
-      const answer = createAnswer('ans4;ans5;ans6');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3',
-        condition_operand: '==',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('3 answer values, 3 condition values, operand ===, OR link, positive example', function () {
-      const answer = createAnswer('ans2;ans4;ans5');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3',
-        condition_operand: '==',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('3 answer values, 3 condition values, operand ===, OR link, negative example', function () {
-      const answer = createAnswer('ans4;ans5;ans6');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3',
-        condition_operand: '==',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('3 answer values, 3 condition values, operand ===, AND link, positive example', function () {
-      const answer = createAnswer('ans1;ans2;ans3');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3',
-        condition_operand: '==',
-        condition_link: 'AND',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('3 answer values, 3 condition values, operand ===, AND link, negative example', function () {
-      const answer = createAnswer('ans1;ans2;ans4');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3',
-        condition_operand: '==',
-        condition_link: 'AND',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('3 answer values, 3 condition values, operand ===, XOR link, positive example', function () {
-      const answer = createAnswer('ans0;ans2;ans5');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3',
-        condition_operand: '==',
-        condition_link: 'XOR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('3 answer values, 3 condition values, operand ===, XOR link, negative example too many matches', function () {
-      const answer = createAnswer('ans1;ans2;ans4');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3',
-        condition_operand: '==',
-        condition_link: 'XOR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('3 answer values, 3 condition values, operand ===, XOR link, negative example no match', function () {
-      const answer = createAnswer('ans4;ans5;ans6');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3',
-        condition_operand: '==',
-        condition_link: 'XOR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('3 answer values, 3 condition values, operand ===, XOR link, positive example with ; at the end of values', function () {
-      const answer = createAnswer('ans0;ans2;ans5;');
-      const condition = createCondition({
-        condition_value: 'ans1;ans2;ans3;',
-        condition_operand: '==',
-        condition_link: 'XOR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        1
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 1 condition values, operand ===, OR link, number, negative example', function () {
-      const answer = createAnswer('12');
-      const condition = createCondition({
-        condition_value: '8',
-        condition_operand: '==',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        3
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 1 condition values, operand ===, OR link, number, positive example', function () {
-      const answer = createAnswer('12');
-      const condition = createCondition({
-        condition_value: '12',
-        condition_operand: '==',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        3
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 1 condition values, operand <, OR link, number, negative example', function () {
-      const answer = createAnswer('12');
-      const condition = createCondition({
-        condition_value: '8',
-        condition_operand: '<',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        3
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 1 condition values, operand <, OR link, number, positive example', function () {
-      const answer = createAnswer('12');
-      const condition = createCondition({
-        condition_value: '22',
-        condition_operand: '<',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        3
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 1 condition values, operand >, OR link, number, negative example', function () {
-      const answer = createAnswer('12');
-      const condition = createCondition({
-        condition_value: '22',
-        condition_operand: '>',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        3
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 1 condition values, operand >, OR link, number, positive example', function () {
-      const answer = createAnswer('12');
-      const condition = createCondition({
-        condition_value: '8',
-        condition_operand: '>',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        3
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 1 condition values, operand <=, OR link, number, negative example', function () {
-      const answer = createAnswer('12');
-      const condition = createCondition({
-        condition_value: '8',
-        condition_operand: '<=',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        3
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 1 condition values, operand <=, OR link, number, positive example', function () {
-      const answer = createAnswer('12');
-      const condition = createCondition({
-        condition_value: '12',
-        condition_operand: '<=',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        3
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 1 condition values, operand >=, OR link, number, negative example', function () {
-      const answer = createAnswer('12');
-      const condition = createCondition({
-        condition_value: '13',
-        condition_operand: '>=',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        3
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 1 condition values, operand >=, OR link, number, positive example', function () {
-      const answer = createAnswer('12');
-      const condition = createCondition({
-        condition_value: '12',
-        condition_operand: '>=',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        3
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 1 condition values, operand \\=, OR link, number, negative example', function () {
-      const answer = createAnswer('12');
-      const condition = createCondition({
-        condition_value: '12',
-        condition_operand: '\\=',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        3
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 1 condition values, operand \\=, OR link, number, positive example', function () {
-      const answer = createAnswer('12');
-      const condition = createCondition({
-        condition_value: '11',
-        condition_operand: '\\=',
-        condition_link: 'OR',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        3
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 3 condition values, operand ==, date, negative example', function () {
-      const answer = createAnswer(startOfToday().toDateString());
-      const condition = createCondition({
-        condition_value: addDays(startOfToday(), 1).toDateString(),
-        condition_operand: '==',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        5
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 3 condition values, operand ==, date, positive example', function () {
-      const answer = createAnswer(startOfToday().toDateString());
-      const condition = createCondition({
-        condition_value: startOfToday().toDateString(),
-        condition_operand: '==',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        5
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 3 condition values, operand <, date, negative example', function () {
-      const answer = createAnswer(startOfToday().toDateString());
-      const condition = createCondition({
-        condition_value: startOfToday().toDateString(),
-        condition_operand: '<',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        5
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 3 condition values, operand < date, positive example', function () {
-      const answer = createAnswer(startOfToday().toDateString());
-      const condition = createCondition({
-        condition_value: addDays(startOfToday(), 1).toDateString(),
-        condition_operand: '<',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        5
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 3 condition values, operand >, date, negative example', function () {
-      const answer = createAnswer(startOfToday().toDateString());
-      const condition = createCondition({
-        condition_value: startOfToday().toDateString(),
-        condition_operand: '>',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        5
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 3 condition values, operand > date, positive example', function () {
-      const answer = createAnswer(startOfToday().toDateString());
-      const condition = createCondition({
-        condition_value: subDays(startOfToday(), 1).toDateString(),
-        condition_operand: '>',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        5
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 3 condition values, operand <=, date, negative example', function () {
-      const answer = createAnswer(startOfToday().toDateString());
-      const condition = createCondition({
-        condition_value: subDays(startOfToday(), 1).toDateString(),
-        condition_operand: '<=',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        5
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 3 condition values, operand <= date, positive example', function () {
-      const answer = createAnswer(startOfToday().toDateString());
-      const condition = createCondition({
-        condition_value: startOfToday().toDateString(),
-        condition_operand: '<=',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        5
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 3 condition values, operand >=, date, negative example', function () {
-      const answer = createAnswer(startOfToday().toDateString());
-      const condition = createCondition({
-        condition_value: addDays(startOfToday(), 1).toDateString(),
-        condition_operand: '>=',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        5
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 3 condition values, operand >= date, positive example', function () {
-      const answer = createAnswer(startOfToday().toDateString());
-      const condition = createCondition({
-        condition_value: startOfToday().toDateString(),
-        condition_operand: '>=',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        5
-      );
-
-      expect(actual).to.equal(true);
-    });
-
-    it('1 answer value, 3 condition values, operand \\=, date, negative example', function () {
-      const answer = createAnswer(startOfToday().toDateString());
-      const condition = createCondition({
-        condition_value: startOfToday().toDateString(),
-        condition_operand: '\\=',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        5
-      );
-
-      expect(actual).to.equal(false);
-    });
-
-    it('1 answer value, 3 condition values, operand \\= date, positive example', function () {
-      const answer = createAnswer(startOfToday().toDateString());
-      const condition = createCondition({
-        condition_value: addDays(startOfToday(), 1).toDateString(),
-        condition_operand: '\\=',
-      });
-
-      const actual = QuestionnaireInstancesService.isConditionMet(
-        answer,
-        condition,
-        5
-      );
-
-      expect(actual).to.equal(true);
     });
   });
 
@@ -1372,6 +640,7 @@ describe('questionnaireInstancesService', function () {
       study_id: 'Study1',
       name: 'TestQuestionnaire1',
       custom_name: 'TestQuestionnaire',
+      sort_order: null,
       no_questions: 2,
       cycle_amount: 0,
       cycle_unit: 'once',
@@ -1415,6 +684,7 @@ describe('questionnaireInstancesService', function () {
       questionnaire_id: 1,
       questionnaire_version: 1,
       user_id: 'Testuser',
+      sort_order: null,
       type: 'for_probands',
       status: 'inactive',
       cycle_unit: 'day',
@@ -1424,34 +694,6 @@ describe('questionnaireInstancesService', function () {
       date_of_release_v1: null,
       ids: '',
       ...override,
-    };
-  }
-
-  function createAnswer(value: string): Answer {
-    return {
-      question_id: 1,
-      questionnaire_instance_id: 2,
-      answer_option_id: 3,
-      value: value,
-    };
-  }
-
-  function createCondition(conditionOverwrite: Partial<Condition>): Condition {
-    return {
-      condition_type: 'external',
-      condition_answer_option_id: 1,
-      condition_question_id: 1,
-      condition_questionnaire_id: 1,
-      condition_questionnaire_version: 1,
-      condition_target_questionnaire: 1,
-      condition_target_questionnaire_version: 1,
-      condition_target_answer_option: 1,
-      condition_target_question_pos: 1,
-      condition_target_answer_option_pos: 1,
-      condition_value: 'string',
-      condition_operand: '==',
-      condition_link: null,
-      ...conditionOverwrite,
     };
   }
 

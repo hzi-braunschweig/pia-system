@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -7,7 +7,7 @@
 import { PersonalDataInteractor } from '../interactors/personalDataInteractor';
 import { handleError } from '../handleError';
 import { Lifecycle } from '@hapi/hapi';
-import { PersonalDataReq } from '../models/personalData';
+import { PersonalDataReq } from '../models/personalDataDb';
 import { AccessToken } from '@pia/lib-service-core';
 
 export class PersonalDataHandler {

@@ -24,6 +24,7 @@ export interface AnswerOption {
   is_notable: boolean[];
   values: string[];
   values_code: number[];
+  use_autocomplete?: boolean | null;
 }
 
 export interface Value {

@@ -10,7 +10,6 @@ import {
   ProbandDeletedMessage,
   ProbandCreatedMessage,
   ProbandLoggedInMessage,
-  QuestionnaireInstanceCreatedMessage,
   Producer,
   QuestionnaireInstanceExpiredMessage,
   QuestionnaireInstanceActivatedMessage,
@@ -18,12 +17,8 @@ import {
 import { config } from '../config';
 import { NotificationHandlers } from './notificationHandlers';
 import { performance } from 'perf_hooks';
-import {
-  QuestionnaireInstance,
-  QuestionnaireInstanceStatus,
-} from '../models/questionnaireInstance';
+import { QuestionnaireInstance } from '../models/questionnaireInstance';
 import { Questionnaire } from '../models/questionnaire';
-import isInstanceWithNarrowedStatus from '../utilities/isInstanceWithNarrowedStatus';
 
 type QuestionnaireForMessage = Pick<Questionnaire, 'id' | 'custom_name'>;
 type QuestionnaireInstanceForMessage = Pick<
@@ -37,7 +32,6 @@ export type QuestionnaireInstanceMessageFn = (
 ) => Promise<void>;
 
 export class MessageQueueService extends MessageQueueClient {
-  private questionnaireInstanceCreatedProducer?: Producer<QuestionnaireInstanceCreatedMessage>;
   private questionnaireInstanceActivatedProducer?: Producer<QuestionnaireInstanceActivatedMessage>;
   private questionnaireInstanceExpiredProducer?: Producer<QuestionnaireInstanceExpiredMessage>;
 
@@ -77,10 +71,6 @@ export class MessageQueueService extends MessageQueueClient {
   public async connect(): Promise<void> {
     await super.connect();
 
-    this.questionnaireInstanceCreatedProducer = await this.createProducer(
-      MessageQueueTopic.QUESTIONNAIRE_INSTANCE_CREATED
-    );
-
     this.questionnaireInstanceActivatedProducer = await this.createProducer(
       MessageQueueTopic.QUESTIONNAIRE_INSTANCE_ACTIVATED
     );
@@ -106,43 +96,6 @@ export class MessageQueueService extends MessageQueueClient {
       async (message: ProbandLoggedInMessage) =>
         await MessageQueueService.onProbandLoggedIn(message.pseudonym)
     );
-  }
-
-  public async sendQuestionnaireInstanceCreated(
-    questionnaireInstance: QuestionnaireInstanceForMessage,
-    questionnaire: QuestionnaireForMessage
-  ): Promise<void> {
-    if (!this.questionnaireInstanceCreatedProducer) {
-      throw new Error('connect() must be called before sending messages');
-    }
-
-    type AllowedStatus = Extract<
-      QuestionnaireInstanceStatus,
-      'inactive' | 'active' | 'expired'
-    >;
-
-    if (
-      !isInstanceWithNarrowedStatus<AllowedStatus>(questionnaireInstance, [
-        'inactive',
-        'active',
-        'expired',
-      ])
-    ) {
-      throw new Error(
-        `Instance with id "${questionnaireInstance.id}" has wrong status for sending created message: ${questionnaireInstance.status}`
-      );
-    }
-
-    await this.questionnaireInstanceCreatedProducer.publish({
-      id: questionnaireInstance.id,
-      studyName: questionnaireInstance.study_id,
-      pseudonym: questionnaireInstance.user_id,
-      status: questionnaireInstance.status,
-      questionnaire: {
-        id: questionnaire.id,
-        customName: questionnaire.custom_name ?? '',
-      },
-    });
   }
 
   public async sendQuestionnaireInstanceActivated(

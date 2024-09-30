@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -150,6 +150,18 @@ const routes: ProxyRouteConfig[] = [
     upstream: {
       host: 'personaldataservice',
       path: adminUpstreamPath,
+      port: ConfigUtils.getEnvVariableInt('PERSONALDATASERVICE_PORT'),
+    },
+  },
+  {
+    path:
+      publicApiPath +
+      'studies/:studyName/participants/:pseudonym/personal-data',
+    upstream: {
+      host: 'personaldataservice',
+      path:
+        publicUpstreamPath +
+        'studies/:studyName/participants/:pseudonym/personal-data',
       port: ConfigUtils.getEnvVariableInt('PERSONALDATASERVICE_PORT'),
     },
   },

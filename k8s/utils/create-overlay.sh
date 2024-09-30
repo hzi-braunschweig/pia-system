@@ -6,6 +6,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 
+LOGO_FILE_NAME="logo.jpeg"
+
 # Check if a file path was provided
 if [ -z "$1" ]
 then
@@ -40,6 +42,12 @@ read -p "Password of the mail server user: " mailServerPassword
 read -p "Does the mail server require a secure TLS connection? (true|false): " mailServerRequireTls
 read -p "Mail address used by PIA when sending mails (will be visible to users): " mailServerFromAddress
 read -p "Name used by PIA when sending mails (will be visible to users): " mailServerFromName
+
+read -p "Provide file path to a JPEG image to use as a logo (max. 100 KB) (leave empty to skip): " customizeLogoFilePath
+while [[ "$customizeLogoFilePath" != "" && ! -f $customizeLogoFilePath ]]; do
+    read -p "The file path provided does not exist. Please provide a valid file path or leave empty to skip:"
+done
+
 printf "%60s" " " | tr ' ' '-' && echo
 echo "ℹ️Please provide Firebase credentials from your credential.json to send push notifications to users."
 echo "Copy and paste the private key from you credential.json without quotes:"
@@ -66,8 +74,21 @@ echo -en $firebasePrivateKey > tmp_fb_pkey.txt
 cat tmp_fb_pkey.txt | base64 > tmp_fb_pkey_b64.txt
 rm tmp_fb_pkey.txt
 
+# Customize logo
+customizeLogo=""
+componentCustomizeLogo=""
+configMapGenerator=""
+
+if [[ -n "$customizeLogoFilePath" ]]
+then
+    customizeLogoComponent="  - ../../components/customize-logo \# Remove, if you want to use the original HZI logo again"
+    configMapGenerator="configMapGenerator:\n  - name: pia-logo\n    files:\n      - ./${LOGO_FILE_NAME}\n      - ./${LOGO_FILE_NAME}.gz\n"
+fi
+
 # Replace the placeholders with the actual values in the kustomization.yaml template
 echo "$KUSTOMIZATION_TEMPLATE" | sed -e "s#{deploymentName}#$deploymentName#g" \
+    -e "s#{customizeLogoComponent}#$customizeLogoComponent#g" \
+    -e "s#{configMapGenerator}#$configMapGenerator#g" \
     -e "s#{namespace}#$namespace#g" \
     -e "s#{dockerRegistryPath}#$dockerRegistryPath#g" \
     -e "s#{dockerImageTag}#$dockerImageTag#g" \
@@ -93,5 +114,22 @@ echo "$KUSTOMIZATION_TEMPLATE" | sed -e "s#{deploymentName}#$deploymentName#g" \
 # Cleanup the temporary private key file
 rm tmp_fb_pkey_b64.txt;
 
-echo
-echo "File has been written to $FILE_PATH/kustomization.yaml"
+# Copy logo to the overlays directory
+if [[ -n "$customizeLogoFilePath" ]]
+then
+    cp $customizeLogoFilePath $FILE_PATH/${LOGO_FILE_NAME}
+
+    echo "🖼 Logo was copied from: ${customizeLogoFilePath} to: $FILE_PATH/${LOGO_FILE_NAME}"
+
+    # Create compression version of logo if possible
+    if [ -x "$(command -v gzip)" ]
+    then
+        gzip < $FILE_PATH/${LOGO_FILE_NAME} > $FILE_PATH/${LOGO_FILE_NAME}.gz
+        echo "🗜 Created compression version of logo file $FILE_PATH/${LOGO_FILE_NAME}.gz"
+    else
+        echo "🚨 Please make sure to create a gzip compressed version of the logo file, named '${LOGO_FILE_NAME}.gz' before deployment."
+    fi
+fi
+echo ""
+echo "🥳 Your custom overlay has been written to $FILE_PATH/kustomization.yaml"
+echo "📋 Please check its content before deployment."

@@ -133,6 +133,7 @@ export class ParticipantController extends Controller {
         studyName,
         {
           ...participant,
+          isTestProband: participant.isTestParticipant,
           origin: ProbandOrigin.PUBLIC_API,
         },
         false,

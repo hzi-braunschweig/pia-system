@@ -12,6 +12,9 @@ import {
   QuestionnaireDto,
 } from './questionnaire';
 
+// A questionnaire instances progress is measured in percent, 100% is the maximum.
+export const MAX_PROGRESS = 100;
+
 /**
  * Identifies a questionnaire instance by either its ID or the custom name
  * of its related questionnaire.

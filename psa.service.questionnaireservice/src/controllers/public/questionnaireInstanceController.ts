@@ -5,7 +5,7 @@
  */
 
 import { Boom } from '@hapi/boom';
-import { Pseudonym } from '@pia/lib-publicapi';
+import { Pseudonym, StudyName } from '@pia/lib-publicapi';
 
 import { publicApiSecurity } from '@pia/lib-service-core';
 import { ValidateError } from '@tsoa/runtime';
@@ -36,7 +36,6 @@ import {
   SampleTrackingServiceRejectedSampleIdError,
   StudyNotFoundError,
 } from '../../errors';
-import { StudyName } from '../../models/customTypes';
 import { CustomName } from '../../models/questionnaire';
 import {
   QuestionnaireInstanceIdentifier,

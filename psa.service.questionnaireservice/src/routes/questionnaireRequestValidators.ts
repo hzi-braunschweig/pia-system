@@ -284,6 +284,12 @@ export const questionnaireRequestPayload = Joi.object<Questionnaire>({
             .allow(null)
             .optional(),
           condition: conditionValidation.optional(),
+          use_autocomplete: Joi.bool()
+            .description(
+              'true if answer selection should be shown in an autocomplete to users - only possible for single/multiple select'
+            )
+            .allow(null)
+            .optional(),
         })
         .min(0)
         .required(),

@@ -492,6 +492,30 @@ describe('/public/studies/{studyName}/participants', () => {
         origin: 'public_api',
       });
     });
+
+    it('should map isTestParticipant to internal isTestProband', async () => {
+      // Arrange
+      const studyName = 'QTestStudy1';
+
+      // Act
+      const result = (await chai
+        .request(apiAddress)
+        .post(`/public/studies/${studyName}/participants`)
+        .set(apiClientHeader)
+        .send(
+          createParticipantRequest({ isTestParticipant: true })
+        )) as Response<CreateParticipantResponseDto>;
+
+      // Assert
+      expect(result).to.have.status(StatusCodes.CREATED);
+
+      const participant = await getRepository(Proband).findOneOrFail({
+        where: { pseudonym: result.body.pseudonym },
+        loadRelationIds: { relations: ['study'], disableMixedMap: true },
+      });
+
+      expect(participant.isTestProband).to.equal(true);
+    });
   });
 
   describe('PATCH /public/studies/{studyName}/participants/{pseudonym}', () => {

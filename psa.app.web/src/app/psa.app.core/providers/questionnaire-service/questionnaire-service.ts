@@ -258,13 +258,12 @@ export class QuestionnaireService {
 
   getQuestionnaireInstanceQueues(
     pseudonym: string
-  ): Promise<QuestionnaireInstanceQueue[]> {
+  ): Observable<QuestionnaireInstanceQueue[]> {
     return this.http
       .get<{ queues: QuestionnaireInstanceQueue[] }>(
         this.apiUrl + 'probands/' + pseudonym + '/queues'
       )
-      .pipe(pluck('queues'))
-      .toPromise();
+      .pipe(map((response) => response.queues));
   }
 
   deleteQuestionnaireInstanceQueue(

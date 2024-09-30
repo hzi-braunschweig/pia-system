@@ -154,6 +154,7 @@ export class MainChart extends Chart {
     const analyzerService = new AnalyzerService(this, config, {
       qpiaService,
       messageQueue,
+      questionnaireService,
     });
 
     const notificationService = new NotificationService(this, config, {

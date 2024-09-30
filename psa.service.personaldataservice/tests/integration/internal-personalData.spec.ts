@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -15,7 +15,10 @@ import { Response } from '@pia/lib-service-core';
 import { config } from '../../src/config';
 import { Server } from '../../src/server';
 import { setup, cleanup } from './internal-personalData.spec.data/setup.helper';
-import { PersonalData, PersonalDataReq } from '../../src/models/personalData';
+import {
+  PersonalDataDb,
+  PersonalDataReq,
+} from '../../src/models/personalDataDb';
 import { mockUpdateAccountMailAddress } from './mockUpdateAccountMailAddress.helper.spec';
 import { probandAuthClient } from '../../src/clients/authServerClient';
 
@@ -118,7 +121,7 @@ describe('Internal: /personalData', () => {
       const personalData = createPersonalData();
 
       // Act
-      const result: Response<PersonalData> = await chai
+      const result: Response<PersonalDataDb> = await chai
         .request(apiAddress)
         .put('/personalData/proband/qtest-proband1')
         .send(personalData);
@@ -144,7 +147,7 @@ describe('Internal: /personalData', () => {
       const personalData = createPersonalData();
 
       // Act
-      const result: Response<PersonalData> = await chai
+      const result: Response<PersonalDataDb> = await chai
         .request(apiAddress)
         .put('/personalData/proband/qtest-proband2')
         .send(personalData);
@@ -173,7 +176,7 @@ describe('Internal: /personalData', () => {
       const personalData = createPersonalData();
 
       // Act
-      const result: Response<PersonalData> = await chai
+      const result: Response<PersonalDataDb> = await chai
         .request(apiAddress)
         .put('/personalData/proband/qtest-proband2')
         .send(personalData);
@@ -204,7 +207,7 @@ describe('Internal: /personalData', () => {
       const personalData = createPersonalData();
 
       // Act
-      const result: Response<PersonalData> = await chai
+      const result: Response<PersonalDataDb> = await chai
         .request(apiAddress)
         .put('/personalData/proband/qtest-proband2?skipUpdateAccount=true')
         .send(personalData);
@@ -246,7 +249,7 @@ describe('Internal: /personalData', () => {
       };
 
       // Act
-      const result: Response<PersonalData> = await chai
+      const result: Response<PersonalDataDb> = await chai
         .request(apiAddress)
         .put('/personalData/proband/qtest-proband3')
         .send(personalData);
@@ -284,7 +287,7 @@ describe('Internal: /personalData', () => {
       };
 
       // Act
-      const result: Response<PersonalData> = await chai
+      const result: Response<PersonalDataDb> = await chai
         .request(apiAddress)
         .put('/personalData/proband/qtest-proband4')
         .send(personalData);

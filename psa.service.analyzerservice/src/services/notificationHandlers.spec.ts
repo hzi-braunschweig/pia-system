@@ -324,6 +324,7 @@ describe.skip('notificationHandlers', function () {
       study_id: 'Study1',
       name: 'TestQuestionnaire1',
       custom_name: '',
+      sort_order: null,
       no_questions: 2,
       cycle_amount: 0,
       cycle_unit: 'once',

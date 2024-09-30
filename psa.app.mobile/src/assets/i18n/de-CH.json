@@ -99,7 +99,8 @@
     "ALERT_SUBTITLE_SENT_LAST_TIME": "Ihre Antworten wurden jetzt zum letzten Mal abgeschickt.",
     "NO_RESULTS": "Keine Fragebögen gefunden",
     "UPLOADED_IMAGE_TOO_LARGE": "Es können nur Dateien mit einer Grösse von bis zu 20MB hochgeladen werden. Bitte prüfen Sie Ihre Dateigrösse.",
-    "NO_IMAGE_UPLOAD": "Noch kein Foto hochgeladen."
+    "NO_IMAGE_UPLOAD": "Noch kein Foto hochgeladen.",
+    "AUTOCOMPLETE_PICK": "Wählen Sie eine Option aus."
   },
   "QUESTIONNAIRES": {
     "TITLE": "Übersicht",

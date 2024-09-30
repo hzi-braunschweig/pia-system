@@ -16,6 +16,7 @@ components:
   - ../../components/no-servicemonitor # Remove, if you plan to use Prometheus
   - ../../components/no-modysservice # Remove, if you plan to connect to a MODYS instance
   - ../../components/no-sormasservice # Remove, if you plan to connect to a SORMAS instance
+{customizeLogoComponent}
 
 images:
   - name: registry.hzdr.de/pia-eresearch-system/pia/psa.database
@@ -88,6 +89,19 @@ images:
     newName: {dockerRegistryPath}/psa.server.jobscheduler
     newTag: {dockerImageTag}
 
+patches:
+  - target:
+      kind: Ingress
+      name: apigateway
+    patch: |-
+      - op: replace
+        path: "/spec/rules/0/host"
+        value: "{externalHost}"
+      - op: replace
+        path: "/spec/tls/0/hosts/0"
+        value: "{externalHost}"
+
+{configMapGenerator}
 secretGenerator:
   - name: docker-registry
     type: kubernetes.io/dockerconfigjson

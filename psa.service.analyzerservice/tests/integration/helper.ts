@@ -5,6 +5,11 @@
  */
 
 import { db } from '../../src/db';
+import { ITask } from 'pg-promise';
+import FetchMocker from 'fetch-mock';
+import { CreateQuestionnaireInstanceInternalDto } from '@pia-system/lib-http-clients-internal';
+import { config } from '../../src/config';
+import { zonedTimeToUtc } from 'date-fns-tz';
 
 interface LogMessageMapping {
   query: string;
@@ -13,7 +18,11 @@ interface LogMessageMapping {
 
 interface Query {
   query: string;
-  arg?: Record<string, unknown>;
+  arg?: Record<string, unknown> | object;
+}
+
+export function localTimeToUtc(date: Date): Date {
+  return zonedTimeToUtc(date, config.timeZone);
 }
 
 async function waitForConsoleLogMessages(messages: string[]): Promise<void> {
@@ -83,7 +92,31 @@ export async function dbWait(
   await promise;
 }
 
-export async function txWait(queries: Query[]): Promise<void> {
+export async function dbWaitWithReturn<T>(
+  query: string,
+  arg?: Record<string, unknown>,
+  tx: ITask<unknown> | typeof db = db
+): Promise<T> {
+  const messages: string[] = [];
+  for (const line of query.split('\n')) {
+    const mapping = getMapping(line);
+    if (mapping) {
+      messages.push(mapping);
+    }
+  }
+
+  const promise = waitForConsoleLogMessages(messages);
+  const result = (await tx.query(query, arg)) as T;
+
+  await promise;
+
+  return result;
+}
+
+export async function txWait(
+  queries: Query[],
+  t: ITask<unknown> | typeof db = db
+): Promise<void> {
   const messages = [];
   for (const query of queries) {
     const mapping = getMapping(query.query);
@@ -93,9 +126,9 @@ export async function txWait(queries: Query[]): Promise<void> {
   }
 
   const promise = waitForConsoleLogMessages(messages);
-  await db.tx(async (t) => {
+  await t.tx(async (subTx) => {
     for (const query of queries) {
-      await t.none(query.query, query.arg);
+      await subTx.none(query.query, query.arg);
     }
   });
   await promise;
@@ -113,4 +146,45 @@ export async function waitForConditionToBeTrue(
 
     setInterval(handler, timeout);
   });
+}
+
+export function setupPassthroughForInternalQuestionnaireServiceRequests(
+  fetchMock: FetchMocker.FetchMockSandbox
+): void {
+  // Fake a successful request against the questionnaire service
+  fetchMock.post(
+    'path:/questionnaire/questionnaireInstances',
+    (url: string, opts: { method: string; body: string }, request: any) => {
+      console.log('url', url);
+      console.log('opts', opts);
+      console.log('request', request);
+
+      if (opts.method === 'POST') {
+        // Attach IDs like the service itself would do after inserting instances into the database
+        const parsed = JSON.parse(
+          opts.body
+        ) as unknown as CreateQuestionnaireInstanceInternalDto[];
+        const instances: CreateQuestionnaireInstanceInternalDto[] = parsed.map(
+          (qi: CreateQuestionnaireInstanceInternalDto, idx: number) => ({
+            ...qi,
+            id: idx + 1,
+          })
+        );
+        return JSON.stringify(instances);
+      }
+      return opts.body;
+    }
+  );
+}
+
+export function getInsertQuery(
+  table: string,
+  object: object,
+  returning = true
+): string {
+  const fieldNames = Object.keys(object);
+  const fields = fieldNames.join(', ');
+  const values = fieldNames.map((key) => `$\{${key}}`).join(', ');
+  const returningClause = returning ? ' RETURNING *' : '';
+  return `INSERT INTO ${table} (${fields}) VALUES (${values})${returningClause};`;
 }

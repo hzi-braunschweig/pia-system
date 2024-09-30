@@ -14,7 +14,7 @@ import {
   ViewChild,
   AfterContentChecked,
 } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, retry } from 'rxjs';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { SampleTrackingService } from 'src/app/psa.app.core/providers/sample-tracking-service/sample-tracking.service';
 import {
@@ -51,7 +51,7 @@ import {
 import { QuestionnaireInstanceQueue } from '../../../psa.app.core/models/questionnaireInstanceQueue';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
 import { DOCUMENT, Location } from '@angular/common';
-import { timeout } from 'rxjs/operators';
+import { map, startWith } from 'rxjs/operators';
 import { Tools } from './tools';
 import {
   HistoryItem,
@@ -71,6 +71,7 @@ import { CurrentUser } from '../../../_services/current-user.service';
 import { MatRadioButton } from '@angular/material/radio';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { addDays, format, isAfter } from 'date-fns';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
 export enum DisplayStatus {
   QUESTIONS,
@@ -143,7 +144,6 @@ export class QuestionProbandComponent
   public pseudonym: string;
   public answerVersionFromServer: number;
   public release_version: number;
-
   public isReleaseButtonVisible: boolean = false;
 
   @ViewChild('questionSwiper')
@@ -275,7 +275,7 @@ export class QuestionProbandComponent
           answers.forEach((answer) => {
             if (answerOption.id === answer.answer_option_id) {
               this.answerIdsFromServer.push(answer.answer_option_id);
-              if (answerOption.answer_type_id === 2) {
+              if (answerOption.answer_type_id === AnswerType.MultiSelect) {
                 const arrayValue: string[] = answer.value.split(';');
                 for (let i = 0; i < answerOption.values.length; i++) {
                   valueList.push({
@@ -327,7 +327,7 @@ export class QuestionProbandComponent
           }
         }
         this.addAnswer(questionIndex, answerOption);
-        if (answerOption.answer_type_id === 2) {
+        if (answerOption.answer_type_id === AnswerType.MultiSelect) {
           valueList.forEach((valueItem) => {
             this.addValue(questionIndex, answerOptionIndex, null, valueItem);
           });
@@ -358,8 +358,7 @@ export class QuestionProbandComponent
    */
   private addQuestion(question?: Question): void {
     const text = question ? this.calculatAppropriateDate(question.text) : '';
-    const is_mandatory =
-      question && question.is_mandatory ? question.is_mandatory : false;
+    const is_mandatory = question?.is_mandatory ?? false;
     const id = question ? question.id : '';
     const questionIndex = (this.myForm.get('questions') as FormArray).length;
 
@@ -484,6 +483,9 @@ export class QuestionProbandComponent
         value: new FormControl(answer_value),
         values: new FormArray([]),
         hasValue: new FormControl(hasValue),
+        use_autocomplete: new FormControl(
+          answerOption?.use_autocomplete ?? false
+        ),
       })
     );
 
@@ -498,7 +500,33 @@ export class QuestionProbandComponent
       answerControl.setValidators(RequiredAnswerValidator.answerRequired);
     }
 
-    if (answer_type_id === AnswerType.Number) {
+    if (answer_type_id === AnswerType.SingleSelect) {
+      const valueControl = answerControl.get('value') as FormControl;
+
+      answerControl.addControl('filtered_values', new FormControl([]));
+      if (answerOption && Array.isArray(answerOption.values)) {
+        const initialFilteredValues = this.filterAutocompleteOptions(
+          valueControl.value || '',
+          answerOption.values
+        );
+        answerControl.get('filtered_values').setValue(initialFilteredValues);
+
+        valueControl.valueChanges
+          .pipe(
+            startWith(valueControl.value),
+            map((value) =>
+              this.filterAutocompleteOptions(value || '', answerOption.values)
+            )
+          )
+          .subscribe((filteredValues) => {
+            answerControl.get('filtered_values').setValue(filteredValues);
+          });
+      } else {
+        console.warn(
+          `Autocomplete options not available for question ${questionIndex}, answer ${answerIndex}`
+        );
+      }
+    } else if (answer_type_id === AnswerType.Number) {
       answerControl.addControl(
         'restriction_min',
         new FormControl(answerOption.restriction_min)
@@ -522,9 +550,7 @@ export class QuestionProbandComponent
       } else {
         answerControl.get('value').setValidators(Tools.checkIfNumberIsInteger);
       }
-    }
-
-    if (answer_type_id === AnswerType.Sample) {
+    } else if (answer_type_id === AnswerType.Sample) {
       const sample_ids: string[] = answerOption.answer_value
         ? answerOption.answer_value.split(';')
         : [null, null];
@@ -538,9 +564,7 @@ export class QuestionProbandComponent
           new FormControl(sample_ids[1], [this.validateSampleID.bind(this)])
         );
       }
-    }
-
-    if (answer_type_id === AnswerType.Date) {
+    } else if (answer_type_id === AnswerType.Date) {
       const restriction_min =
         answerOption.restriction_min !== null
           ? Tools.countDateFromToday(answerOption.restriction_min)
@@ -1621,17 +1645,17 @@ export class QuestionProbandComponent
   private findAndOpenNextInstance(): void {
     this.questionnaireService
       .getQuestionnaireInstanceQueues(this.pseudonym)
-      .then(async (queuesResult: QuestionnaireInstanceQueue[]) => {
-        if (queuesResult.length < 1) {
-          timeout(300);
-          queuesResult =
-            await this.questionnaireService.getQuestionnaireInstanceQueues(
-              this.pseudonym
-            );
-        }
-        if (queuesResult.length < 1) {
-          this.router.navigate(['questionnaires/user']);
-        } else {
+      .pipe(
+        map((queuesResult: QuestionnaireInstanceQueue[]) => {
+          if (queuesResult.length < 1) {
+            throw new Error('No queued instances found.');
+          }
+          return queuesResult;
+        }),
+        retry({ count: 2, delay: 300 })
+      )
+      .subscribe({
+        next: async (queuesResult: QuestionnaireInstanceQueue[]) => {
           let foundInstance = null;
           for (let i = 0; !foundInstance && i < queuesResult.length; i++) {
             try {
@@ -1673,9 +1697,12 @@ export class QuestionProbandComponent
               ]);
             });
           } else {
-            this.router.navigate(['questionnaires/user']);
+            throw new Error('Queued instance was not found anymore.');
           }
-        }
+        },
+        error: () => {
+          this.router.navigate(['questionnaires/user']);
+        },
       });
   }
 
@@ -1837,7 +1864,7 @@ export class QuestionProbandComponent
     }
   }
 
-  public updateState(
+  public updateSingleSelectState(
     button: MatRadioButton,
     questionIndex: number,
     answerIndex: number
@@ -1846,12 +1873,54 @@ export class QuestionProbandComponent
       questionIndex,
       answerIndex
     ).get('value');
+
     if (button.checked) {
       answerValue.setValue('');
     } else {
       answerValue.setValue(button.value);
     }
     this.checkConditions(questionIndex, answerIndex);
+  }
+
+  public updateSingleSelectStateFromAutocomplete(
+    event: MatAutocompleteSelectedEvent,
+    questionIndex: number,
+    answerIndex: number
+  ): void {
+    const answerValue = this.getAnswerOptionFormControlAtPosition(
+      questionIndex,
+      answerIndex
+    ).get('value');
+
+    if (event.option.value) {
+      answerValue.setValue(event.option.value);
+    } else {
+      answerValue.setValue('');
+    }
+    this.checkConditions(questionIndex, answerIndex);
+  }
+
+  public validateAutocompleteInput(
+    questionIndex: number,
+    answerIndex: number
+  ): void {
+    setTimeout(() => {
+      const answerControl = this.getAnswerOptionFormControlAtPosition(
+        questionIndex,
+        answerIndex
+      );
+      const valueControl = answerControl.get('value') as FormControl;
+      const currentValue = valueControl.value;
+      const allowedValues = answerControl
+        .get('values')
+        .value.map((value: Value) => value.value);
+
+      if (currentValue && !allowedValues.includes(currentValue)) {
+        valueControl.setValue('');
+      } else {
+        this.checkConditions(questionIndex, answerIndex);
+      }
+    }, 150);
   }
 
   public isAnswerInArray(answer, answers_string): boolean {
@@ -2203,5 +2272,15 @@ export class QuestionProbandComponent
     this.isReleaseButtonVisible =
       status.includes(this.questionnaire_instance_status) &&
       !this.user.hasRole('Forscher');
+  }
+
+  private filterAutocompleteOptions(
+    value: string,
+    options: string[]
+  ): string[] {
+    const filterValue = value.toLowerCase();
+    return options.filter((option) =>
+      option.toLowerCase().includes(filterValue)
+    );
   }
 }

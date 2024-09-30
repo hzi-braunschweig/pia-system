@@ -13,6 +13,9 @@ import {
 const conf = {
   public: GlobalConfig.getPublic('analyzerservice'),
   database: GlobalConfig.getQPia(),
+  services: {
+    questionnaireservice: GlobalConfig.questionnaireservice,
+  },
   isTestMode: ConfigUtils.getEnvVariable('IS_TEST_MODE', 'false') === 'true',
   timeZone: GlobalConfig.timeZone,
   // the configured time is relative to the configured timezone

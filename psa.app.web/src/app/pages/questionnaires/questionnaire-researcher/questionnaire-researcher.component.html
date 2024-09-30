@@ -2953,6 +2953,28 @@
                                       }}
                                     </div>
                                   </mat-form-field>
+
+                                  @if (answer.controls["answer_type_id"].value
+                                  === 1) {
+                                  <mat-checkbox
+                                    class="checkbox-with-suffix"
+                                    formControlName="use_autocomplete"
+                                  >
+                                    {{
+                                      'QUESTIONNAIRE_FORSCHER.USE_AUTOCOMPLETE'
+                                        | translate
+                                    }}
+                                    <mat-icon
+                                      color="primary"
+                                      [matTooltip]="
+                                        'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_CUSTOM_NAME_HINT'
+                                          | translate
+                                      "
+                                    >
+                                      help_outline
+                                    </mat-icon>
+                                  </mat-checkbox>
+                                  }
                                   <button
                                     type="button"
                                     mat-icon-button

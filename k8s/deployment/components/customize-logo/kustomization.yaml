@@ -1,0 +1,54 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+patches:
+  - target:
+      kind: Deployment
+      name: webappserver
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: webappserver
+      spec:
+        template:
+          spec:
+            containers:
+              - name: main
+                volumeMounts:
+                  - name: pia-logo-volume
+                    mountPath: '/usr/share/nginx/html/assets/images/logo.jpeg'
+                    subPath: 'logo.jpeg'
+                    readOnly: true
+                  - name: pia-logo-volume
+                    mountPath: '/usr/share/nginx/html/assets/images/logo.jpeg.gz'
+                    subPath: 'logo.jpeg.gz'
+                    readOnly: true
+                  - name: pia-logo-volume
+                    mountPath: '/usr/share/nginx/html/admin/assets/images/logo.jpeg'
+                    subPath: 'logo.jpeg'
+                    readOnly: true
+                  - name: pia-logo-volume
+                    mountPath: '/usr/share/nginx/html/admin/assets/images/logo.jpeg.gz'
+                    subPath: 'logo.jpeg.gz'
+                    readOnly: true
+                  - name: pia-logo-volume
+                    mountPath: '/usr/share/nginx/html/assets/images/hzi_logo.jpg'
+                    subPath: 'logo.jpeg'
+                    readOnly: true
+                  - name: pia-logo-volume
+                    mountPath: '/usr/share/nginx/html/assets/images/hzi_logo.jpg.gz'
+                    subPath: 'logo.jpeg.gz'
+                    readOnly: true
+                  - name: pia-logo-volume
+                    mountPath: '/usr/share/nginx/html/admin/assets/images/hzi_logo.jpg'
+                    subPath: 'logo.jpeg'
+                    readOnly: true
+                  - name: pia-logo-volume
+                    mountPath: '/usr/share/nginx/html/admin/assets/images/hzi_logo.jpg.gz'
+                    subPath: 'logo.jpeg.gz'
+                    readOnly: true
+            volumes:
+              - name: pia-logo-volume
+                configMap:
+                  name: pia-logo

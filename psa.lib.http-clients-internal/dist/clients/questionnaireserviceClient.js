@@ -53,6 +53,9 @@ class QuestionnaireserviceClient extends serviceClient_1.ServiceClient {
     async getQuestionnaireInstanceAnswers(id) {
         return await this.httpClient.get(`/questionnaire/questionnaireInstances/${id.toString()}/answers`);
     }
+    async createQuestionnaireInstances(instances) {
+        return this.httpClient.post('/questionnaire/questionnaireInstances', instances);
+    }
     async getQuestionnaireAnswers(id, filter) {
         const params = new URLSearchParams();
         if (filter.status) {

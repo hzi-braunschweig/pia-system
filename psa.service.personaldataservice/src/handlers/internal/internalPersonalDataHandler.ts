@@ -1,11 +1,11 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 import { Lifecycle, Request } from '@hapi/hapi';
-import { PersonalData, PersonalDataReq } from '../../models/personalData';
+import { PersonalDataDb, PersonalDataReq } from '../../models/personalDataDb';
 
 import { InternalPersonalDataInteractor } from '../../interactors/internal/internalPersonalDataInteractor';
 import { handleError } from '../../handleError';
@@ -17,7 +17,7 @@ export class InternalPersonalDataHandler {
    */
   public static createOrUpdate: Lifecycle.Method = async (
     request: Request
-  ): Promise<PersonalData> => {
+  ): Promise<PersonalDataDb> => {
     return InternalPersonalDataInteractor.createOrUpdate(
       request.params['pseudonym'] as string,
       request.payload as PersonalDataReq,

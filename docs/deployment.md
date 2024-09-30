@@ -98,6 +98,27 @@ Execute all commands on your deployment machine.
 
 Now your deployment configuration is ready to be deployed 🎉
 
+## Customizing header logo
+
+> ⚠️ The logo file must be a JPEG image with a maximum size of 100 KB. Keep it as small as possible.
+
+If you did not specify a logo file during creating your custom overlay, you can add the necessary configuration and files manually:
+
+1. Name your logo file `logo.jpeg` and copy it to `k8s/deployment/overlays/<your-deployment-name>`.
+2. Create a compressed version: `gzip < logo.jpeg > logo.jpeg.gz`
+3. Add the following configuration to your overlays `kustomization.yaml` file:
+
+   ```yaml
+   components:
+     - ../../components/customize-logo
+
+   configMapGenerator:
+     - name: pia-logo
+       files:
+         - ./logo.jpeg
+         - ./logo.jpeg.gz
+   ```
+
 ## Deploying
 
 Deploy PIA to your cluster by running the following command from the `k8s` directory (while replacing `<your-deployment-name>` with the name of your deployment directory):

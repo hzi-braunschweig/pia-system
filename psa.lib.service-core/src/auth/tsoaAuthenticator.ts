@@ -17,7 +17,7 @@ interface TokenIntrospectionResult {
   active: boolean;
 }
 
-class InvalidAuthorizationTokenError extends SpecificError {
+export class InvalidAuthorizationTokenError extends SpecificError {
   public readonly statusCode = StatusCodes.UNAUTHORIZED;
   public readonly errorCode = 'INVALID_AUTHORIZATION_TOKEN';
   public readonly message = 'No or invalid authorization token provided';

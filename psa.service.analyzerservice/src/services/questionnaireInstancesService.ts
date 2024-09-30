@@ -10,7 +10,6 @@ import {
   addHours,
   addMonths,
   addWeeks,
-  isEqual,
   set,
   setDay,
   startOfToday,
@@ -25,9 +24,6 @@ import {
   QuestionnaireInstanceQuestionnairePair,
 } from '../models/questionnaireInstance';
 import { Proband } from '../models/proband';
-import { Answer } from '../models/answer';
-import { Condition } from '../models/condition';
-import { AnswerType } from '../models/answerOption';
 import { LoggingService } from './loggingService';
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 import { config } from '../config';
@@ -36,6 +32,14 @@ import {
   messageQueueService,
   QuestionnaireInstanceMessageFn,
 } from './messageQueueService';
+import {
+  AnswerWithQuestionnaireInstance,
+  AnswerWithCondition,
+  Answer,
+} from '../models/answer';
+import { AnswerOption } from '../models/answerOption';
+import { Condition } from '../models/condition';
+import { CreateQuestionnaireInstanceInternalDto } from '@pia-system/lib-http-clients-internal';
 
 interface CycleSettings {
   cycleUnit: CycleUnit;
@@ -123,7 +127,10 @@ export class QuestionnaireInstancesService {
             (qInstance.status === 'inactive' ||
               qInstance.status === 'active' ||
               qInstance.status === 'in_progress') &&
-            this.isQuestionnaireInstanceExpired(qInstance)
+            this.isQuestionnaireInstanceExpired(
+              qInstance.date_of_issue,
+              qInstance
+            )
           ) {
             vQuestionnaireInstances.push({
               questionnaireInstance: {
@@ -216,13 +223,85 @@ export class QuestionnaireInstancesService {
     });
   }
 
+  public static async getAnswerOption(
+    t: ITask<unknown>,
+    id: number
+  ): Promise<AnswerOption> {
+    return t.one('SELECT * FROM answer_options WHERE id=$1', [id]);
+  }
+
+  public static async getLatestAnswersForCondition(
+    t: ITask<unknown>,
+    proband: Proband,
+    qCondition: Condition
+  ): Promise<AnswerWithQuestionnaireInstance[]> {
+    return t.manyOrNone(
+      'SELECT * FROM answers,questionnaire_instances WHERE answers.questionnaire_instance_id=questionnaire_instances.id AND user_id=$1 AND answer_option_id=$2 AND cycle=ANY(SELECT MAX(cycle) FROM questionnaire_instances WHERE user_id=$1 AND questionnaire_id=$3 AND questionnaire_version=$4 AND (questionnaire_instances.status IN ($5, $6, $7))) ORDER BY versioning',
+      [
+        proband.pseudonym,
+        qCondition.condition_target_answer_option,
+        qCondition.condition_target_questionnaire,
+        qCondition.condition_target_questionnaire_version,
+        'released_once',
+        'released_twice',
+        'relesed',
+      ]
+    );
+  }
+
+  public static async getAnswer(
+    t: ITask<unknown>,
+    instanceId: number,
+    answerOptionId: number,
+    answerVersion: number
+  ): Promise<Answer | null> {
+    return t.oneOrNone(
+      'SELECT * FROM answers WHERE questionnaire_instance_id=$1 AND answer_option_id=$2 AND versioning=$3',
+      [instanceId, answerOptionId, answerVersion]
+    );
+  }
+
+  public static async getAnswersWithCondition(
+    t: ITask<unknown>,
+    instanceId: number,
+    answerVersion: number
+  ): Promise<AnswerWithCondition[]> {
+    return t.manyOrNone(
+      `SELECT value,
+                  answer_option_id,
+                  c.id AS condition_id,
+                  questionnaire_instance_id,
+                  condition_questionnaire_id,
+                  condition_questionnaire_version,
+                  condition_type,
+                  condition_value,
+                  condition_link,
+                  condition_operand
+           FROM answers AS a
+                  JOIN conditions AS c ON
+             a.answer_option_id = c.condition_target_answer_option
+                  JOIN (SELECT id,
+                               MAX(version) AS version
+                        FROM questionnaires
+                        GROUP BY id) AS q ON
+               c.condition_questionnaire_id = q.id
+               AND c.condition_questionnaire_version = q.version
+           WHERE a.questionnaire_instance_id = $(questionnaireInstanceId)
+             AND a.versioning = $(answerVersion)`,
+      {
+        questionnaireInstanceId: instanceId,
+        answerVersion: answerVersion,
+      }
+    );
+  }
+
   /**
    * Creates the next questionnaire instance for the given questionnaire instance
    */
   public static createNextQuestionnaireInstance(
     questionnaire: Questionnaire,
     instance: QuestionnaireInstance
-  ): QuestionnaireInstanceNew {
+  ): CreateQuestionnaireInstanceInternalDto {
     const cycleSettings: CycleSettings = {
       cycleUnit: questionnaire.cycle_unit,
       cyclePerDay: questionnaire.cycle_per_day ?? this.HOURS_PER_DAY,
@@ -236,24 +315,23 @@ export class QuestionnaireInstancesService {
       cycleSettings
     );
     const dateOfIssue = zonedTimeToUtc(zonedDateOfIssue, config.timeZone);
-    const nextInstance: QuestionnaireInstanceNew = {
-      study_id: instance.study_id,
-      questionnaire_id: instance.questionnaire_id,
-      questionnaire_version: instance.questionnaire_version,
-      questionnaire_name: instance.questionnaire_name,
-      sort_order: instance.sort_order,
-      user_id: instance.user_id,
-      date_of_issue: dateOfIssue,
+    const nextInstance: CreateQuestionnaireInstanceInternalDto = {
+      studyId: instance.study_id,
+      questionnaireId: instance.questionnaire_id,
+      questionnaireVersion: instance.questionnaire_version,
+      questionnaireName: instance.questionnaire_name,
+      sortOrder: instance.sort_order,
+      pseudonym: instance.user_id,
+      dateOfIssue: dateOfIssue,
       cycle: instance.cycle + 1,
       status: 'inactive', // placeholder until we determine the real status
+      origin: null,
     };
 
-    nextInstance.status = this.getQuestionnaireInstanceStatus({
-      ...nextInstance,
-      expires_after_days: questionnaire.expires_after_days,
-      cycle_unit: questionnaire.cycle_unit,
-      type: questionnaire.type,
-    });
+    nextInstance.status = this.getQuestionnaireInstanceStatus(
+      dateOfIssue,
+      questionnaire
+    );
 
     return nextInstance;
   }
@@ -280,7 +358,7 @@ export class QuestionnaireInstancesService {
     user: Proband,
     hasInternalCondition: boolean,
     onlyLoginDependantOnes = false
-  ): QuestionnaireInstanceNew[] {
+  ): CreateQuestionnaireInstanceInternalDto[] {
     return this.getIssueDatesForQuestionnaireInstances(
       questionnaire,
       user,
@@ -289,276 +367,26 @@ export class QuestionnaireInstancesService {
     )
       .map((zonedIssueDate) => zonedTimeToUtc(zonedIssueDate, config.timeZone))
       .map((issueDate, index) => {
-        const newInstance: QuestionnaireInstanceNew = {
-          study_id: questionnaire.study_id,
-          questionnaire_id: questionnaire.id,
-          questionnaire_version: questionnaire.version,
-          questionnaire_name: questionnaire.name,
-          sort_order: questionnaire.sort_order,
-          user_id: user.pseudonym,
-          date_of_issue: issueDate,
+        const newInstance: CreateQuestionnaireInstanceInternalDto = {
+          studyId: questionnaire.study_id,
+          questionnaireId: questionnaire.id,
+          questionnaireVersion: questionnaire.version,
+          questionnaireName: questionnaire.name,
+          sortOrder: questionnaire.sort_order,
+          pseudonym: user.pseudonym,
+          dateOfIssue: issueDate,
           cycle: index + 1,
           status: 'inactive',
+          origin: null,
         };
 
-        newInstance.status = this.getQuestionnaireInstanceStatus({
-          ...newInstance,
-          expires_after_days: questionnaire.expires_after_days,
-          cycle_unit: questionnaire.cycle_unit,
-          type: questionnaire.type,
-        });
+        newInstance.status = this.getQuestionnaireInstanceStatus(
+          issueDate,
+          questionnaire
+        );
 
         return newInstance;
       });
-  }
-
-  /**
-   * Returns true if the value of answer meets the condition, false otherwise
-   */
-  public static isConditionMet(
-    answer: Answer | undefined,
-    condition: Condition,
-    type: AnswerType
-  ): boolean {
-    if (!answer) {
-      return false;
-    }
-    const answer_values: (string | number | Date)[] = this.parseValues(
-      answer.value,
-      type
-    );
-    const condition_values: (string | number | Date)[] = this.parseValues(
-      condition.condition_value,
-      type
-    );
-    const condition_link = condition.condition_link ?? 'OR';
-
-    switch (condition.condition_operand) {
-      case '<':
-        if (condition_link === 'AND') {
-          return condition_values.every(function (condition_value) {
-            if (condition_value === '') return true;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? answer_value < condition_value
-                : false;
-            });
-          });
-        } else if (condition_link === 'OR') {
-          return condition_values.some(function (condition_value) {
-            if (condition_value === '') return false;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? answer_value < condition_value
-                : false;
-            });
-          });
-          // a general else clause which catches all other values is not what we want here
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter(function (condition_value) {
-            if (condition_value === '') return false;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? answer_value < condition_value
-                : false;
-            });
-          }).length;
-          return count === 1;
-        } else {
-          return false;
-        }
-
-      case '>':
-        if (condition_link === 'AND') {
-          return condition_values.every(function (condition_value) {
-            if (condition_value === '') return true;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? answer_value > condition_value
-                : false;
-            });
-          });
-        } else if (condition_link === 'OR') {
-          return condition_values.some(function (condition_value) {
-            if (condition_value === '') return false;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? answer_value > condition_value
-                : false;
-            });
-          });
-          // a general else clause which catches all other values is not what we want here
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter(function (condition_value) {
-            if (condition_value === '') return false;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? answer_value > condition_value
-                : false;
-            });
-          }).length;
-          return count === 1;
-        } else {
-          return false;
-        }
-
-      case '<=':
-        if (condition_link === 'AND') {
-          return condition_values.every(function (condition_value) {
-            if (condition_value === '') return true;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? answer_value <= condition_value
-                : false;
-            });
-          });
-        } else if (condition_link === 'OR') {
-          return condition_values.some(function (condition_value) {
-            if (condition_value === '') return false;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? answer_value <= condition_value
-                : false;
-            });
-          });
-          // a general else clause which catches all other values is not what we want here
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter(function (condition_value) {
-            if (condition_value === '') return false;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? answer_value <= condition_value
-                : false;
-            });
-          }).length;
-          return count === 1;
-        } else {
-          return false;
-        }
-
-      case '>=':
-        if (condition_link === 'AND') {
-          return condition_values.every(function (condition_value) {
-            if (condition_value === '') return true;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? answer_value >= condition_value
-                : false;
-            });
-          });
-        } else if (condition_link === 'OR') {
-          return condition_values.some(function (condition_value) {
-            if (condition_value === '') return false;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? answer_value >= condition_value
-                : false;
-            });
-          });
-          // a general else clause which catches all other values is not what we want here
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter(function (condition_value) {
-            if (condition_value === '') return false;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? answer_value >= condition_value
-                : false;
-            });
-          }).length;
-          return count === 1;
-        } else {
-          return false;
-        }
-
-      case '==':
-        if (condition_link === 'AND') {
-          return condition_values.every(function (condition_value) {
-            if (condition_value === '') return true;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? type === AnswerType.Date
-                  ? isEqual(answer_value as Date, condition_value as Date)
-                  : answer_value === condition_value
-                : false;
-            });
-          });
-        } else if (condition_link === 'OR') {
-          return condition_values.some(function (condition_value) {
-            if (condition_value === '') return false;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? type === AnswerType.Date
-                  ? isEqual(answer_value as Date, condition_value as Date)
-                  : answer_value === condition_value
-                : false;
-            });
-          });
-          // a general else clause which catches all other values is not what we want here
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter(function (condition_value) {
-            if (condition_value === '') return false;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? type === AnswerType.Date
-                  ? isEqual(answer_value as Date, condition_value as Date)
-                  : answer_value === condition_value
-                : false;
-            });
-          }).length;
-          return count === 1;
-        } else {
-          return false;
-        }
-
-      case '\\=':
-        if (condition_link === 'AND') {
-          return condition_values.every(function (condition_value) {
-            if (condition_value === '') return true;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? type === AnswerType.Date
-                  ? !isEqual(answer_value as Date, condition_value as Date)
-                  : answer_value !== condition_value
-                : false;
-            });
-          });
-        } else if (condition_link === 'OR') {
-          return condition_values.some(function (condition_value) {
-            if (condition_value === '') return false;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? type === AnswerType.Date
-                  ? !isEqual(answer_value as Date, condition_value as Date)
-                  : answer_value !== condition_value
-                : false;
-            });
-          });
-          // a general else clause which catches all other values is not what we want here
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        } else if (condition_link === 'XOR') {
-          const count = condition_values.filter(function (condition_value) {
-            if (condition_value === '') return false;
-            return answer_values.some(function (answer_value) {
-              return answer_value !== ''
-                ? type === AnswerType.Date
-                  ? !isEqual(answer_value as Date, condition_value as Date)
-                  : answer_value !== condition_value
-                : false;
-            });
-          }).length;
-          return count === 1;
-        } else {
-          return false;
-        }
-
-      default:
-        return false;
-    }
   }
 
   /**
@@ -574,18 +402,19 @@ export class QuestionnaireInstancesService {
   }
 
   public static isQuestionnaireInstanceExpired(
-    instance: Pick<
-      BaseQuestionnaireInstance,
-      'date_of_issue' | 'expires_after_days' | 'cycle_unit' | 'type'
+    dateOfIssue: Date,
+    questionnaireSettings: Pick<
+      Questionnaire,
+      'expires_after_days' | 'cycle_unit' | 'type'
     >
   ): boolean {
     return (
-      instance.cycle_unit !== 'spontan' &&
-      instance.type === 'for_probands' &&
+      questionnaireSettings.cycle_unit !== 'spontan' &&
+      questionnaireSettings.type === 'for_probands' &&
       this.isDateExpiredAfterDays(
         new Date(),
-        instance.date_of_issue,
-        instance.expires_after_days
+        dateOfIssue,
+        questionnaireSettings.expires_after_days
       )
     );
   }
@@ -800,19 +629,6 @@ export class QuestionnaireInstancesService {
     }
   }
 
-  private static parseValues(
-    values: string,
-    type: AnswerType
-  ): (string | number | Date)[] {
-    if (type === AnswerType.Number) {
-      return values.split(';').map((value) => parseFloat(value));
-    } else if (type === AnswerType.Date) {
-      return values.split(';').map((value) => new Date(value));
-    } else {
-      return values.split(';');
-    }
-  }
-
   private static calculateDateOfIssue(
     oldIssueDate: Date,
     settings: CycleSettings
@@ -883,14 +699,17 @@ export class QuestionnaireInstancesService {
   }
 
   private static getQuestionnaireInstanceStatus(
-    instance: Pick<
-      BaseQuestionnaireInstance,
-      'date_of_issue' | 'expires_after_days' | 'cycle_unit' | 'type'
+    dateOfIssue: Date,
+    questionnaireSettings: Pick<
+      Questionnaire,
+      'expires_after_days' | 'cycle_unit' | 'type'
     >
-  ): QuestionnaireInstanceStatus {
+  ): Extract<QuestionnaireInstanceStatus, 'inactive' | 'active' | 'expired'> {
     const curDate = new Date();
-    if (instance.date_of_issue <= curDate) {
-      if (this.isQuestionnaireInstanceExpired(instance)) {
+    if (dateOfIssue <= curDate) {
+      if (
+        this.isQuestionnaireInstanceExpired(dateOfIssue, questionnaireSettings)
+      ) {
         return 'expired';
       } else {
         return 'active';

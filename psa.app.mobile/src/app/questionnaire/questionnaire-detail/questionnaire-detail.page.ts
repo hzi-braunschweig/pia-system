@@ -608,7 +608,7 @@ export class QuestionnaireDetailPage
   private async getQuestionnaireInstanceQueues(): Promise<
     QuestionnaireInstanceQueue[]
   > {
-    await this.timeout(300);
+    await this.timeout(400);
     return this.questionnnaireClient.getQuestionnaireInstanceQueues(
       this.questionnaireInstance.user_id
     );

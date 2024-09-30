@@ -31,7 +31,37 @@ export interface QuestionnaireInstanceInternalDto {
   releaseVersion: number | null;
 }
 
+export interface CreateQuestionnaireInstanceInternalDto
+  extends Omit<
+    QuestionnaireInstanceInternalDto,
+    | 'id'
+    | 'dateOfReleaseV1'
+    | 'dateOfReleaseV2'
+    | 'notificationsScheduled'
+    | 'progress'
+    | 'releaseVersion'
+  > {
+  id?: number;
+  questionnaireId: number;
+  questionnaireVersion: number;
+  sortOrder: number | null;
+  status: Extract<
+    QuestionnaireInstanceStatus,
+    'inactive' | 'active' | 'expired'
+  >;
+  origin: QuestionnaireInstanceOriginInternalDto | null;
+  options?: {
+    addToQueue?: boolean;
+  };
+}
+
 export interface QuestionnaireInstanceWithQuestionnaireInternalDto
   extends QuestionnaireInstanceInternalDto {
   questionnaire: QuestionnaireInternalDto;
+}
+
+export interface QuestionnaireInstanceOriginInternalDto {
+  createdInstance?: number;
+  originInstance: number;
+  condition: number;
 }

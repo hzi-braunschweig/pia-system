@@ -34,6 +34,10 @@ import { AddCustomName1705593083327 } from './migrations/1705593083327-AddCustom
 import { AddHelpText1710161762375 } from './migrations/1710161762375-AddHelpText';
 import { AddNotificationLinkToOverview1718963386491 } from './migrations/1718963386491-AddNotificationLinkToOverview';
 import { AddSortOrder1718022737421 } from './migrations/1718022737421-AddSortOrder';
+import { CreateQuestionnaireInstanceOrigins1723188490598 } from './migrations/1723188490598-CreateQuestionnaireInstanceOrigins';
+import { QuestionnaireInstanceOrigin } from './entities/questionnaireInstanceOrigin';
+import { QuestionnaireInstanceQueue } from './entities/questionnaireInstanceQueue';
+import { AddUseAutocompleteToAnswerOptions1721410716900 } from './migrations/1721410716900-AddUseAutocompleteToAnswerOptions';
 
 const pgp = pgPromise({ capSQL: true, noLocking: config.isTestMode });
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -74,6 +78,8 @@ const typeOrmOptions: ConnectionOptions = {
   password: config.database.password,
   database: config.database.database,
   entities: [
+    QuestionnaireInstanceQueue,
+    QuestionnaireInstanceOrigin,
     QuestionnaireInstance,
     Questionnaire,
     Question,
@@ -91,6 +97,8 @@ const typeOrmOptions: ConnectionOptions = {
     AddHelpText1710161762375,
     AddNotificationLinkToOverview1718963386491,
     AddSortOrder1718022737421,
+    AddUseAutocompleteToAnswerOptions1721410716900,
+    CreateQuestionnaireInstanceOrigins1723188490598,
   ],
   logging: false,
   extra: { poolSize: 100 },

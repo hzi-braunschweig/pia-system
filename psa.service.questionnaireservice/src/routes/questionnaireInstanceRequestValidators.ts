@@ -6,8 +6,7 @@
 
 import { RouteOptionsValidate } from '@hapi/hapi';
 import Joi from 'joi';
-
-const MAX_PROGRESS = 100;
+import { MAX_PROGRESS } from '../models/questionnaireInstance';
 
 export const getQuestionnaireInstanceValidation: RouteOptionsValidate = {
   params: Joi.object({

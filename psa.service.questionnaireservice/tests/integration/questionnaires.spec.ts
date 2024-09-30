@@ -568,6 +568,60 @@ describe('/questionnaires', function () {
       expect(body.questions[1].variable_name).to.eq('q1');
     });
 
+    it('should return HTTP 200 with use_autocomplete if set', async () => {
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/questionnaires')
+        .set(forscherHeader1)
+        .send({
+          ...getValidQuestionnaire1(),
+          questions: [
+            {
+              ...getValidQuestionnaire1().questions[0],
+              answer_options: [
+                {
+                  text: 'Fieber?2',
+                  answer_type_id: 1,
+                  values: [{ value: 'Ja' }, { value: 'Nein' }],
+                  values_code: [{ value: 1 }, { value: 0 }],
+                  position: 1,
+                  variable_name: '',
+                  is_notable: [],
+                  use_autocomplete: false,
+                },
+                {
+                  text: 'Kopfschmerzen?2',
+                  answer_type_id: 1,
+                  values: [{ value: 'Ja' }, { value: 'Nein' }],
+                  values_code: [{ value: 1 }, { value: 0 }],
+                  position: 2,
+                  variable_name: '',
+                  is_notable: [],
+                  use_autocomplete: true,
+                },
+                {
+                  text: 'Kopfschmerzen?3',
+                  answer_type_id: 1,
+                  values: [{ value: 'Ja' }, { value: 'Nein' }],
+                  values_code: [{ value: 1 }, { value: 0 }],
+                  position: 3,
+                  variable_name: '',
+                  is_notable: [],
+                },
+              ],
+            },
+          ],
+        });
+
+      const body = result.body as QuestionnaireResponse;
+
+      expect(result).to.have.status(StatusCodes.OK);
+
+      expect(body.questions[0].answer_options[0].use_autocomplete).to.eq(false);
+      expect(body.questions[0].answer_options[1].use_autocomplete).to.eq(true);
+      expect(body.questions[0].answer_options[2].use_autocomplete).to.eq(null);
+    });
+
     it('should return HTTP 200 with an questionnaire with a generated custom name', async () => {
       const result = await chai
         .request(apiAddress)

@@ -77,4 +77,7 @@ export class AnswerOption implements AnswerOptionDto {
     cascade: true,
   })
   public condition?: Condition | null;
+
+  @Column({ type: 'boolean', nullable: true })
+  public useAutocomplete?: boolean | null;
 }

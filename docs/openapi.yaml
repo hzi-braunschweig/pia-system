@@ -17,6 +17,8 @@ tags:
       PIA is using a message queue for inter-service communication. Messages
       classified as events can be stored for a configurable duration and
       retrieved, if enabled by a SysAdmin.
+  - name: Personal Data
+    description: Operations related to a participants personal data.
   - name: Questionnaires
     description: >-
       Operations related to the questionnaires resource.
@@ -119,6 +121,104 @@ paths:
           required: false
           schema:
             $ref: '#/components/schemas/EventTypeString'
+  '/studies/{studyName}/participants/{pseudonym}/personal-data':
+    patch:
+      operationId: PatchPersonalData
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonalDataPatchResponseDto'
+              examples:
+                Example 1:
+                  value:
+                    - salutation: Ms.
+                      title: Dr.
+                      firstname: Jane
+                      lastname: Doe
+                      address:
+                        street: Street
+                        houseNumber: '1'
+                        postalCode: '12345'
+                        city: City
+                        state: State
+                      phone:
+                        private: '123456789'
+                        work: '987654321'
+                        mobile: '123123123'
+                      email: some-email@local.host
+                      comment: Some comment
+                Example 2:
+                  value:
+                    - email: jane.doe@local.host
+                      comment: This is a comment
+                      phone:
+                        mobile: '+49123456789'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidAuthorizationTokenError'
+              examples:
+                Example 1: {}
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MissingStudyAccessError'
+              examples:
+                Example 1: {}
+                Example 2: {}
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecificError'
+              examples:
+                Example 1: {}
+                Example 2: {}
+        '500':
+          description: An internal error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                Example 1:
+                  value:
+                    name: Error
+                    message: An internal error occurred
+      description: Updates personal data of a participant
+      tags:
+        - Personal Data
+      security:
+        - jwt-public: []
+      parameters:
+        - description: Name of the study
+          in: path
+          name: studyName
+          required: true
+          schema:
+            $ref: '#/components/schemas/StudyName'
+        - description: Pseudonym of the participant
+          in: path
+          name: pseudonym
+          required: true
+          schema:
+            $ref: '#/components/schemas/Pseudonym'
+      requestBody:
+        description: Personal data to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonalDataPatchRequestDto'
+              description: Personal data to update
   '/studies/{studyName}/participants/{pseudonym}/questionnaire-instances':
     get:
       operationId: GetQuestionnaireInstances
@@ -682,6 +782,182 @@ components:
       type: string
       example: Example Study
       description: The name of a study is also a unique identifier.
+    PartialAddress:
+      properties:
+        street:
+          type: string
+          example: Main Street
+        houseNumber:
+          type: string
+          example: '42'
+        city:
+          type: string
+          example: Metropolis
+        postalCode:
+          type: string
+          example: '12345'
+        state:
+          type: string
+          example: State
+      type: object
+      additionalProperties: false
+    PhoneNumbers:
+      description: Set of phone numbers for a participant
+      properties:
+        private:
+          type: string
+          example: +12 345 678 90
+        work:
+          type: string
+          example: +12 345 678 90
+        mobile:
+          type: string
+          example: +12 123 456 789 10
+      type: object
+      additionalProperties: false
+    PersonalDataPatchResponseDto:
+      properties:
+        address:
+          $ref: '#/components/schemas/PartialAddress'
+        salutation:
+          type: string
+          example: Ms.
+        title:
+          type: string
+          example: Dr.
+        firstname:
+          type: string
+          example: Jane
+        lastname:
+          type: string
+          example: Doe
+        phone:
+          $ref: '#/components/schemas/PhoneNumbers'
+        email:
+          type: string
+          example: jane.doe@localhost.local
+          pattern: ^.+\@.+\..+$
+        comment:
+          type: string
+          description: An internal comment
+          example: This participant has a comment
+      type: object
+      additionalProperties: false
+    SpecificError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+        causedBy: {}
+        statusCode:
+          type: number
+          format: double
+        errorCode:
+          type: string
+      required:
+        - name
+        - message
+        - statusCode
+        - errorCode
+      type: object
+      additionalProperties: false
+    StatusCodes.UNAUTHORIZED:
+      enum:
+        - 401
+      type: number
+    InvalidAuthorizationTokenError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+          enum:
+            - No or invalid authorization token provided
+          nullable: false
+          default: No or invalid authorization token provided
+        stack:
+          type: string
+        causedBy: {}
+        statusCode:
+          $ref: '#/components/schemas/StatusCodes.UNAUTHORIZED'
+        errorCode:
+          type: string
+          enum:
+            - INVALID_AUTHORIZATION_TOKEN
+          nullable: false
+          default: INVALID_AUTHORIZATION_TOKEN
+      required:
+        - name
+        - message
+        - statusCode
+        - errorCode
+      type: object
+      additionalProperties: false
+    MissingStudyAccessError:
+      properties:
+        name:
+          type: string
+        message:
+          type: string
+        stack:
+          type: string
+        causedBy: {}
+        statusCode:
+          $ref: '#/components/schemas/StatusCodes.FORBIDDEN'
+        errorCode:
+          type: string
+          enum:
+            - MISSING_STUDY_ACCESS
+          nullable: false
+          default: MISSING_STUDY_ACCESS
+      required:
+        - name
+        - message
+        - statusCode
+        - errorCode
+      type: object
+      additionalProperties: false
+    Pseudonym:
+      type: string
+      example: abcd12-1234
+      description: |-
+        The pseudonym is the unique identifier of a participant.
+        It consists of a prefix and a suffix. The prefix maps
+        to exactly one study. The suffix consists only of integers
+        and is unique within the study. There is no specific
+        limitation for the length of the prefix and the suffix.
+      pattern: '^[a-z0-9]+-[0-9]+$'
+    PersonalDataPatchRequestDto:
+      properties:
+        salutation:
+          type: string
+          example: Ms.
+        title:
+          type: string
+          example: Dr.
+        firstname:
+          type: string
+          example: Jane
+        lastname:
+          type: string
+          example: Doe
+        phone:
+          $ref: '#/components/schemas/PhoneNumbers'
+        email:
+          type: string
+          example: jane.doe@localhost.local
+          pattern: ^.+\@.+\..+$
+        comment:
+          type: string
+          description: An internal comment
+          example: This participant has a comment
+        address:
+          $ref: '#/components/schemas/PartialAddress'
+      type: object
+      additionalProperties: false
     QuestionnaireInstanceStatus:
       type: string
       enum:
@@ -702,7 +978,7 @@ components:
 
         `released_once` and `released_twice` is only valid for questionnaires of
         type `for_participant`.
-    Pick_QuestionnaireInstance.Exclude_keyofQuestionnaireInstance.questionnaire-or-answers-or-studyId__:
+    Pick_QuestionnaireInstance.Exclude_keyofQuestionnaireInstance.questionnaire-or-answers-or-studyId-or-origin__:
       properties:
         id:
           type: integer
@@ -758,9 +1034,9 @@ components:
         - releaseVersion
       type: object
       description: 'From T, pick a set of properties whose keys are in the union K'
-    Omit_QuestionnaireInstance.questionnaire-or-answers-or-studyId_:
+    Omit_QuestionnaireInstance.questionnaire-or-answers-or-studyId-or-origin_:
       $ref: >-
-        #/components/schemas/Pick_QuestionnaireInstance.Exclude_keyofQuestionnaireInstance.questionnaire-or-answers-or-studyId__
+        #/components/schemas/Pick_QuestionnaireInstance.Exclude_keyofQuestionnaireInstance.questionnaire-or-answers-or-studyId-or-origin__
       description: Construct a type with the properties of T except for those in type K.
     CustomName:
       type: string
@@ -772,7 +1048,7 @@ components:
     GetQuestionnaireInstanceResponseDto:
       allOf:
         - $ref: >-
-            #/components/schemas/Omit_QuestionnaireInstance.questionnaire-or-answers-or-studyId_
+            #/components/schemas/Omit_QuestionnaireInstance.questionnaire-or-answers-or-studyId-or-origin_
         - properties:
             questionnaireCustomName:
               allOf:
@@ -818,16 +1094,6 @@ components:
         - message
       type: object
       additionalProperties: false
-    Pseudonym:
-      type: string
-      example: abcd12-1234
-      description: |-
-        The pseudonym is the unique identifier of a participant.
-        It consists of a prefix and a suffix. The prefix maps
-        to exactly one study. The suffix consists only of integers
-        and is unique within the study. There is no specific
-        limitation for the length of the prefix and the suffix.
-      pattern: '^[a-z0-9]+-[0-9]+$'
     Pick_QuestionnaireInstanceDto.status-or-releaseVersion-or-progress_:
       properties:
         status:

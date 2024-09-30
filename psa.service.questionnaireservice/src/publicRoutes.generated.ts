@@ -18,14 +18,14 @@ const models: TsoaRoute.Models = {
         "type": {"dataType":"union","subSchemas":[{"dataType":"enum","enums":["inactive"]},{"dataType":"enum","enums":["active"]},{"dataType":"enum","enums":["in_progress"]},{"dataType":"enum","enums":["released"]},{"dataType":"enum","enums":["released_once"]},{"dataType":"enum","enums":["released_twice"]},{"dataType":"enum","enums":["expired"]},{"dataType":"enum","enums":["deleted"]}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Pick_QuestionnaireInstance.Exclude_keyofQuestionnaireInstance.questionnaire-or-answers-or-studyId__": {
+    "Pick_QuestionnaireInstance.Exclude_keyofQuestionnaireInstance.questionnaire-or-answers-or-studyId-or-origin__": {
         "dataType": "refAlias",
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"integer","required":true},"questionnaireName":{"dataType":"string","required":true},"sortOrder":{"dataType":"integer","required":true},"pseudonym":{"dataType":"string","required":true},"dateOfIssue":{"dataType":"datetime","required":true},"dateOfReleaseV1":{"dataType":"datetime","required":true},"dateOfReleaseV2":{"dataType":"datetime","required":true},"cycle":{"dataType":"integer","required":true},"status":{"ref":"QuestionnaireInstanceStatus","required":true},"notificationsScheduled":{"dataType":"boolean","required":true},"progress":{"dataType":"integer","required":true},"releaseVersion":{"dataType":"integer","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Omit_QuestionnaireInstance.questionnaire-or-answers-or-studyId_": {
+    "Omit_QuestionnaireInstance.questionnaire-or-answers-or-studyId-or-origin_": {
         "dataType": "refAlias",
-        "type": {"ref":"Pick_QuestionnaireInstance.Exclude_keyofQuestionnaireInstance.questionnaire-or-answers-or-studyId__","validators":{}},
+        "type": {"ref":"Pick_QuestionnaireInstance.Exclude_keyofQuestionnaireInstance.questionnaire-or-answers-or-studyId-or-origin__","validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "StudyName": {
@@ -40,7 +40,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "GetQuestionnaireInstanceResponseDto": {
         "dataType": "refAlias",
-        "type": {"dataType":"intersection","subSchemas":[{"ref":"Omit_QuestionnaireInstance.questionnaire-or-answers-or-studyId_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"questionnaireCustomName":{"dataType":"union","subSchemas":[{"ref":"CustomName"},{"dataType":"enum","enums":[null]}],"required":true},"questionnaireVersion":{"dataType":"integer","required":true},"questionnaireId":{"dataType":"integer","required":true},"studyName":{"ref":"StudyName","required":true}}}],"validators":{}},
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"Omit_QuestionnaireInstance.questionnaire-or-answers-or-studyId-or-origin_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"questionnaireCustomName":{"dataType":"union","subSchemas":[{"ref":"CustomName"},{"dataType":"enum","enums":[null]}],"required":true},"questionnaireVersion":{"dataType":"integer","required":true},"questionnaireId":{"dataType":"integer","required":true},"studyName":{"ref":"StudyName","required":true}}}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "StudyNotFoundError": {

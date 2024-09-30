@@ -1,5 +1,23 @@
 # Configuration
 
+PIA is designed to be configurable for different environments and use cases. See [Options](#options) for a list of all
+possible configuration values.
+
+You can also use the [interactive bash script](deployment.md#preparation), which will ask for each configuration value and
+generate an overlay and adjacent files. If you already have a custom overlay, but want to change or extend your
+configuration, create a separate overlay and compare your own version with the newly generated one.
+
+### Customizing header logo
+
+You can customize the header logo of your PIA instance. This is not done by setting a configuration option but by
+customizing your overlay and providing the necessary logo files.
+This will be done for you when using the [interactive bash script](deployment.md#preparation).
+
+See the [deployment documentation creating and configuring your own logo](deployment.md#customizing-header-logo) for
+further information.
+
+## Options
+
 PIA is designed to be configurable for different environments and use cases. These are the available configuration options:
 
 | key                        | description                                                                                                | possible values             | required |
@@ -29,4 +47,4 @@ PIA is designed to be configurable for different environments and use cases. The
 | `modysIdentifierTypeId`    | Identifier type id to be used to fetch participant data from external MODYS                                | number                      | no       |
 | `modysRequestConcurrency`  | Count of maximum concurrend requests towards an external MODYS instance                                    | number                      | no       |
 
-See the [deployment documentation](../docs/deployment.md#deploying-for-the-first-time) to learn more about how to actually set up the configuration.
+See the [deployment documentation](deployment.md) to learn more about how to actually set up the configuration.

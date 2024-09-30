@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -7,9 +7,10 @@
 import Boom from '@hapi/boom';
 import { runTransaction } from '../db';
 import { PersonalDataRepository } from '../repositories/personalDataRepository';
-import { PersonalData, PersonalDataReq } from '../models/personalData';
+import { PersonalDataDb, PersonalDataReq } from '../models/personalDataDb';
 import { probandAuthClient } from '../clients/authServerClient';
 import { assert } from 'ts-essentials';
+import { ParticipantRefusesContactError } from '../errors';
 
 export class PersonalDataService {
   /**
@@ -27,16 +28,16 @@ export class PersonalDataService {
     },
     personalData: PersonalDataReq,
     skipUpdateAccount = false
-  ): Promise<PersonalData> {
+  ): Promise<PersonalDataDb> {
     if (!proband.complianceContact) {
-      throw Boom.forbidden('proband has refused to be contacted');
+      throw new ParticipantRefusesContactError();
     }
     return runTransaction(async (transaction) => {
       const existingPersonalData = await PersonalDataRepository.getPersonalData(
         proband.pseudonym,
         { transaction }
       );
-      let result: PersonalData;
+      let result: PersonalDataDb;
       if (existingPersonalData) {
         result = await PersonalDataRepository.updatePersonalData(
           proband.pseudonym,
@@ -63,7 +64,7 @@ export class PersonalDataService {
 
   public static async getPersonalData(
     pseudonym: string
-  ): Promise<PersonalData | null> {
+  ): Promise<PersonalDataDb | null> {
     return PersonalDataRepository.getPersonalData(pseudonym);
   }
 
@@ -77,7 +78,7 @@ export class PersonalDataService {
 
   public static async getPersonalDataOfStudies(
     studies: string[]
-  ): Promise<PersonalData[]> {
+  ): Promise<PersonalDataDb[]> {
     return await PersonalDataRepository.getPersonalDataOfStudies(studies);
   }
 

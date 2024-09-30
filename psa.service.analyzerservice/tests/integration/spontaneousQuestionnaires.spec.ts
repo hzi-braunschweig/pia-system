@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion,security/detect-object-injection */
 /*
  * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
@@ -6,6 +7,8 @@
 
 import { expect } from 'chai';
 import pg_promise from 'pg-promise';
+import { createSandbox } from 'sinon';
+import fetchMocker from 'fetch-mock';
 
 import { Server } from '../../src/server';
 import { db } from '../../src/db';
@@ -14,13 +17,28 @@ import {
   setup,
   cleanup,
 } from './spontaneousQuestionnaires.spec.data/setup.helper';
-import { dbWait } from './helper';
+import {
+  dbWait,
+  setupPassthroughForInternalQuestionnaireServiceRequests,
+  dbWaitWithReturn,
+  getInsertQuery,
+  localTimeToUtc,
+} from './helper';
 import { QuestionnaireInstance } from '../../src/models/questionnaireInstance';
 import { Questionnaire } from '../../src/models/questionnaire';
+import {
+  CreateQuestionnaireInstanceInternalDto,
+  HttpClient,
+} from '@pia-system/lib-http-clients-internal';
+import { config } from '../../src/config';
+import { addHours, startOfToday } from 'date-fns';
 
 const pgp = pg_promise({ capSQL: true });
 
 describe('Spontaneous questionnaire instance creation', function () {
+  const fetchMock = fetchMocker.sandbox();
+  const testSandbox = createSandbox();
+
   const QUESTIONNAIRE_VERSION_1 = 1;
   const QUESTIONNAIRE_VERSION_2 = 2;
 
@@ -32,12 +50,27 @@ describe('Spontaneous questionnaire instance creation', function () {
     await Server.stop();
   });
 
-  beforeEach(async function () {
+  beforeEach(async () => {
+    fetchMock.catch({
+      status: 200,
+      body: JSON.stringify({}),
+    });
+
+    setupPassthroughForInternalQuestionnaireServiceRequests(fetchMock);
+
     await setup();
+
+    testSandbox
+      .stub<typeof HttpClient, 'fetch'>(HttpClient, 'fetch')
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      .callsFake(fetchMock);
   });
 
-  afterEach(async function () {
+  afterEach(async () => {
     await cleanup();
+    fetchMock.restore();
+    testSandbox.restore();
   });
 
   describe('versioning a spontaneous questionnaire', () => {
@@ -46,6 +79,8 @@ describe('Spontaneous questionnaire instance creation', function () {
       const expectedQuestionnaireInstanceCount = 2;
 
       await createQuestionnaire({ version: 1 });
+      await insertLatestQuestionnaireInstancesFromInternalApiCalls();
+
       const addedQIs: QuestionnaireInstance[] = await db.many(
         'SELECT * FROM questionnaire_instances WHERE questionnaire_id = 99999'
       );
@@ -60,6 +95,7 @@ describe('Spontaneous questionnaire instance creation', function () {
 
       // Act
       await createQuestionnaire({ version: 2 });
+      await insertLatestQuestionnaireInstancesFromInternalApiCalls();
 
       // Assert
       const replacedQIs: QuestionnaireInstance[] = await db.many(
@@ -78,7 +114,10 @@ describe('Spontaneous questionnaire instance creation', function () {
       // Arrange
       const expectedQuestionnaireInstanceCountBefore = 2;
       const expectedQuestionnaireInstanceCountAfter = 3;
+
       await createQuestionnaire();
+      await insertLatestQuestionnaireInstancesFromInternalApiCalls();
+
       const addedQIs = await db.many(
         'SELECT * FROM questionnaire_instances WHERE questionnaire_id = 99999'
       );
@@ -90,6 +129,7 @@ describe('Spontaneous questionnaire instance creation', function () {
       await dbWait(
         "UPDATE questionnaire_instances SET status='released_once', date_of_release_v1=NOW() WHERE questionnaire_id=99999 AND user_id='qtest-proband1'"
       );
+      await insertLatestQuestionnaireInstancesFromInternalApiCalls();
 
       // Assert
       const withNewQI = await db.many(
@@ -107,14 +147,19 @@ describe('Spontaneous questionnaire instance creation', function () {
 
       // Act
       await createQuestionnaire();
+      await insertLatestQuestionnaireInstancesFromInternalApiCalls();
+
       const addedQIs = await db.many(
         'SELECT * FROM questionnaire_instances WHERE questionnaire_id = 99999'
       );
+
       expect(addedQIs.length).to.equal(
         expectedQuestionnaireInstanceCountBefore
       );
 
       await createQuestionnaire({ version: 2, sort_order: 0 });
+      await insertLatestQuestionnaireInstancesFromInternalApiCalls();
+
       const replacedQIs = await db.many(
         'SELECT * FROM questionnaire_instances WHERE questionnaire_id = 99999'
       );
@@ -126,6 +171,7 @@ describe('Spontaneous questionnaire instance creation', function () {
       await dbWait(
         "UPDATE questionnaire_instances SET status='released_once', date_of_release_v1=NOW() WHERE questionnaire_id=99999 AND user_id='qtest-proband1'"
       );
+      await insertLatestQuestionnaireInstancesFromInternalApiCalls();
 
       // Assert
       const withNewQI: QuestionnaireInstance[] = await db.many(
@@ -169,9 +215,12 @@ describe('Spontaneous questionnaire instance creation', function () {
 
       // Act
       await createQuestionnaire();
+      await insertLatestQuestionnaireInstancesFromInternalApiCalls();
+
       const addedQIs = await db.many(
         'SELECT * FROM questionnaire_instances WHERE questionnaire_id = 99999'
       );
+
       expect(addedQIs.length).to.equal(
         expectedQuestionnaireInstanceCountBefore
       );
@@ -179,21 +228,28 @@ describe('Spontaneous questionnaire instance creation', function () {
       await dbWait(
         "UPDATE questionnaire_instances SET status='released_once', date_of_release_v1=NOW() WHERE questionnaire_id=99999 AND user_id='qtest-proband1'"
       );
+      await insertLatestQuestionnaireInstancesFromInternalApiCalls();
+
       const withNewQI = await db.many(
         'SELECT * FROM questionnaire_instances WHERE questionnaire_id = 99999'
       );
+
       expect(withNewQI.length).to.equal(
         expectedQuestionnaireInstanceCountAfter
       );
+
       await createQuestionnaire({ version: 2, sort_order: 0 });
+      await insertLatestQuestionnaireInstancesFromInternalApiCalls();
 
       // Assert
       const replacedQIs: QuestionnaireInstance[] = await db.many(
         'SELECT * FROM questionnaire_instances WHERE questionnaire_id = 99999'
       );
+
       expect(replacedQIs.length).to.equal(
         expectedQuestionnaireInstanceCountAfter
       );
+
       const q1_1 = replacedQIs.find(
         (qi) =>
           qi.user_id === 'qtest-proband1' &&
@@ -265,5 +321,87 @@ describe('Spontaneous questionnaire instance creation', function () {
     Object.assign(spontaneous, options);
     const query = pgp.helpers.insert(spontaneous, questionnaireCs);
     await dbWait(query);
+  }
+
+  /**
+   * @param expression URL expression
+   * @param callIndex if not provided, the last call is returned
+   */
+  function getFetchMockCallPayload<T>(
+    expression: string,
+    callIndex?: number
+  ): T {
+    const calls = fetchMock.calls(expression);
+    callIndex = callIndex ?? calls.length - 1;
+
+    expect(calls).to.have.length.greaterThan(
+      0,
+      `No calls for ${expression} were found.`
+    );
+
+    return JSON.parse(calls[callIndex]![1]!.body as unknown as string) as T;
+  }
+
+  async function insertQuestionnaireInstance(
+    questionnaireInstance: Partial<QuestionnaireInstance>,
+    questionnaire: Pick<Questionnaire, 'id' | 'version' | 'name'>
+  ): Promise<QuestionnaireInstance> {
+    const qi: Partial<QuestionnaireInstance> = {
+      questionnaire_id: questionnaire.id,
+      questionnaire_version: questionnaire.version,
+      questionnaire_name: questionnaire.name,
+      cycle: 1,
+      date_of_issue: localTimeToUtc(
+        addHours(startOfToday(), config.notificationTime.hours)
+      ),
+      user_id: 'qtest-proband1',
+      study_id: 'ApiTestStudie',
+      status: 'inactive',
+      ...questionnaireInstance,
+    };
+
+    const result = await dbWaitWithReturn<QuestionnaireInstance[]>(
+      getInsertQuery('questionnaire_instances', qi),
+      qi
+    );
+
+    return result[0]!;
+  }
+
+  async function insertLatestQuestionnaireInstancesFromInternalApiCalls(): Promise<
+    QuestionnaireInstance[]
+  > {
+    const insertedQuestionnaires = getFetchMockCallPayload<
+      CreateQuestionnaireInstanceInternalDto[]
+    >('path:/questionnaire/questionnaireInstances');
+
+    return insertQuestionnaireInstancesFromInternalDtos(insertedQuestionnaires);
+  }
+
+  async function insertQuestionnaireInstancesFromInternalDtos(
+    dtos: CreateQuestionnaireInstanceInternalDto[]
+  ): Promise<QuestionnaireInstance[]> {
+    const instances: Promise<QuestionnaireInstance>[] = [];
+
+    for (const qi of dtos) {
+      const questionnaire = await db.one<Questionnaire>(
+        'SELECT * FROM questionnaires WHERE id = $1 AND version = $2',
+        [qi.questionnaireId, qi.questionnaireVersion]
+      );
+      instances.push(
+        insertQuestionnaireInstance(
+          {
+            user_id: qi.pseudonym,
+            cycle: qi.cycle,
+            date_of_issue: qi.dateOfIssue,
+            status: qi.status,
+            sort_order: qi.sortOrder,
+          },
+          questionnaire
+        )
+      );
+    }
+
+    return Promise.all(instances);
   }
 });

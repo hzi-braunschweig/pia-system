@@ -3,9 +3,9 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-magic-numbers,security/detect-object-injection */
 
-import { getManager } from 'typeorm';
+import { getManager, getRepository } from 'typeorm';
 import chaiHttp from 'chai-http';
 import chai, { expect } from 'chai';
 import { StatusCodes } from 'http-status-codes';
@@ -28,13 +28,34 @@ import { ConditionType } from '../../src/models/condition';
 import { Answer } from '../../src/entities/answer';
 import { AnswerOption } from '../../src/entities/answerOption';
 import { Question } from '../../src/entities/question';
+import {
+  CreateQuestionnaireInstanceInternalDto,
+  QuestionnaireInstanceOriginInternalDto,
+} from '@pia-system/lib-http-clients-internal';
+import { QuestionnaireInstanceOrigin } from '../../src/entities/questionnaireInstanceOrigin';
+import {
+  MessageQueueClient,
+  MessageQueueTopic,
+  QuestionnaireInstanceCreatedMessage,
+} from '@pia/lib-messagequeue';
+import { createSandbox } from 'sinon';
+import { beforeEach } from 'mocha';
+import { waitForConditionToBeTrue } from './public/utilities';
+import { QuestionnaireInstanceQueue } from '../../src/entities/questionnaireInstanceQueue';
+import sinonChai from 'sinon-chai';
 
 chai.use(chaiHttp);
+chai.use(sinonChai);
 const apiAddress = `http://localhost:${config.internal.port}`;
 
 describe('Internal: QuestionnaireInstances', () => {
+  const testSandbox = createSandbox();
+  const mqc = new MessageQueueClient(config.servers.messageQueue);
   const pseudonym1 = 'qtest-proband1';
   const pseudonym2 = 'qtest-proband2';
+
+  let createdInstanceMessages: QuestionnaireInstanceCreatedMessage[] = [];
+
   before(async () => {
     await db.none("INSERT INTO studies(name) VALUES ('QTestStudy')");
     await db.none(
@@ -50,17 +71,36 @@ describe('Internal: QuestionnaireInstances', () => {
       }
     );
     await Server.init();
+    await mqc.connect(true);
   });
 
   after(async () => {
+    await mqc.disconnect();
     await Server.stop();
     await db.none("DELETE FROM probands WHERE pseudonym LIKE 'qtest%'");
     await db.none("DELETE FROM studies WHERE name LIKE 'QTest%'");
   });
 
+  beforeEach(async () => {
+    await mqc.createConsumer(
+      MessageQueueTopic.QUESTIONNAIRE_INSTANCE_CREATED,
+      async (message) => {
+        createdInstanceMessages.push(message);
+        return Promise.resolve();
+      }
+    );
+  });
+
+  afterEach(() => {
+    testSandbox.restore();
+    createdInstanceMessages = [];
+  });
+
   describe('GET /questionnaire/questionnaireInstances/{id}', () => {
     let questionnaireX: Questionnaire;
     let questionnaireY: Questionnaire;
+    let questionnaireInstanceX: QuestionnaireInstance;
+    let questionnaireInstanceY: QuestionnaireInstance;
 
     beforeEach(async () => {
       await getManager().transaction(async (manager) => {
@@ -68,10 +108,9 @@ describe('Internal: QuestionnaireInstances', () => {
           Questionnaire,
           createQuestionnaire({ id: 9100 })
         );
-        const qiX1 = await manager.save(
+        questionnaireInstanceX = await manager.save(
           QuestionnaireInstance,
           createQuestionnaireInstance({
-            id: 19100,
             questionnaire: questionnaireX,
             status: 'released_twice',
             dateOfIssue: new Date('2020-06-01T02:00'),
@@ -81,59 +120,75 @@ describe('Internal: QuestionnaireInstances', () => {
         );
         await manager.save(Answer, [
           {
-            questionnaireInstance: qiX1,
-            question: qiX1.questionnaire.questions[0],
-            answerOption: qiX1.questionnaire.questions[0].answerOptions[0],
+            questionnaireInstance: questionnaireInstanceX,
+            question: questionnaireInstanceX.questionnaire.questions[0],
+            answerOption:
+              questionnaireInstanceX.questionnaire.questions[0]
+                .answerOptions[0],
             versioning: 1,
             value: 'Bad',
           },
           {
-            questionnaireInstance: qiX1,
-            question: qiX1.questionnaire.questions[0],
-            answerOption: qiX1.questionnaire.questions[0].answerOptions[1],
+            questionnaireInstance: questionnaireInstanceX,
+            question: questionnaireInstanceX.questionnaire.questions[0],
+            answerOption:
+              questionnaireInstanceX.questionnaire.questions[0]
+                .answerOptions[1],
             versioning: 1,
             value: 'Bad',
           },
           {
-            questionnaireInstance: qiX1,
-            question: qiX1.questionnaire.questions[0],
-            answerOption: qiX1.questionnaire.questions[0].answerOptions[2],
+            questionnaireInstance: questionnaireInstanceX,
+            question: questionnaireInstanceX.questionnaire.questions[0],
+            answerOption:
+              questionnaireInstanceX.questionnaire.questions[0]
+                .answerOptions[2],
             versioning: 1,
             value: 'Good',
           },
           {
-            questionnaireInstance: qiX1,
-            question: qiX1.questionnaire.questions[0],
-            answerOption: qiX1.questionnaire.questions[0].answerOptions[3],
+            questionnaireInstance: questionnaireInstanceX,
+            question: questionnaireInstanceX.questionnaire.questions[0],
+            answerOption:
+              questionnaireInstanceX.questionnaire.questions[0]
+                .answerOptions[3],
             versioning: 1,
             value: 'Good',
           },
 
           {
-            questionnaireInstance: qiX1,
-            question: qiX1.questionnaire.questions[0],
-            answerOption: qiX1.questionnaire.questions[0].answerOptions[0],
+            questionnaireInstance: questionnaireInstanceX,
+            question: questionnaireInstanceX.questionnaire.questions[0],
+            answerOption:
+              questionnaireInstanceX.questionnaire.questions[0]
+                .answerOptions[0],
             versioning: 2,
             value: 'Bad',
           },
           {
-            questionnaireInstance: qiX1,
-            question: qiX1.questionnaire.questions[0],
-            answerOption: qiX1.questionnaire.questions[0].answerOptions[1],
+            questionnaireInstance: questionnaireInstanceX,
+            question: questionnaireInstanceX.questionnaire.questions[0],
+            answerOption:
+              questionnaireInstanceX.questionnaire.questions[0]
+                .answerOptions[1],
             versioning: 2,
             value: 'Good',
           },
           {
-            questionnaireInstance: qiX1,
-            question: qiX1.questionnaire.questions[0],
-            answerOption: qiX1.questionnaire.questions[0].answerOptions[2],
+            questionnaireInstance: questionnaireInstanceX,
+            question: questionnaireInstanceX.questionnaire.questions[0],
+            answerOption:
+              questionnaireInstanceX.questionnaire.questions[0]
+                .answerOptions[2],
             versioning: 2,
             value: 'Good',
           },
           {
-            questionnaireInstance: qiX1,
-            question: qiX1.questionnaire.questions[0],
-            answerOption: qiX1.questionnaire.questions[0].answerOptions[3],
+            questionnaireInstance: questionnaireInstanceX,
+            question: questionnaireInstanceX.questionnaire.questions[0],
+            answerOption:
+              questionnaireInstanceX.questionnaire.questions[0]
+                .answerOptions[3],
             versioning: 2,
             value: 'Good',
           },
@@ -189,10 +244,9 @@ describe('Internal: QuestionnaireInstances', () => {
           value: 'Good',
         });
         questionnaireY = await manager.save(Questionnaire, questionnaireYpre);
-        await manager.save(
+        questionnaireInstanceY = await manager.save(
           QuestionnaireInstance,
           createQuestionnaireInstance({
-            id: 19200,
             questionnaire: questionnaireY,
             dateOfIssue: new Date('2020-06-05T02:00'),
           })
@@ -214,10 +268,12 @@ describe('Internal: QuestionnaireInstances', () => {
     it('should return 200 and fetch the questionnaire instance with the questionnaire', async () => {
       const result: { body: QuestionnaireInstanceDto } = await chai
         .request(apiAddress)
-        .get('/questionnaire/questionnaireInstances/19200');
+        .get(
+          `/questionnaire/questionnaireInstances/${questionnaireInstanceY.id}`
+        );
 
       expect(result).to.have.status(StatusCodes.OK);
-      expect(result.body.id).to.equal(19200);
+      expect(result.body.id).to.equal(questionnaireInstanceY.id);
       expect(result.body.questionnaire.id).to.equal(9200);
       expect(result.body.questionnaire.questions).to.have.length(2);
       expect(
@@ -231,13 +287,15 @@ describe('Internal: QuestionnaireInstances', () => {
     it('should return 200 and fetch the questionnaire instance with the filtered questionnaire', async () => {
       const result: { body: QuestionnaireInstance } = await chai
         .request(apiAddress)
-        .get('/questionnaire/questionnaireInstances/19200')
+        .get(
+          `/questionnaire/questionnaireInstances/${questionnaireInstanceY.id}`
+        )
         .query({
           filterQuestionnaireByConditions: true,
         });
 
       expect(result).to.have.status(StatusCodes.OK);
-      expect(result.body.id).to.equal(19200);
+      expect(result.body.id).to.equal(questionnaireInstanceY.id);
       expect(result.body.questionnaire.id).to.equal(9200);
       expect(result.body.questionnaire.questions).to.have.length(1);
       expect(
@@ -428,6 +486,263 @@ describe('Internal: QuestionnaireInstances', () => {
       expect(result).to.have.status(StatusCodes.OK);
       expect(result.body).to.be.an('array');
       expect(result.body).to.have.length(0);
+    });
+  });
+
+  describe('POST /questionnaire/questionnaireInstances', () => {
+    const questionnaireId = 1;
+    const dateOfIssue = new Date();
+    const instancesFixture: CreateQuestionnaireInstanceInternalDto[] = [
+      {
+        studyId: 'QTestStudy',
+        pseudonym: pseudonym1,
+        questionnaireName: 'Questionnaire A',
+        questionnaireId,
+        questionnaireVersion: 1,
+        sortOrder: null,
+        dateOfIssue,
+        cycle: 1,
+        status: 'inactive',
+        origin: null,
+      },
+      {
+        studyId: 'QTestStudy',
+        pseudonym: pseudonym1,
+        questionnaireName: 'Questionnaire A',
+        questionnaireId,
+        questionnaireVersion: 1,
+        sortOrder: null,
+        dateOfIssue,
+        cycle: 2,
+        status: 'inactive',
+        origin: null,
+      },
+      {
+        studyId: 'QTestStudy',
+        pseudonym: pseudonym1,
+        questionnaireName: 'Questionnaire A',
+        questionnaireId,
+        questionnaireVersion: 1,
+        sortOrder: null,
+        dateOfIssue,
+        cycle: 3,
+        status: 'inactive',
+        origin: null,
+      },
+      {
+        studyId: 'QTestStudy',
+        pseudonym: pseudonym1,
+        questionnaireName: 'Questionnaire A',
+        questionnaireId,
+        questionnaireVersion: 1,
+        sortOrder: null,
+        dateOfIssue,
+        cycle: 4,
+        status: 'inactive',
+        origin: null,
+      },
+    ];
+
+    beforeEach(async () => {
+      await getRepository(Questionnaire).save(
+        createQuestionnaire({ id: questionnaireId })
+      );
+    });
+
+    afterEach(async () => {
+      await getRepository(Questionnaire).delete({});
+      await getRepository(QuestionnaireInstance).delete({});
+      await getRepository(QuestionnaireInstanceOrigin).delete({});
+    });
+
+    it('should return 200 and create all instances', async () => {
+      const instances = structuredClone(instancesFixture);
+      const result: { body: CreateQuestionnaireInstanceInternalDto[] } =
+        await chai
+          .request(apiAddress)
+          .post('/questionnaire/questionnaireInstances')
+          .send(instances);
+
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(result.body).to.be.an('array');
+      expect(result.body).to.have.length(4);
+
+      for (let idx = 0; idx < result.body.length; idx++) {
+        const instanceDto = result.body[idx];
+
+        expect(instanceDto.dateOfIssue).to.equal(dateOfIssue.toISOString());
+
+        delete instanceDto.dateOfIssue;
+        delete instances[idx].dateOfIssue;
+
+        expect(instanceDto).to.deep.include(instances[idx]);
+        expect(result.body).to.have.length(instances.length);
+      }
+    });
+
+    it('should return 200 and create all instances and their origin relation', async () => {
+      const questionnaire = await getRepository(Questionnaire).save(
+        createQuestionnaire({ id: 9100 })
+      );
+      const originInstance = await getRepository(QuestionnaireInstance).save(
+        createQuestionnaireInstance({
+          questionnaire,
+          status: 'active',
+          pseudonym: pseudonym1,
+        })
+      );
+      const condition = await getRepository(Condition).save({
+        type: ConditionType.EXTERNAL,
+        value: 'Good',
+        link: 'AND',
+        operand: '==',
+        targetAnswerOption: questionnaire.questions[0].answerOptions[0],
+        targetQuestionnaire: questionnaire,
+        targetQuestionnaireVersion: 1,
+        conditionQuestionnaire: questionnaire,
+        conditionAnswerOption: questionnaire.questions[0].answerOptions[1],
+        conditionTargetQuestionnaire: questionnaire,
+        conditionTargetQuestionnaireVersion: 1,
+      });
+      const origin: QuestionnaireInstanceOriginInternalDto = {
+        originInstance: originInstance.id,
+        condition: condition.id,
+      };
+
+      const instances = structuredClone(instancesFixture).map((instance) => {
+        return {
+          ...instance,
+          origin,
+        };
+      });
+
+      const result: { body: CreateQuestionnaireInstanceInternalDto[] } =
+        await chai
+          .request(apiAddress)
+          .post('/questionnaire/questionnaireInstances')
+          .send(instances);
+
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(result.body).to.be.an('array');
+      expect(result.body).to.have.length(instances.length);
+
+      for (let idx = 0; idx < result.body.length; idx++) {
+        const instanceDto = result.body[idx];
+
+        expect(instanceDto.dateOfIssue).to.equal(dateOfIssue.toISOString());
+
+        const expectedOrigin: QuestionnaireInstanceOriginInternalDto = {
+          ...origin,
+          createdInstance: instanceDto.id ?? 0,
+        };
+        expect(instanceDto.origin).to.deep.equal(expectedOrigin);
+
+        delete instanceDto.dateOfIssue;
+        delete instanceDto.origin;
+        delete instances[idx].dateOfIssue;
+        delete instances[idx].origin;
+
+        expect(instanceDto).to.deep.include(instances[idx]);
+        expect(instanceDto.id).to.greaterThan(0);
+      }
+
+      const origins = await getRepository(QuestionnaireInstanceOrigin).find({
+        relations: ['createdInstance', 'originInstance', 'condition'],
+      });
+      expect(origins).to.have.length(instances.length);
+      expect(origins.map((o) => o.createdInstance.id)).to.have.members(
+        result.body.map((qi) => qi.id)
+      );
+      expect(
+        origins.every((o) => o.originInstance.id == originInstance.id)
+      ).to.be.equal(true, 'All origins should have the same originInstance');
+    });
+
+    it('should return 200 and add flagged instances to queue', async () => {
+      // Arrange
+      // first two instances should be queued
+      const instances = structuredClone(instancesFixture).map(
+        (instance, idx) => ({
+          ...instance,
+          options: { addToQueue: idx < 2 },
+        })
+      );
+      const queuedInstances = instances.filter(
+        (instance) => instance.options.addToQueue
+      );
+
+      // Act
+      const result: { body: CreateQuestionnaireInstanceInternalDto[] } =
+        await chai
+          .request(apiAddress)
+          .post('/questionnaire/questionnaireInstances')
+          .send(instances);
+
+      // Assert
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(result.body).to.be.an('array');
+      expect(result.body).to.have.length(instances.length);
+
+      const queue = await getRepository(QuestionnaireInstanceQueue).find({
+        relations: ['questionnaireInstance'],
+        loadRelationIds: true,
+      });
+
+      expect(queue).to.have.length(queuedInstances.length);
+
+      for (const entry of queue) {
+        expect(entry.pseudonym).to.equal(pseudonym1);
+        expect(result.body.map((qi) => qi.id)).to.contain(
+          entry.questionnaireInstance
+        );
+        expect(entry.dateOfQueue).to.be.a('Date');
+      }
+    });
+
+    it('should dispatch a message for every instance created', async () => {
+      // Arrange
+      const expectedCustomName = 'dummy_custom_name';
+      await getRepository(Questionnaire).update(
+        { id: 1, version: 1 },
+        { customName: expectedCustomName }
+      );
+      const instances = structuredClone(instancesFixture);
+
+      // Act
+      const result: { body: CreateQuestionnaireInstanceInternalDto[] } =
+        await chai
+          .request(apiAddress)
+          .post('/questionnaire/questionnaireInstances')
+          .send(instances);
+
+      // Assert
+      expect(result).to.have.status(StatusCodes.OK);
+      expect(result.body).to.be.an('array');
+      expect(result.body).to.have.length(4);
+
+      const expectedMessages: QuestionnaireInstanceCreatedMessage[] = [];
+
+      for (let idx = 0; idx < result.body.length; idx++) {
+        const instanceDto = result.body[idx];
+        const instance = instances[idx];
+        expectedMessages.push({
+          id: instanceDto.id,
+          studyName: instance.studyId,
+          pseudonym: instance.pseudonym,
+          status:
+            instance.status as unknown as QuestionnaireInstanceCreatedMessage['status'],
+          questionnaire: {
+            id: 1,
+            customName: expectedCustomName,
+          },
+        });
+      }
+
+      await waitForConditionToBeTrue(
+        () => createdInstanceMessages.length === 4
+      );
+
+      expect(createdInstanceMessages).to.include.deep.members(expectedMessages);
     });
   });
 });

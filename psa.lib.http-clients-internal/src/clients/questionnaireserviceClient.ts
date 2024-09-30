@@ -8,6 +8,7 @@ import { ServiceClient } from '../core/serviceClient';
 import {
   QuestionnaireInstanceInternalDto,
   QuestionnaireInstanceWithQuestionnaireInternalDto,
+  CreateQuestionnaireInstanceInternalDto,
 } from '../dtos/questionnaireInstance';
 import { AnswerInternalDto, AnswersFilterInternalDto } from '../dtos/answer';
 import { QuestionnaireInternalDto } from '../dtos/questionnaire';
@@ -62,9 +63,6 @@ export class QuestionnaireserviceClient extends ServiceClient {
     );
   }
 
-  /**
-   * Gets all pseudonyms from pia that are in a specific study or have a specific status account
-   */
   public async getQuestionnaireInstancesForProband(
     pseudonym: string
   ): Promise<QuestionnaireInstanceInternalDto[]> {
@@ -82,9 +80,6 @@ export class QuestionnaireserviceClient extends ServiceClient {
     );
   }
 
-  /**
-   * Gets all pseudonyms from pia that are in a specific study or have a specific status account
-   */
   public async getQuestionnaireInstance(
     id: number,
     filterQuestionnaireByConditions?: boolean
@@ -107,6 +102,15 @@ export class QuestionnaireserviceClient extends ServiceClient {
   ): Promise<AnswerInternalDto[]> {
     return await this.httpClient.get<AnswerInternalDto[]>(
       `/questionnaire/questionnaireInstances/${id.toString()}/answers`
+    );
+  }
+
+  public async createQuestionnaireInstances(
+    instances: CreateQuestionnaireInstanceInternalDto[]
+  ): Promise<CreateQuestionnaireInstanceInternalDto[]> {
+    return this.httpClient.post<CreateQuestionnaireInstanceInternalDto[]>(
+      '/questionnaire/questionnaireInstances',
+      instances
     );
   }
 

@@ -17,7 +17,12 @@
        "yaml": true,
        "basePath": "/api/v1",
        "version": "1",
-       "tags": [],
+       "tags": [
+         {
+           "name": "Example Service",
+           "description": "Operations related to the example services domain."
+         }
+       ],
        "securityDefinitions": {
          "jwt-public": {
            "type": "oauth2",

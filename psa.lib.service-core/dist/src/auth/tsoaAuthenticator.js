@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TsoaAuthenticator = void 0;
+exports.TsoaAuthenticator = exports.InvalidAuthorizationTokenError = void 0;
 const http_status_codes_1 = require("http-status-codes");
 const jsonwebtoken_1 = require("jsonwebtoken");
 const node_fetch_1 = __importDefault(require("node-fetch"));
@@ -17,6 +17,7 @@ class InvalidAuthorizationTokenError extends errorHandler_1.SpecificError {
         this.message = 'No or invalid authorization token provided';
     }
 }
+exports.InvalidAuthorizationTokenError = InvalidAuthorizationTokenError;
 class TsoaAuthenticator {
     constructor(securityName, authClientSettings) {
         this.securityName = securityName;

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -18,7 +18,10 @@ import {
 import { config } from '../../src/config';
 import { Server } from '../../src/server';
 import { cleanup, setup } from './personalData.spec.data/setup.helper';
-import { PersonalData, PersonalDataReq } from '../../src/models/personalData';
+import {
+  PersonalDataDb,
+  PersonalDataReq,
+} from '../../src/models/personalDataDb';
 import { assert } from 'ts-essentials';
 import { mockUpdateAccountMailAddress } from './mockUpdateAccountMailAddress.helper.spec';
 
@@ -185,7 +188,7 @@ describe('/admin/personalData', () => {
 
     it('should return HTTP 200 with personal proband data when a PM tries ', async () => {
       // Act
-      const result: Response<PersonalData> = await chai
+      const result: Response<PersonalDataDb> = await chai
         .request(apiAddress)
         .get('/admin/personalData/proband/qtest-proband1')
         .set(pmHeader);
@@ -197,7 +200,7 @@ describe('/admin/personalData', () => {
 
     it('should also accept pseudonyms in uppercase and return HTTP 200', async () => {
       // Act
-      const result: Response<PersonalData> = await chai
+      const result: Response<PersonalDataDb> = await chai
         .request(apiAddress)
         .get('/admin/personalData/proband/QTest-Proband1')
         .set(pmHeader);
@@ -263,7 +266,7 @@ describe('/admin/personalData', () => {
 
     it('should return HTTP 200 with personal proband data when a PM tries ', async () => {
       // Act
-      const result: Response<PersonalData[]> = await chai
+      const result: Response<PersonalDataDb[]> = await chai
         .request(apiAddress)
         .get('/admin/personalData')
         .set(pmHeader);
@@ -279,7 +282,7 @@ describe('/admin/personalData', () => {
 
     it('should not return personal data of probands the PM has no access to', async () => {
       // Act
-      const result: Response<PersonalData[]> = await chai
+      const result: Response<PersonalDataDb[]> = await chai
         .request(apiAddress)
         .get('/admin/personalData')
         .set(pmHeader);
@@ -403,7 +406,7 @@ describe('/admin/personalData', () => {
       const personalData = createPersonalData();
 
       // Act
-      const result: Response<PersonalData> = await chai
+      const result: Response<PersonalDataDb> = await chai
         .request(apiAddress)
         .put('/admin/personalData/proband/qtest-proband3')
         .set(pmHeader)
@@ -442,7 +445,7 @@ describe('/admin/personalData', () => {
       };
 
       // Act
-      const result: Response<PersonalData> = await chai
+      const result: Response<PersonalDataDb> = await chai
         .request(apiAddress)
         .put('/admin/personalData/proband/qtest-proband1')
         .set(pmHeader)
@@ -480,7 +483,7 @@ describe('/admin/personalData', () => {
       };
 
       // Act
-      const result: Response<PersonalData> = await chai
+      const result: Response<PersonalDataDb> = await chai
         .request(apiAddress)
         .put('/admin/personalData/proband/qtest-proband1')
         .set(pmHeader)
@@ -516,7 +519,7 @@ describe('/admin/personalData', () => {
       };
 
       // Act
-      const result: Response<PersonalData> = await chai
+      const result: Response<PersonalDataDb> = await chai
         .request(apiAddress)
         .put('/admin/personalData/proband/qtest-proband1')
         .set(pmHeader)
@@ -538,7 +541,7 @@ describe('/admin/personalData', () => {
       const personalData = { ...createPersonalData(), plz: '0123' };
 
       // Act
-      const result: Response<PersonalData> = await chai
+      const result: Response<PersonalDataDb> = await chai
         .request(apiAddress)
         .put('/admin/personalData/proband/qtest-proband1')
         .set(pmHeader)

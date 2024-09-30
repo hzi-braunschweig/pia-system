@@ -9,6 +9,7 @@ import { Configuration } from '../../configuration';
 import { NodeJSService } from '../generic/nodejsservice';
 import { QPiaService } from '../stateful/qpiaservice';
 import { MessageQueue } from '../stateful/messagequeue';
+import { QuestionnaireService } from './questionnaireservice';
 
 export class AnalyzerService extends NodeJSService {
   public constructor(
@@ -17,9 +18,11 @@ export class AnalyzerService extends NodeJSService {
     {
       qpiaService,
       messageQueue,
+      questionnaireService,
     }: {
       qpiaService: QPiaService;
       messageQueue: MessageQueue;
+      questionnaireService: QuestionnaireService;
     }
   ) {
     super(
@@ -27,6 +30,10 @@ export class AnalyzerService extends NodeJSService {
       configuration,
       'analyzerservice',
       {
+        QUESTIONNAIRESERVICE_HOST: questionnaireService.internalService.name,
+        QUESTIONNAIRESERVICE_INTERNAL_PORT:
+          questionnaireService.internalService.port,
+
         QPIA_HOST: qpiaService.service.name,
         QPIA_PORT: qpiaService.service.port,
         QPIA_USER: configuration.variables.qpia.user,

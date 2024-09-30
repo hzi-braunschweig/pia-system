@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -19,6 +19,7 @@ import {
 } from '@pia/lib-service-core';
 import { messageQueueService } from './services/messageQueueService';
 import { probandAuthClient } from './clients/authServerClient';
+import { RegisterRoutes } from './publicRoutes.generated';
 
 export class Server {
   private static instance: Hapi.Server;
@@ -44,6 +45,8 @@ export class Server {
       routes: defaultInternalRoutesPaths,
       isInternal: true,
     });
+
+    RegisterRoutes(this.instance);
 
     MailService.initService(config.servers.mailserver);
 

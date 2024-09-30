@@ -5,15 +5,15 @@
  */
 
 export enum AnswerType {
-  None,
-  SingleSelect,
-  MultiSelect,
-  Number,
-  Text,
-  Date,
-  Sample,
-  PZN,
-  Image,
-  Timestamp,
-  File,
+  None = 0,
+  SingleSelect = 1,
+  MultiSelect = 2,
+  Number = 3,
+  Text = 4,
+  Date = 5,
+  Sample = 6,
+  PZN = 7,
+  Image = 8,
+  Timestamp = 9,
+  File = 10,
 }

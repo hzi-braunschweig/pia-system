@@ -7,6 +7,7 @@
 import { Lifecycle } from '@hapi/hapi';
 import { InternalQuestionnaireInstancesInteractor } from '../../interactors/internal/internalQuestionnaireInstancesInteractor';
 import { QuestionnaireInstanceStatus } from '../../models/questionnaireInstance';
+import { CreateQuestionnaireInstanceInternalDto } from '@pia-system/lib-http-clients-internal';
 
 export class InternalQuestionnaireInstancesHandler {
   public static getOne: Lifecycle.Method = async (request) => {
@@ -32,6 +33,15 @@ export class InternalQuestionnaireInstancesHandler {
     const id = request.params['id'] as number;
     return await InternalQuestionnaireInstancesInteractor.getQuestionnaireInstanceAnswers(
       id
+    );
+  };
+
+  public static postMany: Lifecycle.Method = async (request) => {
+    const questionnaireInstances =
+      request.payload as CreateQuestionnaireInstanceInternalDto[];
+
+    return await InternalQuestionnaireInstancesInteractor.createQuestionnaireInstances(
+      questionnaireInstances
     );
   };
 }

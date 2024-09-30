@@ -6,3 +6,4 @@
 
 export { Pseudonym } from './types/pseudonym';
 export { StudyName } from './types/studyName';
+export { Expand } from './types/expand';

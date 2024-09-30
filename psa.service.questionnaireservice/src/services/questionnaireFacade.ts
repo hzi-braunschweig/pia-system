@@ -23,13 +23,12 @@ import {
   StudyNotFoundError,
 } from '../errors';
 import { PartialAnswerDto } from '../models/answer';
-import { StudyName } from '../models/customTypes';
 import { CustomName } from '../models/questionnaire';
 import { QuestionnaireInstanceStatus } from '../models/questionnaireInstance';
 import { AnswerService } from './answerService';
 import { AnswerValidatorService } from './answerValidatorService';
 import { QuestionnaireInstanceService } from './questionnaireInstanceService';
-import { Pseudonym } from '@pia/lib-publicapi';
+import { Pseudonym, StudyName } from '@pia/lib-publicapi';
 
 export class QuestionnaireFacade {
   public static async getQuestionnaireInstances(

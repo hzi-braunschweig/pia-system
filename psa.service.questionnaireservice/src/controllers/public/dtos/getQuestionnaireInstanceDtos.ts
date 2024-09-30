@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { StudyName } from '@pia/lib-publicapi';
 import { QuestionnaireInstance } from '../../../entities/questionnaireInstance';
-import { StudyName } from '../../../models/customTypes';
 import { CustomName } from '../../../models/questionnaire';
 
 export type GetQuestionnaireInstanceResponseDto = Omit<
   QuestionnaireInstance,
-  'questionnaire' | 'answers' | 'studyId'
+  'questionnaire' | 'answers' | 'studyId' | 'origin'
 > & {
   studyName: StudyName;
   /** @isInt */

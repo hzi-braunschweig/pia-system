@@ -84,9 +84,3 @@ export function isIsoDateString(value: unknown): value is IsoDateString {
     return false;
   }
 }
-
-/**
- * The name of a study is also a unique identifier.
- * @example "Example Study"
- */
-export type StudyName = string;

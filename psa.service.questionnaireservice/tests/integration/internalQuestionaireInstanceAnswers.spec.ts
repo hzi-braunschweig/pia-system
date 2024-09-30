@@ -64,6 +64,7 @@ describe('Internal: QuestionnaireInstance answers', function () {
           values: ['Ja', 'Nein', 'Keine Angabe'],
           // eslint-disable-next-line @typescript-eslint/no-magic-numbers
           valuesCode: [1, 0, 2],
+          useAutocomplete: null,
         },
       });
 
@@ -86,6 +87,7 @@ describe('Internal: QuestionnaireInstance answers', function () {
           values: ['Husten', 'Schnupfen', 'Schmerzen', 'Wehwehchen'],
           // eslint-disable-next-line @typescript-eslint/no-magic-numbers
           valuesCode: [1, 2, 3, 4],
+          useAutocomplete: null,
         },
       });
 
@@ -107,6 +109,7 @@ describe('Internal: QuestionnaireInstance answers', function () {
           restrictionMin: null,
           values: null,
           valuesCode: null,
+          useAutocomplete: null,
         },
       });
 
@@ -128,6 +131,7 @@ describe('Internal: QuestionnaireInstance answers', function () {
           restrictionMin: null,
           values: null,
           valuesCode: null,
+          useAutocomplete: null,
         },
       });
     });

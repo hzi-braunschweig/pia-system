@@ -26,6 +26,7 @@ export interface DbAnswerOption {
   is_notable: boolean[] | null;
   values: string[] | null;
   values_code: number[] | null;
+  use_autocomplete: boolean | null;
 }
 
 export enum AnswerType {
@@ -66,6 +67,7 @@ export interface AnswerOptionDto {
   valuesCode: number[] | null;
   question?: QuestionDto;
   condition?: ConditionDto | null;
+  useAutocomplete?: boolean | null;
 }
 
 export interface AnswerOptionResponse extends DbAnswerOption {
@@ -85,4 +87,5 @@ export interface AnswerOptionRequest {
   is_notable?: boolean[];
   values?: { value: string }[];
   values_code?: { value: number }[] | null;
+  use_autocomplete?: boolean | null;
 }

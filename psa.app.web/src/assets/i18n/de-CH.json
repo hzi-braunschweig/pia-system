@@ -258,6 +258,8 @@
     "CODE": "Code",
     "ANSWER_TYPE": "Antworttyp",
     "ANSWER_TYPE_REQUIRED": "Antworttyp ist erforderlich",
+    "USE_AUTOCOMPLETE": "Antworten als Autocomplete-Element",
+    "USE_AUTOCOMPLETE_HINT": "Teilnehmende können die Antworten durch eine Texteingabe durchsuchen. Dies ist hilfreich bei Fragen mit vielen Antwortmöglichkeiten.",
     "NEW_SUB-QUESTION": "Neue Unterfrage erstellen",
     "NEW_QUESTION": "Neue Frage erstellen",
     "NUMBER_REQUIRED": "Bitte geben Sie eine Nummer ein",
@@ -420,7 +422,8 @@
     "SELECT_ONLY_FILE": "Falsches Dateiformat. Bitte nur ein PDF oder CSV Format auswählen.",
     "CURRENT_QUESTION": "Bitte beantworten Sie zunächst die aktuelle Frage.",
     "CURRENT_SAMPLE_IDs": "Bitte bestätigen Sie zunächst die Proben-IDs.",
-    "UPLOADED_FILE_TOO_LARGE": "Es können nur Dateien mit einer Grösse von bis zu 20MB hochgeladen werden. Bitte prüfen Sie Ihre Dateigrösse."
+    "UPLOADED_FILE_TOO_LARGE": "Es können nur Dateien mit einer Grösse von bis zu 20MB hochgeladen werden. Bitte prüfen Sie Ihre Dateigrösse.",
+    "AUTOCOMPLETE_PICK": "Wählen Sie eine Option aus"
   },
   "ANSWERS_HISTORY": {
     "VERSION": "Version: ",

@@ -13,8 +13,9 @@ import { Readable } from 'stream';
 
 import { HttpClient } from '../core/httpClient';
 import { QuestionnaireserviceClient } from './questionnaireserviceClient';
-import ReadableStream = NodeJS.ReadableStream;
+import { CreateQuestionnaireInstanceInternalDto } from '../dtos/questionnaireInstance';
 import * as os from 'os';
+import ReadableStream = NodeJS.ReadableStream;
 
 chai.use(chaiAsPromised);
 
@@ -122,6 +123,67 @@ describe('QuestionnaireserviceClient', () => {
     });
   });
 
+  describe('createQuestionnaireInstances', () => {
+    it('should call questionnaire service to create questionnaire instances', async () => {
+      // Arrange
+      const pseudonym1 = 'QTestProband1';
+      const questionnaireId = 1234;
+      const dateOfIssue = new Date();
+      const instancesFixture: CreateQuestionnaireInstanceInternalDto[] = [
+        {
+          studyId: 'QTestStudy',
+          pseudonym: pseudonym1,
+          questionnaireName: 'Questionnaire A',
+          questionnaireId,
+          questionnaireVersion: 1,
+          sortOrder: null,
+          dateOfIssue,
+          cycle: 1,
+          status: 'inactive',
+          origin: null,
+        },
+        {
+          studyId: 'QTestStudy',
+          pseudonym: pseudonym1,
+          questionnaireName: 'Questionnaire A',
+          questionnaireId,
+          questionnaireVersion: 1,
+          sortOrder: null,
+          dateOfIssue,
+          cycle: 2,
+          status: 'inactive',
+          origin: null,
+        },
+      ];
+
+      fetchMock.post(
+        {
+          url: 'express:/questionnaire/questionnaireInstances',
+        },
+        {
+          status: StatusCodes.OK,
+          body: JSON.stringify(instancesFixture),
+        }
+      );
+
+      // Act
+      const result = await client.createQuestionnaireInstances(
+        instancesFixture
+      );
+
+      // Assert
+      expect(
+        fetchMock.called('express:/questionnaire/questionnaireInstances', {
+          method: 'POST',
+        })
+      ).to.be.true;
+
+      expect(result).to.deep.equal(
+        JSON.parse(JSON.stringify(instancesFixture))
+      );
+    });
+  });
+
   describe('getQuestionnaireInstanceAnswers', () => {
     it("should call questionnaireservice to get a questionnaire instances' answers", async () => {
       // Arrange
@@ -136,6 +198,7 @@ describe('QuestionnaireserviceClient', () => {
         }
       );
 
+      // Act
       await client.getQuestionnaireInstanceAnswers(questionnaireInstanceId);
 
       // Assert
@@ -310,6 +373,7 @@ describe('QuestionnaireserviceClient', () => {
         values: ['no'],
       }) + os.EOL;
     }
+
     return Readable.from(generate());
   }
 });

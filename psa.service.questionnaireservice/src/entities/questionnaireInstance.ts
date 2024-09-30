@@ -10,7 +10,8 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import {
   QuestionnaireInstanceDto,
@@ -18,6 +19,7 @@ import {
 } from '../models/questionnaireInstance';
 import { Questionnaire } from './questionnaire';
 import { Answer } from './answer';
+import { QuestionnaireInstanceOrigin } from './questionnaireInstanceOrigin';
 
 @Entity({
   orderBy: {
@@ -27,7 +29,7 @@ import { Answer } from './answer';
 })
 export class QuestionnaireInstance implements QuestionnaireInstanceDto {
   /** @isInt */
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
   public id!: number;
 
   @Column()
@@ -82,4 +84,11 @@ export class QuestionnaireInstance implements QuestionnaireInstanceDto {
 
   @OneToMany(() => Answer, (answer) => answer.questionnaireInstance)
   public answers?: Answer[];
+
+  @OneToOne(
+    () => QuestionnaireInstanceOrigin,
+    (origin) => origin.createdInstance,
+    { cascade: true }
+  )
+  public origin?: QuestionnaireInstanceOrigin | null;
 }

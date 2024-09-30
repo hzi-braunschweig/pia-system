@@ -12,11 +12,15 @@ import {
   QuestionnaireInstanceReleasedMessage,
   ProbandDeactivatedMessage,
   QuestionnaireInstanceAnsweringStartedMessage,
+  QuestionnaireInstanceCreatedMessage,
 } from '@pia/lib-messagequeue';
 import { QuestionnaireInstanceService } from './questionnaireInstanceService';
 import { QuestionnaireInstance } from '../entities/questionnaireInstance';
+import { QuestionnaireInstanceStatus } from '../models/questionnaireInstance';
+import isInstanceWithNarrowedStatus from '../helpers/isInstanceWithNarrowedStatus';
 
 export class MessageQueueService extends MessageQueueClient {
+  private questionnaireInstanceCreatedProducer?: Producer<QuestionnaireInstanceCreatedMessage>;
   private questionnaireInstanceReleasedProducer?: Producer<QuestionnaireInstanceReleasedMessage>;
   private questionnaireInstanceAnsweringStartedProducer?: Producer<QuestionnaireInstanceAnsweringStartedMessage>;
 
@@ -43,6 +47,10 @@ export class MessageQueueService extends MessageQueueClient {
       }
     );
 
+    this.questionnaireInstanceCreatedProducer = await this.createProducer(
+      MessageQueueTopic.QUESTIONNAIRE_INSTANCE_CREATED
+    );
+
     this.questionnaireInstanceReleasedProducer = await this.createProducer(
       MessageQueueTopic.QUESTIONNAIRE_INSTANCE_RELEASED
     );
@@ -51,6 +59,42 @@ export class MessageQueueService extends MessageQueueClient {
       await this.createProducer(
         MessageQueueTopic.QUESTIONNAIRE_INSTANCE_ANSWERING_STARTED
       );
+  }
+
+  public async sendQuestionnaireInstanceCreated(
+    questionnaireInstance: QuestionnaireInstance
+  ): Promise<void> {
+    if (!this.questionnaireInstanceCreatedProducer) {
+      throw new Error('connect() must be called before sending messages');
+    }
+
+    type AllowedStatus = Extract<
+      QuestionnaireInstanceStatus,
+      'inactive' | 'active' | 'expired'
+    >;
+
+    if (
+      !isInstanceWithNarrowedStatus<AllowedStatus>(questionnaireInstance, [
+        'inactive',
+        'active',
+        'expired',
+      ])
+    ) {
+      throw new Error(
+        `Instance with id "${questionnaireInstance.id}" has wrong status for sending created message: ${questionnaireInstance.status}`
+      );
+    }
+
+    await this.questionnaireInstanceCreatedProducer.publish({
+      id: questionnaireInstance.id,
+      studyName: questionnaireInstance.studyId,
+      pseudonym: questionnaireInstance.pseudonym,
+      status: questionnaireInstance.status,
+      questionnaire: {
+        id: questionnaireInstance.questionnaire?.id ?? 0,
+        customName: questionnaireInstance.questionnaire?.customName ?? '',
+      },
+    });
   }
 
   public async sendQuestionnaireInstanceReleased(

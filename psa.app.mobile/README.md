@@ -101,7 +101,7 @@ You only need to do this once or after a reset.
 Start the emulated device with writable file system (given `ANDROID_HOME` is set):
 
 ```sh
-$ANDROID_HOME/emulator/emulator -avd <device-name> -writable-system
+$ANDROID_HOME/emulator/emulator -avd <device-name> -writable-system -selinux permissive
 ```
 
 > ℹ️ You can find the device name by running `$ANDROID_HOME/emulator/emulator -list-avds`.
@@ -109,6 +109,9 @@ $ANDROID_HOME/emulator/emulator -avd <device-name> -writable-system
 Then run the following commands:
 
 ```sh
+adb root
+adb disable-verity
+adb reboot
 adb root
 adb remount
 adb shell

@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
@@ -9,7 +9,7 @@ import { AccessToken, assertStudyAccess } from '@pia/lib-service-core';
 
 import { userserviceClient } from '../clients/userserviceClient';
 import { PersonalDataService } from '../services/personalDataService';
-import { PersonalData, PersonalDataReq } from '../models/personalData';
+import { PersonalDataDb, PersonalDataReq } from '../models/personalDataDb';
 
 export class PersonalDataInteractor {
   /**
@@ -18,7 +18,7 @@ export class PersonalDataInteractor {
   public static async getPersonalData(
     decodedToken: AccessToken,
     pseudonym: string
-  ): Promise<PersonalData> {
+  ): Promise<PersonalDataDb> {
     const personalData = await PersonalDataService.getPersonalData(pseudonym);
 
     if (!personalData) {
@@ -35,7 +35,7 @@ export class PersonalDataInteractor {
    */
   public static async getPersonalDataOfAllProbands(
     studies: string[]
-  ): Promise<PersonalData[]> {
+  ): Promise<PersonalDataDb[]> {
     return await PersonalDataService.getPersonalDataOfStudies(studies);
   }
 
@@ -46,7 +46,7 @@ export class PersonalDataInteractor {
     decodedToken: AccessToken,
     pseudonym: string,
     personalData: PersonalDataReq
-  ): Promise<PersonalData> {
+  ): Promise<PersonalDataDb> {
     const proband = await userserviceClient.getProband(pseudonym);
     if (!proband) {
       throw Boom.notFound('proband does not exist');

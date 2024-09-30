@@ -5,6 +5,7 @@
  */
 
 export interface Condition {
+  id?: number;
   condition_type: ConditionType;
   condition_answer_option_id: number;
   condition_question_id: number;

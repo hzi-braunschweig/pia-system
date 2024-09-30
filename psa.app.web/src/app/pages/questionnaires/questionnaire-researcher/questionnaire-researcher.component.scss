@@ -204,6 +204,7 @@ form {
 
         .answer-option-type {
           display: flex;
+          column-gap: var(--grid-layout-gap);
           align-items: baseline;
         }
 
@@ -387,4 +388,13 @@ mat-icon.warning-icon {
 
 .warning-card {
   background-color: $warning-color;
+}
+
+:host ::ng-deep .checkbox-with-suffix label {
+  display: flex;
+  align-items: center;
+
+  .mat-icon {
+    padding-right: 20px;
+  }
 }

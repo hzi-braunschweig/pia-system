@@ -1,12 +1,12 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 import * as Boom from '@hapi/boom';
 import { PersonalDataService } from '../../services/personalDataService';
-import { PersonalData, PersonalDataReq } from '../../models/personalData';
+import { PersonalDataDb, PersonalDataReq } from '../../models/personalDataDb';
 import { userserviceClient } from '../../clients/userserviceClient';
 
 export class InternalPersonalDataInteractor {
@@ -17,7 +17,7 @@ export class InternalPersonalDataInteractor {
     pseudonym: string,
     personalData: PersonalDataReq,
     skipUpdateAccount: boolean
-  ): Promise<PersonalData> {
+  ): Promise<PersonalDataDb> {
     const proband = await userserviceClient.getProband(pseudonym);
     if (!proband) {
       throw Boom.notFound('proband does not exist');

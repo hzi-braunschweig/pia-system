@@ -1,12 +1,12 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 import { getDbTransactionFromOptionsOrDbConnection } from '../db';
 import { RepositoryOptions } from '@pia/lib-service-core';
-import { PersonalData, PersonalDataReq } from '../models/personalData';
+import { PersonalDataDb, PersonalDataReq } from '../models/personalDataDb';
 
 export class PersonalDataRepository {
   public static async deletePersonalData(
@@ -23,9 +23,9 @@ export class PersonalDataRepository {
   public static async getPersonalData(
     pseudonym: string,
     options?: RepositoryOptions
-  ): Promise<PersonalData | null> {
+  ): Promise<PersonalDataDb | null> {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
-    return await db.oneOrNone<PersonalData>(
+    return await db.oneOrNone<PersonalDataDb>(
       'SELECT * FROM personal_data WHERE pseudonym=$1',
       [pseudonym]
     );
@@ -37,7 +37,7 @@ export class PersonalDataRepository {
   ): Promise<string | null> {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
     return await db
-      .oneOrNone<PersonalData>(
+      .oneOrNone<PersonalDataDb>(
         'SELECT email FROM personal_data WHERE pseudonym=$1',
         [pseudonym]
       )
@@ -47,10 +47,10 @@ export class PersonalDataRepository {
   public static async getPersonalDataOfStudies(
     studies: string[] | undefined,
     options?: RepositoryOptions
-  ): Promise<PersonalData[]> {
+  ): Promise<PersonalDataDb[]> {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
     if (!studies?.length) return [];
-    return await db.manyOrNone<PersonalData>(
+    return await db.manyOrNone<PersonalDataDb>(
       'SELECT * FROM personal_data WHERE study IN ($(studies:csv))',
       { studies }
     );
@@ -60,7 +60,7 @@ export class PersonalDataRepository {
     pseudonym: string,
     userValues: PersonalDataReq,
     options?: RepositoryOptions
-  ): Promise<PersonalData> {
+  ): Promise<PersonalDataDb> {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
     return await db.one(
       `UPDATE personal_data
@@ -105,9 +105,9 @@ export class PersonalDataRepository {
     study: string,
     userValues: PersonalDataReq,
     options?: RepositoryOptions
-  ): Promise<PersonalData> {
+  ): Promise<PersonalDataDb> {
     const db = getDbTransactionFromOptionsOrDbConnection(options);
-    return db.one<PersonalData>(
+    return db.one<PersonalDataDb>(
       `INSERT INTO personal_data(pseudonym, study, anrede, titel, name, vorname, strasse, haus_nr, plz, landkreis,
                                        ort,
                                        telefon_privat, telefon_dienst, telefon_mobil, email, comment)

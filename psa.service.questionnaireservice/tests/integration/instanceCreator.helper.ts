@@ -28,6 +28,7 @@ function createAnswerOption(
     values: null,
     valuesCode: null,
     condition: null,
+    useAutocomplete: null,
     ...overwrite,
   };
 }
@@ -95,6 +96,7 @@ export function createQuestionnaire(
     studyId: 'QTestStudy',
     name: 'ApiTestQuestionnaire',
     customName: null,
+    sortOrder: null,
     noQuestions: 2,
     cycleAmount: 1,
     cycleUnit: 'week',
@@ -138,6 +140,7 @@ export function createQuestionnaire(
         answerOptions: create5AnswerOptions(id + 20),
       }),
     ],
+    sortOrder: null,
     ...overwrite,
   };
 }
@@ -149,6 +152,7 @@ export function createQuestionnaireInstance(
     id: 19100,
     studyId: 'QTestStudy',
     questionnaireName: 'ApiTestQuestionnaire',
+    sortOrder: null,
     pseudonym: 'qtest-proband1',
     dateOfIssue: new Date('2017-08-07T22:00:00.000Z'),
     dateOfReleaseV1: null,
@@ -159,6 +163,7 @@ export function createQuestionnaireInstance(
     progress: 0,
     releaseVersion: 0,
     questionnaire: createQuestionnaire(),
+    sortOrder: null,
     ...overwrite,
   };
 }

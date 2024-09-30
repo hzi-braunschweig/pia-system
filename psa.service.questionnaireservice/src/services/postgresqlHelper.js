@@ -147,7 +147,7 @@ const postgresqlHelper = (function () {
                 const curAnswerOption =
                   questionnaire.questions[i].answer_options[j];
                 const insertedAnswerOption = await t.one(
-                  'INSERT INTO answer_options(question_id, text, answer_type_id, values, values_code, position, restriction_min, restriction_max, is_decimal, variable_name, is_notable) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
+                  'INSERT INTO answer_options(question_id, text, answer_type_id, values, values_code, position, restriction_min, restriction_max, is_decimal, variable_name, is_notable, use_autocomplete) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
                   [
                     questionsResult[i].id,
                     curAnswerOption.text,
@@ -164,6 +164,7 @@ const postgresqlHelper = (function () {
                     curAnswerOption.is_notable
                       ? curAnswerOption.is_notable.map((value) => value.value)
                       : null,
+                    curAnswerOption.use_autocomplete,
                   ]
                 );
                 answerOptionsResult.push(insertedAnswerOption);
@@ -460,7 +461,7 @@ const postgresqlHelper = (function () {
                 const curAnswerOption =
                   questionnaire.questions[i].answer_options[j];
                 const insertedAnswerOption = await t.one(
-                  'INSERT INTO answer_options(question_id, text, answer_type_id, values, values_code, position, restriction_min, restriction_max, is_decimal, variable_name, is_notable) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *',
+                  'INSERT INTO answer_options(question_id, text, answer_type_id, values, values_code, position, restriction_min, restriction_max, is_decimal, variable_name, is_notable, use_autocomplete) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *',
                   [
                     questionsResult[i].id,
                     curAnswerOption.text,
@@ -477,6 +478,7 @@ const postgresqlHelper = (function () {
                     curAnswerOption.is_notable
                       ? curAnswerOption.is_notable.map((value) => value.value)
                       : null,
+                    curAnswerOption.use_autocomplete,
                   ]
                 );
                 answerOptionsResult.push(insertedAnswerOption);

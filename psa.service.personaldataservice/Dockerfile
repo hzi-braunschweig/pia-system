@@ -9,12 +9,14 @@ COPY $DIR/package*.json ./
 #copy dependencies' package.json
 COPY --chown=node:node psa.lib.service-core/package*.json ../psa.lib.service-core/
 COPY --chown=node:node psa.lib.messagequeue/package*.json ../psa.lib.messagequeue/
+COPY --chown=node:node psa.lib.publicapi/package*.json ../psa.lib.publicapi/
 COPY --chown=node:node psa.lib.http-clients-internal/package*.json ../psa.lib.http-clients-internal/
 COPY --chown=node:node psa.lib.auth-server-client/package*.json ../psa.lib.auth-server-client/
 
 #copy dependencies' source
 COPY --chown=node:node psa.lib.service-core/dist ../psa.lib.service-core/dist
 COPY --chown=node:node psa.lib.messagequeue/dist ../psa.lib.messagequeue/dist
+COPY --chown=node:node psa.lib.publicapi/src ../psa.lib.publicapi/src
 COPY --chown=node:node psa.lib.http-clients-internal/dist ../psa.lib.http-clients-internal/dist
 COPY --chown=node:node psa.lib.auth-server-client/dist ../psa.lib.auth-server-client/dist
 
@@ -81,6 +83,7 @@ USER root
 FROM install AS build
 
 COPY $DIR/tsconfig*.json ./
+COPY $DIR/tsoa.json ./
 COPY $DIR/src ./src
 RUN npm run build
 

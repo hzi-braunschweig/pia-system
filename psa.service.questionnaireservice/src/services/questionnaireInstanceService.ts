@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Pseudonym } from '@pia/lib-publicapi';
+import { Pseudonym, StudyName } from '@pia/lib-publicapi';
 import {
   FindConditions,
   getConnection,
@@ -24,7 +24,6 @@ import {
   InvalidStatusTransitionError,
   QuestionnaireInstanceNotFoundError,
 } from '../errors';
-import { StudyName } from '../models/customTypes';
 import { CustomName, QuestionnaireType } from '../models/questionnaire';
 import {
   PatchQuestionnaireInstanceDto,

@@ -9,10 +9,12 @@ COPY $DIR/package*.json ./
 #copy dependencies' package.json
 COPY --chown=node:node psa.lib.service-core/package*.json ../psa.lib.service-core/
 COPY --chown=node:node psa.lib.messagequeue/package*.json ../psa.lib.messagequeue/
+COPY --chown=node:node psa.lib.http-clients-internal/package*.json ../psa.lib.http-clients-internal/
 
 #copy dependencies' source
 COPY --chown=node:node psa.lib.service-core/dist ../psa.lib.service-core/dist
 COPY --chown=node:node psa.lib.messagequeue/dist ../psa.lib.messagequeue/dist
+COPY --chown=node:node psa.lib.http-clients-internal/dist ../psa.lib.http-clients-internal/dist
 
 ################################################################
 
@@ -27,6 +29,8 @@ USER node
 WORKDIR /usr/src/psa.lib.service-core
 RUN npm ci
 WORKDIR /usr/src/psa.lib.messagequeue
+RUN npm ci
+WORKDIR /usr/src/psa.lib.http-clients-internal
 RUN npm ci
 WORKDIR /usr/src/node-app/
 ###

@@ -68,6 +68,7 @@ export interface AnswerOption {
   text: string;
   values: string[];
   values_code: number[];
+  use_autocomplete?: boolean | null;
 }
 
 export interface Answer {

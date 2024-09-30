@@ -67,6 +67,7 @@ export interface AnswerOptionForm {
   variable_name: FormControl<string>;
   answer_type_id: FormControl<number>;
   current_answer_type_id: FormControl<number>;
+  use_autocomplete: FormControl<boolean>;
   coding_enable: FormControl<boolean>;
   has_condition: FormControl<boolean>;
   condition_error: FormControl<string>;

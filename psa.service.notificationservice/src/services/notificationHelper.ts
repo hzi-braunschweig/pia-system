@@ -50,6 +50,7 @@ export class NotificationHelper {
             ? addDays(new Date(dateOfIssue), i * notification_interval)
             : addHours(new Date(dateOfIssue), i * notification_interval);
       }
+
       // Use notification time as reference
       else if (notification_interval_unit === 'days') {
         newDate = addDays(notificationTime, i * notification_interval);

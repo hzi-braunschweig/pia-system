@@ -207,7 +207,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
           ],
         },
         {
-          text: 'Wie alt sind sie?',
+          text: 'Wie alt sind Sie?',
           help_text: '',
           variable_name: '',
           position: 2,
@@ -225,7 +225,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
           ],
         },
         {
-          text: 'Ihr Geschlecht',
+          text: 'Single Select mit Radio Buttons',
           help_text: '',
           variable_name: '',
           position: 3,
@@ -239,6 +239,30 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
               is_notable: [{ value: false }, { value: false }],
               values: [{ value: 'Männlich' }, { value: 'Weiblich' }],
               values_code: [{ value: 1 }, { value: 2 }],
+              use_autocomplete: false,
+            },
+          ],
+        },
+        {
+          text: 'Single Select mit Autocomplete',
+          help_text: '',
+          variable_name: '',
+          position: 4,
+          is_mandatory: false,
+          answer_options: [
+            {
+              position: 1,
+              text: '',
+              variable_name: '',
+              answer_type_id: 1,
+              is_notable: [{ value: false }, { value: false }],
+              values: [
+                { value: 'Männlich' },
+                { value: 'Weiblich' },
+                { value: 'Divers' },
+              ],
+              values_code: [{ value: 1 }, { value: 2 }],
+              use_autocomplete: true,
             },
           ],
         },
@@ -246,7 +270,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
           text: 'Welche Symptome haben Sie?',
           help_text: '',
           variable_name: '',
-          position: 4,
+          position: 5,
           is_mandatory: false,
           answer_options: [
             {
@@ -272,7 +296,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
           text: 'Wann sind erste Symptome aufgetreten?',
           help_text: '',
           variable_name: '',
-          position: 5,
+          position: 6,
           is_mandatory: false,
           answer_options: [
             {
@@ -360,10 +384,13 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       .should('not.exist');
   });
 
-  it('should fill out any questionnaire and submit it', () => {
+  it('should fill out any questionnaire, submit it and the finished questionnaire should contain the correct values', () => {
     cy.visit(appUrl);
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
+
+    console.log('probandCredentials.username');
+    console.log(probandCredentials.username);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
@@ -380,9 +407,13 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
     cy.get('[data-e2e="e2e-input-type-number"]').type('23');
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
-    cy.get('[data-e2e="e2e-input-type-radio-group"]')
+    cy.get('[data-e2e="e2e-input-type-single-select"]')
       .contains('Männlich')
       .click();
+    cy.get('[data-e2e="e2e-swiper-button-next"]').click();
+
+    cy.get('[data-e2e="e2e-input-type-autocomplete"]').click();
+    cy.contains('Divers').click();
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
     cy.get('[data-e2e="e2e-input-type-checkbox-group"]')
@@ -414,6 +445,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       .find('[data-e2e="e2e-questionnaire-name"]')
       .contains(q.name)
       .should('be.visible');
+    checkEnteredQuestionnaireData();
   });
 
   it('should display second questionnaire only if condition defined in the first questionnaire is fulfilled', () => {
@@ -446,7 +478,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
     cy.get('[data-e2e="e2e-input-type-number"]').type('23');
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
-    cy.get('[data-e2e="e2e-input-type-radio-group"]')
+    cy.get('[data-e2e="e2e-input-type-single-select"]')
       .contains('Männlich')
       .click();
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
@@ -529,7 +561,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
           ],
         },
         {
-          text: 'Wie alt sind sie?',
+          text: 'Wie alt sind Sie?',
           help_text: '',
           variable_name: '',
           position: 2,
@@ -645,4 +677,63 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
           .should('be.visible');
       });
   });
+
+  it('should display single selects in a autocomplete if the researcher toggles this option', () => {});
 });
+
+function checkEnteredQuestionnaireData() {
+  cy.get('[data-e2e="e2e-proband-completed-questionnaire-table"]')
+    .find('[data-e2e="e2e-questionnaire-name"]')
+    .contains(q.name)
+    .click();
+  cy.contains('li', 'Wie heißen Sie').should('be.visible');
+
+  cy.get('[data-e2e="e2e-navigation-button"').click();
+  cy.get('button').contains('Fragebogen endgültig abschicken').click();
+
+  cy.get('#confirmbutton').click();
+  cy.get('[role="tab"]').contains('Abgeschlossene Fragebögen').click();
+  cy.get('[data-e2e="e2e-proband-completed-questionnaire-table"]')
+    .find('[data-e2e="e2e-questionnaire-name"]')
+    .contains(q.name)
+    .click();
+
+  cy.contains('mat-card', 'Wie heißen Sie?').within(() => {
+    cy.get('mat-form-field input').should('have.value', 'Bar');
+  });
+
+  cy.contains('mat-card', 'Wie alt sind Sie?').within(() => {
+    cy.get('mat-form-field input').should('have.value', '23');
+  });
+
+  cy.contains('mat-card', 'Single Select mit Radio Buttons').within(() => {
+    cy.contains('mat-radio-button', 'Männlich')
+      .find('input')
+      .should('be.checked');
+    cy.contains('mat-radio-button', 'Weiblich')
+      .find('input')
+      .should('not.be.checked');
+  });
+
+  cy.contains('mat-card', 'Single Select mit Autocomplete').within(() => {
+    cy.get('mat-form-field input').should('have.value', 'Divers');
+  });
+
+  cy.contains('mat-card', 'Welche Symptome haben Sie?').within(() => {
+    cy.get('input[type="checkbox"][value="Fieber"]')
+      .should('exist')
+      .and('be.checked');
+    cy.get('input[type="checkbox"][value="Husten"]')
+      .should('exist')
+      .and('be.checked');
+    cy.get('input[type="checkbox"][value="Durchfall"]')
+      .should('exist')
+      .and('not.be.checked');
+  });
+
+  cy.contains('mat-card', 'Wann sind erste Symptome aufgetreten?').within(
+    () => {
+      cy.get('mat-form-field input').should('have.value', '01.12.20');
+    }
+  );
+}

@@ -139,5 +139,6 @@
       - psa.utils.repo-tool
     openapi:
       - psa.server.eventhistory
+      - psa.service.personaldataservice
       - psa.service.questionnaireservice
       - psa.service.userservice

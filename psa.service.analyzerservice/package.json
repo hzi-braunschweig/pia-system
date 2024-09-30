@@ -13,11 +13,13 @@
   "dependencies": {
     "@hapi/boom": "^10.0.0",
     "@hapi/hapi": "~21.1.0",
+    "@pia-system/lib-http-clients-internal": "file:../psa.lib.http-clients-internal",
     "@pia/lib-messagequeue": "file:../psa.lib.messagequeue",
     "@pia/lib-service-core": "file:../psa.lib.service-core",
     "date-fns": "^2.29.3",
     "date-fns-tz": "^1.3.7",
     "joi": "^17.9.0",
+    "node-fetch": "^2.7.0",
     "node-schedule": "^2.1.0",
     "pg-promise": "^10.14.1"
   },

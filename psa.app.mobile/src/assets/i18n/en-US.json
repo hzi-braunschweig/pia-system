@@ -99,7 +99,8 @@
     "ALERT_SUBTITLE_SENT_LAST_TIME": "Your answers have now been sent for the last time.",
     "NO_RESULTS": "No questionnaire found",
     "UPLOADED_IMAGE_TOO_LARGE": "Only files up to 20MB in size can be uploaded. Please check your file size.",
-    "NO_IMAGE_UPLOAD": "No file uploaded yet."
+    "NO_IMAGE_UPLOAD": "No file uploaded yet.",
+    "AUTOCOMPLETE_PICK": "Pick one"
   },
   "QUESTIONNAIRES": {
     "TITLE": "Overview",

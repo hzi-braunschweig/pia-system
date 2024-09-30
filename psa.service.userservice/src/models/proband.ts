@@ -32,6 +32,7 @@ export interface CreateProbandRequest {
   studyCenter?: string | null;
   examinationWave?: number | null;
   temporaryPassword?: boolean;
+  isTestProband?: boolean;
   origin: ProbandOrigin;
 }
 

@@ -182,11 +182,48 @@
                         </div>
 
                         <div
-                          *ngIf="answer.controls['answer_type_id'].value == 1"
+                          *ngIf="answer.controls['answer_type_id'].value === 1"
                           class="answer-type radio-group"
-                          data-e2e="e2e-input-type-radio-group"
+                          data-e2e="e2e-input-type-single-select"
                         >
                           <div>
+                            @if (answer.controls['use_autocomplete'].value){
+                            <mat-form-field>
+                              <input
+                                type="text"
+                                [placeholder]="
+                                  'ANSWERS_PROBAND.AUTOCOMPLETE_PICK'
+                                    | translate
+                                "
+                                data-e2e="e2e-input-type-autocomplete"
+                                matInput
+                                formControlName="value"
+                                [matAutocomplete]="auto"
+                                (blur)="validateAutocompleteInput(i, j)"
+                              />
+                              <mat-autocomplete
+                                #auto="matAutocomplete"
+                                (optionSelected)="
+                                  updateSingleSelectStateFromAutocomplete(
+                                    $event,
+                                    i,
+                                    j
+                                  )
+                                "
+                              >
+                                @for (valueAnswers of
+                                answer.controls['filtered_values'].value; track
+                                valueAnswers) {
+                                <mat-option
+                                  [value]="valueAnswers"
+                                  (mousedown)="$event.preventDefault()"
+                                >
+                                  {{ valueAnswers }}</mat-option
+                                >
+                                }
+                              </mat-autocomplete>
+                            </mat-form-field>
+                            } @else {
                             <mat-radio-group formControlName="value">
                               <div
                                 *ngFor="
@@ -198,7 +235,9 @@
                                 <mat-radio-button
                                   #radioButton
                                   [value]="valueAnswers.value"
-                                  (click)="updateState(radioButton, i, j)"
+                                  (click)="
+                                    updateSingleSelectState(radioButton, i, j)
+                                  "
                                 >
                                   <span
                                     (click)="$event.stopImmediatePropagation()"
@@ -207,6 +246,7 @@
                                 </mat-radio-button>
                               </div>
                             </mat-radio-group>
+                            }
                           </div>
                           <mat-error *ngIf="answer.hasError('answerRequired')">
                             {{
@@ -217,7 +257,7 @@
                         </div>
 
                         <div
-                          *ngIf="answer.controls['answer_type_id'].value == 2"
+                          *ngIf="answer.controls['answer_type_id'].value === 2"
                           class="answer-type checkbox-group"
                           data-e2e="e2e-input-type-checkbox-group"
                         >
@@ -247,7 +287,7 @@
                         </div>
 
                         <div
-                          *ngIf="answer.controls['answer_type_id'].value == 3"
+                          *ngIf="answer.controls['answer_type_id'].value === 3"
                           class="answer-type text"
                           data-e2e="e2e-input-type-number"
                         >
@@ -312,7 +352,7 @@
                         </div>
 
                         <div
-                          *ngIf="answer.controls['answer_type_id'].value == 4"
+                          *ngIf="answer.controls['answer_type_id'].value === 4"
                           data-e2e="e2e-input-type-text"
                           class="answer-type text"
                         >
@@ -333,7 +373,7 @@
                         </div>
 
                         <div
-                          *ngIf="answer.controls['answer_type_id'].value == 5"
+                          *ngIf="answer.controls['answer_type_id'].value === 5"
                           data-e2e="e2e-input-type-date"
                         >
                           <mat-form-field>
@@ -388,7 +428,7 @@
                         </div>
 
                         <div
-                          *ngIf="answer.controls['answer_type_id'].value == 6"
+                          *ngIf="answer.controls['answer_type_id'].value === 6"
                           class="answer-type data"
                         >
                           <mat-error
@@ -523,7 +563,7 @@
                         </div>
 
                         <div
-                          *ngIf="answer.controls['answer_type_id'].value == 7"
+                          *ngIf="answer.controls['answer_type_id'].value === 7"
                         >
                           <mat-form-field>
                             <input
@@ -549,7 +589,7 @@
                         </div>
 
                         <div
-                          *ngIf="answer.controls['answer_type_id'].value == 8"
+                          *ngIf="answer.controls['answer_type_id'].value === 8"
                         >
                           <input [hidden]="true" formControlName="value" />
                           <app-image-answer-option
@@ -576,7 +616,7 @@
                           </mat-error>
                         </div>
                         <div
-                          *ngIf="answer.controls['answer_type_id'].value == 9"
+                          *ngIf="answer.controls['answer_type_id'].value === 9"
                         >
                           <input [hidden]="true" formControlName="value" />
                           <app-timestamp-answer-option
@@ -588,7 +628,7 @@
                           </app-timestamp-answer-option>
                         </div>
                         <div
-                          *ngIf="answer.controls['answer_type_id'].value == 10"
+                          *ngIf="answer.controls['answer_type_id'].value === 10"
                         >
                           <input [hidden]="true" formControlName="value" />
                           <app-file-answer-option
@@ -734,10 +774,25 @@
                           </div>
 
                           <div
-                            *ngIf="answer.controls['answer_type_id'].value == 1"
+                            *ngIf="
+                              answer.controls['answer_type_id'].value === 1
+                            "
                             class="answer-type radio-group"
-                            data-e2e="e2e-input-type-radio-group"
+                            data-e2e="e2e-input-type-single-select"
                           >
+                            @if (answer.controls[ 'use_autocomplete' ].value){
+                            <mat-form-field>
+                              <mat-select formControlName="value">
+                                @for (valueAnswers of
+                                answer.controls['values'].value; track
+                                valueAnswers) {
+                                <mat-option [value]="valueAnswers.value">
+                                  {{ valueAnswers.value }}</mat-option
+                                >
+                                }
+                              </mat-select>
+                            </mat-form-field>
+                            } @else {
                             <div class="radio-group">
                               <mat-radio-group formControlName="value">
                                 <div
@@ -747,7 +802,6 @@
                                     ].value;
                                     let k = index
                                   "
-                                  class="radio-button-option"
                                 >
                                   <mat-radio-button
                                     [value]="valueAnswers.value"
@@ -761,6 +815,9 @@
                                 </div>
                               </mat-radio-group>
                             </div>
+
+                            }
+
                             <mat-error
                               *ngIf="
                                 answer.hasError('answerRequired') &&
@@ -776,7 +833,9 @@
                           </div>
 
                           <div
-                            *ngIf="answer.controls['answer_type_id'].value == 2"
+                            *ngIf="
+                              answer.controls['answer_type_id'].value === 2
+                            "
                             class="answer-type checkbox-group"
                             data-e2e="e2e-input-type-checkbox-group"
                           >
@@ -815,13 +874,11 @@
                           </div>
 
                           <div
-                            *ngIf="answer.controls['answer_type_id'].value == 3"
+                            *ngIf="
+                              answer.controls['answer_type_id'].value === 3
+                            "
                           >
-                            <mat-form-field
-                              *ngIf="
-                                answer.controls['answer_type_id'].value == 3
-                              "
-                            >
+                            <mat-form-field>
                               <input matInput formControlName="value" />
                             </mat-form-field>
                             <mat-error
@@ -897,7 +954,9 @@
                           </div>
 
                           <div
-                            *ngIf="answer.controls['answer_type_id'].value == 4"
+                            *ngIf="
+                              answer.controls['answer_type_id'].value === 4
+                            "
                             data-e2e="e2e-input-type-text"
                             class="answer-type text"
                           >
@@ -919,7 +978,9 @@
                           </div>
 
                           <div
-                            *ngIf="answer.controls['answer_type_id'].value == 5"
+                            *ngIf="
+                              answer.controls['answer_type_id'].value === 5
+                            "
                             class="answer-type date"
                             data-e2e="e2e-input-type-date"
                           >
@@ -977,7 +1038,9 @@
                           </div>
 
                           <div
-                            *ngIf="answer.controls['answer_type_id'].value == 6"
+                            *ngIf="
+                              answer.controls['answer_type_id'].value === 6
+                            "
                             class="answer-type data"
                           >
                             <mat-grid-list
@@ -1043,7 +1106,9 @@
                           </div>
 
                           <div
-                            *ngIf="answer.controls['answer_type_id'].value == 7"
+                            *ngIf="
+                              answer.controls['answer_type_id'].value === 7
+                            "
                           >
                             <mat-form-field>
                               <mat-label
@@ -1070,7 +1135,9 @@
                           </div>
 
                           <div
-                            *ngIf="answer.controls['answer_type_id'].value == 8"
+                            *ngIf="
+                              answer.controls['answer_type_id'].value === 8
+                            "
                           >
                             <input
                               [hidden]="true"
@@ -1105,7 +1172,9 @@
                             </mat-error>
                           </div>
                           <div
-                            *ngIf="answer.controls['answer_type_id'].value == 9"
+                            *ngIf="
+                              answer.controls['answer_type_id'].value === 9
+                            "
                           >
                             <app-timestamp-answer-option
                               [timestamp]="answer.controls['value'].value"
@@ -1128,7 +1197,7 @@
 
                           <div
                             *ngIf="
-                              answer.controls['answer_type_id'].value == 10
+                              answer.controls['answer_type_id'].value === 10
                             "
                           >
                             <input [hidden]="true" formControlName="value" />

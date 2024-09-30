@@ -451,6 +451,7 @@ export class ProbandService {
       newProband.ids = newProbandData.ids ?? null;
       newProband.study = study;
       newProband.origin = newProbandData.origin;
+      newProband.isTestProband = newProbandData.isTestProband ?? false;
 
       await probandRepo.save(newProband).catch((e) => {
         throw new ProbandSaveError('could not create the proband', e);

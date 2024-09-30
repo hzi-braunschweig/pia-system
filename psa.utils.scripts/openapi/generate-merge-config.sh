@@ -19,7 +19,7 @@ handle_directory() {
   cd $dir
   if [ -z "$(ls -A $SPEC_DIR/*.yaml)" ] || [ ! -z "$REBUILD_OPENAPI" ]
   then
-    npm ci
+    npm i --prefer-offline --no-audit --progress=false
     npm run build.openapi
   fi
   if [ -d "$SPEC_DIR" ]

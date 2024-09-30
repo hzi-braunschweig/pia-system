@@ -108,6 +108,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
   study_id: string;
   selectedStudy: Study = null;
   answer_type_id: number;
+  use_autocomplete: boolean;
   panelDrag: any = true;
   studies: Study[];
   showQuestionnaireCondition = false;
@@ -1062,6 +1063,9 @@ export class QuestionnaireResearcherComponent implements OnInit {
         answer_type_id: new FormControl(
           this.answer_type_id,
           Validators.required
+        ),
+        use_autocomplete: new FormControl(
+          answerOption?.use_autocomplete ?? false
         ),
         current_answer_type_id: new FormControl(this.answer_type_id),
         coding_enable: new FormControl(coding_enable),

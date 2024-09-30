@@ -64,6 +64,11 @@ export class QuestionnaireConditionChecker {
     ) as FormControl;
   }
 
+  /**
+   * @deprecated If you are currently working on this method, please consider refactoring it.
+   * We have a great example for an optimized version, which could be extracted into a library.
+   * @see psa.service.analyzerservice/src/services/conditionsService.ts
+   */
   isConditionMet(questionnaireForm: FormArray, condition: Condition): boolean {
     if (!condition || condition.condition_type !== 'internal_this') {
       return true;

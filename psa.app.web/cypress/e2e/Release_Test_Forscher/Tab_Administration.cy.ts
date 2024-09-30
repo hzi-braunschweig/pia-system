@@ -1073,7 +1073,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
           .contains('Are you over 18')
           .click();
 
-        cy.get('[data-e2e="e2e-input-type-radio-group"]')
+        cy.get('[data-e2e="e2e-input-type-single-select"]')
           .contains('Yes')
           .click();
 
