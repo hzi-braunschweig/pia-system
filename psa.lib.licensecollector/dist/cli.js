@@ -8,6 +8,7 @@ const promises_1 = __importDefault(require("fs/promises"));
 const commander_1 = require("commander");
 const licenseCollector_1 = require("./licenseCollector");
 const dockerLicenseTexts_1 = require("./dockerLicenseTexts");
+const additionalLicenseTexts_1 = require("./additionalLicenseTexts");
 const asyncWithErrors_1 = require("./asyncWithErrors");
 class Program {
     static async main() {
@@ -29,6 +30,7 @@ class Program {
             if (options.addDocker) {
                 licenses.push(...(0, dockerLicenseTexts_1.getDockerLicenses)());
             }
+            licenses.push(...(0, additionalLicenseTexts_1.getAdditionalLicenses)());
             licenses.sort((a, b) => {
                 return a.packageName === b.packageName
                     ? 0

@@ -23,8 +23,8 @@ class PackageLicense {
             .digest('hex');
     }
     assertLicenseTextIsValid() {
-        if (!(this.licenseText !== PackageLicense.EMPTY_LICENSE_TEXT_PLACEHOLDER &&
-            PackageLicense.VALID_LICENSE_TEXT_SNIPPETS.some((snippet) => this.licenseText.includes(snippet)))) {
+        if (this.licenseText === PackageLicense.EMPTY_LICENSE_TEXT_PLACEHOLDER ||
+            !PackageLicense.VALID_LICENSE_TEXT_SNIPPETS.some((snippet) => this.licenseText.includes(snippet))) {
             throw new Error('Could not find a valid license text for package "' +
                 this.packageName +
                 '" with text:\n\n' +

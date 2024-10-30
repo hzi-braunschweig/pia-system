@@ -1,5 +1,5 @@
 # Appflow currently only supports until node v18 (https://ionic.io/docs/appflow/build-stacks)
-FROM node:18.16.1-alpine@sha256:bf6c61feabc1a1bd565065016abe77fa378500ec75efa67f5b04e5e5c4d447cd AS base
+FROM node:20.9.0-alpine@sha256:cb2301e2c5fe3165ba2616591efe53b4b6223849ac0871c138f56d5f7ae8be4b AS base
 
 FROM base AS npm-install
 RUN apk --update --no-cache add curl tzdata

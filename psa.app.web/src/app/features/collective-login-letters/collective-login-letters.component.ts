@@ -390,7 +390,7 @@ export class CollectiveLoginLettersComponent implements OnInit {
 
         @font-face {
             font-family: ff1;
-            src: url(../../../assets/fonts/f1.woff)format("woff");
+            src: url(../../../assets/fonts/Carlito-Bold.woff) format("woff");
         }
 
         .ff1 {
@@ -403,7 +403,7 @@ export class CollectiveLoginLettersComponent implements OnInit {
 
         @font-face {
             font-family: ff2;
-            src: url(../../../assets/fonts/f2.woff)format("woff");
+            src: url(../../../assets/fonts/Carlito-Regular.woff) format("woff");
         }
 
         .ff2 {
@@ -416,7 +416,7 @@ export class CollectiveLoginLettersComponent implements OnInit {
 
         @font-face {
             font-family: ff3;
-            src: url(../../../assets/fonts/f3.woff)format("woff");
+            src: url(../../../assets/fonts/Carlito-Italic.woff) format("woff");
         }
 
         .ff3 {

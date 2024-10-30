@@ -56,11 +56,9 @@ export class PackageLicense {
 
   public assertLicenseTextIsValid(): void {
     if (
-      !(
-        this.licenseText !== PackageLicense.EMPTY_LICENSE_TEXT_PLACEHOLDER &&
-        PackageLicense.VALID_LICENSE_TEXT_SNIPPETS.some((snippet) =>
-          this.licenseText.includes(snippet)
-        )
+      this.licenseText === PackageLicense.EMPTY_LICENSE_TEXT_PLACEHOLDER ||
+      !PackageLicense.VALID_LICENSE_TEXT_SNIPPETS.some((snippet) =>
+        this.licenseText.includes(snippet)
       )
     ) {
       throw new Error(

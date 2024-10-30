@@ -9,6 +9,7 @@ import fs from 'fs/promises';
 import { Argument, Command, Option } from 'commander';
 import { LicenseCollector } from './licenseCollector';
 import { getDockerLicenses } from './dockerLicenseTexts';
+import { getAdditionalLicenses } from './additionalLicenseTexts';
 import { PackageLicense } from './packageLicense';
 import { asyncPassErrors } from './asyncWithErrors';
 
@@ -83,6 +84,7 @@ class Program {
           if (options.addDocker) {
             licenses.push(...getDockerLicenses());
           }
+          licenses.push(...getAdditionalLicenses());
           licenses.sort((a, b) => {
             return a.packageName === b.packageName
               ? 0
