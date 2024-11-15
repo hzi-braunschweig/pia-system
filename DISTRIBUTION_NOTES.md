@@ -2,7 +2,13 @@
 
 This file contains notes about changes that operation teams need to be aware of when updating PIA.
 
-## 1.39 (Keycloak v24)
+## 1.39
+
+- The logo in the header of the webapp can now be configured
+- Introduced a relation in cyclic questionnaires with conditions, so that the target questionnaire has a reference to the triggering questionnaire
+- Update android target level API to 34
+
+## 1.38.1 (Keycloak v24)
 
 - Keycloak is updated to v24
 - Passwords will be rehashed on first login after update, as the password policy now complies to current OWASP criteria

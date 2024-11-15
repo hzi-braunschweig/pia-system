@@ -51,7 +51,7 @@ import {
 import { QuestionnaireInstanceQueue } from '../../../psa.app.core/models/questionnaireInstanceQueue';
 import { DialogPopUpComponent } from '../../../_helpers/dialog-pop-up';
 import { DOCUMENT, Location } from '@angular/common';
-import { map, startWith } from 'rxjs/operators';
+import { filter, map, startWith } from 'rxjs/operators';
 import { Tools } from './tools';
 import {
   HistoryItem,
@@ -514,6 +514,7 @@ export class QuestionProbandComponent
         valueControl.valueChanges
           .pipe(
             startWith(valueControl.value),
+            filter(() => valueControl.enabled),
             map((value) =>
               this.filterAutocompleteOptions(value || '', answerOption.values)
             )

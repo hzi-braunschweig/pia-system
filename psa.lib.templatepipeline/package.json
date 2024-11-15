@@ -15,7 +15,7 @@
     "test.unit": "nyc mocha src/**/*.spec.ts tests/**/*.spec.ts --exit"
   },
   "dependencies": {
-    "dompurify": "^2.4.1",
+    "dompurify": "^2.4.9",
     "jsdom": "^20.0.2",
     "marked": "^4.2.2",
     "mustache": "^4.2.0",

@@ -9,12 +9,10 @@
 </ion-item>
 <ion-item *ngFor="let value of values; index as i" lines="none">
   <ion-checkbox
-    class="ion-text-wrap"
     [disabled]="disabled"
     [formControl]="getFormControlAt(i)"
     [name]="name + '-' + value"
-    slot="end"
   >
-    {{ value }}
+    <div class="ion-text-wrap">{{ value }}</div>
   </ion-checkbox>
 </ion-item>

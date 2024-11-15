@@ -34,10 +34,15 @@ export class Precheck extends Chart {
         annotations: {
           'argocd.argoproj.io/hook': 'PreSync',
           'argocd.argoproj.io/hook-delete-policy': 'BeforeHookCreation',
-          'linkerd.io/inject': 'false',
         },
       },
-      podMetadata: configuration.getMetadata(),
+      podMetadata: {
+        ...configuration.getMetadata(),
+        annotations: {
+          ...configuration.getMetadata().annotations,
+          'linkerd.io/inject': 'disabled',
+        },
+      },
 
       serviceAccount: new ServiceAccountWithImagePullSecrets(this, 'sa', {
         metadata: { ...configuration.getMetadata(), name: 'pia-precheck' },

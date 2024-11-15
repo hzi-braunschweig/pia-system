@@ -17,7 +17,7 @@ components:
 
 #images:
 #- name: "*"
-#  newTag: "1.39.1"
+#  newTag: "1.39.2"
 
 patches:
   - target:

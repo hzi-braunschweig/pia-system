@@ -37,14 +37,9 @@
   allowEmptySelection="true"
 >
   <ion-item *ngFor="let value of values" lines="none">
-    <ion-radio
-      class="ion-text-wrap"
-      [value]="value"
-      [disabled]="disabled"
-      color="dark"
-      mode="md"
-      >{{ value }}</ion-radio
-    >
+    <ion-radio [value]="value" [disabled]="disabled" color="dark" mode="md">
+      <div class="ion-text-wrap">{{ value }}</div>
+    </ion-radio>
   </ion-item>
 </ion-radio-group>
 }

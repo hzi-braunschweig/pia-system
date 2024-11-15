@@ -352,7 +352,10 @@ export class NotificationHandlers {
                   false
                 );
 
-              if (questionnaire.type === 'for_probands') {
+              if (
+                questionnaire.type === 'for_probands' &&
+                questionnaireOfInstance.type === 'for_probands'
+              ) {
                 newInstances.forEach((newInstance) => {
                   newInstance.options = {
                     ...newInstance.options,
