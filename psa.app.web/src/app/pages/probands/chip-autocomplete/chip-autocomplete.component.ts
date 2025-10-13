@@ -36,6 +36,7 @@ const CHIP_AUTOCOMPLETE_ACCESSOR = {
   templateUrl: './chip-autocomplete.component.html',
   styleUrls: ['./chip-autocomplete.component.scss'],
   providers: [CHIP_AUTOCOMPLETE_ACCESSOR],
+  standalone: false,
 })
 export class ChipAutocompleteComponent
   implements ControlValueAccessor, OnChanges, OnDestroy

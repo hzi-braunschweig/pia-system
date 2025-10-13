@@ -18,7 +18,7 @@ export class ProbandService {
   public constructor(public http: HttpClient) {}
   private readonly apiUrl = 'api/v1/user/';
 
-  private mapProbandsToContact = map(
+  private readonly mapProbandsToContact = map(
     (probandsToContact: ProbandToContact[]): ProbandToContact[] => {
       return probandsToContact.map((probandToContact) =>
         ProbandService.formatProbandToContactDates(probandToContact)
@@ -51,7 +51,7 @@ export class ProbandService {
   /**
    * Get a list of all probands of a study
    */
-  public getProbands(studyName: string): Promise<Proband[]> {
+  public async getProbands(studyName: string): Promise<Proband[]> {
     return this.http
       .get<Proband[]>(`${this.apiUrl}studies/${studyName}/probands`)
       .toPromise();
@@ -60,7 +60,7 @@ export class ProbandService {
   /**
    * Get a zip containing the idat of all probands of a study
    */
-  public getProbandsExport(
+  public async getProbandsExport(
     studyName: string
   ): Promise<{ probandsExport: string }> {
     return firstValueFrom(

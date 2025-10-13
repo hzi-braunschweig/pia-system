@@ -14,11 +14,10 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MatButtonModule } from '@angular/material/button';
 
 @Component({
-  standalone: true,
   selector: 'app-dialog-delete',
   template: `
     <mat-dialog-content>{{
-      'DIALOG.DELETE' | translate: data
+      'DIALOG.DELETE' | translate : data
     }}</mat-dialog-content>
     <mat-dialog-actions>
       <button mat-button (click)="onNoClick()">

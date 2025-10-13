@@ -4,7 +4,7 @@ include:
 
 npm-install:
   stage: prepare
-  image: snickch/buildx@sha256:63db62815b7ec00b80fd28c5f85c88c50df48d65fbbdd454e18b0efcc96a3235
+  image: docker:28.4.0@sha256:831644212c5bdd0b3362b5855c87b980ea39a83c9e9adcef2ce03eced99a737a
   variables:
     DOCKER_HOST: null
   before_script:
@@ -15,9 +15,9 @@ npm-install:
     - .job-exclude-schedules-pipelines
     - .no-cpu-request
   script:
-    # generate the bake files
-    - ./psa.utils.ci-create-bake-file/npm-install.sh > npm-install.hcl
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - export TAG=$IMAGE_ID
+    - export IMAGE_REGISTRY=$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
     - docker buildx bake --push -f npm-install.hcl
   tags:
     - docker

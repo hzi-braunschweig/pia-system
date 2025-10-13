@@ -46,6 +46,9 @@ describe('Internal: QuestionnaireInstance answers', function () {
       expect(result.body).to.have.lengthOf(expectedLength);
 
       expect(result.body).to.deep.include({
+        questionnaireInstanceId: 666671,
+        questionId: 666666,
+        answerOptionId: 666666,
         versioning: 1,
         value: 'Ja',
         dateOfRelease: null,
@@ -69,6 +72,9 @@ describe('Internal: QuestionnaireInstance answers', function () {
       });
 
       expect(result.body).to.deep.include({
+        questionnaireInstanceId: 666671,
+        questionId: 666666,
+        answerOptionId: 666667,
         versioning: 1,
         value: 'Husten;Schnupfen',
         dateOfRelease: null,
@@ -92,6 +98,9 @@ describe('Internal: QuestionnaireInstance answers', function () {
       });
 
       expect(result.body).to.deep.include({
+        questionnaireInstanceId: 666671,
+        questionId: 666667,
+        answerOptionId: 666668,
         versioning: 1,
         value: '42',
         dateOfRelease: null,
@@ -114,6 +123,9 @@ describe('Internal: QuestionnaireInstance answers', function () {
       });
 
       expect(result.body).to.deep.include({
+        questionnaireInstanceId: 666671,
+        questionId: 666667,
+        answerOptionId: 666669,
         versioning: 1,
         value: 'Mir geht es eigentlich nicht so gut...',
         dateOfRelease: null,

@@ -5,11 +5,11 @@
  */
 
 import Boom from '@hapi/boom';
-import { getCustomRepository, getRepository, In } from 'typeorm';
+import { In } from 'typeorm';
 import { Answer } from '../../entities/answer';
 import { QuestionnaireInstance } from '../../entities/questionnaireInstance';
 import { QuestionnaireInstanceStatus } from '../../models/questionnaireInstance';
-import { CustomQuestionnaireInstanceRepository } from '../../repositories/questionnaireInstanceRepository';
+import { customQuestionnaireInstanceRepository } from '../../repositories/questionnaireInstanceRepository';
 import { QuestionnaireFilter } from '../../services/questionnaireFilter';
 import { CreateQuestionnaireInstanceInternalDto } from '@pia-system/lib-http-clients-internal';
 import { messageQueueService } from '../../services/messageQueueService';
@@ -17,22 +17,16 @@ import { Questionnaire } from '../../entities/questionnaire';
 import { QuestionnaireInstanceQueue } from '../../entities/questionnaireInstanceQueue';
 import addMinutes from 'date-fns/addMinutes';
 import { QuestionnaireInstanceOrigin } from '../../entities/questionnaireInstanceOrigin';
+import { dataSource } from '../../db';
 
 export class InternalQuestionnaireInstancesInteractor {
   public static async getQuestionnaireInstance(
     id: number,
     filterQuestionnaireByConditions?: boolean
   ): Promise<QuestionnaireInstance> {
-    const qiRepo = getCustomRepository(CustomQuestionnaireInstanceRepository);
-    const qInstance = await qiRepo
-      .findOneOrFailByIdWithQuestionnaire({
-        where: {
-          id: id,
-        },
-        relations: [
-          'questionnaire.questions.condition.targetAnswerOption',
-          'questionnaire.questions.answerOptions.condition.targetAnswerOption',
-        ],
+    const qInstance = await customQuestionnaireInstanceRepository
+      .findOneOrFailByIdWithQuestionnaireAndAllConditionRelations({
+        where: { id: id },
       })
       .catch((err) => {
         throw Boom.notFound('Could not get the questionnaire instance', err);
@@ -50,7 +44,8 @@ export class InternalQuestionnaireInstancesInteractor {
       status: QuestionnaireInstanceStatus[];
     }
   ): Promise<QuestionnaireInstance[]> {
-    const qiRepo = getCustomRepository(CustomQuestionnaireInstanceRepository);
+    const qiRepo = customQuestionnaireInstanceRepository;
+
     try {
       if (filter.loadQuestionnaire) {
         return await qiRepo.findWithQuestionnaire({
@@ -76,22 +71,26 @@ export class InternalQuestionnaireInstancesInteractor {
   public static async getQuestionnaireInstanceAnswers(
     questionnaireInstance: number
   ): Promise<Answer[]> {
-    const answerRepo = getRepository(Answer);
+    const answerRepo = dataSource.getRepository(Answer);
     return await answerRepo.find({
       where: {
-        questionnaireInstance,
+        questionnaireInstanceId: questionnaireInstance,
       },
-      relations: ['answerOption'],
+      relations: { answerOption: true },
     });
   }
 
   public static async createQuestionnaireInstances(
     questionnaireInstances: CreateQuestionnaireInstanceInternalDto[]
   ): Promise<CreateQuestionnaireInstanceInternalDto[]> {
-    const instanceRepository = getRepository(QuestionnaireInstance);
-    const questionnaireRepository = getRepository(Questionnaire);
-    const instanceQueueRepository = getRepository(QuestionnaireInstanceQueue);
-    const originRepository = getRepository(QuestionnaireInstanceOrigin);
+    const instanceRepository = dataSource.getRepository(QuestionnaireInstance);
+    const questionnaireRepository = dataSource.getRepository(Questionnaire);
+    const instanceQueueRepository = dataSource.getRepository(
+      QuestionnaireInstanceQueue
+    );
+    const originRepository = dataSource.getRepository(
+      QuestionnaireInstanceOrigin
+    );
 
     const instances: QuestionnaireInstance[] = [];
 
@@ -145,7 +144,7 @@ export class InternalQuestionnaireInstancesInteractor {
           dateOfQueue = addMinutes(new Date(), 1);
         }
         return instanceQueueRepository.create({
-          questionnaireInstance: entity,
+          questionnaireInstanceId: entity.id,
           pseudonym: entity.pseudonym,
           dateOfQueue,
         });
@@ -195,7 +194,7 @@ export class InternalQuestionnaireInstancesInteractor {
       cycle: instance.cycle,
       options: {
         addToQueue: instanceQueueEntries.some(
-          (iqe) => iqe.questionnaireInstance.id === instance.id
+          (iqe) => iqe.questionnaireInstanceId === instance.id
         ),
       },
       status:

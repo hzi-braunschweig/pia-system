@@ -9,7 +9,7 @@ import * as amqp from 'amqplib';
 import { MessageQueueClientHelper } from './messageQueueClientHelper';
 
 export class MessageQueueClientConnection {
-  protected connection: amqp.Connection | null = null;
+  protected connection: amqp.ChannelModel | null = null;
 
   public constructor(
     private readonly options: {

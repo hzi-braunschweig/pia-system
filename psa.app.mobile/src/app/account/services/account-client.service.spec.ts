@@ -9,11 +9,15 @@ import { TestBed } from '@angular/core/testing';
 import { AccountClientService } from './account-client.service';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
 import {
-  HttpClientTestingModule,
   HttpTestingController,
+  provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import SpyObj = jasmine.SpyObj;
 import { DeletionType } from './deletion-type.enum';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('AccountClientService', () => {
   let service: AccountClientService;
@@ -25,9 +29,12 @@ describe('AccountClientService', () => {
     endpoint.getUrl.and.returnValue('http://localhost');
 
     TestBed.configureTestingModule({
-      providers: [{ provide: EndpointService, useValue: endpoint }],
-
-      imports: [HttpClientTestingModule],
+      imports: [],
+      providers: [
+        { provide: EndpointService, useValue: endpoint },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+      ],
     });
     service = TestBed.inject(AccountClientService);
     httpTestingController = TestBed.inject(HttpTestingController);

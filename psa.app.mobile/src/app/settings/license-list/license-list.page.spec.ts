@@ -22,14 +22,18 @@ import {
 
 import { LicenseJson, LicenseListPage } from './license-list.page';
 import {
-  HttpClientTestingModule,
   HttpTestingController,
+  provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { MockComponent, MockPipe } from 'ng-mocks';
 import { TranslatePipe } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { ScrollingModule } from '@angular/cdk/scrolling';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('LicenseListPage', () => {
   let component: LicenseListPage;
@@ -42,15 +46,12 @@ describe('LicenseListPage', () => {
         LicenseListPage,
         MockPipe(TranslatePipe),
         MockComponent(HeaderComponent),
-        IonContent,
-        IonCard,
-        IonCardHeader,
-        IonCardTitle,
-        IonCardSubtitle,
-        IonCardContent,
-        IonSkeletonText,
       ],
-      imports: [HttpClientTestingModule, ScrollingModule],
+      imports: [ScrollingModule],
+      providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
   });
 

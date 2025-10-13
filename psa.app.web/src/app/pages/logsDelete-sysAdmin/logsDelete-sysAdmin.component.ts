@@ -5,12 +5,7 @@
  */
 
 import { Component, ViewChild } from '@angular/core';
-import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {
   DateAdapter,
   MAT_DATE_FORMATS,
@@ -18,7 +13,6 @@ import {
 } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { LoggingService } from 'src/app/psa.app.core/providers/logging-service/logging-service';
@@ -63,6 +57,7 @@ interface SystemLogTableEntry {
       useClass: MatPaginatorIntlGerman,
     },
   ],
+  standalone: false,
 })
 export class LogsDeleteSysAdminComponent {
   form: FormGroup = new FormGroup({
@@ -86,10 +81,8 @@ export class LogsDeleteSysAdminComponent {
   ]);
 
   constructor(
-    private formBuilder: FormBuilder,
-    private loggingService: LoggingService,
-    public dialog: MatDialog,
-    public snackBar: MatSnackBar
+    private readonly loggingService: LoggingService,
+    public dialog: MatDialog
   ) {}
 
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;

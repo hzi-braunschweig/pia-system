@@ -43,6 +43,7 @@ export interface DialogSelectForPartialDeletionResult {
   selector: 'app-dialog-select-for-partial-deletion',
   templateUrl: 'dialog-select-for-partial-deletion.component.html',
   styleUrls: ['dialog-select-for-partial-deletion.component.scss'],
+  standalone: false,
 })
 export class DialogSelectForPartialDeletionComponent implements OnInit {
   public currentDate = new Date();
@@ -75,15 +76,15 @@ export class DialogSelectForPartialDeletionComponent implements OnInit {
   private researchers: string[] = [];
 
   constructor(
-    private dialogRef: MatDialogRef<
+    private readonly dialogRef: MatDialogRef<
       DialogSelectForPartialDeletionComponent,
       DialogSelectForPartialDeletionResult
     >,
-    private sampleTrackingService: SampleTrackingService,
-    private userService: UserService,
-    private alertService: AlertService,
+    private readonly sampleTrackingService: SampleTrackingService,
+    private readonly userService: UserService,
+    private readonly alertService: AlertService,
     @Inject(MAT_DIALOG_DATA) public data: DialogSelectForPartialDeletionData,
-    private questionnaireService: QuestionnaireService
+    private readonly questionnaireService: QuestionnaireService
   ) {
     this.isLoading = true;
 
@@ -248,8 +249,8 @@ export class DialogSelectForPartialDeletionComponent implements OnInit {
       return;
     }
     // filter the questionnaire instances
-    this.filteredQuestionnaires = this.questionnaires.filter(
-      (questionnaire) => questionnaire.name.toLowerCase().indexOf(search) > -1
+    this.filteredQuestionnaires = this.questionnaires.filter((questionnaire) =>
+      questionnaire.name.toLowerCase().includes(search)
     );
   }
 
@@ -261,8 +262,8 @@ export class DialogSelectForPartialDeletionComponent implements OnInit {
       return;
     }
     // filter the lab results
-    this.filteredLabResults = this.labResults.filter(
-      (labresult) => labresult.id.toLowerCase().indexOf(search) > -1
+    this.filteredLabResults = this.labResults.filter((labresult) =>
+      labresult.id.toLowerCase().includes(search)
     );
   }
 
@@ -274,8 +275,8 @@ export class DialogSelectForPartialDeletionComponent implements OnInit {
       return;
     }
     // filter the researchers
-    this.filteredResearchers = this.researchers.filter(
-      (username) => username.toLowerCase().indexOf(search) > -1
+    this.filteredResearchers = this.researchers.filter((username) =>
+      username.toLowerCase().includes(search)
     );
   }
 }

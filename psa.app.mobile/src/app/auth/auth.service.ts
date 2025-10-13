@@ -34,7 +34,6 @@ export class AuthService {
     locale: string
   ): Promise<void> {
     await this.keycloakClient.initialize();
-
     await this.keycloakClient.login(false, username, locale);
     this._isAuthenticated.next(true);
   }

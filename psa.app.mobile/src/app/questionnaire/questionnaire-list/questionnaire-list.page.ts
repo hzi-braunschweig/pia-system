@@ -19,6 +19,7 @@ type Status = 'open' | 'closed';
   selector: 'app-questionnaire-list',
   templateUrl: './questionnaire-list.page.html',
   styleUrls: ['./questionnaire-list.page.scss'],
+  standalone: false,
 })
 export class QuestionnaireListPage {
   isLoading = true;

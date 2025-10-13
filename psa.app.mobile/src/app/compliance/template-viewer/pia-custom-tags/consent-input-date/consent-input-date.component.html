@@ -11,19 +11,21 @@
   mode="md"
   class="ion-margin-start ion-margin-end"
 >
-  <ion-label class="ion-text-wrap" position="stacked">{{ label }}</ion-label>
-
   <ion-input
     *ngIf="displayValue"
     [value]="displayValue"
     [disabled]="formControl.disabled"
     [readonly]="!formControl.disabled"
     data-unit="display-value"
+    [label]="label"
+    labelPlacement="stacked"
   ></ion-input>
   <ion-input
     *ngIf="!displayValue"
     [value]="'GENERAL.PLEASE_CLICK' | translate"
     readonly
+    [label]="label"
+    labelPlacement="stacked"
   ></ion-input>
 
   <ion-modal [trigger]="'open-datetime-' + consentName" *ngIf="!form.disabled">

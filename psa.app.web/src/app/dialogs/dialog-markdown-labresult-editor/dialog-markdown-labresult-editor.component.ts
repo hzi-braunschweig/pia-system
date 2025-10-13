@@ -32,6 +32,7 @@ interface TableHeader {
   templateUrl: './dialog-markdown-labresult-editor.component.html',
   styleUrls: ['./dialog-markdown-labresult-editor.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class DialogMarkdownLabresultEditorComponent implements OnInit {
   @ViewChild('fileInput') fileInputRef!: ElementRef<HTMLInputElement>;
@@ -87,7 +88,7 @@ export class DialogMarkdownLabresultEditorComponent implements OnInit {
       DialogMarkdownLabresultEditorComponent,
       string
     >,
-    private sampleTrackingService: SampleTrackingService
+    private readonly sampleTrackingService: SampleTrackingService
   ) {}
 
   async ngOnInit() {
@@ -245,13 +246,13 @@ ${columnTags}
 
   dragOver(event: DragEvent) {
     event.preventDefault();
-    if (this.isDragNDropHovered !== true) {
+    if (!this.isDragNDropHovered) {
       this.isDragNDropHovered = true;
     }
   }
 
   dragLeave(_event: DragEvent) {
-    if (this.isDragNDropHovered !== false) {
+    if (this.isDragNDropHovered) {
       this.isDragNDropHovered = false;
     }
   }
@@ -289,7 +290,7 @@ ${columnTags}
     }
   }
 
-  private convertImageToBase64(file: File): Promise<string> {
+  private async convertImageToBase64(file: File): Promise<string> {
     const reader = new FileReader();
     return new Promise((resolve, reject) => {
       reader.onloadend = () => resolve(reader.result as string);

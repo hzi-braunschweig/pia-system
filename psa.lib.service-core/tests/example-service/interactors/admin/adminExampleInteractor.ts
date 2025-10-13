@@ -5,32 +5,32 @@
  */
 
 import {
-  AccessToken,
   hasRealmRole,
   MissingPermissionError,
   Nullable,
+  RequestAuthCredentials,
 } from '../../../../src';
 import { Example } from '../../models/example';
 
 export class AdminExampleInteractor {
   public static getExample(
-    decodedToken: AccessToken,
+    credentials: RequestAuthCredentials,
     study: string,
     name: string
   ): Nullable<Example> {
-    if (hasRealmRole('Forscher', decodedToken)) {
+    if (hasRealmRole('Forscher', credentials)) {
       return {
         study: study,
         name: name,
         age: 21,
       };
-    } else if (hasRealmRole('Untersuchungsteam', decodedToken)) {
+    } else if (hasRealmRole('Untersuchungsteam', credentials)) {
       return {
         study: study,
         name: name,
         age: 42,
       };
-    } else if (hasRealmRole('SysAdmin', decodedToken)) {
+    } else if (hasRealmRole('SysAdmin', credentials)) {
       return {
         study: study,
         name: name,

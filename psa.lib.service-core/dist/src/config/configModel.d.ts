@@ -42,6 +42,10 @@ export interface AuthClientSettings {
     clientId: string;
     secret: string;
 }
+export interface NotificationTime {
+    hours: number;
+    minutes: number;
+}
 export interface ServiceConfig {
     public: Connection;
     internal?: Connection;
@@ -63,5 +67,6 @@ export interface ServiceConfig {
     probandAppUrl?: string;
     adminAppUrl?: string;
     backendApiUrl?: string;
+    notificationTime?: NotificationTime;
 }
 export declare type SupersetOfServiceConfig<C> = Required<Extract<C, ServiceConfig>>;

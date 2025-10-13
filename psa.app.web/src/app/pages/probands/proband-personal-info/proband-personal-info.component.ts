@@ -16,6 +16,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 @Component({
   templateUrl: 'proband-personal-info.component.html',
   styleUrls: ['proband-personal-info.component.scss'],
+  standalone: false,
 })
 export class ProbandPersonalInfoComponent implements OnInit {
   probandId: string;
@@ -23,11 +24,11 @@ export class ProbandPersonalInfoComponent implements OnInit {
   anreden = ['Frau', 'Herr'];
 
   constructor(
-    private activatedRoute: ActivatedRoute,
-    private alertService: AlertService,
-    private router: Router,
-    private location: Location,
-    private personalDataService: PersonalDataService
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly alertService: AlertService,
+    private readonly router: Router,
+    private readonly location: Location,
+    private readonly personalDataService: PersonalDataService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -93,7 +94,7 @@ export class ProbandPersonalInfoComponent implements OnInit {
     if (this.probandForm.valid) {
       this.personalDataService
         .putPersonalDataFor(this.probandId, this.probandForm.value)
-        .then(() => this.router.navigate(['/probands-personal-info/']))
+        .then(async () => this.router.navigate(['/probands-personal-info/']))
         .catch((err) => this.alertService.errorObject(err));
     }
   }

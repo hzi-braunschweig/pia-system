@@ -80,6 +80,10 @@
     {
       "matchPackageNames": ["postgres"],
       "allowedVersions": "<11.0"
+    },
+    {
+      "matchPackageNames": ["rabbitmq"],
+      "allowedVersions": "<3.10"
     }
   ]
 }

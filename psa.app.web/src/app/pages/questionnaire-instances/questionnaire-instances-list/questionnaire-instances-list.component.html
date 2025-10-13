@@ -125,19 +125,19 @@
           *matCellDef="let row"
           data-e2e="e2e-icon-td"
         >
-          <span *ngIf="row.status == 'active'" class="q-active">{{
+          <span *ngIf="row.status === 'active'" class="q-active">{{
             'QUESTIONNAIRES_PROBAND.NEW' | translate
           }}</span>
-          <span *ngIf="row.status == 'in_progress'" class="q-in-progress">
+          <span *ngIf="row.status === 'in_progress'" class="q-in-progress">
             !
           </span>
           <span
-            *ngIf="row.status == 'released_once' || row.status == 'released'"
+            *ngIf="row.status === 'released_once' || row.status === 'released'"
             class="q-released"
           >
             ✔
           </span>
-          <span *ngIf="row.status == 'released_twice'" class="q-released-2">
+          <span *ngIf="row.status === 'released_twice'" class="q-released-2">
             ✔✔</span
           >
         </td>
@@ -191,7 +191,7 @@
                   row.status
                 )
               "
-              *ngIf="row.status != 'released_twice'"
+              *ngIf="row.status !== 'released_twice'"
             >
               <mat-icon>assignment</mat-icon>
             </button>
@@ -208,7 +208,7 @@
                   row.status
                 )
               "
-              *ngIf="row.status == 'released_twice'"
+              *ngIf="row.status === 'released_twice'"
             >
               <mat-icon>visibility</mat-icon>
             </button>
@@ -228,9 +228,9 @@
         </th>
         <td mat-cell class="date-column" *matCellDef="let row">
           {{
-            row.questionnaire_cycle_unit == 'hour'
-              ? (row.date_of_issue | date: 'medium')
-              : (row.date_of_issue | date: 'mediumDate')
+            row.questionnaire_cycle_unit === 'hour'
+              ? (row.date_of_issue | date : 'medium')
+              : (row.date_of_issue | date : 'mediumDate')
           }}
         </td>
       </ng-container>

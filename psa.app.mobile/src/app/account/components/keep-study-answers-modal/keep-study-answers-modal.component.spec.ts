@@ -8,33 +8,35 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
 import { KeepStudyAnswersModalComponent } from './keep-study-answers-modal.component';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TranslateModule, TranslatePipe } from '@ngx-translate/core';
 import { MockPipe } from 'ng-mocks';
 import { DeleteAccountModalService } from '../../services/delete-account-modal.service';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('KeepStudyAnswersModalComponent', () => {
   let component: KeepStudyAnswersModalComponent;
   let fixture: ComponentFixture<KeepStudyAnswersModalComponent>;
   let deleteAccountModalService: DeleteAccountModalService;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [KeepStudyAnswersModalComponent, MockPipe(TranslatePipe)],
-        imports: [
-          IonicModule.forRoot(),
-          HttpClientTestingModule,
-          TranslateModule,
-        ],
-      }).compileComponents();
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [KeepStudyAnswersModalComponent, MockPipe(TranslatePipe)],
+      imports: [IonicModule.forRoot(), TranslateModule],
+      providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+      ],
+    }).compileComponents();
 
-      deleteAccountModalService = TestBed.inject(DeleteAccountModalService);
-      fixture = TestBed.createComponent(KeepStudyAnswersModalComponent);
-      component = fixture.componentInstance;
-      fixture.detectChanges();
-    })
-  );
+    deleteAccountModalService = TestBed.inject(DeleteAccountModalService);
+    fixture = TestBed.createComponent(KeepStudyAnswersModalComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();

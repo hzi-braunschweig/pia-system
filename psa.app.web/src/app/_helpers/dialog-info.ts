@@ -15,7 +15,6 @@ import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'dialog-info',
-  standalone: true,
   template: `
     <h1 mat-dialog-title style=" display: flex; justify-content: center; "></h1>
     <div mat-dialog-content>

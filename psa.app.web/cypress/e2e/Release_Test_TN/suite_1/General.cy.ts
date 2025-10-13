@@ -23,8 +23,8 @@ import {
   updateProbandData,
 } from '../../../support/commands';
 import { CreateProbandRequest } from '../../../../src/app/psa.app.core/models/proband';
+import short from 'short-uuid';
 
-const short = require('short-uuid');
 const translator = short();
 
 let study;

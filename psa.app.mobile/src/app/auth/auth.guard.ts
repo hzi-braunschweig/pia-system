@@ -32,6 +32,7 @@ export class AuthGuard {
     if (this.auth.isAuthenticated()) {
       return true;
     } else {
+      console.warn('AuthGuard: User is not authenticated');
       return this.router.createUrlTree(['auth', 'login']);
     }
   }

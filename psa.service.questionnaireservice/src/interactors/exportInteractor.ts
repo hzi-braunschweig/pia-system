@@ -6,11 +6,7 @@
 
 import Boom from '@hapi/boom';
 import archiver, { Archiver } from 'archiver';
-import {
-  AccessToken,
-  assertStudyAccess,
-  asyncForEach,
-} from '@pia/lib-service-core';
+import { asyncForEach } from '@pia/lib-service-core';
 import { userserviceClient } from '../clients/userserviceClient';
 import {
   availableExportFeatures,
@@ -31,12 +27,7 @@ export class ExportInteractor {
   /**
    * Creates a export and returns the result as a stream
    */
-  public static async export(
-    decodedToken: AccessToken,
-    searchCriteria: ExportOptions
-  ): Promise<Archiver> {
-    assertStudyAccess(searchCriteria.study_name, decodedToken);
-
+  public static async export(searchCriteria: ExportOptions): Promise<Archiver> {
     return await ExportInteractor.aggregate(searchCriteria);
   }
 
@@ -55,7 +46,9 @@ export class ExportInteractor {
 
     if (
       (options.exports.includes('answers') ||
-        options.exports.includes('codebook')) &&
+        options.exports.includes('codebook') ||
+        options.exports.includes('legacy_answers') ||
+        options.exports.includes('questionnaires')) &&
       (!questionnaires || questionnaires.length === 0)
     ) {
       throw Boom.badData(

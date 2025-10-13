@@ -25,23 +25,16 @@ export class Fs {
     }
   }
 
-  public static async writeExecutableFile(
-    fileName: string,
-    content: string
-  ): Promise<void> {
-    await Fs.writeFile(fileName, content);
-    await Fs.chmod(fileName, '755');
-  }
-
   public static async readJson<T = unknown>(fileName: string): Promise<T> {
     return JSON.parse((await Fs.readFile(fileName)).toString()) as T;
   }
 
   public static async writeYaml(
     fileName: string,
-    content: unknown
+    content: unknown,
+    header: string
   ): Promise<void> {
-    await Fs.writeFile(fileName, yaml.stringify(content));
+    await Fs.writeFile(fileName, header + '\n' + yaml.stringify(content));
   }
 
   public static async readYaml<T = unknown>(fileName: string): Promise<T> {

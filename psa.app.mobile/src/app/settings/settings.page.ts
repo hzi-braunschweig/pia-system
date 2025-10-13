@@ -12,6 +12,7 @@ import { DeleteAccountModalService } from '../account/services/delete-account-mo
   selector: 'app-settings',
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
+  standalone: false,
 })
 export class SettingsPage {
   constructor(

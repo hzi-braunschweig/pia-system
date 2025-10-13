@@ -6,20 +6,22 @@
 
 import { AuthCredentials, MergeType } from '@hapi/hapi';
 
-/**
- * Used to access the application APIs
- */
-export interface AccessToken
-  extends MergeType<Record<string, unknown>, AuthCredentials> {
+export interface CredentialsExtra {
   username: string;
   studies: string[];
   locale: string;
 }
 
-export function isAccessToken(
-  token: Record<string, unknown>
-): token is AccessToken {
-  return (
-    !!token['username'] && !!token['locale'] && Array.isArray(token['studies'])
-  );
-}
+/**
+ * The decoded credentials of a token, filled by the hapi keycloak plugin.
+ */
+export type RequestAuthCredentials = MergeType<
+  CredentialsExtra,
+  AuthCredentials
+>;
+
+/**
+ * @deprecated use RequestAuthCredentials instead which is explicitly typed, without a record signature
+ */
+export type AccessToken = Record<string, unknown> &
+  MergeType<CredentialsExtra, AuthCredentials>;

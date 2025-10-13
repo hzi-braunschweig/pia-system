@@ -34,7 +34,6 @@ describe('ExecutionTime', () => {
     await sleep(sleepDuration);
 
     // Assert
-    expect(executionTime.toString().startsWith('(took 3')).to.be.true;
-    expect(executionTime.toString().endsWith(' ms)')).to.be.true;
+    expect(executionTime.toString()).to.match(/^\(took [3-9]\d ms\)$/);
   });
 });

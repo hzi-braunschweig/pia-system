@@ -74,7 +74,7 @@ describe('DialogAddApiClientComponent', () => {
     await selectHarness.open();
 
     const optionTexts = await Promise.all(
-      (await selectHarness.getOptions()).map((option) => option.getText())
+      (await selectHarness.getOptions()).map(async (option) => option.getText())
     );
     expect(optionTexts).toEqual(['study1', 'study2']);
   });

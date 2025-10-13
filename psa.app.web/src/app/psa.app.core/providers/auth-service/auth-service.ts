@@ -37,14 +37,16 @@ export class AuthService {
 
   private readonly apiUrl = 'api/v1/user/';
 
-  private static mapProbandResponseDates = map((proband: Proband): Proband => {
-    if (typeof proband.firstLoggedInAt === 'string') {
-      proband.firstLoggedInAt = new Date(proband.firstLoggedInAt);
+  private static readonly mapProbandResponseDates = map(
+    (proband: Proband): Proband => {
+      if (typeof proband.firstLoggedInAt === 'string') {
+        proband.firstLoggedInAt = new Date(proband.firstLoggedInAt);
+      }
+      return proband;
     }
-    return proband;
-  });
+  );
 
-  private pendingPartialDeletionDateConverter = map(
+  private readonly pendingPartialDeletionDateConverter = map(
     (deletion: PendingPartialDeletionResponse) => {
       deletion.fromDate = deletion.fromDate
         ? new Date(deletion.fromDate)
@@ -54,21 +56,21 @@ export class AuthService {
     }
   );
 
-  public getProband(pseudonym: string): Promise<Proband> {
+  public async getProband(pseudonym: string): Promise<Proband> {
     return this.http
       .get<Proband>(this.apiUrl + 'users/' + pseudonym)
       .pipe(AuthService.mapProbandResponseDates)
       .toPromise();
   }
 
-  public getProbandByIDS(ids: string): Promise<Proband> {
+  public async getProbandByIDS(ids: string): Promise<Proband> {
     return this.http
       .get<Proband>(this.apiUrl + 'users/ids/' + ids)
       .pipe(AuthService.mapProbandResponseDates)
       .toPromise();
   }
 
-  public deleteUser(username: string): Promise<void> {
+  public async deleteUser(username: string): Promise<void> {
     return this.http
       .delete<void>(this.apiUrl + 'users/' + username)
       .toPromise();
@@ -78,7 +80,7 @@ export class AuthService {
     await this.http.post(this.apiUrl + 'users', postData).toPromise();
   }
 
-  public postProband(
+  public async postProband(
     postData: CreateProbandRequest,
     studyName: string
   ): Promise<void> {
@@ -87,7 +89,7 @@ export class AuthService {
       .toPromise();
   }
 
-  public postIDS(
+  public async postIDS(
     postData: CreateIDSProbandRequest,
     studyName: string
   ): Promise<void> {
@@ -108,7 +110,7 @@ export class AuthService {
       .toPromise();
   }
 
-  getPlannedProbands(): Promise<PlannedProband[]> {
+  async getPlannedProbands(): Promise<PlannedProband[]> {
     return this.http
       .get<{ plannedprobands: PlannedProband[] }>(
         this.apiUrl + 'plannedprobands'
@@ -117,19 +119,19 @@ export class AuthService {
       .toPromise();
   }
 
-  getPlannedProband(user_id: string): Promise<PlannedProband> {
+  async getPlannedProband(user_id: string): Promise<PlannedProband> {
     return this.http
       .get<PlannedProband>(this.apiUrl + 'plannedprobands/' + user_id)
       .toPromise();
   }
 
-  deletePlannedProband(user_id: string): Promise<PlannedProband> {
+  async deletePlannedProband(user_id: string): Promise<PlannedProband> {
     return this.http
       .delete<PlannedProband>(this.apiUrl + 'plannedprobands/' + user_id)
       .toPromise();
   }
 
-  postPlannedProbands(postData: object): Promise<PlannedProband[]> {
+  async postPlannedProbands(postData: object): Promise<PlannedProband[]> {
     return this.http
       .post<{ plannedprobands: PlannedProband[] }>(
         this.apiUrl + 'plannedprobands',
@@ -187,7 +189,7 @@ export class AuthService {
       .toPromise();
   }
 
-  postPendingPartialDeletion(
+  async postPendingPartialDeletion(
     postData: PendingPartialDeletionRequest
   ): Promise<PendingPartialDeletionResponse> {
     return this.http
@@ -199,7 +201,7 @@ export class AuthService {
       .toPromise();
   }
 
-  getPendingPartialDeletion(
+  async getPendingPartialDeletion(
     pendingPartialDeletionId: number
   ): Promise<PendingPartialDeletionResponse> {
     return this.http
@@ -210,7 +212,7 @@ export class AuthService {
       .toPromise();
   }
 
-  putPendingPartialDeletion(
+  async putPendingPartialDeletion(
     pendingPartialDeletionId: number
   ): Promise<PendingPartialDeletionResponse> {
     return this.http
@@ -232,13 +234,13 @@ export class AuthService {
       .toPromise();
   }
 
-  postPendingComplianceChange(postData: object): Promise<object> {
+  async postPendingComplianceChange(postData: object): Promise<object> {
     return this.http
       .post(this.apiUrl + 'pendingcompliancechanges', postData)
       .toPromise();
   }
 
-  getPendingComplianceChange(
+  async getPendingComplianceChange(
     pendingComplianceChangeId: string
   ): Promise<PendingComplianceChange> {
     return this.http
@@ -248,7 +250,7 @@ export class AuthService {
       .toPromise();
   }
 
-  putPendingComplianceChange(
+  async putPendingComplianceChange(
     pendingComplianceChangeId: string
   ): Promise<object> {
     return this.http
@@ -259,7 +261,7 @@ export class AuthService {
       .toPromise();
   }
 
-  deletePendingComplianceChange(
+  async deletePendingComplianceChange(
     pendingComplianceChangeId: number
   ): Promise<object> {
     return this.http
@@ -269,13 +271,13 @@ export class AuthService {
       .toPromise();
   }
 
-  postPendingStudyChange(postData: object): Promise<void> {
+  async postPendingStudyChange(postData: object): Promise<void> {
     return this.http
       .post<void>(this.apiUrl + 'pendingstudychanges', postData)
       .toPromise();
   }
 
-  putPendingStudyChange(pendingStudyChangeId: string): Promise<void> {
+  async putPendingStudyChange(pendingStudyChangeId: string): Promise<void> {
     return this.http
       .put<void>(
         this.apiUrl + 'pendingstudychanges/' + pendingStudyChangeId,
@@ -284,13 +286,13 @@ export class AuthService {
       .toPromise();
   }
 
-  deletePendingStudyChange(pendingStudyChangeId: number): Promise<void> {
+  async deletePendingStudyChange(pendingStudyChangeId: number): Promise<void> {
     return this.http
       .delete<void>(this.apiUrl + 'pendingstudychanges/' + pendingStudyChangeId)
       .toPromise();
   }
 
-  public deleteProbandAccount(
+  public async deleteProbandAccount(
     pseudonym: string,
     deletionType: ProbandAccountDeletionType
   ): Promise<void> {

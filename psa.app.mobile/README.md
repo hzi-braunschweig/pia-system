@@ -6,19 +6,14 @@ PIA Mobile App for iOS and Android.
 
 Install dependencies: `npm install`
 
-### Device / Emulator
+## Device / Emulator
 
-To run the app on a device or an emulator you need to install the following packages globally:
+To run the app on a device or an emulator you can use one of the following commands:
 
-- `npm install -g native-run`
-- `npm install -g cordova`
-- `npm install -g @ionic/cli`
+- `npm run start:android`
+- `npm run start:ios`
 
-After setup and installing additional dependencies (sections about iOS and Android) you can start the app by running
-`start:<plattform>:<emulator|device>`.
-
-- You can choose a device if you add ` -- --target <ID>`
-- You can get a list of supported devices by adding ` -- --list`
+Alternatively, you can open Android Studio and run it from there (see [Capacitor Android Documentation](https://capacitorjs.com/docs/android#running-your-app)). You can start Android Studio by running `npm run open:android`.
 
 #### Configure Keycloak
 
@@ -33,42 +28,54 @@ For building the iOS app you will need a Mac with xcode installed. To install xc
 
 - `xcode-select --install`
 
-Additional setup is required for Cordova to support programmatic builds:
+Additionally, you need the dependency manager for Swift `cocoapods` which is built with `Ruby`. It is not recommended to use the Ruby installation provided by the system, but install a newer Ruby. You can do this e.g. with `Homebrew`:
 
-- `npm install -g ios-sim`
-- `brew install ios-deploy`
+- `brew install ruby`
+
+Then install `cocoapods` with
+
 - `sudo gem install cocoapods`
 
-Run the app with live reload:
+Run the app:
 
-- Emulator: `npm run start:ios:emulator`
-- Device: `npm run start:ios:device`
+- `npm run start:ios`
 
-To access your local PIA instance from an emulated device, you need to drag and drop your root
-certificate from `pia-ansible/local/generated/secrets/ssl/ca.cert` onto the emulator window.
+To access your local PIA instance from an emulated iOS device, your connection needs to use SSL. We recommend following the [developer documentation](../docs/development.md), which explains how to add your own, trusted certificates to your ingress controllers. After following these instructions, you can open the location of your root certificate by running
+
+```sh
+open "$(mkcert -CAROOT)"
+```
+
+Drag and drop the root certificate onto your iOS emulator to trust it.
 
 Debug in Safari:
 
 - open Safari
-- enable developer options in Safari settings
-- click on Developer
+- enable developer options: Safari settings -> Advanced -> Show features for web developers
+- click on Develop
 - search for the emulator or device and click on the app
+
+If the logs do not work, because a css file was not found, it might help to compile for prod: `ionic capacitor run ios --prod`.
 
 Further reading: https://ionicframework.com/docs/developing/ios
 
 #### Android
 
-For building the Android app you will need the Android SDK, Java JDK **8** and the Gradle build tool.
+For building the Android app you will need the Android SDK, Java JDK **21** and the Gradle build tool.
 
-If you want to use your local PIA instance and an emulated device, you need to follow these steps:
+Run the app with:
+
+- `npm run start:android`
+
+To access your local PIA instance from an emulated device, you need to follow these steps:
 
 ##### 1. Create a new Android emulator device which uses the current SDK version
 
-See [config.xml](./config.xml) `android-targetSdkVersion` for which SDK version is required.
+See [variables.gradle](./android/variables.gradle) `targetSdkVersion` for which SDK version is required.
 
-The device image **must not be a Play Store image** or else you won't be able to root the device in the next step.
+The device image **must not be a Play Store image** (use type `Default Android System Image`) or else you won't be able to root the device in the next step.
 
-##### 3. Modify [`network_security_config.xml`](./resources/android/xml/network_security_config.xml)
+##### 2. Modify [`network_security_config.xml`](./android/app/src/main/res/xml/network_security_config.xml)
 
 > The following changes should **never** be committed. They are for **development only**.
 
@@ -93,7 +100,7 @@ with
 </domain-config>
 ```
 
-##### 4. Add `pia-app` to your device host file
+##### 3. Add `pia-app` to your device host file
 
 The following steps are required to let the android emulator resolve the `pia-app` hostname.
 You only need to do this once or after a reset.
@@ -110,8 +117,8 @@ Then run the following commands:
 
 ```sh
 adb root
-adb disable-verity
-adb reboot
+adb disable-verity # this command might take some time
+adb reboot # this command might take some time (the emulator should reboot)
 adb root
 adb remount
 adb shell
@@ -124,9 +131,9 @@ exit
 # end of device shell
 ```
 
-Run the app with live reload:
+Run the app with:
 
-- Emulator: `npm run start:android:emulator`
+- `npm run start:android`
 
 Debug in Chrome:
 
@@ -137,10 +144,13 @@ Further reading: https://ionicframework.com/docs/developing/android
 
 ## Deployment
 
-### Create New Release
+### Create a new Release
 
 - raise package version in `package.json`
-- raise app version in `config.xml`
+- raise app version in [build.gradle](android/app/build.gradle)for android
+- raise app version in [Info.plist](ios/App/App/Info.plist) for iOS
+
+Alternatively, the version can also be set with the official Ionic vscode extension.
 
 ### App Variants
 
@@ -194,7 +204,6 @@ Apps should always be built by Ionic AppFlow. Use the following steps only if th
 
 ###### Building and uploading to store
 
-- make sure to use correct GoogleService-Info.plist for package "de.info-pia.app" (from Code base or Firebase Console)
 - in project folder: `npm run build:ios`
 - open "platforms/ios/PIA.xcodeproj" in XCode
 - select "generic iOS device"
@@ -206,26 +215,21 @@ Apps should always be built by Ionic AppFlow. Use the following steps only if th
 
 ## Frequent Issues
 
-### config.xml behaviour
+### Android: Inconsistent JVM-target compatibility
 
-Ionic will copy the initial state of the `config.xml` file when a build is started.
-When running with livereload, the initial state will be brought back to the `config.xml` as soon as you stop the dev
-server.
-Any change which was made in between will be lost!
+Error when building the android app: `Inconsistent JVM-target compatibility detected for tasks 'compileDebugJavaWithJavac' (*) and 'compileDebugKotlin' (*)`
 
-Also, Cordova will parse the `config.xml` (and the referenced `network_security_config.xml`) and will make adjustments
-to it based on its content. This will also add entries with IPs which where read from the `network_security_config.xml`.
-**These changes should not be committed to the Git repo**! Keep it out of Git!
+Solution: Change the `Gradle JDK` in the Android Studio settings version to 21.
 
-### iOS app cannot be built by cordova
+### iOS app cannot be built
 
 Error: `xcode-select: error: tool 'xcodebuild' requires Xcode, but active developer directory '/Library/Developer/CommandLineTools' is a command line tools instance`
 
 Solution: `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`
 
-### No Java files found that extend CordovaActivity
+Error: `CocoaPods could not find compatible versions for pod "FirebaseMessaging"`
 
-Remove the platform folder and try again.
+Solution: `cd ios/App && rm Podfile.lock && pod install` - do not commit you own, local `Podfile.lock`.
 
 ### More
 

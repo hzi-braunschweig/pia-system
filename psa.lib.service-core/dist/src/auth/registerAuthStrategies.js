@@ -13,7 +13,7 @@ async function registerAuthStrategies(server, authSettings) {
         console.warn('Did not register any auth strategy');
         return;
     }
-    const userInfo = ['username', 'studies'];
+    const userInfo = ['username', 'studies', 'locale'];
     await server.register({ plugin: hapi_auth_keycloak_1.default });
     if (authSettings.probandTokenIntrospectionClient) {
         server.auth.strategy('jwt-proband', 'keycloak-jwt', {

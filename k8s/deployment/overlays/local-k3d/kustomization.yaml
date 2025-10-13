@@ -13,6 +13,7 @@ resources:
 
 components:
   - ../../components/local-development
+  # - ../../components/theming-example  # Uncomment to enable theming example
 
 # To keep volumes and their data after skaffold usage, we need to manage the namespace and PVCs ourselves
 patches:

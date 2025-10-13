@@ -12,20 +12,23 @@ resources:
 
 components:
   - ../../components/no-servicemonitor
-  - ../../components/no-modysservice
   - ../../components/no-sormasservice
+  - ../../components/no-precheck
+  - ../../components/image-pull-policy-always
 
 #images:
 #- name: "*"
 #  newTag: "1.39.2"
 
 patches:
+  # specify pvc
+
   - target:
       kind: PersistentVolumeClaim
     patch: |-
       - op: replace
         path: /spec/storageClassName
-        value: csi-cinder-sc-retain
+        value: local-path
 
   # for all ingresses
 
@@ -34,13 +37,10 @@ patches:
     patch: |-
       - op: replace
         path: /spec/ingressClassName
-        value: nginx
+        value: traefik
       - op: replace
         path: "/metadata/annotations/cert-manager.io~1issuer"
         value: "letsencrypt-prod"
-      - op: replace
-        path: "/metadata/annotations/nginx.ingress.kubernetes.io~1proxy-buffer-size"
-        value: "64k"
 
   # for the apigateway ingress
 
@@ -78,6 +78,21 @@ patches:
         value:
           app: "pia"
 
+  # set issuer
+
+  - target:
+      kind: Ingress
+    patch: |-
+      - op: remove
+        path: "/metadata/annotations/cert-manager.io~1issuer"
+
+  - target:
+      kind: Ingress
+    patch: |-
+      - op: add
+        path: "/metadata/annotations/cert-manager.io~1cluster-issuer"
+        value: "letsencrypt-prod"
+
 secretGenerator:
   - name: pia-config
     options:
@@ -97,15 +112,9 @@ secretGenerator:
       - mailServerFromName=PIA
       - probandTermsOfServiceUrl=https://localhost/fake-tos
       - probandPolicyUrl=https://localhost/fake-policy
-      - modysBaseUrl=http://localhost:99999
-      - modysUserName=modysuser
-      - modysPassword=modyspassword
-      - modysStudy=Teststudy with MODYS
-      - modysIdentifierTypeId=1
-      - modysRequestConcurrency=5
       - isSormasEnabled=false
       # the default language, unless another language is explicitly set. Possible values:
-      # de-CH, de-DE, en-US
+      # de-CH, de-DE, en-US, fr-FR, es-ES
       - defaultLanguage=de-DE
       - userPasswordLength=12
       # firebase credential
@@ -113,3 +122,7 @@ secretGenerator:
       - firebaseProjectId=dummy
       - firebaseClientEmail=dummy
       - mailhogAuth=pia:$2a$04$vYMXXNXoS.ekdaD1YdLpEOlLkXOYijva6HmLeVnnwCBG3SNI8h3sW
+      # notification time
+      - notificationHour=8
+      - notificationMinute=0
+      #- httpsProxyUrl=https://proxy.example.com

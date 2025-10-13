@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Plugin, Server } from '@hapi/hapi';
-import { AccessToken } from '../auth/authModel';
+import { Lifecycle, Plugin, Server } from '@hapi/hapi';
 import {
   assertStudyAccess,
   MissingStudyAccessError,
@@ -58,15 +57,14 @@ export const AssertStudyAccess: Plugin<unknown> = {
      * Needs to run within onPreHandler lifecycle as authentication and path param
      * validation must have run.
      */
-    server.ext('onPreHandler', (r, h) => {
+    const onPreHandler: Lifecycle.Method = (r, h) => {
       const isActive = r.route.settings.app?.assertStudyAccess;
 
       if (isActive) {
-        const decodedToken = r.auth.credentials as AccessToken;
+        const decodedToken = r.auth.credentials;
         // object injection not possible due to previous param validation
         // eslint-disable-next-line security/detect-object-injection
         const studyName = r.params[studyPathParamName] as string;
-
         try {
           assertStudyAccess(studyName, decodedToken);
         } catch (error) {
@@ -76,6 +74,7 @@ export const AssertStudyAccess: Plugin<unknown> = {
         }
       }
       return h.continue;
-    });
+    };
+    server.ext('onPreHandler', onPreHandler);
   },
 };

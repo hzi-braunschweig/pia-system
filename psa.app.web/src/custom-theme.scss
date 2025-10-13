@@ -5,36 +5,37 @@
  */
 @use '@angular/material' as mat;
 @use 'sass:string';
+@use 'sass:map';
 
-$primary: mat.define-palette(mat.$light-green-palette, 800, 500);
-$accent: mat.define-palette(mat.$light-blue-palette, 600, 100, 800);
-$warn: mat.define-palette(mat.$red-palette, 600);
+$primary: mat.m2-define-palette(mat.$m2-light-green-palette, 800, 500);
+$accent: mat.m2-define-palette(mat.$m2-light-blue-palette, 600, 100, 800);
+$warn: mat.m2-define-palette(mat.$m2-red-palette, 600);
 
-$typography: mat.define-typography-config(
+$typography: mat.m2-define-typography-config(
   $font-family: string.unquote('Roboto, "Helvetica Neue", sans-serif'),
   $body-1:
-    mat.define-typography-level(
+    mat.m2-define-typography-level(
       $font-size: 14px,
       $line-height: 1.5,
       $font-weight: 400,
       $letter-spacing: normal,
     ),
   $body-2:
-    mat.define-typography-level(
+    mat.m2-define-typography-level(
       $font-size: 14px,
       $line-height: 1.5,
       $font-weight: 400,
       $letter-spacing: normal,
     ),
   $subtitle-2:
-    mat.define-typography-level(
+    mat.m2-define-typography-level(
       $font-size: 12px,
       $line-height: 1.125,
       $font-weight: 600,
       $letter-spacing: normal,
     ),
   $button:
-    mat.define-typography-level(
+    mat.m2-define-typography-level(
       $font-size: 14px,
       $line-height: 1.125,
       $font-weight: 500,
@@ -42,7 +43,7 @@ $typography: mat.define-typography-config(
     ),
 );
 
-$theme: mat.define-light-theme(
+$theme: mat.m2-define-light-theme(
   (
     color: (
       primary: $primary,
@@ -55,8 +56,8 @@ $theme: mat.define-light-theme(
 );
 
 @mixin theme-fixes($theme) {
-  $primary: map-get($theme, primary);
-  $accent: map-get($theme, accent);
+  $primary: map.get($theme, primary);
+  $accent: map.get($theme, accent);
 
   // more padding for button
   .mat-mdc-button {
@@ -104,7 +105,7 @@ $theme: mat.define-light-theme(
     }
 
     .mdc-data-table__header-cell {
-      color: mat.get-color-from-palette(mat.$gray-palette, 600);
+      color: mat.m2-get-color-from-palette(mat.$m2-gray-palette, 600);
     }
 
     .mat-mdc-header-row,
@@ -159,8 +160,8 @@ $theme: mat.define-light-theme(
 @include theme-fixes($theme);
 
 :root {
-  --color-primary: #{mat.get-color-from-palette($primary, 500)};
-  --color-accent: #{mat.get-color-from-palette($accent, 500)};
-  --color-warn: #{mat.get-color-from-palette($warn, 500)};
+  --color-primary: #{mat.m2-get-color-from-palette($primary, 500)};
+  --color-accent: #{mat.m2-get-color-from-palette($accent, 500)};
+  --color-warn: #{mat.m2-get-color-from-palette($warn, 500)};
   --form-field-subscription-size-dynamic: 1.6rem;
 }

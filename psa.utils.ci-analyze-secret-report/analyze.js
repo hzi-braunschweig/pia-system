@@ -36,7 +36,10 @@ const falsePositives = [
   // ignore GCP API Keys, as they are public keys - https://groups.google.com/g/firebase-talk/c/bamCgTDajkw/m/uVEJXjtiBwAJ
   'psa.app.web/src/firebase-messaging-sw.js:789291b97012fbd1bc4c3b799fe241fe914b7e852e5a20a33b999e9a09eb3016:GCP API key',
   'psa.app.web/src/environments/environment.base.ts:789291b97012fbd1bc4c3b799fe241fe914b7e852e5a20a33b999e9a09eb3016:GCP API key',
-  'psa.app.mobile/google-services.json:4b39945706f3f6393dc018c2d59410a55e4a32867df8351f8529b7c32ab607a0:GCP API key',
+
+  'psa.app.mobile/GoogleService-Info.plist:f4adcc5b30d80f76cf857175c47e38b6fe79f963b3908623891af226d98bb36a:GCP API key',
+  'psa.app.mobile/ios/App/GoogleService-Info.plist:f4adcc5b30d80f76cf857175c47e38b6fe79f963b3908623891af226d98bb36a:GCP API key',
+  'psa.app.mobile/android/app/google-services.json:4b39945706f3f6393dc018c2d59410a55e4a32867df8351f8529b7c32ab607a0:GCP API key',
 ];
 
 if (hasVulnerabilities(secretDetectionReportJson)) {

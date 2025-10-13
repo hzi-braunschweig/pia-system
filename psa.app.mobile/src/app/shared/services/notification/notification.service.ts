@@ -1,18 +1,18 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
 import { Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import { FirebaseX } from '@awesome-cordova-plugins/firebase-x/ngx';
+import { PushNotifications } from '@capacitor/push-notifications';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
 import { NotificationClientService } from './notification-client.service';
 import { NotificationPresenterService } from './notification-presenter.service';
 import { AuthService } from '../../../auth/auth.service';
+import type { PluginListenerHandle } from '@capacitor/core';
 
 @Injectable({
   providedIn: 'root',
@@ -25,13 +25,11 @@ export class NotificationService {
     notificationId: string;
   } = null;
 
-  private subscriptions: Subscription[] = [];
+  private subscriptions: (Subscription | PluginListenerHandle)[] = [];
 
   constructor(
     private notificationPresenter: NotificationPresenterService,
     private notificationClient: NotificationClientService,
-    private fcm: FirebaseX,
-    private router: Router,
     private auth: AuthService
   ) {}
 
@@ -39,25 +37,55 @@ export class NotificationService {
     this.currentUser = username;
     await this.presentLastUndeliveredMessage();
 
-    if (!(await this.fcm.hasPermission())) {
-      // only requested on iOS, always implicitly granted on Android
-      await this.fcm.grantPermission();
+    let permStatus = await PushNotifications.checkPermissions();
+
+    if (
+      permStatus.receive === 'prompt' ||
+      permStatus.receive === 'prompt-with-rationale'
+    ) {
+      permStatus = await PushNotifications.requestPermissions();
     }
 
-    await this.updateToken(await this.fcm.getToken());
-    this.unsubscribe();
+    if (permStatus.receive !== 'granted') {
+      console.warn('user denied permissions for push notifications');
+      return;
+    }
+
+    await this.unsubscribeLocalListeners();
     this.subscriptions.push(
-      this.fcm.onTokenRefresh().subscribe((token) => this.updateToken(token)),
-
-      this.fcm
-        .onMessageReceived()
-        .pipe(filter((data) => !!data.tap && !!data.id))
-        .subscribe((data) => this.openNotification(data.id)),
-
+      await PushNotifications.addListener(
+        'registration',
+        (token: { value: string }) => {
+          this.updateToken(token.value);
+        }
+      ),
+      await PushNotifications.addListener(
+        'pushNotificationReceived',
+        (notification) => {
+          console.log('Push received:', notification);
+        }
+      ),
+      await PushNotifications.addListener(
+        'pushNotificationActionPerformed',
+        (notification) => {
+          if (notification.notification.data?.id) {
+            this.openNotification(notification.notification.data.id);
+          }
+        }
+      ),
       this.auth.isAuthenticated$
         .pipe(filter((isAuthenticated) => !isAuthenticated))
-        .subscribe(async () => await this.fcm.unregister())
+        .subscribe(async () => {
+          await Promise.all([
+            PushNotifications.unregister(),
+            PushNotifications.removeAllDeliveredNotifications(),
+            PushNotifications.removeAllListeners(),
+            this.unsubscribeLocalListeners(),
+          ]);
+        })
     );
+
+    await PushNotifications.register();
   }
 
   private async updateToken(token: string) {
@@ -94,8 +122,14 @@ export class NotificationService {
     this.lastUndeliveredMessage = null;
   }
 
-  private unsubscribe() {
-    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
+  private async unsubscribeLocalListeners() {
+    for (const sub of this.subscriptions) {
+      if ('unsubscribe' in sub) {
+        sub.unsubscribe();
+      } else {
+        await sub.remove();
+      }
+    }
     this.subscriptions = [];
   }
 }

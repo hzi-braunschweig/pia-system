@@ -10,7 +10,7 @@
     matInput
     #textInput
     type="text"
-    [ngModel]="timestamp | date: 'HH:mm dd.MM.yy'"
+    [ngModel]="timestamp | date : 'HH:mm dd.MM.yy'"
     (blur)="textInputBlurred(textInput.value)"
     data-unit="timestamp-input"
   />

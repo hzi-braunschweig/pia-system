@@ -138,7 +138,7 @@
               {{ proband.plz }} {{ proband.ort }}
             </div>
             <div class="t m0 x5 h6 y29 ff3 fs1 fc2 sc0 ls0 ws0">
-              {{ currentDate | date: 'mediumDate' }}
+              {{ currentDate | date : 'mediumDate' }}
             </div>
             <div class="t m0 x5 h6 y2a ff3 fs1 fc2 sc0 ls0 ws0">
               Studienzentrum Hannover
@@ -156,11 +156,11 @@
               Ihr L3-Pseudonym: <span class="fc1">{{ proband.username }}</span>
             </div>
             <div class="t m0 x1 h6 y2f ff3 fs1 fc2 sc0 ls0 ws0">
-              <span *ngIf="proband.anrede == 'Frau'"
+              <span *ngIf="proband.anrede === 'Frau'"
                 >Sehr geehrte Frau
                 <span *ngIf="proband.titel">{{ proband.titel }} </span
                 >{{ proband.vorname }} {{ proband.name }}</span
-              ><span *ngIf="proband.anrede == 'Herr'"
+              ><span *ngIf="proband.anrede === 'Herr'"
                 >Sehr geehrter Herr
                 <span *ngIf="proband.titel">{{ proband.titel }} </span
                 >{{ proband.vorname }} {{ proband.name }}</span

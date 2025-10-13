@@ -15,7 +15,6 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { MockModule } from 'ng-mocks';
 import { By } from '@angular/platform-browser';
-import { IonInput } from '@ionic/angular';
 
 import { ConsentInputDateComponent } from './consent-input-date.component';
 import { Component, ViewChild } from '@angular/core';
@@ -30,7 +29,6 @@ describe('ConsentInputDateComponent', () => {
         ConsentInputDateComponent,
         HostComponent,
         HostWithInitialDateValueComponent,
-        IonInput,
       ],
       imports: [MockModule(TranslateModule), MockModule(ReactiveFormsModule)],
     }).compileComponents();
@@ -88,6 +86,7 @@ describe('ConsentInputDateComponent', () => {
   @Component({
     selector: 'app-host',
     template,
+    standalone: false,
   })
   class HostComponent {
     @ViewChild('component')
@@ -98,6 +97,7 @@ describe('ConsentInputDateComponent', () => {
   @Component({
     selector: 'app-with-initial-date-value-host',
     template,
+    standalone: false,
   })
   class HostWithInitialDateValueComponent extends HostComponent {
     form: FormGroup = new FormGroup({

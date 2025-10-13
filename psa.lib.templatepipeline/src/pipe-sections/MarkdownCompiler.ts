@@ -10,10 +10,10 @@ import { HtmlDocument, MarkdownDocument } from '../template-documents';
 import { JSDOM } from 'jsdom';
 import DOMPurify from 'dompurify';
 
-const window = new JSDOM('').window as unknown;
+const window = new JSDOM('').window;
 
 // @types/dompurify does not yet support @types/jsdom
-const domPurify = DOMPurify(window as Window);
+const domPurify = DOMPurify(window);
 
 export class MarkdownCompiler
   implements PipeSection<MarkdownDocument, HtmlDocument>

@@ -21,9 +21,9 @@ import {
   loginProfessional,
   UserCredentials,
 } from 'cypress/support/user.commands';
+import short from 'short-uuid';
 import Chainable = Cypress.Chainable;
 
-const short = require('short-uuid');
 const translator = short();
 
 let study;
@@ -73,13 +73,9 @@ describe('Release Test, role: "Proband", Tab: Settings', () => {
 
       cy.get('[data-e2e="change-password-button"]').click();
 
-      cy.expectPathname('/api/v1/auth/realms/pia-proband-realm/account/');
+      cy.expectPathname('/api/v1/auth/realms/pia-proband-realm/account');
 
-      cy.get('#landing-signingin > a')
-        .contains('Passwort und Authentifizierung')
-        .click();
-
-      cy.get('.pf-c-data-list__item-row').contains('Aktualisieren').click();
+      cy.get('.pf-v5-c-data-list__item-action > .pf-v5-c-button').click();
 
       cy.get('#password-new').type(updatePassword, {
         parseSpecialCharSequences: false,
@@ -89,10 +85,9 @@ describe('Release Test, role: "Proband", Tab: Settings', () => {
       });
 
       cy.get('button[type="submit"]').click();
-      cy.get('#referrerLink').should('be.visible').click();
 
-      cy.expectPathname('/settings');
-
+      cy.visit(appUrl);
+      cy.expectPathname('/home');
       logout();
     });
   });

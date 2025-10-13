@@ -6,29 +6,29 @@
 
 import { ITask } from 'pg-promise';
 
+import { CreateQuestionnaireInstanceInternalDto } from '@pia-system/lib-http-clients-internal';
+import { asyncForEach } from '@pia/lib-service-core';
+import { startOfToday } from 'date-fns';
+import { questionnaireserviceClient } from '../clients/questionnaireserviceClient';
+import { db } from '../db';
+import { Answer, AnswerWithCondition } from '../models/answer';
+import { AnswerOption } from '../models/answerOption';
+import { Condition } from '../models/condition';
+import { Proband } from '../models/proband';
 import {
   Questionnaire,
   QuestionnaireWithConditionType,
 } from '../models/questionnaire';
-import { QuestionnaireInstancesService } from './questionnaireInstancesService';
 import { QuestionnaireInstance } from '../models/questionnaireInstance';
-import { db } from '../db';
-import { Answer, AnswerWithCondition } from '../models/answer';
-import { Proband } from '../models/proband';
-import { startOfToday } from 'date-fns';
-import { Condition } from '../models/condition';
-import { AnswerOption } from '../models/answerOption';
-import { asyncForEach } from '@pia/lib-service-core';
-import { LoggingService } from './loggingService';
 import { ProbandsRepository } from '../repositories/probandsRepository';
 import {
-  isUserActiveInStudy,
   isQuestionnaireAvailableToProband,
+  isUserActiveInStudy,
 } from '../utilities/probands';
 import { ConditionsService } from './conditionsService';
+import { LoggingService } from './loggingService';
+import { QuestionnaireInstancesService } from './questionnaireInstancesService';
 import { QuestionnaireService } from './questionnaireService';
-import { questionnaireserviceClient } from '../clients/questionnaireserviceClient';
-import { CreateQuestionnaireInstanceInternalDto } from '@pia-system/lib-http-clients-internal';
 
 /**
  * @description handler methods that handle db notifications
@@ -184,6 +184,10 @@ export class NotificationHandlers {
       return;
     }
 
+    console.log(`proband ${proband.pseudonym} logged in for the first time`);
+
+    // warn: an exception after the update will not trigger this code path again
+    // when the triggering message is redelivered
     proband = await ProbandsRepository.updateFirstLoggedInAt(
       pseudonym,
       new Date()
@@ -435,18 +439,10 @@ export class NotificationHandlers {
                   conditionTargetAnswerOption.answer_type_id
                 )
               ) {
-                const result = await t.manyOrNone(
-                  'DELETE FROM questionnaire_instances WHERE questionnaire_id=$1 AND questionnaire_version=$2 AND id NOT IN ' +
-                    '(SELECT questionnaire_instance_id FROM answers WHERE questionnaire_instance_id IN ' +
-                    '(SELECT id FROM questionnaire_instances WHERE questionnaire_id=$1 AND questionnaire_version=$2) ) RETURNING *',
-                  [questionnaire.id, questionnaire.version]
-                );
-                NotificationHandlers.logger.info(
-                  `Deleted ${
-                    result.length
-                  } questionnaire instances for questionnaire ${NotificationHandlers.logger.printQuestionnaire(
-                    questionnaire
-                  )} whos condition was met before but is not met anymore`
+                await NotificationHandlers.deleteObsoleteQuestionnaireInstances(
+                  t,
+                  questionnaire,
+                  user
                 );
               }
             }
@@ -727,21 +723,53 @@ export class NotificationHandlers {
             )
           );
 
-      await NotificationHandlers.createQuestionnaireInstances(qInstances);
+      const createdInstances =
+        await NotificationHandlers.createQuestionnaireInstances(qInstances);
       NotificationHandlers.logger.info(
-        `Added ${qInstances.length} questionnaire instances to db for user ${user.pseudonym}`
+        `Added ${createdInstances.length} questionnaire instances to db for user ${user.pseudonym}`
       );
     });
   }
 
   private static async createQuestionnaireInstances(
-    instances: CreateQuestionnaireInstanceInternalDto[]
+    instances: readonly CreateQuestionnaireInstanceInternalDto[]
   ): Promise<CreateQuestionnaireInstanceInternalDto[]> {
-    if (instances.length > 0) {
-      return questionnaireserviceClient.createQuestionnaireInstances(instances);
+    const result: CreateQuestionnaireInstanceInternalDto[] = [];
+    const remaining = [...instances];
+    const maxChunkSize = 1000;
+
+    while (remaining.length > 0) {
+      const chunk = remaining.splice(0, maxChunkSize);
+      result.push(
+        ...(await questionnaireserviceClient.createQuestionnaireInstances(
+          chunk
+        ))
+      );
     }
 
-    return [];
+    return result;
+  }
+
+  private static async deleteObsoleteQuestionnaireInstances(
+    t: ITask<unknown>,
+    questionnaire: Questionnaire,
+    user: Proband
+  ): Promise<void> {
+    const result = await t.manyOrNone(
+      'DELETE FROM questionnaire_instances WHERE questionnaire_id=$1 AND questionnaire_version=$2 AND user_id=$3 AND id NOT IN ' +
+        '(SELECT questionnaire_instance_id FROM answers WHERE questionnaire_instance_id IN ' +
+        '(SELECT id FROM questionnaire_instances WHERE questionnaire_id=$1 AND questionnaire_version=$2) ) RETURNING *',
+      [questionnaire.id, questionnaire.version, user.pseudonym]
+    );
+    NotificationHandlers.logger.info(
+      `Deleted ${
+        result.length
+      } questionnaire instances for questionnaire ${NotificationHandlers.logger.printQuestionnaire(
+        questionnaire
+      )} whose condition was met before but is not met anymore for proband ${
+        user.pseudonym
+      }`
+    );
   }
 
   private static isFirstLogin(proband: Proband): boolean {

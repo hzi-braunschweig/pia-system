@@ -1,4 +1,4 @@
-FROM node:20.9.0-alpine@sha256:cb2301e2c5fe3165ba2616591efe53b4b6223849ac0871c138f56d5f7ae8be4b  AS base
+FROM node:20.18.1-alpine@sha256:24fb6aa7020d9a20b00d6da6d1714187c45ed00d1eb4adb01395843c338b9372 AS base
 
 FROM base AS npm-install
 RUN apk --update --no-cache add curl tzdata
@@ -17,16 +17,17 @@ COPY $DIR/package*.json ./
 #copy dev dependencies
 COPY psa.lib.licensecollector/package*.json ../psa.lib.licensecollector/
 COPY psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
+COPY psa.lib.licensecollector/static-licenses ../psa.lib.licensecollector/static-licenses
 COPY psa.lib.charts/dist ../psa.lib.charts/dist
 
 ### workaround for npm 9 until we move to package registry
 ### execute install in the local dependency folders
 WORKDIR /usr/src/psa.lib.licensecollector
-RUN npm ci
+RUN --mount=type=cache,target=/home/node/.npm,uid=1000,gid=1000,mode=0775 npm ci --prefer-offline
 WORKDIR /usr/src/node-app/
 ###
 
-RUN npm ci
+RUN --mount=type=cache,target=/home/node/.npm,uid=1000,gid=1000,mode=0775 npm ci --prefer-offline
 
 ENV NODE_PATH=/usr/src/node-app/node_modules
 ENV PATH=$PATH:/usr/src/node-app/node_modules/.bin
@@ -47,18 +48,19 @@ COPY $DIR/package*.json ./
 #copy dev dependencies
 COPY --chown=node psa.lib.licensecollector/package*.json ../psa.lib.licensecollector/
 COPY --chown=node psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
+COPY --chown=node psa.lib.licensecollector/static-licenses ../psa.lib.licensecollector/static-licenses
 COPY --chown=node psa.lib.charts/dist ../psa.lib.charts/dist
 
 
 ### workaround for npm 9 until we move to package registry
 ### execute install in the local dependency folders
 WORKDIR /usr/src/psa.lib.licensecollector
-RUN npm ci
+RUN --mount=type=cache,target=/home/node/.npm,uid=1000,gid=1000,mode=0775 npm ci --prefer-offline
 WORKDIR /usr/src/node-app/
 ###
 
 
-RUN npm ci
+RUN --mount=type=cache,target=/home/node/.npm,uid=1000,gid=1000,mode=0775 npm ci --prefer-offline
 
 COPY --chown=node $DIR/.browserslistrc $DIR/*.json ./
 COPY --chown=node $DIR/src ./src
@@ -85,7 +87,7 @@ RUN find /usr/src/node-app/dist/out/ | xargs gzip -k -9
 
 ################################################################
 
-FROM nginx:1.25.3-alpine@sha256:db353d0f0c479c91bd15e01fc68ed0f33d9c4c52f3415e63332c3d0bf7a4bb77 AS final
+FROM nginx:1.29.1-alpine@sha256:42a516af16b852e33b7682d5ef8acbd5d13fe08fecadc7ed98605ba5e3b26ab8 AS final
 RUN apk --update --no-cache add bash sed
 
 ARG DIR=.
@@ -94,10 +96,10 @@ RUN rm -rf /usr/share/nginx/html/*
 ENV WEBAPPSERVER_HTTP_PORT=80 DEFAULT_LANGUAGE=en-US
 COPY $DIR/envsubst-on-environment.sh /docker-entrypoint.d/40-envsubst-on-environment.sh
 COPY $DIR/nginx-site.conf /etc/nginx/templates/default.conf.template
-COPY --from=build-public /usr/src/node-app/dist/out/ /usr/share/nginx/html
-COPY --from=build-admin /usr/src/node-app/dist/out/ /usr/share/nginx/html
-COPY --from=build-public /usr/src/node-app/dist/out/main*.js /usr/share/nginx/template/main.js.template
-COPY --from=build-admin /usr/src/node-app/dist/out/admin/main*.js /usr/share/nginx/template/admin/main.js.template
+COPY --from=build-public /usr/src/node-app/dist/out/browser/ /usr/share/nginx/html
+COPY --from=build-admin /usr/src/node-app/dist/out/admin/browser/ /usr/share/nginx/html/admin
+COPY --from=build-public /usr/src/node-app/dist/out/browser/*.js /usr/share/nginx/template/
+COPY --from=build-admin /usr/src/node-app/dist/out/admin/browser/*.js /usr/share/nginx/template/admin/
 
 ARG VERSION_INFO_PIPELINE_ID=-
 ENV VERSION_INFO_PIPELINE_ID=$VERSION_INFO_PIPELINE_ID

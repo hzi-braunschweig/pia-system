@@ -14,9 +14,9 @@ import { EventProxy } from '../proxys/eventProxy';
 import { proxies } from '../proxies';
 
 export class MessageQueueService extends MessageQueueClient {
-  private _proxies: typeof EventProxy[] = [];
+  private _proxies: (typeof EventProxy)[] = [];
 
-  public set proxies(value: typeof EventProxy[]) {
+  public set proxies(value: (typeof EventProxy)[]) {
     this._proxies = value;
   }
 

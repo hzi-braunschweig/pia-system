@@ -17,6 +17,7 @@ import { Component, Input } from '@angular/core';
       <mat-icon color="warn">cancel</mat-icon>
     </div>
   </div>`,
+  standalone: false,
 })
 export class ComplianceViewListEntryComponent {
   @Input()

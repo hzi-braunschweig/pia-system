@@ -34,8 +34,8 @@
     "user": "[[env:MAIL_USER]]"
   },
   "loginTheme": "pia",
-  "accountTheme": "pia",
-  "emailTheme": "pia",
+  "accountTheme": "my-account",
+  "emailTheme": "[[env:EMAIL_THEME]]",
   "eventsEnabled": false,
   "eventsListeners": [
     "jboss-logging",
@@ -45,9 +45,11 @@
   "adminEventsDetailsEnabled": false,
   "internationalizationEnabled": true,
   "supportedLocales": [
-    "de-DE",
-    "de-CH",
-    "en-US"
+    "de-DE", 
+    "de-CH", 
+    "en-US", 
+    "fr-FR", 
+    "es-ES"
   ],
   "defaultLocale": "de-DE",
   "authenticationFlows": [

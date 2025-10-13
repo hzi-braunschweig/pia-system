@@ -15,7 +15,7 @@ export class ConfigUtils {
    * @param fallback value to use if variable is undefined
    */
   public static getEnvVariable(key: string, fallback?: string): string {
-    // key is always a string which is literally defined wihtin this class
+    // key is always a string which is literally defined wihtin GlobalConfig
     // eslint-disable-next-line security/detect-object-injection
     const result = process.env[key];
     if (result === undefined) {
@@ -30,6 +30,17 @@ export class ConfigUtils {
       throw new Error(`missing config variable '${key}'`);
     }
     return result;
+  }
+
+  /**
+   * Reads an environment variable by its name. Returns undefined if the variable is not set.
+   * @param key name of environment variable
+   * @returns value of environment variable or undefined if the variable is not set
+   */
+  public static getOptionalEnvVariable(key: string): string | undefined {
+    // key is always a string which is literally defined wihtin GlobalConfig
+    // eslint-disable-next-line security/detect-object-injection
+    return process.env[key];
   }
 
   /**

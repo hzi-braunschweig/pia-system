@@ -22,7 +22,6 @@ import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dialog-add-api-client',
-  standalone: true,
   imports: [
     CommonModule,
     TranslateModule,

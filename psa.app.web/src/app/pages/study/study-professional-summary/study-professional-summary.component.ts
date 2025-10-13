@@ -20,6 +20,7 @@ import { createRegistrationUrl } from '../study-registration-link';
   templateUrl: './study-professional-summary.component.html',
   styleUrls: ['./study-professional-summary.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class StudyProfessionalSummaryComponent {
   @Input()

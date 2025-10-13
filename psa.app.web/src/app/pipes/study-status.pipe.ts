@@ -10,7 +10,10 @@ import { StudyStatus } from '../psa.app.core/models/study';
 /**
  * Returns the translation key of an account status
  */
-@Pipe({ name: 'studyStatusConvert' })
+@Pipe({
+  name: 'studyStatusConvert',
+  standalone: false,
+})
 export class StudyStatusPipe implements PipeTransform {
   public transform(status: StudyStatus): string {
     if (status === 'active') {

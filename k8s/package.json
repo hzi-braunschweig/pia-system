@@ -22,27 +22,27 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "cdk8s": "^2.66.5",
-    "cdk8s-plus-25": "^2.22.28",
-    "commander": "^11.1.0",
-    "constructs": "^10.2.70",
+    "cdk8s": "^2.70.7",
+    "cdk8s-plus-25": "^2.22.79",
+    "commander": "^14.0.0",
+    "constructs": "^10.4.2",
     "node-forge": "^1.3.1",
-    "yaml": "^2.3.4"
+    "yaml": "^2.8.1"
   },
   "devDependencies": {
     "@pia/eslint-config": "file:../psa.eslint-config",
-    "@types/jest": "^26.0.24",
+    "@types/jest": "^27.0.0",
     "@types/node": "^20.11.26",
-    "@types/node-forge": "^1.3.7",
+    "@types/node-forge": "^1.3.13",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
-    "cdk8s-cli": "^2.127.0",
+    "cdk8s-cli": "^2.200.153",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-no-only-tests": "^3.1.0",
     "eslint-plugin-security": "^1.7.1",
-    "jest": "^26",
-    "ts-jest": "^26",
+    "jest": "^27",
+    "ts-jest": "^27",
     "ts-node": "^10.9.2",
     "typescript": "^4.9.5"
   }

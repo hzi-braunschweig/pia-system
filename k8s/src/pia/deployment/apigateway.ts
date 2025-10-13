@@ -26,7 +26,6 @@ import { UserService } from './userservice';
 import { DeploymentWithoutServiceLinks } from '../../k8s/deploymentWithoutServiceLinks';
 import { LoggingService } from './loggingservice';
 import { PersonaldataService } from './personaldataservice';
-import { ModysService } from './modysservice';
 import { ComplianceService } from './complianceservice';
 import { QuestionnaireService } from './questionnaireservice';
 import { AnalyzerService } from './analyzerservice';
@@ -48,7 +47,6 @@ export class ApiGateway extends Chart {
       userService,
       loggingService,
       personalDataService,
-      modysService,
       complianceService,
       questionnaireService,
       analyzerService,
@@ -64,7 +62,6 @@ export class ApiGateway extends Chart {
       userService: UserService;
       loggingService: LoggingService;
       personalDataService: PersonaldataService;
-      modysService: ModysService;
       complianceService: ComplianceService;
       questionnaireService: QuestionnaireService;
       analyzerService: AnalyzerService;
@@ -85,7 +82,6 @@ export class ApiGateway extends Chart {
     assert.strictEqual(userService.service.name, 'userservice');
     assert.strictEqual(personalDataService.service.name, 'personaldataservice');
     assert.strictEqual(loggingService.service.name, 'loggingservice');
-    assert.strictEqual(modysService.service.name, 'modysservice');
     assert.strictEqual(complianceService.service.name, 'complianceservice');
     assert.strictEqual(
       questionnaireService.service.name,
@@ -131,7 +127,6 @@ export class ApiGateway extends Chart {
             SAMPLETRACKINGSERVICE_PORT: sampleTrackingService.service.port,
             PERSONALDATASERVICE_PORT: personalDataService.service.port,
             LOGGINGSERVICE_PORT: loggingService.service.port,
-            MODYSSERVICE_PORT: modysService.service.port,
             COMPLIANCESERVICE_PORT: complianceService.service.port,
             ANALYZERSERVICE_PORT: analyzerService.service.port,
             SORMASSERVICE_PORT: sormasService.service.port,

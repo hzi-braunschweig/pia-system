@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GlobalConfig = exports.GlobalAuthSettings = void 0;
-const configUtils_1 = require("./configUtils");
 const configModel_1 = require("./configModel");
+const configUtils_1 = require("./configUtils");
 class GlobalAuthSettings {
     static get keycloakHttpConnection() {
         return new configModel_1.HttpConnection(configUtils_1.ConfigUtils.getEnvVariable('AUTHSERVER_HOST', 'authserver'), configUtils_1.ConfigUtils.getEnvVariableInt('AUTHSERVER_PORT'));
@@ -63,6 +63,9 @@ class GlobalConfig {
     static get timeZone() {
         return configUtils_1.ConfigUtils.getEnvVariable('APPLICATION_TIMEZONE', 'Europe/Berlin');
     }
+    static get proxyUrl() {
+        return configUtils_1.ConfigUtils.getOptionalEnvVariable('HTTPS_PROXY');
+    }
     static get mailserver() {
         return {
             host: configUtils_1.ConfigUtils.getEnvVariable('MAIL_HOST'),
@@ -111,6 +114,15 @@ class GlobalConfig {
             username: configUtils_1.ConfigUtils.getEnvVariable('MESSAGEQUEUE_APP_USER'),
             password: configUtils_1.ConfigUtils.getEnvVariable('MESSAGEQUEUE_APP_PASSWORD'),
         };
+    }
+    static getNotificationTime() {
+        const DEFAULT_HOUR = 8;
+        const notificationTime = {
+            hours: configUtils_1.ConfigUtils.getEnvVariableInt('NOTIFICATION_HOUR', DEFAULT_HOUR),
+            minutes: configUtils_1.ConfigUtils.getEnvVariableInt('NOTIFICATION_MINUTE', 0),
+        };
+        console.log('Notification time configured: ', notificationTime);
+        return notificationTime;
     }
     static isDevelopmentSystem() {
         return (configUtils_1.ConfigUtils.getEnvVariable('IS_DEVELOPMENT_SYSTEM', 'false').toLowerCase() === 'true');

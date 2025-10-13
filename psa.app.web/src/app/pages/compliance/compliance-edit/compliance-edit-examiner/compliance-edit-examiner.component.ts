@@ -18,6 +18,7 @@ import { ComplianceEditParentComponent } from '../compliance-edit-parent.compone
   selector: 'app-compliance-edit-examiner',
   templateUrl: './compliance-edit-examiner.component.html',
   styleUrls: ['./compliance-edit-examiner.component.scss'],
+  standalone: false,
 })
 export class ComplianceEditExaminerComponent
   extends ComplianceEditParentComponent

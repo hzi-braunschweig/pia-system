@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { PiaConfig } from './piaConfig';
 import * as fs from 'fs';
+import { PiaConfig } from './piaConfig';
 
 describe('PiaConfig', () => {
   const path = 'pia-config-test-dir';
@@ -20,5 +20,13 @@ describe('PiaConfig', () => {
 
   it('should show missings for an empty directory', () => {
     expect(PiaConfig.getMissing(path).length).toBeGreaterThan(1);
+  });
+
+  it('should show missings for required configs', () => {
+    expect(PiaConfig.getMissing(path)).toContain('webappUrl');
+  });
+
+  it('should not show missings for optional configs', () => {
+    expect(PiaConfig.getMissing(path)).not.toContain('httpsProxyUrl');
   });
 });

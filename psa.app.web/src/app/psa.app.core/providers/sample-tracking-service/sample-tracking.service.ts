@@ -16,7 +16,7 @@ import { LabObservationName } from '../../models/labObservationName';
 export class SampleTrackingService {
   private readonly apiUrl = 'api/v1/sample/';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   async getLabResultTemplate(studyName: string): Promise<LabResultTemplate> {
     return firstValueFrom(
@@ -54,7 +54,7 @@ export class SampleTrackingService {
    * @param  sampleID Proband Id
    * @return list with laboratory results
    */
-  getLabResultsForSampleID(sampleID): Promise<LabResult> {
+  async getLabResultsForSampleID(sampleID): Promise<LabResult> {
     return firstValueFrom(
       this.http.get<LabResult>(this.apiUrl + `labResults/${sampleID}`)
     );
@@ -66,7 +66,7 @@ export class SampleTrackingService {
    * @param resultID the ID of the laboratory-result
    * @return a html string as a presentation of the laboratory result
    */
-  getLabResultObservationForUser(userID, resultID): Promise<string> {
+  async getLabResultObservationForUser(userID, resultID): Promise<string> {
     const headers = new HttpHeaders({
       Accept: 'text/html',
     });
@@ -82,7 +82,7 @@ export class SampleTrackingService {
    * Returns a list of distinct laboratory observation names
    * @return a html string as a presentation of the laboratory result
    */
-  getLabObservationNames(): Promise<LabObservationName[]> {
+  async getLabObservationNames(): Promise<LabObservationName[]> {
     return firstValueFrom(
       this.http.get<LabObservationName[]>(this.apiUrl + `labObservations/names`)
     );
@@ -94,7 +94,7 @@ export class SampleTrackingService {
    * @param resultID Id of the laboratory result
    * @param newData data you want to update
    */
-  putLabResult(
+  async putLabResult(
     probandID: string,
     resultID: string,
     newData: {
@@ -118,7 +118,7 @@ export class SampleTrackingService {
    * @param probandID  Id of the proband
    * @param labResult The laboratory result
    */
-  postLabResult(probandID: string, labResult): Promise<LabResult> {
+  async postLabResult(probandID: string, labResult): Promise<LabResult> {
     return firstValueFrom(
       this.http.post<LabResult>(
         this.apiUrl + `probands/${probandID}/labResults`,
@@ -132,7 +132,7 @@ export class SampleTrackingService {
    * @param  probandID Proband Id
    * @return list with blood samples
    */
-  getAllBloodSamplesForUser(probandID): Promise<BloodSample[]> {
+  async getAllBloodSamplesForUser(probandID): Promise<BloodSample[]> {
     return firstValueFrom(
       this.http.get<BloodSample[]>(
         this.apiUrl + `probands/${probandID}/bloodSamples`
@@ -145,7 +145,7 @@ export class SampleTrackingService {
    * @param  sampleID The blood sample's Id
    * @return list with blood samples
    */
-  getBloodSamplesForBloodSampleID(sampleID): Promise<LabResult[]> {
+  async getBloodSamplesForBloodSampleID(sampleID): Promise<LabResult[]> {
     return firstValueFrom(
       this.http.get<LabResult[]>(this.apiUrl + `bloodResult/${sampleID}`)
     );
@@ -157,11 +157,11 @@ export class SampleTrackingService {
    * @param sampleID Id of the blood sample
    * @param newData data you want to update
    */
-  putBloodSample(
+  async putBloodSample(
     probandID: string,
     sampleID: string,
     newData: { remark?: string; blood_sample_carried_out?: boolean }
-  ): Promise<object> {
+  ): Promise<any> {
     return firstValueFrom(
       this.http.put(
         this.apiUrl + `probands/${probandID}/bloodSamples/${sampleID}`,
@@ -175,7 +175,7 @@ export class SampleTrackingService {
    * @param probandID  Id of the proband
    * @param bloodSample The blood sample
    */
-  postBloodSample(probandID: string, bloodSample): Promise<object> {
+  async postBloodSample(probandID: string, bloodSample): Promise<object> {
     return firstValueFrom(
       this.http.post(
         this.apiUrl + `probands/${probandID}/bloodSamples`,
@@ -190,7 +190,7 @@ export class SampleTrackingService {
    * @param sampleID sample Id
    * @param dummySampleId a Bact-sample ID ... whatever that is
    */
-  updateSampleStatusAndSampleDateFor(
+  async updateSampleStatusAndSampleDateFor(
     sampleID: string,
     dummySampleId: string,
     pseudonym: string

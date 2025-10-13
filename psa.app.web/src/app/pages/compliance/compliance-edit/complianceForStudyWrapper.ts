@@ -18,7 +18,6 @@ export class ComplianceForStudyWrapper {
   readonly form: FormGroup;
   usedFormControls: Map<string, string[]>;
   editMode = true;
-  private complianceData: ComplianceDataResponse | null;
   private readonly consentSystem: FormGroup;
   private readonly textSystem: FormGroup;
   private readonly consentGeneric: FormGroup;
@@ -63,7 +62,6 @@ export class ComplianceForStudyWrapper {
   }
 
   setComplianceData(data: ComplianceDataResponse | null): void {
-    this.complianceData = data;
     if (data) {
       // if compliance exists show it and disable the form
       this.form.disable(); // this is currently not working because of https://github.com/angular/angular/issues/22556

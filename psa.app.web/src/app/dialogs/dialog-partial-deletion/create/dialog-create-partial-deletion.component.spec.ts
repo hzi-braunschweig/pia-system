@@ -115,7 +115,7 @@ describe('DialogCreatePartialDeletionComponent', () => {
   });
 
   it('should close the dialog when canceling', async () => {
-    await component.cancelDeletion();
+    component.cancelDeletion();
     expect(dialogRef.close).toHaveBeenCalled();
   });
 });

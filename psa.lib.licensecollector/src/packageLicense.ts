@@ -34,6 +34,8 @@ export class PackageLicense {
     'Mozilla Public License, version 2.0',
     // EPL-2.0
     'Eclipse Public License - v 2.0',
+    // Blue Oak Model License
+    'This license gives everyone as much permission to work with\nthis software as possible, while protecting contributors\nfrom liability.',
   ];
 
   public constructor(

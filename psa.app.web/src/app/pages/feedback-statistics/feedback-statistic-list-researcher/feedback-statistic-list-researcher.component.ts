@@ -27,6 +27,7 @@ import { MatDialog } from '@angular/material/dialog';
 @Component({
   selector: 'app-feedback-statistic-list-researcher',
   templateUrl: './feedback-statistic-list-researcher.component.html',
+  standalone: false,
 })
 export class FeedbackStatisticListResearcherComponent {
   public isLoading = false;

@@ -12,7 +12,6 @@ import * as csv from 'csv-parse/sync';
 import { StatusCodes } from 'http-status-codes';
 import { Response } from 'superagent';
 
-import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 import {
   CsvBloodSampleRow,
   CsvLabResultObservationRow,
@@ -29,12 +28,6 @@ chai.use(chaiHttp);
 
 const apiAddress = `http://localhost:${config.public.port}`;
 
-const forscherHeader1 = AuthTokenMockBuilder.createAuthHeader({
-  roles: ['Forscher'],
-  username: 'qtest-exportforscher',
-  studies: ['Teststudie - Export'],
-});
-
 const questionnaire = { id: 297, version: 1 };
 
 describe('/export should work with ids field', function () {
@@ -48,13 +41,20 @@ describe('/export should work with ids field', function () {
 
   before(async () => {
     await Server.init();
+    const serverInstance = Server.getInstanceForTesting();
     await setup();
 
     sandbox
       .stub(userserviceClient, 'getPseudonyms')
       .resolves(['test-1', 'test-ids2']);
 
-    const authRequest = AuthServerMock.adminRealm().returnValid();
+    sandbox.stub(serverInstance.auth, 'test').resolves({
+      credentials: {
+        scope: ['realm:Forscher'],
+        username: 'qtest-exportforscher',
+        studies: ['Teststudie - Export'],
+      },
+    });
 
     const search = {
       start_date: new Date('2000-01-01'),
@@ -76,12 +76,10 @@ describe('/export should work with ids field', function () {
     const response = await chai
       .request(apiAddress)
       .post('/admin/export')
-      .set(forscherHeader1)
-      .send(search)
+      .send({ exportOptions: JSON.stringify(search), token: 'Bearer TOKEN' })
       .parse(binaryParser)
       .buffer();
     expect(response).to.have.status(StatusCodes.OK);
-    authRequest.isDone();
 
     const result = await zip.loadAsync(response.body as string);
 
@@ -129,7 +127,7 @@ describe('/export should work with ids field', function () {
         {
           Antwort: 'gelb;blau;',
           Antwort_Datum: '.',
-          FB_Datum: '08.06.2021, 00:00',
+          FB_Datum: '08.06.2021, 00:00:00',
           Frage: 'FB2_alle_Antworttypen_UT_v1_f1_1_a2',
           Kodierung_Code: '["1","0"]',
           Kodierung_Wert: '["Ja","Nein"]',
@@ -139,7 +137,7 @@ describe('/export should work with ids field', function () {
         {
           Antwort: 'gelb;blau;',
           Antwort_Datum: '.',
-          FB_Datum: '08.06.2021, 00:00',
+          FB_Datum: '08.06.2021, 00:00:00',
           Frage: 'FB2_alle_Antworttypen_UT_v1_f1_1_a2',
           Kodierung_Code: '["1","0"]',
           Kodierung_Wert: '["Ja","Nein"]',
@@ -212,7 +210,7 @@ describe('/export should work with ids field', function () {
           Auftragsnr: '',
           Bericht_ID: '1',
           'CT-Wert': 'test',
-          Datum_Abnahme: '01.01.2010, 00:00',
+          Datum_Abnahme: '01.01.2010, 00:00:00',
           Datum_Analyse: '.',
           Datum_Eingang: '.',
           Datum_Mitteilung: '.',
@@ -229,7 +227,7 @@ describe('/export should work with ids field', function () {
           Auftragsnr: '',
           Bericht_ID: '2',
           'CT-Wert': 'test',
-          Datum_Abnahme: '01.01.2010, 00:00',
+          Datum_Abnahme: '01.01.2010, 00:00:00',
           Datum_Analyse: '.',
           Datum_Eingang: '.',
           Datum_Mitteilung: '.',

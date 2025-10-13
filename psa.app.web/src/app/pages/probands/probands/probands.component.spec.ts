@@ -18,7 +18,6 @@ import SpyObj = jasmine.SpyObj;
 import { CurrentUser } from '../../../_services/current-user.service';
 
 describe('ProbandsComponent', () => {
-  let component: ProbandsComponent;
   let fixture: ComponentFixture<ProbandsComponent>;
   let user: SpyObj<CurrentUser>;
 
@@ -56,7 +55,7 @@ describe('ProbandsComponent', () => {
 
     // Create component
     fixture = TestBed.createComponent(ProbandsComponent);
-    component = fixture.componentInstance;
+    fixture.componentInstance;
     fixture.detectChanges(); // run ngOnInit
     tick(); // wait for ngOnInit to finish
   }

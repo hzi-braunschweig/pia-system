@@ -12,6 +12,7 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-consent-input-date',
   templateUrl: './consent-input-date.component.html',
+  standalone: false,
 })
 export class ConsentInputDateComponent
   extends ConsentInputTextComponent

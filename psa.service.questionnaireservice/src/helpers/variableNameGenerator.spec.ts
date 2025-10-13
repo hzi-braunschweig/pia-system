@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import variableNameGenerator from './variableNameGenerator';
+import { variableNameGenerator } from './variableNameGenerator';
 import { expect } from 'chai';
 
 describe('variableNameGenerator', () => {

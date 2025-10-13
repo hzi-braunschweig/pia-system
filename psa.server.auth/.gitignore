@@ -1,2 +1,3 @@
 .browserslistrc
-*.css
+styles.css
+layout.css

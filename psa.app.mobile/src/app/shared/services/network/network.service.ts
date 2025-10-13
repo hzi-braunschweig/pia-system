@@ -5,9 +5,10 @@
  */
 
 import { Injectable } from '@angular/core';
-import { merge, Observable } from 'rxjs';
-import { Network } from '@awesome-cordova-plugins/network/ngx';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import {
+  Network,
+  ConnectionStatus as CapacitorConnectionStatus,
+} from '@capacitor/network';
 
 export enum ConnectionStatus {
   Online,
@@ -19,13 +20,12 @@ export enum ConnectionStatus {
 })
 export class NetworkService {
   private status: ConnectionStatus = ConnectionStatus.Online;
+  private networkType: string = 'unknown';
 
-  constructor(private network: Network) {
-    this.getConnectionStatus().subscribe((status) => (this.status = status));
-  }
+  constructor() {}
 
   public getNetworkType(): string {
-    return this.network.type;
+    return this.networkType;
   }
 
   public getStatus(): ConnectionStatus {
@@ -40,10 +40,18 @@ export class NetworkService {
     return this.status === ConnectionStatus.Offline;
   }
 
-  private getConnectionStatus(): Observable<ConnectionStatus> {
-    return merge(
-      this.network.onDisconnect().pipe(map(() => ConnectionStatus.Offline)),
-      this.network.onConnect().pipe(map(() => ConnectionStatus.Online))
-    ).pipe(distinctUntilChanged());
+  public async initialize() {
+    const status = await Network.getStatus();
+    this.setNetworkStatus(status);
+    await Network.addListener('networkStatusChange', (newStatus) => {
+      this.setNetworkStatus(newStatus);
+    });
+  }
+
+  private setNetworkStatus(status: CapacitorConnectionStatus) {
+    this.status = status.connected
+      ? ConnectionStatus.Online
+      : ConnectionStatus.Offline;
+    this.networkType = status.connectionType;
   }
 }

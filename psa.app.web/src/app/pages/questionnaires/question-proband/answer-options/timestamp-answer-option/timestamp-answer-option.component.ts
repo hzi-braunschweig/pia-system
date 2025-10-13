@@ -11,6 +11,7 @@ import { parse } from 'date-fns';
   selector: 'app-timestamp-answer-option',
   templateUrl: './timestamp-answer-option.component.html',
   styleUrls: ['timestamp-answer-option.component.scss'],
+  standalone: false,
 })
 export class TimestampAnswerOptionComponent {
   @Input()

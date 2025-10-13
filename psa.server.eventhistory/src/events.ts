@@ -37,7 +37,7 @@ export const SupportedTopics = [
   MessageQueueTopic.QUESTIONNAIRE_INSTANCE_EXPIRED,
 ] as const;
 
-export type EventType = typeof SupportedTopics[number];
+export type EventType = (typeof SupportedTopics)[number];
 
 /**
  * Event types:
@@ -53,7 +53,7 @@ export type EventType = typeof SupportedTopics[number];
  * - `questionnaire_instance.released` - questionnaire instance moved to any "released*" status
  * - `questionnaire_instance.expired` - questionnaire instance has expired
  */
-export type EventTypeString = `${typeof SupportedTopics[number]}`;
+export type EventTypeString = `${(typeof SupportedTopics)[number]}`;
 
 export type SupportedMessages =
   | ProbandLoggedInMessage

@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PdfGenerator = void 0;
 const puppeteer_1 = __importDefault(require("puppeteer"));
 const template_documents_1 = require("../template-documents");
-let browser;
+let browserSingleton;
 class PdfGenerator {
     constructor(options) {
         this.defaultOptions = {
@@ -26,32 +26,48 @@ class PdfGenerator {
         this.options = { ...this.defaultOptions, ...options };
     }
     static async closeBrowser() {
-        if (!browser) {
+        if (!browserSingleton) {
             return;
         }
+        const browser = await browserSingleton;
+        browserSingleton = undefined;
         await browser.close();
-        browser = undefined;
     }
     execute(input) {
         return new template_documents_1.PdfDocument(this.generatePdf(input.htmlText));
     }
     async generatePdf(htmlText) {
-        if (!browser) {
-            browser = await puppeteer_1.default.launch({
-                args: ['--disable-dev-shm-usage', '--no-sandbox'],
-            });
-        }
-        const page = await browser.newPage();
+        let page;
+        let browser;
         try {
-            await page.setContent(await htmlText);
+            if (!browserSingleton) {
+                browserSingleton = puppeteer_1.default.launch({
+                    headless: 'shell',
+                    args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-gpu'],
+                    env: {
+                        ...process.env,
+                        XDG_CONFIG_HOME: '/tmp/.chromium',
+                        XDG_CACHE_HOME: '/tmp/.chromium',
+                    },
+                });
+            }
+            browser = await browserSingleton;
+            page = await browser.newPage();
+            await page.setContent(await htmlText, { waitUntil: 'domcontentloaded' });
             return await page.pdf(this.options);
         }
         catch (e) {
-            console.error(e);
+            console.error('Error at generating PDF: ', e);
+            browserSingleton = undefined;
+            if (browser) {
+                browser.close();
+            }
             throw e;
         }
         finally {
-            await page.close();
+            if (page) {
+                await page.close();
+            }
         }
     }
 }

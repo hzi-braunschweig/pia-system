@@ -15,7 +15,6 @@ import { MockBuilder } from 'ng-mocks';
 import { HomePage } from './home.page';
 import { QuestionnaireClientService } from '../questionnaire/questionnaire-client.service';
 import { HomePageModule } from './home.module';
-import { AuthService } from '../auth/auth.service';
 import SpyObj = jasmine.SpyObj;
 import { CurrentUser } from '../auth/current-user.service';
 

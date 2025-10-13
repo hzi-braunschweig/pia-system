@@ -31,7 +31,7 @@ read -p "External URL which is used to access the application from the browser (
 read -p "External protocol in use (https|http): " externalProtocol
 read -p "External host name of your PIA instance: " externalHost
 read -p "External port (should only be none default [443] behind a reverse proxy): " externalPort
-read -p "Code of default language to use app-wide (de-DE|de-CH|en-US): " defaultLanguage
+read -p "Code of default language to use app-wide (de-DE|de-CH|en-US|fr-FR|es-ES): " defaultLanguage
 read -p "Minimum valid length of user passwords and length of generated one-time passwords (number): " userPasswordLength
 read -p "URL to the proband facing terms of service which will be displayed in the app: " probandTermsOfServiceUrl
 read -p "URL to the proband facing privacy policy which will be displayed in the app: " probandPolicyUrl
@@ -42,6 +42,7 @@ read -p "Password of the mail server user: " mailServerPassword
 read -p "Does the mail server require a secure TLS connection? (true|false): " mailServerRequireTls
 read -p "Mail address used by PIA when sending mails (will be visible to users): " mailServerFromAddress
 read -p "Name used by PIA when sending mails (will be visible to users): " mailServerFromName
+read -p "URL of the HTTPS proxy used by PIA to access the internet (used by notificationservice for firebase notifications): " httpsProxyUrl
 
 read -p "Provide file path to a JPEG image to use as a logo (max. 100 KB) (leave empty to skip): " customizeLogoFilePath
 while [[ "$customizeLogoFilePath" != "" && ! -f $customizeLogoFilePath ]]; do
@@ -76,7 +77,7 @@ rm tmp_fb_pkey.txt
 
 # Customize logo
 customizeLogo=""
-componentCustomizeLogo=""
+customizeLogoComponent=""
 configMapGenerator=""
 
 if [[ -n "$customizeLogoFilePath" ]]
@@ -130,6 +131,7 @@ then
         echo "🚨 Please make sure to create a gzip compressed version of the logo file, named '${LOGO_FILE_NAME}.gz' before deployment."
     fi
 fi
+
 echo ""
 echo "🥳 Your custom overlay has been written to $FILE_PATH/kustomization.yaml"
 echo "📋 Please check its content before deployment."

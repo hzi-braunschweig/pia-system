@@ -26,7 +26,7 @@ describe('ComplianceGuard', () => {
   let next: SpyObj<ActivatedRouteSnapshot>;
   let state: SpyObj<RouterStateSnapshot>;
 
-  beforeEach(() => MockBuilder(ComplianceGuard, AppModule));
+  beforeEach(async () => MockBuilder(ComplianceGuard, AppModule));
 
   beforeEach(() => {
     guard = TestBed.inject(ComplianceGuard);

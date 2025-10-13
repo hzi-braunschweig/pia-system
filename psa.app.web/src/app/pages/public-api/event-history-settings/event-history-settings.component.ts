@@ -29,6 +29,7 @@ import { EventHistorySettingsService } from './event-history-settings.service';
   templateUrl: './event-history-settings.component.html',
   styleUrls: ['./event-history-settings.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class EventHistorySettingsComponent implements OnInit {
   @Output()

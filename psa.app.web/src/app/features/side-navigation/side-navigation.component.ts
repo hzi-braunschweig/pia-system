@@ -9,7 +9,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Event, NavigationEnd, Router } from '@angular/router';
 import { RequestNewMaterialComponent } from '../../pages/laboratories/request-new-material/request-new-material.component';
-import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { DialogOkCancelComponent } from '../../_helpers/dialog-ok-cancel';
 import { AuthenticationManager } from '../../_services/authentication-manager.service';
 import { Page, PageManager } from '../../_services/page-manager.service';
@@ -22,6 +21,7 @@ import { CurrentUser } from '../../_services/current-user.service';
   providers: [RequestNewMaterialComponent],
   templateUrl: 'side-navigation.component.html',
   styleUrls: ['side-navigation.component.scss'],
+  standalone: false,
 })
 export class SideNavigationComponent {
   @Input() public sidenav?: MatSidenav;
@@ -33,12 +33,11 @@ export class SideNavigationComponent {
 
   constructor(
     public user: CurrentUser,
-    private router: Router,
-    private matDialog: MatDialog,
-    private authenticationService: AuthService,
-    private auth: AuthenticationManager,
-    private pageManager: PageManager,
-    private selectedProbandInfoService: SelectedProbandInfoService
+    private readonly router: Router,
+    private readonly matDialog: MatDialog,
+    private readonly auth: AuthenticationManager,
+    private readonly pageManager: PageManager,
+    private readonly selectedProbandInfoService: SelectedProbandInfoService
   ) {
     this.selectedProbandInfoService.sideNavState$.subscribe((resultList) =>
       this.updateSelectedProbandInfo(resultList)
@@ -91,7 +90,7 @@ export class SideNavigationComponent {
   }
 
   public async logout(): Promise<void> {
-    if (!!this.sidenav) {
+    if (this.sidenav) {
       this.sidenav.close();
     }
 
@@ -103,7 +102,7 @@ export class SideNavigationComponent {
   }
 
   public openPage(page: Page): void {
-    if (!!this.sidenav) {
+    if (this.sidenav) {
       this.sidenav.close();
     }
 

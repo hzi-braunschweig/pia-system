@@ -34,6 +34,7 @@ import { By } from '@angular/platform-browser';
     [showError]="showError"
     [errorMessage]="errorMessage"
   ></app-chip-autocomplete>`,
+  standalone: false,
 })
 class TestChipAutocompleteComponent {
   control = new FormControl([]);

@@ -13,7 +13,6 @@ export class ComplianceWrapper {
   complianceTextObject: TemplateSegment[] = null; // filled only if compliance needed and must be filled by current role
   readonly form: FormGroup;
   usedFormControls: Map<string, string[]>;
-  private complianceData: ComplianceDataResponse | null;
   private readonly consentSystem: FormGroup;
   private readonly textSystem: FormGroup;
   private readonly consentGeneric: FormGroup;
@@ -33,7 +32,6 @@ export class ComplianceWrapper {
   }
 
   setComplianceData(data: ComplianceDataResponse | null): void {
-    this.complianceData = data;
     if (data) {
       // if compliance exists show it and disable the form
       this.form.disable(); // this is currently not working because of https://github.com/angular/angular/issues/22556

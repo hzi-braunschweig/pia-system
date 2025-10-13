@@ -10,7 +10,10 @@ import { Proband } from '../psa.app.core/models/proband';
 /**
  * Returns the translation key of an account status
  */
-@Pipe({ name: 'accountStatusConvert' })
+@Pipe({
+  name: 'accountStatusConvert',
+  standalone: false,
+})
 export class AccountStatusPipe implements PipeTransform {
   public transform(
     entityWithStatus: Pick<Proband, 'accountStatus' | 'status'>

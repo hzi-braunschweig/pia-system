@@ -10,7 +10,6 @@ import {
   createPlannedProband,
   createProband,
   createStudy,
-  createUser,
   createWelcomeText,
   generateRandomProbandForStudy,
   generateRandomStudy,
@@ -24,8 +23,8 @@ import {
   loginProfessional,
   UserCredentials,
 } from 'cypress/support/user.commands';
+import short from 'short-uuid';
 
-const short = require('short-uuid');
 const translator = short();
 
 let study;

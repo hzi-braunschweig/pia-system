@@ -4,41 +4,37 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { HttpHandler, HttpHeaders, HttpRequest } from '@angular/common/http';
-import { ContentTypeInterceptor } from './content-type-interceptor';
-import SpyObj = jasmine.SpyObj;
+import { HttpHandlerFn, HttpHeaders, HttpRequest } from '@angular/common/http';
+import { contentTypeInterceptor } from './content-type-interceptor';
+import { of } from 'rxjs';
 
-describe('ContentTypeInterceptor', () => {
+describe('contentTypeInterceptor', () => {
   it('should add a default Content-Type header if none is set', () => {
-    const interceptor = new ContentTypeInterceptor();
     const request = new HttpRequest('GET', 'some/url/', {
       headers: new HttpHeaders(),
     });
     const cloneSpy = spyOn(request, 'clone').and.returnValue(request);
-    const handler = jasmine.createSpyObj<SpyObj<HttpHandler>>('HttpHandler', [
-      'handle',
-    ]);
+    const next = jasmine.createSpy('next').and.returnValue(of({}));
 
-    interceptor.intercept(request, handler);
+    contentTypeInterceptor(request, next as HttpHandlerFn);
+
     expect(cloneSpy).toHaveBeenCalledWith({
       setHeaders: {
         'Content-Type': 'application/json',
       },
     });
-    expect(handler.handle).toHaveBeenCalledWith(request);
+    expect(next).toHaveBeenCalledWith(request);
   });
 
-  it('should pass through the request if user is not logged in', () => {
-    const interceptor = new ContentTypeInterceptor();
+  it('should pass through the request if Content-Type is already set', () => {
     const headers = new HttpHeaders().set('Content-Type', 'application/json');
     const request = new HttpRequest('GET', 'some/url/', { headers });
     const cloneSpy = spyOn(request, 'clone');
-    const handler = jasmine.createSpyObj<SpyObj<HttpHandler>>('HttpHandler', [
-      'handle',
-    ]);
+    const next = jasmine.createSpy('next').and.returnValue(of({}));
 
-    interceptor.intercept(request, handler);
+    contentTypeInterceptor(request, next as HttpHandlerFn);
+
     expect(cloneSpy).not.toHaveBeenCalled();
-    expect(handler.handle).toHaveBeenCalledWith(request);
+    expect(next).toHaveBeenCalledWith(request);
   });
 });

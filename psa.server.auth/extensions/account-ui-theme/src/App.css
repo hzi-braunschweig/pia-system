@@ -1,0 +1,144 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+:root {
+  --primary-color: #f1f6ed;
+  --primary-color-dark-100: #aadb6e;
+  --primary-color-dark-200: #8db65c;
+  --primary-color-dark-300: #516934;
+  --color-white: #fff;
+  --color-black: #000;
+  --color-label: #6c6c6c;
+  --color-red-200: #eb445a;
+  --color-red-dark-300: #d41630;
+  --color-grey: #f0f0f0;
+
+  --pf-v5-global--FontFamily--text: Overpass, Arial, sans-serif;
+  --pf-v5-global--FontFamily--heading: Overpass, Arial, sans-serif;
+  --pf-v5-global--Color--light-100: var(--primary-color-dark-300);
+  --pf-v5-global--Color--light-200: var(--primary-color-dark-200);
+  --pf-v5-global--BackgroundColor--dark-200: var(--primary-color);
+  --pf-v5-global--BackgroundColor--dark-400: var(--primary-color);
+  --pf-v5-global--active-color--100: var(--primary-color-dark-200);
+  --pf-v5-global--link--Color: var(--primary-color-dark-200);
+  --pf-v5-global--link--Color--hover: var(--primary-color-dark-300);
+  --pf-v5-global--primary-color--dark-100: var(--primary-color-dark-200);
+  --pf-v5-c-button--m-primary--BackgroundColor: var(
+    var(--primary-color-dark-200)
+  );
+  --pf-v5-global--danger-color--100: var(--color-red-200);
+}
+
+.pf-v5-c-page__header-brand-link {
+  pointer-events: none;
+  cursor: default;
+}
+
+.pf-v5-c-masthead__brand img {
+  height: 35px;
+}
+
+.pf-v5-c-menu-toggle {
+  margin-left: 0.5rem;
+}
+
+.pf-v5-c-avatar {
+  display: none;
+}
+
+.pf-v5-c-page__main-section {
+  background-color: var(--primary-color);
+}
+
+/* Overwrite black background color for header and sidebar */
+.pf-v5-c-masthead,
+.pf-v5-c-toolbar,
+.pf-v5-c-page__sidebar-body {
+  background-color: var(--pf-v5-global--BackgroundColor--light-100);
+}
+
+/* Keep elements in header always in one line */
+.pf-v5-c-masthead {
+  --pf-v5-c-masthead--GridTemplateColumns: max-content min-content 1fr;
+  --pf-v5-c-masthead__content--GridColumn: 3;
+}
+
+/* Keep dropdown in header aligned right */
+.pf-v5-c-toolbar__content {
+  justify-content: end;
+}
+.pf-v5-c-toolbar__content-section {
+  width: auto;
+}
+
+.pf-v5-c-nav__link.pf-m-current::after,
+.pf-v5-c-nav__link.pf-m-current:hover::after,
+.pf-v5-c-nav__item.pf-m-current:not(.pf-m-expanded) .pf-v5-c-nav__link::after {
+  border-color: var(--primary-color-dark-200);
+}
+
+.pf-v5-c-button.pf-m-link,
+.pf-v5-c-button.pf-m-secondary {
+  color: white;
+  background-color: var(--primary-color-dark-200);
+}
+
+.pf-v5-c-button.pf-m-primary {
+  color: white;
+  background-color: var(--primary-color-dark-200);
+}
+
+.pf-v5-c-label {
+  margin-left: 1rem;
+}
+
+#refresh-page {
+  margin-bottom: 1rem;
+  margin-right: 1rem;
+}
+
+.pf-v5-c-button.pf-m-danger {
+  color: white;
+}
+
+.pf-v5-c-button.pf-m-danger:hover {
+  color: white;
+  background-color: var(--color-red-dark-300);
+}
+
+.pf-v5-l-split__item.pf-m-fill {
+  flex-grow: 0;
+}
+
+.pf-v5-l-split {
+  display: flex;
+  justify-content: space-between;
+}
+
+.pf-v5-c-button.pf-m-link.pf-m-inline {
+  padding: 0.5rem;
+  display: flex;
+}
+
+@media (min-width: 768px) {
+  .pf-v5-u-display-none-on-lg {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .pf-v5-u-display-none {
+    display: none !important;
+  }
+
+  /* Place action button in lists below list item row */
+  .pf-v5-c-data-list__item-action {
+    grid-row: 3;
+    justify-content: end;
+    grid-column: 1 / -1;
+    padding-top: 0;
+  }
+}

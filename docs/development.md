@@ -64,6 +64,7 @@ After all services are up and running, you can access:
 - **PIA Participant UI** at [https://pia-app/](https://pia-app/)
 - **Mailhog** at [https://pia:test@mail-pia-app/](https://pia:test@mail-pia-app/)
   - Mailhog will show you all mails which were sent by your local PIA. No mails are actually sent.
+- **Keycloak** at [https://pia-app/api/v1/auth/](https://pia-app/api/v1/auth/)
 
 ## How to add a local TLS certificate for SSL termination
 
@@ -72,7 +73,7 @@ This way you can create your own certificates for your local development environ
 
 1. Install mkcert by following the instructions on the [GitHub page](https://github.com/FiloSottile/mkcert?tab=readme-ov-file#installation)
 2. Run `mkcert -install` to install the root certificate
-3. Run `npm run generate-local-tls-certificates:k3d` to generate your local certificates. This will create the following files:
+3. Run `npm run generate-local-tls-certificates:k3d` in the `k8s` folder to generate your local certificates. This will create the following files:
    - `k8s/deployment/overlays/local-k3d/pia-app-key.pem`
    - `k8s/deployment/overlays/local-k3d/pia-app.pem`
 4. Add the generated certificate to your local ingress resources by running the following commands in `k8s/`:
@@ -82,12 +83,75 @@ kubectl create -n pia secret tls ingress-tls --key deployment/overlays/local-k3d
 kubectl create -n pia secret tls ingress-mailhog-tls --key deployment/overlays/local-k3d/pia-app.key --cert deployment/overlays/local-k3d/pia-app.crt
 ```
 
+## How to connect to the local database instances:
+
+Forward the database port of the qpiaservice (or ipiaservice or ewpiaservice) pod:
+
+```bash
+kubectl -n pia port-forward qpiaservice-0 5432:5432
+```
+
+Connect to the database with your favorite tool using:
+
+- Host: localhost
+- Port: 5432
+- Username: superuser
+- Password: `qpia_superuser_db.password` (or `ipia_` or `ewpia_`) from [internal-secrets.yaml (generated)](../k8s/deployment/overlays/local-k3d/internal-secrets.yaml)
+
 ## Tips for skaffold
 
 > 🌈 You can opt out of skaffolds metrics collection by executing `skaffold config set --global collect-metrics false`.
 
 > 👯‍ We have limited concurrency to avoid overloading network and CPU for new developors. You can disable this limit
 > appending `--build-concurrency 0` when executing skaffold to utilize all available resources.
+
+## How to use a local image registry to speed up the development cycle
+
+Skaffold needs to copy all image to the cluster. For a local cluster in k3d it will use the k3d function (`k3d image import`). This will load the whole image and copy it to the cluster. For small changes (only the last few layers) this can take a long time, because it will only copy all layers together. To use the advantage of docker layers, you need to use a registry.
+
+If you want to use k3d with a local registry instead of loading the images through k3d, start the cluster like this and disable the skaffold k3d load feature:
+
+```bash
+k3d registry create registry.localhost --port 5000
+k3d cluster create pia --port 80:80@loadbalancer --port 443:443@loadbalancer --registry-use k3d-registry.localhost:5000
+skaffold config set --global k3d-disable-load true
+```
+
+Add the registry to your hosts file:
+
+```/etc/hosts
+127.0.0.1	k3d-registry.localhost
+```
+
+Then you can use `skaffold dev` with the environment variable set before: `SKAFFOLD_DEFAULT_REPO=k3d-registry.localhost:5000 skaffold dev` or `export SKAFFOLD_DEFAULT_REPO=k3d-registry.localhost:5000` and then run `skaffold dev`.
+
+## How to use Docker Desktop instead of k3d
+
+Kubernetes in Docker brings the benefit, that the built image is in the same container runtime context as the cluster. Therefore a image does not need to be copied to the cluster.
+
+> ⚠️ Even though the images don't need to be copied to the cluster, we experienced a very slow deployment performance with Kubernetes inDocker Desktop.
+
+For Kubernetes in Docker Desktop enable Kubernetes in Preferences -> Kubernetes -> Enable Kubernetes.
+Since Kubernetes in Docker Desktop is not shipped with a ingress controller, you need to install one.
+
+You can simply install the ingress nginx controller as described in the
+[official documentation](https://kubernetes.github.io/ingress-nginx/deploy/#quick-start), e.g.:
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.0-beta.0/deploy/static/provider/cloud/deploy.yaml
+```
+
+And mark the ingress class as default, so that the ingress controller applies the ingress rules of pia:
+
+```bash
+kubectl -n ingress-nginx annotate ingressclasses.networking.k8s.io/nginx ingressclass.kubernetes.io/is-default-class=true
+```
+
+Docker Desktop offers a different Storage Class Name and only offers hostpath instead of local-path as k3d does. Therefore you need to use a different kustomization file. You can do so by using a skaffold profile:
+
+```bash
+skaffold dev -p local-docker-desktop
+```
 
 ## How to add a service
 
@@ -112,7 +176,7 @@ If a service needs to offer endpoints via PIAs [Public API](../README.md#public-
 with [tsoa](https://tsoa-community.github.io/docs/introduction.html) to enable automated generation and merging for the
 root [OpenAPI document](./openapi.yaml) and to allow our CI pipeline to ensure it is always up-to-date.
 
-You can refer to the [guide on adding tsoa into an existing service](./docs/adding-tsoa-to-an-existing-service.md) for
+You can refer to the [guide on adding tsoa into an existing service](./adding-tsoa-to-an-existing-service.md) for
 detailed steps.
 
 ### Local dependencies

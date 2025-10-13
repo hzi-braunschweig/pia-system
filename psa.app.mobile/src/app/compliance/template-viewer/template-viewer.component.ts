@@ -13,6 +13,7 @@ import { TemplateSegment } from '../segment.model';
   selector: 'app-template-viewer',
   templateUrl: './template-viewer.component.html',
   styleUrls: ['./template-viewer.component.scss'],
+  standalone: false,
 })
 export class TemplateViewerComponent extends ContainerForFormControlUsageComponent {
   @Input()

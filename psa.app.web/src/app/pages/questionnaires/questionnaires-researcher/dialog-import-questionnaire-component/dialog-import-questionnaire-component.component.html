@@ -1,0 +1,158 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+@if (isLoading) {
+<app-loading-spinner cover="true"></app-loading-spinner>
+}
+<h1 mat-dialog-title data-e2e="import-questionnaire-title">
+  {{ 'QUESTIONNAIRES_FORSCHER.IMPORT_QUESTIONNAIRE' | translate }}
+</h1>
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <mat-dialog-content class="space-y">
+    <mat-form-field>
+      <mat-label>{{ 'QUESTIONNAIRES_IMPORT.STUDY' | translate }}</mat-label>
+      <mat-select
+        data-e2e="select-study-dropdown"
+        data-unit="select-study-dropdown"
+        formControlName="study"
+      >
+        @for (study of studies; track study) {
+        <mat-option
+          data-e2e="select-study-option"
+          data-unit="select-study-option"
+          [value]="study.name"
+          >{{ study.name }}</mat-option
+        >
+        }
+      </mat-select>
+      @if (form.controls.study.invalid && (form.controls.study.dirty ||
+      form.controls.study.touched)) { @if
+      (form.controls.study.hasError('required')) {
+      <mat-error>{{
+        'QUESTIONNAIRES_IMPORT.ERROR_NO_STUDY' | translate
+      }}</mat-error>
+      } }
+    </mat-form-field>
+    <br />
+    <mat-label
+      >{{ 'QUESTIONNAIRES_IMPORT.PUBLISHINGSTATE' | translate }}:</mat-label
+    >
+    <mat-radio-group formControlName="publishMode" data-unit="publish-mode">
+      <mat-radio-button
+        data-e2e="publish-mode-adapt"
+        data-unit="publish-mode-adapt"
+        value="adapt"
+        >{{
+          'QUESTIONNAIRES_IMPORT.ADAPT_PUBLISH_MODE' | translate
+        }}</mat-radio-button
+      >
+      <mat-radio-button data-unit="publish-mode-hidden" value="hidden">{{
+        'QUESTIONNAIRES_IMPORT.USE_DRAFT_PUBLISH_MODE' | translate
+      }}</mat-radio-button>
+    </mat-radio-group>
+    @if (form.controls.questionnaireFile.value) {
+    <br />
+    <div>
+      <mat-label>{{ form.controls.questionnaireFile.value.name }}</mat-label>
+      <mat-icon fontIcon="file_present"></mat-icon>
+      @if (form.controls.questionnaireFile.errors) {
+      <mat-icon
+        data-unit="import-error-icon"
+        color="warn"
+        fontIcon="error"
+      ></mat-icon>
+      } @if (!form.controls.questionnaireFile.errors && importState ===
+      'success') {
+      <mat-icon
+        data-e2e="import-success-icon"
+        data-unit="import-success-icon"
+        color="primary"
+        fontIcon="done"
+      ></mat-icon>
+      } @if
+      (form.controls.questionnaireFile.hasError('IMPORT_JSON_PARSE_ERROR')) {
+      <mat-error
+        >{{
+          'QUESTIONNAIRES_IMPORT.ERROR_JSON_PARSE_ERROR' | translate
+        }}.</mat-error
+      >
+      } @if
+      (form.controls.questionnaireFile.hasError('IMPORT_JSON_SCHEMA_INVALID')) {
+      <mat-error
+        >{{ 'QUESTIONNAIRES_IMPORT.ERROR_JSON_SCHEMA_INVALID' | translate }}:
+        {{
+          form.controls.questionnaireFile.getError('IMPORT_JSON_SCHEMA_INVALID')
+        }}</mat-error
+      >
+      } @if
+      (form.controls.questionnaireFile.hasError('DUPLICATE_QUESTIONNAIRE_KEY'))
+      {
+      <mat-error
+        >{{
+          'QUESTIONNAIRES_IMPORT.ERROR_DUPLICATE_QUESTIONNAIRE_KEY' | translate
+        }}.</mat-error
+      >
+      } @if
+      (form.controls.questionnaireFile.hasError('IMPORT_CONDITION_QUESTIONNAIRE_REFERENCE_ERROR'))
+      {
+      <mat-error
+        >{{
+          'QUESTIONNAIRES_IMPORT.ERROR_CONDITION_QUESTIONNAIRE_REFERENCE_ERROR'
+            | translate
+        }}.</mat-error
+      >
+      } @if
+      (form.controls.questionnaireFile.hasError('IMPORT_CONDITION_ANSWER_OPTION_REFERENCE_ERROR'))
+      {
+      <mat-error
+        >{{
+          'QUESTIONNAIRES_IMPORT.ERROR_CONDITION_ANSWER_OPTION_REFERENCE_ERROR'
+            | translate
+        }}.</mat-error
+      >
+      }
+    </div>
+    }
+    <br />
+    <button type="button" mat-raised-button (click)="importFileInput.click()">
+      {{ 'QUESTIONNAIRES_IMPORT.CHOOSE_FILE' | translate }}
+    </button>
+    <input
+      #importFileInput
+      hidden
+      (change)="addFile()"
+      type="file"
+      id="file"
+      accept="application/json,.json"
+      data-e2e="file-input"
+      data-unit="file-input"
+    />
+    @if (form.controls.questionnaireFile.invalid &&
+    (form.controls.questionnaireFile.dirty ||
+    form.controls.questionnaireFile.touched)) { @if
+    (form.controls.questionnaireFile.hasError('required')) {
+    <mat-error>{{
+      'QUESTIONNAIRES_IMPORT.ERROR_NO_FILE' | translate
+    }}</mat-error>
+    } }
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <button mat-button mat-dialog-close mat-raised-button>
+      {{ 'QUESTIONNAIRES_IMPORT.CLOSE' | translate }}
+    </button>
+    <button
+      mat-button
+      mat-raised-button
+      color="primary"
+      type="submit"
+      data-e2e="import-button"
+      data-unit="import-button"
+    >
+      {{ 'QUESTIONNAIRES_IMPORT.IMPORT' | translate }}
+    </button>
+  </mat-dialog-actions>
+</form>

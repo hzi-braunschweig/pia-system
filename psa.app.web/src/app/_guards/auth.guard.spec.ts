@@ -1,93 +1,98 @@
 ﻿/*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2025 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { TestBed } from '@angular/core/testing';
-import { MockBuilder } from 'ng-mocks';
-
-import { AppModule } from '../app.module';
-import { AuthGuard } from './auth.guard';
-import { KeycloakService } from 'keycloak-angular';
 import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { isAccessAllowed } from './auth.guard';
+import { AuthGuardData } from 'keycloak-angular';
+import { TestBed } from '@angular/core/testing';
+import Keycloak from 'keycloak-js';
 import SpyObj = jasmine.SpyObj;
+import { environment } from '../../environments/environment';
 
-describe('AuthGuard', () => {
-  let guard: AuthGuard;
+describe('isAccessAllowed', () => {
+  let route: ActivatedRouteSnapshot;
+  let state: RouterStateSnapshot;
+  let keycloak: SpyObj<Keycloak>;
 
-  let keycloak: SpyObj<KeycloakService>;
+  beforeEach(() => {
+    route = new ActivatedRouteSnapshot();
+    state = { url: '/some/path' } as RouterStateSnapshot;
 
-  beforeEach(async () => {
-    keycloak = jasmine.createSpyObj<KeycloakService>('KeycloakService', [
-      'login',
-      'isLoggedIn',
-      'getUserRoles',
-    ]);
-    keycloak.login.and.resolveTo();
+    keycloak = jasmine.createSpyObj('Keycloak', ['login']);
 
-    // Build Base Module
-    await MockBuilder(AuthGuard, AppModule).mock(KeycloakService, keycloak);
-    guard = TestBed.inject(AuthGuard);
+    TestBed.configureTestingModule({
+      providers: [{ provide: Keycloak, useValue: keycloak }],
+    });
   });
 
-  describe('canActivate()', () => {
-    it('should send user to login if not authenticated', async () => {
-      // Arrange
-      keycloak.isLoggedIn.and.returnValue(false);
-      const state = { url: '/some/path' } as RouterStateSnapshot;
-      const route = new ActivatedRouteSnapshot();
+  it('should call login and return false if not authenticated', async () => {
+    const authData: AuthGuardData = {
+      authenticated: false,
+      grantedRoles: {
+        realmRoles: [],
+        resourceRoles: {},
+      },
+      keycloak,
+    };
 
-      // Act
-      const result = await guard.canActivate(route, state);
+    const result = await TestBed.runInInjectionContext(() =>
+      isAccessAllowed(route, state, authData)
+    );
 
-      // Assert
-      expect(result).toBeFalse();
-      expect(keycloak.login).toHaveBeenCalledTimes(1);
+    expect(result).toBeFalse();
+    expect(keycloak.login).toHaveBeenCalledOnceWith({
+      redirectUri: environment.baseUrl + '/some/path',
     });
+  });
 
-    it('should return true if no roles are expected', async () => {
-      // Arrange
-      keycloak.isLoggedIn.and.returnValue(true);
-      keycloak.getUserRoles.and.returnValue(['Untersuchungsteam']);
-      const state = { url: '/some/path' } as RouterStateSnapshot;
-      const route = new ActivatedRouteSnapshot();
+  it('should return true if no roles are required', async () => {
+    const authData: AuthGuardData = {
+      authenticated: true,
+      grantedRoles: {
+        realmRoles: ['Untersuchungsteam'],
+        resourceRoles: {},
+      },
+      keycloak,
+    };
+    route.data = {};
 
-      // Act
-      const result = await guard.canActivate(route, state);
+    const result = await isAccessAllowed(route, state, authData);
 
-      // Assert
-      expect(result).toBeTrue();
-    });
+    expect(result).toBeTrue();
+  });
 
-    it('should return true if the role matches', async () => {
-      // Arrange
-      keycloak.isLoggedIn.and.returnValue(true);
-      keycloak.getUserRoles.and.returnValue(['Untersuchungsteam']);
-      const state = { url: '/some/path' } as RouterStateSnapshot;
-      const route = new ActivatedRouteSnapshot();
-      route.data = { authorizedRoles: ['Forscher', 'Untersuchungsteam'] };
+  it('should return true if user has an authorized role', async () => {
+    const authData: AuthGuardData = {
+      authenticated: true,
+      grantedRoles: {
+        realmRoles: ['Untersuchungsteam'],
+        resourceRoles: {},
+      },
+      keycloak,
+    };
+    route.data = { authorizedRoles: ['Forscher', 'Untersuchungsteam'] };
 
-      // Act
-      const result = await guard.canActivate(route, state);
+    const result = await isAccessAllowed(route, state, authData);
 
-      // Assert
-      expect(result).toBeTrue();
-    });
+    expect(result).toBeTrue();
+  });
 
-    it('should return false if no role matches', async () => {
-      // Arrange
-      keycloak.isLoggedIn.and.returnValue(true);
-      keycloak.getUserRoles.and.returnValue(['Proband']);
-      const state = { url: '/some/path' } as RouterStateSnapshot;
-      const route = new ActivatedRouteSnapshot();
-      route.data = { authorizedRoles: ['Forscher', 'Untersuchungsteam'] };
+  it('should return false if user has no matching role', async () => {
+    const authData: AuthGuardData = {
+      authenticated: true,
+      grantedRoles: {
+        realmRoles: ['Proband'],
+        resourceRoles: {},
+      },
+      keycloak,
+    };
+    route.data = { authorizedRoles: ['Forscher', 'Untersuchungsteam'] };
 
-      // Act
-      const result = await guard.canActivate(route, state);
+    const result = await isAccessAllowed(route, state, authData);
 
-      // Assert
-      expect(result).toBeFalse();
-    });
+    expect(result).toBeFalse();
   });
 });

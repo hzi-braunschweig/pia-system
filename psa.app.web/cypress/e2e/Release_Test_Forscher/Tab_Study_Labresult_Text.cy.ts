@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import Chainable = Cypress.Chainable;
 import {
   createProfessionalUser,
   loginProfessional,
@@ -25,8 +24,8 @@ import {
 import { CreateProbandRequest } from '../../../src/app/psa.app.core/models/proband';
 import { createStudy, selectStudy } from 'cypress/support/study.commands';
 import { updateLabResultTemplateText } from 'cypress/support/sample-tracking.commands';
+import short from 'short-uuid';
 
-const short = require('short-uuid');
 const translator = short();
 
 let proband: CreateProbandRequest;

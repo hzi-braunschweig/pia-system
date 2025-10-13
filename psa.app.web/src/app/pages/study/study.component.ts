@@ -29,13 +29,14 @@ import { DialogMarkdownLabresultEditorComponent } from 'src/app/dialogs/dialog-m
 @Component({
   selector: 'app-home-professional',
   templateUrl: './study.component.html',
+  standalone: false,
 })
 export class StudyComponent {
   public selectedStudyName;
 
   public selectedStudy$: Observable<Study>;
 
-  private externallyUpdatedStudy: Subject<string> = new Subject();
+  private readonly externallyUpdatedStudy: Subject<string> = new Subject();
 
   constructor(
     private readonly userService: UserService,

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatPaginator, MatPaginatorIntl } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -17,6 +17,7 @@ import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
 import { Questionnaire } from '../../../psa.app.core/models/questionnaire';
+import { DialogImportQuestionnaireComponentComponent } from './dialog-import-questionnaire-component/dialog-import-questionnaire-component.component';
 
 @Component({
   templateUrl: 'questionnaires-researcher.component.html',
@@ -27,16 +28,14 @@ import { Questionnaire } from '../../../psa.app.core/models/questionnaire';
       useClass: MatPaginatorIntlGerman,
     },
   ],
+  standalone: false,
 })
 export class QuestionnairesResearcherComponent implements OnInit {
-  constructor(
-    private questionnaireService: QuestionnaireService,
-    private alertService: AlertService,
-    private router: Router,
-    public dialog: MatDialog
-  ) {}
+  @ViewChild(MatPaginator, { static: true })
+  private readonly _paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true }) private readonly sort: MatSort;
 
-  displayedColumns = [
+  public displayedColumns = [
     'id',
     'version',
     'study_id',
@@ -47,57 +46,59 @@ export class QuestionnairesResearcherComponent implements OnInit {
     'updated_at',
     'delete',
   ];
-  questionnaireDatabase = new QuestionnaireDatabase(
+  public isLoading: boolean;
+  public dataSource: QuestionnaireDataSource | null;
+  public selection = new SelectionModel<string>(true, []);
+  private readonly questionnaireDatabase = new QuestionnaireDatabase(
     this.questionnaireService,
     this.alertService
   );
-  dataSource: QuestionnaireDataSource | null;
-  selection = new SelectionModel<string>(true, []);
-  @ViewChild(MatPaginator, { static: true }) _paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) sort: MatSort;
-  @ViewChild('delete') delete: ElementRef;
-  questionnaires: Questionnaire[];
-  isLoading: boolean = true;
 
-  ngOnInit(): void {
+  public constructor(
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly alertService: AlertService,
+    private readonly router: Router,
+    public dialog: MatDialog
+  ) {}
+
+  public ngOnInit(): void {
     this.dataSource = new QuestionnaireDataSource(
       this.questionnaireDatabase,
       this._paginator,
       this.sort
     );
-
-    this.questionnaireService.getQuestionnaires().then(
-      (result) => {
-        this.questionnaires = result.questionnaires;
-        this.loadData();
-      },
-      (err: any) => {
-        this.alertService.errorObject(err);
-      }
-    );
+    void this.loadData();
   }
 
-  applyFilter(filterValue: string): void {
+  public applyFilter(filterValue: string): void {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  loadData(): void {
-    this.dataSource.insertData(this.questionnaires);
-    this.isLoading = false;
+  public createNewQuestionnaire(): void {
+    void this.router.navigate(['/questionnaire']);
   }
 
-  createNewQuestionnaire(): void {
-    this.router.navigate(['/questionnaire']);
+  public editQuestionnaire(id: number, version: number): void {
+    void this.router.navigate(['/questionnaire', id, version, 'edit']);
   }
 
-  editQuestionnaire(id: number, version: number): void {
-    this.router.navigate(['/questionnaire', id, version, 'edit']);
+  public openImportDialog(): void {
+    const dialogRef = this.dialog.open(
+      DialogImportQuestionnaireComponentComponent,
+      {
+        width: '800px',
+      }
+    );
+
+    dialogRef.afterClosed().subscribe(() => {
+      void this.loadData();
+    });
   }
 
-  openDialog(id: number, version: number): void {
+  public openDeleteDialog(id: number, version: number): void {
     const dialogRef = this.dialog.open(DialogDeleteComponent, {
       width: '400px',
-      data: { data: 'den Fragebogen ' + id + ', Version ' + version },
+      data: { data: `den Fragebogen ${id}, Version ${version}` },
     });
 
     dialogRef.afterClosed().subscribe((result) => {
@@ -105,5 +106,19 @@ export class QuestionnairesResearcherComponent implements OnInit {
         this.questionnaireDatabase.deleteQuestionnaire(id, version);
       }
     });
+  }
+
+  private async loadData(): Promise<void> {
+    try {
+      this.isLoading = true;
+      const questionnaires: Questionnaire[] = await this.questionnaireService
+        .getQuestionnaires()
+        .then((result) => result.questionnaires);
+      this.dataSource.insertData(questionnaires);
+    } catch (err) {
+      this.alertService.errorObject(err);
+    } finally {
+      this.isLoading = false;
+    }
   }
 }

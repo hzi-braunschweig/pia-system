@@ -20,11 +20,27 @@ export class AppDateAdapter extends NativeDateAdapter {
   }
 
   parse(value: unknown): Date | null {
-    if (this.locale.match(/de/) && typeof value == 'string') {
-      return this.parseGermanDate(value);
+    if (typeof value === 'string') {
+      if (this.locale.match(/de/i)) {
+        return this.parseGermanDate(value);
+      }
+      if (this.locale.match(/(fr|es)/i)) {
+        return this.parseFrenchOrSpanishDate(value);
+      }
     }
 
     return super.parse(value);
+  }
+
+  private parseFrenchOrSpanishDate(value: string): Date | null {
+    const parts = value.split('/');
+    if (parts.length < 3) {
+      return null;
+    }
+    const day = Number(parts[0]);
+    const month = Number(parts[1]) - 1;
+    const year = Number(parts[2]);
+    return new Date(year, month, day);
   }
 
   private parseGermanDate(value: string): Date | null {
@@ -46,7 +62,7 @@ export class AppDateAdapter extends NativeDateAdapter {
   ): string {
     if (Array.isArray(displayFormat)) {
       for (const format of displayFormat) {
-        if (format.matcher === null || format.matcher?.test(this.locale)) {
+        if (format.matcher === null || format.matcher.test(this.locale)) {
           return format.format;
         }
       }
@@ -74,8 +90,8 @@ export const APP_DATE_FORMATS_LONG = {
   display: {
     ...APP_DATE_FORMATS_SHORT.display,
     dateInput: [
-      // keep the order ofr matcher, so 'null' will always be the fallback
       { matcher: /de/, format: 'dd.MM.yyyy' },
+      { matcher: /(fr)|(es)/, format: 'dd/MM/yyyy' },
       { matcher: null, format: 'M/d/yyyy' },
     ],
   },

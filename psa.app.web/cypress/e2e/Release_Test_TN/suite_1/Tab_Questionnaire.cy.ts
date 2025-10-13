@@ -23,7 +23,8 @@ import {
   UserCredentials,
 } from 'cypress/support/user.commands';
 
-const short = require('short-uuid');
+import short from 'short-uuid';
+
 const translator = short();
 
 let study;
@@ -267,7 +268,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
           ],
         },
         {
-          text: 'Welche Symptome haben Sie?',
+          text: 'Multi Select ohne Autocomplete',
           help_text: '',
           variable_name: '',
           position: 5,
@@ -289,6 +290,34 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
                 { value: 'Durchfall' },
               ],
               values_code: [{ value: 3 }, { value: 4 }, { value: 5 }],
+              use_autocomplete: false,
+            },
+          ],
+        },
+        {
+          text: 'Multi Select mit Autocomplete',
+          help_text: '',
+          variable_name: '',
+          position: 6,
+          is_mandatory: false,
+          answer_options: [
+            {
+              position: 1,
+              text: '',
+              variable_name: '',
+              answer_type_id: 2,
+              is_notable: [
+                { value: false },
+                { value: false },
+                { value: false },
+              ],
+              values: [
+                { value: 'Fieber' },
+                { value: 'Husten' },
+                { value: 'Durchfall' },
+              ],
+              values_code: [{ value: 3 }, { value: 4 }, { value: 5 }],
+              use_autocomplete: true,
             },
           ],
         },
@@ -296,7 +325,7 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
           text: 'Wann sind erste Symptome aufgetreten?',
           help_text: '',
           variable_name: '',
-          position: 6,
+          position: 7,
           is_mandatory: false,
           answer_options: [
             {
@@ -416,12 +445,18 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
     cy.contains('Divers').click();
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
-    cy.get('[data-e2e="e2e-input-type-checkbox-group"]')
+    cy.get('[data-e2e="e2e-input-type-multiselect"]')
       .find('[value="Fieber"]')
       .check();
-    cy.get('[data-e2e="e2e-input-type-checkbox-group"]')
+    cy.get('[data-e2e="e2e-input-type-multiselect"]')
       .find('[value="Husten"]')
       .check();
+    cy.get('[data-e2e="e2e-swiper-button-next"]').click();
+
+    cy.get('[data-e2e="e2e-input-type-autocomplete-multiselect"]').click();
+    cy.get('mat-option').contains('Husten').should('be.visible').click();
+    cy.get('[data-e2e="e2e-input-type-autocomplete-multiselect"]').click();
+    cy.get('mat-option').contains('Durchfall').should('be.visible').click();
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
     cy.get('[data-e2e="e2e-input-type-date"]')
@@ -483,10 +518,10 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       .click();
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
-    cy.get('[data-e2e="e2e-input-type-checkbox-group"]')
+    cy.get('[data-e2e="e2e-input-type-multiselect"]')
       .find('[value="Fieber"]')
       .check();
-    cy.get('[data-e2e="e2e-input-type-checkbox-group"]')
+    cy.get('[data-e2e="e2e-input-type-multiselect"]')
       .find('[value="Husten"]')
       .check();
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
@@ -677,8 +712,6 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
           .should('be.visible');
       });
   });
-
-  it('should display single selects in a autocomplete if the researcher toggles this option', () => {});
 });
 
 function checkEnteredQuestionnaireData() {
@@ -698,42 +731,61 @@ function checkEnteredQuestionnaireData() {
     .contains(q.name)
     .click();
 
-  cy.contains('mat-card', 'Wie heißen Sie?').within(() => {
+  cy.contains('mat-card.answer-card', 'Wie heißen Sie?').within(() => {
     cy.get('mat-form-field input').should('have.value', 'Bar');
   });
 
-  cy.contains('mat-card', 'Wie alt sind Sie?').within(() => {
+  cy.contains('mat-card.answer-card', 'Wie alt sind Sie?').within(() => {
     cy.get('mat-form-field input').should('have.value', '23');
   });
 
-  cy.contains('mat-card', 'Single Select mit Radio Buttons').within(() => {
-    cy.contains('mat-radio-button', 'Männlich')
-      .find('input')
-      .should('be.checked');
-    cy.contains('mat-radio-button', 'Weiblich')
-      .find('input')
-      .should('not.be.checked');
-  });
-
-  cy.contains('mat-card', 'Single Select mit Autocomplete').within(() => {
-    cy.get('mat-form-field input').should('have.value', 'Divers');
-  });
-
-  cy.contains('mat-card', 'Welche Symptome haben Sie?').within(() => {
-    cy.get('input[type="checkbox"][value="Fieber"]')
-      .should('exist')
-      .and('be.checked');
-    cy.get('input[type="checkbox"][value="Husten"]')
-      .should('exist')
-      .and('be.checked');
-    cy.get('input[type="checkbox"][value="Durchfall"]')
-      .should('exist')
-      .and('not.be.checked');
-  });
-
-  cy.contains('mat-card', 'Wann sind erste Symptome aufgetreten?').within(
+  cy.contains('mat-card.answer-card', 'Single Select mit Radio Buttons').within(
     () => {
-      cy.get('mat-form-field input').should('have.value', '01.12.20');
+      cy.contains('mat-radio-button', 'Männlich')
+        .find('input')
+        .should('be.checked');
+      cy.contains('mat-radio-button', 'Weiblich')
+        .find('input')
+        .should('not.be.checked');
     }
   );
+
+  cy.contains('mat-card.answer-card', 'Single Select mit Autocomplete').within(
+    () => {
+      cy.contains('Divers');
+    }
+  );
+
+  cy.contains('mat-card.answer-card', 'Multi Select ohne Autocomplete').within(
+    () => {
+      cy.get('input[type="checkbox"][value="Fieber"]')
+        .should('exist')
+        .and('be.checked');
+      cy.get('input[type="checkbox"][value="Husten"]')
+        .should('exist')
+        .and('be.checked');
+      cy.get('input[type="checkbox"][value="Durchfall"]')
+        .should('exist')
+        .and('not.be.checked');
+    }
+  );
+
+  cy.contains('mat-card.answer-card', 'Multi Select mit Autocomplete').within(
+    () => {
+      cy.get('input[type="checkbox"][value="Husten"]')
+        .should('exist')
+        .and('be.checked');
+      cy.get('input[type="checkbox"][value="Durchfall"]')
+        .should('exist')
+        .and('be.checked');
+      cy.get('input[type="checkbox"][value="Fieber"]').should('not.exist');
+    }
+  );
+
+  cy.contains(
+    'mat-card.answer-card',
+    'Wann sind erste Symptome aufgetreten?'
+  ).within(() => {
+    cy.get('mat-form-field input').should('have.value', '01.12.20');
+  });
 }

@@ -10,6 +10,7 @@ import { ConsentInputRadioComponent } from '../consent-input-radio/consent-input
 @Component({
   selector: 'app-consent-input-text',
   templateUrl: './consent-input-text.component.html',
+  standalone: false,
 })
 export class ConsentInputTextComponent
   extends ConsentInputRadioComponent

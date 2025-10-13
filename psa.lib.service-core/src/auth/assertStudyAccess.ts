@@ -4,11 +4,10 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { AccessToken } from './authModel';
-import { SpecificError } from '../plugins/errorHandler';
+import { AuthCredentials } from '@hapi/hapi';
 import { StatusCodes } from 'http-status-codes';
+import { SpecificError } from '../plugins/errorHandler';
 import { hasRealmRole } from './realmRole';
-
 export class MissingStudyAccessError extends SpecificError {
   public readonly statusCode = StatusCodes.FORBIDDEN;
   public readonly errorCode = 'MISSING_STUDY_ACCESS';
@@ -19,14 +18,28 @@ export class MissingStudyAccessError extends SpecificError {
  */
 export function assertStudyAccess(
   expectedStudyName: string,
-  decodedToken: AccessToken
+  credentials: Record<string, unknown> & AuthCredentials
 ): void {
-  if (
-    !hasRealmRole('SysAdmin', decodedToken) &&
-    !decodedToken.studies.includes(expectedStudyName)
-  ) {
-    throw new MissingStudyAccessError(
-      `Requesting user has no access to study "${expectedStudyName}"`
-    );
+  if (hasRealmRole('SysAdmin', credentials)) {
+    return;
   }
+  if (
+    hasStudiesAttribute(credentials) &&
+    credentials.studies.includes(expectedStudyName)
+  ) {
+    return;
+  }
+  throw new MissingStudyAccessError(
+    `Requesting user has no access to study "${expectedStudyName}"`
+  );
+}
+
+function hasStudiesAttribute(
+  decodedToken: Record<string, unknown>
+): decodedToken is { studies: string[] } {
+  return (
+    'studies' in decodedToken &&
+    Array.isArray(decodedToken['studies']) &&
+    decodedToken['studies'].every((x) => typeof x === 'string')
+  );
 }

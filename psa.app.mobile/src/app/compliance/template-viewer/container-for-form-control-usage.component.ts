@@ -6,7 +6,10 @@
 
 import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 
-@Component({ template: '' })
+@Component({
+  template: '',
+  standalone: false,
+})
 export abstract class ContainerForFormControlUsageComponent
   implements OnDestroy
 {

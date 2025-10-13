@@ -6,6 +6,7 @@
 
 import fbAdmin, { FirebaseError } from 'firebase-admin';
 import { TokenMessage } from 'firebase-admin/lib/messaging/messaging-api';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 import { config } from '../config';
 import {
   FirebaseMessageRejectedError,
@@ -18,9 +19,18 @@ export class FcmHelper {
    */
   public static initFBAdmin(this: void): void {
     const credential = config.fireBaseCredentials;
+    console.log(
+      'Using ' +
+        (config.proxyUrl ? 'https proxy ' + config.proxyUrl : 'no https proxy')
+    );
+    const proxyAgent = config.proxyUrl
+      ? new HttpsProxyAgent(config.proxyUrl)
+      : undefined;
+
     fbAdmin.initializeApp({
-      credential: fbAdmin.credential.cert(credential),
+      credential: fbAdmin.credential.cert(credential, proxyAgent),
       projectId: credential.projectId,
+      httpAgent: proxyAgent,
     });
   }
 

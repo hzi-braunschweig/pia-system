@@ -1,12 +1,12 @@
-FROM cypress/included:13.9.0@sha256:0aa5fd58f367afcc2ae008d252382a6adc49f4574fd022155435dd1e7bf2c21b
+FROM cypress/included:15.3.0@sha256:bcc9add4c54d0cf8165c0f3310737d86da6fb6ce6c33a314fd5e902fbf1f6c99
 
 ENV DIR=psa.app.web
 
 WORKDIR /dependencies/$DIR/
-ENV PACT_SKIP_BINARY_INSTALL=true
 COPY $DIR/package*.json ./
 COPY psa.lib.licensecollector/package*.json ../psa.lib.licensecollector/
 COPY psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
+COPY psa.lib.licensecollector/static-licenses ../psa.lib.licensecollector/static-licenses
 
 ### workaround for npm 9 until we move to package registry
 ### execute install in the local dependency folders

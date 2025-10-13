@@ -7,7 +7,7 @@ build-docker:
     - .job-exclude-schedules-pipelines
     - .no-cpu-request
   stage: prepare
-  image: snickch/buildx@sha256:63db62815b7ec00b80fd28c5f85c88c50df48d65fbbdd454e18b0efcc96a3235
+  image: docker:28.4.0@sha256:831644212c5bdd0b3362b5855c87b980ea39a83c9e9adcef2ce03eced99a737a
   # downloads may fail
   retry: 2
   variables:
@@ -46,6 +46,7 @@ push-branch-images:
   variables:
     GIT_STRATEGY: none
     DOCKER_HOST: null
+    SKOPEO_RETRY: '10'
   dependencies: []
   needs:
     - job: accumulate-coverage
@@ -53,7 +54,7 @@ push-branch-images:
     - sh -c "skopeo login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
     - >
       for JOB in $JOBS_DOCKER; do
-        skopeo copy docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$CI_COMMIT_REF_SLUG
+        skopeo copy --retry-times $SKOPEO_RETRY docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$CI_COMMIT_REF_SLUG
       done
   rules:
     - if: $CI_MERGE_REQUEST_IID

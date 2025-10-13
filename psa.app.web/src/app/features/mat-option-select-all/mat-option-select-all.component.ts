@@ -30,6 +30,7 @@ import { takeUntil } from 'rxjs/operators';
       }
     `,
   ],
+  standalone: false,
 })
 export class MatOptionSelectAllComponent implements AfterViewInit, OnDestroy {
   state: MatPseudoCheckboxState = 'checked';
@@ -37,9 +38,9 @@ export class MatOptionSelectAllComponent implements AfterViewInit, OnDestroy {
   private options = [];
   private value = [];
 
-  private destroyed = new Subject();
+  private readonly destroyed = new Subject();
 
-  constructor(private matSelect: MatSelect) {}
+  constructor(private readonly matSelect: MatSelect) {}
 
   ngAfterViewInit(): void {
     this.options = this.matSelect.options.map((x) => x.value);

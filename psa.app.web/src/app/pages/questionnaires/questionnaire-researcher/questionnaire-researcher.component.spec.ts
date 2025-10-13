@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { S } from '@angular/cdk/keycodes';
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
 import { AppModule } from '../../../app.module';
 import {
@@ -42,8 +41,6 @@ import {
   ConditionType,
 } from '../../../psa.app.core/models/questionnaire';
 import { By } from '@angular/platform-browser';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import createSpyObj = jasmine.createSpyObj;
 import SpyObj = jasmine.SpyObj;
@@ -592,32 +589,38 @@ describe('QuestionnaireResearcherComponent', () => {
   });
 
   describe('use_autocomplete checkbox', () => {
-    it('should display the checkbox when answer_type_id is 1', fakeAsync(() => {
-      const questionnaire = createQuestionnaire({
-        questions: [
-          {
-            ...createQuestion(),
-            answer_options: [
-              createAnswerOption({
-                id: 1,
-                answer_type_id: AnswerType.SingleSelect,
-                variable_name: 'test',
-              }),
-            ],
-          },
-        ],
-      });
+    const testCases = [
+      { answerType: AnswerType.SingleSelect, typeName: 'SingleSelect' },
+      { answerType: AnswerType.MultiSelect, typeName: 'MultiSelect' },
+    ];
+    testCases.forEach(({ answerType, typeName }) => {
+      it(`should display the checkbox when answer_type_id is ${answerType} (${typeName})`, fakeAsync(() => {
+        const questionnaire = createQuestionnaire({
+          questions: [
+            {
+              ...createQuestion(),
+              answer_options: [
+                createAnswerOption({
+                  id: 1,
+                  answer_type_id: answerType,
+                  variable_name: 'test',
+                }),
+              ],
+            },
+          ],
+        });
 
-      component.initForm(questionnaire);
-      tick();
-      fixture.detectChanges();
-      const checkbox = fixture.debugElement.query(
-        By.css('mat-checkbox[formControlName="use_autocomplete"]')
-      );
-      expect(checkbox).toBeTruthy();
-    }));
+        component.initForm(questionnaire);
+        tick();
+        fixture.detectChanges();
+        const checkbox = fixture.debugElement.query(
+          By.css('mat-checkbox[formControlName="use_autocomplete"]')
+        );
+        expect(checkbox).toBeTruthy();
+      }));
+    });
 
-    it('should not display the checkbox when answer_type_id is not 1', fakeAsync(() => {
+    it('should not display the checkbox when answer_type_id is not Single-/Multi-Select', fakeAsync(() => {
       const questionnaire = createQuestionnaire({
         questions: [
           {

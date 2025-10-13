@@ -1,0 +1,21 @@
+{
+  "NEW_PROBAND_ERROR_FETCHING_DATA": "Le journal des symptômes n'a pas pu charger les données du participant à partir de SORMAS.",
+  "NEW_PROBAND_ERROR_EMAIL_NOT_VALID": "L'adresse e-mail est manquante ou n'est pas valide. Veuillez vous assurer qu'une adresse e-mail valide est indiquée et qu'elle est marquée comme primaire.",
+  "NEW_PROBAND_COULD_NOT_SAVE_FOLLOW_UP_ENDDATE": "Le journal des symptômes n'a pas pu enregistrer la date de fin de suivi.",
+  "NEW_PROBAND_ERROR_REGISTERING": "Le participant n'a pas pu être enregistré. Cela peut être dû à une mauvaise configuration du système ou au fait que la personne (UUID) existe déjà dans le journal des symptômes.",
+  "NEW_PROBAND_SUCCESS_MESSAGE": "Le participant a été enregistré avec succès :\n\n Nom d'utilisateur : {{pseudonym}}\n\n Le mot de passe a été envoyé par e-mail au participant\n",
+  "NEW_PROBAND_SUCCESS_WITH_EMAIL_ERROR_MESSAGE": "Le participant a été enregistré avec succès :\n\n Nom d'utilisateur : {{pseudonym}} \n Mot de passe : {{password}}\n\n⚠️ Le mot de passe n'a pas pu être envoyé par e-mail au participant",
+  "UPDATE_PROBAND_ERROR_FETCHING_DATA": "Le journal des symptômes n'a pas pu charger les données du participant à partir de SORMAS.",
+  "UPDATE_PROBAND_ERROR_EMAIL_NOT_VALID": "L'adresse e-mail est manquante ou n'est pas valide. Veuillez vous assurer qu'une adresse e-mail valide est indiquée et qu'elle est marquée comme primaire.",
+  "UPDATE_PROBAND_COULD_NOT_SAVE_FOLLOW_UP_ENDDATE": "Le journal des symptômes n'a pas pu enregistrer la date de fin de suivi.",
+  "UPDATE_PROBAND_SUCCESS_MESSAGE": "Le journal des symptômes a mis à jour avec succès les données du participant.",
+  "DEACTIVATE_PROBAND_INTERNAL_ERROR": "Une erreur inattendue s'est produite. Veuillez en informer l'administrateur.",
+  "DEACTIVATE_PROBAND_NOT_FOUND_ERROR": "Aucun participant n'a pu être trouvé pour la personne indiquée (UUID) dans le journal des symptômes",
+  "DEACTIVATE_PROBAND_SUCCESS": "Le participant a été désactivé et sera supprimé, dès que tous les questionnaires ouverts auront été envoyés ou auront expiré.",
+  "PROBAND_VIEW_TITLE": "Journal des symptômes",
+  "PROBAND_VIEW_DESCRIPTION": "La personne de contact est enregistrée dans le journal des symptômes avec les données suivantes :",
+  "PROBAND_VIEW_LABEL_LOGIN_NAME": "Nom d'utilisateur",
+  "PROBAND_VIEW_LABEL_EMAIL": "E-mail",
+  "PROBAND_VIEW_LABEL_FOLLOW_UP_END_DATE": "Date de fin de suivi",
+  "PROBAND_VIEW_NOT_FOUND": "Le participant ne semble pas exister dans le journal des symptômes."
+}

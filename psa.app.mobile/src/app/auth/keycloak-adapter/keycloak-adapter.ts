@@ -26,14 +26,13 @@
  *  - some custom business logic (e.g. for background login)
  */
 
-import {
+import Keycloak, {
   KeycloakAdapter,
   KeycloakError,
   KeycloakLoginOptions,
   KeycloakLogoutOptions,
   KeycloakRegisterOptions,
 } from 'keycloak-js';
-import { KeycloakService } from 'keycloak-angular';
 import {
   EMPTY,
   finalize,
@@ -73,24 +72,22 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
   private readonly jwt: JwtHelperService = new JwtHelperService();
 
   constructor(
-    private readonly keycloakService: KeycloakService,
+    private readonly keycloak: Keycloak,
     private readonly inAppBrowser: InAppBrowser,
     private readonly translate: TranslateService,
     private readonly http: HttpClient,
     private readonly realmUrl: string
   ) {}
 
+  /**
+   * The login has a timeout of 2 seconds if it is done in the background
+   * (on app start). Otherwise, the timeout is 15 minutes.
+   */
   login(options?: KeycloakLoginOptions): Promise<void> {
-    /**
-     * The login has a timeout of 2 seconds if it is done in the background
-     * (on app start). Otherwise, the timeout is 15 minutes.
-     */
     const timeoutDuration =
       options?.cordovaOptions?.hidden === 'yes' ? 2000 : 15 * 60 * 1000;
 
-    const loginUrl = this.keycloakService
-      .getKeycloakInstance()
-      .createLoginUrl(options); // will also add oauth state to callback storage
+    const loginUrl = this.keycloak.createLoginUrl(options); // will also add oauth state to callback storage
 
     const browser = this.getInAppBrowserWithDefaultAppearance(loginUrl, {
       ...options?.cordovaOptions,
@@ -139,9 +136,7 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
   }
 
   logout(options?: KeycloakLogoutOptions): Promise<void> {
-    let logoutUrl = this.keycloakService
-      .getKeycloakInstance()
-      .createLogoutUrl(options);
+    let logoutUrl = this.keycloak.createLogoutUrl(options);
 
     const browser = this.getInAppBrowserWithDefaultAppearance(logoutUrl, {
       hidden: 'yes',
@@ -169,7 +164,7 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
           })
         )
       ).pipe(
-        tap(() => this.keycloakService.clearToken()),
+        tap(() => this.keycloak.clearToken()),
         map(() => void 0),
         finalize(() => browser.close())
       )
@@ -182,9 +177,7 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
   }
 
   accountManagement(): Promise<void> {
-    const accountUrl = this.keycloakService
-      .getKeycloakInstance()
-      .createAccountUrl();
+    const accountUrl = this.keycloak.createAccountUrl();
 
     const browser = this.getInAppBrowserWithDefaultAppearance(accountUrl, {
       toolbar: 'no',
@@ -332,7 +325,7 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
       return EMPTY;
     }
 
-    const kc = this.keycloakService.getKeycloakInstance();
+    const kc = this.keycloak;
     let timeLocal = new Date().getTime();
 
     if (oauth.error) {
@@ -399,7 +392,7 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
   }
 
   private setToken(token, refreshToken, idToken, timeLocal) {
-    const kc = this.keycloakService.getKeycloakInstance();
+    const kc = this.keycloak;
 
     if (refreshToken) {
       kc.refreshToken = refreshToken;
@@ -461,7 +454,7 @@ export class PiaKeycloakAdapter implements KeycloakAdapter {
   }
 
   private throwError(error: KeycloakError): Observable<void> {
-    const kc = this.keycloakService.getKeycloakInstance();
+    const kc = this.keycloak;
     kc.onAuthError && kc.onAuthError(error);
     return throwError(() => error);
   }

@@ -7,8 +7,13 @@
 import {
   createProfessionalUser,
   loginProfessional,
+  ProfessionalUser,
   UserCredentials,
 } from '../../support/user.commands';
+import 'cypress-file-upload';
+import path from 'path';
+import short from 'short-uuid';
+import { CreateProbandRequest } from '../../../src/app/psa.app.core/models/proband';
 import {
   changePassword,
   createPlannedProband,
@@ -19,37 +24,31 @@ import {
   getCredentialsForProbandByUsername,
   login,
 } from '../../support/commands';
-import 'cypress-file-upload';
-import { CreateProbandRequest } from '../../../src/app/psa.app.core/models/proband';
 import { expectLocation } from '../../support/helper.commands';
+import { ADMIN_APP_URL } from 'cypress/support/constants';
+import { Study } from 'cypress/support/study.commands';
 
-const path = require('path');
-
-const short = require('short-uuid');
 const translator = short();
 
-let study;
-let study2;
-let study3;
-let study4;
-let someRandomAnotherStudy;
-let forscher;
-let proband: CreateProbandRequest;
-let probandB: CreateProbandRequest;
-let ut;
-let pm;
+let study: Study | undefined;
+let study2: Study | undefined;
+let study3: Study | undefined;
+let study4: Study | undefined;
+let someRandomAnotherStudy: Study | undefined;
+let forscher: ProfessionalUser | undefined;
+let proband: CreateProbandRequest | undefined;
+let probandB: CreateProbandRequest | undefined;
+let ut: ProfessionalUser | undefined;
+let pm: ProfessionalUser | undefined;
 const forscherCredentials = { username: '', password: '' };
 const probandCredentials = { username: '', password: '' };
 const probandCredentialsB = { username: '', password: '' };
 const utCredentials = { username: '', password: '' };
 const newPassword = ',dYv3zg;r:CB';
 
-const adminAppUrl = '/admin/';
 const probandAppUrl = '/';
 const probandAuthFormUrl =
   '/api/v1/auth/realms/pia-proband-realm/protocol/openid-connect/auth';
-const adminAuthFormUrl =
-  '/api/v1/auth/realms/pia-admin-realm/protocol/openid-connect/auth';
 
 function getExpansionPanel(eq: number) {
   return cy
@@ -97,11 +96,13 @@ describe('Release Test, role: "Forscher", Administration', () => {
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,
       role: 'Untersuchungsteam',
+      study_accesses: [],
     };
 
     pm = {
       username: `e2e-pm-${translator.new()}@testpia-app.de`,
       role: 'ProbandenManager',
+      study_accesses: [],
     };
     createStudy(study);
     createStudy(study2);
@@ -146,7 +147,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
   });
 
   it('should create a questionnaire and check if it is directly visible by existing and also newly created proband', () => {
-    cy.visit(adminAppUrl);
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
@@ -238,7 +239,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
   });
 
   it('should create questionnaires "A" and "B", show questionnaire "B" to Proband only if condition in "A" met', () => {
-    cy.visit(adminAppUrl);
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
@@ -369,7 +370,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
   });
 
   it('should show warnings for variable names when editing questions and answer options', () => {
-    cy.visit(adminAppUrl);
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
 
@@ -582,7 +583,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
   });
 
   it('should show errors when redeclaring variable names', () => {
-    cy.visit(adminAppUrl);
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
 
@@ -645,7 +646,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
   // This test works only in chromium and headless. Does not work on Firefox,
   // because it does not start downloading file immediately but ask if you want to open it or download
   it('should export questionnaire', () => {
-    cy.visit(adminAppUrl);
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
@@ -697,44 +698,29 @@ describe('Release Test, role: "Forscher", Administration', () => {
   });
 
   it('should import questionnaire', () => {
-    cy.visit(adminAppUrl);
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
-    cy.get('[data-e2e="e2e-create-new-questionnaire-button"]').click();
+    cy.get('[data-e2e="import-questionnaire-button"]').click();
 
-    cy.get('[data-e2e="e2e-import-questionnaire-button"]').click();
-    cy.get('[data-e2e="e2e-file-input"]').attachFile(
+    cy.get('[data-e2e="import-questionnaire-title"]').should('exist');
+    cy.get('[data-e2e="select-study-dropdown"]').click();
+    cy.get('[data-e2e="select-study-option"]').contains(study.name).click();
+
+    cy.get('[data-e2e="publish-mode-adapt"]').click();
+
+    cy.get('[data-e2e="file-input"]').attachFile(
       'questionnnaire_for_importing.json'
     );
 
-    cy.get('[data-e2e="e2e-select-study-dropdown"]').click();
-    cy.get('[data-e2e="option"]').contains(study.name).click();
+    cy.get('[data-e2e="import-button"]').click();
 
-    cy.get('[data-e2e="e2e-save-questionnaire-button"]').click();
-    cy.get('#confirmbutton').click();
-
-    cy.get('[data-e2e="e2e-questionnaire-type-select"]')
-      .contains('Für Teilnehmende')
-      .should('exist');
-    cy.get('[data-e2e="e2e-cycle-unit-select-dropdown"]')
-      .contains('Einmal')
-      .should('exist');
-
-    cy.get('[data-e2e="e2e-activate-after-days-input"]').should(
-      'have.value',
-      0
-    );
-    cy.get('[data-e2e="e2e-notification-tries"]').should('have.value', 0);
-
-    cy.get(' [data-e2e="e2e-question-expansion-panel"] > [role="button"]')
-      .first()
-      .contains('Frage : Where are you from?')
-      .should('exist');
+    cy.get('[data-e2e="import-success-icon"]').should('exist');
   });
 
   it('should test filter functionality', () => {
-    cy.visit(adminAppUrl);
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
@@ -851,7 +837,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
       .should('exist');
   });
   it('should create new version of questionnaire', () => {
-    cy.visit(adminAppUrl);
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
@@ -906,7 +892,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
   });
 
   it('should test versioning for singular questionnaire', () => {
-    cy.visit(adminAppUrl);
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
@@ -971,7 +957,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
     expectLocation(probandAuthFormUrl);
 
     // Login as forscher
-    cy.visit(adminAppUrl);
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
@@ -1084,8 +1070,8 @@ describe('Release Test, role: "Forscher", Administration', () => {
       });
   });
 
-  it.only('should test spontaneous questionnaire', () => {
-    cy.visit(adminAppUrl);
+  it('should test spontaneous questionnaire', () => {
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
@@ -1151,7 +1137,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
     // Logout
     cy.logoutParticipant();
 
-    cy.visit(adminAppUrl);
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
@@ -1224,7 +1210,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
   });
 
   it('should update a questionnaire', () => {
-    cy.visit(adminAppUrl);
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();
@@ -1433,7 +1419,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
   });
 
   it('should deactivate a questionnaire', () => {
-    cy.visit(adminAppUrl);
+    cy.visit(ADMIN_APP_URL);
     login(forscherCredentials.username, forscherCredentials.password);
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Verwaltung').click();

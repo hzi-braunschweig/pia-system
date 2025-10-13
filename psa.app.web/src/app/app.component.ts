@@ -5,9 +5,7 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { FCMService } from './_services/fcm.service';
 import { MediaChange, MediaObserver } from '@angular/flex-layout';
-import { LocaleService } from './_services/locale.service';
 import { environment } from '../environments/environment';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TranslateService } from '@ngx-translate/core';
@@ -20,17 +18,16 @@ register();
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
+  standalone: false,
 })
 export class AppComponent implements OnInit {
   public isLoading: boolean = true;
   public isLtMd: boolean;
 
   constructor(
-    private fcmService: FCMService,
-    private localeService: LocaleService,
-    private mediaObserver: MediaObserver,
-    private snackBar: MatSnackBar,
-    private translate: TranslateService
+    private readonly mediaObserver: MediaObserver,
+    private readonly snackBar: MatSnackBar,
+    private readonly translate: TranslateService
   ) {}
 
   public async ngOnInit(): Promise<void> {

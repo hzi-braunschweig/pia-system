@@ -7,7 +7,11 @@
 import Joi from 'joi';
 import { ConditionRequest } from '../models/condition';
 
-import { Questionnaire } from '../models/questionnaire';
+import {
+  Publish,
+  Questionnaire,
+  validatorCustomName,
+} from '../models/questionnaire';
 
 export const conditionValidation = Joi.object<ConditionRequest>().keys({
   condition_target_questionnaire: Joi.number()
@@ -51,9 +55,7 @@ export const conditionValidation = Joi.object<ConditionRequest>().keys({
 export const questionnaireRequestPayload = Joi.object<Questionnaire>({
   study_id: Joi.string().required().example('Teststudie1'),
   name: Joi.string().required().example('Testfragebogenname'),
-  custom_name: Joi.string()
-    .pattern(/^[a-zA-Z0-9_-]+$/)
-    .pattern(/^\d+$/, { invert: true })
+  custom_name: validatorCustomName
     .allow(null)
     .example('test_questionnaire_custom_name'),
   sort_order: Joi.number()
@@ -88,7 +90,7 @@ export const questionnaireRequestPayload = Joi.object<Questionnaire>({
     .description('only for cycle_amount=hour, defines the time of first QI')
     .optional()
     .allow(null),
-  publish: Joi.string()
+  publish: Joi.string<Publish>()
     .description('the publishing state')
     .example('allaudiences')
     .valid('hidden', 'testprobands', 'allaudiences')

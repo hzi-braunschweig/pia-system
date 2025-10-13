@@ -27,7 +27,6 @@ const STUDY_SELECT_VALUE_ACCESSOR = {
 };
 
 @Component({
-  standalone: true,
   selector: 'app-study-select',
   templateUrl: './study-select.component.html',
   providers: [STUDY_SELECT_VALUE_ACCESSOR],
@@ -52,7 +51,7 @@ export class StudySelectComponent
 
   private subscription: Subscription;
 
-  constructor(private currentUser: CurrentUser) {}
+  constructor(private readonly currentUser: CurrentUser) {}
 
   ngOnInit() {
     this.selectedStudy = new FormControl<string>(

@@ -13,6 +13,8 @@ import {
   OnInit,
   ViewChild,
   AfterContentChecked,
+  ViewChildren,
+  QueryList,
 } from '@angular/core';
 import { Observable, retry } from 'rxjs';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
@@ -126,6 +128,7 @@ interface ConditionFormValue {
       useValue: APP_DATE_FORMATS_SHORT,
     },
   ],
+  standalone: false,
 })
 export class QuestionProbandComponent
   implements ComponentCanDeactivate, OnInit, AfterContentChecked, OnDestroy
@@ -145,9 +148,16 @@ export class QuestionProbandComponent
   public answerVersionFromServer: number;
   public release_version: number;
   public isReleaseButtonVisible: boolean = false;
+  private readonly MULTISELECT_NOT_SPECIFIED = [
+    'Keine Angabe',
+    'Not specified',
+  ];
 
   @ViewChild('questionSwiper')
   public questionSwiper: ElementRef<SwiperContainer>;
+
+  @ViewChildren('autoInputForMultiSelect')
+  autoInputsForMultiSelect: QueryList<ElementRef<HTMLInputElement>>;
 
   public canDeactivate(): Observable<boolean> | boolean {
     return this.myForm ? !this.myForm.dirty : true;
@@ -164,18 +174,18 @@ export class QuestionProbandComponent
 
   constructor(
     public readonly user: CurrentUser,
-    private activatedRoute: ActivatedRoute,
-    private alertService: AlertService,
-    private router: Router,
-    private translate: TranslateService,
-    private authService: AuthService,
-    private userService: UserService,
-    private selectedProbandInfoService: SelectedProbandInfoService,
-    private questionnaireService: QuestionnaireService,
-    private sampleTrackingService: SampleTrackingService,
-    private dialog: MatDialog,
-    private _location: Location,
-    @Inject(DOCUMENT) private document: Document
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly alertService: AlertService,
+    private readonly router: Router,
+    private readonly translate: TranslateService,
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+    private readonly selectedProbandInfoService: SelectedProbandInfoService,
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly sampleTrackingService: SampleTrackingService,
+    private readonly dialog: MatDialog,
+    private readonly _location: Location,
+    @Inject(DOCUMENT) private readonly document: Document
   ) {
     if (this.activatedRoute.snapshot.paramMap.has('instanceId')) {
       this.questionnaireInstanceId = Number(
@@ -396,11 +406,8 @@ export class QuestionProbandComponent
   private calculatAppropriateDate(inputText: string): string {
     const myRegex = /\(dat=(.*?)\)/g;
     let str = inputText ? inputText : '';
-    while (true) {
-      const myArray = myRegex.exec(str);
-      if (!myArray) {
-        break;
-      }
+    let myArray: RegExpExecArray;
+    while ((myArray = myRegex.exec(str)) !== null) {
       const days = Number.parseInt(myArray[1], 10);
       const replacementDate = addDays(new Date(this.date_of_issue), days);
       str = str.replace(myArray[0], format(replacementDate, 'dd.MM.yyyy'));
@@ -515,6 +522,35 @@ export class QuestionProbandComponent
           .pipe(
             startWith(valueControl.value),
             filter(() => valueControl.enabled),
+            map((value) =>
+              this.filterAutocompleteOptions(value || '', answerOption.values)
+            )
+          )
+          .subscribe((filteredValues) => {
+            answerControl.get('filtered_values').setValue(filteredValues);
+          });
+      } else {
+        console.warn(
+          `Autocomplete options not available for question ${questionIndex}, answer ${answerIndex}`
+        );
+      }
+    } else if (answer_type_id === AnswerType.MultiSelect) {
+      answerControl.addControl('filtered_values', new FormControl([]));
+      answerControl.addControl('filter_value', new FormControl(''));
+      const filterValueControl = answerControl.get(
+        'filter_value'
+      ) as FormControl;
+      if (answerOption && Array.isArray(answerOption.values)) {
+        const initialFilteredValues = this.filterAutocompleteOptions(
+          '',
+          answerOption.values
+        );
+        answerControl.get('filtered_values').setValue(initialFilteredValues);
+
+        filterValueControl.valueChanges
+          .pipe(
+            startWith(filterValueControl.value),
+            filter(() => filterValueControl.enabled),
             map((value) =>
               this.filterAutocompleteOptions(value || '', answerOption.values)
             )
@@ -684,59 +720,63 @@ export class QuestionProbandComponent
     );
   }
 
-  public onChange(
-    input: HTMLInputElement,
+  public onMultiSelectChange(
     questionIndex: number,
-    answerIndex: number
+    answerIndex: number,
+    checked: boolean,
+    value: string
   ): void {
-    const answerValue = this.getAnswerOptionFormControlAtPosition(
+    const formControl = this.getAnswerOptionFormControlAtPosition(
       questionIndex,
       answerIndex
-    ).get('value');
-    const answerValues =
-      this.getAnswerOptionFormControlAtPosition(questionIndex, answerIndex).get(
-        'values'
-      ).value != null
-        ? this.getAnswerOptionFormControlAtPosition(
-            questionIndex,
-            answerIndex
-          ).get('values').value
-        : '';
-    const stringValue: string =
-      answerValue.value != null ? answerValue.value.toString() : '';
+    );
+    const answerValue = formControl.get('value');
+    const answerValues = formControl.get('values').value ?? '';
+    const stringValue: string = answerValue.value?.toString() ?? '';
 
-    if (input.checked) {
-      if (input.value === 'Keine Angabe') {
-        answerValue.setValue(input.value);
+    if (checked) {
+      const filterValueControl = formControl.get('filter_value');
+      if (filterValueControl?.value) {
+        filterValueControl.setValue('');
+      }
+      this.autoInputsForMultiSelect.forEach((autoInput) => {
+        autoInput.nativeElement.value = '';
+      });
+
+      if (this.MULTISELECT_NOT_SPECIFIED.includes(value)) {
+        answerValue.setValue(value);
         // always use setValue() instead of value =
         answerValues.forEach((answerValueControl) => {
-          answerValueControl.isChecked =
-            answerValueControl.value === input.value;
+          answerValueControl.isChecked = answerValueControl.value === value;
         });
       } else {
         const arrayValue: string[] = stringValue.split(';');
-        const index = arrayValue.findIndex((x) => x === 'Keine Angabe');
+        const index = arrayValue.findIndex((x) =>
+          this.MULTISELECT_NOT_SPECIFIED.includes(x)
+        );
         if (index !== -1) {
           arrayValue.splice(index, 1);
           if (arrayValue.length === 0) {
-            answerValue.setValue(input.value);
+            answerValue.setValue(value);
           } else {
-            answerValue.setValue(input.value + ';' + arrayValue.join(';'));
+            answerValue.setValue(value + ';' + arrayValue.join(';'));
           }
         } else {
-          answerValue.setValue(input.value + ';' + stringValue);
+          answerValue.setValue(value + ';' + stringValue);
         }
         answerValues.forEach((answerValueControl) => {
-          if (answerValueControl.value === input.value) {
+          if (answerValueControl.value === value) {
             answerValueControl.isChecked = true;
-          } else if (answerValueControl.value === 'Keine Angabe') {
+          } else if (
+            this.MULTISELECT_NOT_SPECIFIED.includes(answerValueControl)
+          ) {
             answerValueControl.isChecked = false;
           }
         });
       }
     } else {
       const arrayValue: string[] = stringValue.split(';');
-      const i = arrayValue.findIndex((x) => x === input.value);
+      const i = arrayValue.findIndex((x) => x === value);
       arrayValue.splice(i, 1);
       if (arrayValue.length === 0) {
         answerValue.setValue('');
@@ -744,7 +784,7 @@ export class QuestionProbandComponent
         answerValue.setValue(arrayValue.join(';'));
       }
       answerValues.forEach((answerValueControl) => {
-        if (answerValueControl.value === input.value) {
+        if (answerValueControl.value === value) {
           answerValueControl.isChecked = false;
         }
       });

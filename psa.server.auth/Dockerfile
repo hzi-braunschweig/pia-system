@@ -1,17 +1,22 @@
-FROM maven:3.8.5-openjdk-17@sha256:62e6a9e10fb57f3019adeea481339c999930e7363f2468d1f51a7c0be4bca26d as extension-builder
+FROM maven:3.9.11-amazoncorretto-21-debian@sha256:55d0fa0ef06c61796456993b196c5790bd8c5c97642d12a959a7c750fe46e65a AS extension-builder
 
 ARG DIR=.
 
 RUN mkdir /build
 WORKDIR /build
 
-COPY ${DIR}/extensions/keycloak-study-registration/ ./
+COPY ${DIR}/extensions/keycloak-study-registration/ ./keycloak-study-registration
+COPY ${DIR}/extensions/account-ui-theme/ ./account-ui-theme
 
-RUN --mount=type=cache,target=/root/.m2 mvn clean package -Dmaven.test.skip=true
+RUN --mount=type=cache,target=/root/.m2 \
+    cd keycloak-study-registration && mvn clean package -Dmaven.test.skip=true
+RUN --mount=type=cache,target=/root/.m2 \
+    cd account-ui-theme && mvn clean package -Dmaven.test.skip=true
+
 
 ################################################################
 
-FROM node:20.3.0-alpine@sha256:2d5e8a8a51bc341fd5f2eed6d91455c3a3d147e91a14298fc564b5dc519c1666 as theme-builder
+FROM node:20.18.1-alpine@sha256:24fb6aa7020d9a20b00d6da6d1714187c45ed00d1eb4adb01395843c338b9372 AS theme-builder
 
 ARG DIR=.
 
@@ -29,27 +34,18 @@ RUN npm ci \
 
 ################################################################
 
-FROM curlimages/curl@sha256:4a3396ae573c44932d06ba33f8696db4429c419da87cbdc82965ee96a37dd0af AS dl-keycloak-config-cli
+FROM curlimages/curl@sha256:463eaf6072688fe96ac64fa623fe73e1dbe25d8ad6c34404a669ad3ce1f104b6 AS dl-keycloak-config-cli
 
 WORKDIR /dl
-#
-# `keycloak-config-cli-24.0.1.jar` is the latest version, which is compatible with Java 17.
-# `keycloak-config-cli-24.0.5.jar` requires Java 21, which is not supported by the official Keycloak docker image.
-#
-# The project is using the Keycloak version number to express against which Keycloak version the tool is tested in thier CI.
-# Therefore there is no harm in using `keycloak-config-cli` for Keycloak in version 24.0.1 with Keycloak in version 24.0.5,
-# as long as the minor version does not change how Keycloak is configured or new features are introduced.
-#
-RUN curl -L -o ./keycloak-config-cli.jar https://github.com/adorsys/keycloak-config-cli/releases/download/v5.12.0/keycloak-config-cli-24.0.1.jar
-RUN echo "48069c527b3c26f3fc56299cb518e410d324ee7a16abb9276c920f013ae7b46d keycloak-config-cli.jar" | sha256sum -c
+RUN curl -L -o ./keycloak-config-cli.jar https://github.com/adorsys/keycloak-config-cli/releases/download/v6.4.0/keycloak-config-cli-26.1.0.jar
 
 ################################################################
 
-FROM quay.io/keycloak/keycloak:24.0.5@sha256:c916c668a5cd589948c3310ab31ffcfc5da55f0e546028f2f606419ce17c6ad8
+FROM quay.io/keycloak/keycloak:26.3.4@sha256:2b32a51a31e8d780d9fa9a69a59ead69975263c61b5dd13559090e22aa26f100
 
 ARG DIR=.
 
-ENV KEYCLOAK_BACKEND_PORT 4000
+ENV KEYCLOAK_BACKEND_PORT=4000
 
 COPY --from=dl-keycloak-config-cli /dl/keycloak-config-cli.jar /keycloak-config-cli.jar
 COPY --from=theme-builder /build/themes/ /opt/keycloak/themes/
@@ -58,7 +54,8 @@ WORKDIR /
 
 ENV PATH="/opt/keycloak/bin:${PATH}"
 
-COPY --from=extension-builder /build/target/*.jar /opt/keycloak/providers
+COPY --from=extension-builder /build/keycloak-study-registration/target/*.jar /opt/keycloak/providers
+COPY --from=extension-builder /build/account-ui-theme/target/*.jar /opt/keycloak/providers
 COPY ${DIR}/extensions/*.jar /opt/keycloak/providers
 
 RUN kc.sh build --db=postgres
@@ -69,5 +66,6 @@ COPY ${DIR}/templates/* /templates/
 
 EXPOSE 4000
 
+ENV EMAIL_THEME=pia
 COPY --chmod=0755 psa.utils.scripts/logs-masking/custom-entrypoint.sh /custom-entrypoint.sh
 ENTRYPOINT ["/start.sh"]

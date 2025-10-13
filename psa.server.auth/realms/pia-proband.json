@@ -38,13 +38,15 @@
     "user": "[[env:MAIL_USER]]"
   },
   "loginTheme": "pia",
-  "accountTheme": "pia",
-  "emailTheme": "pia",
+  "accountTheme": "my-account",
+  "emailTheme": "[[env:EMAIL_THEME]]",
   "internationalizationEnabled": true,
   "supportedLocales": [
-    "de-DE",
-    "de-CH",
-    "en-US"
+    "de-DE", 
+    "de-CH", 
+    "en-US", 
+    "fr-FR", 
+    "es-ES"
   ],
   "defaultLocale": "de-DE",
   "userManagedAccessAllowed": true,
@@ -101,7 +103,7 @@
       "alias": "TERMS_AND_CONDITIONS",
       "name": "Terms and Conditions",
       "providerId": "TERMS_AND_CONDITIONS",
-      "enabled": false,
+      "enabled": true,
       "defaultAction": false,
       "priority": 20,
       "config": {}
@@ -323,7 +325,9 @@
       "protocol": "openid-connect",
       "attributes": {
         "pkce.code.challenge.method": "S256",
-        "post.logout.redirect.uris": "+"
+        "post.logout.redirect.uris": "+",
+        "tosUri": "[[env:AUTHSERVER_PROBAND_TERMS_OF_SERVICE_URL]]",
+        "policyUri": "[[env:AUTHSERVER_PROBAND_POLICY_URL]]"
       },
       "protocolMappers": [
         {
@@ -350,6 +354,28 @@
             "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "studies",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "id": "6672160d-36ed-4080-b237-9aadea877c2b",
+          "name": "Nonce backwards compatible",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-nonce-backwards-compatible-mapper",
+          "consentRequired": false,
+          "config": {}
+        },        
+        {
+          "id": "d3b65c1c-ad59-4d9c-8e85-b638e5060fff",
+          "name": "Session state (backwards compatibility)",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-session-state-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "lightweight.claim": "false",
+            "access.token.claim": "true",
+            "introspection.token.claim": "true",
             "userinfo.token.claim": "true"
           }
         }

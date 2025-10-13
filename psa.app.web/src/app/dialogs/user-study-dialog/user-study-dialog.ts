@@ -33,6 +33,7 @@ export type DialogUserStudyAccessComponentReturn = boolean;
 @Component({
   selector: 'dialog-user-study',
   templateUrl: 'user-study-dialog.html',
+  standalone: false,
 })
 export class DialogUserStudyAccessComponent implements OnDestroy {
   public roles: { value: ProfessionalRole; viewValue: string }[] = [
@@ -58,9 +59,9 @@ export class DialogUserStudyAccessComponent implements OnDestroy {
 
   public isLoading = false;
 
-  private studyName: string;
+  private readonly studyName: string;
 
-  private subscription: Subscription;
+  private readonly subscription: Subscription;
 
   public readonly accesses = [
     { value: 'read', viewValue: 'DIALOG.READ' },
@@ -74,14 +75,14 @@ export class DialogUserStudyAccessComponent implements OnDestroy {
       DialogUserStudyAccessComponent,
       DialogUserStudyAccessComponentReturn
     >,
-    private alertService: AlertService,
-    private userService: UserService,
-    private matDialog: MatDialog,
-    private translate: TranslateService
+    private readonly alertService: AlertService,
+    private readonly userService: UserService,
+    private readonly matDialog: MatDialog,
+    private readonly translate: TranslateService
   ) {
     this.studyName = data.studyName;
     this.subscription = this.selectedRole.valueChanges.subscribe(
-      (role: ProfessionalRole) => this.fetchUsersForRole(role)
+      async (role: ProfessionalRole) => this.fetchUsersForRole(role)
     );
   }
 

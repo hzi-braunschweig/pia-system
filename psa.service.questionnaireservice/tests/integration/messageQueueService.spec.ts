@@ -6,7 +6,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 
 import { Server } from '../../src/server';
-import { db } from '../../src/db';
+import { dataSource, db } from '../../src/db';
 import { EventEmitter, once } from 'events';
 import { MessageQueueService } from '../../src/services/messageQueueService';
 import { createSandbox } from 'sinon';
@@ -17,14 +17,7 @@ import {
   ProbandDeactivatedMessage,
 } from '@pia/lib-messagequeue';
 import { config } from '../../src/config';
-import {
-  FindOperator,
-  getManager,
-  getRepository,
-  In,
-  Not,
-  Repository,
-} from 'typeorm';
+import { FindOperator, In, Not, Repository } from 'typeorm';
 import { Questionnaire } from '../../src/entities/questionnaire';
 import {
   createQuestionnaire,
@@ -57,7 +50,7 @@ describe('MessageQueueService', () => {
     );
     await Server.init();
     await mqc.connect(true);
-    qiRepo = getRepository(QuestionnaireInstance);
+    qiRepo = dataSource.getRepository(QuestionnaireInstance);
   });
 
   after(async function () {
@@ -85,7 +78,7 @@ describe('MessageQueueService', () => {
         MessageQueueTopic.PROBAND_DEACTIVATED
       );
 
-      await getManager().transaction(async (manager) => {
+      await dataSource.manager.transaction(async (manager) => {
         const qForProbands = await manager.save(
           Questionnaire,
           createQuestionnaire({ id: 9100 })
@@ -125,14 +118,16 @@ describe('MessageQueueService', () => {
     });
 
     afterEach(async () => {
-      await qiRepo.delete({});
+      await qiRepo.deleteAll();
     });
 
     it('should delete inactive "for_proband" questionnaire instances of the deactivated pseudonym', async () => {
       // Arrange
       const inactiveOfP1Before = await qiRepo.count({
-        pseudonym: pseudonym1,
-        status: 'inactive',
+        where: {
+          pseudonym: pseudonym1,
+          status: 'inactive',
+        },
       });
       expect(inactiveOfP1Before).to.equal(2);
 
@@ -145,7 +140,7 @@ describe('MessageQueueService', () => {
       // Assert
       await once(endOfMessageHandlingEmitter, endOfUserDeactivated);
       const inactiveOfP1After = await qiRepo.find({
-        relations: ['questionnaire'],
+        relations: { questionnaire: true },
         where: {
           pseudonym: pseudonym1,
           status: 'inactive',
@@ -160,12 +155,16 @@ describe('MessageQueueService', () => {
     it('should not delete any other questionnaire instance', async () => {
       // Arrange
       const nonInactiveOfP1Before = await qiRepo.count({
-        pseudonym: pseudonym1,
-        status: Not<QuestionnaireInstanceStatus>('inactive'),
+        where: {
+          pseudonym: pseudonym1,
+          status: Not<QuestionnaireInstanceStatus>('inactive'),
+        },
       });
       expect(nonInactiveOfP1Before).to.be.greaterThan(0);
       const allOfP2Before = await qiRepo.count({
-        pseudonym: pseudonym2,
+        where: {
+          pseudonym: pseudonym2,
+        },
       });
       expect(allOfP2Before).to.be.greaterThan(0);
 
@@ -178,11 +177,15 @@ describe('MessageQueueService', () => {
       // Assert
       await once(endOfMessageHandlingEmitter, endOfUserDeactivated);
       const nonInactiveOfP1After = await qiRepo.count({
-        pseudonym: pseudonym1,
-        status: Not<QuestionnaireInstanceStatus>('inactive'),
+        where: {
+          pseudonym: pseudonym1,
+          status: Not<QuestionnaireInstanceStatus>('inactive'),
+        },
       });
       const allOfP2After = await qiRepo.count({
-        pseudonym: pseudonym2,
+        where: {
+          pseudonym: pseudonym2,
+        },
       });
       expect(nonInactiveOfP1Before).to.be.equal(nonInactiveOfP1After);
       expect(allOfP2Before).to.equal(allOfP2After);
@@ -270,7 +273,7 @@ describe('MessageQueueService', () => {
     type: QuestionnaireType | void
   ): Promise<number> {
     return qiRepo.count({
-      relations: ['questionnaire'],
+      relations: { questionnaire: true },
       where: {
         pseudonym,
         ...(status ? { status } : {}),

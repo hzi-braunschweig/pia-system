@@ -77,10 +77,12 @@ interface TableRow {
       useClass: MatPaginatorIntlGerman,
     },
   ],
+  standalone: false,
 })
 export class ProbandsPersonalInfoComponent implements OnInit {
-  @ViewChild(MatPaginator, { static: true }) private paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) private sort: MatSort;
+  @ViewChild(MatPaginator, { static: true })
+  private readonly paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true }) private readonly sort: MatSort;
 
   public studies: Study[];
   public currentStudy: Study | undefined;
@@ -102,18 +104,18 @@ export class ProbandsPersonalInfoComponent implements OnInit {
 
   public constructor(
     public user: CurrentUser,
-    private userService: UserService,
-    private authService: AuthService,
-    private personalDataService: PersonalDataService,
-    private probandService: ProbandService,
-    private alertService: AlertService,
-    private router: Router,
-    private dialog: MatDialog,
-    private activatedRoute: ActivatedRoute,
-    private accountStatusPipe: AccountStatusPipe,
-    private translate: TranslateService,
-    private datePipe: DatePipe,
-    private fileDownloadService: FileDownloadService
+    private readonly userService: UserService,
+    private readonly authService: AuthService,
+    private readonly personalDataService: PersonalDataService,
+    private readonly probandService: ProbandService,
+    private readonly alertService: AlertService,
+    private readonly router: Router,
+    private readonly dialog: MatDialog,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly accountStatusPipe: AccountStatusPipe,
+    private readonly translate: TranslateService,
+    private readonly datePipe: DatePipe,
+    private readonly fileDownloadService: FileDownloadService
   ) {
     const probandIdToDelete =
       this.activatedRoute.snapshot.queryParamMap.get('probandIdToDelete');
@@ -600,7 +602,7 @@ export class ProbandsPersonalInfoComponent implements OnInit {
       .afterClosed()
       .subscribe(async (result) => {
         if (result) {
-          if (result[1] && result[1].proband_id) {
+          if (result[1]?.proband_id) {
             await this.initTable();
             result[1].for_id = result[1].for_id
               ? result[1].for_id
@@ -627,7 +629,7 @@ export class ProbandsPersonalInfoComponent implements OnInit {
             this.showResultDialog(response);
           } else {
             let dataError;
-            if (result[0] && result[0].acceptDelete) {
+            if (result[0]?.acceptDelete) {
               dataError = {
                 content: 'DIALOG.ERROR_COMPLIANCE_CONFIRMATION',
                 isSuccess: false,

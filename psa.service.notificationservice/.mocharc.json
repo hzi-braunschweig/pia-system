@@ -1,10 +1,6 @@
 {
-  "require": [
-    "dotenv/config",
-    "source-map-support/register",
-    "ts-node/register/transpile-only",
-    "./tests/dbTeardown.hook.js"
-  ],
+  "require": ["ts-node/register/transpile-only", "./tests/dbTeardown.hook.js"],
+  "enable-source-maps": true,
   "reporter": "mocha-multi-reporters",
   "reporter-option": "configFile=tests/mocha-reporters-config.json"
 }

@@ -23,14 +23,14 @@ import { CurrentUser } from './current-user.service';
  */
 export class ComplianceManager {
   private complianceDataCache: ComplianceDataResponse;
-  private complianceDataChangesSubject = new Subject<void>();
+  private readonly complianceDataChangesSubject = new Subject<void>();
   public readonly complianceDataChangesObservable =
     this.complianceDataChangesSubject.asObservable();
   private cachedIsInternalComplianceActive: boolean = undefined;
 
   public constructor(
-    private user: CurrentUser,
-    private complianceService: ComplianceService
+    private readonly user: CurrentUser,
+    private readonly complianceService: ComplianceService
   ) {}
 
   public async isInternalComplianceActive(): Promise<boolean> {

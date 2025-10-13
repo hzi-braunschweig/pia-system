@@ -11,13 +11,17 @@ import { MatDialog } from '@angular/material/dialog';
 import { DialogViewComplianceComponent } from '../compliance-view-dialog/dialog-view-compliance.component';
 import { AlertService } from '../../../_services/alert.service';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
-import { HttpClientModule, HttpResponse } from '@angular/common/http';
-import { MockModule, MockProvider } from 'ng-mocks';
+import { HttpResponse } from '@angular/common/http';
+import { MockProvider } from 'ng-mocks';
 import { ComplianceService } from '../../../psa.app.core/providers/compliance-service/compliance-service';
 import SpyObj = jasmine.SpyObj;
 import { of, throwError } from 'rxjs';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
-@Pipe({ name: 'translate' })
+@Pipe({
+  name: 'translate',
+  standalone: false,
+})
 class MockTranslatePipe implements PipeTransform {
   transform(value): any {
     return value;
@@ -51,8 +55,9 @@ describe('ComplianceManagerComponent', () => {
         MockProvider(ComplianceService, complianceService),
         MockProvider(AlertService, alertService),
         MockProvider(UserService, userService),
+        provideHttpClientTesting(),
       ],
-      imports: [MockModule(HttpClientModule)],
+      imports: [],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 

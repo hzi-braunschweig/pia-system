@@ -8,13 +8,17 @@ import { TestBed } from '@angular/core/testing';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { DeleteAccountModalService } from './delete-account-modal.service';
 import { DeletionType } from './deletion-type.enum';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { QuestionnaireClientService } from '../../questionnaire/questionnaire-client.service';
 import { Study } from '../../questionnaire/questionnaire.model';
 import { CannotDetermineDeletionTypeError } from './cannot-determine-deletion-type.error';
 import { KeepStudyAnswersModalComponent } from '../components/keep-study-answers-modal/keep-study-answers-modal.component';
 import { DeleteAccountModalComponent } from '../components/delete-account-modal/delete-account-modal.component';
 import { CurrentUser } from '../../auth/current-user.service';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('DeleteAccountModalService', () => {
   let service: DeleteAccountModalService;
@@ -30,7 +34,11 @@ describe('DeleteAccountModalService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [IonicModule, HttpClientTestingModule],
+      imports: [IonicModule.forRoot()],
+      providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+      ],
     });
     service = TestBed.inject(DeleteAccountModalService);
     currentUser = TestBed.inject(CurrentUser);

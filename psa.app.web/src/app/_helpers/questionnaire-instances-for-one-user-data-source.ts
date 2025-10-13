@@ -33,10 +33,10 @@ export class QuestionnaireInstancesOneUserDataSource extends DataSource<any> {
   renderedData: QuestionnaireInstance[] = [];
 
   constructor(
-    private _questionnaireDatabase: QuestionnaireInsancesOneUserDatabase,
-    private _paginator: MatPaginator,
-    private _sort: MatSort,
-    private translate: TranslateService
+    private readonly _questionnaireDatabase: QuestionnaireInsancesOneUserDatabase,
+    private readonly _paginator: MatPaginator,
+    private readonly _sort: MatSort,
+    private readonly translate: TranslateService
   ) {
     super();
 
@@ -60,7 +60,7 @@ export class QuestionnaireInstancesOneUserDataSource extends DataSource<any> {
           .slice()
           .filter((item: QuestionnaireInstance) => {
             const searchStr = this.buildItemString(item);
-            return searchStr.indexOf(this.filter.toLowerCase()) !== -1;
+            return searchStr.includes(this.filter.toLowerCase());
           });
 
         // Sort filtered data
@@ -78,11 +78,9 @@ export class QuestionnaireInstancesOneUserDataSource extends DataSource<any> {
   }
 
   buildItemString(item: QuestionnaireInstance): string {
-    const str =
-      item.study_id +
-      item.questionnaire_name +
-      this.translate.instant(item.status) +
-      item.date_of_issue;
+    const str = `${item.study_id}${
+      item.questionnaire_name
+    }${this.translate.instant(item.status)}${item.date_of_issue?.toString()}`;
     return str.toLowerCase();
   }
 

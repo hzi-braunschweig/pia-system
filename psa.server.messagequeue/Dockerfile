@@ -1,4 +1,4 @@
-FROM rabbitmq:3.9.13@sha256:a924f830b5beaa01142f68176cbf7c862ee460c29bbc631c5c6f01acabd2f50e
+FROM rabbitmq:3.9.29@sha256:ff02642ec7b0d1e23a2cf4172c2c1d4a82f39e7b79762414f0c1ac41618b8458
 
 RUN apt-get update && apt-get install -y gettext
 

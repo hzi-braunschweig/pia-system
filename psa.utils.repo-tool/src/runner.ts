@@ -87,6 +87,7 @@ export class Runner {
     jobResult: ExecResult
   ): void {
     if (jobResult.success) {
+      console.log(jobResult.data);
       console.log(`${name}: ${Color.successString()}`);
     } else {
       console.error(jobResult.data);

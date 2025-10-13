@@ -1,7 +1,8 @@
 import { AuthCredentials, MergeType } from '@hapi/hapi';
-export interface AccessToken extends MergeType<Record<string, unknown>, AuthCredentials> {
+export interface CredentialsExtra {
     username: string;
     studies: string[];
     locale: string;
 }
-export declare function isAccessToken(token: Record<string, unknown>): token is AccessToken;
+export declare type RequestAuthCredentials = MergeType<CredentialsExtra, AuthCredentials>;
+export declare type AccessToken = Record<string, unknown> & MergeType<CredentialsExtra, AuthCredentials>;

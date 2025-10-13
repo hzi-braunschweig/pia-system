@@ -12,11 +12,14 @@ export const environment: Environment = {
   baseUrl: `${window.location.origin}/admin`,
   defaultLanguage: '${DEFAULT_LANGUAGE}',
   isSormasEnabled:
+    // @ts-expect-error This will be replaced by a variable in the CI/CD pipeline
     '${IS_SORMAS_ENABLED}' && '${IS_SORMAS_ENABLED}'.toLowerCase() !== 'false',
   isDevelopmentSystem:
+    // @ts-expect-error This will be replaced by a variable in the CI/CD pipeline
     '${IS_DEVELOPMENT_SYSTEM}' &&
     '${IS_DEVELOPMENT_SYSTEM}'.toLowerCase() !== 'false',
   isE2ETestSystem:
+    // @ts-expect-error This will be replaced by a variable in the CI/CD pipeline
     '${IS_E2E_TEST_SYSTEM}' && '${IS_E2E_TEST_SYSTEM}'.toLowerCase() === 'true',
   authserver: {
     url: window.location.origin + '/api/v1/auth',

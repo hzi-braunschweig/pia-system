@@ -34,11 +34,23 @@ export class LocaleService {
       locale: 'de-CH',
       flagIcons: ['ch'],
     },
+    {
+      language: 'Français',
+      locale: 'fr-FR',
+      flagIcons: ['fr'],
+    },
+    {
+      language: 'Español',
+      locale: 'es-ES',
+      flagIcons: ['es'],
+    },
   ];
 
   private readonly iso6391FallbackLanguages = {
     en: 'en-US',
     de: 'de-DE',
+    es: 'es-ES',
+    fr: 'fr-FR',
   };
 
   private readonly fallbackLanguage: string = 'en-US';

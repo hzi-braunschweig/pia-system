@@ -10,7 +10,7 @@ import { LoginMobileAppProxy } from './proxys/loginMobileAppProxy';
 import { UserRegistrationProxy } from './proxys/userRegistrationProxy';
 import { ProbandEmailVerifiedProxy } from './proxys/probandEmailVerifiedProxy';
 
-export const proxies: typeof EventProxy[] = [
+export const proxies: (typeof EventProxy)[] = [
   LoginWebAppProxy,
   LoginMobileAppProxy,
   UserRegistrationProxy,

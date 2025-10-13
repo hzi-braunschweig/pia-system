@@ -9,9 +9,10 @@ import { DomSanitizer } from '@angular/platform-browser';
 
 @Pipe({
   name: 'safeUrl',
+  standalone: false,
 })
 export class SafeUrlPipe implements PipeTransform {
-  constructor(private domSanitizer: DomSanitizer) {}
+  constructor(private readonly domSanitizer: DomSanitizer) {}
 
   transform(url: any): any {
     return this.domSanitizer.bypassSecurityTrustResourceUrl(url);

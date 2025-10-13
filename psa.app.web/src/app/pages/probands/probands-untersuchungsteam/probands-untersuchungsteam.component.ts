@@ -18,6 +18,7 @@ import { ProbandsListComponent } from '../../../features/probands-list/probands-
   selector: 'app-probands-untersuchungsteam',
   templateUrl: 'probands-untersuchungsteam.component.html',
   styleUrls: ['probands-untersuchungsteam.component.scss'],
+  standalone: false,
 })
 export class ProbandsUntersuchungsteamComponent {
   @ViewChild(ProbandsListComponent, { static: true })
@@ -25,7 +26,10 @@ export class ProbandsUntersuchungsteamComponent {
 
   isLoading = false;
 
-  constructor(private router: Router, private dialog: MatDialog) {}
+  constructor(
+    private readonly router: Router,
+    private readonly dialog: MatDialog
+  ) {}
 
   createIDS(): void {
     const dialogRef = this.dialog.open(DialogNewIdsComponent, {

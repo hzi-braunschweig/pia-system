@@ -6,8 +6,6 @@
 
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { File } from '@awesome-cordova-plugins/file/ngx';
-import { FileOpener } from '@awesome-cordova-plugins/file-opener/ngx';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import {
@@ -17,6 +15,8 @@ import {
 } from '../compliance.model';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
 import { CurrentUser } from '../../auth/current-user.service';
+import { Directory, Filesystem } from '@capacitor/filesystem';
+import { FileOpener } from '@capawesome-team/capacitor-file-opener';
 
 @Injectable({
   providedIn: 'root',
@@ -29,8 +29,6 @@ export class ComplianceClientService {
   constructor(
     private http: HttpClient,
     private currentUser: CurrentUser,
-    private file: File,
-    private fileOpener: FileOpener,
     private endpoint: EndpointService
   ) {}
 
@@ -110,10 +108,34 @@ export class ComplianceClientService {
       );
   }
 
-  private downloadFile(blob: Blob, fileName: string, mimeType: string) {
-    this.file
-      .writeFile(this.file.dataDirectory, fileName, blob, { replace: true })
-      .then((fileEntry) => this.fileOpener.open(fileEntry.nativeURL, mimeType))
-      .catch((err) => console.log(JSON.stringify(err)));
+  private async downloadFile(blob: Blob, fileName: string, mimeType: string) {
+    try {
+      const base64Data: string = await this.blobToBase64(blob);
+      const file = await Filesystem.writeFile({
+        directory: Directory.Data,
+        path: `files/${fileName}`,
+        data: base64Data,
+        recursive: true,
+      });
+
+      FileOpener.openFile({ path: file.uri, mimeType });
+    } catch (e) {
+      console.error('Could not write or open file: ', e);
+    }
+  }
+
+  private blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.result && typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject(new Error('Failed to convert blob to Base64'));
+        }
+      };
+      reader.onerror = () => reject(new Error('Error reading blob as Base64'));
+      reader.readAsDataURL(blob);
+    });
   }
 }

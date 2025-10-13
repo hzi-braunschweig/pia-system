@@ -17,14 +17,15 @@ export interface PartialDeletionViewHeaderData {
 @Component({
   selector: 'app-dialog-view-partial-deletion',
   templateUrl: 'dialog-view-partial-deletion.component.html',
+  standalone: false,
 })
 export class DialogViewPartialDeletionComponent {
   @Input() labResults: LabResult[] = [];
   @Input() questionnaireInstances: QuestionnaireInstance[] = [];
   @Input() headerData: PartialDeletionViewHeaderData;
   @Input() cancelText: string;
-  @Output() cancel = new EventEmitter<MouseEvent>();
-  @Output() confirm = new EventEmitter<MouseEvent>();
+  @Output() cancelClicked = new EventEmitter<MouseEvent>();
+  @Output() confirmClicked = new EventEmitter<MouseEvent>();
 
   public containsData(): boolean {
     return (

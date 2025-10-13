@@ -9,9 +9,13 @@ import { ComplianceService } from './compliance-service';
 import { GenericFieldDescription } from '../../models/compliance';
 import { SegmentType, TemplateSegment } from '../../models/Segments';
 import {
-  HttpClientTestingModule,
   HttpTestingController,
+  provideHttpClientTesting,
 } from '@angular/common/http/testing';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('ComplianceService', () => {
   let httpMock: HttpTestingController;
@@ -21,8 +25,12 @@ describe('ComplianceService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ComplianceService],
-      imports: [HttpClientTestingModule],
+      imports: [],
+      providers: [
+        ComplianceService,
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+      ],
     });
     httpMock = TestBed.inject(HttpTestingController);
     service = TestBed.inject(ComplianceService);

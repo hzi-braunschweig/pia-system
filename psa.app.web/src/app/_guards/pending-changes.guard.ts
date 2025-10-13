@@ -22,7 +22,7 @@ export interface ComponentCanDeactivate {
   providedIn: 'root',
 })
 export class PendingChangesGuard {
-  constructor(private translate: TranslateService) {}
+  constructor(private readonly translate: TranslateService) {}
 
   canDeactivate(
     component: ComponentCanDeactivate

@@ -19,6 +19,7 @@ import { isSpecificHttpError } from '../../psa.app.core/models/specificHttpError
   selector: 'app-public-api',
   templateUrl: './public-api.component.html',
   styleUrls: ['./public-api.component.scss'],
+  standalone: false,
 })
 export class PublicApiComponent {
   public isLoading = true;

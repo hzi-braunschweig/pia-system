@@ -9,7 +9,7 @@ import { CouldNotCreateNewRandomVariableNameError } from '../errors';
 
 const MAX_TRIES = 100;
 
-export default function variableNameGenerator(
+export function variableNameGenerator(
   length: number,
   unavailableNames: string[] = []
 ): string {
@@ -26,4 +26,49 @@ export default function variableNameGenerator(
   throw new CouldNotCreateNewRandomVariableNameError(
     `it seems that all possible variable names have been assigned (tried it ${MAX_TRIES} times)`
   );
+}
+
+const GENERATED_VARIABLE_DIGITS_LENGTH = 8;
+
+/**
+ * Adds variable names when not set by mutating questions and answer options
+ * of the given questionnaire
+ */
+export default function generateAndSetVariableNames<
+  T extends {
+    questions?: {
+      variable_name?: string | null;
+      answer_options?: { variable_name?: string | null }[];
+    }[];
+  }
+>(
+  questionnaire: T
+): asserts questionnaire is T & {
+  questions: {
+    variable_name: string;
+    answer_options: { variable_name: string }[];
+  }[];
+} {
+  const unavailableNames: string[] = [];
+
+  questionnaire.questions?.forEach((question) => {
+    if (!question.variable_name) {
+      question.variable_name = variableNameGenerator(
+        GENERATED_VARIABLE_DIGITS_LENGTH,
+        unavailableNames
+      );
+      unavailableNames.push(question.variable_name);
+    }
+
+    question.answer_options
+      ?.filter((ao) => !ao.variable_name)
+      .forEach((answerOption) => {
+        answerOption.variable_name = variableNameGenerator(
+          GENERATED_VARIABLE_DIGITS_LENGTH,
+          unavailableNames
+        );
+        unavailableNames.push(answerOption.variable_name);
+      });
+    return question;
+  });
 }

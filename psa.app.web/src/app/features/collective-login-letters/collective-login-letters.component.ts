@@ -5,7 +5,6 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
 import { Location } from '@angular/common';
 import { PlannedProband } from 'src/app/psa.app.core/models/plannedProband';
@@ -15,15 +14,15 @@ import { PlannedProband } from 'src/app/psa.app.core/models/plannedProband';
   templateUrl: './collective-login-letters.component.html',
   styleUrls: ['./collective-login-letters.component.scss'],
   preserveWhitespaces: false,
+  standalone: false,
 })
 export class CollectiveLoginLettersComponent implements OnInit {
   currentDate = new Date();
   plannedProbands: PlannedProband[] = [];
 
   constructor(
-    private router: Router,
-    private dataService: DataService,
-    private _location: Location
+    private readonly dataService: DataService,
+    private readonly _location: Location
   ) {
     this.dataService.plannedProbandsForLetters.subscribe(
       (plannedProbands) => (this.plannedProbands = plannedProbands)
@@ -390,7 +389,7 @@ export class CollectiveLoginLettersComponent implements OnInit {
 
         @font-face {
             font-family: ff1;
-            src: url(../../../assets/fonts/Carlito-Bold.woff) format("woff");
+            src: url(../../../assets/fonts/font-bold.woff) format("woff");
         }
 
         .ff1 {
@@ -403,7 +402,7 @@ export class CollectiveLoginLettersComponent implements OnInit {
 
         @font-face {
             font-family: ff2;
-            src: url(../../../assets/fonts/Carlito-Regular.woff) format("woff");
+            src: url(../../../assets/fonts/font-regular.woff) format("woff");
         }
 
         .ff2 {
@@ -416,7 +415,7 @@ export class CollectiveLoginLettersComponent implements OnInit {
 
         @font-face {
             font-family: ff3;
-            src: url(../../../assets/fonts/Carlito-Italic.woff) format("woff");
+            src: url(../../../assets/fonts/font-italic.woff) format("woff");
         }
 
         .ff3 {

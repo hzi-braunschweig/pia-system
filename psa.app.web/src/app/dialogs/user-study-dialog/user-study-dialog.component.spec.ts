@@ -125,7 +125,7 @@ describe('DialogUserStudyAccessComponent', () => {
     matDialog.open.and.returnValue(internalDialogRef);
     const closedObs = new Subject<string>();
     internalDialogRef.afterClosed.and.returnValue(closedObs);
-    await component.submit();
+    component.submit();
     expect(matDialog.open).toHaveBeenCalled();
     expect(userService.postStudyAccess).not.toHaveBeenCalled();
 

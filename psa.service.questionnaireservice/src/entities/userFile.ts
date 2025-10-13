@@ -27,7 +27,9 @@ export class UserFile implements UserFileDto {
   @JoinColumn({ name: 'questionnaire_instance_id', referencedColumnName: 'id' })
   public questionnaireInstance?: QuestionnaireInstance;
 
-  @ManyToOne(() => AnswerOption, { primary: true })
-  @JoinColumn({ name: 'answer_option_id', referencedColumnName: 'id' })
+  @PrimaryColumn()
+  public answerOptionId?: number;
+
+  @ManyToOne(() => AnswerOption)
   public answerOption?: AnswerOption;
 }

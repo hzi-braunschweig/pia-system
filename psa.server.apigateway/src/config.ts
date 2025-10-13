@@ -29,7 +29,7 @@ const publicMetaData = {
 const responseRoutes: ResponseRouteConfig[] = [
   ...(isDevelopment ? [] : nonExposedKeycloakPaths),
   {
-    path: '/api/v1/',
+    path: apiPath,
     response: {
       headers: {
         'content-type': 'application/json',

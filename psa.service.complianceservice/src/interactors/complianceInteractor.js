@@ -64,7 +64,7 @@ class ComplianceInteractor {
    * @param {import('@hapi/hapi').Request} request
    * @param {string} study the name of the study
    * @param {string} userId the name of the user
-   * @return {Promise<Buffer>} the requested compliance of a specific study as PDF
+   * @return {Promise<Uint8Array>} the requested compliance of a specific study as PDF
    */
   static async getComplianceAgreePdf(request, study, userId) {
     let complianceAgree;
@@ -97,7 +97,7 @@ class ComplianceInteractor {
    * @param {import('@hapi/hapi').Request} request
    * @param {number} complianceId the id of the compliance
    * @param {string} study the study the user has access to
-   * @return {Promise<Buffer>} the requested compliance of a specific study as PDF
+   * @return {Promise<Uint8Array>} the requested compliance of a specific study as PDF
    */
   static async getComplianceAgreePdfByComplianceId(
     request,

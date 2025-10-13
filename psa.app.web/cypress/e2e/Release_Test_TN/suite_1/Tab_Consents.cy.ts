@@ -21,8 +21,8 @@ import {
   loginProfessional,
   UserCredentials,
 } from 'cypress/support/user.commands';
+import short from 'short-uuid';
 
-const short = require('short-uuid');
 const translator = short();
 
 let study;
@@ -38,7 +38,6 @@ const testProbandConsent = {
     '<pia-consent-input-text-lastname></pia-consent-input-text-lastname>\n<pia-consent-input-text-firstname></pia-consent-input-text-firstname>\n\nIch williger ein meine Proben zu verwalten\n<pia-consent-input-radio-samples></pia-consent-input-radio-samples>\n\nIch williger ein meine Laborergebnisse zu verwalten\n<pia-consent-input-radio-labresults></pia-consent-input-radio-labresults>\n\nIch williger ein meine Blut Proben zu verwalten\n<pia-consent-input-radio-bloodsamples></pia-consent-input-radio-bloodsamples>\n\nIch willige in die Verarbeitung und Nutzung meiner personenbezogenen Daten gemäß der vorstehenden Datenschutzerklärung ein.\n<pia-consent-input-radio-app></pia-consent-input-radio-app>\n',
 };
 
-const adminAppUrl = '/admin/';
 const probandAppUrl = '/';
 
 describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwilligungen', () => {

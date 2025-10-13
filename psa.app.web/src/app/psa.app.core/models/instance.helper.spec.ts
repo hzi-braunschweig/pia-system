@@ -4,22 +4,23 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Study } from './study';
-import { Proband, ProbandOrigin } from './proband';
-import { User } from './user';
-import { ProbandToContact } from './probandToContact';
-import { PersonalData } from './personalData';
-import { PendingPersonalDataDeletion } from './pendingPersonalDataDeletion';
-import { PendingComplianceChange } from './pendingComplianceChange';
-import { PendingDeletion, PendingProbandDeletion } from './pendingDeletion';
-import { ComplianceDataResponse, ComplianceText } from './compliance';
-import { SegmentType } from './Segments';
-import { BloodSample, LabResult } from './labresult';
-import { ProfessionalAccount } from './professionalAccount';
-import { Condition, Questionnaire } from './questionnaire';
-import { Question } from './question';
+import { QuestionnaireFormType } from 'src/app/pages/questionnaires/questionnaire-researcher/questionnaire-form';
 import { AnswerOption } from './answerOption';
 import { AnswerType } from './answerType';
+import { ComplianceDataResponse, ComplianceText } from './compliance';
+import { BloodSample, LabResult } from './labresult';
+import { PendingComplianceChange } from './pendingComplianceChange';
+import { PendingDeletion, PendingProbandDeletion } from './pendingDeletion';
+import { PendingPersonalDataDeletion } from './pendingPersonalDataDeletion';
+import { PersonalData } from './personalData';
+import { Proband, ProbandOrigin } from './proband';
+import { ProbandToContact } from './probandToContact';
+import { ProfessionalAccount } from './professionalAccount';
+import { Question } from './question';
+import { Questionnaire } from './questionnaire';
+import { SegmentType } from './Segments';
+import { Study } from './study';
+import { User } from './user';
 
 export function createStudy(overwrite: Partial<Study> = {}): Study {
   return {
@@ -268,6 +269,94 @@ export function createLabResult(overwrite: Partial<LabResult> = {}): LabResult {
   };
 }
 
+export function createFormQuestionnaire(
+  overwrite: Partial<QuestionnaireFormType> = {}
+): QuestionnaireFormType {
+  return {
+    study_id: 'Teststudy',
+    name: 'Test Questionnaire',
+    custom_name: 'Test',
+    sort_order: 1,
+    type: 'for_probands',
+    cycle_amount: 1,
+    activate_at_date: null,
+    cycle_unit: 'day',
+    cycle_per_day: 1,
+    cycle_first_hour: 8,
+    publish: 'allaudiences',
+    keep_answers: false,
+    activate_after_days: 0,
+    deactivate_after_days: 30,
+    notification_tries: 3,
+    notification_title: 'Reminder',
+    notification_weekday: null,
+    notification_interval: null,
+    notification_interval_unit: null,
+    notification_body_new: 'New Notification',
+    notification_body_in_progress: 'In Progress Notification',
+    notification_link_to_overview: false,
+    compliance_needed: true,
+    notify_when_not_filled: true,
+    notify_when_not_filled_time: null,
+    notify_when_not_filled_day: 1,
+    expires_after_days: 30,
+    finalises_after_days: 7,
+    condition_error: '',
+    questions: [
+      {
+        text: 'Sample Question?',
+        help_text: 'Help text for question',
+        variable_name: 'sample_question',
+        is_mandatory: true,
+        answer_options: [
+          {
+            text: 'Option 1',
+            variable_name: 'option_1',
+            answer_type_id: 1,
+            use_autocomplete: false,
+            values: [{ value: 'Value 1', value_coded: 1, is_notable: false }],
+            restriction_min: null,
+            restriction_max: null,
+            condition: null,
+            id: 0,
+            position: 0,
+            current_answer_type_id: 0,
+            coding_enable: false,
+            has_condition: false,
+            condition_error: '',
+            is_condition_target: false,
+            tmp_for_condition: {
+              questionnairesForAnswerOptionCondition: [],
+              answerOptionMessageNeedToSentQuestionnaire: false,
+              selectedConditionTypeAnswerOption: false,
+              selectedQuestionnaireIndexAnswerOption: 0,
+              selectedQuestionIndexAnswerOption: 0,
+              selectedAnswerOptionsIndexAnswerOption: 0,
+              condition_link: '',
+            },
+            values_code: [],
+            is_notable: [],
+          },
+        ],
+        id: 0,
+        position: 0,
+        has_condition: false,
+        condition_error: '',
+        tmp_for_condition: {
+          questionnairesForQuestionCondition: [],
+          questionMessageNeedToSentQuestionnaire: false,
+          selectedConditionTypeQuestion: false,
+          selectedQuestionnaireIndexQuestion: 0,
+          selectedQuestionIndexQuestion: 0,
+          selectedAnswerOptionsIndexQuestion: 0,
+          condition_link: 'AND',
+        },
+      },
+    ],
+    ...overwrite,
+  };
+}
+
 export function createQuestionnaire(
   overwrite: Partial<Questionnaire> = {}
 ): Questionnaire {
@@ -299,7 +388,7 @@ export function createQuestionnaire(
     updated_at: new Date().toISOString(),
     type: 'for_probands',
     version: 1,
-    publish: 'string',
+    publish: 'allaudiences',
     notify_when_not_filled: false,
     notify_when_not_filled_time: '08:00',
     notify_when_not_filled_day: 3,
@@ -308,7 +397,6 @@ export function createQuestionnaire(
     questions: [],
     condition: null,
     condition_error: null,
-    condition_postview: null,
     ...overwrite,
   };
 }

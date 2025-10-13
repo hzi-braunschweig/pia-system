@@ -22,6 +22,7 @@ import { MatInputHarness } from '@angular/material/input/testing';
   template: `<app-markdown-editor
     [formControl]="control"
   ></app-markdown-editor>`,
+  standalone: false,
 })
 class TestMarkdownEditorComponent {
   @ViewChild(MarkdownEditorComponent, { static: false })

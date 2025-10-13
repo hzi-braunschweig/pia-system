@@ -22,8 +22,8 @@ import {
   UserCredentials,
 } from '../../../support/user.commands';
 import { expectLocation } from '../../../support/helper.commands';
+import short from 'short-uuid';
 
-const short = require('short-uuid');
 const translator = short();
 
 let study;

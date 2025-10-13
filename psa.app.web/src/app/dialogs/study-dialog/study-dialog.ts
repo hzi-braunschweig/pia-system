@@ -20,6 +20,7 @@ import {
   selector: 'app-study-dialog',
   templateUrl: 'study-dialog.html',
   styleUrls: ['study-dialog.scss'],
+  standalone: false,
 })
 export class DialogStudyComponent implements OnInit {
   public form: FormGroup;
@@ -31,10 +32,10 @@ export class DialogStudyComponent implements OnInit {
   constructor(
     public dialogRef: MatDialogRef<DialogStudyComponent>,
     @Inject(MAT_DIALOG_DATA)
-    private existingStudy: { name?: string },
-    private alertService: AlertService,
-    private userService: UserService,
-    private user: CurrentUser
+    private readonly existingStudy: { name?: string },
+    private readonly alertService: AlertService,
+    private readonly userService: UserService,
+    private readonly user: CurrentUser
   ) {}
 
   private static createEmptyStudy(): Study {

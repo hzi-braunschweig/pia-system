@@ -20,8 +20,6 @@ import {
   NG_VALUE_ACCESSOR,
 } from '@angular/forms';
 import { AlertController } from '@ionic/angular';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
-import { Keyboard } from '@awesome-cordova-plugins/keyboard/ngx';
 import { TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
@@ -30,6 +28,11 @@ import { SampleTrackingClientService } from '../../lab-result/sample-tracking-cl
 import { QuestionnaireAnswerValidators } from '../questionnaire-form/questionnaire-answer-validators';
 import { SampleFormControlValue } from '../questionnaire-form/questionnaire-form.service';
 import { BackButtonService } from '../../shared/services/back-button/back-button.service';
+import { Keyboard } from '@capacitor/keyboard';
+import {
+  CapacitorBarcodeScanner,
+  CapacitorBarcodeScannerTypeHintALLOption,
+} from '@capacitor/barcode-scanner';
 
 const QUESTIONNAIRE_ANSWER_SAMPLE_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -41,6 +44,7 @@ const QUESTIONNAIRE_ANSWER_SAMPLE_ACCESSOR = {
   selector: 'app-questionnaire-answer-sample',
   templateUrl: './questionnaire-answer-sample.component.html',
   providers: [QUESTIONNAIRE_ANSWER_SAMPLE_ACCESSOR],
+  standalone: false,
 })
 export class QuestionnaireAnswerSampleComponent
   implements ControlValueAccessor, OnInit, OnDestroy
@@ -78,10 +82,8 @@ export class QuestionnaireAnswerSampleComponent
 
   constructor(
     private sampleTrackingClient: SampleTrackingClientService,
-    private barcodeScanner: BarcodeScanner,
     private alertCtrl: AlertController,
     private translate: TranslateService,
-    private keyboard: Keyboard,
     private backButton: BackButtonService
   ) {}
 
@@ -148,18 +150,16 @@ export class QuestionnaireAnswerSampleComponent
   hideKeyboard(event: Event) {
     event.stopPropagation();
     event.preventDefault();
-    if (this.keyboard.isVisible) {
-      this.keyboard.hide();
-    }
+    Keyboard.hide();
   }
 
   async onScanningBarcode(controlName: keyof SampleFormControlValue) {
     this.backButton.disable();
-    const barcodeData = await this.barcodeScanner.scan({
-      showFlipCameraButton: true,
+    const barcodeData = await CapacitorBarcodeScanner.scanBarcode({
+      hint: CapacitorBarcodeScannerTypeHintALLOption.ALL,
     });
-    if (barcodeData.text) {
-      this.form.get(controlName).setValue(barcodeData.text);
+    if (barcodeData.ScanResult) {
+      this.form.get(controlName).setValue(barcodeData.ScanResult);
       this.form.get(controlName).markAsDirty();
     }
     this.backButton.enable();

@@ -21,6 +21,9 @@ class ConfigUtils {
         }
         return result;
     }
+    static getOptionalEnvVariable(key) {
+        return process.env[key];
+    }
     static getEnvVariableInt(key, fallback) {
         const result = ConfigUtils.getEnvVariable(key, fallback?.toString());
         const parsed = Number.parseInt(result);

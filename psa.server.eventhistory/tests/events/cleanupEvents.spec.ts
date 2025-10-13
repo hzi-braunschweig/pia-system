@@ -73,7 +73,7 @@ describe('Cleanup event ', () => {
   it('should exit when event history is disabled by not configuring it', async () => {
     // Arrange
     await setupEventsForPastDays();
-    await dataSource.getRepository(Configuration).delete({});
+    await dataSource.getRepository(Configuration).deleteAll();
 
     // Act
     await produceMessage(

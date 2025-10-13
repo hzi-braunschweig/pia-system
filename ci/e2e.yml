@@ -206,9 +206,9 @@ e2e:
 
     #e2e
     MAILSERVER_BASEURL: http://mailserver:8025
-    CYPRESS_BASE_URL: http://apigateway
-    WEBAPP_URL: http://apigateway
-    EXTERNAL_HOST: apigateway
+    CYPRESS_BASE_URL: http://localhost
+    WEBAPP_URL: http://localhost
+    EXTERNAL_HOST: localhost
 
     ENABLE_DB_IMPORT: 'true'
     ENABLE_DB_EXPORT: 'true'
@@ -238,6 +238,11 @@ e2e:
     KUBERNETES_SERVICE_MEMORY_LIMIT: 768Mi
 
     DEFAULT_LANGUAGE: de-DE
+
+    # Set notification time to ensure questionnaires are available when tests run
+    NOTIFICATION_HOUR: '0'
+    NOTIFICATION_MINUTE: '0'
+
   services:
     - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.sftpserver:$IMAGE_ID
       alias: sftpserver

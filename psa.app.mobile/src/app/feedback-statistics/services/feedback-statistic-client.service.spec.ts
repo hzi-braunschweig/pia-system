@@ -8,13 +8,17 @@ import { TestBed } from '@angular/core/testing';
 
 import { FeedbackStatisticClientService } from './feedback-statistic-client.service';
 import {
-  HttpClientTestingModule,
   HttpTestingController,
+  provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { FeedbackStatisticDto } from '@pia-system/charts';
 import SpyObj = jasmine.SpyObj;
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
 import { MockProvider } from 'ng-mocks';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('FeedbackStatisticClientService', () => {
   let service: FeedbackStatisticClientService;
@@ -27,8 +31,12 @@ describe('FeedbackStatisticClientService', () => {
     endpoint.getUrl.and.returnValue('http://localhost');
 
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [MockProvider(EndpointService, endpoint)],
+      imports: [],
+      providers: [
+        MockProvider(EndpointService, endpoint),
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+      ],
     });
     service = TestBed.inject(FeedbackStatisticClientService);
     httpMock = TestBed.inject(HttpTestingController);

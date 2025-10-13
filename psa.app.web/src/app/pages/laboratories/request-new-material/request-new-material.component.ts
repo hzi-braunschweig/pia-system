@@ -18,6 +18,7 @@ import { CurrentUser } from '../../../_services/current-user.service';
   selector: 'app-request-new-material',
   templateUrl: './request-new-material.component.html',
   styleUrls: ['./request-new-material.component.scss'],
+  standalone: false,
 })
 export class RequestNewMaterialComponent {
   constructor(
@@ -36,7 +37,7 @@ export class RequestNewMaterialComponent {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      if (result && result.shouldRequestNewMaterial) {
+      if (result?.shouldRequestNewMaterial) {
         this.sampleTrackingService
           .requestMaterialForProband(this.user.username)
           .then((res) => {
@@ -97,6 +98,7 @@ export class RequestNewMaterialComponent {
       </button>
     </div>
   `,
+  standalone: false,
 })
 export class ConfirmNewMaterialRequestComponent {
   constructor(

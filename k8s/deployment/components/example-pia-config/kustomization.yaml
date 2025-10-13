@@ -20,15 +20,9 @@ secretGenerator:
       - mailServerFromName=PIA
       - probandTermsOfServiceUrl=https://localhost/fake-tos
       - probandPolicyUrl=https://localhost/fake-policy
-      - modysBaseUrl=http://localhost:99999
-      - modysUserName=modysuser
-      - modysPassword=modyspassword
-      - modysStudy=Teststudy with MODYS
-      - modysIdentifierTypeId=1
-      - modysRequestConcurrency=5
       - isSormasEnabled=false
       # the default language, unless another language is explicitly set. Possible values:
-      # de-CH, de-DE, en-US
+      # de-CH, de-DE, en-US, fr-FR, es-ES
       - defaultLanguage=de-DE
       - userPasswordLength=8
       # firebase credential
@@ -37,3 +31,7 @@ secretGenerator:
       - firebaseClientEmail=dummy
       # password is "test"
       - mailhogAuth=pia:$2a$04$qxRo.ftFoNep7ld/5jfKtuBTnGqff/fZVyj53mUC5sVf9dtDLAi/S
+      # notification time
+      - notificationHour=8
+      - notificationMinute=0
+      #- httpsProxyUrl=https://proxy.example.com

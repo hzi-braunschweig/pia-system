@@ -14,7 +14,6 @@ resources:
 components:
   - ../../components/no-mailhog # Do not remove this for production environments
   - ../../components/no-servicemonitor # Remove, if you plan to use Prometheus
-  - ../../components/no-modysservice # Remove, if you plan to connect to a MODYS instance
   - ../../components/no-sormasservice # Remove, if you plan to connect to a SORMAS instance
 {customizeLogoComponent}
 
@@ -45,9 +44,6 @@ images:
     newTag: {dockerImageTag}
   - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.personaldataservice
     newName: {dockerRegistryPath}/psa.service.personaldataservice
-    newTag: {dockerImageTag}
-  - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.modysservice
-    newName: {dockerRegistryPath}/psa.service.modysservice
     newTag: {dockerImageTag}
   - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.complianceservice
     newName: {dockerRegistryPath}/psa.service.complianceservice

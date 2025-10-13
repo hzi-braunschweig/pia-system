@@ -12,10 +12,10 @@ export interface StudyAccess {
   accessLevel: AccessLevel;
 }
 
-export type StudyAccessOfUser = {
+export interface StudyAccessOfUser {
   study_id: string;
   access_level: AccessLevel;
-};
+}
 
 /**
  * The studies to which a planned proband is visible

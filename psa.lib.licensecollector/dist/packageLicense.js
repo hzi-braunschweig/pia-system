@@ -59,5 +59,6 @@ PackageLicense.VALID_LICENSE_TEXT_SNIPPETS = [
     'CC0 1.0 Universal',
     'Mozilla Public License, version 2.0',
     'Eclipse Public License - v 2.0',
+    'This license gives everyone as much permission to work with\nthis software as possible, while protecting contributors\nfrom liability.',
 ];
 //# sourceMappingURL=packageLicense.js.map

@@ -20,6 +20,7 @@ const INPUT_PASSWORD_ACCESSOR = {
   templateUrl: './input-password.component.html',
   styleUrls: ['./input-password.component.scss'],
   providers: [INPUT_PASSWORD_ACCESSOR],
+  standalone: false,
 })
 export class InputPasswordComponent extends AbstractControlValueAccessor<string> {
   @Input()

@@ -5,61 +5,91 @@
  */
 
 import { TestBed } from '@angular/core/testing';
-import { KeycloakService } from 'keycloak-angular';
 import { CurrentUser } from './current-user.service';
 import { JwtService } from './jwt.service';
 import { MockProvider } from 'ng-mocks';
 import SpyObj = jasmine.SpyObj;
+import Keycloak from 'keycloak-js';
+import { KEYCLOAK_EVENT_SIGNAL, KeycloakEventType } from 'keycloak-angular';
+import { signal } from '@angular/core';
 
 describe('CurrentUser', () => {
   let currentUser: CurrentUser;
 
-  let keycloak: SpyObj<KeycloakService>;
+  let keycloak: SpyObj<Keycloak>;
   let jwt: SpyObj<JwtService>;
+  let mockSignal: any;
 
   beforeEach(async () => {
     // Provider and Services
-    keycloak = jasmine.createSpyObj(['getToken']);
-    keycloak.getToken.and.resolveTo('sometoken');
+    keycloak = jasmine.createSpyObj([], { token: 'sometoken' });
     jwt = jasmine.createSpyObj(['decodeToken']);
+    mockSignal = signal({ type: KeycloakEventType.Ready });
+    jwt.decodeToken.and.returnValue(getDecodedToken());
 
-    // Build Base Module
     TestBed.configureTestingModule({
-      providers: [CurrentUser, MockProvider(JwtService, jwt)],
+      providers: [
+        CurrentUser,
+        MockProvider(JwtService, jwt),
+        { provide: Keycloak, useValue: keycloak },
+        { provide: KEYCLOAK_EVENT_SIGNAL, useValue: mockSignal },
+      ],
     });
     currentUser = TestBed.inject(CurrentUser);
   });
 
-  describe('init()', () => {
-    it('should initialize the current user', async () => {
+  describe('listening to keycloak events', () => {
+    it('should initialize the current user', () => {
       // Arrange
       jwt.decodeToken.and.returnValue(getDecodedToken());
 
       // Act
-      const successful = await currentUser.init(keycloak);
+      mockSignal.set({ type: KeycloakEventType.Ready });
+      TestBed.flushEffects();
 
       // Assert
-      expect(successful).toBeTrue();
       expect(currentUser.username).toEqual('Testforscher');
       expect(currentUser.role).toEqual('Forscher');
       expect(currentUser.studies).toEqual(['Teststudie1', 'Teststudie2']);
       expect(currentUser.locale).toEqual('de-DE');
     });
 
-    it('should handle errors', async () => {
+    it('should reset the user on logout', () => {
       // Arrange
-      keycloak.getToken.and.rejectWith();
+      currentUser.username = 'Testforscher';
+      currentUser.role = 'Forscher';
+      currentUser.studies = ['Teststudie1', 'Teststudie2'];
+      currentUser.locale = 'de-DE';
 
       // Act
-      const successful = await currentUser.init(keycloak);
+      mockSignal.set({ type: KeycloakEventType.AuthLogout });
+      TestBed.flushEffects();
 
       // Assert
-      expect(successful).toBeFalse();
+      expect(currentUser.username).toBeUndefined();
+      expect(currentUser.role).toBeUndefined();
+      expect(currentUser.studies).toBeUndefined();
+      expect(currentUser.locale).toBeUndefined();
+    });
+
+    it('should handle errors', () => {
+      // Arrange
+      jwt.decodeToken.and.throwError('Token error');
+
+      // Act
+      mockSignal.set({ type: KeycloakEventType.Ready });
+      TestBed.flushEffects();
+
+      // Assert
+      expect(currentUser.username).toBeUndefined();
+      expect(currentUser.role).toBeUndefined();
+      expect(currentUser.studies).toBeUndefined();
+      expect(currentUser.locale).toBeUndefined();
     });
   });
 
   describe('get study', () => {
-    it('should return first study of studies array', async () => {
+    it('should return first study of studies array', () => {
       // Arrange
       currentUser.role = 'Proband';
       currentUser.studies = ['Teststudie1'];

@@ -13,7 +13,10 @@ export class QuestionnaireInstanceQueue {
   @Column({ name: 'user_id' })
   public pseudonym!: string;
 
-  @OneToOne(() => QuestionnaireInstance, { primary: true })
+  @PrimaryColumn()
+  public questionnaireInstanceId!: number;
+
+  @OneToOne(() => QuestionnaireInstance)
   @JoinColumn({ name: 'questionnaire_instance_id' })
   public questionnaireInstance!: QuestionnaireInstance;
 

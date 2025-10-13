@@ -14,7 +14,7 @@ import {
 import { EventHistorySettingsDto } from './event-history-settings.dto';
 
 describe('EventHistorySettingsService', () => {
-  beforeEach(() =>
+  beforeEach(async () =>
     MockBuilder(EventHistorySettingsService).replace(
       HttpClientModule,
       HttpClientTestingModule

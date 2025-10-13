@@ -222,9 +222,12 @@ export class MessageQueueClient extends MessageQueueClientConnection {
       await args.onMessage(data.message, new Date(properties.timestamp));
       // message got successfully handled
       args.channel.ack(args.message, false);
-    } catch {
+    } catch (e) {
       if (redelivered) {
-        console.error(`dropping message on ${args.topic} to dead-letter-queue`);
+        console.error(
+          `dropping message on ${args.topic} to dead-letter-queue`,
+          e
+        );
         args.channel.sendToQueue(
           args.deadLetterQueue.queue,
           args.message.content,
@@ -232,6 +235,7 @@ export class MessageQueueClient extends MessageQueueClientConnection {
         );
         args.channel.ack(args.message, false);
       } else {
+        console.error(`requeue message on ${args.topic}`, e);
         // give it another try
         args.channel.nack(args.message, false, !redelivered);
       }

@@ -21,11 +21,11 @@ import { CurrentUser } from '../_services/current-user.service';
 })
 export class ComplianceGuard {
   constructor(
-    private router: Router,
-    private user: CurrentUser,
-    private complianceService: ComplianceService,
-    private complianceManager: ComplianceManager,
-    private alertService: AlertService
+    private readonly router: Router,
+    private readonly user: CurrentUser,
+    private readonly complianceService: ComplianceService,
+    private readonly complianceManager: ComplianceManager,
+    private readonly alertService: AlertService
   ) {}
 
   public async canActivate(

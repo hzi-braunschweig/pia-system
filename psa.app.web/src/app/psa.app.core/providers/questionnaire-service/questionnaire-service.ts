@@ -1,31 +1,37 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { firstValueFrom, Observable } from 'rxjs';
+import { map, pluck } from 'rxjs/operators';
+import { StudyWelcomeText } from 'src/app/psa.app.core/models/studyWelcomeText';
+import { Answer } from '../../models/answer';
 import {
   Questionnaire,
   QuestionnaireListResponse,
 } from '../../models/questionnaire';
+import {
+  PublishMode,
+  QuestionnaireFile,
+  QuestionnaireImportResponseBody,
+} from '../../models/questionnaireImport';
 import {
   QuestionnaireInstance,
   QuestionnaireInstanceResponse,
   QuestionnaireStatus,
 } from '../../models/questionnaireInstance';
 import { QuestionnaireInstanceQueue } from '../../models/questionnaireInstanceQueue';
-import { Answer } from '../../models/answer';
 import { Study } from '../../models/study';
-import { Observable } from 'rxjs';
-import { HttpClient, HttpEvent } from '@angular/common/http';
-import { map, pluck } from 'rxjs/operators';
-import { StudyWelcomeText } from 'src/app/psa.app.core/models/studyWelcomeText';
 import { StudyAddress } from '../../models/studyAddress';
+import { ExportRequestData } from '../../models/export';
 
 @Injectable()
 export class QuestionnaireService {
-  private static questionnaireInstanceDateConverter = map(
+  private static readonly questionnaireInstanceDateConverter = map(
     (instances: QuestionnaireInstance[]) => {
       instances.forEach((instance) => {
         instance.date_of_issue = instance.date_of_issue
@@ -44,9 +50,9 @@ export class QuestionnaireService {
 
   private readonly apiUrl = 'api/v1/questionnaire/';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
-  getQuestionnaire(
+  async getQuestionnaire(
     questionnaireId: number,
     version: number
   ): Promise<Questionnaire> {
@@ -57,7 +63,10 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  deleteQuestionnaire(questionnaireId: number, version: number): Promise<void> {
+  async deleteQuestionnaire(
+    questionnaireId: number,
+    version: number
+  ): Promise<void> {
     return this.http
       .delete<void>(
         this.apiUrl + 'questionnaires/' + questionnaireId + '/' + version
@@ -65,7 +74,7 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  deleteAnswer(
+  async deleteAnswer(
     questionnaireInstanceId: number,
     answerOptionId: number
   ): Promise<void> {
@@ -80,19 +89,35 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  getQuestionnaires(): Promise<QuestionnaireListResponse> {
+  async getQuestionnaires(): Promise<QuestionnaireListResponse> {
     return this.http
       .get<QuestionnaireListResponse>(this.apiUrl + 'questionnaires')
       .toPromise();
   }
 
-  postQuestionnaire(postData: object): Promise<any> {
+  public async importQuestionnaire(
+    study: string,
+    publishMode: PublishMode,
+    questionnaireFiles: QuestionnaireFile[]
+  ): Promise<QuestionnaireImportResponseBody> {
+    return firstValueFrom(
+      this.http.post<QuestionnaireImportResponseBody>(
+        this.apiUrl + 'studies/' + study + '/questionnaires-import',
+        {
+          publishMode,
+          questionnaireFiles,
+        }
+      )
+    );
+  }
+
+  async postQuestionnaire(postData: object): Promise<any> {
     return this.http
       .post<any>(this.apiUrl + 'questionnaires', postData)
       .toPromise();
   }
 
-  putQuestionnaire(
+  async putQuestionnaire(
     questionnaireId: number,
     version: number,
     putData: object
@@ -108,7 +133,7 @@ export class QuestionnaireService {
   /**
    * Currently Questionnaires can only be deactivated and not vice versa.
    */
-  deactivateQuestionnaire(
+  async deactivateQuestionnaire(
     studyName: string,
     questionnaireId: number,
     version: number
@@ -126,7 +151,7 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  reviseQuestionnaire(
+  async reviseQuestionnaire(
     questionnaireId: number,
     putData: object
   ): Promise<Questionnaire> {
@@ -138,7 +163,7 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  getQuestionnaireInstancesForUser(
+  async getQuestionnaireInstancesForUser(
     username: string
   ): Promise<QuestionnaireInstance[]> {
     return this.http
@@ -150,7 +175,7 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  getQuestionnaireInstances(
+  async getQuestionnaireInstances(
     status?: QuestionnaireStatus[]
   ): Promise<QuestionnaireInstance[]> {
     return this.http
@@ -163,7 +188,7 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  getQuestionnaireInstance(
+  async getQuestionnaireInstance(
     questionnaireInstanceId: number
   ): Promise<QuestionnaireInstance> {
     return this.http
@@ -173,7 +198,7 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  putQuestionnaireInstance(
+  async putQuestionnaireInstance(
     questionnaireInstanceId: number,
     putData: object
   ): Promise<QuestionnaireInstance> {
@@ -185,7 +210,7 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  postAnswers(
+  async postAnswers(
     questionnaireInstanceId: number,
     postData: object
   ): Promise<{ answers: Answer[] }> {
@@ -200,7 +225,9 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  getAnswers(questionnaireInstanceId: number): Promise<{ answers: Answer[] }> {
+  async getAnswers(
+    questionnaireInstanceId: number
+  ): Promise<{ answers: Answer[] }> {
     return this.http
       .get<{ answers: Answer[] }>(
         this.apiUrl +
@@ -211,7 +238,9 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  getHistoricalAnswers(questionnaireInstanceId: number): Promise<Answer[]> {
+  async getHistoricalAnswers(
+    questionnaireInstanceId: number
+  ): Promise<Answer[]> {
     return this.http
       .get<{ answers: Answer[] }>(
         this.apiUrl +
@@ -227,7 +256,7 @@ export class QuestionnaireService {
    * @deprecated remaining study API routes will be moved to the userservice in the future
    * @see https://confluence.sormas-tools.de/pages/viewpage.action?pageId=12978804
    */
-  getStudy(name: string): Promise<Study> {
+  async getStudy(name: string): Promise<Study> {
     return this.http.get<Study>(this.apiUrl + 'studies/' + name).toPromise();
   }
 
@@ -235,25 +264,10 @@ export class QuestionnaireService {
    * @deprecated remaining study API routes will be moved to the userservice in the future
    * @see https://confluence.sormas-tools.de/pages/viewpage.action?pageId=12978804
    */
-  getStudyAddresses(): Promise<StudyAddress[]> {
+  async getStudyAddresses(): Promise<StudyAddress[]> {
     return this.http
       .get<StudyAddress[]>(this.apiUrl + 'studies/addresses')
       .toPromise();
-  }
-
-  getExportData(postData: any): Observable<HttpEvent<Blob>> {
-    // convert dates to utc string to prevent timezone issues
-    const convertedData: any = Object.assign({}, postData);
-    if (convertedData.start_date) {
-      convertedData.start_date = postData.start_date.toDateString();
-    }
-    if (convertedData.end_date) {
-      convertedData.end_date = postData.end_date.toDateString();
-    }
-    return this.http.post(this.apiUrl + 'export', convertedData, {
-      responseType: 'blob',
-      observe: 'response',
-    });
   }
 
   getQuestionnaireInstanceQueues(
@@ -266,7 +280,7 @@ export class QuestionnaireService {
       .pipe(map((response) => response.queues));
   }
 
-  deleteQuestionnaireInstanceQueue(
+  async deleteQuestionnaireInstanceQueue(
     instance_id: number,
     pseudonym: string
   ): Promise<void> {
@@ -277,11 +291,11 @@ export class QuestionnaireService {
       .toPromise();
   }
 
-  getImageBy(id): Promise<any> {
+  async getImageBy(id): Promise<any> {
     return this.getFileBy(id);
   }
 
-  getFileBy(id: any): Promise<any> {
+  async getFileBy(id: any): Promise<any> {
     return this.http.get(this.apiUrl + 'files/' + id).toPromise();
   }
 
@@ -289,11 +303,56 @@ export class QuestionnaireService {
    * @deprecated remaining study API routes will be moved to the userservice in the future
    * @see https://confluence.sormas-tools.de/pages/viewpage.action?pageId=12978804
    */
-  getStudyWelcomeText(studyName: string): Promise<StudyWelcomeText> {
+  async getStudyWelcomeText(studyName: string): Promise<StudyWelcomeText> {
     return this.http
       .get<StudyWelcomeText>(
         this.apiUrl + 'studies/' + studyName + '/welcome-text'
       )
       .toPromise();
+  }
+
+  export(exportRequestData: ExportRequestData, token: string) {
+    // convert dates to utc string to prevent timezone issues
+    const convertedData = this.convertExportDates(exportRequestData);
+    // we use a hidden form for the post to let the browser handle the streaming of the response
+    // to prevent the browser from keeping the whole response into memory before writing it to the disc
+    this.createFormWithDataAndSubmit(convertedData, token);
+  }
+
+  private convertExportDates(
+    exportRequestData: ExportRequestData
+  ): ExportRequestData {
+    if (exportRequestData.start_date) {
+      exportRequestData.start_date =
+        exportRequestData.start_date.toDateString();
+    }
+    if (exportRequestData.end_date) {
+      exportRequestData.end_date = exportRequestData.end_date.toDateString();
+    }
+    return exportRequestData;
+  }
+
+  private createFormWithDataAndSubmit(
+    exportRequestData: Record<string, any>,
+    token: string
+  ) {
+    const form = document.createElement('form');
+    form.action = 'api/v1/questionnaire/export';
+    form.method = 'post';
+    form.style.display = 'none';
+    const tokenInput = document.createElement('input');
+    tokenInput.type = 'hidden';
+    tokenInput.name = 'token';
+    tokenInput.value = token;
+    const optionsInput = document.createElement('input');
+    optionsInput.type = 'hidden';
+    optionsInput.name = 'exportOptions';
+    optionsInput.value = JSON.stringify(exportRequestData);
+    form.appendChild(tokenInput);
+    form.appendChild(optionsInput);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
   }
 }

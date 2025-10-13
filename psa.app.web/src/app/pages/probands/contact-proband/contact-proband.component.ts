@@ -25,6 +25,7 @@ interface EmailRequestForm {
   selector: 'app-contact-proband',
   templateUrl: './contact-proband.component.html',
   styleUrls: ['./contact-proband.component.scss'],
+  standalone: false,
 })
 export class ContactProbandComponent implements OnInit {
   public isChildWindow = false;
@@ -44,11 +45,11 @@ export class ContactProbandComponent implements OnInit {
 
   constructor(
     public currentUser: CurrentUser,
-    private probandService: ProbandService,
-    private matDialog: MatDialog,
-    private activatedRoute: ActivatedRoute,
-    private location: Location,
-    private notificationService: NotificationService
+    private readonly probandService: ProbandService,
+    private readonly matDialog: MatDialog,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly location: Location,
+    private readonly notificationService: NotificationService
   ) {
     if (this.activatedRoute.snapshot.paramMap.has('usernames')) {
       this.message

@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { getRepository } from 'typeorm';
-import { runTransaction } from '../db';
+import { dataSource, runTransaction } from '../db';
 import { Questionnaire } from '../entities/questionnaire';
 import { CouldNotUpdateGeneratedCustomName } from '../errors';
 import generateCustomName from '../helpers/generateCustomName';
@@ -47,7 +46,7 @@ export class QuestionnaireService {
     questionnaire: Pick<Questionnaire, 'id' | 'version' | 'name'>
   ): Promise<string> {
     const customName = generateCustomName(questionnaire.name, questionnaire.id);
-    const result = await getRepository(Questionnaire).update(
+    const result = await dataSource.getRepository(Questionnaire).update(
       {
         id: questionnaire.id,
         version: questionnaire.version,

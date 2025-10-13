@@ -51,7 +51,7 @@ export class Tools {
     const formControlText = control.value;
     if (
       formControlText &&
-      formControlText.toString().match(/^-?(0|[1-9]\d*)([\.\,]\d+)?$/) === null
+      formControlText.toString().match(/^-?(0|[1-9]\d*)([.,]\d+)?$/) === null
     ) {
       return { notDecimalNumber: true };
     } else {

@@ -18,6 +18,7 @@ import { CurrentUser } from '../auth/current-user.service';
 @Component({
   selector: 'app-contact',
   templateUrl: './contact.page.html',
+  standalone: false,
 })
 export class ContactPage implements OnInit {
   public hasSamplesCompliance: boolean;

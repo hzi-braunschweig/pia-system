@@ -35,12 +35,16 @@ import { Answer } from '../../../psa.app.core/models/answer';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { DOCUMENT } from '@angular/common';
 import { By } from '@angular/platform-browser';
-import { createQuestion } from '../../../psa.app.core/models/instance.helper.spec';
+import {
+  createAnswerOption,
+  createQuestion,
+} from '../../../psa.app.core/models/instance.helper.spec';
 import { Role } from '../../../psa.app.core/models/user';
 import { TranslatePipe } from '@ngx-translate/core';
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
 import { SwiperContainer } from 'swiper/element';
+import { AnswerType } from 'src/app/psa.app.core/models/answerType';
 
 describe('QuestionProbandComponent', () => {
   let fixture: MockedComponentFixture;
@@ -158,6 +162,112 @@ describe('QuestionProbandComponent', () => {
       const alertService = TestBed.inject(AlertService);
       expect(alertService.errorMessage).not.toHaveBeenCalled();
     });
+  });
+
+  describe('useAutocomplete', () => {
+    const mockQuestionnaireWithUseAutocomplete = (
+      answerTypeId: AnswerType,
+      useAutocomplete: boolean
+    ) =>
+      ({
+        id: 1234,
+        status: 'active',
+        date_of_issue: new Date(),
+        user_id: 'Testproband',
+        release_version: 0,
+        questionnaire: {
+          id: 1,
+          name: 'TestQ',
+          study_id: 'Teststudy',
+          questions: [
+            createQuestion({
+              id: 1,
+              answer_options: [
+                createAnswerOption({
+                  id: 1,
+                  answer_type_id: answerTypeId,
+                  variable_name: 'temperatureSource',
+                  values: ['Infrared', 'Oral', 'Axillary', 'Rectal'],
+                  values_code: [1, 2, 3, 4],
+                  use_autocomplete: useAutocomplete,
+                }),
+              ],
+            }),
+          ],
+        } as Questionnaire,
+      } as QuestionnaireInstance);
+
+    [['show', true] as const, ['not show', false] as const].forEach(
+      ([show, useAutocomplete]) =>
+        it(`should ${show} an autocomplete multi select if useAutocomplete = ${useAutocomplete}`, fakeAsync(async () => {
+          // Arrange
+          questionnaireService.getQuestionnaireInstance.and.resolveTo(
+            mockQuestionnaireWithUseAutocomplete(
+              AnswerType.MultiSelect,
+              useAutocomplete
+            )
+          );
+          document.getElementById = jasmine
+            .createSpy()
+            .and.returnValue(document.createElement('div'));
+          const swiperMock = jasmine.createSpyObj('Swiper', [], {
+            activeIndex: 0,
+            allowSlidePrev: true,
+            allowSlideNext: false,
+          });
+          component.questionSwiper = {
+            nativeElement: { swiper: swiperMock } as SwiperContainer,
+          };
+
+          await component.ngOnInit();
+          component.displayStatus = DisplayStatus.OVERVIEW;
+          fixture.detectChanges();
+
+          const matFormField = fixture.debugElement.query(
+            By.css('mat-form-field')
+          );
+          expect(component.myForm.get('questions')).toHaveSize(1);
+          useAutocomplete
+            ? expect(matFormField).toBeTruthy()
+            : expect(matFormField).toBeFalsy();
+        }))
+    );
+
+    [['show', true] as const, ['not show', false] as const].forEach(
+      ([show, useAutocomplete]) =>
+        it(`should ${show} an autocomplete single select if useAutocomplete = ${useAutocomplete}`, fakeAsync(async () => {
+          // Arrange
+          questionnaireService.getQuestionnaireInstance.and.resolveTo(
+            mockQuestionnaireWithUseAutocomplete(
+              AnswerType.SingleSelect,
+              useAutocomplete
+            )
+          );
+          document.getElementById = jasmine
+            .createSpy()
+            .and.returnValue(document.createElement('div'));
+          const swiperMock = jasmine.createSpyObj('Swiper', [], {
+            activeIndex: 0,
+            allowSlidePrev: true,
+            allowSlideNext: false,
+          });
+          component.questionSwiper = {
+            nativeElement: { swiper: swiperMock } as SwiperContainer,
+          };
+
+          await component.ngOnInit();
+          component.displayStatus = DisplayStatus.OVERVIEW;
+          fixture.detectChanges();
+
+          const matFormField = fixture.debugElement.query(
+            By.css('mat-form-field')
+          );
+          expect(component.myForm.get('questions')).toHaveSize(1);
+          useAutocomplete
+            ? expect(matFormField).toBeTruthy()
+            : expect(matFormField).toBeFalsy();
+        }))
+    );
   });
 
   describe('ngOnDestroy()', () => {

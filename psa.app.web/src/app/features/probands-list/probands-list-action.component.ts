@@ -13,5 +13,6 @@ import { Component } from '@angular/core';
       <ng-content></ng-content>
     </button>
   `,
+  standalone: false,
 })
 export class ProbandsListActionComponent {}

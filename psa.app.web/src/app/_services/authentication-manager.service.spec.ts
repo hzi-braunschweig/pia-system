@@ -5,7 +5,7 @@
  */
 
 import { TestBed } from '@angular/core/testing';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 import { MockProvider } from 'ng-mocks';
 import SpyObj = jasmine.SpyObj;
 
@@ -15,7 +15,7 @@ import { FCMService } from './fcm.service';
 describe('AuthenticationManager', () => {
   let service: AuthenticationManager;
 
-  let keycloak: SpyObj<KeycloakService>;
+  let keycloak: SpyObj<Keycloak>;
   let fcmService: SpyObj<FCMService>;
 
   beforeEach(async () => {
@@ -30,7 +30,7 @@ describe('AuthenticationManager', () => {
     TestBed.configureTestingModule({
       providers: [
         AuthenticationManager,
-        MockProvider(KeycloakService, keycloak),
+        MockProvider(Keycloak, keycloak),
         MockProvider(FCMService, fcmService),
       ],
     });

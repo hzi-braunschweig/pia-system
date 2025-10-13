@@ -10,6 +10,7 @@ import { Component, Input } from '@angular/core';
   selector: 'app-loading-spinner',
   template: '<mat-spinner class="loading"></mat-spinner>',
   styleUrls: ['./loading-spinner.component.scss'],
+  standalone: false,
 })
 export class LoadingSpinnerComponent {
   /**

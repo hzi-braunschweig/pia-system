@@ -32,7 +32,10 @@ import { DialogMarkdownLabresultEditorComponent } from './dialog-markdown-labres
 import createSpyObj = jasmine.createSpyObj;
 import SpyObj = jasmine.SpyObj;
 
-@Pipe({ name: 'translate' })
+@Pipe({
+  name: 'translate',
+  standalone: false,
+})
 class MockTranslatePipe implements PipeTransform {
   transform(value: string): string {
     return value;

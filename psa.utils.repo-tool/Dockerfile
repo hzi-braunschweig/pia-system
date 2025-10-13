@@ -1,10 +1,11 @@
-FROM node:20.3.0-alpine@sha256:2d5e8a8a51bc341fd5f2eed6d91455c3a3d147e91a14298fc564b5dc519c1666 AS base
+FROM node:20.18.1-alpine@sha256:24fb6aa7020d9a20b00d6da6d1714187c45ed00d1eb4adb01395843c338b9372 AS base
 
 WORKDIR /usr/src/node-app/
 
 COPY psa.eslint-config/package*.json psa.eslint-config/*.js ../psa.eslint-config/
 COPY psa.lib.licensecollector/package*.json ../psa.lib.licensecollector/
 COPY psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
+COPY psa.lib.licensecollector/static-licenses ../psa.lib.licensecollector/static-licenses
 
 ### workaround for npm 9 until we move to package registry
 ### execute install in the local dependency folders

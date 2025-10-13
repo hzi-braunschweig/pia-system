@@ -5,7 +5,7 @@
  */
 
 import { Component } from '@angular/core';
-import { Keyboard } from '@awesome-cordova-plugins/keyboard/ngx';
+import { Keyboard } from '@capacitor/keyboard';
 import { AbstractControlValueAccessor } from './abstract-control-value-accessor';
 
 /**
@@ -15,20 +15,21 @@ import { AbstractControlValueAccessor } from './abstract-control-value-accessor'
  *
  * @see {@link https://v9.angular.io/guide/deprecations#undecorated-base-classes-using-angular-features}
  */
-@Component({ template: '' })
+@Component({
+  template: '',
+  standalone: false,
+})
 // eslint-disable-next-line @angular-eslint/component-class-suffix
 export abstract class AbstractTextInputControlValueAccessor<
   V
 > extends AbstractControlValueAccessor<V> {
-  constructor(protected keyboard: Keyboard) {
+  constructor() {
     super();
   }
 
   hideKeyboard(event: Event) {
     event.stopPropagation();
     event.preventDefault();
-    if (this.keyboard.isVisible) {
-      this.keyboard.hide();
-    }
+    Keyboard.hide();
   }
 }

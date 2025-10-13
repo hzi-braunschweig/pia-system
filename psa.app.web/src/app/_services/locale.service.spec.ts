@@ -8,7 +8,11 @@ import { TestBed } from '@angular/core/testing';
 
 import { LocaleService } from './locale.service';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import {
+  HttpClient,
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { environment } from '../../environments/environment';
 import { CurrentUser } from './current-user.service';
@@ -27,7 +31,6 @@ describe('LocaleService', () => {
 
     TestBed.configureTestingModule({
       imports: [
-        HttpClientModule,
         TranslateModule.forRoot({
           loader: {
             provide: TranslateLoader,
@@ -41,6 +44,7 @@ describe('LocaleService', () => {
           provide: CurrentUser,
           useValue: currentUserMock,
         },
+        provideHttpClient(withInterceptorsFromDi()),
       ],
     });
   });
@@ -123,7 +127,7 @@ describe('LocaleService', () => {
     });
 
     it('should fallback if user selection is not an implemented langauge', () => {
-      currentUserMock.locale = 'fr-FR';
+      currentUserMock.locale = 'it-IT';
 
       const service = TestBed.inject(LocaleService);
 

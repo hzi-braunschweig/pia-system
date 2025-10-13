@@ -14,7 +14,6 @@ import { AppModule } from '../../app.module';
 import { TranslatePipe } from '@ngx-translate/core';
 
 describe('DeleteAccountConfirmationDialogComponent', () => {
-  let component: DialogDeleteAccountConfirmationComponent;
   let fixture: ComponentFixture<DialogDeleteAccountConfirmationComponent>;
 
   beforeEach(async () => {
@@ -28,7 +27,7 @@ describe('DeleteAccountConfirmationDialogComponent', () => {
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DialogDeleteAccountConfirmationComponent);
-    component = fixture.componentInstance;
+    fixture.componentInstance;
     fixture.detectChanges();
   });
 

@@ -25,7 +25,6 @@ import { addDays, formatISO, subDays } from 'date-fns';
 import { StatusCodes } from 'http-status-codes';
 import * as sinon from 'sinon';
 import { createSandbox } from 'sinon';
-import { getConnection } from 'typeorm';
 import { sampletrackingserviceClient } from '../../../src/clients/sampletrackingserviceClient';
 import { userserviceClient } from '../../../src/clients/userserviceClient';
 import { config } from '../../../src/config';
@@ -73,6 +72,7 @@ import {
   sprintPath,
   waitForConditionToBeTrue,
 } from './utilities';
+import { dataSource } from '../../../src/db';
 
 chai.use(chaiHttp);
 chai.use(publicApiMatchers);
@@ -678,23 +678,19 @@ describe(pathQuestionnaireInstances, () => {
         expect(response.body).to.deep.equal(expectedResponse);
         expect(response).to.have.status(StatusCodes.OK);
 
-        const countAnswersV1 = await getConnection()
-          .getRepository(Answer)
-          .count({
-            where: {
-              questionnaireInstance: segments.instanceId,
-              versioning: 1,
-            },
-          });
+        const countAnswersV1 = await dataSource.getRepository(Answer).count({
+          where: {
+            questionnaireInstanceId: segments.instanceId,
+            versioning: 1,
+          },
+        });
 
-        const countAnswersV2 = await getConnection()
-          .getRepository(Answer)
-          .count({
-            where: {
-              questionnaireInstance: segments.instanceId,
-              versioning: 2,
-            },
-          });
+        const countAnswersV2 = await dataSource.getRepository(Answer).count({
+          where: {
+            questionnaireInstanceId: segments.instanceId,
+            versioning: 2,
+          },
+        });
 
         expect(countAnswersV2).to.equal(
           countAnswersV1,
@@ -1172,10 +1168,19 @@ describe(pathQuestionnaireInstances, () => {
         expect(response.body).to.have.lengthOf(answers.length);
         expect(response.body).answersToMatch(answers, 1);
 
-        const qi = await getConnection()
+        const qi = await dataSource
           .getRepository(QuestionnaireInstance)
-          .findOne(segments.instanceId, {
-            relations: ['answers', 'answers.question', 'answers.answerOption'],
+          .findOne({
+            where: {
+              id: segments.instanceId,
+            },
+
+            relations: {
+              answers: {
+                question: true,
+                answerOption: true,
+              },
+            },
           });
 
         expect(qi.status).to.equal(expectedStatus);
@@ -1252,9 +1257,9 @@ describe(pathQuestionnaireInstances, () => {
 
           // Assert
           expect(response).to.have.status(StatusCodes.OK);
-          const qi = await getConnection()
+          const qi = await dataSource
             .getRepository(QuestionnaireInstance)
-            .findOne(segments.instanceId);
+            .findOne({ where: { id: segments.instanceId } });
 
           expect(qi.progress).to.equal(testCase.expectedProgress);
         }
@@ -1285,18 +1290,20 @@ describe(pathQuestionnaireInstances, () => {
         expect(response.body).to.have.lengthOf(answers.length);
         expect(response.body).answersToMatch(answers, 1);
 
-        const qi = await getConnection()
+        const qi = await dataSource
           .getRepository(QuestionnaireInstance)
-          .findOne(
-            questionnaires.StudyB.styb0000000001.questionnaire_a.instanceId,
-            {
-              relations: [
-                'answers',
-                'answers.question',
-                'answers.answerOption',
-              ],
-            }
-          );
+          .findOne({
+            where: {
+              id: questionnaires.StudyB.styb0000000001.questionnaire_a
+                .instanceId,
+            },
+            relations: {
+              answers: {
+                question: true,
+                answerOption: true,
+              },
+            },
+          });
 
         expect(qi.status).to.equal(expectedStatus);
         expect(qi.releaseVersion).to.equal(0);
@@ -1312,9 +1319,9 @@ describe(pathQuestionnaireInstances, () => {
         const { instanceId } =
           questionnaires.StudyB.styb0000000001.questionnaire_a_released_once;
 
-        const qiBefore = await getConnection()
+        const qiBefore = await dataSource
           .getRepository(QuestionnaireInstance)
-          .findOne(instanceId);
+          .findOne({ where: { id: instanceId } });
 
         expect(qiBefore.progress).to.not.equal(
           100,
@@ -1334,9 +1341,9 @@ describe(pathQuestionnaireInstances, () => {
 
         expect(response).to.have.status(StatusCodes.OK);
 
-        const qiAfter = await getConnection()
+        const qiAfter = await dataSource
           .getRepository(QuestionnaireInstance)
-          .findOne(instanceId);
+          .findOne({ where: { id: instanceId } });
 
         expect(qiAfter.progress).to.equal(100, 'Progress should be at 100%');
       });
@@ -1412,18 +1419,20 @@ describe(pathQuestionnaireInstances, () => {
           );
         }
 
-        const qi = await getConnection()
+        const qi = await dataSource
           .getRepository(QuestionnaireInstance)
-          .findOne(
-            questionnaires.StudyA.stya0000000001.questionnaire_a.instanceId,
-            {
-              relations: [
-                'answers',
-                'answers.question',
-                'answers.answerOption',
-              ],
-            }
-          );
+          .findOne({
+            where: {
+              id: questionnaires.StudyA.stya0000000001.questionnaire_a
+                .instanceId,
+            },
+            relations: {
+              answers: {
+                question: true,
+                answerOption: true,
+              },
+            },
+          });
 
         const numAnswersVersion1 = qi.answers.filter((a) => a.versioning === 1);
         const numAnswersVersion2 = qi.answers.filter((a) => a.versioning === 2);
@@ -1512,18 +1521,20 @@ describe(pathQuestionnaireInstances, () => {
           );
         }
 
-        const qi = await getConnection()
+        const qi = await dataSource
           .getRepository(QuestionnaireInstance)
-          .findOne(
-            questionnaires.StudyA.stya0000000001.questionnaire_a.instanceId,
-            {
-              relations: [
-                'answers',
-                'answers.question',
-                'answers.answerOption',
-              ],
-            }
-          );
+          .findOne({
+            where: {
+              id: questionnaires.StudyA.stya0000000001.questionnaire_a
+                .instanceId,
+            },
+            relations: {
+              answers: {
+                question: true,
+                answerOption: true,
+              },
+            },
+          });
 
         const numAnswersVersion1 = qi.answers.filter((a) => a.versioning === 1);
         const numAnswersVersion2 = qi.answers.filter((a) => a.versioning === 2);
@@ -1563,14 +1574,12 @@ describe(pathQuestionnaireInstances, () => {
         expect(response.body).to.have.lengthOf(answers.length);
         expect(response.body).answersToMatch(answers, 1);
 
-        const countAnswers = await getConnection()
-          .getRepository(Answer)
-          .count({
-            where: {
-              questionnaireInstance:
-                questionnaires.StudyB.styb0000000001.questionnaire_a.instanceId,
-            },
-          });
+        const countAnswers = await dataSource.getRepository(Answer).count({
+          where: {
+            questionnaireInstanceId:
+              questionnaires.StudyB.styb0000000001.questionnaire_a.instanceId,
+          },
+        });
 
         expect(countAnswers).to.equal(
           answers.length,
@@ -1602,14 +1611,18 @@ describe(pathQuestionnaireInstances, () => {
           expect(response.body).to.have.lengthOf(answers.length);
           expect(response.body).answersToMatch(answers, 1);
 
-          const qi = await getConnection()
+          const qi = await dataSource
             .getRepository(QuestionnaireInstance)
-            .findOne(segments.instanceId, {
-              relations: [
-                'answers',
-                'answers.question',
-                'answers.answerOption',
-              ],
+            .findOne({
+              where: {
+                id: segments.instanceId,
+              },
+              relations: {
+                answers: {
+                  question: true,
+                  answerOption: true,
+                },
+              },
             });
 
           expect(qi.status).to.equal(expectedStatus);

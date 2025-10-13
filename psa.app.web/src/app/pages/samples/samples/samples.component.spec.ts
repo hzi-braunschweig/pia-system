@@ -38,7 +38,6 @@ import { DialogInfoComponent } from '../../../_helpers/dialog-info';
 import { DialogYesNoComponent } from '../../../dialogs/dialog-yes-no/dialog-yes-no';
 import { AlertService } from '../../../_services/alert.service';
 import SpyObj = jasmine.SpyObj;
-import any = jasmine.any;
 
 describe('SamplesComponent', () => {
   let fixture: MockedComponentFixture;

@@ -17,6 +17,7 @@ import { CurrentUser } from '../../../_services/current-user.service';
       data-unit="feedback-statistic-list-researcher"
       *ngIf="currentUser.isProfessional()"
     ></app-feedback-statistic-list-researcher>`,
+  standalone: false,
 })
 export class FeedbackStatisticListComponent {
   constructor(public readonly currentUser: CurrentUser) {}

@@ -34,9 +34,9 @@ export class QuestionnaireDataSource extends DataSource<any> {
   renderedData: Questionnaire[] = [];
 
   constructor(
-    private _questionnaireDatabase: QuestionnaireDatabase,
-    private _paginator: MatPaginator,
-    private _sort: MatSort
+    private readonly _questionnaireDatabase: QuestionnaireDatabase,
+    private readonly _paginator: MatPaginator,
+    private readonly _sort: MatSort
   ) {
     super();
 
@@ -59,7 +59,7 @@ export class QuestionnaireDataSource extends DataSource<any> {
           .slice()
           .filter((item: Questionnaire) => {
             const searchStr = this.buildItemString(item);
-            return searchStr.indexOf(this.filter.toLowerCase()) !== -1;
+            return searchStr.includes(this.filter.toLowerCase());
           });
 
         const sortedData = this.sortData(this.filteredData.slice());

@@ -29,7 +29,7 @@ export interface GetProfessionalAccountsFilters {
 export class UserService {
   private readonly apiUrl = 'api/v1/user';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   public async getStudyAccesses(studyName: string): Promise<StudyAccess[]> {
     return await this.http
@@ -75,7 +75,7 @@ export class UserService {
       .toPromise();
   }
 
-  getStudies(): Promise<Study[]> {
+  async getStudies(): Promise<Study[]> {
     return this.getStudies$().toPromise();
   }
 
@@ -83,29 +83,29 @@ export class UserService {
     return this.http.get<Study[]>(`${this.apiUrl}/studies`);
   }
 
-  postStudy(postData: object): Promise<Study> {
+  async postStudy(postData: object): Promise<Study> {
     return this.http
       .post<Study>(`${this.apiUrl}/studies`, postData)
       .toPromise();
   }
 
-  putStudy(name: string, putData: object): Promise<Study> {
+  async putStudy(name: string, putData: object): Promise<Study> {
     return this.http
       .put<Study>(`${this.apiUrl}/studies/${name}`, putData)
       .toPromise();
   }
 
-  getStudy(name: string): Promise<Study> {
+  async getStudy(name: string): Promise<Study> {
     return this.http.get<Study>(`${this.apiUrl}/studies/${name}`).toPromise();
   }
 
-  getStudyWelcomeText(studyName: string): Promise<StudyWelcomeText> {
+  async getStudyWelcomeText(studyName: string): Promise<StudyWelcomeText> {
     return this.http
       .get<StudyWelcomeText>(`${this.apiUrl}/studies/${studyName}/welcome-text`)
       .toPromise();
   }
 
-  putStudyWelcomeText(
+  async putStudyWelcomeText(
     studyName: string,
     welcomeText: string
   ): Promise<StudyWelcomeText> {
@@ -119,7 +119,7 @@ export class UserService {
       .toPromise();
   }
 
-  getStudyWelcomeMail(
+  async getStudyWelcomeMail(
     studyName: string
   ): Promise<StudyWelcomeMailTemplateResponseDto> {
     return this.http
@@ -129,7 +129,7 @@ export class UserService {
       .toPromise();
   }
 
-  putStudyWelcomeMail(
+  async putStudyWelcomeMail(
     studyName: string,
     welcomeMail: StudyWelcomeMailTemplateRequestDto
   ): Promise<StudyWelcomeMailTemplateResponseDto> {

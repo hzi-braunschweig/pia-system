@@ -72,13 +72,14 @@
                           </app-questionnaire-answer-single-select>
                         </ng-container>
                         <ng-container *ngSwitchCase="AnswerType.MultiSelect">
-                          <app-questionnaire-answer-checkbox
+                          <app-questionnaire-answer-multi-select
                             [label]="answer?.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
                             [formControl]="formControl"
                             [name]="answer.id"
                             [values]="answer.values"
+                            [useAutocomplete]="answer.use_autocomplete"
                           >
-                          </app-questionnaire-answer-checkbox>
+                          </app-questionnaire-answer-multi-select>
                         </ng-container>
                         <ng-container *ngSwitchCase="AnswerType.Number">
                           <app-questionnaire-answer-input-number

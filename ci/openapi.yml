@@ -33,7 +33,7 @@ openapi-check:
     - .job-exclude-schedules-pipelines
     - .no-cpu-request
   stage: test
-  image: node:20.3.0-buster-slim@sha256:a0f92f6970cb1fd5e9b6039a8f428616a9b9ed3633360c6b84dcc6aa5c7d5723
+  image: node:20.3.0-buster-slim@sha256:9f4d4a6ebe2aa2068f53347e17e37995f0b2b5f372094354d6f8a155fdd3a5e6
   variables:
     GIT_DEPTH: '1'
     CACHE_DIR: '$CI_PROJECT_DIR/node_modules'
@@ -62,7 +62,7 @@ openapi-validate:
     - .job-exclude-schedules-pipelines
     - .no-cpu-request
   stage: test
-  image: node:20.3.0-buster-slim@sha256:a0f92f6970cb1fd5e9b6039a8f428616a9b9ed3633360c6b84dcc6aa5c7d5723
+  image: node:20.3.0-buster-slim@sha256:9f4d4a6ebe2aa2068f53347e17e37995f0b2b5f372094354d6f8a155fdd3a5e6
   variables:
     GIT_DEPTH: '1'
     CACHE_DIR: '$CI_PROJECT_DIR/node_modules'

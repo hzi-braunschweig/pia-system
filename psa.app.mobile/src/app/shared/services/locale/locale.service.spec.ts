@@ -6,8 +6,12 @@
 
 import { TestBed } from '@angular/core/testing';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { HttpClient } from '@angular/common/http';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import {
+  HttpClient,
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 
 import { LocaleService } from './locale.service';
@@ -20,7 +24,6 @@ describe('LocaleService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
-        HttpClientTestingModule,
         TranslateModule.forRoot({
           loader: {
             provide: TranslateLoader,
@@ -28,6 +31,10 @@ describe('LocaleService', () => {
             deps: [HttpClient],
           },
         }),
+      ],
+      providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
       ],
     });
   });
@@ -47,6 +54,16 @@ describe('LocaleService', () => {
     it('should apply de-DE', () => {
       service.currentLocale = 'de-DE';
       expect(service.currentLocale).toEqual('de-DE');
+    });
+
+    it('should apply fr-FR', () => {
+      service.currentLocale = 'fr-FR';
+      expect(service.currentLocale).toEqual('fr-FR');
+    });
+
+    it('should apply es-ES', () => {
+      service.currentLocale = 'es-ES';
+      expect(service.currentLocale).toEqual('es-ES');
     });
 
     it('should apply en-US as default for undefined', () => {
@@ -77,6 +94,26 @@ describe('LocaleService', () => {
     it('should apply de-DE for non existing german accent de-AC by ISO639-1 mapping', () => {
       service.currentLocale = 'de-AC';
       expect(service.currentLocale).toEqual('de-DE');
+    });
+
+    it('should apply fr-FR as ISO639-1 mapping for fr', () => {
+      service.currentLocale = 'fr';
+      expect(service.currentLocale).toEqual('fr-FR');
+    });
+
+    it('should apply fr-FR for non existing french accent fr-AC by ISO639-1 mapping', () => {
+      service.currentLocale = 'fr-AC';
+      expect(service.currentLocale).toEqual('fr-FR');
+    });
+
+    it('should apply es-ES as ISO639-1 mapping for es', () => {
+      service.currentLocale = 'es';
+      expect(service.currentLocale).toEqual('es-ES');
+    });
+
+    it('should apply es-ES for non existing spanish accent es-AC by ISO639-1 mapping', () => {
+      service.currentLocale = 'es-AC';
+      expect(service.currentLocale).toEqual('es-ES');
     });
   });
 });

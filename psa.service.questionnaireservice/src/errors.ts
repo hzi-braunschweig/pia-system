@@ -62,3 +62,29 @@ export class WrongRoleError extends SpecificError {
   public readonly statusCode = StatusCodes.FORBIDDEN;
   public readonly errorCode = 'WRONG_ROLE';
 }
+
+export class ImportJsonParseError extends SpecificError {
+  public readonly statusCode = StatusCodes.BAD_REQUEST;
+  public readonly errorCode = 'IMPORT_JSON_PARSE_ERROR';
+  public readonly message = 'Could not parse JSON file';
+}
+
+export class ImportJsonSchemaError extends SpecificError {
+  public readonly statusCode = StatusCodes.BAD_REQUEST;
+  public readonly errorCode = 'IMPORT_JSON_SCHEMA_INVALID';
+}
+
+export class DuplicateQuestionnaireKeyError extends SpecificError {
+  public readonly statusCode = StatusCodes.BAD_REQUEST;
+  public readonly errorCode = 'DUPLICATE_QUESTIONNAIRE_KEY';
+}
+
+export class ImportConditionQuestionnaireReferenceError extends SpecificError {
+  public readonly statusCode = StatusCodes.BAD_REQUEST;
+  public readonly errorCode = 'IMPORT_CONDITION_QUESTIONNAIRE_REFERENCE_ERROR';
+}
+
+export class ImportConditionAnswerOptionReferenceError extends SpecificError {
+  public readonly statusCode = StatusCodes.BAD_REQUEST;
+  public readonly errorCode = 'IMPORT_CONDITION_ANSWER_OPTION_REFERENCE_ERROR';
+}

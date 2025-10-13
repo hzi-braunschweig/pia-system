@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+
+configMapGenerator:
+  - name: replacement-config
+    options:
+      disableNameSuffixHash: true
+      labels:
+        'kustomize/ignore': 'true'
+    literals:
+      - imagePullPolicy=Always
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: replacement-config
+      fieldPath: data.imagePullPolicy
+    targets:
+      - select:
+          kind: Deployment
+        options:
+          create: true
+        fieldPaths:
+          - spec.template.spec.containers.*.imagePullPolicy
+      - select:
+          kind: StatefulSet
+        options:
+          create: true
+        fieldPaths:
+          - spec.template.spec.containers.*.imagePullPolicy
+      - select:
+          kind: Job
+        options:
+          create: true
+        fieldPaths:
+          - spec.template.spec.containers.*.imagePullPolicy
+          - spec.template.spec.initContainers.*.imagePullPolicy

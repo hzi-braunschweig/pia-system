@@ -10,7 +10,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToOne,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { AnswerOptionDto, AnswerType } from '../models/answerOption';
 import { Condition } from './condition';
@@ -21,10 +21,11 @@ export class AnswerOption implements AnswerOptionDto {
   /**
    * @isInt
    */
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('identity') // even though we do not use IDENTITY, the internal custom pg trigger works like this
   public id!: number;
 
   /**
+   * Order position in the question starting with 1
    * @isInt
    */
   @Column()

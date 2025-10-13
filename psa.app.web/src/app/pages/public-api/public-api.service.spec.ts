@@ -14,7 +14,7 @@ import { MockBuilder, ngMocks } from 'ng-mocks';
 import { HttpClientModule } from '@angular/common/http';
 
 describe('PublicApiService', () => {
-  beforeEach(() =>
+  beforeEach(async () =>
     MockBuilder(PublicApiService).replace(
       HttpClientModule,
       HttpClientTestingModule

@@ -6,7 +6,7 @@
 
 import Chainable = Cypress.Chainable;
 import { UserCredentials } from './user.commands';
-import { expectLocation, getRandomId } from './helper.commands';
+import { getRandomId } from './helper.commands';
 
 export interface Study {
   name: string;
@@ -122,7 +122,7 @@ export function changeStudy(
               ...changes,
             },
           })
-          .then((result) => cy.wrap(result.body.id))
+          .then((result) => cy.wrap(result.body.id as number))
       )
       .then((pendingstudychangeId) => {
         return cy
@@ -133,9 +133,7 @@ export function changeStudy(
           .then((token) =>
             cy.request({
               method: 'PUT',
-              url:
-                '/api/v1/user/admin/pendingstudychanges/' +
-                pendingstudychangeId,
+              url: `/api/v1/user/admin/pendingstudychanges/${pendingstudychangeId}`,
               headers: { Authorization: token },
             })
           )

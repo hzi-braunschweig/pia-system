@@ -8,11 +8,15 @@ import { TestBed } from '@angular/core/testing';
 
 import { FeedbackStatisticsService } from './feedback-statistics.service';
 import {
-  HttpClientTestingModule,
   HttpTestingController,
+  provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { FeedbackStatisticConfigurationDto } from './feedback-statistic-configuration/feedback-statistic-configuration.model';
 import { FeedbackStatisticDto } from '@pia-system/charts';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('FeedbackStatisticsService', () => {
   let service: FeedbackStatisticsService;
@@ -20,8 +24,12 @@ describe('FeedbackStatisticsService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [FeedbackStatisticsService],
-      imports: [HttpClientTestingModule],
+      imports: [],
+      providers: [
+        FeedbackStatisticsService,
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+      ],
     });
     service = TestBed.inject(FeedbackStatisticsService);
     httpMock = TestBed.inject(HttpTestingController);

@@ -3,7 +3,6 @@ kind: Component
 
 components:
   - ../no-servicemonitor
-  - ../no-modysservice
   - ../no-sormasservice
   - ../no-precheck
   - ../example-pia-config

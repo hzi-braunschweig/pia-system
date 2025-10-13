@@ -13,13 +13,14 @@ import {
   platformBrowserDynamicTesting,
 } from '@angular/platform-browser-dynamic/testing';
 import { MockInstance, ngMocks } from 'ng-mocks';
+import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
 
-// Disable Zone.js long stack trace so assertion errors are readable
-Error['stackTraceLimit'] = 0;
-Zone['assertZonePatched'] = function () {};
+Error.stackTraceLimit = 0;
+Zone.assertZonePatched = function () {};
 
 // @see https://ng-mocks.sudo.eu/extra/auto-spy
 ngMocks.autoSpy('jasmine');
+ngMocks.globalExclude(NgxMaterialTimepickerModule);
 
 // auto restore MockInstances
 jasmine.getEnv().addReporter({
@@ -27,6 +28,10 @@ jasmine.getEnv().addReporter({
   specStarted: MockInstance.remember,
   suiteDone: MockInstance.restore,
   suiteStarted: MockInstance.remember,
+});
+
+beforeAll(() => {
+  window.onbeforeunload = (): string => '###FULL-PAGE-RELOAD###';
 });
 
 // First, initialize the Angular testing environment.

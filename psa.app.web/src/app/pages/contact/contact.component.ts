@@ -17,6 +17,7 @@ import { QuestionnaireService } from '../../psa.app.core/providers/questionnaire
 @Component({
   templateUrl: 'contact.component.html',
   styleUrls: ['./contact.component.scss'],
+  standalone: false,
 })
 export class ContactComponent implements OnInit {
   public addresses: StudyAddress[];

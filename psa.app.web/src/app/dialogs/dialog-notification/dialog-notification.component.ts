@@ -11,6 +11,7 @@ import { NotificationDto } from '../../psa.app.core/models/notification';
 @Component({
   selector: 'dialog-notification',
   templateUrl: 'dialog-notification.component.html',
+  standalone: false,
 })
 export class DialogNotificationComponent {
   constructor(

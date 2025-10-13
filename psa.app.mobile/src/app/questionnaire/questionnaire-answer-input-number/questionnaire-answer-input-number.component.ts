@@ -19,5 +19,6 @@ const QUESTIONNAIRE_ANSWER_INPUT_NUMBER_ACCESSOR = {
   selector: 'app-questionnaire-answer-input-number',
   templateUrl: './questionnaire-answer-input-number.component.html',
   providers: [QUESTIONNAIRE_ANSWER_INPUT_NUMBER_ACCESSOR],
+  standalone: false,
 })
 export class QuestionnaireAnswerInputNumberComponent extends AbstractTextInputControlValueAccessor<FormControlValue> {}

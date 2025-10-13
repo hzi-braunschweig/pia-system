@@ -19,6 +19,7 @@ export interface DialogViewComplianceComponentData {
 @Component({
   selector: 'app-dialog-view-compliance',
   templateUrl: './dialog-view-compliance.component.html',
+  standalone: false,
 })
 export class DialogViewComplianceComponent implements OnInit {
   isLoading: boolean = false;
@@ -26,8 +27,8 @@ export class DialogViewComplianceComponent implements OnInit {
   complianceData: ComplianceDataResponse;
 
   constructor(
-    private complianceService: ComplianceService,
-    private alertService: AlertService,
+    private readonly complianceService: ComplianceService,
+    private readonly alertService: AlertService,
     @Inject(MAT_DIALOG_DATA)
     public readonly dialogData: DialogViewComplianceComponentData,
     public readonly dialogRef: MatDialogRef<DialogViewComplianceComponent>
@@ -50,7 +51,7 @@ export class DialogViewComplianceComponent implements OnInit {
   }
 
   async downloadPdf(): Promise<void> {
-    await this.complianceService.getComplianceAgreementPdfById(
+    this.complianceService.getComplianceAgreementPdfById(
       this.dialogData.study,
       this.dialogData.complianceId
     );

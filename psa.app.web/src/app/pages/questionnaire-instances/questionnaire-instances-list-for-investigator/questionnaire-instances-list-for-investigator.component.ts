@@ -15,6 +15,7 @@ import { QuestionnaireInstance } from '../../../psa.app.core/models/questionnair
 @Component({
   selector: 'app-questionnaire-instances-list-for-investigator',
   templateUrl: './questionnaire-instances-list-for-investigator.component.html',
+  standalone: false,
 })
 export class QuestionnaireInstancesListForInvestigatorComponent
   implements OnInit, OnDestroy
@@ -24,11 +25,11 @@ export class QuestionnaireInstancesListForInvestigatorComponent
   private pseudonym: string;
 
   constructor(
-    private questionnaireService: QuestionnaireService,
-    private activatedRoute: ActivatedRoute,
-    private alertService: AlertService,
-    private selectedProbandInfoService: SelectedProbandInfoService,
-    private userService: AuthService
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly alertService: AlertService,
+    private readonly selectedProbandInfoService: SelectedProbandInfoService,
+    private readonly userService: AuthService
   ) {}
 
   async ngOnInit(): Promise<void> {

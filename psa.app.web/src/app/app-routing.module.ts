@@ -30,7 +30,6 @@ import { LogsDeleteSysAdminComponent } from './pages/logsDelete-sysAdmin/logsDel
 import { ContactComponent } from './pages/contact/contact.component';
 import { ComplianceResearcherComponent } from './pages/compliance/compliance-researcher/compliance-researcher.component';
 import { NgModule } from '@angular/core';
-import { AuthGuard } from './_guards/auth.guard';
 import { ComplianceGuard } from './_guards/compliance.guard';
 import { PendingChangesGuard } from './_guards/pending-changes.guard';
 import { ComplianceType } from './psa.app.core/models/compliance';
@@ -43,12 +42,13 @@ import { LicenseListComponent } from './pages/license-list/license-list.componen
 import { ComplianceEditProbandComponent } from './pages/compliance/compliance-edit/compliance-edit-proband/compliance-edit-proband.component';
 import { RegistrationComponent } from './pages/registration/registration/registration.component';
 import { StudyComponent } from './pages/study/study.component';
+import { canActivateAuthRole } from './_guards/auth.guard';
 
 const routes: Routes = [
   {
     path: 'home',
     component: HomeComponent,
-    canActivate: mapToCanActivate([AuthGuard, ComplianceGuard]),
+    canActivate: [canActivateAuthRole, ...mapToCanActivate([ComplianceGuard])],
     pathMatch: 'full',
   },
   {
@@ -58,7 +58,7 @@ const routes: Routes = [
   {
     path: 'study/:studyName',
     component: StudyComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: {
       authorizedRoles: [
         'Forscher',
@@ -77,7 +77,7 @@ const routes: Routes = [
   {
     path: 'study/:studyName/pendingstudychange',
     component: StudyComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: {
       authorizedRoles: ['Forscher'],
     },
@@ -86,7 +86,7 @@ const routes: Routes = [
   {
     path: 'study/:studyName',
     component: StudyComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: {
       authorizedRoles: [
         'Forscher',
@@ -100,14 +100,14 @@ const routes: Routes = [
   {
     path: 'probands-to-contact',
     component: ProbandsToContactComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['ProbandenManager'] },
     pathMatch: 'full',
   },
   {
     path: 'contact',
     component: ContactComponent,
-    canActivate: mapToCanActivate([AuthGuard, ComplianceGuard]),
+    canActivate: [canActivateAuthRole, ...mapToCanActivate([ComplianceGuard])],
     data: { authorizedRoles: ['Proband'] },
     pathMatch: 'full',
   },
@@ -119,84 +119,84 @@ const routes: Routes = [
   {
     path: 'questionnaires/user',
     component: QuestionnaireInstancesListForProbandComponent,
-    canActivate: mapToCanActivate([AuthGuard, ComplianceGuard]),
+    canActivate: [canActivateAuthRole, ...mapToCanActivate([ComplianceGuard])],
     data: { authorizedRoles: ['Proband'] },
     pathMatch: 'full',
   },
   {
     path: 'studies/:studyName/probands/:pseudonym/questionnaireInstances',
     component: QuestionnaireInstancesListForInvestigatorComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['Untersuchungsteam'] },
     pathMatch: 'full',
   },
   {
     path: 'questionnaires/admin',
     component: QuestionnairesResearcherComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['Forscher'] },
     pathMatch: 'full',
   },
   {
     path: 'questionnaire',
     component: QuestionnaireResearcherComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['Forscher'] },
     pathMatch: 'full',
   },
   {
     path: 'deletelogs',
     component: LogsDeleteSysAdminComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['SysAdmin'] },
     pathMatch: 'full',
   },
   {
     path: 'probands',
     component: ProbandsComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['Forscher', 'Untersuchungsteam'] },
     pathMatch: 'full',
   },
   {
     path: 'probands/:pseudonym',
     component: ProbandComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['Untersuchungsteam'] },
     pathMatch: 'full',
   },
   {
     path: 'contact-proband',
     component: ContactProbandComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['ProbandenManager'] },
     pathMatch: 'full',
   },
   {
     path: 'contact-proband/:usernames',
     component: ContactProbandComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['ProbandenManager'] },
     pathMatch: 'full',
   },
   {
     path: 'probands-personal-info',
     component: ProbandsPersonalInfoComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['ProbandenManager'] },
     pathMatch: 'full',
   },
   {
     path: 'probands-personal-info/:username',
     component: ProbandPersonalInfoComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['ProbandenManager'] },
     pathMatch: 'full',
   },
   {
     path: 'studies',
     component: StudiesComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['SysAdmin', 'Forscher'] },
     pathMatch: 'full',
   },
@@ -208,14 +208,14 @@ const routes: Routes = [
   {
     path: 'studies/:name/users',
     component: StudyAccessesComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['SysAdmin'] },
     pathMatch: 'full',
   },
   {
     path: 'questionnaire/:id/:version/edit',
     component: QuestionnaireResearcherComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     canDeactivate: [PendingChangesGuard],
     data: { authorizedRoles: ['Forscher'] },
     pathMatch: 'full',
@@ -228,7 +228,7 @@ const routes: Routes = [
   {
     path: 'questionnaire/:id/:instanceId',
     component: QuestionProbandComponent,
-    canActivate: mapToCanActivate([AuthGuard, ComplianceGuard]),
+    canActivate: [canActivateAuthRole, ...mapToCanActivate([ComplianceGuard])],
     canDeactivate: [PendingChangesGuard],
     data: { authorizedRoles: ['Proband', 'Forscher', 'Untersuchungsteam'] },
     pathMatch: 'full',
@@ -236,69 +236,69 @@ const routes: Routes = [
   {
     path: 'questionnaireInstances/:username',
     component: QuestionnaireInstancesComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['Forscher', 'ProbandenManager'] },
     pathMatch: 'full',
   },
   {
     path: 'internalUsers',
     component: InternalUsersComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['SysAdmin'] },
     pathMatch: 'full',
   },
   {
     path: 'compliance/agree',
     component: ComplianceEditProbandComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['Proband'] },
     pathMatch: 'full',
   },
   {
     path: 'compliance/setup',
     component: ComplianceResearcherComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['Forscher'] },
     pathMatch: 'full',
   },
   {
     path: 'compliance/view',
     component: ComplianceManagerComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['EinwilligungsManager'] },
     pathMatch: 'full',
   },
   {
     path: 'compliance/management',
     component: ComplianceExaminerComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['Untersuchungsteam'] },
     pathMatch: 'full',
   },
   {
     path: 'settings',
     component: SettingsComponent,
-    canActivate: mapToCanActivate([AuthGuard, ComplianceGuard]),
+    canActivate: [canActivateAuthRole, ...mapToCanActivate([ComplianceGuard])],
     data: { authorizedRoles: ['Proband'] },
     pathMatch: 'full',
   },
   {
     path: 'licenses',
     component: LicenseListComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     pathMatch: 'full',
   },
   {
     path: 'sample-management',
     component: SampleManagementComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['ProbandenManager'] },
     pathMatch: 'full',
   },
   {
     path: 'sample-management/:pseudonym',
     component: SamplesComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: {
       authorizedRoles: ['ProbandenManager', 'Untersuchungsteam', 'Forscher'],
     },
@@ -307,7 +307,7 @@ const routes: Routes = [
   {
     path: 'laboratory-results',
     component: LaboratoryResultsComponent,
-    canActivate: mapToCanActivate([AuthGuard, ComplianceGuard]),
+    canActivate: [canActivateAuthRole, ...mapToCanActivate([ComplianceGuard])],
     data: {
       authorizedRoles: ['Proband', 'Forscher'],
       expectedCompliances: [ComplianceType.LABRESULTS],
@@ -317,7 +317,7 @@ const routes: Routes = [
   {
     path: 'laboratory-results/:id',
     component: LaboratoryResultDetailsComponent,
-    canActivate: mapToCanActivate([AuthGuard, ComplianceGuard]),
+    canActivate: [canActivateAuthRole, ...mapToCanActivate([ComplianceGuard])],
     data: {
       authorizedRoles: ['Proband', 'Forscher'],
       expectedCompliances: [ComplianceType.LABRESULTS],
@@ -327,41 +327,38 @@ const routes: Routes = [
   {
     path: 'planned-probands',
     component: PlannedProbandsComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['Untersuchungsteam'] },
     pathMatch: 'full',
   },
   {
     path: 'collective-login-letters',
     component: CollectiveLoginLettersComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['Untersuchungsteam'] },
     pathMatch: 'full',
   },
   {
     path: 'collective-sample-letters',
     component: CollectiveSampleLettersComponent,
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['ProbandenManager'] },
     pathMatch: 'full',
   },
   {
     path: 'feedback-statistics',
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['Forscher', 'Proband'] },
-    loadChildren: () =>
-      import('./pages/feedback-statistics/feedback-statistics.module').then(
-        (m) => m.FeedbackStatisticsModule
-      ),
+    loadChildren: async () =>
+      (await import('./pages/feedback-statistics/feedback-statistics.module'))
+        .FeedbackStatisticsModule,
   },
   {
     path: 'public-api',
-    canActivate: mapToCanActivate([AuthGuard]),
+    canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['SysAdmin'] },
-    loadChildren: () =>
-      import('./pages/public-api/public-api.module').then(
-        (m) => m.PublicApiModule
-      ),
+    loadChildren: async () =>
+      (await import('./pages/public-api/public-api.module')).PublicApiModule,
   },
   // Otherwise redirect to home
   { path: '**', redirectTo: 'home', pathMatch: 'full' },

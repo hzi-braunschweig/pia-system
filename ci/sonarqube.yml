@@ -8,7 +8,7 @@ check-sonarqube:
     - .no-cpu-request
   stage: push
   image:
-    name: sonarsource/sonar-scanner-cli:5.0@sha256:494ecc3b5b1ee1625bd377b3905c4284e4f0cc155cff397805a244dee1c7d575
+    name: sonarsource/sonar-scanner-cli:11.4@sha256:14f46a51cbfde162e30cfd673bff542eca59860a0e904bcd2614f192605bd704
     entrypoint: ['']
   needs:
     - job: accumulate-coverage
@@ -25,7 +25,7 @@ check-sonarqube:
       - .sonar/cache
   script:
     - git fetch --unshallow || true
-    - find . -name tsconfig.json -exec sed -i "s/@pia\/lib-service-core/..\/psa.lib.service-core\/tsconfig.global.json/g" {} \;
+    - for TSCONFIG in `ls */tsconfig.json`; do sed --in-place "s/@pia\/lib-service-core/..\/psa.lib.service-core\/tsconfig.global.json/g" $TSCONFIG; done
     - sonar-scanner -Dsonar.qualitygate.wait=true
   rules:
     - if: $SONAR_TOKEN == null

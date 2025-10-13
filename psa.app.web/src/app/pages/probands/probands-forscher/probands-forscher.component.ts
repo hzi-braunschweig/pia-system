@@ -35,6 +35,7 @@ import { ProbandsListComponent } from '../../../features/probands-list/probands-
   selector: 'app-probands-forscher',
   templateUrl: 'probands-forscher.component.html',
   styleUrls: ['probands-forscher.component.scss'],
+  standalone: false,
 })
 export class ProbandsForscherComponent {
   @ViewChild(ProbandsListComponent, { static: true })
@@ -43,10 +44,10 @@ export class ProbandsForscherComponent {
   isLoading = false;
 
   constructor(
-    private authService: AuthService,
-    private alertService: AlertService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
+    private readonly authService: AuthService,
+    private readonly alertService: AlertService,
+    private readonly router: Router,
+    private readonly activatedRoute: ActivatedRoute,
     public dialog: MatDialog
   ) {
     const pendingPartialDeletionId =

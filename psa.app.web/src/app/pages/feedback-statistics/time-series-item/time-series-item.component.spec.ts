@@ -100,7 +100,7 @@ describe('TimeSeriesItemComponent', () => {
         await select.open();
         const options = await select.getOptions();
         const optionTexts: string[] = await Promise.all(
-          options.map((option) => option.getText())
+          options.map(async (option) => option.getText())
         );
         expect(options.length).toEqual(3);
         expect(optionTexts[0]).toContain('(lesionsArms)');
@@ -130,7 +130,7 @@ describe('TimeSeriesItemComponent', () => {
         await select.open();
         const options = await select.getOptions();
         const optionTexts: string[] = await Promise.all(
-          options.map((option) => option.getText())
+          options.map(async (option) => option.getText())
         );
         expect(options.length).toEqual(2);
         expect(optionTexts[0]).toContain('(1)');

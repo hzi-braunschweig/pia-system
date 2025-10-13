@@ -4,14 +4,15 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { Role } from '../../psa.app.core/models/user';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 
 @Component({
   selector: 'app-account-info',
   templateUrl: './account-info.component.html',
   styleUrls: ['./account-info.component.scss'],
+  standalone: false,
 })
 export class AccountInfoComponent implements OnInit {
   @Input() public username: string;
@@ -26,10 +27,11 @@ export class AccountInfoComponent implements OnInit {
     EinwilligungsManager: 'ROLES.COMPLIANCE_MANAGER',
     SysAdmin: 'ROLES.SYSTEM_ADMINISTRATOR',
   };
+  private readonly keycloak = inject(Keycloak);
 
   public roleTranslationKey: string;
 
-  constructor(private readonly keycloak: KeycloakService) {}
+  constructor() {}
 
   public ngOnInit(): void {
     this.roleTranslationKey =
@@ -37,6 +39,6 @@ export class AccountInfoComponent implements OnInit {
   }
 
   public manageAccount() {
-    this.keycloak.getKeycloakInstance().accountManagement();
+    this.keycloak.accountManagement();
   }
 }

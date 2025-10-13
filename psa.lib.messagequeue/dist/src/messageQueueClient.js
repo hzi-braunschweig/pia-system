@@ -110,13 +110,14 @@ class MessageQueueClient extends messageQueueClientConnection_1.MessageQueueClie
             await args.onMessage(data.message, new Date(properties.timestamp));
             args.channel.ack(args.message, false);
         }
-        catch {
+        catch (e) {
             if (redelivered) {
-                console.error(`dropping message on ${args.topic} to dead-letter-queue`);
+                console.error(`dropping message on ${args.topic} to dead-letter-queue`, e);
                 args.channel.sendToQueue(args.deadLetterQueue.queue, args.message.content, publishOptions);
                 args.channel.ack(args.message, false);
             }
             else {
+                console.error(`requeue message on ${args.topic}`, e);
                 args.channel.nack(args.message, false, !redelivered);
             }
         }

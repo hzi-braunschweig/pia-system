@@ -11,7 +11,7 @@ import {
   ManyToOne,
   OneToMany,
   OneToOne,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Questionnaire } from './questionnaire';
 import { AnswerOption } from './answerOption';
@@ -23,13 +23,14 @@ export class Question implements QuestionDto {
   /**
    * @isInt
    */
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('identity') // even though we do not use IDENTITY, the internal custom pg trigger works like this
   public id!: number;
 
   @Column({ type: 'boolean', nullable: true })
   public isMandatory!: boolean | null;
 
   /**
+   * Order position in the questionnaire starting with 1
    * @isInt
    */
   @Column()

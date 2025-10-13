@@ -15,7 +15,7 @@ import { StatusCodes } from 'http-status-codes';
 import { createSandbox } from 'sinon';
 import { Response } from 'superagent';
 
-import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
+import { AuthServerMock } from '@pia/lib-service-core';
 import { cleanup, setup } from './exportContent.spec.data/setup.helper';
 import {
   CsvAnswerRow,
@@ -28,24 +28,30 @@ import { Server } from '../../src/server';
 import { config } from '../../src/config';
 import { userserviceClient } from '../../src/clients/userserviceClient';
 import { ExportOptions } from '../../src/interactors/exportInteractor';
+import Hapi, { AuthenticationData } from '@hapi/hapi';
+import { getExportPayloadFromOptions } from './export.spec';
 
 chai.use(chaiHttp);
 
 const apiAddress = `http://localhost:${config.public.port}`;
 
-const forscherHeader1 = AuthTokenMockBuilder.createAuthHeader({
-  roles: ['Forscher'],
-  username: 'qtest-exportforscher',
-  studies: ['Teststudie - Export', 'Answers Export'],
-});
+const forscherAuthData: AuthenticationData = {
+  credentials: {
+    scope: ['realm:Forscher'],
+    username: 'qtest-exportforscher',
+    studies: ['Teststudie - Export', 'Answers Export'],
+  },
+};
 
 describe('/export content should match the expected csv', function () {
   const sandbox = createSandbox();
 
   let responseZips: JSZip;
+  let serverInstance: Hapi.Server;
 
   before(async () => {
     await Server.init();
+    serverInstance = Server.getInstanceForTesting();
     await setup();
 
     sandbox
@@ -59,6 +65,8 @@ describe('/export content should match the expected csv', function () {
         'qtest-0000000006',
         'qtest-0000000007',
       ]);
+
+    sandbox.stub(serverInstance.auth, 'test').resolves(forscherAuthData);
 
     const questionnaires = [
       { id: 295, version: 1 },
@@ -90,14 +98,14 @@ describe('/export content should match the expected csv', function () {
         'questionnaires',
       ],
     };
+    const payload = getExportPayloadFromOptions(search);
 
     const authRequest = AuthServerMock.adminRealm().returnValid();
 
     const response: Response = await chai
       .request(apiAddress)
       .post('/admin/export')
-      .set(forscherHeader1)
-      .send(search)
+      .send(payload)
       .parse(binaryParser)
       .buffer();
     expect(response).to.have.status(StatusCodes.OK);
@@ -249,6 +257,7 @@ describe('/export content should match the expected csv', function () {
       v5: CsvAnswerRow[];
       v6: CsvAnswerRow[];
       v7: CsvAnswerRow[];
+      v8: CsvAnswerRow[];
     };
     let expectedAnswersRows: {
       v1: CsvAnswerRow[];
@@ -258,6 +267,7 @@ describe('/export content should match the expected csv', function () {
       v5: CsvAnswerRow[];
       v6: CsvAnswerRow[];
       v7: CsvAnswerRow[];
+      v8: CsvAnswerRow[];
     };
 
     before(async () => {
@@ -269,6 +279,7 @@ describe('/export content should match the expected csv', function () {
         { id: 100000, version: 5 },
         { id: 100000, version: 6 },
         { id: 100000, version: 7 },
+        { id: 100000, version: 8 },
         { id: 200000, version: 1 },
         { id: 200000, version: 2 },
       ];
@@ -281,14 +292,14 @@ describe('/export content should match the expected csv', function () {
         probands: ['answ-01', 'answ-02', 'answ-03', 'answ-04'],
         exports: ['answers'],
       };
+      const payload = getExportPayloadFromOptions(search);
 
       const authRequest = AuthServerMock.adminRealm().returnValid();
 
       const response: Response = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(search)
+        .send(payload)
         .parse(binaryParser)
         .buffer();
       expect(response).to.have.status(StatusCodes.OK);
@@ -305,6 +316,7 @@ describe('/export content should match the expected csv', function () {
         v5: await loadReceivedCsv<CsvAnswerRow>(answersCsv[4]),
         v6: await loadReceivedCsv<CsvAnswerRow>(answersCsv[5]),
         v7: await loadReceivedCsv<CsvAnswerRow>(answersCsv[6]),
+        v8: await loadReceivedCsv<CsvAnswerRow>(answersCsv[7]),
       };
 
       expectedAnswersRows = {
@@ -315,6 +327,7 @@ describe('/export content should match the expected csv', function () {
         v5: await loadFixtureCsv<CsvAnswerRow>('answers_AE1_v5.csv'),
         v6: await loadFixtureCsv<CsvAnswerRow>('answers_AE1_v6.csv'),
         v7: await loadFixtureCsv<CsvAnswerRow>('answers_AE1_v7.csv'),
+        v8: await loadFixtureCsv<CsvAnswerRow>('answers_AE1_v8.csv'),
       };
     });
 
@@ -378,6 +391,10 @@ describe('/export content should match the expected csv', function () {
 
     it('should match fixture csv for AE1 v7', () => {
       expect(receivedAnswersRows.v7).to.deep.equal(expectedAnswersRows.v7);
+    });
+
+    it('should match fixture csv for AE1 v8', () => {
+      expect(receivedAnswersRows.v8).to.deep.equal(expectedAnswersRows.v8);
     });
   });
 
@@ -540,6 +557,7 @@ function expectAndReturnAnswerCsvFile(
     /answers\/answers_AE1-Answer-Export_v5_100000_(\d{4}-\d{2}-\d{2}T\d{2}\d{2})/,
     /answers\/answers_AE1-Answer-Export_v6_100000_(\d{4}-\d{2}-\d{2}T\d{2}\d{2})/,
     /answers\/answers_AE1-Answer-Export_v7_100000_(\d{4}-\d{2}-\d{2}T\d{2}\d{2})/,
+    /answers\/answers_AE1-Answer-Export_v8_100000_(\d{4}-\d{2}-\d{2}T\d{2}\d{2})/,
   ];
 
   const zips = filesRegex.map((regex) => findFileByRegex(files, regex));

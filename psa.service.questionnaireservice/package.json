@@ -24,6 +24,8 @@
     "@pia/lib-messagequeue": "file:../psa.lib.messagequeue",
     "@pia/lib-publicapi": "file:../psa.lib.publicapi",
     "@pia/lib-service-core": "file:../psa.lib.service-core",
+    "@tsoa/cli": "^6.1.0",
+    "@tsoa/runtime": "^6.1.0",
     "archiver": "^5.3.1",
     "csv-stringify": "^6.2.1",
     "date-fns": "^2.29.3",
@@ -41,7 +43,7 @@
     "remove-markdown": "^0.5.0",
     "ts-essentials": "^9.3.0",
     "tsoa": "^6.0.1",
-    "typeorm": "^0.2.41",
+    "typeorm": "^0.3.20",
     "typeorm-naming-strategies": "^4.1.0"
   },
   "devDependencies": {
@@ -51,7 +53,7 @@
     "@types/csv-parse": "^1.2.2",
     "@types/jsonwebtoken": "^8.5.9",
     "@types/mocha": "^10.0.0",
-    "@types/node": "^20.0.3",
+    "@types/node": "^20.0.0 <20.1.0",
     "@types/node-fetch": "^2.6.2",
     "@types/remove-markdown": "^0.3.1",
     "@types/sinon-chai": "^3.2.9",
@@ -72,7 +74,6 @@
     "nyc": "^15.1.0",
     "sinon": "^14.0.2",
     "sinon-chai": "^3.7.0",
-    "source-map-support": "^0.5.21",
     "ts-node": "^10.9.1",
     "typescript": "~4.8.4"
   }

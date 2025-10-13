@@ -6,7 +6,7 @@
 
 import { Component } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
+import { App } from '@capacitor/app';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
 import {
   AlertController,
@@ -15,12 +15,12 @@ import {
   Platform,
 } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
-import { Market } from '@awesome-cordova-plugins/market/ngx';
 import { environment } from '../../../environments/environment';
 import { LocaleService } from '../../shared/services/locale/locale.service';
 import { ToastPresenterService } from '../../shared/services/toast-presenter/toast-presenter.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
+import { AppLauncher } from '@capacitor/app-launcher';
 
 class EndpointNotCompatibleError extends Error {
   constructor() {
@@ -44,6 +44,7 @@ class EndpointUrlInvalidError extends Error {
   selector: 'app-login-username',
   templateUrl: './login-username.component.html',
   styleUrls: ['./login-username.component.scss'],
+  standalone: false,
 })
 export class LoginUsernameComponent {
   public readonly form = new FormGroup({
@@ -63,8 +64,6 @@ export class LoginUsernameComponent {
     public localeService: LocaleService,
     private endpoint: EndpointService,
     private platform: Platform,
-    private appVersion: AppVersion,
-    private market: Market,
     private loadingCtrl: LoadingController,
     private auth: AuthService,
     private toastPresenter: ToastPresenterService,
@@ -134,11 +133,14 @@ export class LoginUsernameComponent {
       }
     }
 
-    if (this.platform.is('cordova')) {
-      const currentAppVersion = await this.appVersion
-        .getVersionNumber()
-        .catch(() => null);
-      if (!(await this.endpoint.isEndpointCompatible(currentAppVersion))) {
+    if (this.platform.is('hybrid')) {
+      try {
+        const currentAppVersion = (await App.getInfo()).version;
+        if (!(await this.endpoint.isEndpointCompatible(currentAppVersion))) {
+          throw new EndpointNotCompatibleError();
+        }
+      } catch (e) {
+        console.error('Error at retrieving current version number: ', e);
         throw new EndpointNotCompatibleError();
       }
     }
@@ -155,7 +157,7 @@ export class LoginUsernameComponent {
       await this.menuCtrl.enable(true);
     } catch (e) {
       if (e?.message !== 'closed_by_user') {
-        console.error('Authentication failed with: ', e);
+        console.error('Authentication failed with: ', JSON.stringify(e));
 
         const alert = await this.alertCtrl.create({
           header: this.translate.instant('LOGIN.ALERT_TRY_AGAIN_LATER'),
@@ -172,6 +174,8 @@ export class LoginUsernameComponent {
   }
 
   private async showAppIncompatibleAlert(): Promise<void> {
+    const appId = this.getAppId();
+
     const alert = await this.alertCtrl.create({
       header: this.translate.instant(
         'LOGIN.ALERT_MSG_INCOMPATIBLE_APP_VERSION'
@@ -187,7 +191,11 @@ export class LoginUsernameComponent {
           ),
           handler: () => {
             alert.dismiss();
-            this.market.open(this.getAppId());
+            AppLauncher.openUrl({
+              url: this.platform.is('ios')
+                ? `itms-apps://apps.apple.com/app/id${appId}`
+                : `market://details?id=${appId}`,
+            });
             return false;
           },
         },

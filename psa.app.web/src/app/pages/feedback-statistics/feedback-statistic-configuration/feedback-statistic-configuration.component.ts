@@ -23,6 +23,7 @@ import { TranslateService } from '@ngx-translate/core';
 @Component({
   selector: 'app-feedback-statistic-configuration',
   templateUrl: './feedback-statistic-configuration.component.html',
+  standalone: false,
 })
 export class FeedbackStatisticConfigurationComponent implements AfterViewInit {
   public isLoading = false;
@@ -41,7 +42,7 @@ export class FeedbackStatisticConfigurationComponent implements AfterViewInit {
     SpecificFeedbackStatisticConfigurationDto
   >;
 
-  private configurationId: number =
+  private readonly configurationId: number =
     this.activatedRoute.snapshot.params.configurationId;
 
   constructor(

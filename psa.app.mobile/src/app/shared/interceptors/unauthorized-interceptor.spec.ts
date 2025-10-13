@@ -7,49 +7,81 @@
 import {
   HttpErrorResponse,
   HttpEvent,
-  HttpHandler,
+  HttpHandlerFn,
   HttpRequest,
 } from '@angular/common/http';
-import { fakeAsync, tick } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { onErrorResumeNext, Subject } from 'rxjs';
 
-import { UnauthorizedInterceptor } from './unauthorized-interceptor';
 import { AuthService } from '../../auth/auth.service';
 import SpyObj = jasmine.SpyObj;
+import { unauthorizedInterceptor } from './unauthorized-interceptor';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
-describe('UnauthorizedInterceptor', () => {
+describe('unauthorizedInterceptor', () => {
   let request: HttpRequest<any>;
-  let handler: SpyObj<HttpHandler>;
   let handleSubject: Subject<HttpEvent<any>>;
   let authMock: SpyObj<AuthService>;
+  let next: jasmine.Spy<HttpHandlerFn>;
 
   beforeEach(() => {
-    request = new HttpRequest('GET', 'some/url/');
-    handler = jasmine.createSpyObj<HttpHandler>('HttpHandler', ['handle']);
-    handleSubject = new Subject<HttpEvent<any>>();
-    handler.handle.and.returnValue(handleSubject.asObservable());
     authMock = jasmine.createSpyObj('AuthService', ['getToken', 'logout']);
+    authMock.logout.and.returnValue(Promise.resolve());
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: AuthService, useValue: authMock },
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
+    });
+
+    request = new HttpRequest('GET', 'some/url/');
+    handleSubject = new Subject<HttpEvent<any>>();
+    next = jasmine.createSpy().and.returnValue(handleSubject.asObservable());
   });
 
   it('should log user out if a 401 response was received', fakeAsync(() => {
     const error = new HttpErrorResponse({ status: 401 });
-    const interceptor = new UnauthorizedInterceptor(authMock);
-    onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
+
+    let interceptorResult = undefined;
+    TestBed.runInInjectionContext(() => {
+      unauthorizedInterceptor(request, next).subscribe({
+        error: (err) => {
+          interceptorResult = err;
+        },
+      });
+    });
+
     handleSubject.error(error);
     tick();
 
-    expect(handler.handle).toHaveBeenCalledWith(request);
+    expect(next).toHaveBeenCalledWith(request);
     expect(authMock.logout).toHaveBeenCalledTimes(1);
+    expect(interceptorResult).toEqual(error);
   }));
 
   it('should only pass the error if a non 401 response was received', fakeAsync(() => {
     const error = new HttpErrorResponse({ status: 404 });
-    const interceptor = new UnauthorizedInterceptor(authMock);
-    onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
+    onErrorResumeNext(
+      TestBed.runInInjectionContext(() =>
+        unauthorizedInterceptor(request, next)
+      )
+    ).subscribe();
+
+    let caughtError: unknown;
+    TestBed.runInInjectionContext(() =>
+      unauthorizedInterceptor(request, next)
+    ).subscribe({
+      error: (err) => (caughtError = err),
+    });
+
     handleSubject.error(error);
     tick();
 
-    expect(handler.handle).toHaveBeenCalledWith(request);
+    expect(next).toHaveBeenCalledWith(request);
     expect(authMock.logout).not.toHaveBeenCalled();
+    expect(caughtError).toBe(error);
   }));
 });

@@ -21,9 +21,10 @@ export type DialogUserEditComponentReturn = boolean;
 @Component({
   selector: 'dialog-user-edit',
   templateUrl: 'user-edit-dialog.html',
+  standalone: false,
 })
 export class DialogUserEditComponent {
-  private studyName: string;
+  private readonly studyName: string;
   public form: FormGroup;
   public username: string;
   public accesses = [
@@ -38,8 +39,8 @@ export class DialogUserEditComponent {
       DialogUserEditComponent,
       DialogUserEditComponentReturn
     >,
-    private alertService: AlertService,
-    private userService: UserService
+    private readonly alertService: AlertService,
+    private readonly userService: UserService
   ) {
     this.studyName = data.studyName;
     this.username = data.username;

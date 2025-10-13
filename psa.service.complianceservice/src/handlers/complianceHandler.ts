@@ -141,10 +141,10 @@ export class ComplianceHandler {
   }
 
   private static _createPdfResponse(
-    pdfBuffer: Buffer,
+    pdf: Uint8Array,
     h: ResponseToolkit
   ): ResponseObject {
-    const response = h.response(pdfBuffer);
+    const response = h.response(Buffer.from(pdf));
     response.header('Content-Type', 'application/pdf');
     response.header('Content-Disposition', 'attachment; filename=consent.pdf');
     return response;

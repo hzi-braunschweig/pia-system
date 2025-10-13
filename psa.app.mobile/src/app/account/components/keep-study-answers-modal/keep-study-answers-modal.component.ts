@@ -12,6 +12,7 @@ import { DeleteAccountModalService } from '../../services/delete-account-modal.s
   selector: 'app-keep-study-answers-modal',
   templateUrl: './keep-study-answers-modal.component.html',
   styles: [],
+  standalone: false,
 })
 export class KeepStudyAnswersModalComponent {
   constructor(

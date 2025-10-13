@@ -13,7 +13,7 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { SelectedProbandData } from '../psa.app.core/models/selectedProbandData';
 @Injectable()
 export class SelectedProbandInfoService {
-  private sideNavInfoSelectedProband: BehaviorSubject<SelectedProbandData> =
+  private readonly sideNavInfoSelectedProband: BehaviorSubject<SelectedProbandData> =
     new BehaviorSubject<SelectedProbandData>(null);
   public sideNavState$: Observable<SelectedProbandData> =
     this.sideNavInfoSelectedProband.asObservable();

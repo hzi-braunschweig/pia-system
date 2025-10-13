@@ -11,7 +11,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
   selector: 'dialog-delete',
   template: `
     <mat-dialog-content style="	text-align: center">{{
-      'DIALOG.DELETE' | translate: data
+      'DIALOG.DELETE' | translate : data
     }}</mat-dialog-content>
     <hr />
     <mat-dialog-actions align="end">
@@ -24,6 +24,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
       </button>
     </mat-dialog-actions>
   `,
+  standalone: false,
 })
 export class ScanSampleComponent {
   constructor(

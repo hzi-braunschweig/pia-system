@@ -18,6 +18,7 @@ import { Server } from '../../src/server';
 import { config } from '../../src/config';
 import { StatusCodes } from 'http-status-codes';
 import { AnswerDataDto } from '../../src/models/answer';
+import * as os from 'os';
 
 chai.use(chaiHttp);
 
@@ -127,7 +128,13 @@ function binaryParser(
   const data: unknown[] = [];
   res.setEncoding('binary');
   res.on('data', function (chunk: string) {
-    data.push(JSON.parse(chunk));
+    for (const line of chunk.split(os.EOL)) {
+      if (line === '') {
+        continue;
+      }
+      console.error(`chunk='${line}'`);
+      data.push(JSON.parse(line));
+    }
   });
   res.on('end', function () {
     cb(null, Buffer.from(JSON.stringify(data)));

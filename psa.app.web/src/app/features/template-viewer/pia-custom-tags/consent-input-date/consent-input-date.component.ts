@@ -22,5 +22,6 @@ import {
     },
     { provide: MAT_DATE_FORMATS, useValue: APP_DATE_FORMATS_LONG },
   ],
+  standalone: false,
 })
 export class ConsentInputDateComponent extends ConsentInputTextComponent {}

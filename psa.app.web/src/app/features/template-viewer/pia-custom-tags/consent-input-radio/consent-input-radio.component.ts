@@ -22,6 +22,7 @@ import {
   selector: 'app-consent-input-radio',
   templateUrl: './consent-input-radio.component.html',
   styleUrls: ['./consent-input-radio.component.scss'],
+  standalone: false,
 })
 export class ConsentInputRadioComponent implements OnInit, OnDestroy {
   @Input()

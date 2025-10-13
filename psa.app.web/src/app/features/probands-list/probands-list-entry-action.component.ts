@@ -24,6 +24,7 @@ import { Proband } from '../../psa.app.core/models/proband';
 @Component({
   selector: 'app-probands-list-entry-action-button',
   template: ``,
+  standalone: false,
 })
 export class ProbandsListEntryActionButtonComponent implements OnChanges {
   @Input()
@@ -50,7 +51,7 @@ export class ProbandsListEntryActionButtonComponent implements OnChanges {
 
   constructor(
     @Inject(forwardRef(() => ProbandsListEntryActionComponent))
-    private parent: ProbandsListEntryActionComponent
+    private readonly parent: ProbandsListEntryActionComponent
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -72,6 +73,7 @@ export class ProbandsListEntryActionButtonComponent implements OnChanges {
 @Component({
   selector: 'app-probands-list-entry-action',
   template: ``,
+  standalone: false,
 })
 export class ProbandsListEntryActionComponent {
   @Input()
@@ -80,7 +82,10 @@ export class ProbandsListEntryActionComponent {
   @Input()
   actionHeader: string;
 
-  private buttons = new Map<string, ProbandsListEntryActionButtonConfig>();
+  private readonly buttons = new Map<
+    string,
+    ProbandsListEntryActionButtonConfig
+  >();
 
   constructor(@Host() private readonly parent: ProbandsListComponent) {}
 

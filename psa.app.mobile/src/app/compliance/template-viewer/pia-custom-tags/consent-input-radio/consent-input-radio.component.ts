@@ -18,6 +18,7 @@ import { Attribute, CustomTagSegment } from '../../../segment.model';
 @Component({
   selector: 'app-consent-input-radio',
   templateUrl: './consent-input-radio.component.html',
+  standalone: false,
 })
 export class ConsentInputRadioComponent implements OnInit, OnDestroy {
   @Input()

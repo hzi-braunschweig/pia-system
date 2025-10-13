@@ -21,8 +21,8 @@ import {
   UserCredentials,
 } from '../../../support/user.commands';
 import { CreateProbandRequest } from '../../../../src/app/psa.app.core/models/proband';
+import short from 'short-uuid';
 
-const short = require('short-uuid');
 const translator = short();
 
 let study;
@@ -31,7 +31,6 @@ let ut;
 let pm;
 let forscher;
 const probandCredentials = { username: '', password: '' };
-const newPassword = ',dYv3zg;r:CB';
 let message;
 const adminAppUrl = '/admin/';
 

@@ -1,16 +1,15 @@
 /*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2025 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Injectable } from '@angular/core';
+import { inject } from '@angular/core';
 import {
   HttpErrorResponse,
   HttpEvent,
-  HttpHandler,
-  HttpHeaders,
-  HttpInterceptor,
+  HttpInterceptorFn,
+  HttpHandlerFn,
   HttpRequest,
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
@@ -25,27 +24,22 @@ export const ToastMsgUnknownError = 'APP.TOAST_MSG_UNKNOWN_ERROR';
 /**
  * Provides global http error handling
  */
-@Injectable()
-export class HttpErrorInterceptor implements HttpInterceptor {
-  constructor(
-    private network: NetworkService,
-    private toastPresenter: ToastPresenterService
-  ) {}
+export const httpErrorInterceptor: HttpInterceptorFn = (
+  request: HttpRequest<unknown>,
+  next: HttpHandlerFn
+): Observable<HttpEvent<unknown>> => {
+  const network = inject(NetworkService);
+  const toastPresenter = inject(ToastPresenterService);
 
-  intercept(
-    request: HttpRequest<any>,
-    next: HttpHandler
-  ): Observable<HttpEvent<any>> {
-    return next.handle(request).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status !== 401 && error.status !== 403) {
-          const message = this.network.isOffline()
-            ? ToastMsgNoInternet
-            : ToastMsgUnknownError;
-          this.toastPresenter.presentToast(message);
-        }
-        return throwError(error);
-      })
-    );
-  }
-}
+  return next(request).pipe(
+    catchError((error: HttpErrorResponse) => {
+      if (error.status !== 401 && error.status !== 403) {
+        const message = network.isOffline()
+          ? ToastMsgNoInternet
+          : ToastMsgUnknownError;
+        toastPresenter.presentToast(message);
+      }
+      return throwError(() => error);
+    })
+  );
+};

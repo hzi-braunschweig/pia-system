@@ -6,8 +6,6 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
-import { Keyboard } from '@awesome-cordova-plugins/keyboard/ngx';
-import SpyObj = jasmine.SpyObj;
 
 import { QuestionnaireAnswerInputTextComponent } from './questionnaire-answer-input-text.component';
 
@@ -15,15 +13,11 @@ describe('QuestionnaireAnswerInputTextComponent', () => {
   let component: QuestionnaireAnswerInputTextComponent;
   let fixture: ComponentFixture<QuestionnaireAnswerInputTextComponent>;
 
-  let keyboard: SpyObj<Keyboard>;
-
   beforeEach(() => {
-    keyboard = jasmine.createSpyObj('Keyboard', ['hide']);
-
     TestBed.configureTestingModule({
       declarations: [QuestionnaireAnswerInputTextComponent],
       imports: [IonicModule.forRoot()],
-      providers: [{ provide: Keyboard, useValue: keyboard }],
+      providers: [],
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuestionnaireAnswerInputTextComponent);

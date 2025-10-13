@@ -4,7 +4,7 @@ java-test-unit:
   extends:
     - .job-exclude-schedules-pipelines
   stage: test
-  image: maven:3.8.5-openjdk-17@sha256:62e6a9e10fb57f3019adeea481339c999930e7363f2468d1f51a7c0be4bca26d
+  image: maven:3.9.11-amazoncorretto-21-debian@sha256:55d0fa0ef06c61796456993b196c5790bd8c5c97642d12a959a7c750fe46e65a
   variables:
     ARTIFACT_DIR_NAME: test-artifacts
   script:

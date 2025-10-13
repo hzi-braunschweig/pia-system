@@ -28,6 +28,7 @@ export interface ScanDialogResult {
 @Component({
   selector: 'app-sample-scan-dialog',
   templateUrl: 'scan-dialog.component.html',
+  standalone: false,
 })
 export class ScanDialogComponent {
   public readonly study: Study = this.data.study;
@@ -35,7 +36,7 @@ export class ScanDialogComponent {
 
   public readonly scanForm: FormGroup = this.createScanForm();
 
-  constructor(@Inject(MAT_DIALOG_DATA) private data: ScanDialogData) {}
+  constructor(@Inject(MAT_DIALOG_DATA) private readonly data: ScanDialogData) {}
 
   private static validateSampleId(
     prefix?: string,

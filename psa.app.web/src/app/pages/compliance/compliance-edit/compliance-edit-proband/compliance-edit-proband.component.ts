@@ -22,6 +22,7 @@ import { ComplianceForStudyWrapper } from '../complianceForStudyWrapper';
   selector: 'app-compliance-edit-proband',
   templateUrl: './compliance-edit-proband.component.html',
   styleUrls: ['./compliance-edit-proband.component.scss'],
+  standalone: false,
 })
 export class ComplianceEditProbandComponent
   extends ComplianceEditParentComponent
@@ -30,8 +31,8 @@ export class ComplianceEditProbandComponent
   public isLoading = false;
 
   constructor(
-    private user: CurrentUser,
-    private complianceManager: ComplianceManager,
+    private readonly user: CurrentUser,
+    private readonly complianceManager: ComplianceManager,
     protected complianceService: ComplianceService,
     protected alertService: AlertService,
     protected dialog: MatDialog,

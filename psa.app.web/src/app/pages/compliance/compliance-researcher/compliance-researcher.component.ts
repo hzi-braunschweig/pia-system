@@ -20,6 +20,7 @@ import { TemplateSegment } from '../../../psa.app.core/models/Segments';
   selector: 'app-compliance-researcher',
   templateUrl: './compliance-researcher.component.html',
   styleUrls: ['./compliance-researcher.component.scss'],
+  standalone: false,
 })
 export class ComplianceResearcherComponent implements OnInit {
   isLoading = true;
@@ -33,10 +34,10 @@ export class ComplianceResearcherComponent implements OnInit {
   @ViewChild('complianceTextarea') complianceTextarea: ElementRef;
 
   constructor(
-    private userService: UserService,
-    private alertService: AlertService,
-    private complianceService: ComplianceService,
-    private dialog: MatDialog
+    private readonly userService: UserService,
+    private readonly alertService: AlertService,
+    private readonly complianceService: ComplianceService,
+    private readonly dialog: MatDialog
   ) {
     this.complianceTextFG = new FormGroup({
       to_be_filled_by: new FormControl(null, Validators.required),

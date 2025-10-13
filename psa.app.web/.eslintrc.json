@@ -1,16 +1,51 @@
 {
   "root": true,
-  "ignorePatterns": ["projects/**/*"],
+  "ignorePatterns": ["dist/*", "node_modules/*", ".angular"],
+  "env": {
+    "commonjs": true,
+    "es2020": true
+  },
+  "extends": ["eslint:recommended", "prettier"],
+  "rules": {
+    "no-console": "off",
+    "no-var": "error",
+    "prefer-const": "error"
+  },
   "overrides": [
     {
-      "files": ["*.ts"],
+      "files": ["karma.conf.js"],
+      "env": {
+        "node": true
+      }
+    },
+    {
+      "files": ["src/firebase-messaging-sw.js"],
+      "env": {
+        "worker": true
+      }
+    },
+    {
+      "files": ["src/**/*.ts", "cypress/**/*.ts"],
+      "parser": "@typescript-eslint/parser",
       "parserOptions": {
-        "project": ["tsconfig.json", "cypress/tsconfig.json"],
+        "project": ["./tsconfig.json", "./cypress/tsconfig.json"],
         "createDefaultProgram": true
       },
+      "plugins": ["@typescript-eslint", "security", "import"],
+      "settings": {
+        "import/resolver": {
+          "typescript": true,
+          "node": true
+        }
+      },
       "extends": [
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "plugin:import/recommended",
+        "plugin:security/recommended-legacy",
         "plugin:@angular-eslint/recommended",
-        "plugin:@angular-eslint/template/process-inline-templates"
+        "plugin:@angular-eslint/template/process-inline-templates",
+        "prettier"
       ],
       "rules": {
         "@angular-eslint/directive-selector": [
@@ -28,11 +63,124 @@
             "prefix": "app",
             "style": "kebab-case"
           }
-        ]
+        ],
+
+        "@typescript-eslint/array-type": ["warn", { "default": "array" }],
+        "@typescript-eslint/consistent-indexed-object-style": [
+          "warn",
+          "record"
+        ],
+        "@typescript-eslint/consistent-type-assertions": [
+          "warn",
+          {
+            "assertionStyle": "as",
+            "objectLiteralTypeAssertions": "allow-as-parameter"
+          }
+        ],
+        "@typescript-eslint/consistent-type-definitions": ["warn", "interface"],
+        "@typescript-eslint/explicit-function-return-type": [
+          "warn",
+          { "allowHigherOrderFunctions": false }
+        ],
+        "@typescript-eslint/explicit-member-accessibility": ["warn"],
+        "@typescript-eslint/member-ordering": ["warn"],
+        "@typescript-eslint/no-require-imports": ["error"],
+        "@typescript-eslint/no-unnecessary-boolean-literal-compare": ["warn"],
+        // "@typescript-eslint/no-unnecessary-condition": ["error"], // needs strictNullChecks tsconfig
+        "@typescript-eslint/non-nullable-type-assertion-style": ["error"],
+        "@typescript-eslint/prefer-for-of": ["error"],
+        "@typescript-eslint/prefer-enum-initializers": ["warn"],
+        "@typescript-eslint/prefer-includes": ["warn"],
+        "@typescript-eslint/prefer-nullish-coalescing": ["off"],
+        "@typescript-eslint/prefer-optional-chain": ["warn"],
+        "@typescript-eslint/prefer-readonly": ["warn"],
+        "@typescript-eslint/prefer-reduce-type-parameter": ["error"],
+        "@typescript-eslint/prefer-string-starts-ends-with": ["error"],
+        "@typescript-eslint/promise-function-async": ["warn"],
+        "@typescript-eslint/typedef": ["error"],
+        "@typescript-eslint/unified-signatures": ["error"],
+        "@typescript-eslint/dot-notation": [
+          "warn",
+          { "allowIndexSignaturePropertyAccess": true }
+        ],
+        "@typescript-eslint/no-dupe-class-members": ["error"],
+        "@typescript-eslint/no-invalid-this": ["error"],
+        "@typescript-eslint/no-loop-func": ["warn"],
+        "@typescript-eslint/no-magic-numbers": [
+          "warn",
+          {
+            "ignore": [-1, 0, 1],
+            "ignoreDefaultValues": true,
+            "ignoreEnums": true,
+            "ignoreNumericLiteralTypes": true,
+            "ignoreReadonlyClassProperties": true
+          }
+        ],
+        "@typescript-eslint/no-redeclare": ["error"],
+        "@typescript-eslint/no-shadow": ["warn"],
+        "@typescript-eslint/only-throw-error": ["error"],
+        "@typescript-eslint/no-use-before-define": [
+          "warn",
+          { "functions": false }
+        ],
+        "@typescript-eslint/no-useless-constructor": ["warn"],
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": [
+                  "*psa.lib.*",
+                  "*psa.serv*",
+                  "*psa.eslint*",
+                  "*psa.utils*"
+                ],
+                "message": "Never import files from psa.* packages directly."
+              }
+            ]
+          }
+        ],
+
+        // rules changed from default (should be fixed) sorted by number of occurrences
+        // the commented ones are custom rules from above wich currently cannot be activated with "error"
+        // "@typescript-eslint/consistent-indexed-object-style":["warn"], // 2
+        // "@typescript-eslint/array-type":["warn"], // 3
+        // "@typescript-eslint/no-loop-func":["warn"], // 3
+        // "@typescript-eslint/no-unnecessary-boolean-literal-compare": ["warn"], // 3
+        // "@typescript-eslint/no-useless-constructor": ["warn"], // 4
+        // "@typescript-eslint/no-shadow":["warn"], // 6
+        // "@typescript-eslint/prefer-enum-initializers": ["warn"], // 6
+        // "@typescript-eslint/consistent-type-definitions":["warn"], // 9
+        "@typescript-eslint/no-unused-expressions": ["warn"], // 9
+        // "@typescript-eslint/prefer-includes":["warn"], // 9
+        "@typescript-eslint/no-unsafe-enum-comparison": ["warn"], // 24
+        // "@typescript-eslint/prefer-optional-chain":["warn"], // 25
+        "@typescript-eslint/no-unsafe-return": ["warn"], // 29
+        "@typescript-eslint/require-await": ["warn"], // 44
+        "@typescript-eslint/no-misused-promises": ["warn"], // 53
+        "@typescript-eslint/no-unused-vars": ["warn"], // 67
+        // "@typescript-eslint/explicit-function-return-type": ["warn"], // 69
+        "@typescript-eslint/no-explicit-any": ["warn"], // 88
+        // "@typescript-eslint/dot-notation": ["warn"], // 104
+        // "@typescript-eslint/promise-function-async":["warn"], // 105
+        "import/named": ["warn"], // 140
+        "@typescript-eslint/no-floating-promises": ["warn"], // 147
+        "@typescript-eslint/no-unsafe-argument": ["warn"], // 225
+        // "@typescript-eslint/member-ordering":["warn"], // 243
+        // "@typescript-eslint/prefer-readonly": ["warn"], // 299
+        // "@typescript-eslint/no-use-before-define":["warn"], // 330
+        // "@typescript-eslint/prefer-nullish-coalescing": ["off"], // 360 // needs strictNullChecks tsconfig
+        "@typescript-eslint/no-unsafe-assignment": ["warn"], // 408
+        "@typescript-eslint/unbound-method": ["warn", { "ignoreStatic": true }], // 418
+        "@typescript-eslint/no-unsafe-member-access": ["warn"], // 474
+        // "@typescript-eslint/explicit-member-accessibility": ["warn"], // 877
+        // "@typescript-eslint/no-magic-numbers":["warn"], // 988
+        "@typescript-eslint/no-unsafe-call": ["warn"], // 1162
+        "@angular-eslint/prefer-standalone": ["warn"] // 122
       }
     },
     {
-      "files": ["*.html"],
+      "files": ["src/**/*.html"],
       "extends": ["plugin:@angular-eslint/template/recommended"],
       "rules": {
         "@angular-eslint/template/eqeqeq": ["warn"]

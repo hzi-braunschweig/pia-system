@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 
 import { Question } from './question';
 import { QuestionnaireInstance } from './questionnaireInstance';
@@ -13,20 +13,25 @@ import { AnswerDto } from '../models/answer';
 
 @Entity()
 export class Answer implements AnswerDto {
+  @PrimaryColumn()
+  public questionnaireInstanceId?: number;
+
   @ManyToOne(
     () => QuestionnaireInstance,
-    (questionnaireInstance) => questionnaireInstance.answers,
-    { primary: true }
+    (questionnaireInstance) => questionnaireInstance.answers
   )
-  @JoinColumn({ name: 'questionnaire_instance_id', referencedColumnName: 'id' })
   public questionnaireInstance?: QuestionnaireInstance;
 
-  @ManyToOne(() => Question, { primary: true })
-  @JoinColumn({ name: 'question_id', referencedColumnName: 'id' })
+  @PrimaryColumn()
+  public questionId?: number;
+
+  @ManyToOne(() => Question)
   public question?: Question;
 
-  @ManyToOne(() => AnswerOption, { primary: true })
-  @JoinColumn({ name: 'answer_option_id', referencedColumnName: 'id' })
+  @PrimaryColumn()
+  public answerOptionId?: number;
+
+  @ManyToOne(() => AnswerOption)
   public answerOption?: AnswerOption;
 
   @PrimaryColumn()

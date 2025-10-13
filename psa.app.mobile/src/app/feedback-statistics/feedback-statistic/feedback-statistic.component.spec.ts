@@ -29,6 +29,7 @@ import { RangeValue } from '@ionic/core/dist/types/components/range/range-interf
   selector: 'app-mock',
   template:
     '<app-feedback-statistic [feedbackStatisticDto]="feedbackStatisticDto"></app-feedback-statistic>',
+  standalone: false,
 })
 class MockComponent {
   @ViewChild(FeedbackStatisticComponent)
@@ -49,23 +50,21 @@ describe('FeedbackStatisticComponent', () => {
   let component: MockComponent;
   let fixture: ComponentFixture<MockComponent>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [MockComponent, FeedbackStatisticComponent],
-        imports: [
-          IonicModule.forRoot(),
-          MarkdownModule.forRoot(),
-          TranslateModule.forRoot(),
-          ChartsModule.forRoot(),
-        ],
-      }).compileComponents();
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [MockComponent, FeedbackStatisticComponent],
+      imports: [
+        IonicModule.forRoot(),
+        MarkdownModule.forRoot(),
+        TranslateModule.forRoot(),
+        ChartsModule.forRoot(),
+      ],
+    }).compileComponents();
 
-      fixture = TestBed.createComponent(MockComponent);
-      component = fixture.componentInstance;
-      fixture.detectChanges();
-    })
-  );
+    fixture = TestBed.createComponent(MockComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
 
   it('should create', () => {
     expect(component.childComponent).toBeTruthy();

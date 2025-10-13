@@ -13,6 +13,7 @@ import { LabResult } from '../lab-result.model';
 @Component({
   selector: 'app-lab-result-list',
   templateUrl: './lab-result-list.page.html',
+  standalone: false,
 })
 export class LabResultListPage implements OnInit {
   labResults: LabResult[] = null;

@@ -11,7 +11,7 @@ import { KeycloakGenericEvent } from '../../../src/models/keycloakEvent';
 export class ProxyTestTool {
   public static readonly keycloakExchange =
     config.servers.authserver.messageQueueExchange;
-  protected connection: amqp.Connection | null = null;
+  protected connection: amqp.ChannelModel | null = null;
 
   public static encodeContent(
     content: Partial<KeycloakGenericEvent> | Record<string, string>

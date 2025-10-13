@@ -721,7 +721,7 @@ describe('/notification', function () {
 
         expect(
           usersToContact[0].not_filledout_questionnaire_instances
-        ).deep.equals([9999997, 9999996]);
+        ).to.have.members([9999997, 9999996]);
       });
 
       it('should update an entry for users to contact with notable instances', async function () {
@@ -745,11 +745,11 @@ describe('/notification', function () {
 
         expect(
           usersToContact[0].not_filledout_questionnaire_instances
-        ).deep.equals([9999997, 9999996]);
+        ).to.have.members([9999997, 9999996]);
 
         expect(
           usersToContact[0].notable_answer_questionnaire_instances
-        ).deep.equals([9999996]);
+        ).to.have.members([9999996]);
       });
 
       it('should check and schedule questionnaire statistic notifications', async function () {

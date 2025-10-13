@@ -4,12 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "styles:build": "npm run styles:build:login && npm run styles:build:account",
+    "styles:build": "npm run styles:build:login",
     "styles:build:login": "sass --no-source-map themes/pia/login/resources/scss/styles.scss:themes/pia/login/resources/css/styles.css",
-    "styles:build:account": "sass --no-source-map themes/pia/account/resources/scss/layout.scss:themes/pia/account/resources/public/layout.css",
-    "styles:cleanup": "rm -rf themes/pia/login/resources/css themes/pia/account/resources/css",
-    "styles:postcsss": "postcss themes/pia/login/resources/css/styles.css themes/pia/account/resources/css/styles.css --replace",
-    "theme:build": "npm run styles:cleanup && npm run styles:build && npm run styles:postcsss",
+    "styles:cleanup": "rm -rf themes/pia/login/resources/css",
+    "styles:postcss": "postcss themes/pia/login/resources/css/styles.css --replace",
+    "theme:build": "npm run styles:cleanup && npm run styles:build && npm run styles:postcss",
     "theme:build-local": "npm run get-browserlist && npm run theme:build",
     "get-browserlist": "cp ../psa.app.web/.browserslistrc ./"
   },

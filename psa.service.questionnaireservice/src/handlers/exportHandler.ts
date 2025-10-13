@@ -4,31 +4,34 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Lifecycle } from '@hapi/hapi';
-
 import {
   ExportInteractor,
   ExportOptions,
 } from '../interactors/exportInteractor';
-import { AccessToken, StreamTimeout } from '@pia/lib-service-core';
+import { StreamTimeout } from '@pia/lib-service-core';
 import { pipeline } from 'stream';
+import { Lifecycle } from '@hapi/hapi';
+
+export interface ExportPayload {
+  token: string;
+  exportOptions: ExportOptions;
+}
 
 export class ExportHandler {
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-  private static readonly streamTimeout = 60 * 60 * 1000; // 1 hour
+  private static readonly streamTimeout = 60 * 60 * 5000; // 5 hour
 
   /**
    * Creates a data search and returns the search result
    */
   public static createOne: Lifecycle.Method = async (request, h) => {
+    const payload = request.payload as ExportPayload;
+    const exportOptions = payload.exportOptions;
+
     try {
       request.log(['export'], 'Start export');
-
       const streamTimeout = new StreamTimeout(ExportHandler.streamTimeout);
-      const stream = await ExportInteractor.export(
-        request.auth.credentials as AccessToken,
-        request.payload as ExportOptions
-      );
+      const stream = await ExportInteractor.export(exportOptions);
       stream.on('end', () => {
         request.log(['export'], 'Export finished.');
         request.log(['export'], `Downloaded ${stream.pointer()} Bytes`);
@@ -56,7 +59,6 @@ export class ExportHandler {
           request.log(['export'], 'Export pipeline finished successfully.');
         }
       });
-
       return h.response(streamTimeout).type('application/zip');
     } catch (err) {
       request.log(['export'], 'Export failed');

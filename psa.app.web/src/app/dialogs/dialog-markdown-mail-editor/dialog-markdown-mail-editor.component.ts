@@ -22,6 +22,7 @@ export interface DialogMarkdownMailEditorResponse {
   selector: 'app-dialog-markdown-mail-editor',
   templateUrl: './dialog-markdown-mail-editor.component.html',
   styleUrls: ['./dialog-markdown-mail-editor.component.scss'],
+  standalone: false,
 })
 export class DialogMarkdownMailEditorComponent {
   private static readonly piaPseudonymTagHtml =

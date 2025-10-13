@@ -1,50 +1,44 @@
 ﻿/*
- * SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ * SPDX-FileCopyrightText: 2025 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Injectable } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
-  Router,
   RouterStateSnapshot,
+  CanActivateFn,
+  UrlTree,
 } from '@angular/router';
-import { KeycloakAuthGuard, KeycloakService } from 'keycloak-angular';
+import { createAuthGuard, AuthGuardData } from 'keycloak-angular';
 import { environment } from '../../environments/environment';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class AuthGuard extends KeycloakAuthGuard {
-  constructor(
-    protected readonly router: Router,
-    protected readonly keycloak: KeycloakService
-  ) {
-    super(router, keycloak);
+export const isAccessAllowed = async (
+  route: ActivatedRouteSnapshot,
+  state: RouterStateSnapshot,
+  authData: AuthGuardData
+): Promise<boolean | UrlTree> => {
+  const { authenticated, grantedRoles, keycloak } = authData;
+
+  // Force the user to log in if currently unauthenticated.
+  if (!authenticated) {
+    await keycloak.login({
+      redirectUri: environment.baseUrl + state.url,
+    });
+    return false;
   }
 
-  public async isAccessAllowed(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): Promise<boolean> {
-    // Force the user to log in if currently unauthenticated.
-    if (!this.authenticated) {
-      await this.keycloak.login({
-        redirectUri: environment.baseUrl + state.url,
-      });
-      return false;
-    }
+  // Get the authorized roles from the route.
+  const authorizedRoles = route.data?.authorizedRoles;
 
-    // Get the authorized roles from the route.
-    const authorizedRoles = route.data?.authorizedRoles;
-
-    // Allow the user to proceed if no additional roles are required to access the route.
-    if (!(authorizedRoles instanceof Array) || authorizedRoles.length === 0) {
-      return true;
-    }
-
-    // Allow the user to proceed if any of the required roles is present.
-    return authorizedRoles.some((role) => this.roles.includes(role));
+  // Allow the user to proceed if no additional roles are required to access the route.
+  if (!(authorizedRoles instanceof Array) || authorizedRoles.length === 0) {
+    return true;
   }
-}
+
+  // Allow the user to proceed if any of the required roles is present.
+  return authorizedRoles.some((role) => grantedRoles.realmRoles.includes(role));
+};
+
+export const canActivateAuthRole: CanActivateFn =
+  createAuthGuard(isAccessAllowed);

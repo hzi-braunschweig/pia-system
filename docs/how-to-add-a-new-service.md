@@ -3,6 +3,13 @@
 A dockerized Node.js service can be added by creating a new directory and placing the corresponding sources,
 `Dockerfile` and `package.json` into it.
 
+Instead of adding a specific `Dockerfile` you can reuse a shared Dockerfile by adding `.repo-tool.yaml` with the following structure:
+
+```yaml
+docker:
+  dockerfile: ../docker-templates/nodejs/Dockerfile
+```
+
 ## Configuration for Kubernetes
 
 For the new service to be deployed it needs to be added to the `k8s/src/pia/deployment` directory and initialized in `k8s/src/main.ts`.
@@ -16,21 +23,6 @@ images:
   - name: registry.hzdr.de/pia-eresearch-system/pia/psa.service.exampleservice
     newName: {dockerRegistryPath}/psa.service.exampleservice
     newTag: {dockerImageTag}
-```
-
-Also add an image entry to the skaffold.yaml:
-
-```yaml
-build:
-  # ...
-  artifacts:
-    # ...
-    - image: registry.hzdr.de/pia-eresearch-system/pia/psa.service.exampleservice
-      context: .
-      docker:
-        dockerfile: psa.service.exampleservice/Dockerfile
-        buildArgs:
-          DIR: psa.service.exampleservice
 ```
 
 For the service to be reachable from the outside, the routes to that service have to be configured inside the [apigateway](../psa.server.apigateway/src/config.ts).
@@ -64,18 +56,14 @@ COPY psa.lib.code-sharing-example/ ../psa.lib.code-sharing-example
 RUN npm ci --omit=dev
 ```
 
-## Update CI configuration
+## Update generated files
 
 Finally, you need to run the following [`psa.utils.repo-tool`](../psa.utils.repo-tool) scripts to update configuration files:
 
-### Update [./ci/generated.yaml](../ci/generated.yml):
-
 `npm run generate`
 
-Adds necessary docker, unit-/integration-tests and linting entries.
+This adds necessary docker, unit-/integration-tests and linting entries to [./ci/generated.yaml](../ci/generated.yml).
 
-### Update [./bake.hcl](../bake.hcl):
+Also it adds an entry for your new service to all necessary build images in [./bake.hcl](../bake.hcl) and [./npm-install.hcl](../npm-install).
 
-`npm run generate-hcl`
-
-Adds an entry for your new service to all necessary build images.
+And finally an entry for the new services is added to [./skaffold.yaml](../skaffold.yaml).

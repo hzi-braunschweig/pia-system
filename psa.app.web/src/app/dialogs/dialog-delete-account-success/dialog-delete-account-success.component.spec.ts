@@ -14,7 +14,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 
 describe('DialogDeleteAccountSuccessComponent', () => {
-  let component: DialogDeleteAccountSuccessComponent;
   let fixture: ComponentFixture<DialogDeleteAccountSuccessComponent>;
 
   beforeEach(async () => {
@@ -28,7 +27,7 @@ describe('DialogDeleteAccountSuccessComponent', () => {
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DialogDeleteAccountSuccessComponent);
-    component = fixture.componentInstance;
+    fixture.componentInstance;
     fixture.detectChanges();
   });
 

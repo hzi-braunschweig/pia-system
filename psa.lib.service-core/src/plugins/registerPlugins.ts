@@ -12,7 +12,7 @@ import { Plugin, Server } from '@hapi/hapi';
 import Good from '@hapi/good';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { SafeJson, Squeeze } from '@hapi/good-squeeze';
+import { Squeeze } from '@hapi/good-squeeze';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import GoodConsole from '@hapi/good-console';

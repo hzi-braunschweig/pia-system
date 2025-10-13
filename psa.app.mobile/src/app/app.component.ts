@@ -6,9 +6,7 @@
 
 import { Component, ViewEncapsulation } from '@angular/core';
 import { AlertController, LoadingController, Platform } from '@ionic/angular';
-import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
-import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
-import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
+import { App } from '@capacitor/app';
 import { TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from './auth/auth.service';
@@ -20,6 +18,8 @@ import { BadgeService } from './shared/services/badge/badge.service';
 import { CurrentUser } from './auth/current-user.service';
 import { filter } from 'rxjs/operators';
 import { register } from 'swiper/element/bundle';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { SplashScreen } from '@capacitor/splash-screen';
 
 interface AppPage {
   title: string;
@@ -35,6 +35,7 @@ register();
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class AppComponent {
   public appPages: AppPage[] = [];
@@ -42,10 +43,7 @@ export class AppComponent {
   public piaVersion: string;
 
   constructor(
-    private appVersion: AppVersion,
     private platform: Platform,
-    private splashScreen: SplashScreen,
-    private statusBar: StatusBar,
     private alertCtrl: AlertController,
     private loadingCtrl: LoadingController,
     private translate: TranslateService,
@@ -93,17 +91,17 @@ export class AppComponent {
   }
 
   /**
-   * Executed as soon as the cordova platform is ready and plugins may be used
+   * Executed as soon as capacitor is ready and plugins may be used
    */
   private async onPlatformReady() {
     if (this.auth.isAuthenticated()) {
       await this.notification.initPushNotifications(this.currentUser.username);
     }
 
-    if (this.platform.is('cordova')) {
+    if (this.platform.is('hybrid')) {
       this.styleStatusBar();
-      this.splashScreen.hide();
-      this.piaVersion = await this.appVersion.getVersionNumber();
+      SplashScreen.hide();
+      this.piaVersion = (await App.getInfo()).version;
     }
   }
 
@@ -181,8 +179,8 @@ export class AppComponent {
   }
 
   private styleStatusBar() {
-    this.statusBar.overlaysWebView(false);
-    this.statusBar.styleLightContent();
-    this.statusBar.backgroundColorByHexString('599118'); // --ion-color-tertiary
+    StatusBar.setOverlaysWebView({ overlay: false });
+    StatusBar.setStyle({ style: Style.Light });
+    StatusBar.setBackgroundColor({ color: '#599118' }); // --ion-color-tertiary
   }
 }

@@ -7,7 +7,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DialogMarkdownEditorComponent } from './dialog-markdown-editor.component';
-import { MockComponent, MockPipe, MockProvider } from 'ng-mocks';
+import { MockComponent, MockProvider } from 'ng-mocks';
 import {
   MAT_DIALOG_DATA,
   MatDialogModule,
@@ -17,10 +17,12 @@ import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
 import { MarkdownEditorComponent } from '../../features/markdown-editor/markdown-editor.component';
 import { By } from '@angular/platform-browser';
-import { TranslatePipe } from '@ngx-translate/core';
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ name: 'translate' })
+@Pipe({
+  name: 'translate',
+  standalone: false,
+})
 class MockTranslatePipe implements PipeTransform {
   transform(value: string): string {
     return value;

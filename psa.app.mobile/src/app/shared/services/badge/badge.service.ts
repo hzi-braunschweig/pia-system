@@ -5,20 +5,19 @@
  */
 
 import { Injectable } from '@angular/core';
-import { FirebaseX } from '@awesome-cordova-plugins/firebase-x/ngx';
+import { Badge } from '@capawesome/capacitor-badge';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BadgeService {
-  constructor(private firebaseX: FirebaseX) {}
+  constructor() {}
 
-  set(count: number): void {
-    this.firebaseX.setBadgeNumber(count);
+  async set(count: number) {
+    await Badge.set({ count });
   }
 
-  clear() {
-    this.firebaseX.setBadgeNumber(0);
-    this.firebaseX.clearAllNotifications();
+  async clear() {
+    await Badge.clear();
   }
 }

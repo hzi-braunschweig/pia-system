@@ -14,12 +14,16 @@ import { FormControl, FormGroup } from '@angular/forms';
 import { formatDate } from '@angular/common';
 import { CurrentUser } from '../../../_services/current-user.service';
 
-export type RangeValueObject = { upper: number; lower: number };
+export interface RangeValueObject {
+  upper: number;
+  lower: number;
+}
 
 @Component({
   selector: 'app-feedback-statistic',
   templateUrl: './feedback-statistic.component.html',
   styleUrls: ['./feedback-statistic.component.scss'],
+  standalone: false,
 })
 export class FeedbackStatisticComponent implements OnInit {
   @Input()

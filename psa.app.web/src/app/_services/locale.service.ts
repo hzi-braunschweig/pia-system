@@ -35,16 +35,28 @@ export class LocaleService {
       locale: 'de-CH',
       flagIcons: ['ch'],
     },
+    {
+      language: 'Français',
+      locale: 'fr-FR',
+      flagIcons: ['fr'],
+    },
+    {
+      language: 'Español',
+      locale: 'es-ES',
+      flagIcons: ['es'],
+    },
   ];
   private readonly iso639_1FallbackLanguages = {
     en: 'en-US',
     de: 'de-DE',
+    es: 'es-ES',
+    fr: 'fr-FR',
   };
   private readonly fallbackLanguage: string = 'en-US';
 
   constructor(
-    private translate: TranslateService,
-    private currentUser: CurrentUser
+    private readonly translate: TranslateService,
+    currentUser: CurrentUser
   ) {
     this.fallbackLanguage = this.findBestLocale(environment.defaultLanguage);
     this.translate.addLangs(this.supportedLocales);

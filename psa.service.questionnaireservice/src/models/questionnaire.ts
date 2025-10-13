@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+import Joi from 'joi';
 import {
   Condition,
   ConditionDto,
@@ -19,7 +20,16 @@ import {
 
 export type QuestionnaireType = 'for_probands' | 'for_research_team';
 
-export type CycleUnit = 'once' | 'day' | 'week' | 'month' | 'hour' | 'spontan';
+export type Publish = 'hidden' | 'testprobands' | 'allaudiences';
+
+export type CycleUnit =
+  | 'once'
+  | 'day'
+  | 'week'
+  | 'month'
+  | 'hour'
+  | 'spontan'
+  | 'date';
 
 /**
  * A questionnaires custom name helps to reference a questionnaire by a speakable and unique name.
@@ -28,6 +38,9 @@ export type CycleUnit = 'once' | 'day' | 'week' | 'month' | 'hour' | 'spontan';
  * @pattern ^[a-zA-Z0-9-_]+$
  */
 export type CustomName = string;
+export const validatorCustomName = Joi.string()
+  .pattern(/^[a-zA-Z0-9_-]+$/)
+  .pattern(/^\d+$/, { invert: true });
 
 export interface DbQuestionnaireForPM {
   id: number;
@@ -61,7 +74,7 @@ export interface DbQuestionnaire extends DbQuestionnaireForPM {
   created_at: Date | null;
   readonly updated_at: Date | null;
   type: QuestionnaireType | null;
-  publish: string | null;
+  publish: Publish | null;
   notify_when_not_filled: boolean | null;
   notify_when_not_filled_time: string | null;
   notify_when_not_filled_day: number | null;
@@ -119,7 +132,7 @@ export interface QuestionnaireDto {
   /** @isInt */
   finalisesAfterDays: number;
   type: QuestionnaireType | null;
-  publish: string | null;
+  publish: Publish | null;
   notifyWhenNotFilled: boolean | null;
   notifyWhenNotFilledTime: string | null;
   /** @isInt */
@@ -154,7 +167,7 @@ export interface QuestionnaireRequest {
   cycle_unit: CycleUnit;
   cycle_per_day?: number | null;
   cycle_first_hour?: number | null;
-  publish: string;
+  publish: Publish;
   /*  keep_answers: In some cases, questionnaire answers are to be kept, even
       in case of the answering proband is removed automatically, like it
       may happen in a SORMAS context. Kept answers might deal with usage

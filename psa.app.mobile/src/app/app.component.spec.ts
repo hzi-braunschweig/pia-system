@@ -6,24 +6,21 @@
 
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { MockBuilder } from 'ng-mocks';
-import { BehaviorSubject, NEVER } from 'rxjs';
+import { NEVER } from 'rxjs';
 import { AppComponent } from './app.component';
 import { AuthService } from './auth/auth.service';
 import { ComplianceService } from './compliance/compliance-service/compliance.service';
 import { NotificationService } from './shared/services/notification/notification.service';
-import { User } from './auth/auth.model';
 import { AppModule } from './app.module';
 import { AlertController, LoadingController, Platform } from '@ionic/angular';
-import { SplashScreen } from '@awesome-cordova-plugins/splash-screen/ngx';
-import { StatusBar } from '@awesome-cordova-plugins/status-bar/ngx';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { SplashScreen } from '@capacitor/splash-screen';
 import { TranslatePipe } from '@ngx-translate/core';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
 import SpyObj = jasmine.SpyObj;
 import { CurrentUser } from './auth/current-user.service';
 
 describe('AppComponent', () => {
-  let statusBarSpy: SpyObj<StatusBar>;
-  let splashScreenSpy: SpyObj<SplashScreen>;
   let platformSpy: SpyObj<Platform>;
   let auth: SpyObj<AuthService>;
   let compliance: SpyObj<ComplianceService>;
@@ -34,14 +31,11 @@ describe('AppComponent', () => {
   let alertOkHandler: (value) => void;
 
   beforeEach(async () => {
-    statusBarSpy = jasmine.createSpyObj<StatusBar>('StatusBar', [
-      'overlaysWebView',
-      'styleLightContent',
-      'backgroundColorByHexString',
-    ]);
-    splashScreenSpy = jasmine.createSpyObj<SplashScreen>('SplashScreen', [
-      'hide',
-    ]);
+    spyOn(StatusBar, 'setOverlaysWebView');
+    spyOn(StatusBar, 'setStyle');
+    spyOn(StatusBar, 'setBackgroundColor');
+    spyOn(SplashScreen, 'hide');
+
     platformSpy = jasmine.createSpyObj<Platform>('Platform', ['ready', 'is']);
     auth = jasmine.createSpyObj('AuthService', ['isAuthenticated', 'logout'], {
       isAuthenticated$: NEVER,
@@ -99,8 +93,6 @@ describe('AppComponent', () => {
       .mock(AuthService, auth)
       .mock(ComplianceService, compliance)
       .mock(NotificationService, notification)
-      .mock(StatusBar, statusBarSpy)
-      .mock(SplashScreen, splashScreenSpy)
       .mock(Platform, platformSpy)
       .mock(Platform, platformSpy)
       .mock(AlertController, alertCtrl)
@@ -120,10 +112,14 @@ describe('AppComponent', () => {
     TestBed.createComponent(AppComponent);
     expect(platformSpy.ready).toHaveBeenCalled();
     tick();
-    expect(statusBarSpy.overlaysWebView).toHaveBeenCalledOnceWith(false);
-    expect(statusBarSpy.styleLightContent).toHaveBeenCalled();
-    expect(statusBarSpy.backgroundColorByHexString).toHaveBeenCalled();
-    expect(splashScreenSpy.hide).toHaveBeenCalled();
+    expect(StatusBar.setOverlaysWebView).toHaveBeenCalledOnceWith({
+      overlay: false,
+    });
+    expect(StatusBar.setStyle).toHaveBeenCalledWith({ style: Style.Light });
+    expect(StatusBar.setBackgroundColor).toHaveBeenCalledWith({
+      color: '#599118',
+    });
+    expect(SplashScreen.hide).toHaveBeenCalled();
   }));
 
   it('should initialize notifications when a user is logged in', fakeAsync(() => {
@@ -138,8 +134,8 @@ describe('AppComponent', () => {
     fixture.detectChanges();
     const app = fixture.nativeElement;
     const menuItems = app.querySelectorAll('#menu-content ion-label');
-    console.log([...menuItems].map((item) => item.textContent));
-    expect([...menuItems].map((item) => item.textContent)).toEqual([
+
+    expect([...menuItems].map((item) => item.innerText)).toEqual([
       'APP.MENU.HOME',
       'APP.MENU.QUESTIONNAIRES',
       'APP.MENU.STATISTICS',

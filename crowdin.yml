@@ -13,3 +13,5 @@ files:
     translation: /psa.server.auth/themes/pia/email/messages/messages_%locale_with_underscore%.properties
   - source: /psa.server.auth/themes/pia/account/messages/messages_de_DE.properties
     translation: /psa.server.auth/themes/pia/account/messages/messages_%locale_with_underscore%.properties
+  - source: /psa.server.auth/extensions/account-ui-theme/maven-resources/theme/my-account/account/messages/messages_de_DE.properties
+    translation: /psa.server.auth/extensions/account-ui-theme/maven-resources/theme/my-account/account/messages/messages_%locale_with_underscore%.properties

@@ -7,7 +7,7 @@ exports.AssertStudyAccess = {
     version: '1.0.0',
     register: function (server) {
         const studyPathParamName = 'studyName';
-        server.ext('onPreHandler', (r, h) => {
+        const onPreHandler = (r, h) => {
             const isActive = r.route.settings.app?.assertStudyAccess;
             if (isActive) {
                 const decodedToken = r.auth.credentials;
@@ -20,7 +20,8 @@ exports.AssertStudyAccess = {
                 }
             }
             return h.continue;
-        });
+        };
+        server.ext('onPreHandler', onPreHandler);
     },
 };
 //# sourceMappingURL=assertStudyAccess.js.map

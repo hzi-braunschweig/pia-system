@@ -1,0 +1,6 @@
+participant;is_test_participant;questionnaire_name;questionnaire_id;questionnaire_version;questionnaire_cycle;questionnaire_date_of_issue;answer_date;answer_status;100000_AE1_Einzelauswahl
+answ-01;F;AE1 Answer Export;100000;8;1;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;1
+answ-01;F;AE1 Answer Export;100000;8;1;2022-12-08T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;1
+answ-02;T;AE1 Answer Export;100000;8;1;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;0
+answ-02;T;AE1 Answer Export;100000;8;1;2022-12-08T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;-8888
+answ-03;F;AE1 Answer Export;100000;8;1;2022-12-07T06:00:00+00:00;2022-12-09T07:57:59+00:00;final_participant_answer;Error (value: 1)

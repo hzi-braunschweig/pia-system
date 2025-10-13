@@ -15,6 +15,7 @@ import { CurrentUser } from '../../auth/current-user.service';
   templateUrl: './lab-result-detail.page.html',
   styleUrls: ['./lab-result-detail.page.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class LabResultDetailPage implements OnInit {
   labResultId: string =

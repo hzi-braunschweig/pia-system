@@ -36,12 +36,13 @@ export interface TableRow {
 @Component({
   templateUrl: 'probands-to-contact.component.html',
   styleUrls: ['./probands-to-contact.component.scss'],
+  standalone: false,
 })
 export class ProbandsToContactComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true })
-  private paginator: MatPaginator;
+  private readonly paginator: MatPaginator;
   @ViewChild(MatSort, { static: true })
-  private sort: MatSort;
+  private readonly sort: MatSort;
   public dataSource: MatTableDataSource<TableRow> =
     new MatTableDataSource<TableRow>();
   public cols: Observable<number>;
@@ -62,12 +63,12 @@ export class ProbandsToContactComponent implements OnInit {
   public isLoading: boolean;
 
   public constructor(
-    private probandService: ProbandService,
-    private matDialog: MatDialog,
-    private alertService: AlertService,
-    private router: Router,
-    private personalDataService: PersonalDataService,
-    private accountStatusPipe: AccountStatusPipe
+    private readonly probandService: ProbandService,
+    private readonly matDialog: MatDialog,
+    private readonly alertService: AlertService,
+    private readonly router: Router,
+    private readonly personalDataService: PersonalDataService,
+    private readonly accountStatusPipe: AccountStatusPipe
   ) {}
 
   private static aggregateAndCountQuestionnaires(

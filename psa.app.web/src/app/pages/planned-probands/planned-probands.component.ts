@@ -33,6 +33,7 @@ import { format } from 'date-fns';
       useClass: MatPaginatorIntlGerman,
     },
   ],
+  standalone: false,
 })
 export class PlannedProbandsComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) public paginator: MatPaginator;
@@ -51,10 +52,10 @@ export class PlannedProbandsComponent implements OnInit {
   public isLoading: boolean = true;
 
   constructor(
-    private authService: AuthService,
-    private translate: TranslateService,
-    private router: Router,
-    private dataService: DataService,
+    private readonly authService: AuthService,
+    private readonly translate: TranslateService,
+    private readonly router: Router,
+    private readonly dataService: DataService,
     public dialog: MatDialog
   ) {
     this.filterFormControl.valueChanges

@@ -8,14 +8,18 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LicenseJson, LicenseListComponent } from './license-list.component';
 import {
-  HttpClientTestingModule,
   HttpTestingController,
+  provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { MockComponent, MockPipe } from 'ng-mocks';
 import { TranslatePipe } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { LoadingSpinnerComponent } from '../../features/loading-spinner/loading-spinner.component';
 import { MaterialModule } from '../../material.module';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('LicenseListComponent', () => {
   let component: LicenseListComponent;
@@ -29,7 +33,11 @@ describe('LicenseListComponent', () => {
         MockPipe(TranslatePipe),
         MockComponent(LoadingSpinnerComponent),
       ],
-      imports: [HttpClientTestingModule, MaterialModule],
+      imports: [MaterialModule],
+      providers: [
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
   });
 

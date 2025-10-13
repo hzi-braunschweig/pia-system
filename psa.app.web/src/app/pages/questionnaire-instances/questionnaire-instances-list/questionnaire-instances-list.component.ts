@@ -24,9 +24,13 @@ import { compareQuestionnaireInstances } from './compare-questionnaire-instances
       useClass: MatPaginatorIntlGerman,
     },
   ],
+  standalone: false,
 })
 export class QuestionnaireInstancesListComponent implements OnInit {
-  constructor(private router: Router, private data: DataService) {}
+  constructor(
+    private readonly router: Router,
+    private readonly data: DataService
+  ) {}
 
   @Input() set questionnaireInstances(
     questionnaireInstances: QuestionnaireInstance[]

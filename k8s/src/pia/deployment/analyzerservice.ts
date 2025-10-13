@@ -45,6 +45,8 @@ export class AnalyzerService extends NodeJSService {
         MESSAGEQUEUE_APP_PASSWORD:
           configuration.variables.messageQueue.appPassword,
         MESSAGEQUEUE_APP_USER: configuration.variables.messageQueue.appUser,
+        NOTIFICATION_HOUR: configuration.variables.notificationTime.hours,
+        NOTIFICATION_MINUTE: configuration.variables.notificationTime.minutes,
       },
       {
         // is currently not scalable because it is using a scheduler and listening for db events

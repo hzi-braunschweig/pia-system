@@ -25,11 +25,10 @@ import { DialogDeleteAccountSuccessComponent } from '../../dialogs/dialog-delete
 import { createStudy } from '../../psa.app.core/models/instance.helper.spec';
 import { CurrentUser } from '../../_services/current-user.service';
 import { QuestionnaireService } from '../../psa.app.core/providers/questionnaire-service/questionnaire-service';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 import SpyObj = jasmine.SpyObj;
 
 describe('SettingsComponent', () => {
-  let component: SettingsComponent;
   let fixture: ComponentFixture<SettingsComponent>;
 
   let dialog: SpyObj<MatDialog>;
@@ -37,7 +36,7 @@ describe('SettingsComponent', () => {
   let user: SpyObj<CurrentUser>;
   let alertService: SpyObj<AlertService>;
   let questionnaireService: SpyObj<QuestionnaireService>;
-  let keycloakService: SpyObj<KeycloakService>;
+  let keycloak: SpyObj<Keycloak>;
   let dialogAfterClosed: Subject<string>;
 
   beforeEach(async () => {
@@ -49,7 +48,7 @@ describe('SettingsComponent', () => {
 
     authService = jasmine.createSpyObj('AuthService', ['deleteProbandAccount']);
 
-    keycloakService = jasmine.createSpyObj('KeycloakService', ['clearToken']);
+    keycloak = jasmine.createSpyObj('Keycloak', ['clearToken']);
 
     user = jasmine.createSpyObj('CurrentUser', [], {
       username: 'TestProband',
@@ -70,13 +69,13 @@ describe('SettingsComponent', () => {
       .mock(AuthService, authService)
       .mock(CurrentUser, user)
       .mock(AlertService, alertService)
-      .mock(KeycloakService, keycloakService)
+      .mock(Keycloak, keycloak)
       .mock(QuestionnaireService, questionnaireService);
   });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SettingsComponent);
-    component = fixture.componentInstance;
+    fixture.componentInstance;
     fixture.detectChanges();
   });
 
@@ -144,7 +143,7 @@ describe('SettingsComponent', () => {
         'TestProband',
         'contact'
       );
-      expect(keycloakService.clearToken).toHaveBeenCalledTimes(1);
+      expect(keycloak.clearToken).toHaveBeenCalledTimes(1);
     }));
 
     it('should show a success dialog if deletion was successful', fakeAsync(() => {

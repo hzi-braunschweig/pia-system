@@ -2,6 +2,28 @@
 
 This file contains notes about changes that operation teams need to be aware of when updating PIA.
 
+## 1.42
+
+- Added support for custom themes in Keycloak authentication server
+  - Themes can override email message texts and styling while inheriting base functionality
+  - Custom themes are configured through Kubernetes overlays with theme.properties and message files
+  - The new environment variable `EMAIL_THEME` is used to configure the theme for emails
+  - see [README.md](./psa.server.auth/README.md) for more information
+- Introduced new environment variable `HTTPS_PROXY` for NotificationService
+  - This variable is used to configure the HTTPS proxy used by PIA to access the internet
+  - If not set, no proxy will be used
+  - A HTTPS_PROXY will currently be used for the notification server to access firebase for push notifications
+
+## 1.40 (Keycloak v25)
+
+- Keycloak is updated to v25
+- Passwords will be rehashed on first login after update, as the password hashing algorithm was changed to Argon2.
+  - This might cause increased CPU usage on first logins after updating and server response times might be slower
+    during this time
+- `/health` and `/metrics` are by default accessible on the management port `9000` (and no longer exposed on the standard Keycloak ports)
+- See the Keycloak upgrading guide for more information
+- Removed `modysservice`
+
 ## 1.39
 
 - The logo in the header of the webapp can now be configured

@@ -24,7 +24,10 @@ import { MockComponent } from 'ng-mocks';
 import { HintComponent } from '../../../features/hint/hint.component';
 import { MarkdownEditorComponent } from '../../../features/markdown-editor/markdown-editor.component';
 
-@Pipe({ name: 'translate' })
+@Pipe({
+  name: 'translate',
+  standalone: false,
+})
 class MockTranslatePipe implements PipeTransform {
   transform(value): any {
     return value;
@@ -79,7 +82,7 @@ describe('FeedbackStatisticMetaDataComponent', () => {
       await select.open();
       const options = await select.getOptions();
       const optionTexts: string[] = await Promise.all(
-        options.map((option) => option.getText())
+        options.map(async (option) => option.getText())
       );
       expect(options.length).toEqual(3);
       expect(optionTexts).toEqual([

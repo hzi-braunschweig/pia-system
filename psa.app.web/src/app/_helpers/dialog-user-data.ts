@@ -31,6 +31,7 @@ import { ProfessionalUser } from '../psa.app.core/models/user';
       <button id="confirmbutton" mat-button mat-dialog-close>OK</button>
     </mat-dialog-actions>
   `,
+  standalone: false,
 })
 export class DialogUserDataComponent {
   public accessLevel: string[] = [''];

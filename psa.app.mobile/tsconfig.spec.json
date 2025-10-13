@@ -3,7 +3,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": ["jasmine", "karma-viewport"]
+    "types": ["jasmine", "karma-viewport"],
+    "paths": {
+      "@capacitor/*": ["__mocks__/@capacitor/*"],
+      "@capawesome/*": ["__mocks__/@capawesome/*"],
+      "@capawesome-team/*": ["__mocks__/@capawesome-team/*"]
+    }
   },
   "files": ["src/test.ts", "src/polyfills.ts"],
   "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]

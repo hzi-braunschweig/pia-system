@@ -21,8 +21,8 @@ export class QuestionnaireDatabase {
   questionnaires: Questionnaire[];
 
   constructor(
-    private questionnaireService: QuestionnaireService,
-    private alertService: AlertService
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly alertService: AlertService
   ) {}
 
   deleteQuestionnaire(id: number, version: number): void {

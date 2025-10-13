@@ -6,7 +6,6 @@
 
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
-import { TranslateService } from '@ngx-translate/core';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogPopUpComponent } from '../../../../../_helpers/dialog-pop-up';
 
@@ -14,14 +13,14 @@ import { DialogPopUpComponent } from '../../../../../_helpers/dialog-pop-up';
   selector: 'app-image-answer-option',
   templateUrl: './image-answer-option.component.html',
   styleUrls: ['image-answer-option.component.scss'],
+  standalone: false,
 })
 export class ImageAnswerOptionComponent implements OnInit {
   public imageName: any;
 
   constructor(
-    private qService: QuestionnaireService,
-    private dialog: MatDialog,
-    private translate: TranslateService
+    private readonly qService: QuestionnaireService,
+    private readonly dialog: MatDialog
   ) {}
 
   url = '';
@@ -87,7 +86,7 @@ export class ImageAnswerOptionComponent implements OnInit {
   }
 
   onImageSelected(event): void {
-    if (event.target.files && event.target.files[0]) {
+    if (event.target.files?.[0]) {
       this.loadImage(event.target.files[0]);
     }
   }

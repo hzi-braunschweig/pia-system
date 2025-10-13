@@ -5,15 +5,15 @@
  */
 
 import { Command } from 'commander';
-import * as path from 'path';
 import { Color } from './color';
-
-import { Fs } from './fs';
-import { Generator } from './generator';
 
 import { RepoMetaData } from './models/repoMetaData';
 import { Runner } from './runner';
 import { Scanner } from './scanner';
+
+import { GitlabCI } from './generators/gitlab';
+import { Hcl } from './generators/hcl';
+import { Skaffold } from './generators/skaffold';
 
 class Program {
   public static handleError<T>(promise: Promise<T>): void {
@@ -42,15 +42,11 @@ class Program {
       });
     program
       .command('generate')
-      .description('generates ci stuff')
+      .description(
+        'generates ci files, docker build hcl files and skaffold.yaml'
+      )
       .action(() => {
         Program.handleError(this.generate(repoMetaData, repoDir));
-      });
-    program
-      .command('generate-hcl')
-      .description('generates docker build hcl')
-      .action(() => {
-        Program.handleError(this.generateHcl(repoMetaData, repoDir));
       });
     program
       .command('update')
@@ -74,103 +70,15 @@ class Program {
     program.parse();
   }
 
-  private static async generateHcl(
-    repoMetaData: RepoMetaData,
-    repoDir: string
-  ): Promise<void> {
-    // Read our env variables
-    const targetFile =
-      process.env['BAKE_TARGET_FILE'] ?? path.join(repoDir, 'bake.hcl');
-
-    const deploymentTargetPrefixes = [
-      'k8s',
-      'psa.app',
-      'psa.database',
-      'psa.server',
-      'psa.service',
-    ];
-
-    const file: string[] = [];
-
-    file.push(
-      'group "default" {',
-      '  targets = [ ',
-      repoMetaData.docker
-        .map((job) => `"${this.convertFolderNameToTargetName(job)}"`)
-        .join(', '),
-      '  ]',
-      '}',
-      '',
-      'group "deployment" {',
-      '  targets = [ ',
-      repoMetaData.docker
-        .filter((job) =>
-          deploymentTargetPrefixes.some((prefix) => job.startsWith(prefix))
-        )
-        .map((job) => `"${this.convertFolderNameToTargetName(job)}"`)
-        .join(', '),
-      '  ]',
-      '}',
-      '',
-      'variable "TAG" {',
-      '  default = "develop"',
-      '}',
-      '',
-      'variable "IMAGE_REGISTRY" {',
-      '  default = "pia"',
-      '}',
-      '',
-      'variable "VERSION_INFO_PIPELINE_ID" {',
-      '  default = "develop"',
-      '}',
-      '',
-      'variable "VERSION_INFO_GIT_HASH" {',
-      '  default = "UNKNOWN"',
-      '}',
-      '',
-      'variable "VERSION_INFO_GIT_REF" {',
-      '  default = "UNKNOWN"',
-      '}',
-      '',
-      ...repoMetaData.docker.flatMap((job) => {
-        return [
-          `target "${this.convertFolderNameToTargetName(job)}" {`,
-          '  context = "."',
-          `  dockerfile = "${job}/Dockerfile"`,
-          '  tags = [ "${IMAGE_REGISTRY}/' + job + ':${TAG}" ]',
-          '  args = {',
-          `    DIR = "${job}"`,
-          '    VERSION_INFO_PIPELINE_ID = "${VERSION_INFO_PIPELINE_ID}"',
-          '    VERSION_INFO_GIT_HASH = "${VERSION_INFO_GIT_HASH}"',
-          '    VERSION_INFO_GIT_REF = "${VERSION_INFO_GIT_REF}"',
-          '  }',
-          '}',
-        ];
-      })
-    );
-
-    await Fs.writeFile(targetFile, file.join('\n'));
-  }
-
   private static async generate(
     repoMetaData: RepoMetaData,
     repoDir: string
   ): Promise<void> {
-    // Read our env variables
-    const targetFile =
-      process.env['TARGET_FILE'] ?? path.join(repoDir, 'ci/generated.yml');
-
     console.log(repoMetaData);
 
-    // Create the final gitlab ci modules
-    const gitlabCi = Generator.createGitlabCiModules(repoMetaData);
-
-    // Write the resulting gitlab-ci.yml
-    await Fs.writeYaml(targetFile, gitlabCi);
-  }
-
-  private static convertFolderNameToTargetName(folderName: string): string {
-    return folderName.replace(/\./g, '_');
+    await GitlabCI.generate(repoMetaData, repoDir);
+    await Hcl.generate(repoMetaData, repoDir);
+    await Skaffold.generate(repoMetaData, repoDir);
   }
 }
 

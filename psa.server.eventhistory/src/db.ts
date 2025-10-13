@@ -6,11 +6,7 @@
 
 import 'reflect-metadata';
 import * as util from 'node:util';
-import {
-  ConnectionNotFoundError,
-  DataSource,
-  DataSourceOptions,
-} from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import { config } from './config';
 import { Configuration } from './entity/configuration';
 import { Event } from './entity/event';
@@ -39,26 +35,24 @@ export const dataSource = new DataSource(dataSourceOptions);
 export async function connectDatabase(
   retryCount = 24,
   delay = 1000
-): Promise<DataSource> {
+): Promise<void> {
   const sleep = util.promisify(setTimeout);
   if (retryCount <= 0) throw new Error('retryCount must be greater than 0');
-  // try to get existing connection
-  try {
-    return dataSource.initialize();
-  } catch (e) {
-    if (!(e instanceof ConnectionNotFoundError)) throw e;
-  }
-  // if no connection found try to connect
-  for (let i = 0; i <= retryCount; i++) {
-    try {
-      return await dataSource.initialize();
-    } catch (e: unknown) {
+  for (let i = 0; i <= retryCount && !dataSource.isInitialized; i++) {
+    if (i !== 0) {
       console.log(
-        `Database is not yet available. Waiting for ${delay} ms before next retry.`,
-        e
+        `Database is not yet available. Waiting for ${delay} ms before next retry.`
       );
-      if (i < retryCount) await sleep(delay);
+      await sleep(delay);
+    }
+    try {
+      await dataSource.initialize();
+    } catch (e) {
+      if (e && (e as { code: string }).code !== 'ECONNREFUSED')
+        throw e as Error;
     }
   }
-  throw new Error(`Could not reach database after ${retryCount} retries`);
+  if (!dataSource.isInitialized) {
+    throw new Error(`Could not reach database after ${retryCount} retries`);
+  }
 }

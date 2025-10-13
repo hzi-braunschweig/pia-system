@@ -6,12 +6,14 @@
 
 import { Lifecycle } from '@hapi/hapi';
 import { AdminExampleInteractor } from '../../interactors/admin/adminExampleInteractor';
-import { AccessToken } from '../../../../src';
+import { CredentialsExtra } from '../../../../src';
 
 export class AdminExampleHandler {
-  public static getExample: Lifecycle.Method = (request) => {
+  public static getExample: Lifecycle.Method<{
+    AuthCredentialsExtra: CredentialsExtra;
+  }> = (request) => {
     return AdminExampleInteractor.getExample(
-      request.auth.credentials as AccessToken,
+      request.auth.credentials,
       request.params['studyName'] as string,
       request.params['name'] as string
     );

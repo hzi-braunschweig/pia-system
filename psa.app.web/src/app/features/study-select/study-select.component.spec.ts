@@ -23,6 +23,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
     [required]="true"
     [formControl]="control"
   ></app-study-select>`,
+  standalone: false,
 })
 class TestStudySelectComponent {
   public control = new FormControl<string | null>(null);
@@ -36,7 +37,7 @@ describe('StudySelectComponent', () => {
   beforeEach(async () => {});
 
   describe('multiple studies', () => {
-    beforeEach(() =>
+    beforeEach(async () =>
       createComponent(['Teststudy1', 'Teststudy2', 'Teststudy3'])
     );
 
@@ -45,7 +46,7 @@ describe('StudySelectComponent', () => {
       await select.open();
       const options = await select.getOptions();
       const optionTexts: string[] = await Promise.all(
-        options.map((option) => option.getText())
+        options.map(async (option) => option.getText())
       );
       expect(options.length).toEqual(3);
       expect(optionTexts).toEqual(['Teststudy1', 'Teststudy2', 'Teststudy3']);
@@ -60,7 +61,7 @@ describe('StudySelectComponent', () => {
   });
 
   describe('single study', () => {
-    beforeEach(() => createComponent(['Teststudy']));
+    beforeEach(async () => createComponent(['Teststudy']));
 
     it('should preselect single study', async () => {
       const select = await loader.getHarness(MatSelectHarness);
@@ -69,7 +70,7 @@ describe('StudySelectComponent', () => {
   });
 
   async function createComponent(studies: string[]) {
-    let currentUser = jasmine.createSpyObj('CurrentUser', [], {
+    const currentUser = jasmine.createSpyObj('CurrentUser', [], {
       studies,
     });
 

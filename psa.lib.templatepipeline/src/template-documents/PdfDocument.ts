@@ -9,9 +9,9 @@ import { AbstractTemplateDocument } from './AbstractTemplateDocument';
 
 export class PdfDocument extends AbstractTemplateDocument {
   public readonly type = TemplateSegmentTypes.PDF;
-  public readonly pdf: Promise<Buffer>;
+  public readonly pdf: Promise<Uint8Array>;
 
-  public constructor(pdf: Buffer | Promise<Buffer>) {
+  public constructor(pdf: Uint8Array | Promise<Uint8Array>) {
     super();
     this.pdf = Promise.resolve(pdf);
   }

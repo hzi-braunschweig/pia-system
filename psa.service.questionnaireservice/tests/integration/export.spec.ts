@@ -11,44 +11,76 @@ import { StatusCodes } from 'http-status-codes';
 import sinon from 'sinon';
 import fetchMocker from 'fetch-mock';
 
-import { AuthServerMock, AuthTokenMockBuilder } from '@pia/lib-service-core';
 import { HttpClient } from '@pia-system/lib-http-clients-internal';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
 import { cleanup, setup } from './export.spec.data/setup.helper';
 import { ExportOptions } from '../../src/interactors/exportInteractor';
+import Hapi, { AuthenticationData } from '@hapi/hapi';
 
 chai.use(chaiHttp);
 
 const apiAddress = `http://localhost:${config.public.port}`;
 
-const forscherHeader1 = AuthTokenMockBuilder.createAuthHeader({
-  roles: ['Forscher'],
-  username: 'qtest-exportforscher',
-  studies: ['ApiTestMultiProfs', 'ExportTestStudie'],
-});
-const forscherHeader2 = AuthTokenMockBuilder.createAuthHeader({
-  roles: ['Forscher'],
-  username: 'qtest-forscher1',
-  studies: ['ApiTestMultiProfs', 'ApiTestStudie'],
-});
-const sysadminHeader = AuthTokenMockBuilder.createAuthHeader({
-  roles: ['SysAdmin'],
-  username: 'qtest-sysadmin',
-  studies: [],
-});
-const utHeader = AuthTokenMockBuilder.createAuthHeader({
-  roles: ['Untersuchungsteam'],
-  username: 'qtest-untersuchungsteam',
-  studies: ['ApiTestMultiProfs', 'ApiTestStudie'],
-});
+const forscherAuthenticationData: AuthenticationData = {
+  credentials: {
+    scope: ['realm:Forscher'],
+    username: 'qtest-exportforscher',
+    studies: ['ApiTestMultiProfs', 'ExportTestStudie'],
+  },
+};
+const forscherAuthenticationData2: AuthenticationData = {
+  credentials: {
+    scope: ['realm:Forscher'],
+    username: 'qtest-forscher1',
+    studies: ['ApiTestMultiProfs', 'ApiTestStudie'],
+  },
+};
+const sysadminAuthenticationData: AuthenticationData = {
+  credentials: {
+    scope: ['realm:SysAdmin'],
+    username: 'qtest-sysadmin',
+    studies: [],
+  },
+};
+const utAuthenticationData: AuthenticationData = {
+  credentials: {
+    scope: ['realm:Untersuchungsteam'],
+    username: 'qtest-untersuchungsteam',
+    studies: ['ApiTestMultiProfs', 'ApiTestStudie'],
+  },
+};
+
+const validSearchAll: ExportOptions = {
+  start_date: null,
+  end_date: null,
+  study_name: 'ExportTestStudie',
+  questionnaires: [
+    { id: 666666, version: 1 },
+    { id: 666666, version: 2 },
+  ],
+  probands: ['qtest-exportproband1', 'qtest-exportproband2'],
+  exports: ['answers'],
+};
+
+interface ExportPayload {
+  token: string;
+  exportOptions: string;
+}
+
+const validSearchAllPayload: ExportPayload = {
+  token: 'Bearer TOKEN',
+  exportOptions: JSON.stringify(validSearchAll),
+};
 
 const sandbox = sinon.createSandbox();
 const fetchMock = fetchMocker.sandbox();
 
 describe('/admin/admin/export', function () {
+  let serverInstance: Hapi.Server;
   before(async function () {
     await Server.init();
+    serverInstance = Server.getInstanceForTesting();
     await setup();
   });
 
@@ -61,58 +93,52 @@ describe('/admin/admin/export', function () {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     sandbox.stub(HttpClient, 'fetch').callsFake(fetchMock);
-
-    AuthServerMock.adminRealm().returnValid();
   });
 
   afterEach(() => {
     sandbox.restore();
     fetchMock.restore();
-
-    AuthServerMock.cleanAll();
   });
-
-  const validSearchAll: ExportOptions = {
-    start_date: null,
-    end_date: null,
-    study_name: 'ExportTestStudie',
-    questionnaires: [
-      { id: 666666, version: 1 },
-      { id: 666666, version: 2 },
-    ],
-    probands: ['qtest-exportproband1', 'qtest-exportproband2'],
-    exports: ['answers'],
-  };
 
   describe('POST /admin/export', function () {
     it('should return HTTP 403 if a sysadmin tries', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(sysadminAuthenticationData);
+
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(sysadminHeader)
-        .send(validSearchAll);
+        .send(validSearchAllPayload);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
     it('should return HTTP 403 if a Untersuchungsteam tries', async function () {
+      sandbox.stub(serverInstance.auth, 'test').resolves(utAuthenticationData);
+
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(utHeader)
-        .send(validSearchAll);
+        .send(validSearchAllPayload);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
     it('should return HTTP 403 if a Forscher without study access tries', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData2);
+
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader2)
-        .send(validSearchAll);
+        .send(validSearchAllPayload);
       expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
     it('should return HTTP 422 if the payload has no questionnaires but answers should be exported', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       const invalidSearchNoQuestionnaire: ExportOptions = {
         start_date: new Date(),
         end_date: new Date(),
@@ -125,12 +151,48 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(invalidSearchNoQuestionnaire);
+        .send({
+          ...validSearchAllPayload,
+          exportOptions: JSON.stringify(invalidSearchNoQuestionnaire),
+        });
       expect(result).to.have.status(StatusCodes.UNPROCESSABLE_ENTITY);
     });
 
+    it('should return HTTP 400 if exportOptions is not a string', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
+
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/export')
+        .send({
+          ...validSearchAllPayload,
+          exportOptions: {},
+        });
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
+    it('should return HTTP 400 if exportOptions is no parseable JSON', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
+
+      const result = await chai
+        .request(apiAddress)
+        .post('/admin/export')
+        .send({
+          ...validSearchAllPayload,
+          exportOptions: '{[',
+        });
+      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+    });
+
     it('should return HTTP 400 if the payload has no probands', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
+
       mockGetPseudonyms(['NotSearchedFor']);
 
       const invalidSearchNoUsers: ExportOptions = {
@@ -148,15 +210,17 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(invalidSearchNoUsers);
+        .send(getExportPayloadFromOptions(invalidSearchNoUsers));
       expect(result).to.have.status(StatusCodes.BAD_REQUEST);
     });
 
     it('should return HTTP 400 if the payload has no exports', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       mockGetPseudonyms(['NotSearchedFor']);
 
-      const invalidSearchNoUsers: ExportOptions = {
+      const invalidSearchNoExports: ExportOptions = {
         start_date: new Date(),
         end_date: new Date(),
         study_name: 'ExportTestStudie',
@@ -171,12 +235,14 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(invalidSearchNoUsers);
+        .send(getExportPayloadFromOptions(invalidSearchNoExports));
       expect(result).to.have.status(StatusCodes.BAD_REQUEST);
     });
 
-    it('should return HTTP 422 if the payload has no studyname', async function () {
+    it('should return HTTP 403 if the payload has no studyname', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       const invalidSearchNoStudyname: ExportOptions = {
         start_date: new Date(),
         end_date: new Date(),
@@ -192,12 +258,14 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(invalidSearchNoStudyname);
-      expect(result).to.have.status(StatusCodes.BAD_REQUEST);
+        .send(getExportPayloadFromOptions(invalidSearchNoStudyname));
+      expect(result).to.have.status(StatusCodes.FORBIDDEN);
     });
 
     it('should return HTTP 200 with only the header if the questionnaire does not belong to the study ', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       mockGetPseudonyms(['qtest-exportproband1']);
 
       const invalidSearchWrongQuestionnaires: ExportOptions = {
@@ -212,12 +280,14 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(invalidSearchWrongQuestionnaires);
+        .send(getExportPayloadFromOptions(invalidSearchWrongQuestionnaires));
       expect(result).to.have.status(StatusCodes.OK);
     });
 
     it('should return HTTP 422 if the proband does not belong to the study ', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       mockGetPseudonyms(['qtest-exportproband1']);
 
       const invalidSearchWrongQuestionnaires: ExportOptions = {
@@ -232,12 +302,14 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(invalidSearchWrongQuestionnaires);
+        .send(getExportPayloadFromOptions(invalidSearchWrongQuestionnaires));
       expect(result).to.have.status(StatusCodes.UNPROCESSABLE_ENTITY);
     });
 
     it('should return HTTP 200 with correct data if a Forscher with study access tries', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       mockGetPseudonyms([
         'qtest-exportproband1',
         'qtest-exportproband2',
@@ -247,12 +319,14 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(validSearchAll);
+        .send(validSearchAllPayload);
       expect(result).to.have.status(StatusCodes.OK);
     });
 
     it('should return HTTP 200 when pseudonyms in uppercase', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       mockGetPseudonyms([
         'qtest-exportproband1',
         'qtest-exportproband2',
@@ -262,15 +336,19 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send({
-          ...validSearchAll,
-          probands: ['QTest-ExportProband1', 'QTest-ExportProband2'],
-        });
+        .send(
+          getExportPayloadFromOptions({
+            ...validSearchAll,
+            probands: ['QTest-ExportProband1', 'QTest-ExportProband2'],
+          })
+        );
       expect(result).to.have.status(StatusCodes.OK);
     });
 
     it('should return HTTP 200 with specific date if a Forscher with study access tries', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       mockGetPseudonyms([
         'qtest-exportproband1',
         'qtest-exportproband2',
@@ -292,12 +370,14 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(search);
+        .send(getExportPayloadFromOptions(search));
       expect(result).to.have.status(StatusCodes.OK);
     });
 
     it('should return HTTP 200 with specific questionnaire if a Forscher with study access tries', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       mockGetPseudonyms([
         'qtest-exportproband1',
         'qtest-exportproband2',
@@ -316,12 +396,14 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(search);
+        .send(getExportPayloadFromOptions(search));
       expect(result).to.have.status(StatusCodes.OK);
     });
 
     it('should return HTTP 200 with specific user if a Forscher with study access tries', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       mockGetPseudonyms([
         'qtest-exportproband1',
         'qtest-exportproband2',
@@ -340,12 +422,14 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(search);
+        .send(getExportPayloadFromOptions(search));
       expect(result).to.have.status(StatusCodes.OK);
     });
 
     it('should return HTTP 200 with sample IDs', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       mockGetPseudonyms([
         'qtest-exportproband1',
         'qtest-exportproband2',
@@ -364,12 +448,14 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(search);
+        .send(getExportPayloadFromOptions(search));
       expect(result).to.have.status(StatusCodes.OK);
     });
 
     it('should return HTTP 200 with labresults if the payload has no questionnaires and answers should not be exported', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       mockGetPseudonyms([
         'qtest-exportproband1',
         'qtest-exportproband2',
@@ -388,12 +474,14 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(invalidSearchNoQuestionnaire);
+        .send(getExportPayloadFromOptions(invalidSearchNoQuestionnaire));
       expect(result).to.have.status(StatusCodes.OK);
     });
 
     it('should return HTTP 200 with only the probands settings stream if neither answers nor labresults should be exported', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       mockGetPseudonyms([
         'qtest-exportproband1',
         'qtest-exportproband2',
@@ -412,12 +500,14 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(invalidSearchNoQuestionnaire);
+        .send(getExportPayloadFromOptions(invalidSearchNoQuestionnaire));
       expect(result).to.have.status(StatusCodes.OK);
     });
 
     it('should return HTTP 200 with only the codebook stream', async function () {
+      sandbox
+        .stub(serverInstance.auth, 'test')
+        .resolves(forscherAuthenticationData);
       mockGetPseudonyms([
         'qtest-exportproband1',
         'qtest-exportproband2',
@@ -436,8 +526,7 @@ describe('/admin/admin/export', function () {
       const result = await chai
         .request(apiAddress)
         .post('/admin/export')
-        .set(forscherHeader1)
-        .send(codebookSearch);
+        .send(getExportPayloadFromOptions(codebookSearch));
       expect(result).to.have.status(StatusCodes.OK);
     });
   });
@@ -452,3 +541,12 @@ describe('/admin/admin/export', function () {
     );
   }
 });
+
+export function getExportPayloadFromOptions(
+  options: ExportOptions
+): ExportPayload {
+  return {
+    ...validSearchAllPayload,
+    exportOptions: JSON.stringify(options),
+  };
+}

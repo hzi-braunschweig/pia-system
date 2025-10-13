@@ -7,69 +7,97 @@
 import {
   HttpErrorResponse,
   HttpEvent,
-  HttpHandler,
+  HttpHandlerFn,
   HttpRequest,
+  provideHttpClient,
 } from '@angular/common/http';
+import { DOCUMENT } from '@angular/common';
 import { onErrorResumeNext, Subject } from 'rxjs';
-import { fakeAsync, tick } from '@angular/core/testing';
-import { UnauthorizedInterceptor } from './unauthorized-interceptor';
-import { KeycloakService } from 'keycloak-angular';
-import SpyObj = jasmine.SpyObj;
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { unauthorizedInterceptor } from './unauthorized-interceptor';
+import Keycloak from 'keycloak-js';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
-describe('UnauthorizedInterceptor', () => {
+describe('unauthorizedInterceptor', () => {
   let request: HttpRequest<unknown>;
-  let handler: SpyObj<HttpHandler>;
   let handleSubject: Subject<HttpEvent<unknown>>;
-  let document: SpyObj<Document>;
-  let keycloak: SpyObj<KeycloakService>;
+  let next: jasmine.Spy<HttpHandlerFn>;
+  let document: jasmine.SpyObj<Document>;
+  let keycloak: jasmine.SpyObj<Keycloak>;
 
   beforeEach(() => {
     request = new HttpRequest('GET', 'some/url/');
-    handler = jasmine.createSpyObj<SpyObj<HttpHandler>>('HttpHandler', [
-      'handle',
-    ]);
     handleSubject = new Subject<HttpEvent<unknown>>();
-    handler.handle.and.returnValue(handleSubject.asObservable());
+    next = jasmine.createSpy().and.returnValue(handleSubject.asObservable());
+
     document = jasmine.createSpyObj<Document>('Document', [], {
       location: { href: 'http://example.com/' } as Location,
     });
-    keycloak = jasmine.createSpyObj('KeycloakService', [
-      'isTokenExpired',
-      'logout',
-    ]);
+
+    keycloak = jasmine.createSpyObj('Keycloak', ['isTokenExpired', 'logout']);
     keycloak.isTokenExpired.and.returnValue(true);
+
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: Keycloak, useValue: keycloak },
+        { provide: DOCUMENT, useValue: document },
+      ],
+    });
   });
 
-  it('should log user out if a 401 response was received', fakeAsync(async () => {
+  it('should log user out if a 401 response was received', fakeAsync(() => {
     const error = new HttpErrorResponse({ status: 401 });
-    const interceptor = new UnauthorizedInterceptor(document, keycloak);
-    onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
+    onErrorResumeNext(
+      TestBed.runInInjectionContext(() =>
+        unauthorizedInterceptor(request, next)
+      )
+    ).subscribe();
+
     handleSubject.error(error);
     tick();
-    expect(handler.handle).toHaveBeenCalledWith(request);
-    expect(keycloak.logout).toHaveBeenCalledWith('http://example.com/');
+
+    expect(next).toHaveBeenCalledWith(request);
+    expect(keycloak.logout).toHaveBeenCalledWith({
+      redirectUri: 'http://example.com/',
+    });
   }));
 
   it('should pass the error if a non 401 response was received and token is not expired', fakeAsync(() => {
     const error = new HttpErrorResponse({ status: 404 });
-    const interceptor = new UnauthorizedInterceptor(document, keycloak);
     keycloak.isTokenExpired.and.returnValue(false);
-    onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
+
+    let caughtError: unknown;
+    TestBed.runInInjectionContext(() =>
+      unauthorizedInterceptor(request, next)
+    ).subscribe({
+      error: (err) => (caughtError = err),
+    });
+
     handleSubject.error(error);
     tick();
 
-    expect(handler.handle).toHaveBeenCalledWith(request);
+    expect(next).toHaveBeenCalledWith(request);
     expect(keycloak.logout).not.toHaveBeenCalled();
+    expect(caughtError).toBe(error);
   }));
 
-  it('should handle logout error', fakeAsync(async () => {
+  it('should handle logout error', fakeAsync(() => {
     const error = new HttpErrorResponse({ status: 401 });
-    const interceptor = new UnauthorizedInterceptor(document, keycloak);
-    onErrorResumeNext(interceptor.intercept(request, handler)).subscribe();
-    keycloak.logout.and.rejectWith('some error occured');
+    onErrorResumeNext(
+      TestBed.runInInjectionContext(() =>
+        unauthorizedInterceptor(request, next)
+      )
+    ).subscribe();
+
+    keycloak.logout.and.rejectWith('some error occurred');
     handleSubject.error(error);
     tick();
-    expect(handler.handle).toHaveBeenCalledWith(request);
-    expect(keycloak.logout).toHaveBeenCalledWith('http://example.com/');
+
+    expect(next).toHaveBeenCalledWith(request);
+    expect(keycloak.logout).toHaveBeenCalledWith({
+      redirectUri: 'http://example.com/',
+    });
   }));
 });

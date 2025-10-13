@@ -80,7 +80,9 @@
 
         <ion-label>
           <h2>{{ qInstance.questionnaire_name }}</h2>
-          <ion-note>{{ qInstance.date_of_issue | date: 'shortDate' }}</ion-note>
+          <ion-note>{{
+            qInstance.date_of_issue | date : 'shortDate'
+          }}</ion-note>
           <app-questionnaire-progress-bar
             [progress]="qInstance.progress"
             [status]="qInstance.status"

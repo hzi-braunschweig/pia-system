@@ -259,9 +259,81 @@
                         <div
                           *ngIf="answer.controls['answer_type_id'].value === 2"
                           class="answer-type checkbox-group"
-                          data-e2e="e2e-input-type-checkbox-group"
+                          data-e2e="e2e-input-type-multiselect"
                         >
                           <input [hidden]="true" formControlName="value" />
+                          @if (answer.controls['use_autocomplete'].value){
+                          <mat-form-field style="width: 100%">
+                            <mat-chip-grid #chipGrid aria-label="Select values">
+                              @for (valueList of
+                              answer.controls['values'].controls; track
+                              valueList.value.value; ) {
+                              <p>{{ valueList.isChecked }}</p>
+                              @if (valueList.value.isChecked) {
+                              <mat-chip-row
+                                (removed)="
+                                  onMultiSelectChange(
+                                    i,
+                                    j,
+                                    false,
+                                    valueList.value.value
+                                  )
+                                "
+                              >
+                                {{ valueList.controls['value'].value }}
+                                <button
+                                  matChipRemove
+                                  [attr.aria-label]="
+                                    'remove ' + valueList.value.value
+                                  "
+                                >
+                                  <mat-icon>cancel</mat-icon>
+                                </button>
+                              </mat-chip-row>
+                              } }
+                            </mat-chip-grid>
+                            <input
+                              #autoInputForMultiSelect
+                              type="text"
+                              [placeholder]="
+                                'ANSWERS_PROBAND.AUTOCOMPLETE_MULTISELECT_PICK'
+                                  | translate
+                              "
+                              data-e2e="e2e-input-type-autocomplete-multiselect"
+                              [matAutocomplete]="autoMulti"
+                              [matChipInputFor]="chipGrid"
+                              formControlName="filter_value"
+                            />
+                            <mat-autocomplete
+                              #autoMulti="matAutocomplete"
+                              (optionSelected)="
+                                onMultiSelectChange(
+                                  i,
+                                  j,
+                                  true,
+                                  $event.option.value
+                                )
+                              "
+                            >
+                              @for (valueAnswers of
+                              answer.controls['filtered_values'].value; track
+                              valueAnswers) {
+                              <mat-option
+                                [value]="valueAnswers"
+                                (mousedown)="$event.preventDefault()"
+                              >
+                                {{ valueAnswers }}</mat-option
+                              >
+                              }
+                            </mat-autocomplete>
+                          </mat-form-field>
+                          <mat-error *ngIf="answer.hasError('answerRequired')">
+                            {{
+                              'ANSWERS_PROBAND.ANSWER_VALUE_REQUIRED'
+                                | translate
+                            }}
+                          </mat-error>
+                          } @else {
                           <div
                             *ngFor="
                               let valueList of answer.controls['values']
@@ -274,7 +346,14 @@
                               #checkbox
                               type="checkbox"
                               [checked]="valueList.value.isChecked"
-                              (change)="onChange(checkbox, i, j)"
+                              (change)="
+                                onMultiSelectChange(
+                                  i,
+                                  j,
+                                  checkbox.checked,
+                                  checkbox.value
+                                )
+                              "
                               value="{{ valueList.value.value }}"
                             />{{ valueList.controls['value'].value }}
                           </div>
@@ -284,8 +363,8 @@
                                 | translate
                             }}
                           </mat-error>
+                          }
                         </div>
-
                         <div
                           *ngIf="answer.controls['answer_type_id'].value === 3"
                           class="answer-type text"
@@ -403,10 +482,10 @@
                                     : {
                                         restriction_min:
                                           answer.controls['restriction_min']
-                                            .value | date: 'dd.MM.yyyy',
+                                            .value | date : 'dd.MM.yyyy',
                                         restriction_max:
                                           answer.controls['restriction_max']
-                                            .value | date: 'dd.MM.yyyy'
+                                            .value | date : 'dd.MM.yyyy'
                                       }
                               }}
                             </mat-error>
@@ -653,7 +732,7 @@
                 <mat-card-actions fxLayoutAlign="end center">
                   <button
                     type="button"
-                    *ngIf="questionnaire_instance_status != 'released_once'"
+                    *ngIf="questionnaire_instance_status !== 'released_once'"
                     mat-raised-button
                     (click)="saveAndGoToOverview(i)"
                     data-e2e="e2e-save-questionnaire-and-exit"
@@ -686,7 +765,7 @@
           class="questionnaire-card forscher"
           *ngIf="
             displayStatus == DisplayStatus.OVERVIEW ||
-            questionnaire_instance_status == 'released_twice' ||
+            questionnaire_instance_status === 'released_twice' ||
             user.hasRole('Forscher')
           "
         >
@@ -694,7 +773,7 @@
             <mat-card-title>
               <button
                 *ngIf="
-                  questionnaire_instance_status == 'released_twice' ||
+                  questionnaire_instance_status === 'released_twice' ||
                   user.hasRole('Forscher')
                 "
                 id="arrowback"
@@ -710,23 +789,23 @@
           <mat-card-content>
             <mat-divider
               *ngIf="
-                questionnaire_instance_status == 'in_progress' ||
-                questionnaire_instance_status == 'released_once' ||
-                questionnaire_instance_status == 'released_twice'
+                questionnaire_instance_status === 'in_progress' ||
+                questionnaire_instance_status === 'released_once' ||
+                questionnaire_instance_status === 'released_twice'
               "
             ></mat-divider>
             <p>
               <ng-container
                 *ngIf="
-                  questionnaire_instance_status == 'in_progress' ||
-                  questionnaire_instance_status == 'released_once'
+                  questionnaire_instance_status === 'in_progress' ||
+                  questionnaire_instance_status === 'released_once'
                 "
                 >{{
                   'ANSWERS_PROBAND.OVERVIEW_HINT_IN_PROGRESS' | translate
                 }}</ng-container
               >
               <ng-container
-                *ngIf="questionnaire_instance_status == 'released_twice'"
+                *ngIf="questionnaire_instance_status === 'released_twice'"
                 >{{
                   'ANSWERS_PROBAND.OVERVIEW_HINT_RELEASED' | translate
                 }}</ng-container
@@ -780,7 +859,7 @@
                             class="answer-type radio-group"
                             data-e2e="e2e-input-type-single-select"
                           >
-                            @if (answer.controls[ 'use_autocomplete' ].value){
+                            @if (answer.controls['use_autocomplete'].value){
                             <mat-form-field>
                               <mat-select formControlName="value">
                                 @for (valueAnswers of
@@ -815,13 +894,11 @@
                                 </div>
                               </mat-radio-group>
                             </div>
-
                             }
-
                             <mat-error
                               *ngIf="
                                 answer.hasError('answerRequired') &&
-                                questionnaire_instance_status !=
+                                questionnaire_instance_status !==
                                   'released_twice'
                               "
                             >
@@ -837,8 +914,33 @@
                               answer.controls['answer_type_id'].value === 2
                             "
                             class="answer-type checkbox-group"
-                            data-e2e="e2e-input-type-checkbox-group"
+                            data-e2e="e2e-input-type-multiselect"
                           >
+                            @if (answer.controls['use_autocomplete'].value){
+                            <div
+                              *ngFor="
+                                let valueList of answer.controls['values']
+                                  .controls;
+                                let k = index
+                              "
+                            >
+                              @if (isAnswerInArray(valueList.value,
+                              answer.controls['value'].value )) {
+                              <input
+                                #checkbox
+                                type="checkbox"
+                                [checked]="
+                                  isAnswerInArray(
+                                    valueList.value,
+                                    answer.controls['value'].value
+                                  )
+                                "
+                                value="{{ valueList.value.value }}"
+                              />
+                              {{ valueList.controls['value'].value }}
+                              }
+                            </div>
+                            } @else {
                             <div
                               *ngFor="
                                 let valueList of answer.controls['values']
@@ -859,10 +961,11 @@
                               />
                               {{ valueList.controls['value'].value }}
                             </div>
+                            }
                             <mat-error
                               *ngIf="
                                 answer.hasError('answerRequired') &&
-                                questionnaire_instance_status !=
+                                questionnaire_instance_status !==
                                   'released_twice'
                               "
                             >
@@ -884,7 +987,7 @@
                             <mat-error
                               *ngIf="
                                 answer.hasError('answerRequired') &&
-                                questionnaire_instance_status !=
+                                questionnaire_instance_status !==
                                   'released_twice'
                               "
                             >
@@ -904,7 +1007,7 @@
                                 !answer.controls['value'].hasError(
                                   'notNumber'
                                 ) &&
-                                questionnaire_instance_status !=
+                                questionnaire_instance_status !==
                                   'released_twice'
                               "
                               >{{
@@ -928,7 +1031,7 @@
                                 answer.controls['value'].hasError(
                                   'notDecimalNumber'
                                 ) &&
-                                questionnaire_instance_status !=
+                                questionnaire_instance_status !==
                                   'released_twice'
                               "
                             >
@@ -942,7 +1045,7 @@
                                 answer.controls['value'].hasError(
                                   'notNumber'
                                 ) &&
-                                questionnaire_instance_status !=
+                                questionnaire_instance_status !==
                                   'released_twice'
                               "
                             >
@@ -1003,7 +1106,7 @@
                             <mat-error
                               *ngIf="
                                 answer.hasError('answerRequired') &&
-                                questionnaire_instance_status !=
+                                questionnaire_instance_status !==
                                   'released_twice'
                               "
                             >
@@ -1017,7 +1120,7 @@
                                 answer.controls['value'].hasError(
                                   'valuesValidate'
                                 ) &&
-                                questionnaire_instance_status !=
+                                questionnaire_instance_status !==
                                   'released_twice'
                               "
                               >{{
@@ -1064,7 +1167,7 @@
                                 <mat-error
                                   *ngIf="
                                     answer.hasError('answerRequired') &&
-                                    questionnaire_instance_status !=
+                                    questionnaire_instance_status !==
                                       'released_twice'
                                   "
                                 >
@@ -1092,7 +1195,7 @@
                                 <mat-error
                                   *ngIf="
                                     answer.hasError('answerRequired') &&
-                                    questionnaire_instance_status !=
+                                    questionnaire_instance_status !==
                                       'released_twice'
                                   "
                                 >
@@ -1123,7 +1226,7 @@
                             <mat-error
                               *ngIf="
                                 answer.hasError('answerRequired') &&
-                                questionnaire_instance_status !=
+                                questionnaire_instance_status !==
                                   'released_twice'
                               "
                             >
@@ -1161,7 +1264,7 @@
                             <mat-error
                               *ngIf="
                                 answer.hasError('answerRequired') &&
-                                questionnaire_instance_status !=
+                                questionnaire_instance_status !==
                                   'released_twice'
                               "
                             >
@@ -1184,7 +1287,7 @@
                             <mat-error
                               *ngIf="
                                 answer.hasError('answerRequired') &&
-                                questionnaire_instance_status !=
+                                questionnaire_instance_status !==
                                   'released_twice'
                               "
                             >
@@ -1218,7 +1321,7 @@
                             <mat-error
                               *ngIf="
                                 answer.hasError('answerRequired') &&
-                                questionnaire_instance_status !=
+                                questionnaire_instance_status !==
                                   'released_twice'
                               "
                             >
@@ -1248,13 +1351,13 @@
             >
               <span
                 *ngIf="
-                  questionnaire_instance_status != 'released_once' &&
-                  questionnaire_instance_status != 'released_twice'
+                  questionnaire_instance_status !== 'released_once' &&
+                  questionnaire_instance_status !== 'released_twice'
                 "
               >
                 {{ 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE1' | translate }}
               </span>
-              <span *ngIf="questionnaire_instance_status == 'released_once'">
+              <span *ngIf="questionnaire_instance_status === 'released_once'">
                 {{ 'ANSWERS_PROBAND.RELEASE_QUESTIONNAIRE2' | translate }}
               </span>
             </button>
@@ -1283,7 +1386,7 @@
                 }}</strong>
                 {{ histItem.releasing_person_old }},
                 <strong>{{ 'ANSWERS_HISTORY.DATE' | translate }}</strong>
-                {{ histItem.date_of_release_old | date: 'dd.MM.yy - HH:mm' }}
+                {{ histItem.date_of_release_old | date : 'dd.MM.yy - HH:mm' }}
               </span>
               <span class="arrow-right">&#8594;</span>
               <span *ngIf="histItem.date_of_release_new">
@@ -1294,7 +1397,7 @@
                 }}</strong>
                 {{ histItem.releasing_person_new }},
                 <strong>{{ 'ANSWERS_HISTORY.DATE' | translate }}</strong>
-                {{ histItem.date_of_release_new | date: 'dd.MM.yy - HH:mm' }}
+                {{ histItem.date_of_release_new | date : 'dd.MM.yy - HH:mm' }}
               </span>
               <span *ngIf="!histItem.date_of_release_new">
                 <strong>{{ 'ANSWERS_HISTORY.CURRENT' | translate }}</strong>

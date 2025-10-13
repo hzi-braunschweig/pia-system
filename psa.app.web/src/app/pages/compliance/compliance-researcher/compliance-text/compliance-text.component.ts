@@ -20,6 +20,7 @@ import { ComplianceService } from '../../../../psa.app.core/providers/compliance
   selector: 'app-compliance-text',
   templateUrl: './compliance-text.component.html',
   styleUrls: ['./compliance-text.component.scss'],
+  standalone: false,
 })
 export class ComplianceTextComponent implements OnInit {
   textfieldPlaceholders = [
@@ -42,8 +43,8 @@ export class ComplianceTextComponent implements OnInit {
   @Output() placeholderSelected = new EventEmitter<string>();
 
   constructor(
-    private alertService: AlertService,
-    private complianceService: ComplianceService
+    private readonly alertService: AlertService,
+    private readonly complianceService: ComplianceService
   ) {}
 
   ngOnInit(): void {
@@ -103,7 +104,7 @@ export class ComplianceTextComponent implements OnInit {
   }
 
   mustNotContainValidator(forbiddenRe: RegExp): ValidatorFn {
-    return (control: AbstractControl): { [key: string]: any } | null => {
+    return (control: AbstractControl): Record<string, any> | null => {
       const forbidden = forbiddenRe.test(control.value);
       return forbidden ? { mustNotContain: { value: control.value } } : null;
     };

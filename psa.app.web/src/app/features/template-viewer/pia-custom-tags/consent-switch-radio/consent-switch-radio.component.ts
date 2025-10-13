@@ -16,6 +16,7 @@ import { ContainerForFormControlUsageComponent } from '../../container-for-form-
 @Component({
   selector: 'app-consent-switch-radio',
   templateUrl: './consent-switch-radio.component.html',
+  standalone: false,
 })
 export class ConsentSwitchRadioComponent
   extends ContainerForFormControlUsageComponent

@@ -6,8 +6,9 @@
 
 import { Boom } from '@hapi/boom';
 import { StatusCodes } from 'http-status-codes';
-import { getConnection, getRepository } from 'typeorm';
+import { IsNull } from 'typeorm';
 import { sampletrackingserviceClient } from '../clients/sampletrackingserviceClient';
+import { dataSource } from '../db';
 import { Answer } from '../entities/answer';
 import { AnswerOption } from '../entities/answerOption';
 import { QuestionnaireInstance } from '../entities/questionnaireInstance';
@@ -29,11 +30,14 @@ export class AnswerService {
     instance: QuestionnaireInstance,
     releaseVersion?: number
   ): Promise<Answer[]> {
-    return await getRepository(Answer).find({
-      relations: ['answerOption', 'question'],
+    return await dataSource.getRepository(Answer).find({
+      relations: {
+        question: true,
+        answerOption: true,
+      },
       where: {
-        questionnaireInstance: instance,
-        versioning: releaseVersion ?? instance.releaseVersion,
+        questionnaireInstanceId: instance.id,
+        versioning: releaseVersion ?? instance.releaseVersion ?? IsNull(),
       },
     });
   }
@@ -42,10 +46,10 @@ export class AnswerService {
     instance: QuestionnaireInstance,
     releaseVersion?: number
   ): Promise<number> {
-    return await getRepository(Answer).count({
+    return await dataSource.getRepository(Answer).count({
       where: {
-        questionnaireInstance: instance,
-        versioning: releaseVersion ?? instance.releaseVersion,
+        questionnaireInstanceId: instance.id,
+        versioning: releaseVersion ?? instance.releaseVersion ?? IsNull(),
       },
     });
   }
@@ -60,7 +64,7 @@ export class AnswerService {
       a.versioning = targetReleaseVersion;
       a.questionnaireInstance = instance;
     });
-    await getRepository(Answer).insert(answers);
+    await dataSource.getRepository(Answer).insert(answers);
 
     return await this.find(instance, targetReleaseVersion);
   }
@@ -75,7 +79,7 @@ export class AnswerService {
       );
     }
 
-    const qr = getConnection().createQueryRunner();
+    const qr = dataSource.createQueryRunner();
     await qr.startTransaction();
 
     const answersRepository = qr.manager.getRepository(Answer);
@@ -94,12 +98,15 @@ export class AnswerService {
         }
 
         const existingAnswer = await answersRepository.findOne({
-          relations: ['answerOption', 'question'],
+          relations: {
+            answerOption: true,
+            question: true,
+          },
           where: {
-            question,
-            answerOption,
-            questionnaireInstance: instance,
-            versioning: instance.releaseVersion,
+            questionId: question.id,
+            answerOptionId: answerOption.id,
+            questionnaireInstanceId: instance.id,
+            versioning: instance.releaseVersion ?? IsNull(),
           },
           order: {
             versioning: 'DESC',
@@ -118,15 +125,9 @@ export class AnswerService {
         };
 
         if (existingAnswer && existingAnswer.versioning === nextAnswerVersion) {
-          const result = await answersRepository.update(
-            existingAnswer,
-            updatedAnswerFields
-          );
-          if (result.affected !== undefined && result.affected > 0) {
-            answers.push(
-              answersRepository.merge(existingAnswer, updatedAnswerFields)
-            );
-          }
+          answersRepository.merge(existingAnswer, updatedAnswerFields);
+          await answersRepository.save(existingAnswer);
+          answers.push(existingAnswer);
         } else {
           const result = await answersRepository.save({
             question,
@@ -245,6 +246,7 @@ export class AnswerService {
     codeValue: number
   ): string {
     const index = codes.indexOf(codeValue);
+    // eslint-disable-next-line security/detect-object-injection
     return values[index] ?? '';
   }
 
@@ -280,6 +282,7 @@ export class AnswerService {
     value: string
   ): number {
     const index = values.indexOf(value);
+    // eslint-disable-next-line security/detect-object-injection
     const code = codes[index];
 
     if (code === undefined) {
@@ -349,7 +352,7 @@ export class AnswerService {
         let file: { file_name: string } | undefined;
 
         if (!isNaN(userFileId)) {
-          file = await getConnection()
+          file = await dataSource
             .getRepository(UserFile)
             .createQueryBuilder()
             .select(['file_name'])
@@ -431,7 +434,7 @@ export class AnswerService {
 
   private static determineAnswerVersion(
     instance: QuestionnaireInstance,
-    answer?: Answer
+    answer: Answer | undefined | null
   ): number | undefined {
     const answerVersion = answer?.versioning ?? instance.releaseVersion ?? 1;
 
@@ -452,7 +455,7 @@ export class AnswerService {
   }
 
   private static determineDateOfRelease(
-    answer?: Pick<Answer, 'dateOfRelease'>
+    answer: Pick<Answer, 'dateOfRelease'> | undefined | null
   ): Date {
     return answer?.dateOfRelease ? new Date(answer.dateOfRelease) : new Date();
   }

@@ -11,6 +11,10 @@ export class QuestionnaireListResponse {
   links: { self: { href: string } };
 }
 
+export type QuestionnaireType = 'for_probands' | 'for_research_team';
+
+export type Publish = 'hidden' | 'testprobands' | 'allaudiences';
+
 export type CycleUnit =
   | 'once'
   | 'day'
@@ -29,7 +33,7 @@ export interface Questionnaire {
   cycle_unit: CycleUnit;
   cycle_per_day?: number;
   cycle_first_hour?: number;
-  publish: string;
+  publish: Publish;
   // keep_answers: In some cases, questionnaire answers are to be kept, even
   // in case of the answering proband is removed automatically, like it
   // may happen in a SORMAS context. Kept answers might deal with usage
@@ -41,7 +45,7 @@ export interface Questionnaire {
   name: string;
   custom_name: string | null;
   sort_order: number | null;
-  type: string;
+  type: QuestionnaireType;
   notification_tries: number;
   notification_title: string;
   notification_body_new: string;
@@ -59,7 +63,6 @@ export interface Questionnaire {
   notify_when_not_filled_day: number;
   expires_after_days: number;
   finalises_after_days: number;
-  condition_postview: any;
   version: number;
   updated_at: string | null;
 }

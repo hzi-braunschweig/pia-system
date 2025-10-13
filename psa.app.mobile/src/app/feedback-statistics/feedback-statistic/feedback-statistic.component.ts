@@ -30,6 +30,7 @@ export type RangeValueObject = Extract<
   templateUrl: './feedback-statistic.component.html',
   styleUrls: ['./feedback-statistic.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class FeedbackStatisticComponent implements OnInit {
   @Input()

@@ -10,6 +10,7 @@ import { AbstractControl } from '@angular/forms';
 @Component({
   selector: 'app-questionnaire-answer-error',
   templateUrl: './questionnaire-answer-error.component.html',
+  standalone: false,
 })
 export class QuestionnaireAnswerErrorComponent {
   @Input()

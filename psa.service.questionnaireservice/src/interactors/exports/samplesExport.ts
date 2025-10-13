@@ -38,10 +38,10 @@ export class SamplesExport extends AbstractExportFeature {
       .from('lab_results', 'lr')
       .leftJoin('probands', 'p', 'lr.user_id = p.pseudonym')
       .where('lr.user_id IN (:...probands)', { probands })
-      .orderBy('lr.user_id')
-      .addOrderBy('lr.id')
-      .addOrderBy('lr.study_status')
-      .addOrderBy('lr.status')
+      .orderBy('user_id')
+      .addOrderBy('id')
+      .addOrderBy('study_status')
+      .addOrderBy('status')
       .stream();
   }
 }

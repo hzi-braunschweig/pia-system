@@ -17,6 +17,7 @@ import { FeedbackStatisticConfigurationMetaDataDto } from '../feedback-statistic
   selector: 'app-feedback-statistic-meta-data',
   templateUrl: './feedback-statistic-meta-data.component.html',
   styleUrls: ['./feedback-statistic-meta-data.component.scss'],
+  standalone: false,
 })
 export class FeedbackStatisticMetaDataComponent
   extends AbstractFeedbackStatisticConfigurationComponent<

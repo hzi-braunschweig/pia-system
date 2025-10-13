@@ -70,7 +70,7 @@ export class Server {
       plugin: i18nPlugin,
       options: {
         defaultLocale: config.defaultLanguage,
-        locales: ['en-US', 'de-DE'],
+        locales: ['en-US', 'de-DE', 'es-ES', 'fr-FR'],
         directory: __dirname + '/../resources/i18n',
         updateFiles: false,
       },

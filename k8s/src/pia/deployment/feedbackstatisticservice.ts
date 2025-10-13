@@ -7,11 +7,11 @@
 import { Construct } from 'constructs';
 import { Configuration } from '../../configuration';
 import { NodeJSService } from '../generic/nodejsservice';
-import { UserService } from './userservice';
-import { QPiaService } from '../stateful/qpiaservice';
 import { MessageQueue } from '../stateful/messagequeue';
+import { QPiaService } from '../stateful/qpiaservice';
 import { Authserver } from './authserver';
 import { QuestionnaireService } from './questionnaireservice';
+import { UserService } from './userservice';
 
 export class FeedbackStatisticService extends NodeJSService {
   public constructor(
@@ -64,6 +64,9 @@ export class FeedbackStatisticService extends NodeJSService {
         AUTHSERVER_ADMIN_TOKEN_INTROSPECTION_CLIENT_SECRET:
           configuration.variables.authserver
             .adminTokenIntrospectionClientSecret,
+
+        NOTIFICATION_HOUR: configuration.variables.notificationTime.hours,
+        NOTIFICATION_MINUTE: configuration.variables.notificationTime.minutes,
       },
       {
         // is currently not scalable because its using a scheduler

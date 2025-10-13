@@ -22,7 +22,6 @@ export type DialogOkCancelComponentReturn = 'ok';
 
 @Component({
   selector: 'dialog-ok-cancel',
-  standalone: true,
   template: `
     <h1 *ngIf="data.q" mat-dialog-title>{{ data.q | translate }}</h1>
     <div mat-dialog-content>{{ data.content | translate }}</div>

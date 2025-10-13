@@ -5,10 +5,11 @@
   -->
 
 <ion-item fill="filled" mode="md" class="ion-margin-start ion-margin-end">
-  <ion-label position="floating">{{ label }}</ion-label>
   <ion-input
     type="text"
     [disabled]="formControl.disabled"
     [formControl]="formControl"
+    [label]="label"
+    labelPlacement="floating"
   ></ion-input>
 </ion-item>

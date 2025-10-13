@@ -16,12 +16,13 @@ import { AlertService } from '../../../_services/alert.service';
   templateUrl: './laboratory-result-details.component.html',
   styleUrls: ['./laboratory-result-details.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class LaboratoryResultDetailsComponent implements OnInit {
   public isLoading = true;
   public labResultHtml: string;
 
-  private userId: string =
+  private readonly userId: string =
     this.activatedRoute.snapshot.queryParamMap.get('user_id');
 
   constructor(

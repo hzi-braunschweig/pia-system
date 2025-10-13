@@ -4,16 +4,14 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Injectable } from '@angular/core';
-import { KeycloakService } from 'keycloak-angular';
+import { inject, Injectable } from '@angular/core';
 import { FCMService } from './fcm.service';
+import Keycloak from 'keycloak-js';
 
 @Injectable()
 export class AuthenticationManager {
-  constructor(
-    private keycloak: KeycloakService,
-    private fcmService: FCMService
-  ) {}
+  private readonly keycloak = inject(Keycloak);
+  constructor(private readonly fcmService: FCMService) {}
 
   public async logout(): Promise<void> {
     await this.fcmService.onLogout();

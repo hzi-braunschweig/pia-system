@@ -20,6 +20,7 @@ const QUESTIONNAIRE_ANSWER_SINGLE_SELECT_ACCESSOR = {
   templateUrl: './questionnaire-answer-single-select.component.html',
   providers: [QUESTIONNAIRE_ANSWER_SINGLE_SELECT_ACCESSOR],
   styleUrls: ['./questionnaire-answer-single-select.component.scss'],
+  standalone: false,
 })
 export class QuestionnaireAnswerSingleSelectComponent
   extends AbstractControlValueAccessor<FormControlValue>

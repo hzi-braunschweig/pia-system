@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component } from '@angular/core';
-import { KeycloakService } from 'keycloak-angular';
+import { Component, inject } from '@angular/core';
+import Keycloak from 'keycloak-js';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogDeleteAccountHealthDataPermissionComponent } from '../../dialogs/dialog-delete-account-health-data-permission/dialog-delete-account-health-data-permission.component';
 import { DialogDeleteAccountConfirmationComponent } from '../../dialogs/dialog-delete-account-confirmation/dialog-delete-account-confirmation.component';
@@ -20,19 +20,21 @@ type AccountDeletionType = 'full' | 'contact';
 
 @Component({
   templateUrl: 'settings.component.html',
+  standalone: false,
 })
 export class SettingsComponent {
+  private readonly keycloak = inject(Keycloak);
+
   constructor(
-    private readonly keycloak: KeycloakService,
-    private dialog: MatDialog,
-    private authService: AuthService,
-    private user: CurrentUser,
-    private alertService: AlertService,
-    private questionnaireService: QuestionnaireService
+    private readonly dialog: MatDialog,
+    private readonly authService: AuthService,
+    private readonly user: CurrentUser,
+    private readonly alertService: AlertService,
+    private readonly questionnaireService: QuestionnaireService
   ) {}
 
   public changePassword(): void {
-    this.keycloak.getKeycloakInstance().accountManagement();
+    this.keycloak.accountManagement();
   }
 
   public async initiateAccountDeletion(): Promise<void> {
@@ -73,7 +75,7 @@ export class SettingsComponent {
       )
       .afterClosed()
       .pipe(filter((result) => result === 'delete'))
-      .subscribe(() => this.deleteAccount(deletionType));
+      .subscribe(async () => this.deleteAccount(deletionType));
   }
 
   private async deleteAccount(

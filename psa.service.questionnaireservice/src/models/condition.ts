@@ -63,8 +63,6 @@ export function isConditionDto(condition: unknown): condition is ConditionDto {
       ConditionType.INTERNAL_LAST,
     ].includes(check.type) &&
     (check.value === null || typeof check.value === 'string') &&
-    // TODO: False positive. Take a look at https://github.com/nodesecurity/eslint-plugin-security/issues/54 to find out if disable can be removed
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
     [null, 'AND', 'OR', 'XOR'].includes(check.link) &&
     [null, '<', '>', '<=', '>=', '==', '\\='].includes(check.operand) &&
     (check.targetAnswerOption === undefined ||

@@ -1,5 +1,5 @@
 # Appflow currently only supports until node v18 (https://ionic.io/docs/appflow/build-stacks)
-FROM node:20.9.0-alpine@sha256:cb2301e2c5fe3165ba2616591efe53b4b6223849ac0871c138f56d5f7ae8be4b AS base
+FROM node:20.18.1-alpine@sha256:24fb6aa7020d9a20b00d6da6d1714187c45ed00d1eb4adb01395843c338b9372 AS base
 
 FROM base AS npm-install
 RUN apk --update --no-cache add curl tzdata
@@ -18,17 +18,18 @@ COPY $DIR/package*.json ./
 # copy dev dependencies
 COPY psa.lib.licensecollector/package*.json ../psa.lib.licensecollector/
 COPY psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
+COPY psa.lib.licensecollector/static-licenses ../psa.lib.licensecollector/static-licenses
 COPY psa.eslint-config/ ../psa.eslint-config/
 COPY psa.lib.charts/dist ../psa.lib.charts/dist
 
 ### workaround for npm 9 until we move to package registry
 ### execute install in the local dependency folders
 WORKDIR /usr/src/psa.lib.licensecollector
-RUN npm ci
+RUN --mount=type=cache,target=/home/node/.npm,uid=1000,gid=1000,mode=0775 npm ci --prefer-offline
 WORKDIR /usr/src/node-app/
 ###
 
-RUN npm ci
+RUN --mount=type=cache,target=/home/node/.npm,uid=1000,gid=1000,mode=0775 npm ci --prefer-offline
 
 ENV NODE_PATH=/usr/src/node-app/node_modules
 ENV PATH=$PATH:/usr/src/node-app/node_modules/.bin
@@ -43,8 +44,6 @@ RUN curl -fsSL https://ionic.io/get-ionic-cloud-cli | bash
 FROM base AS build-browser
 RUN apk --update --no-cache add g++ make python3
 
-RUN npm install -g cordova
-
 USER node
 WORKDIR /usr/src/node-app/
 
@@ -53,19 +52,20 @@ COPY $DIR/package*.json ./
 # copy dev dependencies
 COPY --chown=node psa.lib.licensecollector/package*.json ../psa.lib.licensecollector/
 COPY --chown=node psa.lib.licensecollector/dist ../psa.lib.licensecollector/dist
+COPY psa.lib.licensecollector/static-licenses ../psa.lib.licensecollector/static-licenses
 COPY --chown=node psa.eslint-config/ ../psa.eslint-config/
 COPY --chown=node psa.lib.charts/dist ../psa.lib.charts/dist
 
 ### workaround for npm 9 until we move to package registry
 ### execute install in the local dependency folders
 WORKDIR /usr/src/psa.lib.licensecollector
-RUN npm ci
+RUN --mount=type=cache,target=/home/node/.npm,uid=1000,gid=1000,mode=0775 npm ci --prefer-offline
 WORKDIR /usr/src/node-app/
 ###
 
-RUN npm ci
+RUN --mount=type=cache,target=/home/node/.npm,uid=1000,gid=1000,mode=0775 npm ci --prefer-offline
 
-COPY --chown=node $DIR/.browserslistrc $DIR/*.json $DIR/config.xml $DIR/GoogleService-Info.plist ./
+COPY --chown=node $DIR/.browserslistrc $DIR/*.json ./
 COPY --chown=node $DIR/src ./src
 ARG configuration=production
 ARG nodeoptions
@@ -75,6 +75,6 @@ RUN npm run build:browser
 
 ################################################################
 
-FROM busybox:1.36.1@sha256:3fbc632167424a6d997e74f52b878d7cc478225cffac6bc977eedfe51c7f4e79 AS final
+FROM busybox:1.37.0@sha256:d82f458899c9696cb26a7c02d5568f81c8c8223f8661bb2a7988b269c8b9051e AS final
 
-COPY --from=build-browser /usr/src/node-app/platforms/browser/www/ /assets/browser
+COPY --from=build-browser /usr/src/node-app/www/ /assets/browser

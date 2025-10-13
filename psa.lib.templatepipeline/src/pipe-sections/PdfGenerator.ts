@@ -5,10 +5,10 @@
  */
 
 import { PipeSection } from './PipeSection';
-import puppeteer, { Browser, PDFOptions } from 'puppeteer';
+import puppeteer, { Browser, Page, PDFOptions } from 'puppeteer';
 import { HtmlDocument, PdfDocument } from '../template-documents';
 
-let browser: Browser | undefined;
+let browserSingleton: Promise<Browser> | undefined;
 
 export class PdfGenerator implements PipeSection<HtmlDocument, PdfDocument> {
   private readonly defaultOptions: PDFOptions = {
@@ -35,33 +35,50 @@ export class PdfGenerator implements PipeSection<HtmlDocument, PdfDocument> {
   }
 
   public static async closeBrowser(): Promise<void> {
-    if (!browser) {
+    if (!browserSingleton) {
       return;
     }
+    const browser = await browserSingleton;
+    browserSingleton = undefined;
     await browser.close();
-    browser = undefined;
   }
 
   public execute(input: HtmlDocument): PdfDocument {
     return new PdfDocument(this.generatePdf(input.htmlText));
   }
 
-  public async generatePdf(htmlText: Promise<string>): Promise<Buffer> {
-    if (!browser) {
-      browser = await puppeteer.launch({
-        args: ['--disable-dev-shm-usage', '--no-sandbox'],
-      });
-    }
-
-    const page = await browser.newPage();
+  private async generatePdf(htmlText: Promise<string>): Promise<Uint8Array> {
+    let page: Page | undefined;
+    let browser: Browser | undefined;
     try {
-      await page.setContent(await htmlText);
+      if (!browserSingleton) {
+        browserSingleton = puppeteer.launch({
+          headless: 'shell',
+          args: ['--disable-dev-shm-usage', '--no-sandbox', '--disable-gpu'],
+          env: {
+            ...process.env,
+            XDG_CONFIG_HOME: '/tmp/.chromium',
+            XDG_CACHE_HOME: '/tmp/.chromium',
+          },
+        });
+      }
+      browser = await browserSingleton;
+
+      page = await browser.newPage();
+      await page.setContent(await htmlText, { waitUntil: 'domcontentloaded' });
       return await page.pdf(this.options);
     } catch (e) {
-      console.error(e);
+      console.error('Error at generating PDF: ', e);
+
+      browserSingleton = undefined;
+      if (browser) {
+        void browser.close();
+      }
       throw e;
     } finally {
-      await page.close();
+      if (page) {
+        await page.close();
+      }
     }
   }
 }

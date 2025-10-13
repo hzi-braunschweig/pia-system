@@ -5,7 +5,6 @@
  */
 /* eslint-disable @typescript-eslint/no-magic-numbers,security/detect-object-injection */
 
-import { getManager, getRepository } from 'typeorm';
 import chaiHttp from 'chai-http';
 import chai, { expect } from 'chai';
 import { StatusCodes } from 'http-status-codes';
@@ -14,7 +13,7 @@ import { Server } from '../../src/server';
 import { QuestionnaireInstance } from '../../src/entities/questionnaireInstance';
 import { Questionnaire } from '../../src/entities/questionnaire';
 import { Condition } from '../../src/entities/condition';
-import { db } from '../../src/db';
+import { dataSource, db } from '../../src/db';
 import { config } from '../../src/config';
 import {
   QuestionnaireInstanceDto,
@@ -103,7 +102,7 @@ describe('Internal: QuestionnaireInstances', () => {
     let questionnaireInstanceY: QuestionnaireInstance;
 
     beforeEach(async () => {
-      await getManager().transaction(async (manager) => {
+      await dataSource.manager.transaction(async (manager) => {
         questionnaireX = await manager.save(
           Questionnaire,
           createQuestionnaire({ id: 9100 })
@@ -255,13 +254,13 @@ describe('Internal: QuestionnaireInstances', () => {
     });
 
     afterEach(async () => {
-      await getManager().transaction(async (manager) => {
-        await manager.delete(Condition, {});
-        await manager.delete(Questionnaire, {});
-        await manager.delete(Question, {});
-        await manager.delete(AnswerOption, {});
-        await manager.delete(Answer, {});
-        await manager.delete(QuestionnaireInstance, {});
+      await dataSource.manager.transaction(async (manager) => {
+        await manager.deleteAll(Condition);
+        await manager.deleteAll(Questionnaire);
+        await manager.deleteAll(Question);
+        await manager.deleteAll(AnswerOption);
+        await manager.deleteAll(Answer);
+        await manager.deleteAll(QuestionnaireInstance);
       });
     });
 
@@ -339,7 +338,7 @@ describe('Internal: QuestionnaireInstances', () => {
 
   describe('GET /questionnaire/user/{pseudonym}/questionnaireInstances', () => {
     beforeEach(async () => {
-      await getManager().transaction(async (manager) => {
+      await dataSource.manager.transaction(async (manager) => {
         const q1 = await manager.save(
           Questionnaire,
           createQuestionnaire({ id: 9100 })
@@ -396,9 +395,9 @@ describe('Internal: QuestionnaireInstances', () => {
       });
     });
     afterEach(async () => {
-      await getManager().transaction(async (manager) => {
-        await manager.delete(Questionnaire, {});
-        await manager.delete(QuestionnaireInstance, {});
+      await dataSource.manager.transaction(async (manager) => {
+        await manager.deleteAll(Questionnaire);
+        await manager.deleteAll(QuestionnaireInstance);
       });
     });
     it('should return 200 and questionnaire instances filtered by default with questionnaires', async () => {
@@ -544,15 +543,15 @@ describe('Internal: QuestionnaireInstances', () => {
     ];
 
     beforeEach(async () => {
-      await getRepository(Questionnaire).save(
-        createQuestionnaire({ id: questionnaireId })
-      );
+      await dataSource
+        .getRepository(Questionnaire)
+        .save(createQuestionnaire({ id: questionnaireId }));
     });
 
     afterEach(async () => {
-      await getRepository(Questionnaire).delete({});
-      await getRepository(QuestionnaireInstance).delete({});
-      await getRepository(QuestionnaireInstanceOrigin).delete({});
+      await dataSource.getRepository(Questionnaire).deleteAll();
+      await dataSource.getRepository(QuestionnaireInstance).deleteAll();
+      await dataSource.getRepository(QuestionnaireInstanceOrigin).deleteAll();
     });
 
     it('should return 200 and create all instances', async () => {
@@ -581,17 +580,19 @@ describe('Internal: QuestionnaireInstances', () => {
     });
 
     it('should return 200 and create all instances and their origin relation', async () => {
-      const questionnaire = await getRepository(Questionnaire).save(
-        createQuestionnaire({ id: 9100 })
-      );
-      const originInstance = await getRepository(QuestionnaireInstance).save(
-        createQuestionnaireInstance({
-          questionnaire,
-          status: 'active',
-          pseudonym: pseudonym1,
-        })
-      );
-      const condition = await getRepository(Condition).save({
+      const questionnaire = await dataSource
+        .getRepository(Questionnaire)
+        .save(createQuestionnaire({ id: 9100 }));
+      const originInstance = await dataSource
+        .getRepository(QuestionnaireInstance)
+        .save(
+          createQuestionnaireInstance({
+            questionnaire,
+            status: 'active',
+            pseudonym: pseudonym1,
+          })
+        );
+      const condition = await dataSource.getRepository(Condition).save({
         type: ConditionType.EXTERNAL,
         value: 'Good',
         link: 'AND',
@@ -646,9 +647,15 @@ describe('Internal: QuestionnaireInstances', () => {
         expect(instanceDto.id).to.greaterThan(0);
       }
 
-      const origins = await getRepository(QuestionnaireInstanceOrigin).find({
-        relations: ['createdInstance', 'originInstance', 'condition'],
-      });
+      const origins = await dataSource
+        .getRepository(QuestionnaireInstanceOrigin)
+        .find({
+          relations: {
+            createdInstance: true,
+            originInstance: true,
+            condition: true,
+          },
+        });
       expect(origins).to.have.length(instances.length);
       expect(origins.map((o) => o.createdInstance.id)).to.have.members(
         result.body.map((qi) => qi.id)
@@ -683,10 +690,14 @@ describe('Internal: QuestionnaireInstances', () => {
       expect(result.body).to.be.an('array');
       expect(result.body).to.have.length(instances.length);
 
-      const queue = await getRepository(QuestionnaireInstanceQueue).find({
-        relations: ['questionnaireInstance'],
-        loadRelationIds: true,
-      });
+      const queue = await dataSource
+        .getRepository(QuestionnaireInstanceQueue)
+        .find({
+          relations: {
+            questionnaireInstance: true,
+          },
+          loadRelationIds: true,
+        });
 
       expect(queue).to.have.length(queuedInstances.length);
 
@@ -702,10 +713,9 @@ describe('Internal: QuestionnaireInstances', () => {
     it('should dispatch a message for every instance created', async () => {
       // Arrange
       const expectedCustomName = 'dummy_custom_name';
-      await getRepository(Questionnaire).update(
-        { id: 1, version: 1 },
-        { customName: expectedCustomName }
-      );
+      await dataSource
+        .getRepository(Questionnaire)
+        .update({ id: 1, version: 1 }, { customName: expectedCustomName });
       const instances = structuredClone(instancesFixture);
 
       // Act

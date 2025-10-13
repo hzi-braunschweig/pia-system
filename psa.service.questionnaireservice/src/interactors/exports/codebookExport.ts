@@ -99,42 +99,42 @@ export class CodebookExport extends AbstractExportFeature {
           `,
           { id: questionnaire.id, version: questionnaire.version }
         )
-        .leftJoin('questionnaire.questions', 'question')
-        .leftJoin('question.answerOptions', 'answerOption')
-        .leftJoin('question.condition', 'questionCondition')
-        .leftJoin('answerOption.condition', 'answerOptionCondition')
-        .leftJoin(
+        .leftJoinAndSelect('questionnaire.questions', 'question')
+        .leftJoinAndSelect('question.answerOptions', 'answerOption')
+        .leftJoinAndSelect('question.condition', 'questionCondition')
+        .leftJoinAndSelect('answerOption.condition', 'answerOptionCondition')
+        .leftJoinAndSelect(
           'questionnaires',
           'answer_option_target_questionnaire',
           `
-          answer_option_target_questionnaire.id = answerOptionCondition.condition_target_questionnaire AND 
-          answer_option_target_questionnaire.version = answerOptionCondition.condition_target_questionnaire_version
+          answer_option_target_questionnaire.id = "answerOptionCondition".condition_target_questionnaire AND 
+          answer_option_target_questionnaire.version = "answerOptionCondition".condition_target_questionnaire_version
           `
         )
-        .leftJoin(
+        .leftJoinAndSelect(
           'answer_options',
           'answer_option_target_answer_option',
-          'answer_option_target_answer_option.id = answerOptionCondition.condition_target_answer_option'
+          'answer_option_target_answer_option.id = "answerOptionCondition".condition_target_answer_option'
         )
-        .leftJoin(
+        .leftJoinAndSelect(
           'questions',
           'answer_option_target_question',
           'answer_option_target_question.id = answer_option_target_answer_option.question_id'
         )
-        .leftJoin(
+        .leftJoinAndSelect(
           'questionnaires',
           'question_target_questionnaire',
           `
-          question_target_questionnaire.id = questionCondition.condition_target_questionnaire AND
-          question_target_questionnaire.version = questionCondition.condition_target_questionnaire_version
+          question_target_questionnaire.id = "questionCondition".condition_target_questionnaire AND
+          question_target_questionnaire.version = "questionCondition".condition_target_questionnaire_version
           `
         )
-        .leftJoin(
+        .leftJoinAndSelect(
           'answer_options',
           'question_target_answer_option',
-          'question_target_answer_option.id = questionCondition.condition_target_answer_option'
+          'question_target_answer_option.id = "questionCondition".condition_target_answer_option'
         )
-        .leftJoin(
+        .leftJoinAndSelect(
           'questions',
           'question_target_question',
           'question_target_question.id = question_target_answer_option.question_id'

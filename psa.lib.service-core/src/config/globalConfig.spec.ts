@@ -100,4 +100,42 @@ describe('GlobalConfig', () => {
       });
     });
   });
+
+  describe('getNotificationTime()', () => {
+    it('should return default values when environment variables are not set', () => {
+      delete process.env['NOTIFICATION_HOUR'];
+      delete process.env['NOTIFICATION_MINUTE'];
+      expect(GlobalConfig.getNotificationTime()).to.deep.equal({
+        hours: 8,
+        minutes: 0,
+      });
+    });
+
+    it('should return values from environment variables when set', () => {
+      process.env['NOTIFICATION_HOUR'] = '14';
+      process.env['NOTIFICATION_MINUTE'] = '30';
+      expect(GlobalConfig.getNotificationTime()).to.deep.equal({
+        hours: 14,
+        minutes: 30,
+      });
+    });
+
+    it('should handle partial environment variable configuration', () => {
+      process.env['NOTIFICATION_HOUR'] = '9';
+      delete process.env['NOTIFICATION_MINUTE'];
+      expect(GlobalConfig.getNotificationTime()).to.deep.equal({
+        hours: 9,
+        minutes: 0,
+      });
+    });
+
+    it('should handle zero values', () => {
+      process.env['NOTIFICATION_HOUR'] = '0';
+      process.env['NOTIFICATION_MINUTE'] = '0';
+      expect(GlobalConfig.getNotificationTime()).to.deep.equal({
+        hours: 0,
+        minutes: 0,
+      });
+    });
+  });
 });

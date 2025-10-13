@@ -23,6 +23,7 @@ import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
   selector: 'app-questionnaire-instances-list',
   templateUrl: './questionnaire-instances-list.component.html',
   styleUrls: ['./questionnaire-instances-list.component.scss'],
+  standalone: false,
 })
 export class QuestionnaireInstancesListComponent implements AfterViewInit {
   private static readonly order = new Map<QuestionnaireStatus, number>([

@@ -32,10 +32,12 @@ import { FormControl } from '@angular/forms';
       useClass: MatPaginatorIntlGerman,
     },
   ],
+  standalone: false,
 })
 export class InternalUsersComponent implements OnInit {
-  @ViewChild(MatPaginator, { static: true }) private paginator: MatPaginator;
-  @ViewChild(MatSort, { static: true }) private sort: MatSort;
+  @ViewChild(MatPaginator, { static: true })
+  private readonly paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true }) private readonly sort: MatSort;
 
   public roles: { value: ProfessionalRole; viewValue: string }[] = [
     { value: 'Forscher', viewValue: 'ROLES.RESEARCHER' },
@@ -52,9 +54,9 @@ export class InternalUsersComponent implements OnInit {
   public isLoading: boolean = true;
 
   constructor(
-    private authService: AuthService,
-    private userService: UserService,
-    private alertService: AlertService,
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+    private readonly alertService: AlertService,
     public dialog: MatDialog
   ) {}
 

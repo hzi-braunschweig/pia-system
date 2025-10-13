@@ -41,18 +41,19 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
       useClass: MatPaginatorIntlGerman,
     },
   ],
+  standalone: false,
 })
 export class QuestionnaireInstancesComponent implements OnInit {
   username: string;
 
   constructor(
     public user: CurrentUser,
-    private questionnaireService: QuestionnaireService,
-    private activatedRoute: ActivatedRoute,
-    private alertService: AlertService,
-    private _location: Location,
-    private translate: TranslateService,
-    private router: Router
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly alertService: AlertService,
+    private readonly _location: Location,
+    private readonly translate: TranslateService,
+    private readonly router: Router
   ) {
     if ('username' in this.activatedRoute.snapshot.params) {
       this.username = this.activatedRoute.snapshot.paramMap.get('username');
@@ -133,11 +134,12 @@ export class QuestionnaireInstancesComponent implements OnInit {
 
 @Directive({
   selector: '[appShowColumn]',
+  standalone: false,
 })
 export class ShowColumnDirective implements AfterViewInit {
   @Input() showInput: string;
 
-  constructor(private elRef: ElementRef) {}
+  constructor(private readonly elRef: ElementRef) {}
 
   ngAfterViewInit(): void {
     this.elRef.nativeElement.style.display = this.showInput;

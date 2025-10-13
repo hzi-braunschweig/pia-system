@@ -377,6 +377,7 @@
   "QUESTIONNAIRES_FORSCHER": {
     "VERSION": "Version",
     "FILTER": "Fragebögen filtern",
+    "IMPORT_QUESTIONNAIRE": "Fragebogen importieren",
     "NEW_QUESTIONNAIRE": "Neuen Fragebogen erstellen",
     "STUDY_ID": "Studienname",
     "SORT_ORDER": "Reihenfolge TN",
@@ -389,6 +390,22 @@
     "EXPIRED": "Abgelaufen",
     "IN_PROGRESS": "In Bearbeitung",
     "UPDATED_AT": "Letzte Änderung"
+  },
+  "QUESTIONNAIRES_IMPORT": {
+    "IMPORT": "Importieren",
+    "CLOSE": "Schließen",
+    "STUDY": "Studie",
+    "PUBLISHINGSTATE": "Sichtbarkeit",
+    "ADAPT_PUBLISH_MODE": "aus Datei übernehmen",
+    "USE_DRAFT_PUBLISH_MODE": "versteckter Entwurfsmodus",
+    "ERROR_NO_STUDY": "Bitte wählen Sie eine Studie aus.",
+    "CHOOSE_FILE": "Datei auswählen",
+    "ERROR_NO_FILE": "Bitte wählen Sie eine Datei aus.",
+    "ERROR_JSON_PARSE_ERROR": "Der Inhalt der Datei ist kein valides JSON-Objekt",
+    "ERROR_JSON_SCHEMA_INVALID": "Das Format der Datei entspricht nicht dem erwarteten JSON-Schema",
+    "ERROR_DUPLICATE_QUESTIONNAIRE_KEY": "Die benutzerdefinierte Kennung existiert bereits.",
+    "ERROR_CONDITION_QUESTIONNAIRE_REFERENCE_ERROR": "Eine Bedingung verweist auf eine nicht vorhandene Fragebogen-Kennung.",
+    "ERROR_CONDITION_ANSWER_OPTION_REFERENCE_ERROR": "Eine Bedingung verweist auf eine nicht vorhandene Unterfrage im referenzierten Fragebogen."
   },
   "QUESTIONNAIRES_PROBAND": {
     "STATUS": "Status",
@@ -430,7 +447,8 @@
     "CURRENT_QUESTION": "Bitte prüfen Sie Ihre Eingaben. Zu prüfende Eingaben sind durch einen roten Hinweistext markiert.",
     "CURRENT_SAMPLE_IDs": "Bitte bestätigen Sie zunächst die Proben-IDs.",
     "UPLOADED_FILE_TOO_LARGE": "Es können nur Dateien mit einer Größe von bis zu 20MB hochgeladen werden. Bitte prüfen Sie Ihre Dateigröße.",
-    "AUTOCOMPLETE_PICK": "Wählen Sie eine Option aus"
+    "AUTOCOMPLETE_PICK": "Wählen Sie eine Option aus",
+    "AUTOCOMPLETE_MULTISELECT_PICK": "Wählen Sie Optionen aus."
   },
   "ANSWERS_HISTORY": {
     "VERSION": "Version: ",
@@ -570,7 +588,7 @@
     "FILTER_DELETE_DATA": "Daten zum Löschen filtern",
     "FILTER": "Filtern",
     "EXPORT": "Exportieren",
-    "EXPORT_HINT": "Ihr Export wird bearbeitet. Es kann einige Minuten dauern, bis der Download vollständig ist.",
+    "EXPORT_HINT": "Ihr Export wird im Hintergrund heruntergeladen. Es kann einige Minuten dauern, bis der Download vollständig ist. Vermeiden Sie das Anstoßen neuer Exporte, bis dieser beendet ist.",
     "CREATE": "Erstellen",
     "CHANGE": "Ändern",
     "STUDY_REQUIRED": "Bitte wählen Sie eine Studie aus.",

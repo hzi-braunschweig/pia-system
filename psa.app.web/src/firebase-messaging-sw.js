@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+/* eslint-disable no-undef */ // upgrade as soon as possible: https://firebase.google.com/docs/web/modular-upgrade
+
 importScripts(
   'https://www.gstatic.com/firebasejs/9.2.0/firebase-app-compat.js'
 );

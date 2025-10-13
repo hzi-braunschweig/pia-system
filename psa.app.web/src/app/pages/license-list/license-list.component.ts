@@ -23,6 +23,7 @@ export interface LicenseEntry {
   selector: 'app-license-list',
   templateUrl: './license-list.component.html',
   styleUrls: ['./license-list.component.scss'],
+  standalone: false,
 })
 export class LicenseListComponent {
   readonly licenses: Observable<LicenseEntry[]> = this.fetchLicenses();

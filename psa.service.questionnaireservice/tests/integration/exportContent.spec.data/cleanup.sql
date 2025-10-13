@@ -9,5 +9,6 @@ DELETE FROM answers;
 DELETE FROM study_users;
 DELETE FROM probands;
 DELETE FROM studies;
+DELETE FROM questionnaire_instance_origins;
 
 COMMIT;

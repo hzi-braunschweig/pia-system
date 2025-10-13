@@ -20,7 +20,7 @@ import { QuestionnaireDetailPage } from './questionnaire-detail/questionnaire-de
 import { SharedModule } from '../shared/shared.module';
 import { QuestionnaireAnswerSingleSelectComponent } from './questionnaire-answer-single-select/questionnaire-answer-single-select.component';
 import { QuestionnaireAnswerInputTextComponent } from './questionnaire-answer-input-text/questionnaire-answer-input-text.component';
-import { QuestionnaireAnswerCheckboxComponent } from './questionnaire-answer-checkbox/questionnaire-answer-checkbox.component';
+import { QuestionnaireAnswerMultiSelectComponent } from './questionnaire-answer-multi-select/questionnaire-answer-multi-select.component';
 import { QuestionnaireAnswerInputNumberComponent } from './questionnaire-answer-input-number/questionnaire-answer-input-number.component';
 import { QuestionnaireAnswerInputDatetimeComponent } from './questionnaire-answer-input-datetime/questionnaire-answer-input-datetime.component';
 import { QuestionnaireRestrictionDaysAsDatePipe } from './questionnaire-detail/questionnaire-restriction-days-as-date.pipe';
@@ -53,7 +53,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
     QuestionnaireAnswerSingleSelectComponent,
     QuestionnaireAnswerInputTextComponent,
     QuestionnaireAnswerInputNumberComponent,
-    QuestionnaireAnswerCheckboxComponent,
+    QuestionnaireAnswerMultiSelectComponent,
     QuestionnaireAnswerInputDatetimeComponent,
     QuestionnaireAnswerSampleComponent,
     QuestionnaireAnswerPznComponent,

@@ -88,11 +88,11 @@ import { ProfessionalAccount } from '../psa.app.core/models/professionalAccount'
       >
         {{
           'DIALOG.CHANGE_COMPLIANCE_PARTNER'
-            | translate: { usernameProband: data.usernameProband }
+            | translate : { usernameProband: data.usernameProband }
         }}
       </div>
       <div *ngIf="data.requested_by" style="margin:25px">
-        {{ 'DIALOG.ACCEPT_CHANGE_COMPLIANCE' | translate: usernames }}
+        {{ 'DIALOG.ACCEPT_CHANGE_COMPLIANCE' | translate : usernames }}
       </div>
     </mat-dialog-content>
     <hr />
@@ -119,6 +119,7 @@ import { ProfessionalAccount } from '../psa.app.core/models/professionalAccount'
       </button>
     </mat-dialog-actions>
   `,
+  standalone: false,
 })
 export class DialogChangeComplianceComponent implements OnInit {
   public form: FormGroup;
@@ -131,10 +132,10 @@ export class DialogChangeComplianceComponent implements OnInit {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: DialogChangeComplianceData,
-    private dialogRef: MatDialogRef<DialogChangeComplianceComponent>,
-    private alertService: AlertService,
-    private authService: AuthService,
-    private userService: UserService
+    private readonly dialogRef: MatDialogRef<DialogChangeComplianceComponent>,
+    private readonly alertService: AlertService,
+    private readonly authService: AuthService,
+    private readonly userService: UserService
   ) {
     this.usernames.usernameProband = data.usernameProband;
     this.usernames.usernamePM = data.requested_by;
@@ -277,8 +278,8 @@ export class DialogChangeComplianceComponent implements OnInit {
     }
     // filter the users
     this.filteredUsers.next(
-      this.usersWithSameRole.filter(
-        (user) => user.username.toLowerCase().indexOf(search) > -1
+      this.usersWithSameRole.filter((user) =>
+        user.username.toLowerCase().includes(search)
       )
     );
   }

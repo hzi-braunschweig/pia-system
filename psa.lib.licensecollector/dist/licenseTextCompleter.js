@@ -4,7 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LicenseTextCompleter = void 0;
+const promises_1 = require("fs/promises");
 const node_fetch_1 = __importDefault(require("node-fetch"));
+const path_1 = require("path");
 class LicenseTextCompleter {
     static async init() {
         if (LicenseTextCompleter.initialize === null) {
@@ -31,13 +33,12 @@ class LicenseTextCompleter {
     static async fetchLicenses() {
         const licenses = [
             {
-                url: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
+                url: 'file://apache-2.0.txt',
                 key: 'APACHE_LICENSE_2_0',
             },
-            { url: 'https://www.gnu.org/licenses/gpl-2.0.txt', key: 'GPL_2_0' },
-            { url: 'https://www.gnu.org/licenses/gpl-3.0.txt', key: 'GPL_3_0' },
-            { url: 'https://www.gnu.org/licenses/lgpl-3.0.txt', key: 'LGPL_3_0' },
-            { url: 'https://www.gnu.org/licenses/lgpl-3.0.txt', key: 'LGPL_3_0' },
+            { url: 'file://gpl-2.0.txt', key: 'GPL_2_0' },
+            { url: 'file://gpl-3.0.txt', key: 'GPL_3_0' },
+            { url: 'file://lgpl-3.0.txt', key: 'LGPL_3_0' },
             {
                 url: 'https://raw.githubusercontent.com/angular/angular/master/LICENSE',
                 key: 'MIT_ANGULAR',
@@ -107,6 +108,13 @@ class LicenseTextCompleter {
         await Promise.all(fetchPromises);
     }
     static async fetchLicenseText(url, key) {
+        if (url.startsWith('file://')) {
+            return (0, promises_1.readFile)((0, path_1.join)(__dirname, '../static-licenses/', url.substring(7)), {
+                encoding: 'utf8',
+            }).then((res) => {
+                LicenseTextCompleter[key] = res;
+            });
+        }
         return (0, node_fetch_1.default)(url).then(async (res) => {
             LicenseTextCompleter[key] = await res.text();
         });
@@ -167,6 +175,7 @@ class LicenseTextCompleter {
                 '@firebase/app-check-interop-types',
                 LicenseTextCompleter.APACHE_LICENSE_2_0,
             ],
+            ['@firebase/ai', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/app-check-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/auth-interop-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
             ['@firebase/auth-types', LicenseTextCompleter.APACHE_LICENSE_2_0],
@@ -222,6 +231,8 @@ class LicenseTextCompleter {
                 '@firebase/installations-compat',
                 LicenseTextCompleter.APACHE_LICENSE_2_0,
             ],
+            ['@firebase/data-connect', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@firebase/vertexai', LicenseTextCompleter.APACHE_LICENSE_2_0],
             [
                 '@awesome-cordova-plugins/core',
                 LicenseTextCompleter.MIT_AWESOME_CORDOVA_PLUGINS,
@@ -884,6 +895,7 @@ class LicenseTextCompleter {
             ['jasmine-core', LicenseTextCompleter.MIT_JASMINE],
             ['jasmine', LicenseTextCompleter.MIT_JASMINE],
             ['less', LicenseTextCompleter.APACHE_LICENSE_2_0],
+            ['@swc/core', LicenseTextCompleter.APACHE_LICENSE_2_0],
             [
                 'typed-assert',
                 'The MIT License (MIT)',
@@ -994,6 +1006,10 @@ class LicenseTextCompleter {
             ['micromark', this.MIT_MICROMARK],
             ['@rollup/rollup-linux-x64-gnu', this.MIT_ROLLUP],
             ['@rollup/rollup-linux-x64-musl', this.MIT_ROLLUP],
+            ['@rollup/rollup-darwin-arm64', this.MIT_ROLLUP],
+            ['@rollup/rollup-linux-arm64-gnu', this.MIT_ROLLUP],
+            ['@rollup/rollup-linux-arm64-musl', this.MIT_ROLLUP],
+            ['@rollup/rollup-darwin-arm64', this.MIT_ROLLUP],
             ['@webassemblyjs/helper-api-error', this.MIT_WEBASSEMBLYJS],
             ['@webassemblyjs/helper-numbers', this.MIT_WEBASSEMBLYJS],
             ['@webassemblyjs/helper-wasm-bytecode', this.MIT_WEBASSEMBLYJS],

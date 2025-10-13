@@ -10,6 +10,7 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 @Component({
   selector: 'app-sample-remark-dialog',
   templateUrl: 'remark-dialog.component.html',
+  standalone: false,
 })
 export class RemarkDialogComponent {
   constructor(@Inject(MAT_DIALOG_DATA) public data: { remark: string }) {}

@@ -34,7 +34,7 @@ describe('FeedbackStatisticListComponent', () => {
   let fixture: ComponentFixture<FeedbackStatisticListResearcherComponent>;
 
   let activatedRoute: ActivatedRoute;
-  let paramsSubject = new Subject<Params>();
+  const paramsSubject = new Subject<Params>();
   let feedbackStatisticsService: SpyObj<FeedbackStatisticsService>;
   let router: SpyObj<Router>;
   let dialog: SpyObj<MatDialog>;

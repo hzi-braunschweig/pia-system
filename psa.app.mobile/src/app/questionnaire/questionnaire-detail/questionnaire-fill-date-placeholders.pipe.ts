@@ -9,6 +9,7 @@ import { addDays, format, startOfToday } from 'date-fns';
 
 @Pipe({
   name: 'fillDatePlaceholders',
+  standalone: false,
 })
 export class QuestionnaireFillDatePlaceholdersPipe implements PipeTransform {
   private static readonly DATE_PLACEHOLDER_REGEX = /\(dat=(.*?)\)/g;

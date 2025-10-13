@@ -50,7 +50,7 @@ describe('/event-history', () => {
   afterEach(async () => {
     AuthServerMock.cleanAll();
     // reset configuration to migration default values
-    await dataSource.getRepository(Event).delete({});
+    await dataSource.getRepository(Event).deleteAll();
   });
 
   describe('GET /public/event-history', () => {

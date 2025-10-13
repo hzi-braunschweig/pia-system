@@ -1,0 +1,46 @@
+<!--
+  ~ SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+  ~
+  ~ SPDX-License-Identifier: AGPL-3.0-or-later
+  -->
+
+<ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
+  <ion-label class="ion-text-wrap">{{ label }}</ion-label>
+</ion-item>
+@if (useAutocomplete) {
+<ion-item>
+  <ion-input
+    type="text"
+    [placeholder]="'QUESTIONNAIRE_QUESTIONS.AUTOCOMPLETE_PICK' | translate"
+    (ionInput)="filterValues($event)"
+    (ionFocus)="displayAutocomplete()"
+  ></ion-input>
+</ion-item>
+
+@for (formControl of form.controls; track formControl; let index = $index) { @if
+(formControl.value) {
+<ion-chip>
+  <ion-label>{{ values[index] }}</ion-label>
+  <ion-icon
+    name="close-circle"
+    (click)="deselectValue(values[index])"
+  ></ion-icon>
+</ion-chip>
+}} @if (showAutocompleteOptions){
+<ion-list>
+  @for (value of filteredValues; track value) {
+  <ion-item button (click)="selectValue(value)">
+    <ion-label>{{ value }}</ion-label> </ion-item
+  >}
+</ion-list>
+} } @else {
+<ion-item *ngFor="let value of values; index as i" lines="none">
+  <ion-checkbox
+    [disabled]="disabled"
+    [formControl]="getFormControlAt(i)"
+    [name]="name + '-' + value"
+  >
+    <div class="ion-text-wrap">{{ value }}</div>
+  </ion-checkbox>
+</ion-item>
+}

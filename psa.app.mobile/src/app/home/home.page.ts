@@ -13,6 +13,7 @@ import { CurrentUser } from '../auth/current-user.service';
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class HomePage implements OnInit {
   welcomeText: string;

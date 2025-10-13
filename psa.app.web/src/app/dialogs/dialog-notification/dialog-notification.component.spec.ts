@@ -19,7 +19,6 @@ import SpyObj = jasmine.SpyObj;
 
 describe('DialogNotificationComponent', () => {
   let fixture: MockedComponentFixture;
-  let component: DialogNotificationComponent;
 
   let dialogRef: SpyObj<MatDialogRef<DialogNotificationComponent>>;
   let notification: NotificationDto;
@@ -44,7 +43,7 @@ describe('DialogNotificationComponent', () => {
   beforeEach(fakeAsync(() => {
     // Create component
     fixture = MockRender(DialogNotificationComponent);
-    component = fixture.point.componentInstance;
+    fixture.point.componentInstance;
     tick(); // wait for ngOnInit to finish
   }));
 

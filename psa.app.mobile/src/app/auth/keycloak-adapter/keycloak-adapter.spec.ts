@@ -8,14 +8,13 @@ import { discardPeriodicTasks, fakeAsync, tick } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { TranslateService } from '@ngx-translate/core';
 import { PiaKeycloakAdapter } from './keycloak-adapter';
-import { KeycloakService } from 'keycloak-angular';
 import {
   InAppBrowser,
   InAppBrowserEvent,
   InAppBrowserObject,
 } from '@awesome-cordova-plugins/in-app-browser/ngx';
 import Keycloak, { KeycloakLoginOptions } from 'keycloak-js';
-import { NEVER, of, Subject } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
 import { LoginFailedError } from '../errors/login-failed-error';
 import { OAuthState } from './keycloak.model';
@@ -23,8 +22,7 @@ import { OAuthState } from './keycloak.model';
 describe('PiaKeycloakAdapter', () => {
   let adapter: PiaKeycloakAdapter;
 
-  let keycloakService: SpyObj<KeycloakService>;
-  let keycloakInstance: SpyObj<Keycloak>;
+  let keycloak: SpyObj<Keycloak>;
   let inAppBrowser: SpyObj<InAppBrowser>;
   let browser: SpyObj<InAppBrowserObject>;
   let browserEventsLoadStart$: Subject<InAppBrowserEvent>;
@@ -36,11 +34,7 @@ describe('PiaKeycloakAdapter', () => {
   let realmUrl = 'https://pia-app/auth/realms/pia';
 
   beforeEach(() => {
-    keycloakService = jasmine.createSpyObj('KeycloakService', [
-      'clearToken',
-      'getKeycloakInstance',
-    ]);
-    keycloakInstance = jasmine.createSpyObj(
+    keycloak = jasmine.createSpyObj(
       'Keycloak',
       [
         'createLoginUrl',
@@ -50,6 +44,8 @@ describe('PiaKeycloakAdapter', () => {
         'onAuthSuccess',
         'onAuthError',
         'onTokenExpired',
+        'clearToken',
+        'getKeycloakInstance',
       ],
       {
         flow: 'standard',
@@ -57,10 +53,9 @@ describe('PiaKeycloakAdapter', () => {
         tokenParsed: createTokenPayload(),
       }
     );
-    keycloakService.getKeycloakInstance.and.returnValue(keycloakInstance);
-    keycloakInstance.createLoginUrl.and.returnValue(realmUrl + '/login');
-    keycloakInstance.createLogoutUrl.and.returnValues(realmUrl + '/logout');
-    keycloakInstance.createAccountUrl.and.returnValues(realmUrl + '/account');
+    keycloak.createLoginUrl.and.returnValue(realmUrl + '/login');
+    keycloak.createLogoutUrl.and.returnValues(realmUrl + '/logout');
+    keycloak.createAccountUrl.and.returnValues(realmUrl + '/account');
 
     inAppBrowser = jasmine.createSpyObj('InAppBrowser', ['create']);
     browser = jasmine.createSpyObj('InAppBrowserObject', [
@@ -89,7 +84,7 @@ describe('PiaKeycloakAdapter', () => {
     http.post.and.returnValue(of({}));
 
     adapter = new PiaKeycloakAdapter(
-      keycloakService,
+      keycloak,
       inAppBrowser,
       translate,
       http,
@@ -99,8 +94,6 @@ describe('PiaKeycloakAdapter', () => {
 
   describe('login', () => {
     it('should open an in-app browser with correct appearance', fakeAsync(() => {
-      // Arrange
-
       // Act
       adapter.login(
         createKeycloakLoginOptions({
@@ -129,8 +122,6 @@ describe('PiaKeycloakAdapter', () => {
     }));
 
     it('should parse the event url and request an access token', fakeAsync(() => {
-      // Arrange
-
       // Act
       adapter.login(createKeycloakLoginOptions());
       sendBrowserEvent({
@@ -148,7 +139,7 @@ describe('PiaKeycloakAdapter', () => {
           },
         }
       );
-      expect(keycloakInstance.onAuthSuccess).toHaveBeenCalled();
+      expect(keycloak.onAuthSuccess).toHaveBeenCalled();
     }));
 
     it('should respect an existing oauth state', fakeAsync(() => {
@@ -175,7 +166,7 @@ describe('PiaKeycloakAdapter', () => {
           },
         }
       );
-      expect(keycloakInstance.onAuthSuccess).toHaveBeenCalled();
+      expect(keycloak.onAuthSuccess).toHaveBeenCalled();
     }));
 
     it('should treat "loaderror" event with correct redirect url as success', fakeAsync(() => {
@@ -190,7 +181,7 @@ describe('PiaKeycloakAdapter', () => {
 
       // Assert
       expect(http.post).toHaveBeenCalled();
-      expect(keycloakInstance.onAuthSuccess).toHaveBeenCalled();
+      expect(keycloak.onAuthSuccess).toHaveBeenCalled();
     }));
 
     it('should treat "loaderror" event without redirect url as error', fakeAsync(() => {
@@ -207,7 +198,7 @@ describe('PiaKeycloakAdapter', () => {
       // Assert
       expect(errorSpy).toHaveBeenCalledOnceWith(new LoginFailedError());
       expect(http.post).not.toHaveBeenCalled();
-      expect(keycloakInstance.onAuthSuccess).not.toHaveBeenCalled();
+      expect(keycloak.onAuthSuccess).not.toHaveBeenCalled();
     }));
 
     it('should throw login errors ', fakeAsync(() => {
@@ -223,7 +214,7 @@ describe('PiaKeycloakAdapter', () => {
 
       // Assert
       expect(http.post).not.toHaveBeenCalled();
-      expect(keycloakInstance.onAuthError).toHaveBeenCalledOnceWith({
+      expect(keycloak.onAuthError).toHaveBeenCalledOnceWith({
         error: 'access_denied',
         error_description: 'Access+denied',
       });
@@ -248,7 +239,7 @@ describe('PiaKeycloakAdapter', () => {
         new LoginFailedError('closed_by_user')
       );
       expect(http.post).not.toHaveBeenCalled();
-      expect(keycloakInstance.onAuthSuccess).not.toHaveBeenCalled();
+      expect(keycloak.onAuthSuccess).not.toHaveBeenCalled();
     }));
 
     it('should call onTokenExpired if expiration date has been reached', fakeAsync(() => {
@@ -271,8 +262,8 @@ describe('PiaKeycloakAdapter', () => {
       });
 
       // Assert
-      expect(keycloakInstance.onTokenExpired).toHaveBeenCalled();
-      expect(keycloakInstance.onAuthSuccess).toHaveBeenCalled();
+      expect(keycloak.onTokenExpired).toHaveBeenCalled();
+      expect(keycloak.onAuthSuccess).toHaveBeenCalled();
     }));
   });
 
@@ -314,7 +305,7 @@ describe('PiaKeycloakAdapter', () => {
       });
 
       // Assert
-      expect(keycloakService.clearToken).toHaveBeenCalled();
+      expect(keycloak.clearToken).toHaveBeenCalled();
       expect(browser.close).toHaveBeenCalled();
     }));
 
@@ -329,7 +320,7 @@ describe('PiaKeycloakAdapter', () => {
       });
 
       // Assert
-      expect(keycloakService.clearToken).toHaveBeenCalled();
+      expect(keycloak.clearToken).toHaveBeenCalled();
       expect(browser.close).toHaveBeenCalled();
     }));
 
@@ -344,7 +335,7 @@ describe('PiaKeycloakAdapter', () => {
       });
 
       // Assert
-      expect(keycloakService.clearToken).toHaveBeenCalled();
+      expect(keycloak.clearToken).toHaveBeenCalled();
       expect(browser.close).toHaveBeenCalled();
     }));
 
@@ -361,7 +352,7 @@ describe('PiaKeycloakAdapter', () => {
 
       // Assert
       expect(errorSpy).toHaveBeenCalledOnceWith(new LoginFailedError());
-      expect(keycloakService.clearToken).not.toHaveBeenCalled();
+      expect(keycloak.clearToken).not.toHaveBeenCalled();
       expect(browser.close).toHaveBeenCalled();
     }));
   });

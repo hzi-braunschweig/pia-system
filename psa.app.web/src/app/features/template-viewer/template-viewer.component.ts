@@ -12,6 +12,7 @@ import { ContainerForFormControlUsageComponent } from './container-for-form-cont
 @Component({
   selector: 'app-template-viewer',
   templateUrl: './template-viewer.component.html',
+  standalone: false,
 })
 export class TemplateViewerComponent extends ContainerForFormControlUsageComponent {
   @Input()

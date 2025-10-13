@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { ConfigUtils } from './configUtils';
 import {
   AuthClientSettings,
   AuthSettings,
@@ -13,7 +12,9 @@ import {
   HttpConnection,
   MailserverConnection,
   MessageQueueConnection,
+  NotificationTime,
 } from './configModel';
+import { ConfigUtils } from './configUtils';
 
 export class GlobalAuthSettings implements AuthSettings {
   public static get keycloakHttpConnection(): HttpConnection {
@@ -146,6 +147,13 @@ export class GlobalConfig {
   }
 
   /**
+   * http(s) proxy
+   */
+  public static get proxyUrl(): string | undefined {
+    return ConfigUtils.getOptionalEnvVariable('HTTPS_PROXY');
+  }
+
+  /**
    * Global mailserver configuration
    *
    * Will only work, if environment variables are passed to the service
@@ -231,6 +239,20 @@ export class GlobalConfig {
       username: ConfigUtils.getEnvVariable('MESSAGEQUEUE_APP_USER'),
       password: ConfigUtils.getEnvVariable('MESSAGEQUEUE_APP_PASSWORD'),
     };
+  }
+
+  /**
+   * Returns the NotificationTime local as is to the time zone configured for the service.
+   * Defaults to 08:00 am.
+   */
+  public static getNotificationTime(): NotificationTime {
+    const DEFAULT_HOUR = 8;
+    const notificationTime = {
+      hours: ConfigUtils.getEnvVariableInt('NOTIFICATION_HOUR', DEFAULT_HOUR),
+      minutes: ConfigUtils.getEnvVariableInt('NOTIFICATION_MINUTE', 0),
+    };
+    console.log('Notification time configured: ', notificationTime);
+    return notificationTime;
   }
 
   public static isDevelopmentSystem(): boolean {

@@ -13,11 +13,12 @@ import { DialogPopUpComponent } from '../../../../../_helpers/dialog-pop-up';
   selector: 'app-file-answer-option',
   templateUrl: './file-answer-option.component.html',
   styleUrls: ['file-answer-option.component.scss'],
+  standalone: false,
 })
 export class FileAnswerOptionComponent implements OnInit {
   constructor(
-    private qService: QuestionnaireService,
-    private dialog: MatDialog
+    private readonly qService: QuestionnaireService,
+    private readonly dialog: MatDialog
   ) {}
 
   url = '';
@@ -87,7 +88,7 @@ export class FileAnswerOptionComponent implements OnInit {
   }
 
   onFileSelected(event): void {
-    if (event.target.files && event.target.files[0]) {
+    if (event.target.files?.[0]) {
       this.loadFile(event.target.files[0]);
     }
   }

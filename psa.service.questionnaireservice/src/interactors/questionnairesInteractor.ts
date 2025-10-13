@@ -5,21 +5,31 @@
  */
 
 import Boom from '@hapi/boom';
-import { AccessToken, assertStudyAccess } from '@pia/lib-service-core';
+import {
+  AccessToken,
+  assertStudyAccess,
+  SpecificError,
+} from '@pia/lib-service-core';
 import { DatabaseError } from 'pg-protocol';
+import { dataSource } from '../db';
 import {
   CouldNotCreateNewRandomVariableNameError,
   CouldNotUpdateGeneratedCustomName,
   VariableNameHasBeenReusedError,
 } from '../errors';
-import variableNameGenerator from '../helpers/variableNameGenerator';
+import generateAndSetVariableNames from '../helpers/variableNameGenerator';
 import { Questionnaire, QuestionnaireRequest } from '../models/questionnaire';
+import {
+  PublishMode,
+  QuestionnaireFile,
+  QuestionnaireImportFileError,
+  QuestionnaireImportResponseBody,
+} from '../models/routes/questionnaireImport';
 import { StudyAccess } from '../models/studyAccess';
 import { QuestionnaireRepository } from '../repositories/questionnaireRepository';
 import pgHelper from '../services/postgresqlHelper';
+import { importQuestionnaire } from '../services/questionnaireImportService';
 import { QuestionnaireService } from '../services/questionnaireService';
-
-const GENERATED_VARIABLE_DIGITS_LENGTH = 8;
 
 export class QuestionnairesInteractor {
   /**
@@ -61,7 +71,7 @@ export class QuestionnairesInteractor {
     );
 
     try {
-      this.generateAndSetVariableNames(questionnaire);
+      generateAndSetVariableNames(questionnaire);
       this.validateVariableNamesUsage(questionnaire);
 
       const result = (await pgHelper.insertQuestionnaire(
@@ -177,7 +187,7 @@ export class QuestionnairesInteractor {
       // names set, we assume empty variable names in a new revision should be
       // filled with automatically generated ones.
       if (await this.currentQuestionnaireHasCompleteVariableNames(id)) {
-        this.generateAndSetVariableNames(revisedQuestionnaire);
+        generateAndSetVariableNames(revisedQuestionnaire);
       }
 
       this.validateVariableNamesUsage(revisedQuestionnaire);
@@ -192,6 +202,49 @@ export class QuestionnairesInteractor {
 
       console.log(e);
       throw Boom.badImplementation('Could not revise questionnaire');
+    }
+  }
+
+  public static async importQuestionnaires(
+    studyName: string,
+    publishMode: PublishMode,
+    questionnaireFiles: QuestionnaireFile[]
+  ): Promise<QuestionnaireImportResponseBody> {
+    const errors = await dataSource.transaction<QuestionnaireImportFileError[]>(
+      async (manager) => {
+        const importErrors: QuestionnaireImportFileError[] = [];
+        for (const file of questionnaireFiles) {
+          try {
+            await importQuestionnaire(
+              studyName,
+              publishMode,
+              file.content,
+              manager
+            );
+          } catch (e) {
+            if (e instanceof SpecificError) {
+              importErrors.push({
+                name: file.name,
+                errorCode: e.errorCode,
+                message: e.message,
+              });
+            } else {
+              throw e;
+            }
+          }
+        }
+        return importErrors;
+      }
+    );
+    if (errors.length > 0) {
+      return {
+        success: false,
+        errors,
+      };
+    } else {
+      return {
+        success: true,
+      };
     }
   }
 
@@ -313,37 +366,6 @@ export class QuestionnairesInteractor {
 
     questionnaire.custom_name =
       await QuestionnaireService.generateAndUpdateCustomName(questionnaire);
-  }
-
-  /**
-   * Adds variable names when not set by mutating questions and answer options
-   * of the given questionnaire
-   */
-  private static generateAndSetVariableNames(
-    questionnaire: QuestionnaireRequest
-  ): void {
-    const unavailableNames: string[] = [];
-
-    questionnaire.questions?.forEach((question) => {
-      if (!question.variable_name) {
-        question.variable_name = variableNameGenerator(
-          GENERATED_VARIABLE_DIGITS_LENGTH,
-          unavailableNames
-        );
-        unavailableNames.push(question.variable_name);
-      }
-
-      question.answer_options
-        ?.filter((ao) => !ao.variable_name)
-        .forEach((answerOption) => {
-          answerOption.variable_name = variableNameGenerator(
-            GENERATED_VARIABLE_DIGITS_LENGTH,
-            unavailableNames
-          );
-          unavailableNames.push(answerOption.variable_name);
-        });
-      return question;
-    });
   }
 
   private static handleCustomNameErrors(e: unknown): void {

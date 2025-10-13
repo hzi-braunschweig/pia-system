@@ -31,6 +31,7 @@ export interface DialogCreatePartialDeletionResult {
 @Component({
   selector: 'app-dialog-create-partial-deletion',
   templateUrl: 'dialog-create-partial-deletion.component.html',
+  standalone: false,
 })
 export class DialogCreatePartialDeletionComponent {
   labResults: LabResult[] = [];
@@ -39,11 +40,11 @@ export class DialogCreatePartialDeletionComponent {
   headerData: PartialDeletionViewHeaderData;
 
   constructor(
-    private questionnaireService: QuestionnaireService,
-    private authService: AuthService,
-    private alertService: AlertService,
-    private datePipe: DatePipe,
-    private translate: TranslateService,
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly authService: AuthService,
+    private readonly alertService: AlertService,
+    datePipe: DatePipe,
+    translate: TranslateService,
     public dialogRef: MatDialogRef<
       DialogCreatePartialDeletionComponent,
       DialogCreatePartialDeletionResult

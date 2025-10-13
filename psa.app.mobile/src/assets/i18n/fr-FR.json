@@ -1,0 +1,162 @@
+{
+  "GENERAL": {
+    "LANGUAGE": "Langue",
+    "LOGOUT": "Se déconnecter",
+    "YES": "Oui",
+    "NO": "Non",
+    "SAVE": "Enregistrer",
+    "CANCEL_TEXT": "Annuler",
+    "DONE_TEXT": "Terminé",
+    "SET": "Définir",
+    "SEND": "Envoyer",
+    "CANCEL": "Annuler",
+    "OK": "OK",
+    "LOADING": "Chargement...",
+    "SUCCESSFUL": "Effectué avec succès",
+    "WARNING": "Avertissement",
+    "SUBMISSION": "Dépôt",
+    "CLOSE": "Fermer",
+    "OPEN": "Ouvrir",
+    "GO_BACK": "Retour",
+    "PLEASE_CLICK": "Cliquez s'il vous plaît",
+    "SELECT_DATE": "Choisir une date"
+  },
+  "APP": {
+    "MENU": {
+      "TITLE": "Menu",
+      "HOME": "Page d'accueil",
+      "QUESTIONNAIRES": "Questionnaires",
+      "LAB_RESULTS": "Résultats du laboratoire",
+      "COMPLIANCES": "Consentement",
+      "SETTINGS": "Réglages",
+      "CONTACT": "Contact",
+      "STATISTICS": "Statistiques"
+    },
+    "TOAST_MSG_NO_INTERNET": "La demande n'a pas pu être traitée. Veuillez vérifier votre connexion Internet.",
+    "TOAST_MSG_UNKNOWN_ERROR": "La demande n'a pas pu être traitée. Une erreur inconnue est survenue.",
+    "CONFIRM_LOGOUT_TITLE": "Voulez-vous vraiment vous déconnecter ?",
+    "CONFIRM_LOGOUT_MSG": "Si vous vous désinscrivez, vous ne recevrez plus de notifications de PIA. Si vous souhaitez uniquement désactiver les notifications, vous pouvez le faire dans les paramètres de notification de votre appareil.",
+    "LOGGING_OUT": "Déconnexion..."
+  },
+  "HOME": {
+    "TITLE": "Page d'accueil"
+  },
+  "LOGIN": {
+    "USERNAME": "Nom d'utilisateur",
+    "NEXT": "Au suivant",
+    "TOAST_MSG_LOGIN_NO_BACKEND_MAPPING_EXISTS": "Il n'existe pas de Backend-Mapping pour cet utilisateur.",
+    "ALERT_TRY_AGAIN_LATER": "Une erreur est survenue. Veuillez réessayer plus tard.",
+    "CONNECTING_TO_SERVER": "Connexion...",
+    "ENTER_BACKEND_URL": "Entrer l'URL",
+    "GIVEN_BACKEND_URL_NOT_VALID": "L'URL du backend indiquée n'est pas valide.",
+    "ALERT_MSG_INCOMPATIBLE_APP_VERSION": "Vous utilisez une version obsolète de l'application. Veuillez vous assurer que vous installez et utilisez la version la plus récente disponible dans le Store.",
+    "ALERT_BUTTON_LABEL_GO_TO_APP_STORE": "Actualiser"
+  },
+  "COMPLIANCE": {
+    "TITLE": "Consentement",
+    "FIRSTNAME": "Prénom",
+    "LASTNAME": "Nom",
+    "LOCATION": "Ville",
+    "DOWNLOAD_PDF": "Télécharger en PDF",
+    "BIRTHDATE": "Date de naissance",
+    "DATE": "Date",
+    "MSG_COMPLIANCE_FILLED_BY_RESEARCH_TEAM": "Pour cette étude, il faut d'abord remplir un formulaire de consentement. Veuillez vous adresser à votre équipe d'étude.",
+    "MSG_APP_COMPLIANCE_NEEDED": "Le consentement à l'utilisation de l'application est nécessaire.",
+    "TOAST_MSG_FROM_NOT_COMPLETE": "Les données de votre formulaire ne sont pas complètes.",
+    "TOAST_MSG_SUCCESSFULLY_SENT": "Vos paramètres de consentement ont été enregistré avec succès."
+  },
+  "LAB_RESULT": {
+    "TITLE": "Résultats du laboratoire",
+    "TAKEN": "Prélevé",
+    "ANALYSED": "Analysé",
+    "NO_RESULTS": "Aucun résultat de laboratoire trouvé"
+  },
+  "QUESTIONNAIRE_QUESTIONS": {
+    "NUMERIC_INPUT_MSG_NUMBER_BETWEEN": "Veuillez indiquer une valeur entre {{restriction_min}} et {{restriction_max}}.",
+    "NUMERIC_INPUT_MSG_MUST_FULL_NUMBER": "La valeur doit être un nombre entier.",
+    "DATE_INPUT_MSG1": "Veuillez indiquer une date entre {{restriction_min}} et {{restriction_max}}.",
+    "SAMPLE_INPUT_MSG_PROBES_NO_MATCH": "Les identifiants d'échantillons ne correspondent pas.",
+    "SAMPLE_INPUT_MSG_PROBE_ALREADY_SCANNED": "Un échantillon portant cet identifiant a malheureusement déjà été scanné.",
+    "SAMPLE_INPUT_MSG_PROBE_EXISTS": "L'identifiant de l'échantillon doit avoir le format suivant :",
+    "NUMBERS": "Chiffres",
+    "SAMPLE_INPUT_MSG_DOESNT_EXIST": "Un échantillon avec cet identifiant n'existe pas dans le système.",
+    "SAMPLE_INPUT_MSG_PROBE_FORMAT": "L'identifiant de l'échantillon doit avoir le format suivant :",
+    "SAMPLE_INPUT_MSG_PROBE_ALREADY_IN_SYSTEM": "Un échantillon avec cet identifiant n'existe pas dans le système.",
+    "SAMPLE_INPUT_SCAN_BARCODE": "Scanner le code-barres",
+    "CONFIRM": "Confirmer",
+    "TIME_INPUT_TIMESTAMP": "Horodatage",
+    "SAVE_LEAVE": "Enregistrer temporairement et quitter le questionnaire",
+    "SUMMARY": "Récapitulatif",
+    "SUMMARY_SUBTITLE_IN_PROGRESS": "Veuillez relire le questionnaire et vous assurer que vous avez répondu correctement et complètement à toutes les questions. Si vous souhaitez modifier les réponses affichées ici, utilisez le bouton de retour à la question correspondante.",
+    "SUMMARY_SUBTITLE_RELEASED": "Ce questionnaire a déjà été terminé et ne peut plus être modifié.",
+    "NOT_ANSWERED": "Non répondu",
+    "BACKTO_SUMMARY": "Retour au récapitulatif",
+    "SHARE_CHANGES": "Communiquer les modifications (final)",
+    "TOAST_MSG2": "Vos réponses n'ont pas pu être enregistrées. Veuillez vérifier votre connexion Internet.",
+    "ALERT_SUBTITLE_PROBE_SENT": "Identifiant d'échantillon envoyé.",
+    "ALERT_SUBTITLE_NOT_SENT": "L'identifiant de l'échantillon n'a pas été transmis !",
+    "ALERT_SUBTITLE_ANSWER_CURRENT_QUESTION": "Veuillez d'abord répondre à la question actuelle.",
+    "ALERT_SUBTITLE_ANSWERS_SENT": "Vos réponses ont maintenant été envoyées.",
+    "ALERT_SUBTITLE_SENT_LAST_TIME": "Vos réponses sont maintenant envoyées pour la dernière fois.",
+    "NO_RESULTS": "Aucun questionnaire trouvé",
+    "UPLOADED_IMAGE_TOO_LARGE": "Seuls les fichiers d'une taille maximale de 20Mo peuvent être téléchargés. Veuillez vérifier la taille de votre fichier.",
+    "NO_IMAGE_UPLOAD": "Pas encore de photo téléchargée.",
+    "AUTOCOMPLETE_PICK": "Sélectionnez une option.",
+    "AUTOCOMPLETE_MULTISELECT_PICK": "Sélectionnez des options."
+  },
+  "QUESTIONNAIRES": {
+    "TITLE": "Aperçu",
+    "NEW": "NOUVEAU",
+    "OPEN_QUESTIONNAIRES": "Ouvert",
+    "CLOSED_QUESTIONNAIRES": "Complété"
+  },
+  "SETTINGS": {
+    "TITLE": "Réglages",
+    "MANAGE_PASSWORD": "Gérer le mot de passe et l'accès au compte",
+    "DELETE_ACCOUNT": "Supprimer le compte et les données personnelles",
+    "LICENSES": "Licences de logiciels",
+    "GROUP_TITLE_ACCOUNT": "Compte",
+    "GROUP_TITLE_ABOUT": "Sur PIA"
+  },
+  "STUDY_CONTACT": {
+    "TITLE": "Contact",
+    "NEW_NASAL_SWAB": "Nouveau kit de prélèvement nasal",
+    "NEW_NASAL_SWAB_TO_SEND": "Envoyer un nouveau kit de prélèvement nasal !",
+    "NO_ADDRESS_TEXT": "Aucune information de contact n'est actuellement disponible pour cette étude.",
+    "CONFIRMATION_MSG1": "Êtes-vous sûr de vouloir demander du nouveau matériel ?",
+    "TOAST_MSG_NEW_SET_REQUESTED": "Le nouveau kit de prélèvement nasal a été demandé avec succès !"
+  },
+  "DELETE_ACCOUNT": {
+    "TITLE": "Supprimer le compte et les données personnelles",
+    "TITLE_SHORT": "Supprimer le compte",
+    "TEXT_KEEP_STUDY_ANSWERS": "Vous souhaitez supprimer définitivement votre compte PIA. Vous souhaitez permettre à l'étude de continuer à évaluer les réponses au questionnaire que vous avez déjà saisies via PIA ?",
+    "TEXT_DELETE": "Par cette action, vous supprimez définitivement et irrévocablement votre compte PIA et vos données de contact enregistrées dans PIA. Vos réponses au questionnaire déjà saisies sont conservées. Vous êtes sûr ?",
+    "TEXT_DELETE_INCLUDING_ANSWERS": "Par la présente, vous supprimez définitivement et irrévocablement votre compte PIA, vos données de contact et vos réponses au questionnaire enregistrées dans PIA. Vous êtes sûr ?",
+    "TEXT_CONFIRM": "Votre compte et vos données ont été supprimés comme vous l'aviez demandé.",
+    "TEXT_ERROR": "Erreur lors de la suppression de votre compte PIA. Veuillez vous adresser au centre d'études.",
+    "BUTTON_DELETE_NOW": "Supprimer maintenant",
+    "BUTTON_ALLOW": "Oui, permettre",
+    "BUTTON_DENY": "Non, supprimer tout",
+    "BUTTON_LOGOUT": "Se connecter"
+  },
+  "FEEDBACK_STATISTICS": {
+    "TITLE": "Statistiques",
+    "READ_MORE": "Lire plus",
+    "NO_CHARTS": "Aucune statistique n'est encore disponible. N'hésitez pas à revenir ultérieurement.",
+    "NO_DATA": "Le graphique n'est pas encore disponible. Revenez le consulter ultérieurement.",
+    "CAPTION": "État des données : {{updatedAt}} (Il s'agit de données brutes dont la qualité n'est pas garantie)"
+  },
+  "CHARTS": {
+    "FEEDBACK_STATISTIC": {
+      "RELATIVE_FREQUENCY": "Fréquence relative",
+      "DAY": "Jour",
+      "WEEK": "Semaine",
+      "MONTH": "Mois",
+      "YEAR": "Année",
+      "DAYS": "Jours",
+      "WEEKS": "Semaines",
+      "MONTHS": "Mois",
+      "YEARS": "Années"
+    }
+  }
+}

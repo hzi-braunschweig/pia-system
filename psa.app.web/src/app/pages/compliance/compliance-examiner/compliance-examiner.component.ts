@@ -12,6 +12,7 @@ import { Proband } from '../../../psa.app.core/models/proband';
 @Component({
   selector: 'app-compliance-examiner',
   templateUrl: './compliance-examiner.component.html',
+  standalone: false,
 })
 export class ComplianceExaminerComponent {
   isLoading = false;

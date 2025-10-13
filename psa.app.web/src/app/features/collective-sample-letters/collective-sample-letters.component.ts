@@ -5,7 +5,6 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { DataService } from '../../_services/data.service';
 import { Location } from '@angular/common';
 
@@ -14,15 +13,15 @@ import { Location } from '@angular/common';
   templateUrl: './collective-sample-letters.component.html',
   styleUrls: ['./collective-sample-letters.component.scss'],
   preserveWhitespaces: false,
+  standalone: false,
 })
 export class CollectiveSampleLettersComponent implements OnInit {
   currentDate = new Date();
   probands = [];
 
   constructor(
-    private router: Router,
-    private dataService: DataService,
-    private _location: Location
+    private readonly dataService: DataService,
+    private readonly _location: Location
   ) {
     this.dataService.probandsForLetters.subscribe(
       (probands) => (this.probands = probands)

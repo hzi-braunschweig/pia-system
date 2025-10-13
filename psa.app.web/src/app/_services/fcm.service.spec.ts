@@ -123,7 +123,7 @@ describe('FcmService', () => {
     it('should handle errors onLogout()', async () => {
       // Arrange
       afMessagingMock.deleteToken.and.returnValue(throwError('error'));
-      const result = await service.onLogout();
+      await service.onLogout();
       expect(afMessagingMock.deleteToken).toHaveBeenCalled();
     });
   });

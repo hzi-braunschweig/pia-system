@@ -52,6 +52,7 @@ export interface AnswerOptionValue {
       useValue: APP_DATE_FORMATS_SHORT,
     },
   ],
+  standalone: false,
 })
 export class RelativeFrequencyTimeSeriesConfigurationComponent extends AbstractFeedbackStatisticConfigurationComponent<
   RelativeFrequencyTimeSeriesConfigurationForm,

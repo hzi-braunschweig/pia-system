@@ -37,6 +37,9 @@ VALUES
     -- This questionnaire is used to hold answers for condition testing ------------------------------------------------
     (900000, 1, 'Answers Export', 'Answers for conditions', 1, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, FALSE,
      1, 1, '2021-06-08', 'for_probands', 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
+    -- This questionnaire is used to hold answers for condition testing for a cyclic origin ----------------------------
+    (950000, 1, 'Answers Export', 'Answers for conditions cyclic', 1, 1, 'day', 0, 1, 0, '', '', '', '', 0, '', NULL, FALSE,
+     1, 1, '2021-06-08', 'for_probands', 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
     -- AE1 v1 - without labels / no condition --------------------------------------------------------------------------
     (100000, 1, 'Answers Export', 'AE1 Answer Export', 1, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, FALSE,
      1, 1, '2021-06-08', 'for_probands', 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
@@ -58,6 +61,9 @@ VALUES
     -- AE1 v7 - testing exporting answers submitted via older mobile app -----------------------------------------------
     (100000, 7, 'Answers Export', 'AE1 Answer Export', 1, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, FALSE,
      1, 1, '2021-06-08', 'for_probands', 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
+    -- AE1 v8 - testing a cyclic origin questionnaire and the usage of the QuestionnaireInstanceOrigin relation --------
+    (100000, 8, 'Answers Export', 'AE1 Answer Export', 1, 2, 'spontan', 0, 1, 0, '', '', '', '', 0, '', NULL, FALSE,
+     1, 1, '2021-06-08', 'for_probands', 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
     -- AE2 v1 - testing if questionnaire versions without instances will not lead to empty exports ---------------------
     (200000, 1, 'Answers Export', 'AE2 Export without instance', 1, 1, 'once', 0, 1, 0, '', '', '', '', 0, '', NULL, FALSE,
      1, 1, '2021-06-08', 'for_probands', 'allaudiences', FALSE, NULL, NULL, NULL, NULL, FALSE),
@@ -69,8 +75,9 @@ VALUES
 -- id: [questionnaire]{1}[version]{1}[question]{1}
 INSERT INTO questions (id, questionnaire_id, text, "position", is_mandatory, variable_name, questionnaire_version)
 VALUES
-    -- question for condition testing questionnaire
+    -- question for condition testing questionnaires
     (911000, 900000, 'Condition testing', 1, TRUE, 'condition_testing', 1),
+    (961000, 950000, 'Condition testing', 1, TRUE, 'condition_testing', 1),
     -- v1
     (111000, 100000, 'Without variable names', 1, FALSE, '', 1),
     -- v2
@@ -86,6 +93,8 @@ VALUES
     (161000, 100000, 'Cascading conditions on questions and answer options', 2, TRUE, 'conditional_questions_answer_options', 6),
     -- v7 exporting answers for old mobile app answers
     (171000, 100000, 'Exporting old mobile app answers', 2, TRUE, 'old_mobile_app_answers', 7),
+    -- v8 
+    (181000, 100000, 'Basic question', 1, TRUE, '', 8),
     -- 2 v1
     (211000, 200000, 'Question', 1, FALSE, '', 1),
     -- 2 v2
@@ -100,6 +109,8 @@ VALUES
     (911001, 911000, 'An answer option for any condition', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE, ''),
     (911002, 911000, 'An answer option for a question condition', 2, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE, ''),
     (911003, 911000, 'An answer option for an answer option condition', 3, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE, ''),
+    -- answer options for cyclic condition testing
+    (961001, 961000, 'An answer option for any condition', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE, ''),
     -- AE1 - v1  -------------------------------------------------------------------------------------------------------
     (111001, 111000, 'Ist dies eine Einzelauswahl?', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE,
      ''),
@@ -178,6 +189,9 @@ VALUES
     (171001, 171000, 'Einzelauswahl', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE,
      'Einzelauswahl'),
     (171002, 171000, 'Text', 4, '{}', '{}', '{}', 2, FALSE, NULL, NULL, FALSE, 'Text'),
+    -- AE - v8 -------------------------------------------------------------------------------------------------------
+    (181001, 181000, 'Einzelauswahl', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE,
+     'Einzelauswahl'),
     -- AE2
     -- v1
     (211001, 211000, 'Einzelauswahl?', 1, '{f,f}', '{Ja,Nein}', '{1,0}', 1, FALSE, NULL, NULL, FALSE, ''),
@@ -195,6 +209,7 @@ INSERT INTO conditions (condition_type, condition_answer_option_id, condition_qu
 VALUES
     -- condition on questionnaire
     ('external', NULL, NULL, 100000, '==', 'Ja', 911001, 900000, 'AND', 3, 1),
+    ('external', NULL, NULL, 100000, '==', 'Ja', 961001, 950000, 'AND', 8, 1),
     -- condition on question
     ('external', NULL, 141000, NULL, '==', 'Ja', 911001, 900000, 'AND', 4, 1),
     ('internal_this', NULL, 142000, NULL, '==', 'Ja', 141001, 100000, 'AND', 4, 4),
@@ -218,11 +233,30 @@ VALUES
     -- Instances for conditions ---------------------------------------------------------------
     (910101, 'Answers Export', 900000, 'For Probands', 'answ-01', '2022-12-07 07:00:00.000000',
      '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 1,
-     'released_twice', FALSE, 0, 2, 1),
+     'released_twice', FALSE, 0, 2, 1),   
     (910201, 'Answers Export', 900000, 'For Probands', 'answ-02', '2022-12-07 07:00:00.000000',
      '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 1,
      'released_twice', FALSE, 0, 2, 1),
     (910301, 'Answers Export', 900000, 'For Probands', 'answ-03', '2022-12-07 07:00:00.000000',
+     '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 1,
+     'released_twice', FALSE, 0, 2, 1),
+    -- Instances for cyclic origin -----------------------------------------------------------
+    (960101, 'Answers Export', 950000, 'For Probands', 'answ-01', '2022-12-07 07:00:00.000000',
+     '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 1,
+     'released_twice', FALSE, 0, 2, 1),
+    (960102, 'Answers Export', 950000, 'For Probands', 'answ-01', '2022-12-08 08:00:00.000000',
+     '2022-12-09 08:57:59.000000', '2022-12-010 08:57:59.000000', 2,
+     'released_twice', FALSE, 0, 2, 1),
+    (960201, 'Answers Export', 950000, 'For Probands', 'answ-02', '2022-12-07 07:00:00.000000',
+     '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 1,
+     'released_twice', FALSE, 0, 2, 1),
+    (960202, 'Answers Export', 950000, 'For Probands', 'answ-02', '2022-12-08 08:00:00.000000',
+     '2022-12-09 08:57:59.000000', '2022-12-010 08:57:59.000000', 2,
+     'released_twice', FALSE, 0, 2, 1),
+    (960301, 'Answers Export', 950000, 'For Probands', 'answ-03', '2022-12-07 07:00:00.000000',
+     '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 1,
+     'released_twice', FALSE, 0, 2, 1),
+    (960302, 'Answers Export', 950000, 'For Probands', 'answ-03', '2022-12-08 07:00:00.000000',
      '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 1,
      'released_twice', FALSE, 0, 2, 1),
     -- AE1 v1 --------------------------------------------------------------------------------
@@ -354,6 +388,25 @@ VALUES
     (170103, 'Answers Export', 100000, 'For Probands', 'answ-01', '2022-12-07 07:00:00.000000',
      '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 3,
      'released_twice', FALSE, 0, 0, 7),
+    -- AE1 v8 --------------------------------------------------------------------------------
+    -- condition on a cyclic questionnaire that is in all instances true
+    (180101, 'Answers Export', 100000, 'For Probands', 'answ-01', '2022-12-07 07:00:00.000000',
+     '2022-12-8 08:57:59.000000', '2022-12-9 08:57:59.000000', 1,
+     'released_twice', FALSE, 0, 0, 8),
+    (180102, 'Answers Export', 100000, 'For Probands', 'answ-01', '2022-12-08 07:00:00.000000',
+     '2022-12-8 08:57:59.000000', '2022-12-9 08:57:59.000000', 1,
+     'released_twice', FALSE, 0, 0, 8),
+    -- condition on a cyclic questionnaire that is in first true then false
+    (180201, 'Answers Export', 100000, 'For Probands', 'answ-02', '2022-12-07 07:00:00.000000',
+     '2022-12-8 08:57:59.000000', '2022-12-9 08:57:59.000000', 1,
+     'released_twice', FALSE, 0, 0, 8),
+    (180202, 'Answers Export', 100000, 'For Probands', 'answ-02', '2022-12-08 07:00:00.000000',
+     '2022-12-8 08:57:59.000000', '2022-12-9 08:57:59.000000', 1,
+     'released_twice', FALSE, 0, 0, 8),
+    -- condition on a cyclic questionnaire that has no questionnaire_instance_origins set (legacy behaviour)
+    (180301, 'Answers Export', 100000, 'For Probands', 'answ-03', '2022-12-07 07:00:00.000000',
+     '2022-12-8 08:57:59.000000', '2022-12-9 08:57:59.000000', 1,
+     'released_twice', FALSE, 0, 0, 8),
     -- AE2 v1 --------------------------------------------------------------------------------
     (220101, 'Answers Export', 200000, 'For Probands', 'answ-99', '2022-12-07 07:00:00.000000',
      '2022-12-08 08:57:59.000000', '2022-12-09 08:57:59.000000', 1,
@@ -364,6 +417,15 @@ VALUES
     'active', FALSE, 0, 2, 2)
     -- AE3 v1 --------------------------------------------------------------------------------
 ;
+
+INSERT INTO questionnaire_instance_origins (created_instance_id, origin_instance_id, condition_id, created_at)
+VALUES
+    (180101, 960101, 1, '2022-12-07 07:00:00.000000'),
+    (180102, 960102, 1, '2022-12-07 07:00:00.000000'),
+    (180201, 960201, 1, '2022-12-07 07:00:00.000000'),
+    (180202, 960202, 1, '2022-12-07 07:00:00.000000')
+;
+
 
 -- id: 9[user id postfix]{2}[consecutive number]{2}
 INSERT INTO user_files (id, user_id, questionnaire_instance_id, answer_option_id, file_name, file)
@@ -395,6 +457,12 @@ VALUES
     (910101, 911000, 911001, 2, 'Ja', NULL, NULL), -- answ-01
     (910201, 911000, 911001, 2, 'Nein', NULL, NULL), -- answ-02
     (910301, 911000, 911001, 2, 'Nein', NULL, NULL), -- answ-03
+    -- Answers for cyclic origin ---------------------------------------------------------------------------------------
+    (960101, 961000, 961001, 2, 'Ja', NULL, NULL), -- answ-01
+    (960102, 961000, 961001, 2, 'Ja', NULL, NULL), -- answ-01
+    (960201, 961000, 961001, 2, 'Ja', NULL, NULL), -- answ-02
+    (960202, 961000, 961001, 2, 'Nein', NULL, NULL), -- answ-02
+    (960301, 961000, 961001, 2, 'Nein', NULL, NULL), -- answ-03
     -- External condition on questions
     -- v1 answ-01 ------------------------------------------------------------------------------------------------------
     -- cycle 1 - answer versions should be selected based on the instances release version
@@ -698,6 +766,15 @@ VALUES
     (170103, 171000, 171001, 1, 'Nein', NULL, NULL),
     (170103, 171000, 171002, 1, 'this should not be exported', NULL, NULL),
     (170103, 171000, 171001, 2, 'Ja', NULL, NULL),
-    (170103, 171000, 171002, 2, 'second release', NULL, NULL)
-
+    (170103, 171000, 171002, 2, 'second release', NULL, NULL),
+    -- v8 answ-1 --------------------------------------------------------------------------------------------------------   
+    -- cycle 1
+    -- user 1
+    (180101, 181000, 181001, 2, 'Ja', NULL, NULL),
+    (180102, 181000, 181001, 2, 'Ja', NULL, NULL),
+    -- user 2
+    (180201, 181000, 181001, 2, 'Nein', NULL, NULL),
+    (180202, 181000, 181001, 2, 'Nein', NULL, NULL),
+    -- user 3
+    (180301, 181000, 181001, 2, 'Ja', NULL, NULL)
 ;

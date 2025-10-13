@@ -3,7 +3,7 @@
     /* Project Options */
     "declaration": true,
     "removeComments": true,
-    "target": "es2020",
+    "target": "es2021",
     /* Strict Checks */
     "strict": true,
     /* Linter Checks */

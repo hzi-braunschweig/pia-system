@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Inject, Injectable, NgZone } from '@angular/core';
+import { Inject, Injectable, NgZone, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { DOCUMENT } from '@angular/common';
 import { AngularFireMessaging } from '@angular/fire/compat/messaging';
@@ -15,24 +15,29 @@ import { catchError, first, mergeMap, tap } from 'rxjs/operators';
 import { CurrentUser } from './current-user.service';
 
 @Injectable()
-export class FCMService {
+export class FCMService implements OnDestroy {
   private fcmTokenSubscription: Subscription;
   private fcmMessageSubscription: Subscription;
 
-  constructor(
-    private afMessaging: AngularFireMessaging,
-    private user: CurrentUser,
-    private notificationService: NotificationService,
-    private router: Router,
-    private ngZone: NgZone,
-    @Inject(DOCUMENT) private document: Document
+  public constructor(
+    private readonly afMessaging: AngularFireMessaging,
+    private readonly user: CurrentUser,
+    private readonly notificationService: NotificationService,
+    private readonly router: Router,
+    private readonly ngZone: NgZone,
+    @Inject(DOCUMENT) private readonly document: Document
   ) {
     if (this.user.isProband()) {
       this.subscribeToPushNotifications();
     }
   }
 
-  public onLogout(): Promise<boolean> {
+  public ngOnDestroy(): void {
+    this.fcmTokenSubscription?.unsubscribe();
+    this.fcmMessageSubscription?.unsubscribe();
+  }
+
+  public async onLogout(): Promise<boolean> {
     if (this.user.isProband()) {
       return this.deleteToken().toPromise();
     } else {
@@ -72,8 +77,8 @@ export class FCMService {
       payload.notification.title,
       notificationOptions
     );
-    notification.onclick = () =>
-      this.ngZone.run(() =>
+    notification.onclick = async () =>
+      this.ngZone.run(async () =>
         this.router.navigate(['/home'], {
           queryParams: { notification_id: payload.data.id },
         })

@@ -4,26 +4,28 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { KeycloakService } from 'keycloak-angular';
+import Keycloak from 'keycloak-js';
 import { DOCUMENT } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   template: '',
+  standalone: false,
 })
 export class RegistrationComponent implements OnInit {
+  private readonly keycloak = inject(Keycloak);
+
   constructor(
-    @Inject(DOCUMENT) private document: Document,
-    private route: ActivatedRoute,
-    private keycloakService: KeycloakService
+    @Inject(DOCUMENT) private readonly document: Document,
+    private readonly route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     const study = this.route.snapshot.paramMap.get('study');
     const url = new URL(
-      this.keycloakService.getKeycloakInstance().createRegisterUrl({
+      this.keycloak.createRegisterUrl({
         redirectUri: environment.baseUrl,
       })
     );

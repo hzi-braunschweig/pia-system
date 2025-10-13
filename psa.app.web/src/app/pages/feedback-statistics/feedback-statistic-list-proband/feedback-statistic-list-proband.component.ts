@@ -12,6 +12,7 @@ import { FeedbackStatisticDto } from '@pia-system/charts';
 @Component({
   selector: 'app-feedback-statistic-list-proband',
   templateUrl: './feedback-statistic-list-proband.component.html',
+  standalone: false,
 })
 export class FeedbackStatisticListProbandComponent {
   public isLoading = false;

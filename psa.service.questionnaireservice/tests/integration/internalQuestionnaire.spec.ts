@@ -5,7 +5,6 @@
  */
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 
-import { getRepository } from 'typeorm';
 import chaiHttp from 'chai-http';
 import chai, { expect } from 'chai';
 import { StatusCodes } from 'http-status-codes';
@@ -13,7 +12,7 @@ import { StatusCodes } from 'http-status-codes';
 import { Response } from '@pia/lib-service-core';
 import { Server } from '../../src/server';
 import { Questionnaire } from '../../src/entities/questionnaire';
-import { db } from '../../src/db';
+import { db, dataSource } from '../../src/db';
 import { config } from '../../src/config';
 import { createQuestionnaire } from './instanceCreator.helper';
 import { QuestionnaireDto } from '../../src/models/questionnaire';
@@ -25,13 +24,15 @@ describe('Internal: Questionnaire', () => {
   before(async () => {
     await db.none("INSERT INTO studies(name) VALUES ('QTestStudy')");
     await Server.init();
-    await getRepository(Questionnaire).save(
-      createQuestionnaire({ id: 1234, version: 1 })
-    );
+    await dataSource
+      .getRepository(Questionnaire)
+      .save(createQuestionnaire({ id: 1234, version: 1 }));
   });
 
   after(async () => {
-    await getRepository(Questionnaire).delete({ id: 1234, version: 1 });
+    await dataSource
+      .getRepository(Questionnaire)
+      .delete({ id: 1234, version: 1 });
     await Server.stop();
     await db.none("DELETE FROM studies WHERE name LIKE 'QTest%'");
   });

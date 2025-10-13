@@ -9,13 +9,13 @@ import { BehaviorSubject } from 'rxjs';
 
 @Injectable()
 export class DataService {
-  private statusSource = new BehaviorSubject<string>('');
+  private readonly statusSource = new BehaviorSubject<string>('');
   currentStatus = this.statusSource.asObservable();
 
-  private currentProbandsList = new BehaviorSubject<any>([]);
+  private readonly currentProbandsList = new BehaviorSubject<any>([]);
   probandsForLetters = this.currentProbandsList.asObservable();
 
-  private currentPlannedProbandsList = new BehaviorSubject<any>([]);
+  private readonly currentPlannedProbandsList = new BehaviorSubject<any>([]);
   plannedProbandsForLetters = this.currentPlannedProbandsList.asObservable();
 
   constructor() {}

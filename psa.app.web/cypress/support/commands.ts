@@ -15,8 +15,8 @@ import {
 import Chainable = Cypress.Chainable;
 import { Study } from './study.commands';
 import { Credentials } from './sample-tracking.commands';
+import short from 'short-uuid';
 
-const short = require('short-uuid');
 const translator = short();
 
 export function getForscherToken(): Chainable {

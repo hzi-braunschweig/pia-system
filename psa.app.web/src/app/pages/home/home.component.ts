@@ -16,6 +16,7 @@ import { CurrentUser } from '../../_services/current-user.service';
 @Component({
   templateUrl: 'home.component.html',
   styleUrls: ['./home.component.scss'],
+  standalone: false,
 })
 export class HomeComponent implements OnInit {
   public androidLink =
@@ -41,7 +42,9 @@ export class HomeComponent implements OnInit {
   public async ngOnInit(): Promise<void> {
     this.activatedRoute.queryParams
       .pipe(filter((params) => params.notification_id))
-      .subscribe((params) => this.presentNotification(params.notification_id));
+      .subscribe(async (params) =>
+        this.presentNotification(params.notification_id)
+      );
 
     if (this.user.isProband()) {
       this.welcomeText = (

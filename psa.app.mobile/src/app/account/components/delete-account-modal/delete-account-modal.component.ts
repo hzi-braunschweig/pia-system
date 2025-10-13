@@ -20,6 +20,7 @@ import { CurrentUser } from '../../../auth/current-user.service';
   selector: 'app-delete-account-modal',
   templateUrl: './delete-account-modal.component.html',
   styles: [],
+  standalone: false,
 })
 export class DeleteAccountModalComponent {
   public readonly willDeleteAnswers: boolean =

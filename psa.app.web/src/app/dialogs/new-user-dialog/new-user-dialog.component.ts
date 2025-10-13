@@ -18,10 +18,11 @@ import { ReplaySubject } from 'rxjs';
   selector: 'new-user-dialog',
   templateUrl: 'new-user-dialog.component.html',
   styleUrls: ['new-user-dialog.component.scss'],
+  standalone: false,
 })
 export class DialogNewUserComponent implements OnInit {
   public form: FormGroup;
-  private studies: Study[] = [];
+  private readonly studies: Study[] = [];
   public studyFilterCtrl: FormControl = new FormControl();
   public filteredStudies: ReplaySubject<Study[]> = new ReplaySubject<Study[]>(
     1
@@ -44,9 +45,9 @@ export class DialogNewUserComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<DialogNewUserComponent>,
-    private authService: AuthService,
-    private alertService: AlertService,
-    private userService: UserService
+    private readonly authService: AuthService,
+    private readonly alertService: AlertService,
+    private readonly userService: UserService
   ) {
     this.userService.getStudies().then(
       (result) => {
@@ -92,9 +93,7 @@ export class DialogNewUserComponent implements OnInit {
     }
     // filter the users
     this.filteredStudies.next(
-      this.studies.filter(
-        (study) => study.name.toLowerCase().indexOf(search) > -1
-      )
+      this.studies.filter((study) => study.name.toLowerCase().includes(search))
     );
   }
 
@@ -118,7 +117,7 @@ export class DialogNewUserComponent implements OnInit {
   }
 
   public checkIfArrayIsUnique(): boolean {
-    const studyArray: Array<string> = [];
+    const studyArray: string[] = [];
     this.form.get('study_accesses').value.forEach((study_acces) => {
       if (study_acces.study_id != null) {
         studyArray.push(study_acces.study_id);
@@ -127,7 +126,7 @@ export class DialogNewUserComponent implements OnInit {
       }
     });
     if (studyArray.length !== 0) {
-      if (this.showErrorEmpty === true) {
+      if (this.showErrorEmpty) {
         return false;
       } else {
         if (studyArray.length !== new Set(studyArray).size) {

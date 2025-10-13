@@ -31,6 +31,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-time-series-item',
   templateUrl: './time-series-item.component.html',
   styleUrls: ['./time-series-item.component.scss'],
+  standalone: false,
 })
 export class TimeSeriesItemComponent implements OnChanges {
   @Input()

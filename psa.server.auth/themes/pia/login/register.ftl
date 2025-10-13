@@ -141,7 +141,7 @@ This file has been modified:
                             <input type="checkbox" name="piaTosConfirm" <#if register.formData['piaTosConfirm']?has_content>checked</#if>
                                    aria-invalid="<#if messagesPerField.existsError('piaTosConfirm')>true</#if>"
                                    data-e2e="registration-checkbox-tos-confirm">
-                            ${msg('piaRegistrationTosConfirmLabel', tosUri)?no_esc}
+                            ${msg('piaTosConfirmLabel', tosUri)?no_esc}
                         </label>
                         <#if messagesPerField.existsError('tos-confirm')>
                             <span class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
@@ -159,7 +159,7 @@ This file has been modified:
                             <input type="checkbox" name="piaPolicyConfirm" <#if register.formData['piaPolicyConfirm']?has_content>checked</#if>
                                    aria-invalid="<#if messagesPerField.existsError('piaPolicyConfirm')>true</#if>"
                                    data-e2e="registration-checkbox-policy-confirm">
-                            ${msg('piaRegistrationPolicyConfirmLabel', policyUri)?no_esc}
+                            ${msg('piaPolicyConfirmLabel', policyUri)?no_esc}
                         </label>
                         <#if messagesPerField.existsError('policy-confirm')>
                             <span class="${properties.kcInputErrorMessageClass!}" aria-live="polite">

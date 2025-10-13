@@ -12,9 +12,9 @@ import {
   Secret,
 } from 'cdk8s-plus-25';
 import { Construct } from 'constructs';
+import * as fs from 'fs';
 import { InternalSecrets } from './pia/internalSecrets';
 import { PiaConfig } from './pia/piaConfig';
-import * as fs from 'fs';
 
 export type Variables = Record<string, string | boolean | number | EnvValue>;
 
@@ -29,7 +29,6 @@ const PIA_IMAGES: string[] = [
   'psa.service.userservice',
   'psa.service.loggingservice',
   'psa.service.personaldataservice',
-  'psa.service.modysservice',
   'psa.service.complianceservice',
   'psa.service.sampletrackingservice',
   'psa.server.publicapi',
@@ -181,20 +180,9 @@ export class Configuration extends Chart {
       fromName: PiaConfig.getConfig(this.configSecret, 'mailServerFromName'),
     },
 
-    modys: {
-      baseUrl: PiaConfig.getConfig(this.configSecret, 'modysBaseUrl'),
-      userName: PiaConfig.getConfig(this.configSecret, 'modysUserName'),
-      password: PiaConfig.getConfig(this.configSecret, 'modysPassword'),
-      study: PiaConfig.getConfig(this.configSecret, 'modysStudy'),
-      identifierTypeId: PiaConfig.getConfig(
-        this.configSecret,
-        'modysIdentifierTypeId'
-      ),
-      requestConcurrency: PiaConfig.getConfig(
-        this.configSecret,
-        'modysRequestConcurrency'
-      ),
-    },
+    httpsProxyUrl: PiaConfig.getConfig(this.configSecret, 'httpsProxyUrl', {
+      optional: true,
+    }),
 
     webappUrl: PiaConfig.getConfig(this.configSecret, 'webappUrl'),
     externalProtocol: PiaConfig.getConfig(
@@ -236,6 +224,11 @@ export class Configuration extends Chart {
         this.configSecret,
         'firebaseClientEmail'
       ),
+    },
+
+    notificationTime: {
+      hours: PiaConfig.getConfig(this.configSecret, 'notificationHour'),
+      minutes: PiaConfig.getConfig(this.configSecret, 'notificationMinute'),
     },
 
     mailhogAuth: PiaConfig.getConfigFile(this.configSecret, 'mailhogAuth'),

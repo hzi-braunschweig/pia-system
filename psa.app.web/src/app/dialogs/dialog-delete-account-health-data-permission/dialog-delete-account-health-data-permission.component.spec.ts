@@ -13,7 +13,6 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 
 describe('DeleteAccountHealthDataPermissionDialogComponent', () => {
-  let component: DialogDeleteAccountHealthDataPermissionComponent;
   let fixture: ComponentFixture<DialogDeleteAccountHealthDataPermissionComponent>;
 
   beforeEach(async () => {
@@ -27,7 +26,7 @@ describe('DeleteAccountHealthDataPermissionDialogComponent', () => {
     fixture = TestBed.createComponent(
       DialogDeleteAccountHealthDataPermissionComponent
     );
-    component = fixture.componentInstance;
+    fixture.componentInstance;
     fixture.detectChanges();
   });
 

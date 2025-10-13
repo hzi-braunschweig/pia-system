@@ -57,6 +57,8 @@ import {
 import { expectLocation } from './helper.commands';
 
 declare global {
+  // see https://docs.cypress.io/app/tooling/typescript-support
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
     interface Chainable {
       // user commands

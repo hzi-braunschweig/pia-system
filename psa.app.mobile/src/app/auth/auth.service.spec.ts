@@ -7,11 +7,7 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { AuthService } from './auth.service';
-import { createKeycloakToken } from './auth.model.spec';
-import { User } from './auth.model';
 import { DOCUMENT } from '@angular/common';
-import { KeycloakTokenParsed } from 'keycloak-js';
-import { InvalidTokenError } from './errors/invalid-token-error';
 import { KeycloakClientService } from './keycloak-client.service';
 import { BadgeService } from '../shared/services/badge/badge.service';
 import createSpyObj = jasmine.createSpyObj;

@@ -1,7 +1,7 @@
 import * as amqp from 'amqplib';
 export declare class MessageQueueClientConnection {
     private readonly options;
-    protected connection: amqp.Connection | null;
+    protected connection: amqp.ChannelModel | null;
     constructor(options: {
         host: string;
         port?: number;

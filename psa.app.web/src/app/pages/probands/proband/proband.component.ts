@@ -24,6 +24,7 @@ import {
 @Component({
   templateUrl: 'proband.component.html',
   styleUrls: ['proband.component.scss'],
+  standalone: false,
 })
 export class ProbandComponent implements OnInit, OnDestroy {
   public pseudonym: string;
@@ -32,13 +33,13 @@ export class ProbandComponent implements OnInit, OnDestroy {
   public plannedProband: PlannedProband = null;
 
   public constructor(
-    private activatedRoute: ActivatedRoute,
-    private dialog: MatDialog,
-    private userService: AuthService,
-    private router: Router,
-    private selectedProbandInfoService: SelectedProbandInfoService,
-    private dataService: DataService,
-    private alertService: AlertService
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly dialog: MatDialog,
+    private readonly userService: AuthService,
+    private readonly router: Router,
+    private readonly selectedProbandInfoService: SelectedProbandInfoService,
+    private readonly dataService: DataService,
+    private readonly alertService: AlertService
   ) {}
 
   public async ngOnInit(): Promise<void> {

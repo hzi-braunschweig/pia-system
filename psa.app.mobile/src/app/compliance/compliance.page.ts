@@ -23,6 +23,7 @@ import { CurrentUser } from '../auth/current-user.service';
 @Component({
   selector: 'app-page-compliance',
   templateUrl: './compliance.page.html',
+  standalone: false,
 })
 export class CompliancePage implements ViewWillEnter, DoCheck {
   complianceSent = false;

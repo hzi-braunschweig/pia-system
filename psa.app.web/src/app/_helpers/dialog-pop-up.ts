@@ -46,7 +46,7 @@ export interface DialogPopUpData {
         cancel
       </mat-icon>
       <p class="mat-body" [class.show-linebreaks]="data.showLinebreaks">
-        {{ data.content | translate: data.values }}
+        {{ data.content | translate : data.values }}
       </p>
     </mat-dialog-content>
     <mat-dialog-actions>
@@ -55,6 +55,7 @@ export interface DialogPopUpData {
       </button>
     </mat-dialog-actions>
   `,
+  standalone: false,
 })
 export class DialogPopUpComponent {
   constructor(

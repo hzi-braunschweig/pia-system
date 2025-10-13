@@ -65,5 +65,5 @@ include:
   - /ci/cleanup-registry.yml
   - /ci/openapi.yml
   - /ci/check-k8s-base.yml
-  - /ci/check-bake-hcl.yml
+  - /ci/check-generated.yml
   - /ci/check-version-file.yml

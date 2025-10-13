@@ -18,12 +18,13 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist",
+            "outputPath": {
+              "base": "dist"
+            },
             "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": ["src/polyfills.ts"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "preserveSymlinks": true,
@@ -51,7 +52,8 @@
             "stylePreprocessorOptions": {
               "includePaths": ["src"]
             },
-            "scripts": ["./node_modules/marked/marked.min.js"]
+            "scripts": ["./node_modules/marked/marked.min.js"],
+            "browser": "src/main.ts"
           },
           "configurations": {
             "production-proband-app": {
@@ -63,7 +65,9 @@
               ],
               "outputHashing": "all",
               "baseHref": "/",
-              "outputPath": "./dist/out"
+              "outputPath": {
+                "base": "./dist/out"
+              }
             },
             "production-admin-app": {
               "fileReplacements": [
@@ -74,7 +78,9 @@
               ],
               "outputHashing": "all",
               "baseHref": "/admin/",
-              "outputPath": "./dist/out/admin"
+              "outputPath": {
+                "base": "./dist/out/admin"
+              }
             },
             "development-proband-app": {
               "fileReplacements": [
@@ -83,9 +89,8 @@
                   "with": "src/environments/environment.proband.ts"
                 }
               ],
-              "buildOptimizer": false,
+              "outputHashing": "media",
               "optimization": false,
-              "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": true,
@@ -98,14 +103,15 @@
                   "with": "src/environments/environment.admin.ts"
                 }
               ],
-              "buildOptimizer": false,
+              "outputHashing": "media",
               "optimization": false,
-              "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": true,
               "baseHref": "/admin/",
-              "outputPath": "./dist/admin"
+              "outputPath": {
+                "base": "./dist/admin"
+              }
             }
           },
           "defaultConfiguration": "throw-on-default"
@@ -210,6 +216,7 @@
     }
   },
   "cli": {
-    "schematicCollections": ["@angular-eslint/schematics"]
+    "schematicCollections": ["@angular-eslint/schematics"],
+    "analytics": false
   }
 }

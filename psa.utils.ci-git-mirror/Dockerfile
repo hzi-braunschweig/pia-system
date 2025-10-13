@@ -1,2 +1,2 @@
-FROM alpine/git:v2.40.1@sha256:6bc8a689ec4e891ac7fe6fb8d7d47b1d7c674f9bd481cbe39a6b2c5146b6ff2a
+FROM alpine/git:v2.49.1@sha256:bd54f921f6d803dfa3a4fe14b7defe36df1b71349a3e416547e333aa960f86e3
 RUN apk add --no-cache rsync curl

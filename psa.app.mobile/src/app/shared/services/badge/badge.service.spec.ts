@@ -5,33 +5,32 @@
  */
 
 import { BadgeService } from './badge.service';
-import { MockBuilder, MockInstance, MockRender } from 'ng-mocks';
+import { MockBuilder, MockRender } from 'ng-mocks';
 import { AppModule } from '../../../app.module';
-import { FirebaseX } from '@awesome-cordova-plugins/firebase-x/ngx';
+import { Badge } from '@capawesome/capacitor-badge';
+import { fakeAsync, tick } from '@angular/core/testing';
 
 describe('BadgeService', () => {
   let service: BadgeService;
-  let spySetBadgeNumber;
 
   beforeEach(async () => {
+    spyOn(Badge, 'set');
+    spyOn(Badge, 'clear');
     await MockBuilder(BadgeService, AppModule);
-    spySetBadgeNumber = MockInstance(
-      FirebaseX,
-      'setBadgeNumber',
-      jasmine.createSpy()
-    );
     service = MockRender(BadgeService).point.componentInstance;
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
-  it('should set badge to the given number', () => {
+  it('should set badge to the given number', fakeAsync(() => {
     service.set(10);
-    expect(spySetBadgeNumber).toHaveBeenCalledOnceWith(10);
-  });
-  it('should set badge to 0', () => {
+    tick();
+    expect(Badge.set).toHaveBeenCalledWith({ count: 10 });
+  }));
+  it('should set badge to 0', fakeAsync(() => {
     service.clear();
-    expect(spySetBadgeNumber).toHaveBeenCalledOnceWith(0);
-  });
+    tick();
+    expect(Badge.clear).toHaveBeenCalled();
+  }));
 });

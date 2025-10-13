@@ -46,12 +46,10 @@ const conf = {
   },
   probandAppUrl: GlobalConfig.probandAppUrl,
   adminAppUrl: GlobalConfig.adminAppUrl,
+  proxyUrl: GlobalConfig.proxyUrl,
   fireBaseCredentials: getFirebaseCredentials(),
   timeZone: GlobalConfig.timeZone,
-  notificationTime: {
-    hours: 8, // in the time zone configured above
-    minutes: 0,
-  },
+  notificationTime: GlobalConfig.getNotificationTime(),
   scheduleNotificationSendingMaxParallel: ConfigUtils.getEnvVariableInt(
     'SCHEDULE_NOTIFICATION_SENDING_MAX_PARALLEL',
     DEFAULT_SCHEDULE_NOTIFICATION_SENDING_MAX_PARALLEL

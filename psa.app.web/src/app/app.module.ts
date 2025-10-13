@@ -7,21 +7,19 @@
 import { CdkTableModule } from '@angular/cdk/table';
 import { DatePipe, registerLocaleData } from '@angular/common';
 import {
-  HTTP_INTERCEPTORS,
   HttpClient,
-  HttpClientModule,
+  provideHttpClient,
+  withInterceptors,
 } from '@angular/common/http';
 import localeDe from '@angular/common/locales/de';
 import localeEn from '@angular/common/locales/en';
+import localeFr from '@angular/common/locales/fr';
+import localeEs from '@angular/common/locales/es';
 import localeDeExtra from '@angular/common/locales/extra/de';
-
 import localeEnExtra from '@angular/common/locales/extra/en';
-import {
-  APP_INITIALIZER,
-  CUSTOM_ELEMENTS_SCHEMA,
-  LOCALE_ID,
-  NgModule,
-} from '@angular/core';
+import localeFrExtra from '@angular/common/locales/extra/fr';
+import localeEsExtra from '@angular/common/locales/extra/es';
+import { CUSTOM_ELEMENTS_SCHEMA, LOCALE_ID, NgModule } from '@angular/core';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
@@ -47,7 +45,6 @@ import { DialogUserEditComponent } from './dialogs/user-edit-dialog/user-edit-di
 import { DialogUserStudyAccessComponent } from './dialogs/user-study-dialog/user-study-dialog';
 import { CollectiveLoginLettersComponent } from './features/collective-login-letters/collective-login-letters.component';
 import { CollectiveSampleLettersComponent } from './features/collective-sample-letters/collective-sample-letters.component';
-import { HintComponent } from './features/hint/hint.component';
 import { SideNavigationComponent } from './features/side-navigation/side-navigation.component';
 import { MaterialModule } from './material.module';
 import { ComplianceResearcherComponent } from './pages/compliance/compliance-researcher/compliance-researcher.component';
@@ -95,7 +92,6 @@ import { AlertComponent } from './_directives/alert.component';
 import { AppDateAdapter } from './_helpers/date-adapter';
 import { DialogChangeComplianceComponent } from './_helpers/dialog-change-compliance';
 import { DialogDeletePartnerComponent } from './_helpers/dialog-delete-partner';
-import { DialogInfoComponent } from './_helpers/dialog-info';
 import { DialogPopUpComponent } from './_helpers/dialog-pop-up';
 import { ScanSampleComponent } from './_helpers/dialog-scan-sample';
 import { DialogUserDataComponent } from './_helpers/dialog-user-data';
@@ -123,8 +119,8 @@ import { ProbandsUntersuchungsteamComponent } from './pages/probands/probands-un
 import { ProbandsForscherComponent } from './pages/probands/probands-forscher/probands-forscher.component';
 import { MatOptionSelectAllModule } from './features/mat-option-select-all/mat-option-select-all.module';
 import { LocaleService } from './_services/locale.service';
-import { ContentTypeInterceptor } from './_interceptors/content-type-interceptor';
-import { UnauthorizedInterceptor } from './_interceptors/unauthorized-interceptor';
+import { contentTypeInterceptor } from './_interceptors/content-type-interceptor';
+import { unauthorizedInterceptor } from './_interceptors/unauthorized-interceptor';
 import { SelectedProbandInfoService } from './_services/selected-proband-info.service';
 import { TemplateModule } from './features/template-viewer/template.module';
 import { DateAdapter } from '@angular/material/core';
@@ -144,8 +140,7 @@ import {
   VAPID_KEY,
 } from '@angular/fire/compat/messaging';
 import { environment } from '../environments/environment';
-import { KeycloakAngularModule, KeycloakService } from 'keycloak-angular';
-import { initializeAuthentication } from './auth.factory';
+import { provideKeycloakAngular } from './keycloak.provider';
 import { CurrentUser } from './_services/current-user.service';
 import { DialogNotificationComponent } from './dialogs/dialog-notification/dialog-notification.component';
 import { RemarkDialogComponent } from './pages/samples/sample-remark-dialog/remark-dialog.component';
@@ -159,18 +154,21 @@ import { AccountInfoComponent } from './features/account-info/account-info.compo
 import { RegistrationComponent } from './pages/registration/registration/registration.component';
 import { StudyProfessionalSummaryComponent } from './pages/study/study-professional-summary/study-professional-summary.component';
 import { StudyComponent } from './pages/study/study.component';
-import { StudySelectComponent } from './features/study-select/study-select.component';
 import { NgLetDirective } from './_directives/ng-let.directive';
 import { ClipboardModule } from '@angular/cdk/clipboard';
-import { MarkdownEditorComponent } from './features/markdown-editor/markdown-editor.component';
 import { DialogMarkdownEditorComponent } from './dialogs/dialog-markdown-editor/dialog-markdown-editor.component';
 import { DialogMarkdownMailEditorComponent } from './dialogs/dialog-markdown-mail-editor/dialog-markdown-mail-editor.component';
 import { DialogMarkdownLabresultEditorComponent } from './dialogs/dialog-markdown-labresult-editor/dialog-markdown-labresult-editor.component';
 import { ChartsModule } from '@pia-system/charts';
+import { FileDownloadService } from './_services/file-download.service';
+import { StudySelectComponent } from './features/study-select/study-select.component';
+import { MarkdownEditorComponent } from './features/markdown-editor/markdown-editor.component';
 import { DialogDeleteComponent } from './_helpers/dialog-delete';
 import { DialogOkCancelComponent } from './_helpers/dialog-ok-cancel';
+import { DialogInfoComponent } from './_helpers/dialog-info';
 import { DialogYesNoComponent } from './dialogs/dialog-yes-no/dialog-yes-no';
-import { FileDownloadService } from './_services/file-download.service';
+import { HintComponent } from './features/hint/hint.component';
+import { includeBearerTokenInterceptor } from 'keycloak-angular';
 
 // === LOCALE ===
 // Setup ngx-translate
@@ -181,48 +179,12 @@ export function HttpLoaderFactory(http: HttpClient): TranslateHttpLoader {
 // Setup locales for angular i18n (for date pipes etc.)
 registerLocaleData(localeEn, 'en', localeEnExtra);
 registerLocaleData(localeDe, 'de', localeDeExtra);
+registerLocaleData(localeFr, 'fr', localeFrExtra);
+registerLocaleData(localeEs, 'es', localeEsExtra);
 
 // === Module ===
 @NgModule({
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [
-    BrowserModule,
-    FormsModule,
-    BrowserAnimationsModule,
-    MaterialModule,
-    CdkTableModule,
-    AppRoutingModule,
-    ReactiveFormsModule,
-    HttpClientModule,
-    FlexLayoutModule,
-    NgxMaterialTimepickerModule,
-    MarkdownModule.forRoot(),
-    TranslateModule.forRoot({
-      loader: {
-        provide: TranslateLoader,
-        useFactory: HttpLoaderFactory,
-        deps: [HttpClient],
-      },
-    }),
-    ProbandsListModule,
-    LoadingSpinnerModule,
-    MatOptionSelectAllModule,
-    TemplateModule,
-    DragDropModule,
-    AngularFireModule.initializeApp(environment.firebase),
-    AngularFireMessagingModule,
-    KeycloakAngularModule,
-    ClipboardModule,
-    StudySelectComponent,
-    MarkdownEditorComponent,
-    NgLetDirective,
-    ChartsModule.forRoot(),
-    DialogDeleteComponent,
-    DialogOkCancelComponent,
-    DialogInfoComponent,
-    DialogYesNoComponent,
-    HintComponent,
-  ],
   declarations: [
     AccessLevelPipe,
     AccountStatusPipe,
@@ -314,29 +276,51 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     StudyComponent,
     QuestionTextComponent,
   ],
+  bootstrap: [AppComponent],
+  imports: [
+    BrowserModule,
+    FormsModule,
+    BrowserAnimationsModule,
+    MaterialModule,
+    CdkTableModule,
+    AppRoutingModule,
+    ReactiveFormsModule,
+    FlexLayoutModule,
+    NgxMaterialTimepickerModule,
+    MarkdownModule.forRoot(),
+    TranslateModule.forRoot({
+      loader: {
+        provide: TranslateLoader,
+        useFactory: HttpLoaderFactory,
+        deps: [HttpClient],
+      },
+    }),
+    ProbandsListModule,
+    LoadingSpinnerModule,
+    MatOptionSelectAllModule,
+    TemplateModule,
+    DragDropModule,
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFireMessagingModule,
+    ClipboardModule,
+    NgLetDirective,
+    ChartsModule.forRoot(),
+    StudySelectComponent,
+    MarkdownEditorComponent,
+    DialogDeleteComponent,
+    DialogOkCancelComponent,
+    DialogInfoComponent,
+    DialogYesNoComponent,
+    HintComponent,
+  ],
   providers: [
-    {
-      provide: APP_INITIALIZER,
-      useFactory: initializeAuthentication,
-      multi: true,
-      deps: [KeycloakService, CurrentUser],
-    },
+    provideKeycloakAngular(),
     {
       provide: LOCALE_ID,
       useFactory: (localeService: LocaleService) => {
         return localeService.currentLocale;
       },
       deps: [LocaleService],
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: ContentTypeInterceptor,
-      multi: true,
-    },
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: UnauthorizedInterceptor,
-      multi: true,
     },
     { provide: DateAdapter, useClass: CustomDateAdapter },
     // Needed for Firebase Cloud Messaging
@@ -370,7 +354,13 @@ registerLocaleData(localeDe, 'de', localeDeExtra);
     CurrentUser,
     NotificationPresenter,
     FileDownloadService,
+    provideHttpClient(
+      withInterceptors([
+        includeBearerTokenInterceptor,
+        contentTypeInterceptor,
+        unauthorizedInterceptor,
+      ])
+    ),
   ],
-  bootstrap: [AppComponent],
 })
 export class AppModule {}

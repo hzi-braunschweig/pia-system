@@ -47,6 +47,7 @@ import { SwiperContainer } from 'swiper/element';
   templateUrl: './questionnaire-detail.page.html',
   styleUrls: ['./questionnaire-detail.page.scss'],
   encapsulation: ViewEncapsulation.None,
+  standalone: false,
 })
 export class QuestionnaireDetailPage
   implements OnInit, OnDestroy, ViewWillLeave, AfterViewChecked

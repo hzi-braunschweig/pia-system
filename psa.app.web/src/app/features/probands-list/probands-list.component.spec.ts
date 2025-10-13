@@ -5,12 +5,7 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  EventEmitter,
-  NO_ERRORS_SCHEMA,
-  Pipe,
-  PipeTransform,
-} from '@angular/core';
+import { EventEmitter, NO_ERRORS_SCHEMA } from '@angular/core';
 import {
   ProbandsListComponent,
   ProbandsListEntryActionButtonConfig,
@@ -28,13 +23,6 @@ import { ProbandService } from '../../psa.app.core/providers/proband-service/pro
 import { TranslatePipe } from '@ngx-translate/core';
 import { MockPipe } from 'ng-mocks';
 import { CurrentUser } from '../../_services/current-user.service';
-
-@Pipe({ name: 'translate' })
-class MockTranslatePipe implements PipeTransform {
-  transform(value): any {
-    return value;
-  }
-}
 
 describe('ProbandsListComponent', () => {
   let component: ProbandsListComponent;
@@ -94,7 +82,7 @@ describe('ProbandsListComponent', () => {
 
     it('should show an error alert on errors', async () => {
       (probandService.getProbands as jasmine.Spy).and.returnValue(
-        Promise.reject()
+        Promise.reject(new Error())
       );
       await component.fetchProbands();
       expect(alertService.errorObject).toHaveBeenCalled();

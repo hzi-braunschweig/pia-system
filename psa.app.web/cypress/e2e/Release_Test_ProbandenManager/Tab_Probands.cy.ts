@@ -5,13 +5,12 @@
  */
 
 import {
-  ProfessionalUser,
-  UserCredentials,
   createProfessionalUser,
   loginProfessional,
+  ProfessionalUser,
+  UserCredentials,
 } from '../../support/user.commands';
 import {
-  RandomStudy,
   createPlannedProband,
   createProband,
   createStudy,
@@ -19,6 +18,7 @@ import {
   generateRandomStudy,
   getCredentialsForProbandByUsername,
   loginWithCred,
+  RandomStudy,
 } from '../../support/commands';
 
 import short from 'short-uuid';
@@ -171,11 +171,12 @@ function checkCsv(probandsData: Record<ProbandRowHeaderNames, string>[]) {
   cy.readFile(filePath, 'utf8').then(async (csvContent) => {
     const probandsCsv = parseCSV(csvContent);
 
-    const indices = probandRowHeaderNames.reduce((acc, header) => {
-      const index = probandsCsv[0].findIndex((h) => h === header);
-      acc[header] = index;
+    const indices = probandRowHeaderNames.reduce<
+      Partial<Record<ProbandRowHeaderNames, number>>
+    >((acc, header) => {
+      acc[header] = probandsCsv[0].findIndex((h) => h === header);
       return acc;
-    }, {} as Record<ProbandRowHeaderNames, number>);
+    }, {}) as Record<ProbandRowHeaderNames, number>;
 
     for (const proband of probandsData) {
       checkProbandRow(probandsCsv, indices, proband);
@@ -256,4 +257,4 @@ const probandRowHeaderNames = [
   'accountStatus',
 ] as const;
 
-type ProbandRowHeaderNames = typeof probandRowHeaderNames[number];
+type ProbandRowHeaderNames = (typeof probandRowHeaderNames)[number];

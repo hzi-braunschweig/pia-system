@@ -43,7 +43,6 @@ typings
 *.dll #Exclude all dlls !foo.dll #Except for foo.dll
 
 !**/firebase-messaging-sw.js
-!**/protractor.conf.js
 **/tmpAssets
 
 

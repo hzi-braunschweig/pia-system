@@ -13,13 +13,17 @@ import { MockComponent, MockPipe, MockProvider, MockService } from 'ng-mocks';
 import { SettingsPage } from './settings.page';
 import { HeaderComponent } from '../shared/components/header/header.component';
 import { DeleteAccountModalService } from '../account/services/delete-account-modal.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { KeycloakAngularModule, KeycloakService } from 'keycloak-angular';
 import { InAppBrowser } from '@awesome-cordova-plugins/in-app-browser/ngx';
 import SpyObj = jasmine.SpyObj;
 import { BadgeService } from '../shared/services/badge/badge.service';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('SettingsPage', () => {
   let component: SettingsPage;
@@ -35,16 +39,14 @@ describe('SettingsPage', () => {
         MockPipe(TranslatePipe),
         MockComponent(HeaderComponent),
       ],
-      imports: [
-        IonicModule.forRoot(),
-        RouterTestingModule,
-        HttpClientTestingModule,
-      ],
+      imports: [IonicModule.forRoot(), RouterTestingModule],
       providers: [
         InAppBrowser,
         MockProvider(TranslateService),
         MockProvider(BadgeService, MockService(BadgeService)),
         MockProvider(KeycloakService, MockService(KeycloakService)),
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
       ],
     }).compileComponents();
 

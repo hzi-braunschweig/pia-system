@@ -8,7 +8,7 @@ copyright-lint:
     - .no-cpu-request
   stage: test
   image:
-    name: fsfe/reuse@sha256:888418362aa2a8ebea12d8dbfb41fa8eeabd0c423f42df7e3968af4cbb8d2ef1
+    name: fsfe/reuse@sha256:11eb8a423ea82776bc2890bb255b61736bec277ef6e2141f8c91d6d88864f9da
     entrypoint: ['/bin/sh', '-c']
   script:
     - rm VERSION
@@ -23,7 +23,20 @@ copyright-lint:
     - rm -rf psa.app.web/licenses
     - rm -rf psa.app.mobile/licenses
     - rm -rf psa.app.mobile/src/assets
+    - rm -rf psa.app.mobile/android/gradle/
+    - rm -rf psa.app.mobile/android/app/src/
+    - rm -rf psa.app.mobile/ios/App/App/Base.lproj/
+    - rm -rf psa.app.mobile/ios/App/App.xcodeproj/
+    - rm -rf psa.lib.licensecollector/static-licenses
     - rm THIRD_PARTY_LICENSES
+    - rm psa.app.mobile/android/app/capacitor.build.gradle
+    - rm psa.app.mobile/android/capacitor.settings.gradle
+    - rm psa.app.mobile/android/gradlew
+    - rm psa.app.mobile/android/gradlew.bat
+    - rm psa.app.mobile/ios/App/App.xcworkspace/contents.xcworkspacedata
+    - rm psa.app.mobile/ios/App/Podfile.lock
+    - rm psa.app.mobile/ios/App/App/App.entitlements
+    - rm  psa.app.mobile/ios/App/App/PrivacyInfo.xcprivacy
     - find . -name "*.md" -type f -delete
     - find . -name "*.json" -type f -delete
     - find . -name "*.template" -type f -delete
@@ -68,6 +81,7 @@ copyright-lint:
     - find . -name "CITATION.cff" -type f -delete
     - find . -name "*.generated.*" -type f -delete
     - find . -name "bake.hcl" -type f -delete
+    - find . -name "npm-install.hcl" -type f -delete
     - reuse lint
   rules:
     - if: $CI_MERGE_REQUEST_IID

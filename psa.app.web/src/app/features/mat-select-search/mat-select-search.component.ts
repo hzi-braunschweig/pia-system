@@ -37,6 +37,7 @@ import { take, takeUntil } from 'rxjs/operators';
     },
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class MatSelectSearchComponent
   implements OnInit, OnDestroy, AfterViewInit, ControlValueAccessor
@@ -48,7 +49,7 @@ export class MatSelectSearchComponent
 
   constructor(
     @Inject(MatSelect) public matSelect: MatSelect,
-    private changeDetectorRef: ChangeDetectorRef
+    private readonly changeDetectorRef: ChangeDetectorRef
   ) {}
   /** Label of the search placeholder */
   @Input() placeholderLabel = 'Suche';
@@ -64,17 +65,14 @@ export class MatSelectSearchComponent
   /** Reference to the MatSelect options */
   public _options: QueryList<MatOption>;
 
-  /** Previously selected values when using <mat-select [multiple]="true"> */
-  private previousSelectedValues: any[];
-
   /** Whether the backdrop class has been set */
   private overlayClassSet = false;
 
   /** Event that emits when the current value changes */
-  private change = new EventEmitter<string>();
+  private readonly change = new EventEmitter<string>();
 
   /** Subject that emits when the component has been destroyed. */
-  private _onDestroy = new Subject<void>();
+  private readonly _onDestroy = new Subject<void>();
 
   onChange = (_: any) => {};
   onTouched = (_: any) => {};
@@ -128,8 +126,6 @@ export class MatSelectSearchComponent
     this.change.pipe(takeUntil(this._onDestroy)).subscribe(() => {
       this.changeDetectorRef.detectChanges();
     });
-
-    // this.initMultipleHandling();
   }
 
   ngOnDestroy(): void {
@@ -217,63 +213,15 @@ export class MatSelectSearchComponent
     }
     const overlayClass = 'cdk-overlay-pane-select-search';
 
-    // @ts-ignore
+    // @ts-expect-error this is hacky, but currently there is no better way to do this
     this.matSelect._overlayDir.attach
       .pipe(takeUntil(this._onDestroy))
       .subscribe(() => {
-        // note: this is hacky, but currently there is no better way to do this
         this.searchSelectInput.nativeElement.parentElement.parentElement.parentElement.parentElement.parentElement.classList.add(
           overlayClass
         );
       });
 
     this.overlayClassSet = true;
-  }
-
-  /**
-   * Initializes handling <mat-select [multiple]="true">
-   * Note: to improve this code, mat-select should be extended to allow disabling resetting the selection while filtering.
-   */
-  private initMultipleHandling(): void {
-    // if <mat-select [multiple]="true">
-    // store previously selected values and restore them when they are deselected
-    // because the option is not available while we are currently filtering
-    this.matSelect.valueChange
-      .pipe(takeUntil(this._onDestroy))
-      .subscribe((values) => {
-        if (this.matSelect.multiple) {
-          let restoreSelectedValues = false;
-          if (
-            this._value &&
-            this._value.length &&
-            this.previousSelectedValues &&
-            Array.isArray(this.previousSelectedValues)
-          ) {
-            if (!values || !Array.isArray(values)) {
-              values = [];
-            }
-            const optionValues = this.matSelect.options.map(
-              (option) => option.value
-            );
-            this.previousSelectedValues.forEach((previousValue) => {
-              if (
-                values.indexOf(previousValue) === -1 &&
-                optionValues.indexOf(previousValue) === -1
-              ) {
-                // if a value that was selected before is deselected and not found in the options, it was deselected
-                // due to the filtering, so we restore it.
-                values.push(previousValue);
-                restoreSelectedValues = true;
-              }
-            });
-          }
-
-          if (restoreSelectedValues) {
-            this.matSelect._onChange(values);
-          }
-
-          this.previousSelectedValues = values;
-        }
-      });
   }
 }

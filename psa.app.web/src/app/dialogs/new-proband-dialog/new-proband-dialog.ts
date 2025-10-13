@@ -33,6 +33,7 @@ export interface DialogNewProbandComponentData {
   selector: 'dialog-new-proband',
   styleUrls: ['new-proband-dialog.scss'],
   templateUrl: 'new-proband-dialog.html',
+  standalone: false,
 })
 export class DialogNewProbandComponent implements OnInit {
   public form: FormGroup;
@@ -41,11 +42,11 @@ export class DialogNewProbandComponent implements OnInit {
   public filteredStudies: Observable<string[]>;
 
   public constructor(
-    private dialogRef: MatDialogRef<DialogNewProbandComponent>,
-    private authService: AuthService,
-    private alertService: AlertService,
-    private userService: UserService,
-    private dialog: MatDialog,
+    private readonly dialogRef: MatDialogRef<DialogNewProbandComponent>,
+    private readonly authService: AuthService,
+    private readonly alertService: AlertService,
+    private readonly userService: UserService,
+    private readonly dialog: MatDialog,
     @Inject(MAT_DIALOG_DATA) public data?: DialogNewProbandComponentData
   ) {
     this.form = new FormGroup({

@@ -15,6 +15,7 @@ export interface DialogMarkdownEditorData {
 @Component({
   selector: 'app-dialog-markdown-editor',
   templateUrl: './dialog-markdown-editor.component.html',
+  standalone: false,
 })
 export class DialogMarkdownEditorComponent {
   text: string = this.data.initialText;

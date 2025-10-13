@@ -32,7 +32,7 @@ import { db } from '../../src/db';
 import pgHelper from '../../src/services/postgresqlHelper';
 import { QuestionnaireService } from '../../src/services/questionnaireService';
 import { QuestionnaireRepository } from '../../src/repositories/questionnaireRepository';
-import * as variableNameGeneratorModule from '../../src/helpers/variableNameGenerator';
+import * as generateAndSetVariableNames from '../../src/helpers/variableNameGenerator';
 import { CouldNotCreateNewRandomVariableNameError } from '../../src/errors';
 
 chai.use(chaiHttp);
@@ -642,7 +642,7 @@ describe('/questionnaires', function () {
     context('variable names', () => {
       it('should return HTTP 409 when it was not possible to generate a new variable name', async () => {
         sandbox
-          .stub(variableNameGeneratorModule, 'default')
+          .stub(generateAndSetVariableNames, 'default')
           .throws(new CouldNotCreateNewRandomVariableNameError());
 
         const result = await chai
@@ -995,7 +995,7 @@ describe('/questionnaires', function () {
 
       it('should return HTTP 409 when it was not possible to generate a new variable name', async () => {
         sandbox
-          .stub(variableNameGeneratorModule, 'default')
+          .stub(generateAndSetVariableNames, 'default')
           .throws(new CouldNotCreateNewRandomVariableNameError());
 
         const questionnaireRequest =

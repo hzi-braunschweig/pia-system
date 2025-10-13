@@ -11,6 +11,7 @@ tag-release:
   stage: release
   variables:
     GIT_STRATEGY: none
+    SKOPEO_RETRY: '10'
   dependencies: []
   script:
     - sh -c "skopeo login -u '$CI_REGISTRY_USER' -p '$CI_REGISTRY_PASSWORD' '$CI_REGISTRY'"
@@ -22,37 +23,37 @@ tag-release:
     # also creating of the git tag + gitlab release will be added over here
     - >
       for JOB in $JOBS_DOCKER; do
-        skopeo inspect docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID
+        skopeo inspect --retry-times $SKOPEO_RETRY docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID
       done
     - >
       if [ "$IGNORE_EXISTING_RELEASE_IMAGES" != "1" ]; then
         for JOB in $JOBS_DOCKER; do
-          if skopeo inspect docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
+          if skopeo inspect --retry-times $SKOPEO_RETRY docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
         done
       fi
     - >
       if [ "$IGNORE_EXISTING_RELEASE_IMAGES" != "1" ]; then
         for JOB in $JOBS_DOCKER; do
-          if skopeo inspect docker://$CI_RELEASE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
+          if skopeo inspect --retry-times $SKOPEO_RETRY docker://$CI_RELEASE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
         done
       fi
     - >
       if [ "$IGNORE_EXISTING_RELEASE_IMAGES" != "1" ]; then
         for JOB in $JOBS_DOCKER; do
-          if skopeo inspect docker://$CI_ARCHIVE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
+          if skopeo inspect --retry-times $SKOPEO_RETRY docker://$CI_ARCHIVE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG; then echo there are already tags for this release!; false; fi
         done
       fi
     - >
       for JOB in $JOBS_DOCKER; do
-        skopeo copy docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG
+        skopeo copy --retry-times $SKOPEO_RETRY docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG
       done
     - >
       for JOB in $JOBS_DOCKER; do
-        skopeo copy docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID docker://$CI_RELEASE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG
+        skopeo copy --retry-times $SKOPEO_RETRY docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID docker://$CI_RELEASE_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$TARGET_TAG
       done
     - >
       for JOB in $JOBS_DOCKER; do
-        skopeo copy docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID docker://$CI_ARCHIVE_REGISTRY/pia-eresearch-system/pia-docker-image-archive/$JOB:$TARGET_TAG
+        skopeo copy --retry-times $SKOPEO_RETRY docker://$CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$JOB:$IMAGE_ID docker://$CI_ARCHIVE_REGISTRY/pia-eresearch-system/pia-docker-image-archive/$JOB:$TARGET_TAG
       done
     - release-cli create --description "Release $TARGET_TAG" --tag-name "$TARGET_TAG"
   rules:

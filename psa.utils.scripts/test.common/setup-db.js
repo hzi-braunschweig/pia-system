@@ -27,7 +27,7 @@ const setupDb = {
       {
         DIR: postgresPath,
       },
-      postgresPath + '/Dockerfile'
+      '../docker-templates/postgres/Dockerfile'
     );
     console.log(`setting up the postgres db to listen on port ${dbPort}`);
     await docker.rmf(postgresContainer);

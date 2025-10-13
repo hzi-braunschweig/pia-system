@@ -30,7 +30,6 @@ const MARKDOWN_EDITOR_VALUE_ACCESSOR = {
 };
 
 @Component({
-  standalone: true,
   selector: 'app-markdown-editor',
   templateUrl: './markdown-editor.component.html',
   styleUrls: ['./markdown-editor.component.scss'],
@@ -54,7 +53,7 @@ export class MarkdownEditorComponent
   public transformedText?: string;
 
   @ViewChild('markdownTextarea', { static: false, read: ElementRef })
-  private markdownTextarea: ElementRef;
+  private readonly markdownTextarea: ElementRef;
 
   private subscription: Subscription;
 

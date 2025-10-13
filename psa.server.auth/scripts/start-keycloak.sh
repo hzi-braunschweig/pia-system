@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# SPDX-FileCopyrightText: 2021 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+# SPDX-FileCopyrightText: 2024 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
@@ -16,12 +16,9 @@ fi
 kc.sh \
     -Djava.security.egd=file:/dev/urandom \
     start \
-    --hostname=${EXTERNAL_HOST} \
-    --hostname-admin=${EXTERNAL_HOST}${KEYCLOAK_PATH} \
-    --hostname-path=${KEYCLOAK_PATH} \
-    --hostname-strict=true \
-    --hostname-strict-backchannel=true \
-    --hostname-strict-https=${STRICT_HTTPS} \
+    --hostname="${EXTERNAL_PROTOCOL}://${EXTERNAL_HOST}${KEYCLOAK_PATH}" \
+    --hostname-admin="${EXTERNAL_PROTOCOL}://${EXTERNAL_HOST}${KEYCLOAK_PATH}" \
+    --hostname-backchannel-dynamic=false \
     --http-port=4000 \
     --http-enabled=true \
     --proxy-headers=xforwarded \

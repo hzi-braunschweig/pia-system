@@ -13,6 +13,7 @@ import { CurrentUser } from '../../../_services/current-user.service';
 
 @Component({
   templateUrl: './laboratory-results.component.html',
+  standalone: false,
 })
 export class LaboratoryResultsComponent implements OnInit {
   public showEmptyResultTable = false;

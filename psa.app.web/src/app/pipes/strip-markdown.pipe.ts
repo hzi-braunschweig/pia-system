@@ -5,9 +5,12 @@
  */
 
 import { Pipe, PipeTransform } from '@angular/core';
-import * as removeMD from 'remove-markdown';
+import removeMD from 'remove-markdown';
 
-@Pipe({ name: 'stripMarkdown' })
+@Pipe({
+  name: 'stripMarkdown',
+  standalone: false,
+})
 export class StripMarkdown implements PipeTransform {
   transform(text: string): any {
     return removeMD(text);

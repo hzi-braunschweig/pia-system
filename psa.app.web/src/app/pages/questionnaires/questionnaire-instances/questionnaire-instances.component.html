@@ -77,9 +77,9 @@
           </mat-header-cell>
           <mat-cell *matCellDef="let row">
             {{
-              row.questionnaire.cycle_unit == 'hour'
-                ? (row.date_of_issue | date: 'medium')
-                : (row.date_of_issue | date: 'mediumDate')
+              row.questionnaire.cycle_unit === 'hour'
+                ? (row.date_of_issue | date : 'medium')
+                : (row.date_of_issue | date : 'mediumDate')
             }}
           </mat-cell>
         </ng-container>
@@ -90,22 +90,22 @@
             {{ 'QUESTIONNAIRES_PROBAND.STATUS' | translate }}
           </mat-header-cell>
           <mat-cell *matCellDef="let row">
-            <span *ngIf="row.status == 'active'">{{
+            <span *ngIf="row.status === 'active'">{{
               'STUDIES.STATUS_ACTIVE' | translate
             }}</span>
-            <span *ngIf="row.status == 'in_progress'">{{
+            <span *ngIf="row.status === 'in_progress'">{{
               'QUESTIONNAIRES_FORSCHER.IN_PROGRESS' | translate
             }}</span>
-            <span *ngIf="row.status == 'released_once'">{{
+            <span *ngIf="row.status === 'released_once'">{{
               'LOGS.Q_RELEASED_ONCE' | translate
             }}</span>
-            <span *ngIf="row.status == 'released_twice'">{{
+            <span *ngIf="row.status === 'released_twice'">{{
               'LOGS.Q_RELEASED_TWICE' | translate
             }}</span>
-            <span *ngIf="row.status == 'released'">{{
+            <span *ngIf="row.status === 'released'">{{
               'LOGS.Q_RELEASED_ONCE' | translate
             }}</span>
-            <span *ngIf="row.status == 'expired'">{{
+            <span *ngIf="row.status === 'expired'">{{
               'QUESTIONNAIRES_FORSCHER.EXPIRED' | translate
             }}</span>
           </mat-cell>

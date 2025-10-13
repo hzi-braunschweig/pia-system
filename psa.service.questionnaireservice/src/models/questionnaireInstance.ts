@@ -80,7 +80,7 @@ export interface QuestionnaireInstanceDto {
    * @isInt
    */
   sortOrder: number | null;
-  pseudonym: string | null;
+  pseudonym: string;
   dateOfIssue: Date;
   dateOfReleaseV1: Date | null;
   dateOfReleaseV2: Date | null;

@@ -12,11 +12,11 @@ import { Observable, Subject } from 'rxjs';
 
 @Injectable()
 export class AlertService {
-  private subject = new Subject<AlertMessage>();
-  private subjectObservable = this.subject.asObservable();
+  private readonly subject = new Subject<AlertMessage>();
+  private readonly subjectObservable = this.subject.asObservable();
   private keepAfterNavigationChange = false;
 
-  constructor(private router: Router, private translate: TranslateService) {
+  constructor(router: Router, private readonly translate: TranslateService) {
     // clear alert message on route change
     router.events.subscribe((event) => {
       if (event instanceof NavigationStart) {

@@ -1,5 +1,6 @@
 {
   "name": "Import this questionnaire",
+  "custom_name": "e2e-test-import-questionnaire",
   "type": "for_probands",
   "cycle_amount": 1,
   "activate_at_date": null,
@@ -26,7 +27,7 @@
   "questions": [
     {
       "text": "Where are you from?",
-      "variable_name": "",
+      "variable_name": "q1",
       "id": -1,
       "position": 1,
       "is_mandatory": false,
@@ -36,7 +37,7 @@
           "id": -1,
           "position": 1,
           "text": "",
-          "variable_name": "",
+          "variable_name": "ao11",
           "answer_type_id": 4,
           "condition_error": null,
           "is_notable": [],

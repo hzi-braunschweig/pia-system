@@ -55,7 +55,7 @@ describe('FeedbackStatisticConfigurationComponent', () => {
   let matDialog: SpyObj<MatDialog>;
   let matSnackBar: SpyObj<MatSnackBar>;
   let translateService: SpyObj<TranslateService>;
-  let dialogAfterClosed = new Subject<boolean>();
+  const dialogAfterClosed = new Subject<boolean>();
 
   beforeEach(async () => {
     activatedRoute = { snapshot: { params: { studyName: 'Teststudy' } } };

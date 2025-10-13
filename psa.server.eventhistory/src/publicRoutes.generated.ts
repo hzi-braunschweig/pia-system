@@ -2,7 +2,8 @@
 /* tslint:disable */
 /* eslint-disable */
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { TsoaRoute, fetchMiddlewares, HapiTemplateService } from '@tsoa/runtime';
+import type { TsoaRoute } from '@tsoa/runtime';
+import { fetchMiddlewares, HapiTemplateService } from '@tsoa/runtime';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { EventHistoryController } from './controllers/public/eventHistoryController';
 import { hapiAuthentication } from './auth';
@@ -108,6 +109,13 @@ export function RegisterRoutes(server: any) {
     //  NOTE: If you do not see routes for all of your controllers in this file, then you might not have informed tsoa of where to look
     //      Please look into the "controllerPathGlobs" config option described in the readme: https://github.com/lukeautry/tsoa
     // ###########################################################################################################
+        const argsEventHistoryController_getEvents: Record<string, TsoaRoute.ParameterSchema> = {
+            request: {"in":"request","name":"request","required":true,"dataType":"object"},
+            studyName: {"in":"query","name":"studyName","ref":"StudyName"},
+            from: {"in":"query","name":"from","dataType":"datetime"},
+            to: {"in":"query","name":"to","dataType":"datetime"},
+            type: {"in":"query","name":"type","ref":"EventTypeString"},
+        };
         server.route({
             method: 'get',
             path: '/public/event-history',
@@ -120,17 +128,10 @@ export function RegisterRoutes(server: any) {
                     ...(fetchMiddlewares<RouteOptionsPreAllOptions>(EventHistoryController.prototype.getEvents)),
                 ],
                 handler: function EventHistoryController_getEvents(request: Request, h: ResponseToolkit) {
-                    const args: Record<string, TsoaRoute.ParameterSchema> = {
-                            request: {"in":"request","name":"request","required":true,"dataType":"object"},
-                            studyName: {"in":"query","name":"studyName","ref":"StudyName"},
-                            from: {"in":"query","name":"from","dataType":"datetime"},
-                            to: {"in":"query","name":"to","dataType":"datetime"},
-                            type: {"in":"query","name":"type","ref":"EventTypeString"},
-                    };
 
                     let validatedArgs: any[] = [];
                     try {
-                        validatedArgs = templateService.getValidatedArgs({ args, request, h });
+                        validatedArgs = templateService.getValidatedArgs({ args: argsEventHistoryController_getEvents, request, h });
                     } catch (err) {
                         const error = err as any;
                         if (isBoom(error)) {

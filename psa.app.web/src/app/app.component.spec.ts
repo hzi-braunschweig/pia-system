@@ -18,21 +18,16 @@ import { of } from 'rxjs';
 
 import { AppModule } from './app.module';
 import { AppComponent } from './app.component';
-import { CurrentUser } from './_services/current-user.service';
 import SpyObj = jasmine.SpyObj;
 
 describe('AppComponent', () => {
   let fixture: ComponentFixture<AppComponent>;
   let component: AppComponent;
 
-  let currentUser: SpyObj<CurrentUser>;
   let mediaObserver: SpyObj<MediaObserver>;
   let translate: SpyObj<TranslateService>;
 
   beforeEach(async () => {
-    currentUser = jasmine.createSpyObj('CurrentUser', ['init']);
-    currentUser.init.and.resolveTo(true);
-
     mediaObserver = jasmine.createSpyObj('MediaObserver', ['asObservable']);
     mediaObserver.asObservable.and.returnValue(
       of([new MediaChange(true, 'somemq', 'lt-md')])

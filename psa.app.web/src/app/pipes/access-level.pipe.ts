@@ -10,9 +10,12 @@ import { AccessLevel } from '../psa.app.core/models/studyAccess';
 /**
  * Returns Translation for access level
  */
-@Pipe({ name: 'accessLevelPipe' })
+@Pipe({
+  name: 'accessLevelPipe',
+  standalone: false,
+})
 export class AccessLevelPipe implements PipeTransform {
-  private accessLevelMapping = {
+  private readonly accessLevelMapping = {
     read: 'DIALOG.READ',
     write: 'DIALOG.WRITE',
     admin: 'DIALOG.ADMIN',

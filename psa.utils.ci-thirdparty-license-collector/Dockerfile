@@ -1,4 +1,4 @@
-FROM node:20.10.0-alpine@sha256:5ffaaf1eed5668f16f2d59130993b6b4e91263ea73d7556e44faa341d7d1c78a AS base
+FROM node:20.18.1-alpine@sha256:24fb6aa7020d9a20b00d6da6d1714187c45ed00d1eb4adb01395843c338b9372 AS base
 
 ######
 
@@ -28,6 +28,7 @@ RUN --mount=type=cache,target=/npm-cache/ \
     PUPPETEER_SKIP_DOWNLOAD=1 CYPRESS_INSTALL_BINARY=0 npx lerna bootstrap --ci -- --cache /npm-cache/ --prefer-offline
 
 COPY psa.lib.licensecollector/dist psa.lib.licensecollector/dist
+COPY psa.lib.licensecollector/static-licenses psa.lib.licensecollector/static-licenses
 RUN npm i -g psa.lib.licensecollector/
 
 RUN licensecollector -d -f text -t ./THIRD_PARTY_LICENSES .

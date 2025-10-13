@@ -7,8 +7,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AccountInfoComponent } from './account-info.component';
-import { KeycloakService } from 'keycloak-angular';
-import { KeycloakInstance } from 'keycloak-js';
+import Keycloak from 'keycloak-js';
 import { By } from '@angular/platform-browser';
 import { MockComponent, MockDirective, MockPipe, MockProvider } from 'ng-mocks';
 import { TranslatePipe } from '@ngx-translate/core';
@@ -16,22 +15,15 @@ import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { MatTooltip } from '@angular/material/tooltip';
 import SpyObj = jasmine.SpyObj;
-import Spy = jasmine.Spy;
-import createSpy = jasmine.createSpy;
 
 describe('AccountInfoComponent', () => {
   let component: AccountInfoComponent;
   let fixture: ComponentFixture<AccountInfoComponent>;
 
-  let keycloak: SpyObj<KeycloakService>;
-  let accountManagementSpy: Spy;
+  let keycloak: SpyObj<Keycloak>;
 
   beforeEach(async () => {
-    keycloak = jasmine.createSpyObj('KeyloakService', ['getKeycloakInstance']);
-    accountManagementSpy = createSpy('accountManagement');
-    keycloak.getKeycloakInstance.and.returnValue({
-      accountManagement: accountManagementSpy,
-    } as unknown as KeycloakInstance);
+    keycloak = jasmine.createSpyObj('KeyloakService', ['accountManagement']);
 
     await TestBed.configureTestingModule({
       declarations: [
@@ -41,7 +33,7 @@ describe('AccountInfoComponent', () => {
         MockComponent(MatButton),
         MockDirective(MatTooltip),
       ],
-      providers: [MockProvider(KeycloakService, keycloak)],
+      providers: [MockProvider(Keycloak, keycloak)],
     }).compileComponents();
   });
 
@@ -84,6 +76,6 @@ describe('AccountInfoComponent', () => {
     expect(manageButton).not.toBeNull();
 
     manageButton.nativeElement.click();
-    expect(accountManagementSpy).toHaveBeenCalledTimes(1);
+    expect(keycloak.accountManagement).toHaveBeenCalledTimes(1);
   });
 });

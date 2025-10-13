@@ -1,1 +1,1 @@
-FROM atmoz/sftp:alpine@sha256:c5c01b34724a49b8dcbaebc1f8f4e78e5e86d493137707c96fc259a04e23b08b
+FROM atmoz/sftp:alpine@sha256:b722f0ba925481748aa693cfd7fd236350cbd16240b7afda94c0fdf3a90132e3

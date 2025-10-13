@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, inject, OnInit, ViewEncapsulation } from '@angular/core';
 import { DateAdapter, MAT_DATE_FORMATS } from '@angular/material/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import {
@@ -17,16 +17,16 @@ import {
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../_services/alert.service';
 import {
-  APP_DATE_FORMATS_SHORT,
+  APP_DATE_FORMATS_LONG,
   AppDateAdapter,
 } from '../../_helpers/date-adapter';
 import { combineLatest, concatMap, Observable, tap } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
-import { HttpEvent, HttpResponse } from '@angular/common/http';
 import { Proband } from '../../psa.app.core/models/proband';
 import { CurrentUser } from '../../_services/current-user.service';
 import { ProbandService } from '../../psa.app.core/providers/proband-service/proband.service';
-import { FileDownloadService } from 'src/app/_services/file-download.service';
+import Keycloak from 'keycloak-js';
+import { ExportRequestData } from 'src/app/psa.app.core/models/export';
 
 interface StudyQuestionnaire {
   id: number;
@@ -47,11 +47,14 @@ interface StudyQuestionnaire {
     },
     {
       provide: MAT_DATE_FORMATS,
-      useValue: APP_DATE_FORMATS_SHORT,
+      useValue: APP_DATE_FORMATS_LONG,
     },
   ],
+  standalone: false,
 })
 export class DialogExportDataComponent implements OnInit {
+  private readonly keycloak = inject(Keycloak);
+
   exportCheckboxes = [
     {
       name: 'QUESTIONNAIRE_FORSCHER.EXPORT_ANSWERS',
@@ -102,6 +105,7 @@ export class DialogExportDataComponent implements OnInit {
 
   currentDate = new Date();
   isLoading: boolean = false;
+  isExportStarted: boolean = false;
 
   private static containsSearchValue(
     value: string,
@@ -114,11 +118,10 @@ export class DialogExportDataComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<DialogExportDataComponent>,
-    private probandService: ProbandService,
-    private alertService: AlertService,
-    private questionnaireService: QuestionnaireService,
-    private currentUser: CurrentUser,
-    private fileDownloadService: FileDownloadService
+    private readonly probandService: ProbandService,
+    private readonly alertService: AlertService,
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly currentUser: CurrentUser
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -135,14 +138,20 @@ export class DialogExportDataComponent implements OnInit {
     }
   }
 
-  submit(): void {
+  async submit(): Promise<void> {
     if (!this.form.valid) {
       return;
     }
 
-    this.isLoading = true;
+    const token = this.keycloak.token;
+    if (!token || token === '') {
+      return;
+    }
 
-    const exportRequestData = this.form.getRawValue();
+    this.isLoading = true;
+    this.isExportStarted = true;
+
+    const exportRequestData: ExportRequestData = this.form.getRawValue();
 
     if (this.isProbandSelectionRequired(this.form)) {
       if (exportRequestData.probands === 'allProbandsCheckbox') {
@@ -161,23 +170,9 @@ export class DialogExportDataComponent implements OnInit {
       )
       .flatMap((v) => v);
 
-    const responseStream =
-      this.questionnaireService.getExportData(exportRequestData);
-    this.saveExportFile(responseStream);
-  }
+    this.questionnaireService.export(exportRequestData, token);
 
-  saveExportFile(responseStream: Observable<HttpEvent<Blob>>): void {
-    responseStream.subscribe({
-      next: (response: HttpResponse<Blob>) => {
-        this.fileDownloadService.downloadFile(response.body);
-
-        this.isLoading = false;
-      },
-      error: (error) => {
-        this.alertService.errorObject(error);
-        this.isLoading = false;
-      },
-    });
+    this.isLoading = false;
   }
 
   private getExportForm(): FormGroup {
@@ -311,7 +306,10 @@ export class DialogExportDataComponent implements OnInit {
     if (
       (!control.get('questionnaires').value ||
         control.get('questionnaires').value.length === 0) &&
-      (exports.includes('answers') || exports.includes('codebook'))
+      (exports.includes('legacy_answers') ||
+        exports.includes('answers') ||
+        exports.includes('codebook') ||
+        exports.includes('questionnaires'))
     ) {
       return { emptyQuestionnaires: true };
     } else {

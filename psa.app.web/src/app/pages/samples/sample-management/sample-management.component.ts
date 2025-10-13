@@ -41,6 +41,7 @@ import { PersonalData } from '../../../psa.app.core/models/personalData';
       useClass: MatPaginatorIntlGerman,
     },
   ],
+  standalone: false,
 })
 export class SampleManagementComponent implements OnInit {
   isLoading = false;
@@ -79,14 +80,14 @@ export class SampleManagementComponent implements OnInit {
 
   constructor(
     public currentUser: CurrentUser,
-    private probandService: ProbandService,
-    private router: Router,
-    private matDialog: MatDialog,
-    private sampleTrackingService: SampleTrackingService,
-    private mediaObserver: MediaObserver,
-    private dataService: DataService,
-    private personalDataService: PersonalDataService,
-    private accountStatusPipe: AccountStatusPipe
+    private readonly probandService: ProbandService,
+    private readonly router: Router,
+    private readonly matDialog: MatDialog,
+    private readonly sampleTrackingService: SampleTrackingService,
+    private readonly mediaObserver: MediaObserver,
+    private readonly dataService: DataService,
+    private readonly personalDataService: PersonalDataService,
+    private readonly accountStatusPipe: AccountStatusPipe
   ) {
     this.initializeCols();
   }
@@ -223,9 +224,9 @@ export class SampleManagementComponent implements OnInit {
   }
 
   geBloodSamplesForBloodSampleID(
-    usersArray: Array<any>,
+    usersArray: any[],
     filterSampleID: string,
-    newData: Array<any>
+    newData: any[]
   ): void {
     this.sampleTrackingService
       .getBloodSamplesForBloodSampleID(filterSampleID)

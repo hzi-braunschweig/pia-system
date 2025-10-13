@@ -55,6 +55,7 @@ export interface ProbandsListEntryActionButtonConfig {
       useClass: MatPaginatorIntlGerman,
     },
   ],
+  standalone: false,
 })
 export class ProbandsListComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true })

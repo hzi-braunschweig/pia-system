@@ -43,6 +43,7 @@ interface TableRow {
       useClass: MatPaginatorIntlGerman,
     },
   ],
+  standalone: false,
 })
 export class StudyAccessesComponent implements OnInit {
   public study: Study;
@@ -57,11 +58,11 @@ export class StudyAccessesComponent implements OnInit {
   public sort: MatSort;
 
   constructor(
-    private userService: UserService,
-    private activatedRoute: ActivatedRoute,
-    private alertService: AlertService,
+    private readonly userService: UserService,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly alertService: AlertService,
     public dialog: MatDialog,
-    private location: Location
+    private readonly location: Location
   ) {}
 
   public async ngOnInit(): Promise<void> {

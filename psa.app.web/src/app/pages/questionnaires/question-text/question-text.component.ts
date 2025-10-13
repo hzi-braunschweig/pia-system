@@ -10,6 +10,7 @@ import { Component, Input } from '@angular/core';
   selector: 'app-question-text',
   templateUrl: './question-text.component.html',
   styleUrls: ['./question-text.component.scss'],
+  standalone: false,
 })
 export class QuestionTextComponent {
   @Input() text: string;

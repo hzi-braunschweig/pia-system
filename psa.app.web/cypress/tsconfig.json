@@ -3,6 +3,7 @@
   "compilerOptions": {
     "outDir": "../out-tsc/cypress",
     "sourceMap": false,
+    "skipLibCheck": true,
     "types": ["cypress", "node", "cypress-file-upload"]
   },
   "include": ["**/*.ts"],

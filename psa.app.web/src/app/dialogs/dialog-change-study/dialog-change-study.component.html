@@ -14,7 +14,8 @@
     </h1>
     <h5 *ngIf="!data.study.pendingStudyChange">
       {{
-        'DIALOG.CHANGE_STUDY_PARTNER' | translate: { study_id: data.study.name }
+        'DIALOG.CHANGE_STUDY_PARTNER'
+          | translate : { study_id: data.study.name }
       }}
     </h5>
     <h5 *ngIf="data.study.pendingStudyChange">

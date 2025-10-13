@@ -4,26 +4,30 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { createSandbox } from 'sinon';
 import chai from 'chai';
-import { NotificationHandlers } from './notificationHandlers';
-import { db } from '../db';
-import { Questionnaire } from '../models/questionnaire';
 import { startOfToday, subDays } from 'date-fns';
-import { Proband } from '../models/proband';
+import { ITask } from 'pg-promise';
+import { createSandbox } from 'sinon';
+import { db } from '../db';
 import { Condition } from '../models/condition';
+import { Proband } from '../models/proband';
+import { Questionnaire } from '../models/questionnaire';
+import { ConditionsService } from './conditionsService';
+import { NotificationHandlers } from './notificationHandlers';
+import { QuestionnaireInstancesService } from './questionnaireInstancesService';
 
 const expect = chai.expect;
 const sandbox = createSandbox();
 
 /* eslint-disable @typescript-eslint/no-magic-numbers */
-describe.skip('notificationHandlers', function () {
+describe('notificationHandlers', function () {
   afterEach(() => {
     sandbox.restore();
   });
 
   describe('handleInsertedQuestionnaire', function () {
     it('should not create any QIs if no user is active in study', async function () {
+      // Arrange
       const questionnaire = createQuestionnaire({
         id: 99999,
         study_id: 'Study1',
@@ -44,6 +48,7 @@ describe.skip('notificationHandlers', function () {
     });
 
     it('should create QIs for one user', async function () {
+      // Arrange
       const questionnaire = createQuestionnaire({
         id: 99999,
         study_id: 'Study1',
@@ -55,19 +60,33 @@ describe.skip('notificationHandlers', function () {
         deactivate_after_days: 1,
       });
       const probands: Proband[] = [createUser('Testuser1', startOfToday())];
-      const dbStub = stubDb();
-      dbStub.manyOrNone.onCall(0).resolves(probands);
-      const expectedCallCount = 2;
-      const expectedCallArg = 2;
+      sandbox
+        .stub(NotificationHandlers as any, 'getProbandsOfStudy')
+        .resolves(probands);
 
+      stubDb();
+      const createQuestionnaireInstancesStub = sandbox
+        .stub(
+          NotificationHandlers as any,
+          'createQuestionnaireInstancesForProbands'
+        )
+        .resolves([]);
+
+      // Act
       await NotificationHandlers.handleInsertedQuestionnaire(questionnaire);
 
-      expect(dbStub.oneOrNone.callCount).to.equal(1);
-      expect(dbStub.manyOrNone.callCount).to.equal(expectedCallCount);
-      expect(dbStub.manyOrNone.calledWith(expectedCallArg)).to.equal(true);
+      // Assert
+      expect(createQuestionnaireInstancesStub.callCount).to.equal(1);
+      expect(
+        createQuestionnaireInstancesStub.calledWith(
+          questionnaire, // transaction object
+          probands
+        )
+      ).to.be.true;
     });
 
     it('should create QIs for two probands', async function () {
+      // Arrange
       const questionnaire = createQuestionnaire({
         id: 99999,
         study_id: 'Study1',
@@ -82,19 +101,32 @@ describe.skip('notificationHandlers', function () {
         createUser('Testuser1', startOfToday()),
         createUser('Testuser1', subDays(startOfToday(), 1)),
       ];
-      const dbStub = stubDb();
-      dbStub.manyOrNone.onCall(0).resolves(probands);
-      const expectedCallCount = 2;
-      const expectedCallArg = 4;
+      sandbox
+        .stub(NotificationHandlers as any, 'getProbandsOfStudy')
+        .resolves(probands);
+      stubDb();
+      const createQuestionnaireInstancesStub = sandbox
+        .stub(
+          NotificationHandlers as any,
+          'createQuestionnaireInstancesForProbands'
+        )
+        .resolves([]);
 
+      // Act
       await NotificationHandlers.handleInsertedQuestionnaire(questionnaire);
 
-      expect(dbStub.oneOrNone.callCount).to.equal(1);
-      expect(dbStub.manyOrNone.callCount).to.equal(expectedCallCount);
-      expect(dbStub.manyOrNone.calledWith(expectedCallArg)).to.equal(true);
+      // Assert
+      expect(createQuestionnaireInstancesStub.callCount).to.equal(1);
+      expect(
+        createQuestionnaireInstancesStub.calledWith(
+          questionnaire, // transaction object
+          probands
+        )
+      ).to.be.true;
     });
 
     it('should not create QIs if questionnaire is conditional', async function () {
+      // Arrange
       const questionnaire = createQuestionnaire({
         id: 99999,
         study_id: 'Study1',
@@ -111,31 +143,46 @@ describe.skip('notificationHandlers', function () {
         condition_answer_option_id: 1,
         condition_operand: '==',
         condition_value: 'Ja',
+        condition_type: 'external',
       });
+      sandbox
+        .stub(ConditionsService as any, 'getConditionFor')
+        .resolves(qCondition);
+      sandbox
+        .stub(
+          QuestionnaireInstancesService as any,
+          'getLatestAnswersForCondition'
+        )
+        .resolves([]);
 
       const probands = [
         createUser('Testuser1', startOfToday()),
         createUser('Testuser1', subDays(startOfToday(), 1)),
       ];
-      const dbStub = stubDb();
-      dbStub.oneOrNone.resolves(qCondition);
-      dbStub.manyOrNone.onCall(0).resolves(probands);
-      const expectedCallCount = 0;
-      const expectedCallArg = 4;
+      sandbox
+        .stub(NotificationHandlers as any, 'getProbandsOfStudy')
+        .resolves(probands);
+      stubDb();
+      const createQuestionnaireInstancesStub = sandbox
+        .stub(NotificationHandlers as any, 'createQuestionnaireInstances')
+        .resolves([]);
 
+      // Act
       await NotificationHandlers.handleInsertedQuestionnaire(questionnaire);
 
-      expect(dbStub.oneOrNone.callCount).to.equal(1);
-      expect(dbStub.manyOrNone.callCount).to.equal(expectedCallCount);
-      expect(dbStub.manyOrNone.calledWith(expectedCallArg)).to.equal(false);
+      // Assert
+      expect(createQuestionnaireInstancesStub.callCount).to.equal(1);
+      expect(createQuestionnaireInstancesStub.calledWithExactly([])).to.be.true;
     });
   });
 
   describe('handleUpdatedQuestionnaire', function () {
     it('should delete all old qIS and create no new ones if new questionnaire is conditional', async function () {
+      // Arrange
+      const studyId = 'Study1';
       const questionnaire_old = createQuestionnaire({
         id: 99999,
-        study_id: 'Study1',
+        study_id: studyId,
         name: 'TestQuestionnaire1',
         no_questions: 2,
         cycle_amount: 1,
@@ -146,7 +193,7 @@ describe.skip('notificationHandlers', function () {
 
       const questionnaire_new = createQuestionnaire({
         id: 99999,
-        study_id: 'Study1',
+        study_id: studyId,
         name: 'TestQuestionnaire1',
         no_questions: 2,
         cycle_amount: 1,
@@ -156,19 +203,40 @@ describe.skip('notificationHandlers', function () {
       });
 
       const dbStub = stubDb();
-      dbStub.oneOrNone.resolves({ questionnaire_id: 99999 });
       dbStub.manyOrNone.onCall(0).resolves([]);
+      dbStub.manyOrNone.onCall(1).resolves([]);
+      const getProbandsStub = sandbox
+        .stub(NotificationHandlers as any, 'getProbandsOfStudy')
+        .resolves([
+          {
+            pseudonym: 'test-user',
+            study: studyId,
+          },
+        ]);
 
+      const createQuestionnaireInstancesStub = sandbox
+        .stub(NotificationHandlers as any, 'createQuestionnaireInstances')
+        .resolves([]);
+
+      // Act
       await NotificationHandlers.handleUpdatedQuestionnaire(
         questionnaire_old,
         questionnaire_new
       );
 
-      expect(dbStub.oneOrNone.callCount).to.equal(1);
-      expect(dbStub.manyOrNone.callCount).to.equal(1);
+      // Assert
+      expect(dbStub.manyOrNone.callCount).to.equal(2);
+      expect(
+        getProbandsStub.calledWith(
+          sandbox.match.any, // transaction object
+          studyId
+        )
+      ).to.be.true;
+      expect(createQuestionnaireInstancesStub.calledWithExactly([])).to.be.true;
     });
 
     it('should delete all old qIS and create no new ones if no probands are active in study', async function () {
+      // Arrange
       const questionnaire_old = createQuestionnaire({
         id: 99999,
         study_id: 'Study1',
@@ -192,21 +260,31 @@ describe.skip('notificationHandlers', function () {
       });
 
       const dbStub = stubDb();
-      dbStub.oneOrNone.resolves({ questionnaire_id: 99999 });
       dbStub.manyOrNone.onCall(0).resolves([]);
       dbStub.manyOrNone.onCall(1).resolves([]);
       const expectedCallCount = 2;
 
+      sandbox
+        .stub(NotificationHandlers as any, 'getProbandsOfStudy')
+        .resolves([]);
+      const createQuestionnaireInstancesStub = sandbox
+        .stub(NotificationHandlers as any, 'createQuestionnaireInstances')
+        .resolves([]);
+
+      // Act
       await NotificationHandlers.handleUpdatedQuestionnaire(
         questionnaire_old,
         questionnaire_new
       );
 
+      // Assert
       expect(dbStub.oneOrNone.callCount).to.equal(1);
       expect(dbStub.manyOrNone.callCount).to.equal(expectedCallCount);
+      expect(createQuestionnaireInstancesStub.notCalled).to.be.true;
     });
 
-    it('should delete all old qIS and create correct number of neq qIs', async function () {
+    it('should delete all old qIS and create correct number of new qIs', async function () {
+      // Arrange
       const questionnaire_old = createQuestionnaire({
         id: 99999,
         study_id: 'Study1',
@@ -233,24 +311,35 @@ describe.skip('notificationHandlers', function () {
         createUser('Testuser1', startOfToday()),
         createUser('Testuser1', subDays(startOfToday(), 1)),
       ];
+      sandbox
+        .stub(NotificationHandlers as any, 'getProbandsOfStudy')
+        .resolves(probands);
 
       const dbStub = stubDb();
       dbStub.manyOrNone.onCall(0).resolves([]);
-      dbStub.manyOrNone.onCall(1).resolves(probands);
-      const expectedCallCount = 3;
-      const expectedCallArgs = 8;
+      dbStub.manyOrNone.onCall(1).resolves([]);
+      const expectedCallCount = 2;
+      const expectedNewQisLength = 8;
 
+      const createQuestionnaireInstancesStub = sandbox
+        .stub(NotificationHandlers as any, 'createQuestionnaireInstances')
+        .resolves([]);
+
+      // Act
       await NotificationHandlers.handleUpdatedQuestionnaire(
         questionnaire_old,
         questionnaire_new
       );
 
+      // Assert
       expect(dbStub.oneOrNone.callCount).to.equal(1);
       expect(dbStub.manyOrNone.callCount).to.equal(expectedCallCount);
-      expect(dbStub.manyOrNone.calledWith(expectedCallArgs)).to.equal(true);
+      expect(
+        createQuestionnaireInstancesStub.getCall(0).args[0]
+      ).to.have.length(expectedNewQisLength);
     });
 
-    it('should ignore when a custom name has been automatically generated for a questionnaire', () => {
+    it('should ignore when a custom name has been automatically generated for a questionnaire', async () => {
       // Arrange
       const questionnaire_old = createQuestionnaire({
         id: 99999,
@@ -276,23 +365,61 @@ describe.skip('notificationHandlers', function () {
         deactivate_after_days: 1,
       });
 
+      const dbStub = stubDb();
+
       // Act
-      const resultNullName = NotificationHandlers.handleUpdatedQuestionnaire(
-        questionnaire_old,
-        questionnaire_new
-      );
+      const resultNullName =
+        await NotificationHandlers.handleUpdatedQuestionnaire(
+          questionnaire_old,
+          questionnaire_new
+        );
 
       // Assert
       expect(resultNullName).to.be.undefined;
+      expect(dbStub.manyOrNone.callCount).to.equal(0);
 
       // Act
-      const resultEmptyName = NotificationHandlers.handleUpdatedQuestionnaire(
-        { ...questionnaire_old, custom_name: '' },
-        questionnaire_new
-      );
+      const resultEmptyName =
+        await NotificationHandlers.handleUpdatedQuestionnaire(
+          { ...questionnaire_old, custom_name: '' },
+          questionnaire_new
+        );
 
       // Assert
       expect(resultEmptyName).to.be.undefined;
+      expect(dbStub.manyOrNone.callCount).to.equal(0);
+    });
+  });
+
+  describe('deleteObsoleteQuestionnaireInstances', function () {
+    it('should only delete QIs for the specified proband ', async function () {
+      // Arrange
+      const questionnaire = createQuestionnaire({});
+
+      const pseudonym = 'THIS_IS_A_PSEUDONYM_NOT_IN_THE_QUESTIONNAIRE';
+      const user = createUser(pseudonym, new Date());
+
+      const dbStub = stubDb();
+      dbStub.manyOrNone.onCall(0).resolves([]);
+
+      // Act
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
+      await (NotificationHandlers as any).deleteObsoleteQuestionnaireInstances(
+        dbStub as unknown as ITask<unknown>,
+        questionnaire,
+        user
+      );
+
+      // Assert
+      expect(dbStub.manyOrNone.callCount).to.equal(1);
+      expect(
+        dbStub.manyOrNone.calledWith(
+          sandbox.match((query: string) =>
+            query.includes('DELETE FROM questionnaire_instances')
+          ),
+          sandbox.match((args: unknown[]) => args.includes(pseudonym))
+        )
+      ).to.be.true;
     });
   });
 
@@ -386,6 +513,7 @@ describe.skip('notificationHandlers', function () {
         .resolves(null)
         .onCall(1)
         .resolves(null),
+      one: sandbox.stub().resolves(null),
     };
     // see: https://vitaly-t.github.io/pg-promise/module-pg-promise.html
     sandbox

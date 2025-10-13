@@ -71,24 +71,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ClientHasNoAccessToStudyError'
-              examples:
-                Example 1: {}
         '404':
           description: The event history has been disabled
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/EventHistoryIsDisabledError'
-              examples:
-                Example 1: {}
         '500':
           description: An internal error occurred
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-              examples:
-                Example 1: {}
       description: Returns a list of events that match the given filters
       tags:
         - Event History
@@ -162,26 +156,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InvalidAuthorizationTokenError'
-              examples:
-                Example 1: {}
         '403':
           description: Forbidden
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/MissingStudyAccessError'
-              examples:
-                Example 1: {}
-                Example 2: {}
         '404':
           description: Not found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SpecificError'
-              examples:
-                Example 1: {}
-                Example 2: {}
         '500':
           description: An internal error occurred
           content:
@@ -1199,7 +1185,7 @@ components:
       pattern: '^-[0-9]{8}$'
     IsoDateString:
       type: string
-      example: '2024-02-06'
+      example: '2024-02-06T00:00:00.000Z'
       description: |-
         ISO 8601 date string with a fixed format.
         A date value can be restricted to a range, defined by its answer option.

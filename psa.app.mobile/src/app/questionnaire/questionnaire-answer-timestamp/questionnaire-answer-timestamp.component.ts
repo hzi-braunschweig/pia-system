@@ -20,6 +20,7 @@ const QUESTIONNAIRE_ANSWER_TIMESTAMP_ACCESSOR = {
   selector: 'app-questionnaire-answer-timestamp',
   templateUrl: './questionnaire-answer-timestamp.component.html',
   providers: [QUESTIONNAIRE_ANSWER_TIMESTAMP_ACCESSOR],
+  standalone: false,
 })
 export class QuestionnaireAnswerTimestampComponent extends AbstractTextInputControlValueAccessor<FormControlValue> {
   onChange: (value: Date) => void;

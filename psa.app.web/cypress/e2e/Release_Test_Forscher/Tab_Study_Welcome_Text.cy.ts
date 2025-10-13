@@ -14,7 +14,6 @@ import {
   createPlannedProband,
   createProband,
   createStudy,
-  createUser,
   generateRandomProbandForStudy,
   generateRandomStudy,
   getCredentialsForProbandByUsername,
@@ -23,8 +22,8 @@ import {
 } from '../../support/commands';
 import { CreateProbandRequest } from '../../../src/app/psa.app.core/models/proband';
 import { selectStudy } from 'cypress/support/study.commands';
+import short from 'short-uuid';
 
-const short = require('short-uuid');
 const translator = short();
 
 let probandA: CreateProbandRequest;
@@ -37,7 +36,6 @@ let study3;
 let study4;
 let forscher;
 let ut;
-let pm;
 const forscherCredentials = { username: '', password: '' };
 const probandCredentials = { username: '', password: '' };
 const probandCredentialsB = { username: '', password: '' };

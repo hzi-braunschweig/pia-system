@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-const cypressLogToOutput = require('cypress-log-to-output');
-const { existsSync, readFileSync } = require('fs');
-const { rm } = require('fs/promises');
+import * as cypressLogToOutput from 'cypress-log-to-output';
+import { existsSync, readFileSync } from 'fs';
+import { rm } from 'fs/promises';
 
 export default function nodeEvents(
   on: Cypress.PluginEvents,

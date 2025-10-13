@@ -22,6 +22,7 @@ import { PlannedProband } from 'src/app/psa.app.core/models/plannedProband';
   selector: 'new-planned-probands-dialog',
   templateUrl: 'new-planned-probands-dialog.component.html',
   styleUrls: ['new-planned-probands-dialog.component.scss'],
+  standalone: false,
 })
 export class DialogNewPlannedProbandsComponent
   implements OnInit, AfterViewInit
@@ -33,8 +34,8 @@ export class DialogNewPlannedProbandsComponent
 
   constructor(
     public dialogRef: MatDialogRef<DialogNewPlannedProbandsComponent>,
-    private authService: AuthService,
-    private alertService: AlertService,
+    private readonly authService: AuthService,
+    private readonly alertService: AlertService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
 
@@ -103,7 +104,7 @@ export class DialogNewPlannedProbandsComponent
 
   filterEmptyPlannedProbands(): void {
     const emptyIndices = [];
-    this.form.value['pseudonyms'].forEach((value, index) => {
+    this.form.value.pseudonyms.forEach((value, index) => {
       if (value === '' || value === null) {
         emptyIndices.push(index);
       }

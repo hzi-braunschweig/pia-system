@@ -5,7 +5,6 @@
  */
 
 import Boom from '@hapi/boom';
-import { getRepository } from 'typeorm';
 import { QuestionnaireDto } from '../../models/questionnaire';
 import { Questionnaire } from '../../entities/questionnaire';
 import { AnswerDataFilter } from '../../models/answer';
@@ -13,6 +12,7 @@ import { Answer } from '../../entities/answer';
 import { AnswerDataTransform } from '../../services/internal/answerDataTransform';
 import { StreamTimeout } from '@pia/lib-service-core';
 import { Transform } from 'stream';
+import { dataSource } from '../../db';
 
 export class InternalQuestionnaireInteractor {
   // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -23,9 +23,13 @@ export class InternalQuestionnaireInteractor {
     version: number
   ): Promise<QuestionnaireDto> {
     try {
-      return await getRepository(Questionnaire).findOneOrFail({
+      return await dataSource.getRepository(Questionnaire).findOneOrFail({
         where: { id, version },
-        relations: ['questions', 'questions.answerOptions'],
+        relations: {
+          questions: {
+            answerOptions: true,
+          },
+        },
       });
     } catch (err) {
       throw Boom.notFound('questionnaire not found');
@@ -37,7 +41,8 @@ export class InternalQuestionnaireInteractor {
     filter: AnswerDataFilter
   ): Promise<Transform> {
     try {
-      let query = getRepository(Answer)
+      let query = dataSource
+        .getRepository(Answer)
         .createQueryBuilder('a')
         .select([
           'q.id AS questionnaire_id',

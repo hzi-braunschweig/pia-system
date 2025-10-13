@@ -25,9 +25,9 @@ export class PageManager {
   public readonly navPages$: Observable<Page[]>;
 
   constructor(
-    private user: CurrentUser,
-    private complianceManager: ComplianceManager,
-    private feedbackStatisticsService: FeedbackStatisticsService
+    private readonly user: CurrentUser,
+    private readonly complianceManager: ComplianceManager,
+    private readonly feedbackStatisticsService: FeedbackStatisticsService
   ) {
     this.navPages$ = merge(
       from(this.getNavigationPagesForCurrentUser()),

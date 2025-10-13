@@ -22,6 +22,7 @@ export interface DialogChangeStudyData {
   selector: 'app-dialog-change-study',
   templateUrl: 'dialog-change-study.component.html',
   styleUrls: ['dialog-change-study.component.scss'],
+  standalone: false,
 })
 export class DialogChangeStudyComponent implements OnInit {
   public form: FormGroup;
@@ -33,10 +34,10 @@ export class DialogChangeStudyComponent implements OnInit {
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: DialogChangeStudyData,
-    private dialogRef: MatDialogRef<DialogChangeStudyComponent>,
-    private alertService: AlertService,
-    private authService: AuthService,
-    private userService: UserService
+    private readonly dialogRef: MatDialogRef<DialogChangeStudyComponent>,
+    private readonly alertService: AlertService,
+    private readonly authService: AuthService,
+    private readonly userService: UserService
   ) {}
 
   public ngOnInit(): void {
@@ -178,8 +179,8 @@ export class DialogChangeStudyComponent implements OnInit {
       search = search.toLowerCase();
     }
     this.filteredUsers.next(
-      this.usersWithSameRole.filter(
-        (user) => user.username.toLowerCase().indexOf(search) > -1
+      this.usersWithSameRole.filter((user) =>
+        user.username.toLowerCase().includes(search)
       )
     );
   }

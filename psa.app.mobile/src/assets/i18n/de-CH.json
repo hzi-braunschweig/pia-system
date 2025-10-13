@@ -35,7 +35,8 @@
     "TOAST_MSG_NO_INTERNET": "Die Anfrage konnte nicht bearbeitet werden. Bitte überprüfen Sie Ihre Internetverbindung.",
     "TOAST_MSG_UNKNOWN_ERROR": "Die Anfrage konnte nicht bearbeitet werden. Ein unbekannter Fehler ist aufgetreten.",
     "CONFIRM_LOGOUT_TITLE": "Wollen Sie sich wirklich abmelden?",
-    "CONFIRM_LOGOUT_MSG": "Wenn Sie sich abmelden, werden Sie keine weiteren Benachrichtigungen von PIA erhalten. Wenn Sie nur die Benachrichtigungen ausstellen möchten, können Sie das in den Benachrichtigungseinstellungen Ihres Gerätes tun."
+    "CONFIRM_LOGOUT_MSG": "Wenn Sie sich abmelden, werden Sie keine weiteren Benachrichtigungen von PIA erhalten. Wenn Sie nur die Benachrichtigungen ausstellen möchten, können Sie das in den Benachrichtigungseinstellungen Ihres Gerätes tun.",
+    "LOGGING_OUT": "Ausloggen..."
   },
   "HOME": {
     "TITLE": "Startseite"
@@ -100,7 +101,8 @@
     "NO_RESULTS": "Keine Fragebögen gefunden",
     "UPLOADED_IMAGE_TOO_LARGE": "Es können nur Dateien mit einer Grösse von bis zu 20MB hochgeladen werden. Bitte prüfen Sie Ihre Dateigrösse.",
     "NO_IMAGE_UPLOAD": "Noch kein Foto hochgeladen.",
-    "AUTOCOMPLETE_PICK": "Wählen Sie eine Option aus."
+    "AUTOCOMPLETE_PICK": "Wählen Sie eine Option aus.",
+    "AUTOCOMPLETE_MULTISELECT_PICK": "Wählen Sie Optionen aus."
   },
   "QUESTIONNAIRES": {
     "TITLE": "Übersicht",
@@ -141,7 +143,8 @@
     "TITLE": "Statistiken",
     "READ_MORE": "Weiterlesen",
     "NO_CHARTS": "Es sind noch keine Statistiken verfügbar. Schauen Sie zu einem späteren Zeitpunkt noch einmal vorbei.",
-    "NO_DATA": "Die Grafik ist noch nicht verfügbar. Schauen Sie zu einem späteren Zeitpunkt noch einmal vorbei."
+    "NO_DATA": "Die Grafik ist noch nicht verfügbar. Schauen Sie zu einem späteren Zeitpunkt noch einmal vorbei.",
+    "CAPTION": "Datenstand: {{updatedAt}} (Es handelt sich um nicht qualitätsgesicherte Rohdaten)"
   },
   "CHARTS": {
     "FEEDBACK_STATISTIC": {

@@ -12,7 +12,6 @@ import { LabResult } from '../../../psa.app.core/models/labresult';
 import { Router } from '@angular/router';
 import { MatPaginatorIntlGerman } from '../../../_helpers/mat-paginator-intl';
 import { Location } from '@angular/common';
-import { AlertService } from '../../../_services/alert.service';
 
 @Component({
   selector: 'app-laboratory-results-list',
@@ -24,6 +23,7 @@ import { AlertService } from '../../../_services/alert.service';
       useClass: MatPaginatorIntlGerman,
     },
   ],
+  standalone: false,
 })
 export class LaboratoryResultsListComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
@@ -39,9 +39,8 @@ export class LaboratoryResultsListComponent implements OnInit {
   displayedColumns = ['id', 'date_of_sampling', 'action'];
 
   constructor(
-    private _location: Location,
-    private alertService: AlertService,
-    private router: Router
+    private readonly _location: Location,
+    private readonly router: Router
   ) {}
 
   ngOnInit(): void {

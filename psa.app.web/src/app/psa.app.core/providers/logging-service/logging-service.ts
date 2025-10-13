@@ -12,9 +12,9 @@ import { SystemLog, SystemLogFilter } from '../../models/systemLog';
 export class LoggingService {
   private readonly apiUrl = 'api/v1/log/';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
-  getSystemLogs(query: SystemLogFilter): Promise<SystemLog[]> {
+  async getSystemLogs(query: SystemLogFilter): Promise<SystemLog[]> {
     return this.http
       .get<SystemLog[]>(this.apiUrl + `systemLogs`, { params: { ...query } })
       .toPromise();

@@ -27,7 +27,7 @@ export class NgLetDirective {
     }
   }
 
-  private context: NgLetContext = {
+  private readonly context: NgLetContext = {
     $implicit: null,
     appNgLet: null,
   };
@@ -35,7 +35,7 @@ export class NgLetDirective {
   private hasEmbeddedView: boolean = false;
 
   constructor(
-    private templateRef: TemplateRef<any>,
-    private vcRef: ViewContainerRef
+    private readonly templateRef: TemplateRef<any>,
+    private readonly vcRef: ViewContainerRef
   ) {}
 }

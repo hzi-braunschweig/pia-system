@@ -21,6 +21,7 @@ const QUESTIONNAIRE_ANSWER_INPUT_DATETIME_ACCESSOR = {
   selector: 'app-questionnaire-answer-input-datetime',
   templateUrl: './questionnaire-answer-input-datetime.component.html',
   providers: [QUESTIONNAIRE_ANSWER_INPUT_DATETIME_ACCESSOR],
+  standalone: false,
 })
 export class QuestionnaireAnswerInputDatetimeComponent extends AbstractControlValueAccessor<FormControlValue> {
   /**

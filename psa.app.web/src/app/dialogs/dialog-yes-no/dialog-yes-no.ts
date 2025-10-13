@@ -11,7 +11,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
-  standalone: true,
   selector: 'app-dialog-yes-no',
   template: `
     <h1 mat-dialog-title [innerHTML]="data.content | translate"></h1>

@@ -30,9 +30,11 @@ import { MatDatepickerInputEvent } from '@angular/material/datepicker';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { format } from 'date-fns';
 import { NgxMaterialTimepickerTheme } from 'ngx-material-timepicker';
 import { firstValueFrom, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { generateExportDataFrom } from 'src/app/_helpers/questioinnaire-exporter';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { environment } from '../../../../environments/environment';
 import {
@@ -55,18 +57,22 @@ import {
   ConditionLink,
   ConditionOperand,
   ConditionType,
+  CycleUnit,
+  Publish,
   Questionnaire,
+  QuestionnaireType,
 } from '../../../psa.app.core/models/questionnaire';
 import { Study } from '../../../psa.app.core/models/study';
 import { UserService } from '../../../psa.app.core/providers/user-service/user.service';
 import { QuestionnaireEditOptions } from './questionnaire-edit-options';
 import {
-  AnswerOptionConditionForm,
   AnswerOptionForm,
   AnswerOptionValueForm,
-  QuestionConditionForm,
+  ConditionForm,
   QuestionForm,
   QuestionnaireForm,
+  TemporaryAnswerOptionConditionForm,
+  TemporaryQuestionConditionForm,
 } from './questionnaire-form';
 import { validateQuestionnaireInstanceCount } from './questionnaire-instance-count-validator';
 import { uniqueVariableNameValidator } from './unique-variable-name-validator';
@@ -87,6 +93,7 @@ import { VariableNameFormService } from './variable-name-form.service';
       useValue: APP_DATE_FORMATS_SHORT,
     },
   ],
+  standalone: false,
 })
 export class QuestionnaireResearcherComponent implements OnInit {
   fieldsWithErrors: any[];
@@ -96,14 +103,14 @@ export class QuestionnaireResearcherComponent implements OnInit {
   isEditMode = false;
   public questionnaireId: any;
   public questionnaireVersion: any;
-  cycle_unit: string;
-  publish: string;
+  cycle_unit: CycleUnit;
+  publish: Publish;
   keepAnswers: boolean;
   deactivate_after_days: number;
   cycle_amount: number;
   cycle_per_day: number;
   cycle_first_hour: number;
-  type: string;
+  type: QuestionnaireType;
   activate_at_date: string;
   study_id: string;
   selectedStudy: Study = null;
@@ -122,12 +129,11 @@ export class QuestionnaireResearcherComponent implements OnInit {
   condition_questionnaire_id: string;
   condition_answer_option_id: number;
   condition_operand: ConditionOperand;
-  condition_value: any;
+  condition_value: string | string[] | Date;
   condition_question_id: number;
   deactivate_min_days = 0;
   unitValue: number;
   colsAns: number;
-  settingsCols = 12;
   notification_tries: number;
   notification_title: string;
   notification_weekday: string;
@@ -136,16 +142,12 @@ export class QuestionnaireResearcherComponent implements OnInit {
   compliance_needed: boolean;
   expires_after_days: number;
   finalises_after_days: number;
-  conditionCols = 6;
   notification_body_new: string;
   notification_body_in_progress: string;
   needToSentQuestionnaire = false;
   condition_link: ConditionLink;
   selectedWeekday: string;
   selectedUnit: string;
-  isImportedQuestionnaire = false;
-  canImportQuestionnaire = true;
-  condition_postview = null;
   notify_when_not_filled: boolean;
   notify_when_not_filled_time: string = null;
   notify_when_not_filled_day: number = null;
@@ -191,7 +193,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
   isLoading = true;
 
-  canDeactivate(): Observable<boolean> | boolean {
+  private canDeactivate(): Observable<boolean> | boolean {
     return this.myForm ? !this.myForm.dirty : true;
     // insert logic to check if there are pending changes here;
     // returning true will navigate without confirmation
@@ -208,17 +210,17 @@ export class QuestionnaireResearcherComponent implements OnInit {
     }
   }
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-    private translate: TranslateService,
-    private dialog: MatDialog,
-    private mediaObserver: MediaObserver,
-    private alertService: AlertService,
-    private questionnaireService: QuestionnaireService,
-    private userService: UserService,
-    private changeDetectorRef: ChangeDetectorRef,
-    private variableNameFormService: VariableNameFormService
+  public constructor(
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly router: Router,
+    private readonly translate: TranslateService,
+    private readonly dialog: MatDialog,
+    private readonly mediaObserver: MediaObserver,
+    private readonly alertService: AlertService,
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly userService: UserService,
+    private readonly changeDetectorRef: ChangeDetectorRef,
+    private readonly variableNameFormService: VariableNameFormService
   ) {
     if ('id' in this.activatedRoute.snapshot.params) {
       this.isEditMode = true;
@@ -243,7 +245,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
       );
   }
 
-  async ngOnInit(): Promise<void> {
+  public async ngOnInit(): Promise<void> {
     try {
       [this.questionnaires, this.studies] = await Promise.all([
         this.fetchSortedQuestionnaires(),
@@ -285,7 +287,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
    * If the user accepts and external conditions have been found, this method
    * will automatically reset them.
    */
-  async changeStudyDespiteConditionWarningDialog(): Promise<boolean> {
+  private async changeStudyDespiteConditionWarningDialog(): Promise<boolean> {
     const filterExternalConditions = (
       formGroup: FormGroup<AnswerOptionForm> | FormGroup<QuestionForm>
     ) =>
@@ -398,11 +400,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
    * Create or update questionnaire
    * @method onSubmit
    */
-  onSubmit(action: string): void {
-    if (this.isImportedQuestionnaire) {
-      this.myForm.enable();
-    }
-
+  public onSubmit(action: string): void {
     if (this.myForm.controls.cycle_unit.value === 'once') {
       this.myForm.controls.deactivate_after_days.clearValidators();
       this.myForm.controls.deactivate_after_days.setValue(1);
@@ -498,8 +496,6 @@ export class QuestionnaireResearcherComponent implements OnInit {
           this.fieldsWithErrors.join(', ')
       );
     } else {
-      this.isImportedQuestionnaire = false;
-
       this.myForm.controls.questions.value.forEach(
         (question, questionIndex) => {
           const questionController =
@@ -522,9 +518,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
             questionController.controls.has_condition.disable();
           }
           if (questionController.controls.condition !== undefined) {
-            questionController.controls.condition.controls[
-              'condition_question_id'
-            ].disable();
+            questionController.controls.condition.controls.condition_question_id.disable();
           }
           questionController.controls.tmp_for_condition.disable();
           if (
@@ -538,9 +532,9 @@ export class QuestionnaireResearcherComponent implements OnInit {
           const questions = this.myForm.controls.questions;
 
           // For every subquestion (Unterfrage) in the form
-          questions.controls[questionIndex].controls[
-            'answer_options'
-          ].value.forEach((answer, answerIndex) => {
+          questions.controls[
+            questionIndex
+          ].controls.answer_options.value.forEach((answer, answerIndex) => {
             const answerOptionController =
               this.myForm.controls.questions.controls[questionIndex].controls
                 .answer_options.controls[answerIndex];
@@ -565,9 +559,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
             }
             answerOptionController.controls.tmp_for_condition.disable();
             if (answerOptionController.controls.condition !== undefined) {
-              answerOptionController.controls.condition.controls[
-                'condition_question_id'
-              ].disable();
+              answerOptionController.controls.condition.controls.condition_question_id.disable();
             }
           });
         }
@@ -608,7 +600,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     }
   }
 
-  removeConditionErrors(questionnaire: Questionnaire): void {
+  private removeConditionErrors(questionnaire: Questionnaire): void {
     if (questionnaire.condition_error !== undefined) {
       delete questionnaire.condition_error;
     }
@@ -624,7 +616,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     }
   }
 
-  async createQuestionnaire(postData: Questionnaire): Promise<void> {
+  public async createQuestionnaire(postData: Questionnaire): Promise<void> {
     this.removeConditionErrors(postData);
     this.isLoading = true;
     try {
@@ -643,7 +635,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     this.isLoading = false;
   }
 
-  async updateQuestionnaire(
+  public async updateQuestionnaire(
     id: number,
     version: number,
     postData: Questionnaire,
@@ -678,13 +670,12 @@ export class QuestionnaireResearcherComponent implements OnInit {
     this.isLoading = false;
   }
 
-  public async initForm(questionnaire?: Questionnaire): Promise<void> {
+  async initForm(questionnaire?: Questionnaire): Promise<void> {
     let name: string;
     let custom_name: string;
     let sort_order: number;
     let activate_after_days: number;
     if (questionnaire) {
-      this.canImportQuestionnaire = false;
       name = questionnaire.name;
       custom_name = questionnaire.custom_name;
       sort_order = questionnaire.sort_order;
@@ -790,7 +781,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
       this.type = null;
       this.cycle_amount = null;
       this.activate_at_date = null;
-      this.cycle_unit = '';
+      this.cycle_unit = null;
       this.cycle_per_day = null;
       this.cycle_first_hour = null;
       this.publish = 'allaudiences';
@@ -886,7 +877,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
         finalises_after_days: new FormControl(this.finalises_after_days, [
           Validators.min(1),
         ]),
-        questions: new FormArray([]),
+        questions: new FormArray<FormGroup<QuestionForm>>([]),
         condition_error: new FormControl(
           questionnaire ? questionnaire.condition_error : undefined
         ),
@@ -942,9 +933,6 @@ export class QuestionnaireResearcherComponent implements OnInit {
     }
     this.setNotificationControls();
     this.checkCycleUnit();
-    if (this.isImportedQuestionnaire) {
-      this.myForm.controls.questions.disable();
-    }
   }
 
   /**
@@ -953,7 +941,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
    * @param question you want to add to questionnaire (Fragebogen)
    * @return void
    */
-  addQuestion(question?: Question): void {
+  public addQuestion(question?: Question): void {
     const answer_options = new FormArray<FormGroup<AnswerOptionForm>>([]);
     const text = question ? question.text : '';
     const help_text = question ? question.help_text : '';
@@ -966,7 +954,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     const questionIndex = this.myForm.controls.questions.controls.length;
 
     this.myForm.controls.questions.push(
-      new FormGroup({
+      new FormGroup<QuestionForm>({
         text: new FormControl(text, [
           Validators.required,
           this.validateFormControlTextVariableValue,
@@ -980,7 +968,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
         condition_error: new FormControl(
           question ? question.condition_error : undefined
         ),
-        tmp_for_condition: new FormGroup({
+        tmp_for_condition: new FormGroup<TemporaryQuestionConditionForm>({
           questionnairesForQuestionCondition: new FormControl(undefined),
           questionMessageNeedToSentQuestionnaire: new FormControl(undefined),
           selectedConditionTypeQuestion: new FormControl(undefined),
@@ -1001,7 +989,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     }
   }
 
-  removeQuestion(questionIndex: number): void {
+  public removeQuestion(questionIndex: number): void {
     // remove question from the list
     const control = this.myForm.controls.questions;
     control.removeAt(questionIndex);
@@ -1013,7 +1001,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
    * @param questionIndex of the question to which place is to be added
    * @param answerOption of the question to which place is to be added
    */
-  addAnswer(questionIndex: number, answerOption?: AnswerOption): void {
+  public addAnswer(questionIndex: number, answerOption?: AnswerOption): void {
     const text = answerOption ? answerOption.text : '';
     const variable_name = answerOption?.variable_name ?? '';
     this.answer_type_id = answerOption ? answerOption.answer_type_id : null;
@@ -1035,22 +1023,18 @@ export class QuestionnaireResearcherComponent implements OnInit {
     const is_decimal = this.answer_type_id
       ? this.answer_type_id === 3 || this.answer_type_id === 5
         ? answerOption.is_decimal
-        : null
-      : null;
+        : false
+      : false;
     const coding_enable = this.answer_type_id
       ? this.answer_type_id === 1 || this.answer_type_id === 2
-        ? true
-        : false
       : true;
-    const has_condition = !!(answerOption && answerOption.condition);
-    const is_condition_target =
-      answerOption && answerOption.is_condition_target
-        ? answerOption.is_condition_target
-        : false;
+    const has_condition = !!answerOption?.condition;
+    const is_condition_target = answerOption?.is_condition_target
+      ? answerOption.is_condition_target
+      : false;
     const answerIndex =
-      this.myForm.controls.questions.controls[questionIndex].controls[
-        'answer_options'
-      ].length;
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .answer_options.length;
 
     this.myForm.controls.questions.controls[
       questionIndex
@@ -1068,13 +1052,14 @@ export class QuestionnaireResearcherComponent implements OnInit {
           answerOption?.use_autocomplete ?? false
         ),
         current_answer_type_id: new FormControl(this.answer_type_id),
+        is_decimal: new FormControl(is_decimal),
         coding_enable: new FormControl(coding_enable),
         has_condition: new FormControl(has_condition),
         condition_error: new FormControl(
           answerOption ? answerOption.condition_error : undefined
         ),
         is_condition_target: new FormControl(is_condition_target),
-        tmp_for_condition: new FormGroup({
+        tmp_for_condition: new FormGroup<TemporaryAnswerOptionConditionForm>({
           questionnairesForAnswerOptionCondition: new FormControl(undefined),
           answerOptionMessageNeedToSentQuestionnaire: new FormControl(
             undefined
@@ -1108,7 +1093,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     }
   }
 
-  addAnswerOptionsRestriction(
+  public addAnswerOptionsRestriction(
     questionIndex: number,
     answerIndex: number,
     answerOption?: AnswerOption
@@ -1148,7 +1133,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     answerControl.updateValueAndValidity();
   }
 
-  checkRestrictions(questionIndex: number, answerIndex: number): void {
+  public checkRestrictions(questionIndex: number, answerIndex: number): void {
     const answerControl =
       this.myForm.controls.questions.controls[questionIndex].controls
         .answer_options.controls[answerIndex];
@@ -1161,7 +1146,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     }
   }
 
-  validateRestrictions(AC: AbstractControl): any {
+  public validateRestrictions(AC: AbstractControl): any {
     const restriction_min = AC.get('restriction_min').value;
     const restriction_max = AC.get('restriction_max').value;
     const is_decimal = AC.get('is_decimal').value;
@@ -1169,10 +1154,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
     if (is_decimal === true) {
       if (
         (restriction_min === null ||
-          restriction_min.toString().match(/-?(\d+(?:[\.\,]\d{2})?)$/) ===
+          restriction_min.toString().match(/-?(\d+(?:[.,]\d{2})?)$/) ===
             null) &&
         (restriction_max === null ||
-          restriction_max.toString().match(/-?(\d+(?:[\.\,]\d{2})?)$/) === null)
+          restriction_max.toString().match(/-?(\d+(?:[.,]\d{2})?)$/) === null)
       ) {
         AC.get('restriction_min').setErrors({ notDecimalNumber: true });
         AC.get('restriction_max').setErrors({ notDecimalNumber: true });
@@ -1183,7 +1168,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
       }
       if (
         restriction_min === null ||
-        restriction_min.toString().match(/-?(\d+(?:[\.\,]\d{2})?)$/) === null
+        restriction_min.toString().match(/-?(\d+(?:[.,]\d{2})?)$/) === null
       ) {
         AC.get('restriction_min').setErrors({ notDecimalNumber: true });
         return { notDecimalNumber: true };
@@ -1192,7 +1177,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
       }
       if (
         restriction_max === null ||
-        restriction_max.toString().match(/-?(\d+(?:[\.\,]\d{2})?)$/) === null
+        restriction_max.toString().match(/-?(\d+(?:[.,]\d{2})?)$/) === null
       ) {
         AC.get('restriction_max').setErrors({ notDecimalNumber: true });
         return { notDecimalNumber: true };
@@ -1260,7 +1245,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     }
   }
 
-  addAnswerCondition(
+  public addAnswerCondition(
     questionIndex: number,
     answerIndex: number,
     answerOption?: AnswerOption
@@ -1290,7 +1275,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     const condition_operand = answerOption
       ? answerOption.condition.condition_operand
       : null;
-    let condition_value: any = answerOption
+    let condition_value: string | string[] | Date = answerOption
       ? answerOption.condition.condition_value
       : null;
     let condition_question_id;
@@ -1337,6 +1322,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
                           answerOptionFromList.position)
                     ) {
                       if (answerOptionFromList.answer_type_id === 5) {
+                        if (Array.isArray(condition_value))
+                          throw new Error(
+                            'wrong value type of condition_value for answer_type_id 5'
+                          );
                         condition_value = new Date(condition_value);
                       } else if (
                         answerOptionFromList.answer_type_id === 1 ||
@@ -1369,14 +1358,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
     answerControl.addControl(
       'condition',
-      new FormGroup<AnswerOptionConditionForm>({
+      new FormGroup<ConditionForm>({
         condition_type: new FormControl(condition_type, Validators.required),
         condition_target_questionnaire: new FormControl(
-          this.isImportedQuestionnaire && condition_questionnaire_id === -1
-            ? condition_questionnaire_id
-            : condition_questionnaire_id +
-              '-' +
-              condition_questionnaire_version,
+          condition_questionnaire_id + '-' + condition_questionnaire_version,
           Validators.required
         ),
         condition_target_answer_option: new FormControl(
@@ -1405,7 +1390,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     answerControl.controls.condition_error.setValue(undefined);
   }
 
-  moveAnswerUp(questionIndex: number, oldAnswerIndex: number): void {
+  public moveAnswerUp(questionIndex: number, oldAnswerIndex: number): void {
     if (oldAnswerIndex === 0) {
       return;
     }
@@ -1419,7 +1404,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     control.setControl(newAnswerIndex, reverseMovingAnswer);
   }
 
-  moveAnswerDown(questionIndex: number, oldAnswerIndex: number): void {
+  public moveAnswerDown(questionIndex: number, oldAnswerIndex: number): void {
     const control =
       this.myForm.controls.questions.controls[questionIndex].controls
         .answer_options;
@@ -1433,7 +1418,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     control.setControl(newAnswerIndex, reverseMovingAnswer);
   }
 
-  removeAnswer(questionIndex: number, answerIndex: number): void {
+  public removeAnswer(questionIndex: number, answerIndex: number): void {
     // remove AnswerOption from the list
     const control =
       this.myForm.controls.questions.controls[questionIndex].controls
@@ -1441,7 +1426,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     control.removeAt(answerIndex);
   }
 
-  addValue(
+  public addValue(
     questionIndex: number,
     answerIndex: number,
     value?: string,
@@ -1470,7 +1455,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     );
   }
 
-  checkValue(control: AbstractControl): any {
+  private checkValue(control: AbstractControl): any {
     const valueText = control.value.toString();
     if (valueText && valueText.indexOf(';') === -1) {
       return null;
@@ -1479,7 +1464,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     }
   }
 
-  setQuestionnaireType(): void {
+  public setQuestionnaireType(): void {
     switch (this.myForm.value.type) {
       case 'for_probands':
         this.myForm.controls.cycle_unit.clearValidators();
@@ -1509,7 +1494,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     }
   }
 
-  removeItem(
+  public removeItem(
     questionIndex: number,
     answerIndex: number,
     valueIndex: number
@@ -1521,7 +1506,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     control.removeAt(valueIndex);
   }
 
-  checkCycleUnit(): void {
+  public checkCycleUnit(): void {
     if (this.myForm.value.cycle_unit === 'once') {
       this.myForm.controls.cycle_amount.clearValidators();
       this.myForm.controls.cycle_amount.setValue(1);
@@ -1564,7 +1549,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     }
   }
 
-  setDeactivateMinDays(): void {
+  public setDeactivateMinDays(): void {
     this.deactivate_min_days = Math.round(
       this.myForm.value.cycle_amount * this.unitValue
     );
@@ -1580,7 +1565,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     this.myForm.controls.deactivate_after_days.updateValueAndValidity();
   }
 
-  checkAnswerType(
+  public checkAnswerType(
     questionIndex: number,
     answerIndex: number,
     isValueFromServer: boolean
@@ -1622,7 +1607,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     control.controls[answerIndex].get('current_answer_type_id').setValue(id);
   }
 
-  removeQuestionnaireCondition(): void {
+  public removeQuestionnaireCondition(): void {
     this.showQuestionnaireCondition = false;
     this.myForm.removeControl('condition');
     this.selectedQuestionnaireIndex = undefined;
@@ -1641,10 +1626,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
   /**
    * Add condition to the mein question
    */
-  addQuestionnaireCondition(): void {
+  public addQuestionnaireCondition(): void {
     this.myForm.addControl(
       'condition',
-      new FormGroup<QuestionConditionForm>({
+      new FormGroup<ConditionForm>({
         condition_type: new FormControl(
           this.condition_type,
           Validators.required
@@ -1686,7 +1671,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
    * @param questionIndex index of the question (Frage)
    * @param question (Frage)
    */
-  addQuestionCondition(questionIndex: number, question?: Question): void {
+  public addQuestionCondition(
+    questionIndex: number,
+    question?: Question
+  ): void {
     const questionControl =
       this.myForm.controls.questions.controls[questionIndex];
     const condition_type =
@@ -1727,9 +1715,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
         condition_type
       );
       const questionnairesForQuestionConditionValue =
-        questionControl.controls.tmp_for_condition.controls[
-          'questionnairesForQuestionCondition'
-        ].value;
+        questionControl.controls.tmp_for_condition.controls
+          .questionnairesForQuestionCondition.value;
       if (questionnairesForQuestionConditionValue) {
         questionnairesForQuestionConditionValue.forEach(
           (questionnaireResponse, questionnaireIndex) => {
@@ -1789,14 +1776,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
 
     questionControl.addControl(
       'condition',
-      new FormGroup({
+      new FormGroup<ConditionForm>({
         condition_type: new FormControl(condition_type, Validators.required),
         condition_target_questionnaire: new FormControl(
-          this.isImportedQuestionnaire && condition_questionnaire_id === -1
-            ? condition_questionnaire_id
-            : condition_questionnaire_id +
-              '-' +
-              condition_questionnaire_version,
+          condition_questionnaire_id + '-' + condition_questionnaire_version,
           Validators.required
         ),
         condition_target_answer_option: new FormControl(
@@ -1826,38 +1809,38 @@ export class QuestionnaireResearcherComponent implements OnInit {
    * Removes condition of a question (Frage)
    * @param questionIndex Index of the question you want to remove condition
    */
-  removeQuestionConditionByIndex(questionIndex: number): void {
+  public removeQuestionConditionByIndex(questionIndex: number): void {
     this.removeQuestionCondition(
       this.myForm.controls.questions.controls[questionIndex]
     );
   }
 
-  removeQuestionCondition(control: FormGroup<QuestionForm>): void {
+  private removeQuestionCondition(control: FormGroup<QuestionForm>): void {
     control.removeControl('condition');
     control.controls.has_condition.setValue(false);
-    control.controls.tmp_for_condition.controls[
-      'questionMessageNeedToSentQuestionnaire'
-    ].setValue(false);
-    control.controls.tmp_for_condition.controls[
-      'selectedConditionTypeQuestion'
-    ].setValue(undefined);
-    control.controls.tmp_for_condition.controls[
-      'selectedQuestionnaireIndexQuestion'
-    ].setValue(undefined);
-    control.controls.tmp_for_condition.controls[
-      'selectedQuestionIndexQuestion'
-    ].setValue(undefined);
-    control.controls.tmp_for_condition.controls[
-      'selectedAnswerOptionsIndexQuestion'
-    ].setValue(undefined);
+    control.controls.tmp_for_condition.controls.questionMessageNeedToSentQuestionnaire.setValue(
+      false
+    );
+    control.controls.tmp_for_condition.controls.selectedConditionTypeQuestion.setValue(
+      undefined
+    );
+    control.controls.tmp_for_condition.controls.selectedQuestionnaireIndexQuestion.setValue(
+      undefined
+    );
+    control.controls.tmp_for_condition.controls.selectedQuestionIndexQuestion.setValue(
+      undefined
+    );
+    control.controls.tmp_for_condition.controls.selectedAnswerOptionsIndexQuestion.setValue(
+      undefined
+    );
     if (control.controls.tmp_for_condition.controls.condition_link) {
-      control.controls.tmp_for_condition.controls['condition_link'].setValue(
+      control.controls.tmp_for_condition.controls.condition_link.setValue(
         undefined
       );
     }
   }
 
-  removeAnswerOptionConditionByIndex(
+  public removeAnswerOptionConditionByIndex(
     questionIndex: number,
     answerIndex: number
   ): void {
@@ -1867,30 +1850,32 @@ export class QuestionnaireResearcherComponent implements OnInit {
     );
   }
 
-  removeAnswerOptionCondition(control: FormGroup<AnswerOptionForm>): void {
+  private removeAnswerOptionCondition(
+    control: FormGroup<AnswerOptionForm>
+  ): void {
     control.controls.has_condition.setValue(false);
     control.removeControl('condition');
 
     const answerOptionTmpConditionControl = control.controls.tmp_for_condition;
-    answerOptionTmpConditionControl.controls[
-      'answerOptionMessageNeedToSentQuestionnaire'
-    ].setValue(false);
-    answerOptionTmpConditionControl.controls[
-      'selectedConditionTypeAnswerOption'
-    ].setValue(undefined);
-    answerOptionTmpConditionControl.controls[
-      'selectedQuestionnaireIndexAnswerOption'
-    ].setValue(undefined);
-    answerOptionTmpConditionControl.controls[
-      'selectedQuestionIndexAnswerOption'
-    ].setValue(undefined);
-    answerOptionTmpConditionControl.controls[
-      'selectedAnswerOptionsIndexAnswerOption'
-    ].setValue(undefined);
+    answerOptionTmpConditionControl.controls.answerOptionMessageNeedToSentQuestionnaire.setValue(
+      false
+    );
+    answerOptionTmpConditionControl.controls.selectedConditionTypeAnswerOption.setValue(
+      undefined
+    );
+    answerOptionTmpConditionControl.controls.selectedQuestionnaireIndexAnswerOption.setValue(
+      undefined
+    );
+    answerOptionTmpConditionControl.controls.selectedQuestionIndexAnswerOption.setValue(
+      undefined
+    );
+    answerOptionTmpConditionControl.controls.selectedAnswerOptionsIndexAnswerOption.setValue(
+      undefined
+    );
     answerOptionTmpConditionControl.controls.condition_link.setValue(undefined);
   }
 
-  setNotificationControls(): void {
+  public setNotificationControls(): void {
     if (this.myForm.get('notification_tries').value === 0) {
       this.myForm.controls.notification_title.clearValidators();
       this.myForm.controls.notification_weekday.clearValidators();
@@ -1926,17 +1911,15 @@ export class QuestionnaireResearcherComponent implements OnInit {
       this.myForm.controls.notification_title.updateValueAndValidity();
       this.myForm.controls.notification_weekday.updateValueAndValidity();
       this.myForm.controls.notification_interval.updateValueAndValidity();
-      this.myForm.controls[
-        'notification_interval_unit'
-      ].updateValueAndValidity();
+      this.myForm.controls.notification_interval_unit.updateValueAndValidity();
       this.myForm.controls.notification_body_new.updateValueAndValidity();
-      this.myForm.controls[
-        'notification_body_in_progress'
-      ].updateValueAndValidity();
+      this.myForm.controls.notification_body_in_progress.updateValueAndValidity();
     }
   }
 
-  setSelectedConditionTypeQuestionnaireCondition(conditionType: string): void {
+  public setSelectedConditionTypeQuestionnaireCondition(
+    conditionType: string
+  ): void {
     if (this.currentQuestionnaire != null) {
       this.questionnairesForConditionQuestionnaire.forEach(
         (questionnaireResponse, questionnaireIndex) => {
@@ -1957,86 +1940,84 @@ export class QuestionnaireResearcherComponent implements OnInit {
     this.selectedAnswerOptionsIndex = undefined;
   }
 
-  setSelectedConditionTypeQuestionCondition(
+  public setSelectedConditionTypeQuestionCondition(
     questionIndex: number,
     conditionType: string
   ): void {
     const questionTmpConditionControl =
-      this.myForm.controls.questions.controls[questionIndex].controls[
-        'tmp_for_condition'
-      ];
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .tmp_for_condition;
     const questionConditionControl =
-      this.myForm.controls.questions.controls[questionIndex].controls[
-        'condition'
-      ];
+      this.myForm.controls.questions.controls[questionIndex].controls.condition;
 
     if (questionConditionControl !== undefined) {
-      questionConditionControl.controls[
-        'condition_target_questionnaire'
-      ].setValue(null);
+      questionConditionControl.controls.condition_target_questionnaire.setValue(
+        null
+      );
       questionConditionControl.controls.condition_question_id.setValue(null);
-      questionConditionControl.controls[
-        'condition_target_answer_option'
-      ].setValue(null);
+      questionConditionControl.controls.condition_target_answer_option.setValue(
+        null
+      );
       questionConditionControl.controls.condition_operand.setValue(null);
       questionConditionControl.controls.condition_value.setValue(null);
     }
 
     if (conditionType === 'external') {
-      questionTmpConditionControl.controls[
-        'questionnairesForQuestionCondition'
-      ].setValue(this.questionnairesForConditionQuestionnaire);
-      questionTmpConditionControl.controls[
-        'questionMessageNeedToSentQuestionnaire'
-      ].setValue(false);
-      questionTmpConditionControl.controls[
-        'selectedConditionTypeQuestion'
-      ].setValue(true);
+      questionTmpConditionControl.controls.questionnairesForQuestionCondition.setValue(
+        this.questionnairesForConditionQuestionnaire
+      );
+      questionTmpConditionControl.controls.questionMessageNeedToSentQuestionnaire.setValue(
+        false
+      );
+      questionTmpConditionControl.controls.selectedConditionTypeQuestion.setValue(
+        true
+      );
       if (this.currentQuestionnaire != null) {
-        questionTmpConditionControl.controls[
-          'questionnairesForQuestionCondition'
-        ].value.forEach((questionnaireResponse, questionnaireIndex) => {
-          if (this.currentQuestionnaire.id === questionnaireResponse.id) {
-            questionTmpConditionControl.controls[
-              'questionnairesForQuestionCondition'
-            ].value.splice(questionnaireIndex, 1);
+        questionTmpConditionControl.controls.questionnairesForQuestionCondition.value.forEach(
+          (questionnaireResponse, questionnaireIndex) => {
+            if (this.currentQuestionnaire.id === questionnaireResponse.id) {
+              questionTmpConditionControl.controls.questionnairesForQuestionCondition.value.splice(
+                questionnaireIndex,
+                1
+              );
+            }
           }
-        });
+        );
       }
     } else {
       if (this.currentQuestionnaire != null) {
-        questionTmpConditionControl.controls[
-          'questionnairesForQuestionCondition'
-        ].setValue([this.currentQuestionnaire]);
-        questionTmpConditionControl.controls[
-          'questionMessageNeedToSentQuestionnaire'
-        ].setValue(false);
-        questionTmpConditionControl.controls[
-          'selectedConditionTypeQuestion'
-        ].setValue(true);
+        questionTmpConditionControl.controls.questionnairesForQuestionCondition.setValue(
+          [this.currentQuestionnaire]
+        );
+        questionTmpConditionControl.controls.questionMessageNeedToSentQuestionnaire.setValue(
+          false
+        );
+        questionTmpConditionControl.controls.selectedConditionTypeQuestion.setValue(
+          true
+        );
       } else {
-        questionTmpConditionControl.controls[
-          'questionMessageNeedToSentQuestionnaire'
-        ].setValue(true);
-        questionTmpConditionControl.controls[
-          'selectedConditionTypeQuestion'
-        ].setValue(undefined);
+        questionTmpConditionControl.controls.questionMessageNeedToSentQuestionnaire.setValue(
+          true
+        );
+        questionTmpConditionControl.controls.selectedConditionTypeQuestion.setValue(
+          undefined
+        );
       }
     }
 
-    questionTmpConditionControl.controls[
-      'selectedQuestionnaireIndexQuestion'
-    ].setValue(undefined);
-    questionTmpConditionControl.controls[
-      'selectedQuestionIndexQuestion'
-    ].setValue(undefined);
-    questionTmpConditionControl.controls[
-      'selectedAnswerOptionsIndexQuestion'
-    ].setValue(undefined);
+    questionTmpConditionControl.controls.selectedQuestionnaireIndexQuestion.setValue(
+      undefined
+    );
+    questionTmpConditionControl.controls.selectedQuestionIndexQuestion.setValue(
+      undefined
+    );
+    questionTmpConditionControl.controls.selectedAnswerOptionsIndexQuestion.setValue(
+      undefined
+    );
     questionTmpConditionControl.updateValueAndValidity();
   }
 
-  setSelectedConditionTypeAnswerOptionCondition(
+  public setSelectedConditionTypeAnswerOptionCondition(
     questionIndex: number,
     answerIndex: number,
     conditionType: string
@@ -2049,192 +2030,189 @@ export class QuestionnaireResearcherComponent implements OnInit {
         .answer_options.controls[answerIndex].controls.condition;
 
     if (answerOptionConditionControl !== undefined) {
-      answerOptionConditionControl.controls[
-        'condition_target_questionnaire'
-      ].setValue(null);
+      answerOptionConditionControl.controls.condition_target_questionnaire.setValue(
+        null
+      );
       answerOptionConditionControl.controls.condition_question_id.setValue(
         null
       );
-      answerOptionConditionControl.controls[
-        'condition_target_answer_option'
-      ].setValue(null);
+      answerOptionConditionControl.controls.condition_target_answer_option.setValue(
+        null
+      );
       answerOptionConditionControl.controls.condition_operand.setValue(null);
       answerOptionConditionControl.controls.condition_value.setValue(null);
     }
 
     if (conditionType === 'external') {
-      answerOptionTmpConditionControl.controls[
-        'questionnairesForAnswerOptionCondition'
-      ].setValue(this.questionnairesForConditionQuestionnaire);
-      answerOptionTmpConditionControl.controls[
-        'answerOptionMessageNeedToSentQuestionnaire'
-      ].setValue(false);
-      answerOptionTmpConditionControl.controls[
-        'selectedConditionTypeAnswerOption'
-      ].setValue(true);
+      answerOptionTmpConditionControl.controls.questionnairesForAnswerOptionCondition.setValue(
+        this.questionnairesForConditionQuestionnaire
+      );
+      answerOptionTmpConditionControl.controls.answerOptionMessageNeedToSentQuestionnaire.setValue(
+        false
+      );
+      answerOptionTmpConditionControl.controls.selectedConditionTypeAnswerOption.setValue(
+        true
+      );
       if (this.currentQuestionnaire != null) {
-        answerOptionTmpConditionControl.controls[
-          'questionnairesForAnswerOptionCondition'
-        ].value.forEach((questionnaireResponse, questionnaireIndex) => {
-          if (this.currentQuestionnaire.id === questionnaireResponse.id) {
-            answerOptionTmpConditionControl.controls[
-              'questionnairesForAnswerOptionCondition'
-            ].value.splice(questionnaireIndex, 1);
+        answerOptionTmpConditionControl.controls.questionnairesForAnswerOptionCondition.value.forEach(
+          (questionnaireResponse, questionnaireIndex) => {
+            if (this.currentQuestionnaire.id === questionnaireResponse.id) {
+              answerOptionTmpConditionControl.controls.questionnairesForAnswerOptionCondition.value.splice(
+                questionnaireIndex,
+                1
+              );
+            }
           }
-        });
+        );
       }
     } else {
       if (this.currentQuestionnaire != null) {
         const currentQuestionnaireValue = JSON.parse(
           JSON.stringify(this.currentQuestionnaire)
         );
-        answerOptionTmpConditionControl.controls[
-          'questionnairesForAnswerOptionCondition'
-        ].setValue([currentQuestionnaireValue]);
+        answerOptionTmpConditionControl.controls.questionnairesForAnswerOptionCondition.setValue(
+          [currentQuestionnaireValue]
+        );
         if (conditionType === 'internal_this') {
           const currentQuestionPosition =
-            this.myForm.controls.questions.controls[questionIndex].controls[
-              'position'
-            ].value;
+            this.myForm.controls.questions.controls[questionIndex].controls
+              .position.value;
           const currentAnswerOptionPosition =
             this.myForm.controls.questions.controls[questionIndex].controls
               .answer_options.controls[answerIndex].controls.position.value;
-          answerOptionTmpConditionControl.controls[
-            'questionnairesForAnswerOptionCondition'
-          ].value[0].questions.forEach((question, question_index) => {
-            if (question.position === currentQuestionPosition) {
-              question.answer_options.forEach(
-                (answer_option, answer_option_index) => {
-                  if (answer_option.position === currentAnswerOptionPosition) {
-                    question.answer_options.splice(answer_option_index, 1);
+          answerOptionTmpConditionControl.controls.questionnairesForAnswerOptionCondition.value[0].questions.forEach(
+            (question, question_index) => {
+              if (question.position === currentQuestionPosition) {
+                question.answer_options.forEach(
+                  (answer_option, answer_option_index) => {
+                    if (
+                      answer_option.position === currentAnswerOptionPosition
+                    ) {
+                      question.answer_options.splice(answer_option_index, 1);
+                    }
                   }
-                }
-              );
+                );
+              }
             }
-          });
+          );
         }
-        answerOptionTmpConditionControl.controls[
-          'answerOptionMessageNeedToSentQuestionnaire'
-        ].setValue(false);
-        answerOptionTmpConditionControl.controls[
-          'selectedConditionTypeAnswerOption'
-        ].setValue(true);
+        answerOptionTmpConditionControl.controls.answerOptionMessageNeedToSentQuestionnaire.setValue(
+          false
+        );
+        answerOptionTmpConditionControl.controls.selectedConditionTypeAnswerOption.setValue(
+          true
+        );
       } else {
-        answerOptionTmpConditionControl.controls[
-          'answerOptionMessageNeedToSentQuestionnaire'
-        ].setValue(true);
-        answerOptionTmpConditionControl.controls[
-          'selectedConditionTypeAnswerOption'
-        ].setValue(undefined);
+        answerOptionTmpConditionControl.controls.answerOptionMessageNeedToSentQuestionnaire.setValue(
+          true
+        );
+        answerOptionTmpConditionControl.controls.selectedConditionTypeAnswerOption.setValue(
+          undefined
+        );
       }
     }
-    answerOptionTmpConditionControl.controls[
-      'selectedQuestionnaireIndexAnswerOption'
-    ].setValue(undefined);
-    answerOptionTmpConditionControl.controls[
-      'selectedQuestionIndexAnswerOption'
-    ].setValue(undefined);
-    answerOptionTmpConditionControl.controls[
-      'selectedAnswerOptionsIndexAnswerOption'
-    ].setValue(undefined);
+    answerOptionTmpConditionControl.controls.selectedQuestionnaireIndexAnswerOption.setValue(
+      undefined
+    );
+    answerOptionTmpConditionControl.controls.selectedQuestionIndexAnswerOption.setValue(
+      undefined
+    );
+    answerOptionTmpConditionControl.controls.selectedAnswerOptionsIndexAnswerOption.setValue(
+      undefined
+    );
     answerOptionTmpConditionControl.updateValueAndValidity();
   }
 
-  setSelectedQuestionnaireIndexQuestionnaireCondition(index: number): void {
+  public setSelectedQuestionnaireIndexQuestionnaireCondition(
+    index: number
+  ): void {
     this.selectedQuestionnaireIndex = index;
     this.selectedQuestionIndex = undefined;
     this.selectedAnswerOptionsIndex = undefined;
   }
 
-  setSelectedQuestionIndexQuestionnaireCondition(index: number): void {
+  public setSelectedQuestionIndexQuestionnaireCondition(index: number): void {
     this.selectedQuestionIndex = index;
     this.selectedAnswerOptionsIndex = undefined;
   }
 
-  setSelectedAnswerOptionsIndexQuestionnaireCondition(index: number): void {
+  public setSelectedAnswerOptionsIndexQuestionnaireCondition(
+    index: number
+  ): void {
     this.selectedAnswerOptionsIndex = index;
   }
 
-  setSelectedQuestionnaireIndexQuestionCondition(
+  public setSelectedQuestionnaireIndexQuestionCondition(
     questionIndex: number,
     index: number
   ): void {
     const questionTmpConditionControl =
-      this.myForm.controls.questions.controls[questionIndex].controls[
-        'tmp_for_condition'
-      ];
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .tmp_for_condition;
     const questionConditionControl =
-      this.myForm.controls.questions.controls[questionIndex].controls[
-        'condition'
-      ];
+      this.myForm.controls.questions.controls[questionIndex].controls.condition;
     if (questionConditionControl !== undefined) {
       questionConditionControl.controls.condition_question_id.setValue(null);
-      questionConditionControl.controls[
-        'condition_target_answer_option'
-      ].setValue(null);
+      questionConditionControl.controls.condition_target_answer_option.setValue(
+        null
+      );
       questionConditionControl.controls.condition_operand.setValue(null);
       questionConditionControl.controls.condition_value.setValue(null);
     }
-    questionTmpConditionControl.controls[
-      'selectedQuestionnaireIndexQuestion'
-    ].setValue(index);
-    questionTmpConditionControl.controls[
-      'selectedQuestionIndexQuestion'
-    ].setValue(undefined);
-    questionTmpConditionControl.controls[
-      'selectedAnswerOptionsIndexQuestion'
-    ].setValue(undefined);
+    questionTmpConditionControl.controls.selectedQuestionnaireIndexQuestion.setValue(
+      index
+    );
+    questionTmpConditionControl.controls.selectedQuestionIndexQuestion.setValue(
+      undefined
+    );
+    questionTmpConditionControl.controls.selectedAnswerOptionsIndexQuestion.setValue(
+      undefined
+    );
   }
 
-  setSelectedQuestionIndexQuestionCondition(
+  public setSelectedQuestionIndexQuestionCondition(
     questionIndex: number,
     index: number
   ): void {
     const questionTmpConditionControl =
-      this.myForm.controls.questions.controls[questionIndex].controls[
-        'tmp_for_condition'
-      ];
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .tmp_for_condition;
     const questionConditionControl =
-      this.myForm.controls.questions.controls[questionIndex].controls[
-        'condition'
-      ];
+      this.myForm.controls.questions.controls[questionIndex].controls.condition;
     if (questionConditionControl !== undefined) {
-      questionConditionControl.controls[
-        'condition_target_answer_option'
-      ].setValue(null);
+      questionConditionControl.controls.condition_target_answer_option.setValue(
+        null
+      );
       questionConditionControl.controls.condition_operand.setValue(null);
       questionConditionControl.controls.condition_value.setValue(null);
     }
-    questionTmpConditionControl.controls[
-      'selectedQuestionIndexQuestion'
-    ].setValue(index);
-    questionTmpConditionControl.controls[
-      'selectedAnswerOptionsIndexQuestion'
-    ].setValue(undefined);
+    questionTmpConditionControl.controls.selectedQuestionIndexQuestion.setValue(
+      index
+    );
+    questionTmpConditionControl.controls.selectedAnswerOptionsIndexQuestion.setValue(
+      undefined
+    );
   }
 
-  setSelectedAnswerOptionsIndexQuestionCondition(
+  public setSelectedAnswerOptionsIndexQuestionCondition(
     questionIndex: number,
     index: number
   ): void {
     const questionTmpConditionControl =
-      this.myForm.controls.questions.controls[questionIndex].controls[
-        'tmp_for_condition'
-      ];
+      this.myForm.controls.questions.controls[questionIndex].controls
+        .tmp_for_condition;
     const questionConditionControl =
-      this.myForm.controls.questions.controls[questionIndex].controls[
-        'condition'
-      ];
+      this.myForm.controls.questions.controls[questionIndex].controls.condition;
     if (questionConditionControl !== undefined) {
       questionConditionControl.controls.condition_operand.setValue(null);
       questionConditionControl.controls.condition_value.setValue(null);
     }
-    questionTmpConditionControl.controls[
-      'selectedAnswerOptionsIndexQuestion'
-    ].setValue(index);
+    questionTmpConditionControl.controls.selectedAnswerOptionsIndexQuestion.setValue(
+      index
+    );
   }
 
-  setSelectedQuestionnaireIndexAnswerOptionCondition(
+  public setSelectedQuestionnaireIndexAnswerOptionCondition(
     questionIndex: number,
     answerIndex: number,
     index: number
@@ -2249,24 +2227,24 @@ export class QuestionnaireResearcherComponent implements OnInit {
       answerOptionConditionControl.controls.condition_question_id.setValue(
         null
       );
-      answerOptionConditionControl.controls[
-        'condition_target_answer_option'
-      ].setValue(null);
+      answerOptionConditionControl.controls.condition_target_answer_option.setValue(
+        null
+      );
       answerOptionConditionControl.controls.condition_operand.setValue(null);
       answerOptionConditionControl.controls.condition_value.setValue(null);
     }
-    answerOptionTmpConditionControl.controls[
-      'selectedQuestionnaireIndexAnswerOption'
-    ].setValue(index);
-    answerOptionTmpConditionControl.controls[
-      'selectedQuestionIndexAnswerOption'
-    ].setValue(undefined);
-    answerOptionTmpConditionControl.controls[
-      'selectedAnswerOptionsIndexAnswerOption'
-    ].setValue(undefined);
+    answerOptionTmpConditionControl.controls.selectedQuestionnaireIndexAnswerOption.setValue(
+      index
+    );
+    answerOptionTmpConditionControl.controls.selectedQuestionIndexAnswerOption.setValue(
+      undefined
+    );
+    answerOptionTmpConditionControl.controls.selectedAnswerOptionsIndexAnswerOption.setValue(
+      undefined
+    );
   }
 
-  setSelectedQuestionIndexAnswerOptionCondition(
+  public setSelectedQuestionIndexAnswerOptionCondition(
     questionIndex: number,
     answerIndex: number,
     index: number
@@ -2278,21 +2256,21 @@ export class QuestionnaireResearcherComponent implements OnInit {
       this.myForm.controls.questions.controls[questionIndex].controls
         .answer_options.controls[answerIndex].controls.condition;
     if (answerOptionConditionControl !== undefined) {
-      answerOptionConditionControl.controls[
-        'condition_target_answer_option'
-      ].setValue(null);
+      answerOptionConditionControl.controls.condition_target_answer_option.setValue(
+        null
+      );
       answerOptionConditionControl.controls.condition_operand.setValue(null);
       answerOptionConditionControl.controls.condition_value.setValue(null);
     }
-    answerOptionTmpConditionControl.controls[
-      'selectedQuestionIndexAnswerOption'
-    ].setValue(index);
-    answerOptionTmpConditionControl.controls[
-      'selectedAnswerOptionsIndexAnswerOption'
-    ].setValue(undefined);
+    answerOptionTmpConditionControl.controls.selectedQuestionIndexAnswerOption.setValue(
+      index
+    );
+    answerOptionTmpConditionControl.controls.selectedAnswerOptionsIndexAnswerOption.setValue(
+      undefined
+    );
   }
 
-  setSelectedAnswerOptionsIndexAnswerOptionCondition(
+  public setSelectedAnswerOptionsIndexAnswerOptionCondition(
     questionIndex: number,
     answerIndex: number,
     index: number
@@ -2308,12 +2286,12 @@ export class QuestionnaireResearcherComponent implements OnInit {
       answerOptionConditionControl.controls.condition_operand.setValue(null);
       answerOptionConditionControl.controls.condition_value.setValue(null);
     }
-    answerOptionTmpConditionControl.controls[
-      'selectedAnswerOptionsIndexAnswerOption'
-    ].setValue(index);
+    answerOptionTmpConditionControl.controls.selectedAnswerOptionsIndexAnswerOption.setValue(
+      index
+    );
   }
 
-  onDeactivate(): void {
+  public onDeactivate(): void {
     this.dialog
       .open(DialogYesNoComponent, {
         data: {
@@ -2322,10 +2300,10 @@ export class QuestionnaireResearcherComponent implements OnInit {
       })
       .afterClosed()
       .pipe(filter((result) => result === 'yes'))
-      .subscribe(() => this.deactivateQuestionnaire());
+      .subscribe(async () => this.deactivateQuestionnaire());
   }
 
-  async deactivateQuestionnaire(): Promise<void> {
+  public async deactivateQuestionnaire(): Promise<void> {
     this.isLoading = true;
     try {
       this.currentQuestionnaire =
@@ -2341,195 +2319,8 @@ export class QuestionnaireResearcherComponent implements OnInit {
     this.isLoading = false;
   }
 
-  onCancel(): void {
+  public onCancel(): void {
     this.router.navigate(['/questionnaires/admin']);
-  }
-
-  getAnswerOptionPosition(
-    answerOptionId,
-    questionnaire
-  ): { answerOptionPosition: any; questionPosition: any } {
-    for (const question of questionnaire.questions) {
-      for (const answerOption of question.answer_options) {
-        if (answerOption.id === answerOptionId) {
-          return {
-            answerOptionPosition: answerOption.position,
-            questionPosition: question.position,
-          };
-        }
-      }
-    }
-    return { answerOptionPosition: undefined, questionPosition: undefined };
-  }
-
-  generateExportDataFrom(form: FormGroup): any {
-    const questionnaireRequest = JSON.parse(JSON.stringify(form.value));
-
-    // HEADER
-    questionnaireRequest.id = -1;
-
-    if (questionnaireRequest.condition) {
-      questionnaireRequest.condition.condition_question_id = undefined;
-
-      if (questionnaireRequest.condition.condition_link === null) {
-        questionnaireRequest.condition.condition_link = undefined;
-      }
-
-      if (questionnaireRequest.condition.condition_value instanceof Array) {
-        questionnaireRequest.condition.condition_value =
-          questionnaireRequest.condition.condition_value.join(';');
-      } else {
-        questionnaireRequest.condition.condition_value =
-          questionnaireRequest.condition.condition_value.toString();
-      }
-      if (questionnaireRequest.condition.condition_type === 'external') {
-        questionnaireRequest.condition_postview =
-          this.addExternalConditionPostview(questionnaireRequest.condition);
-      }
-    }
-
-    // generate conditions position values
-    let positions;
-    for (const question of questionnaireRequest.questions) {
-      if (question.condition) {
-        positions = this.getAnswerOptionPosition(
-          question.condition.condition_target_answer_option,
-          questionnaireRequest
-        );
-        question.condition.condition_target_question_pos =
-          positions.questionPosition;
-        question.condition.condition_target_answer_option_pos =
-          positions.answerOptionPosition;
-        if (question.condition.condition_type === 'external') {
-          question.condition_postview = this.addExternalConditionPostview(
-            question.condition
-          );
-        }
-      }
-      for (const answer_option of question.answer_options) {
-        if (answer_option.condition) {
-          positions = this.getAnswerOptionPosition(
-            answer_option.condition.condition_target_answer_option,
-            questionnaireRequest
-          );
-          answer_option.condition.condition_target_question_pos =
-            positions.questionPosition;
-          answer_option.condition.condition_target_answer_option_pos =
-            positions.answerOptionPosition;
-          if (answer_option.condition.condition_type === 'external') {
-            answer_option.condition_postview =
-              this.addExternalConditionPostview(answer_option.condition);
-          }
-        }
-      }
-    }
-
-    // QUESTIONS
-    let question_position = 1;
-    for (const question of questionnaireRequest.questions) {
-      if (question.tmp_for_condition) {
-        question.tmp_for_condition = undefined;
-      }
-
-      question.has_condition = undefined;
-      if (question.condition) {
-        question.condition.condition_question_id = undefined;
-
-        if (question.condition.condition_link === null) {
-          question.condition.condition_link = undefined;
-        }
-
-        if (question.condition.condition_type !== 'external') {
-          question.condition.condition_target_questionnaire = -1;
-          question.condition.condition_target_answer_option = -1;
-        }
-
-        if (question.condition.condition_value instanceof Array) {
-          question.condition.condition_value =
-            question.condition.condition_value.join(';');
-        } else {
-          question.condition.condition_value =
-            question.condition.condition_value.toString();
-        }
-      }
-
-      question.position = question_position;
-      question.id = -1;
-      question_position++;
-
-      // ANSWER_OPTIONS
-      let answer_option_position = 1;
-      for (const answer_option of question.answer_options) {
-        answer_option.tmp_for_condition = undefined;
-        answer_option.has_condition = undefined;
-
-        answer_option.current_answer_type_id = undefined;
-        answer_option.coding_enable = undefined;
-        answer_option.is_condition_target = undefined;
-
-        if (answer_option.condition) {
-          answer_option.condition.condition_question_id = undefined;
-
-          if (answer_option.condition.condition_type !== 'external') {
-            answer_option.condition.condition_target_questionnaire = -1;
-            answer_option.condition.condition_target_answer_option = -1;
-          }
-
-          if (answer_option.condition.condition_link === null) {
-            answer_option.condition.condition_link = undefined;
-          }
-          if (answer_option.condition.condition_value instanceof Array) {
-            answer_option.condition.condition_value =
-              answer_option.condition.condition_value.join(';');
-          }
-
-          if (answer_option.condition.condition_value instanceof Number) {
-            answer_option.condition.condition_value =
-              answer_option.condition.condition_value.toString();
-          }
-        }
-
-        for (const value of answer_option.values) {
-          answer_option.values_code.push({ value: value.value_coded });
-          value.value_coded = undefined;
-        }
-
-        answer_option.position = answer_option_position;
-        answer_option.id = -1;
-        answer_option_position++;
-      }
-    }
-
-    return questionnaireRequest;
-  }
-
-  addExternalConditionPostview(condition): void {
-    const postviewCondition: any = {};
-    const foundQuestionnaire = this.questionnaires.find((questionnaire) => {
-      return (
-        questionnaire.id + '-' + questionnaire.version ===
-        condition.condition_target_questionnaire
-      );
-    });
-
-    let foundAnswerOption = null;
-    const foundQuestion = foundQuestionnaire.questions.find((question) => {
-      foundAnswerOption = question.answer_options.find((answer_option) => {
-        return answer_option.id === condition.condition_target_answer_option;
-      });
-      return foundAnswerOption !== null && foundAnswerOption !== undefined;
-    });
-
-    postviewCondition.condition_target_questionnaire_name =
-      foundQuestionnaire.name;
-    postviewCondition.condition_target_question_text = foundQuestion.text;
-    postviewCondition.condition_target_answer_option_pos =
-      foundAnswerOption.position;
-    postviewCondition.condition_operand = condition.condition_operand;
-    postviewCondition.condition_value = condition.condition_value;
-    postviewCondition.condition_link = condition.condition_link;
-
-    return postviewCondition;
   }
 
   /**
@@ -2537,7 +2328,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
    *
    * @returns questionnaireRequest
    */
-  generateQuestionnaireRequestDataFrom(
+  private generateQuestionnaireRequestDataFrom(
     form: FormGroup<QuestionnaireForm>
   ): Questionnaire {
     this.myForm.controls.questions.value.forEach((question, questionIndex) => {
@@ -2561,9 +2352,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
         questionController.controls.has_condition.disable();
       }
       if (questionController.controls.condition !== undefined) {
-        questionController.controls.condition.controls[
-          'condition_question_id'
-        ].disable();
+        questionController.controls.condition.controls.condition_question_id.disable();
       }
       questionController.controls.tmp_for_condition.disable();
       if (questionController.controls.id.value == null) {
@@ -2573,28 +2362,28 @@ export class QuestionnaireResearcherComponent implements OnInit {
       const questions = this.myForm.controls.questions;
 
       // For every subquestion (Unterfrage) in the form
-      questions.controls[questionIndex].controls[
-        'answer_options'
-      ].value.forEach((answer, answerIndex) => {
-        const answerOptionControler =
-          this.myForm.controls.questions.controls[questionIndex].controls
-            .answer_options.controls[answerIndex];
-        answerOptionControler.removeControl('current_answer_type_id');
-        answerOptionControler.controls.coding_enable.disable();
+      questions.controls[questionIndex].controls.answer_options.value.forEach(
+        (answer, answerIndex) => {
+          const answerOptionControler =
+            this.myForm.controls.questions.controls[questionIndex].controls
+              .answer_options.controls[answerIndex];
+          answerOptionControler.removeControl('current_answer_type_id');
+          answerOptionControler.controls.coding_enable.disable();
 
-        if (answerOptionControler.controls.has_condition !== undefined) {
-          answerOptionControler.controls.has_condition.disable();
+          if (answerOptionControler.controls.has_condition !== undefined) {
+            answerOptionControler.controls.has_condition.disable();
+          }
+          if (
+            answerOptionControler.controls.is_condition_target !== undefined
+          ) {
+            answerOptionControler.controls.is_condition_target.disable();
+          }
+          answerOptionControler.controls.tmp_for_condition.disable();
+          if (answerOptionControler.controls.condition !== undefined) {
+            answerOptionControler.controls.condition.controls.condition_question_id.disable();
+          }
         }
-        if (answerOptionControler.controls.is_condition_target !== undefined) {
-          answerOptionControler.controls.is_condition_target.disable();
-        }
-        answerOptionControler.controls.tmp_for_condition.disable();
-        if (answerOptionControler.controls.condition !== undefined) {
-          answerOptionControler.controls.condition.controls[
-            'condition_question_id'
-          ].disable();
-        }
-      });
+      );
     });
 
     if (form.controls.condition) {
@@ -2735,213 +2524,22 @@ export class QuestionnaireResearcherComponent implements OnInit {
     return questionnaireRequest;
   }
 
-  onClickExportFragebogen(): void {
-    const fragebogenObj = this.generateExportDataFrom(this.myForm);
-    const someConditionsWasDeleted = false;
-
-    // Delete all ids
-    fragebogenObj.study_id = undefined;
-
-    // Delete all conditions that depends on this questionnaire
-    // if (fragebogenObj.condition) {
-    //   if (fragebogenObj.condition.condition_type === 'internal_this' || fragebogenObj.condition.condition_type === 'internal_last') {
-    //     fragebogenObj.condition = undefined;
-    //     someConditionsWasDeleted = true;
-    //   }
-    // }
-
-    for (const question of fragebogenObj.questions) {
-      if (question.condition) {
-        // Delete conditions that refers on themselves
-        if (
-          question.condition.condition_type === 'internal_this' ||
-          question.condition.condition_type === 'internal_last'
-        ) {
-          // question.condition = undefined;
-          // someConditionsWasDeleted = true;
-        }
-      }
-
-      for (const answer_option of question.answer_options) {
-        // Delete conditions that refers on themselves
-        // if (answer_option.condition) {
-        //   if (answer_option.condition.condition_type === 'internal_this' || answer_option.condition.condition_type === 'internal_last') {
-        //     answer_option.condition = undefined;
-        //     someConditionsWasDeleted = true;
-        //   }
-        // }
-
-        const values = [];
-        const values_code = [];
-        const is_notable = [];
-
-        // Value and value_code haben beim abschicken folgnde form values: [{value: "ja"}, {value: "nein"}]
-        // Der response hat folgende Form values: ["ja", "nein"]
-        // value_codes genau so
-        // Deshalb muss man die values and value_codes umwandeln
-
-        for (const value of answer_option.is_notable) {
-          is_notable.push(value.value);
-        }
-        answer_option.is_notable = is_notable;
-        for (const value of answer_option.values) {
-          values.push(value.value);
-        }
-        answer_option.values = values;
-        for (const value_code of answer_option.values_code) {
-          values_code.push(value_code.value);
-        }
-        answer_option.values_code = values_code;
-      }
-    }
-
-    if (someConditionsWasDeleted) {
-      this.showDialog('QUESTIONNAIRE_FORSCHER.INTERNAL_CONDITIONS_REMOVED');
-    }
-
+  public onClickExportFragebogen(): void {
+    const fragebogenObj = generateExportDataFrom(
+      this.myForm.getRawValue(),
+      this.questionnaires
+    );
     this.saveJSON(fragebogenObj, this.currentQuestionnaire.name);
   }
 
-  onClickImportFragebogen(): void {
-    let someConditionsWereDeletedAtImport = false;
-    const reader = new FileReader();
-
-    // What should happen after document is loaded
-    reader.onload = (e) => {
-      const fragebogenObj: Questionnaire = JSON.parse(reader.result as string);
-      fragebogenObj.active = true;
-
-      if (fragebogenObj.condition) {
-        this.fixImportedCondition(fragebogenObj.condition);
-
-        if (this.shouldDeleteCondition(fragebogenObj.condition)) {
-          fragebogenObj.condition = undefined;
-          fragebogenObj.condition_error = 'reference-not-found';
-          someConditionsWereDeletedAtImport = true;
-        }
-      }
-
-      for (const question of fragebogenObj.questions) {
-        this.migrateExportLabel(question);
-
-        if (question.condition) {
-          this.fixImportedCondition(question.condition);
-
-          if (this.shouldDeleteCondition(question.condition)) {
-            question.condition = undefined;
-            question.condition_error = 'reference-not-found';
-            someConditionsWereDeletedAtImport = true;
-          }
-        }
-
-        for (const answer_option of question.answer_options) {
-          this.migrateExportLabel(question);
-
-          if (answer_option.condition) {
-            this.fixImportedCondition(answer_option.condition);
-
-            if (this.shouldDeleteCondition(answer_option.condition)) {
-              answer_option.condition = undefined;
-              answer_option.condition_error = 'reference-not-found';
-              someConditionsWereDeletedAtImport = true;
-            }
-          }
-        }
-      }
-      if (someConditionsWereDeletedAtImport) {
-        this.showDialog('QUESTIONNAIRE_FORSCHER.SOME_CONDITIONS_REMOVED');
-      }
-      this.currentQuestionnaire = fragebogenObj;
-      this.isImportedQuestionnaire = true;
-      this.panelDrag = false;
-      this.initForm(fragebogenObj);
-    };
-
-    document.getElementById('myFileInputField').click();
-
-    const inputElement = document.getElementById('myFileInputField');
-
-    inputElement.onchange = (e) => {
-      const fragebogen = (
-        window.document.getElementById('myFileInputField') as HTMLInputElement
-      ).files[0];
-      if (fragebogen) {
-        reader.readAsText(fragebogen);
-      }
-    };
-  }
-
-  onDateChange(event: MatDatepickerInputEvent<Date>): void {
-    this.activate_at_date = event.value.toDateString();
-    this.myForm.controls.activate_at_date.setValue(event.value);
-  }
-
-  fixImportedCondition(condition: any): void {
-    if (
-      condition.condition_target_questionnaire &&
-      condition.condition_target_questionnaire.split
-    ) {
-      condition.condition_target_questionnaire =
-        condition.condition_target_questionnaire.split('-');
-      condition.condition_target_questionnaire[0] = parseInt(
-        condition.condition_target_questionnaire[0],
-        10
-      );
-      if (condition.condition_target_questionnaire.length === 1) {
-        condition.condition_target_questionnaire.push(1);
-      } else {
-        condition.condition_target_questionnaire[1] = parseInt(
-          condition.condition_target_questionnaire[1],
-          10
-        );
-      }
-      [
-        condition.condition_target_questionnaire,
-        condition.condition_target_questionnaire_version,
-      ] = condition.condition_target_questionnaire;
-    } else if (condition.condition_target_questionnaire) {
-      condition.condition_target_questionnaire_version = 1;
-    }
-    console.dir(condition);
-  }
-
-  shouldDeleteCondition(condition: any): boolean {
-    let conditionShouldBeDeleted = true;
-    const questionnaireID = condition.condition_target_questionnaire;
-    const questionnaireVersion =
-      condition.condition_target_questionnaire_version;
-    const answerOptionID = condition.condition_target_answer_option;
-
-    if (condition.condition_type === 'external') {
-      const questionnaireFound = this.questionnaires.find(
-        (element) =>
-          element.id === questionnaireID &&
-          element.version === questionnaireVersion
-      );
-      if (questionnaireFound) {
-        for (const question of questionnaireFound['questions']) {
-          const answerOptions = question['answer_options'];
-
-          if (answerOptions) {
-            const answerOptionFound = answerOptions.find(
-              (element) => element.id === answerOptionID
-            );
-
-            if (answerOptionFound) {
-              conditionShouldBeDeleted = false;
-            }
-          }
-        }
-      }
-    } else {
-      conditionShouldBeDeleted = false;
-    }
-    return conditionShouldBeDeleted;
+  public onDateChange(event: MatDatepickerInputEvent<Date>): void {
+    this.activate_at_date = format(event.value, 'yyyy-MM-dd');
+    this.myForm.controls.activate_at_date.setValue(this.activate_at_date);
   }
 
   // Source: https://stackoverflow.com/questions/19721439/download-json-object-as-a-file-from-browser
   // FileSaver.js is a much better option
-  saveJSON(data, filename): void {
+  private saveJSON(data, filename): void {
     if (!data) {
       console.error('No data');
       return;
@@ -2984,7 +2582,7 @@ export class QuestionnaireResearcherComponent implements OnInit {
     a.dispatchEvent(e);
   }
 
-  getFormValidationErrors(): number {
+  private getFormValidationErrors(): number {
     let numOfErr = 0;
     this.fieldsWithErrors = [];
 
@@ -3044,66 +2642,6 @@ export class QuestionnaireResearcherComponent implements OnInit {
     return numOfErr;
   }
 
-  getFormValidationErrorsmaster(): number {
-    let numOfErr = 0;
-    this.fieldsWithErrors = [];
-
-    Object.keys(this.myForm.controls).forEach((key) => {
-      if (this.myForm.get(key) instanceof FormArray) {
-        this.myForm.controls[key].value.forEach((keyObject, keyIndex) => {
-          const keyController = this.myForm.controls[key].controls[keyIndex];
-          Object.keys(keyController.controls).forEach((key2) => {
-            if (keyController.get(key2) instanceof FormArray) {
-              keyController.controls[key2].value.forEach(
-                (key2Object, key2Index) => {
-                  const key2Controller =
-                    keyController.controls[key2].controls[key2Index];
-                  Object.keys(key2Controller.controls).forEach((key3) => {
-                    const controlErrors3: ValidationErrors =
-                      key2Controller.controls[key3].errors;
-                    if (controlErrors3 != null) {
-                      Object.keys(controlErrors3).forEach((keyError3) => {
-                        this.fieldsWithErrors.push(
-                          key +
-                            '[' +
-                            keyIndex +
-                            '].' +
-                            key2 +
-                            '[' +
-                            key2Index +
-                            '].' +
-                            key3
-                        );
-                        numOfErr++;
-                      });
-                    }
-                  });
-                }
-              );
-            }
-            const controlErrors2: ValidationErrors =
-              keyController.controls[key2].errors;
-            if (controlErrors2 != null) {
-              Object.keys(controlErrors2).forEach(() => {
-                this.fieldsWithErrors.push(key + '[' + keyIndex + '].' + key2);
-                numOfErr++;
-              });
-            }
-          });
-        });
-      }
-      const controlErrors: ValidationErrors = this.myForm.get(key).errors;
-      if (controlErrors != null) {
-        Object.keys(controlErrors).forEach((keyError) => {
-          this.fieldsWithErrors.push(key);
-          numOfErr++;
-        });
-      }
-    });
-
-    return numOfErr;
-  }
-
   private showSuccessDialog(questionnaireName: string): void {
     this.dialog.open<DialogPopUpComponent, DialogPopUpData>(
       DialogPopUpComponent,
@@ -3133,23 +2671,12 @@ export class QuestionnaireResearcherComponent implements OnInit {
     );
   }
 
-  private showDialog(message: string): void {
-    this.dialog.open(DialogPopUpComponent, {
-      width: '500px',
-      data: {
-        data: '',
-        content: message,
-        isSuccess: true,
-      },
-    });
-  }
-
   /**
    * add string (dat=) in current question text
    *
    * @param questionIndex question index in form
    */
-  addCustomVariable(control: FormControl, oField): void {
+  public addCustomVariable(control: FormControl, oField): void {
     let cursorPosition;
     if (oField.selectionStart || oField.selectionStart === '0') {
       cursorPosition = oField.selectionStart;
@@ -3166,15 +2693,14 @@ export class QuestionnaireResearcherComponent implements OnInit {
    *
    * @param control form control
    */
-  validateFormControlTextVariableValue(control: FormControl): ValidationErrors {
+  private validateFormControlTextVariableValue(
+    control: FormControl
+  ): ValidationErrors {
     const myRegex = /\(dat=(.*?)\)/g;
     const str = control.value ? control.value : '';
 
-    while (true) {
-      const myArray = myRegex.exec(str);
-      if (myArray === null) {
-        break;
-      }
+    let myArray: RegExpExecArray;
+    while ((myArray = myRegex.exec(str)) !== null) {
       if (myArray[1] === '' || myArray[1].match(/^-?[0-9,]*$/) === null) {
         return { validVariable: true };
       }
@@ -3182,11 +2708,11 @@ export class QuestionnaireResearcherComponent implements OnInit {
     return null;
   }
 
-  preventExpansion(event: Event): void {
+  public preventExpansion(event: Event): void {
     event.stopPropagation();
   }
 
-  dndDrop(event: CdkDragDrop<string[]>): void {
+  public dndDrop(event: CdkDragDrop<string[]>): void {
     moveItemInArray(
       this.myForm.controls.questions.controls,
       event.previousIndex,
@@ -3194,11 +2720,11 @@ export class QuestionnaireResearcherComponent implements OnInit {
     );
   }
 
-  isUpdateButtonDisabled(): boolean {
+  public isUpdateButtonDisabled(): boolean {
     return this.isEditMode && this.publish === 'allaudiences';
   }
 
-  mustNotEmptyTimeAndDayIfEnabled(form: FormGroup): ValidatorFn {
+  private mustNotEmptyTimeAndDayIfEnabled(form: FormGroup): ValidatorFn {
     return () => {
       const assert =
         form.controls.notify_when_not_filled.value === true &&
@@ -3230,18 +2756,6 @@ export class QuestionnaireResearcherComponent implements OnInit {
           )
       );
     });
-  }
-
-  /**
-   * Detects if the legacy field "label" is still used, and will migrate it
-   * to the new field "variable_name".
-   */
-  private migrateExportLabel(
-    fields: (Question | AnswerOption) & { label?: string }
-  ): void {
-    if ('label' in fields) {
-      fields.variable_name = fields.label;
-    }
   }
 
   private async fetchSortedQuestionnaires(): Promise<Questionnaire[]> {

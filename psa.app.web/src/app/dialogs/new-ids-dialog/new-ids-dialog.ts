@@ -21,6 +21,7 @@ import { UserService } from '../../psa.app.core/providers/user-service/user.serv
 @Component({
   selector: 'dialog-new-ids',
   templateUrl: 'new-ids-dialog.html',
+  standalone: false,
 })
 export class DialogNewIdsComponent implements OnInit {
   public form: FormGroup;
@@ -29,11 +30,11 @@ export class DialogNewIdsComponent implements OnInit {
   public filteredStudies: Observable<string[]>;
 
   public constructor(
-    private dialogRef: MatDialogRef<DialogNewIdsComponent>,
-    private authService: AuthService,
-    private alertService: AlertService,
-    private userService: UserService,
-    private dialog: MatDialog
+    private readonly dialogRef: MatDialogRef<DialogNewIdsComponent>,
+    private readonly authService: AuthService,
+    private readonly alertService: AlertService,
+    private readonly userService: UserService,
+    private readonly dialog: MatDialog
   ) {
     this.form = new FormGroup({
       ids: new FormControl('', Validators.required),

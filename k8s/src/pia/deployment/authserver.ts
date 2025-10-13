@@ -5,13 +5,13 @@
  */
 
 import { Chart, Size } from 'cdk8s';
+import { Cpu, ImagePullPolicy, Service } from 'cdk8s-plus-25';
 import { Construct } from 'constructs';
 import { Configuration } from '../../configuration';
-import { Cpu, ImagePullPolicy, Service } from 'cdk8s-plus-25';
+import { DeploymentWithoutServiceLinks } from '../../k8s/deploymentWithoutServiceLinks';
 import { ServiceAccountWithImagePullSecrets } from '../../k8s/serviceAccountWithImagePullSecrets';
 import { IPiaService } from '../stateful/ipiaservice';
 import { MessageQueue } from '../stateful/messagequeue';
-import { DeploymentWithoutServiceLinks } from '../../k8s/deploymentWithoutServiceLinks';
 
 export class Authserver extends Chart {
   public readonly service: Service;
@@ -105,6 +105,7 @@ export class Authserver extends Chart {
             IS_DIRECT_ACCESS_GRANT_ENABLED:
               configuration.variables.isDevelopmentSystem,
             USER_PASSWORD_LENGTH: configuration.variables.userPasswordLength,
+            EMAIL_THEME: 'pia',
           }),
 
           ports: [

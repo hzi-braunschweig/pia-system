@@ -13,19 +13,20 @@ import { AlertMessage, AlertService } from '../_services/alert.service';
   selector: 'app-alert',
   templateUrl: 'alert.component.html',
   styleUrls: ['alert.component.scss'],
+  standalone: false,
 })
 export class AlertComponent implements OnDestroy {
-  private subscription: Subscription;
-  message: AlertMessage;
+  public message: AlertMessage;
+  private readonly subscription: Subscription;
 
-  constructor(private alertService: AlertService) {
+  public constructor(alertService: AlertService) {
     // subscribe to alert messages
     this.subscription = alertService.getMessage().subscribe((message) => {
       this.message = message;
     });
   }
 
-  ngOnDestroy(): void {
+  public ngOnDestroy(): void {
     // unsubscribe on destroy to prevent memory leaks
     this.subscription.unsubscribe();
   }

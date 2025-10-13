@@ -72,6 +72,11 @@ export interface AuthClientSettings {
   secret: string;
 }
 
+export interface NotificationTime {
+  hours: number;
+  minutes: number;
+}
+
 /**
  * Global schema of service configuration
  */
@@ -96,6 +101,7 @@ export interface ServiceConfig {
   probandAppUrl?: string;
   adminAppUrl?: string;
   backendApiUrl?: string;
+  notificationTime?: NotificationTime;
 }
 
 /**

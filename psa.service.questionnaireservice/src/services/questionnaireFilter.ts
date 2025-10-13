@@ -7,7 +7,7 @@
 
 import { endOfDay } from 'date-fns';
 import { assert } from 'ts-essentials';
-import { getRepository, In, LessThanOrEqual } from 'typeorm';
+import { In, IsNull, LessThanOrEqual } from 'typeorm';
 import { Answer } from '../entities/answer';
 import { AnswerDto, PartialAnswerDto } from '../models/answer';
 import { ConditionDto, ConditionType } from '../models/condition';
@@ -15,6 +15,7 @@ import { QuestionnaireDto } from '../models/questionnaire';
 import { QuestionnaireInstanceDto } from '../models/questionnaireInstance';
 import { ConditionChecker } from './conditionChecker';
 import { QuestionCleaner } from './questionCleaner';
+import { dataSource } from '../db';
 
 export class QuestionnaireFilter {
   private conditionTargetAnswers: Map<number, AnswerDto> = new Map<
@@ -164,13 +165,13 @@ export class QuestionnaireFilter {
         this.qInstance.questionnaire!,
         ConditionType.EXTERNAL
       );
-    const answerRepo = getRepository(Answer);
+    const answerRepo = dataSource.getRepository(Answer);
     if (externalConditionTargetAnswerOptionIds.length > 0) {
       const endOfDayOfIssue = endOfDay(this.qInstance.dateOfIssue);
       const externalConditionTargetAnswers = await answerRepo.find({
         where: [
           {
-            answerOption: In(externalConditionTargetAnswerOptionIds),
+            answerOptionId: In(externalConditionTargetAnswerOptionIds),
             questionnaireInstance: {
               status: In(['released', 'released_once', 'released_twice']),
               pseudonym: this.qInstance.pseudonym,
@@ -178,16 +179,16 @@ export class QuestionnaireFilter {
             dateOfRelease: LessThanOrEqual(endOfDayOfIssue),
           },
           {
-            answerOption: In(externalConditionTargetAnswerOptionIds),
+            answerOptionId: In(externalConditionTargetAnswerOptionIds),
             questionnaireInstance: {
               status: In(['released', 'released_once', 'released_twice']),
               pseudonym: this.qInstance.pseudonym,
               dateOfReleaseV1: LessThanOrEqual(endOfDayOfIssue),
-              dateOfReleaseV2: null,
+              dateOfReleaseV2: IsNull(),
             },
           },
           {
-            answerOption: In(externalConditionTargetAnswerOptionIds),
+            answerOptionId: In(externalConditionTargetAnswerOptionIds),
             questionnaireInstance: {
               status: In(['released', 'released_once', 'released_twice']),
               pseudonym: this.qInstance.pseudonym,
@@ -195,9 +196,12 @@ export class QuestionnaireFilter {
             },
           },
         ],
-        relations: ['answerOption', 'questionnaireInstance'],
+        relations: {
+          answerOption: true,
+          questionnaireInstance: true,
+        },
         order: {
-          answerOption: 'ASC',
+          answerOptionId: 'ASC',
           versioning: 'DESC',
         },
       });
@@ -218,14 +222,17 @@ export class QuestionnaireFilter {
       if (internalLastConditionTargetAnswerOptionIds.length > 0) {
         const internalLastConditionTargetAnswers = await answerRepo.find({
           where: {
-            answerOption: In(externalConditionTargetAnswerOptionIds),
+            answerOptionId: In(externalConditionTargetAnswerOptionIds),
             questionnaireInstance: {
               status: In(['released', 'released_once', 'released_twice']),
               pseudonym: this.qInstance.pseudonym,
               cycle: this.qInstance.cycle - 1,
             },
           },
-          relations: ['answerOption', 'questionnaireInstance'],
+          relations: {
+            answerOption: true,
+            questionnaireInstance: true,
+          },
           order: {
             answerOption: 'ASC',
             versioning: 'DESC',

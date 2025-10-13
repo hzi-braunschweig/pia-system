@@ -1,10 +1,6 @@
 {
-  "require": [
-    "dotenv/config",
-    "source-map-support/register",
-    "ts-node/register/transpile-only",
-    "./tests/beforeAll.hook.ts"
-  ],
+  "require": ["ts-node/register/transpile-only", "./tests/beforeAll.hook.ts"],
+  "enable-source-maps": true,
   "reporter": "mocha-multi-reporters",
   "reporter-option": "configFile=tests/mocha-reporters-config.json"
 }

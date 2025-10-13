@@ -5,14 +5,7 @@
  */
 
 import { Pseudonym, StudyName } from '@pia/lib-publicapi';
-import {
-  FindConditions,
-  getConnection,
-  getCustomRepository,
-  getRepository,
-  In,
-  Not,
-} from 'typeorm';
+import { In, Not } from 'typeorm';
 import { Answer } from '../entities/answer';
 import {
   hasQuestionnaireRelation,
@@ -30,10 +23,12 @@ import {
   QuestionnaireInstance as QuestionnaireInstanceDeprecated,
   QuestionnaireInstanceStatus,
 } from '../models/questionnaireInstance';
-import { CustomQuestionnaireInstanceRepository } from '../repositories/questionnaireInstanceRepository';
+import { customQuestionnaireInstanceRepository } from '../repositories/questionnaireInstanceRepository';
 import { messageQueueService } from './messageQueueService';
 import { QuestionnaireFilter } from './questionnaireFilter';
 import isInstanceWithNarrowedStatus from '../helpers/isInstanceWithNarrowedStatus';
+import { dataSource } from '../db';
+import { FindOptionsWhere } from 'typeorm/find-options/FindOptionsWhere';
 
 export class QuestionnaireInstanceService {
   public static async getQuestionnaireInstances(
@@ -42,15 +37,15 @@ export class QuestionnaireInstanceService {
     customName?: CustomName,
     status?: QuestionnaireInstanceStatus
   ): Promise<HasQuestionnaireRelation<QuestionnaireInstance>[]> {
-    const customNameQuery: FindConditions<QuestionnaireInstance> = customName
+    const customNameQuery: FindOptionsWhere<QuestionnaireInstance> = customName
       ? { questionnaire: { customName } }
       : {};
-    const statusQuery: FindConditions<QuestionnaireInstance> = status
+    const statusQuery: FindOptionsWhere<QuestionnaireInstance> = status
       ? { status }
       : {};
 
-    const result = await getRepository(QuestionnaireInstance).find({
-      relations: ['questionnaire'],
+    const result = await dataSource.getRepository(QuestionnaireInstance).find({
+      relations: { questionnaire: true },
       where: {
         studyId: studyName,
         pseudonym,
@@ -95,11 +90,12 @@ export class QuestionnaireInstanceService {
       ? { questionnaire: { type: options.questionnaireType } }
       : {};
 
-    return await getRepository(QuestionnaireInstance).findOneOrFail(id, {
-      relations: ['questionnaire'],
+    return await dataSource.getRepository(QuestionnaireInstance).findOneOrFail({
+      relations: { questionnaire: true },
       where: {
         ...whereStatusIsNot,
         ...whereQuestionnaireType,
+        id,
       },
     });
   }
@@ -129,8 +125,8 @@ export class QuestionnaireInstanceService {
     pseudonym: string
   ): Promise<void> {
     const instanceIdsToDelete = (
-      await getRepository(QuestionnaireInstance).find({
-        relations: ['questionnaire'],
+      await dataSource.getRepository(QuestionnaireInstance).find({
+        relations: { questionnaire: true },
         where: {
           pseudonym,
           status: 'inactive',
@@ -146,7 +142,9 @@ export class QuestionnaireInstanceService {
       return;
     }
 
-    await getRepository(QuestionnaireInstance).delete(instanceIdsToDelete);
+    await dataSource
+      .getRepository(QuestionnaireInstance)
+      .delete(instanceIdsToDelete);
   }
 
   public static async expireQuestionnaireInstances(
@@ -155,8 +153,8 @@ export class QuestionnaireInstanceService {
     questionnaireType: QuestionnaireType
   ): Promise<void> {
     const idsToUpdate = (
-      await getRepository(QuestionnaireInstance).find({
-        relations: ['questionnaire'],
+      await dataSource.getRepository(QuestionnaireInstance).find({
+        relations: { questionnaire: true },
         where: {
           pseudonym,
           status: In<QuestionnaireInstanceStatus>(status),
@@ -167,7 +165,7 @@ export class QuestionnaireInstanceService {
       })
     ).map((instance) => instance.id);
 
-    await getRepository(QuestionnaireInstance).update(idsToUpdate, {
+    await dataSource.getRepository(QuestionnaireInstance).update(idsToUpdate, {
       status: 'expired',
     });
   }
@@ -203,12 +201,13 @@ export class QuestionnaireInstanceService {
   }
 
   public static async getById(
-    id: number | CustomName,
+    id: number,
     evaluateConditions = false
   ): Promise<QuestionnaireInstance> {
-    const result = await getCustomRepository(
-      CustomQuestionnaireInstanceRepository
-    ).findOneWithAllConditionRelations({ where: { id } });
+    const result =
+      await customQuestionnaireInstanceRepository.findOneWithAllConditionRelations(
+        { where: { id } }
+      );
 
     if (!result) {
       throw new QuestionnaireInstanceNotFoundError(
@@ -234,15 +233,16 @@ export class QuestionnaireInstanceService {
     customName: string,
     pseudonym: string
   ): Promise<QuestionnaireInstance> {
-    const result = await getCustomRepository(
-      CustomQuestionnaireInstanceRepository
-    ).findOneWithAllConditionRelations({
-      where: {
-        pseudonym,
-        studyId: studyName,
-        questionnaire: { customName },
-      },
-    });
+    const result =
+      await customQuestionnaireInstanceRepository.findOneWithAllConditionRelations(
+        {
+          where: {
+            pseudonym,
+            studyId: studyName,
+            questionnaire: { customName },
+          },
+        }
+      );
 
     if (!result) {
       throw new QuestionnaireInstanceNotFoundError(
@@ -282,7 +282,7 @@ export class QuestionnaireInstanceService {
     dto: PatchQuestionnaireInstanceDto,
     returnRaw = false
   ): Promise<QuestionnaireInstanceDeprecated | QuestionnaireInstance> {
-    const queryRunner = getConnection().createQueryRunner();
+    const queryRunner = dataSource.createQueryRunner();
     await queryRunner.startTransaction();
 
     try {
@@ -413,10 +413,10 @@ export class QuestionnaireInstanceService {
       // eslint-disable-next-line @typescript-eslint/no-magic-numbers
       instance.status === 'released_twice' ? 2 : instanceReleaseVersion + 1;
 
-    const answers = await getRepository(Answer).find({
+    const answers = await dataSource.getRepository(Answer).find({
       where: {
-        questionnaireInstance: instance.id,
-        question: In(questionIDs),
+        questionnaireInstanceId: instance.id,
+        questionId: In(questionIDs),
         versioning: nextReleaseVersion,
       },
     });
@@ -498,7 +498,8 @@ export class QuestionnaireInstanceService {
   ): Promise<QuestionnaireInstance | QuestionnaireInstanceDeprecated> {
     this.validateStatusTransition(instance, dto.status);
 
-    const updateResult = await getRepository(QuestionnaireInstance)
+    const updateResult = await dataSource
+      .getRepository(QuestionnaireInstance)
       .createQueryBuilder()
       .update(instance)
       .set(this.getFieldsToUpdateForRelease(instance, dto))

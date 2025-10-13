@@ -41,12 +41,11 @@ import {
   QuestionnaireListResponse,
 } from '../../psa.app.core/models/questionnaire';
 import { By } from '@angular/platform-browser';
-import { of, throwError } from 'rxjs';
-import { HttpResponse } from '@angular/common/http';
 import { createProband } from '../../psa.app.core/models/instance.helper.spec';
 import { ProbandService } from '../../psa.app.core/providers/proband-service/proband.service';
 import { CurrentUser } from '../../_services/current-user.service';
 import SpyObj = jasmine.SpyObj;
+import Keycloak from 'keycloak-js';
 
 describe('DialogExportDataComponent', () => {
   let component: DialogExportDataComponent;
@@ -57,6 +56,7 @@ describe('DialogExportDataComponent', () => {
   let alertService: SpyObj<AlertService>;
   let questionnaireService: SpyObj<QuestionnaireService>;
   let currentUser: SpyObj<CurrentUser>;
+  let keycloak: SpyObj<Keycloak>;
 
   const proband1 = createProband({
     pseudonym: 'Testproband1',
@@ -79,21 +79,20 @@ describe('DialogExportDataComponent', () => {
       'errorObject',
     ]);
     questionnaireService = jasmine.createSpyObj('QuestionnaireService', [
-      'getExportData',
       'getQuestionnaires',
       'getImageBy',
+      'export',
     ]);
     currentUser = jasmine.createSpyObj('CurrentUser', [], {
       studies: ['Teststudie1', 'Teststudie2', 'Teststudie3'],
     });
-
+    keycloak = jasmine.createSpyObj('Keycloak', [], { token: 'token' });
     probandService.getProbands.and.resolveTo([]);
     questionnaireService.getQuestionnaires.and.resolveTo(
       getQuestionnaireListResponse()
     );
-    questionnaireService.getExportData.and.returnValue(
-      of(new HttpResponse({ body: new Blob(), statusText: 'OK' }))
-    );
+
+    questionnaireService.export.and.returnValue();
 
     TestBed.configureTestingModule({
       declarations: [
@@ -123,11 +122,13 @@ describe('DialogExportDataComponent', () => {
         { provide: AlertService, useValue: alertService },
         { provide: QuestionnaireService, useValue: questionnaireService },
         { provide: CurrentUser, useValue: currentUser },
+        { provide: Keycloak, useValue: keycloak },
       ],
       imports: [MockModule(ReactiveFormsModule)],
     });
     fixture = TestBed.createComponent(DialogExportDataComponent);
     component = fixture.componentInstance;
+
     await component.ngOnInit();
     await fixture.whenStable();
     fixture.detectChanges();
@@ -242,7 +243,8 @@ describe('DialogExportDataComponent', () => {
       fixture.detectChanges();
       expect(component.form.get('probands').enabled).toBeFalsy();
       component.submit();
-      expect(questionnaireService.getExportData).toHaveBeenCalledTimes(1);
+      tick();
+      expect(questionnaireService.export).toHaveBeenCalledTimes(1);
     }));
 
     it('should be disabled when only codebook and questionnaires export has been selected', fakeAsync(() => {
@@ -256,34 +258,40 @@ describe('DialogExportDataComponent', () => {
       fixture.detectChanges();
       expect(component.form.get('probands').enabled).toBeFalsy();
       component.submit();
-      expect(questionnaireService.getExportData).toHaveBeenCalledTimes(1);
+      tick();
+      expect(questionnaireService.export).toHaveBeenCalledTimes(1);
     }));
   });
 
   describe('submit()', () => {
-    it('should call questionnaire service to get export data', () => {
+    it('should call questionnaire service to get export data', fakeAsync(() => {
       component.form.get('study_name').setValue('Teststudie1');
       component.form.get('questionnaires').setValue(['Testfragebogen1']);
       component.form.get('probands').setValue('Testproband1');
       component.submit();
-      expect(questionnaireService.getExportData).toHaveBeenCalledWith({
-        start_date: null,
-        end_date: null,
-        study_name: 'Teststudie1',
-        questionnaires: ['Testfragebogen1'],
-        probands: ['Testproband1'],
-        exports: [
-          'legacy_answers',
-          'answers',
-          'codebook',
-          'questionnaires',
-          'labresults',
-          'samples',
-          'bloodsamples',
-          'settings',
-        ],
-      });
-    });
+      tick();
+      expect(questionnaireService.export).toHaveBeenCalledTimes(1);
+      expect(questionnaireService.export).toHaveBeenCalledWith(
+        {
+          start_date: null,
+          end_date: null,
+          study_name: 'Teststudie1',
+          questionnaires: ['Testfragebogen1'],
+          probands: ['Testproband1'],
+          exports: [
+            'legacy_answers',
+            'answers',
+            'codebook',
+            'questionnaires',
+            'labresults',
+            'samples',
+            'bloodsamples',
+            'settings',
+          ],
+        },
+        'token'
+      );
+    }));
 
     it('should call questionnaire service to get export data with all probands of study', fakeAsync(() => {
       probandService.getProbands.and.resolveTo([proband2, proband3]);
@@ -292,43 +300,278 @@ describe('DialogExportDataComponent', () => {
       component.form.get('probands').setValue('allProbandsCheckbox');
       tick();
       component.submit();
-      expect(questionnaireService.getExportData).toHaveBeenCalledWith({
-        start_date: null,
-        end_date: null,
-        study_name: 'Teststudie2',
-        questionnaires: ['Testfragebogen4'],
-        probands: ['Testproband2', 'Testproband3'],
-        exports: [
-          'legacy_answers',
-          'answers',
-          'codebook',
-          'questionnaires',
-          'labresults',
-          'samples',
-          'bloodsamples',
-          'settings',
-        ],
-      });
-    }));
-
-    it('should show an error if export data download failed', fakeAsync(() => {
-      questionnaireService.getExportData.and.returnValue(
-        throwError('some error')
-      );
-      probandService.getProbands.and.resolveTo([proband2, proband3]);
-      component.form.get('study_name').setValue('Teststudie2');
-      component.form.get('questionnaires').setValue(['Testfragebogen4']);
-      component.form.get('probands').setValue('allProbandsCheckbox');
       tick();
-      component.submit();
-      expect(alertService.errorObject).toHaveBeenCalled();
-      expect(component.isLoading).toBeFalsy();
+      expect(questionnaireService.export).toHaveBeenCalledTimes(1);
+      expect(questionnaireService.export).toHaveBeenCalledWith(
+        {
+          start_date: null,
+          end_date: null,
+          study_name: 'Teststudie2',
+          questionnaires: ['Testfragebogen4'],
+          probands: ['Testproband2', 'Testproband3'],
+          exports: [
+            'legacy_answers',
+            'answers',
+            'codebook',
+            'questionnaires',
+            'labresults',
+            'samples',
+            'bloodsamples',
+            'settings',
+          ],
+        },
+        'token'
+      );
     }));
 
-    it('should do nothing if form is invalid', () => {
+    it('should do nothing if form is invalid', fakeAsync(() => {
       expect(component.form.errors).not.toBeNull();
       component.submit();
-      expect(questionnaireService.getExportData).not.toHaveBeenCalled();
+      tick();
+      expect(questionnaireService.export).not.toHaveBeenCalled();
+    }));
+  });
+
+  describe('form validity', () => {
+    const testCases: {
+      selections: {
+        study?: boolean;
+        questionnaires?: boolean;
+        probands?: boolean;
+      };
+      exports: {
+        legacy_answers?: boolean;
+        answers?: boolean;
+        codebook?: boolean;
+        questionnaires?: boolean;
+        labresults?: boolean;
+        samples?: boolean;
+        bloodsamples?: boolean;
+        settings?: boolean;
+      };
+      valid: boolean;
+    }[] = [
+      {
+        selections: {
+          study: true,
+          questionnaires: true,
+          probands: true,
+        },
+        exports: {
+          legacy_answers: true,
+          answers: true,
+          codebook: true,
+          questionnaires: true,
+          labresults: true,
+          samples: true,
+          bloodsamples: true,
+          settings: true,
+        },
+        valid: true,
+      },
+      {
+        selections: {
+          study: false,
+          questionnaires: false,
+          probands: false,
+        },
+        exports: {
+          legacy_answers: false,
+          answers: false,
+          codebook: false,
+          questionnaires: false,
+          labresults: false,
+          samples: false,
+          bloodsamples: false,
+          settings: false,
+        },
+        valid: false,
+      },
+      {
+        selections: {
+          study: true,
+          questionnaires: true,
+        },
+        exports: {
+          questionnaires: true,
+        },
+        valid: true,
+      },
+      {
+        selections: {
+          questionnaires: false,
+        },
+        exports: {
+          questionnaires: true,
+        },
+        valid: false,
+      },
+      {
+        selections: {
+          study: false,
+        },
+        exports: {
+          questionnaires: true,
+        },
+        valid: false,
+      },
+      {
+        selections: {},
+        exports: {
+          questionnaires: true,
+        },
+        valid: false,
+      },
+      {
+        selections: {
+          study: true,
+        },
+        exports: {
+          legacy_answers: true,
+        },
+        valid: false,
+      },
+      {
+        selections: {
+          study: true,
+          questionnaires: true,
+        },
+        exports: {
+          legacy_answers: true,
+        },
+        valid: false,
+      },
+      {
+        selections: {
+          study: true,
+          questionnaires: true,
+          probands: true,
+        },
+        exports: {
+          legacy_answers: true,
+        },
+        valid: true,
+      },
+      {
+        selections: {
+          study: true,
+        },
+        exports: {
+          answers: true,
+        },
+        valid: false,
+      },
+      {
+        selections: {
+          study: true,
+          questionnaires: true,
+        },
+        exports: {
+          answers: true,
+        },
+        valid: false,
+      },
+      {
+        selections: {
+          study: true,
+          questionnaires: true,
+          probands: true,
+        },
+        exports: {
+          answers: true,
+        },
+        valid: true,
+      },
+      {
+        selections: {
+          study: true,
+        },
+        exports: {
+          codebook: true,
+        },
+        valid: false,
+      },
+      {
+        selections: {
+          study: true,
+          questionnaires: true,
+        },
+        exports: {
+          codebook: true,
+        },
+        valid: true,
+      },
+      {
+        selections: {
+          study: true,
+        },
+        exports: {
+          settings: true,
+        },
+        valid: false,
+      },
+      {
+        selections: {
+          study: true,
+          probands: true,
+        },
+        exports: {
+          settings: true,
+        },
+        valid: true,
+      },
+    ];
+
+    testCases.forEach((testCase) => {
+      const exports = Object.entries(testCase.exports)
+        .filter(([, selected]) => selected)
+        .map(([name]) => name);
+
+      const selections = Object.entries(testCase.selections)
+        .filter(([, selected]) => selected)
+        .map(([name]) => name);
+
+      const exportsString =
+        exports.length === 0 ? 'nothing' : exports.join(', ');
+      const selectionsString =
+        selections.length === 0 ? 'nothing' : selections.join(', ');
+
+      it(`should be ${
+        testCase.valid ? 'valid' : 'invalid'
+      } when exporting ${exportsString} and selected ${selectionsString}`, fakeAsync(() => {
+        component.form
+          .get('exports')
+          .setValue([
+            testCase.exports.legacy_answers ?? false,
+            testCase.exports.answers ?? false,
+            testCase.exports.codebook ?? false,
+            testCase.exports.questionnaires ?? false,
+            testCase.exports.labresults ?? false,
+            testCase.exports.samples ?? false,
+            testCase.exports.settings ?? false,
+          ]);
+        component.form
+          .get('study_name')
+          .setValue(testCase.selections.study ? 'Teststudie1' : null);
+        component.form
+          .get('questionnaires')
+          .setValue(
+            testCase.selections.questionnaires ? ['Testfragebogen1'] : null
+          );
+        component.form
+          .get('probands')
+          .setValue(
+            testCase.selections.probands ? 'allProbandsCheckbox' : null
+          );
+
+        tick();
+        fixture.detectChanges();
+        if (testCase.valid) {
+          expect(component.form.valid).toBeTruthy();
+        } else {
+          expect(component.form.valid).toBeFalsy();
+        }
+      }));
     });
   });
 

@@ -7,7 +7,6 @@
 import { Component, OnInit } from '@angular/core';
 import { QuestionnaireService } from 'src/app/psa.app.core/providers/questionnaire-service/questionnaire-service';
 import { AlertService } from '../../../_services/alert.service';
-import { ActivatedRoute } from '@angular/router';
 import {
   QuestionnaireInstance,
   QuestionnaireStatus,
@@ -16,6 +15,7 @@ import {
 @Component({
   selector: 'app-questionnaire-instances-list-for-proband',
   templateUrl: './questionnaire-instances-list-for-proband.component.html',
+  standalone: false,
 })
 export class QuestionnaireInstancesListForProbandComponent implements OnInit {
   isLoading: boolean = true;
@@ -23,8 +23,8 @@ export class QuestionnaireInstancesListForProbandComponent implements OnInit {
   closedQuestionnaireInstances: QuestionnaireInstance[] = [];
 
   constructor(
-    private questionnaireService: QuestionnaireService,
-    private alertService: AlertService
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly alertService: AlertService
   ) {}
 
   async ngOnInit(): Promise<void> {

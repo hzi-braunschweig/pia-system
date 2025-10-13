@@ -10,6 +10,7 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 @Component({
   selector: 'app-dialog-delete-account-confirmation',
   templateUrl: './dialog-delete-account-confirmation.component.html',
+  standalone: false,
 })
 export class DialogDeleteAccountConfirmationComponent {
   constructor(@Inject(MAT_DIALOG_DATA) public keepHealthData: true) {}

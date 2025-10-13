@@ -7,9 +7,12 @@
 
 import { RepositoryOptions } from '@pia/lib-service-core';
 import pgPromise from 'pg-promise';
-import { EntityRepository, Repository } from 'typeorm';
 import { FindOneOptions } from 'typeorm/find-options/FindOneOptions';
-import { db, getDbTransactionFromOptionsOrDbConnection } from '../db';
+import {
+  db,
+  getDbTransactionFromOptionsOrDbConnection,
+  dataSource,
+} from '../db';
 import { QuestionnaireInstance } from '../entities/questionnaireInstance';
 import { QuestionnaireInstanceNotFoundError } from '../errors';
 import { Questionnaire, QuestionnaireType } from '../models/questionnaire';
@@ -24,8 +27,11 @@ import {
   QuestionnaireDbResult,
   RepositoryHelper as QuestionnaireRepositoryHelper,
 } from './questionnaireRepository';
+import { FindOptionsRelations } from 'typeorm/find-options/FindOptionsRelations';
+import { assert } from 'ts-essentials';
 import QueryResultError = pgPromise.errors.QueryResultError;
 import queryResultErrorCode = pgPromise.errors.queryResultErrorCode;
+import { mergeRelations } from '../util/mergeRelations';
 
 const pgp = pgPromise({ capSQL: true });
 
@@ -376,61 +382,93 @@ export class QuestionnaireInstanceRepository {
   }
 }
 
-@EntityRepository(QuestionnaireInstance)
-export class CustomQuestionnaireInstanceRepository extends Repository<QuestionnaireInstance> {
-  private readonly questionnaireRelations = [
-    'questionnaire',
-    'questionnaire.condition',
-    'questionnaire.questions',
-    'questionnaire.questions.condition',
-    'questionnaire.questions.answerOptions',
-    'questionnaire.questions.answerOptions.condition',
-  ];
+const questionnaireRelations: FindOptionsRelations<QuestionnaireInstance> = {
+  questionnaire: {
+    condition: true,
+    questions: {
+      condition: true,
+      answerOptions: {
+        condition: true,
+      },
+    },
+  },
+};
 
-  private readonly targetAnswerOptionRelations = [
-    // to be able to evaluate conditions, we need the targetAnswerOption
-    'questionnaire.questions.condition.targetAnswerOption',
-    'questionnaire.questions.answerOptions.condition.targetAnswerOption',
-  ];
-
-  public async findOneOrFailByIdWithQuestionnaire(
-    options: FindOneOptions<QuestionnaireInstance>
-  ): Promise<QuestionnaireInstance> {
-    this.addQuestionnaireRelations(options);
-    return this.findOneOrFail(options);
-  }
-
-  public async findWithQuestionnaire(
-    options: FindOneOptions<QuestionnaireInstance>
-  ): Promise<QuestionnaireInstance[]> {
-    this.addQuestionnaireRelations(options);
-    return this.find(options);
-  }
-
-  public async findOneWithAllConditionRelations(
-    options: FindOneOptions<QuestionnaireInstance>
-  ): Promise<QuestionnaireInstance | undefined> {
-    this.addQuestionnaireRelations(options);
-    this.addRelationsToEvaluateConditions(options);
-
-    return this.findOne(options);
-  }
-
-  private addQuestionnaireRelations(
-    options: FindOneOptions<QuestionnaireInstance>
-  ): void {
-    if (!options.relations) {
-      options.relations = [];
-    }
-    options.relations.push(...this.questionnaireRelations);
-  }
-
-  private addRelationsToEvaluateConditions(
-    options: FindOneOptions<QuestionnaireInstance>
-  ): void {
-    if (!options.relations) {
-      options.relations = [];
-    }
-    options.relations.push(...this.targetAnswerOptionRelations);
-  }
+function addQuestionnaireRelations(
+  options: FindOneOptions<QuestionnaireInstance>
+): void {
+  assert(
+    /** @deprecated */
+    !Array.isArray(options.relations),
+    'addRelations does not support deprecated FindOptionsRelationByString'
+  );
+  options.relations = mergeRelations(
+    options.relations ?? {},
+    questionnaireRelations
+  );
 }
+
+const targetAnswerOptionRelations: FindOptionsRelations<QuestionnaireInstance> =
+  {
+    questionnaire: {
+      questions: {
+        condition: {
+          targetAnswerOption: true,
+        },
+        answerOptions: {
+          condition: {
+            targetAnswerOption: true,
+          },
+        },
+      },
+    },
+  };
+
+function addRelationsToEvaluateConditions(
+  options: FindOneOptions<QuestionnaireInstance>
+): void {
+  assert(
+    /** @deprecated */
+    !Array.isArray(options.relations),
+    'addRelations does not support deprecated FindOptionsRelationByString'
+  );
+  options.relations = mergeRelations(
+    options.relations ?? {},
+    targetAnswerOptionRelations
+  );
+}
+
+export const customQuestionnaireInstanceRepository = dataSource
+  .getRepository(QuestionnaireInstance)
+  .extend({
+    async findOneOrFailByIdWithQuestionnaire(
+      options: FindOneOptions<QuestionnaireInstance>
+    ): Promise<QuestionnaireInstance> {
+      addQuestionnaireRelations(options);
+      return this.findOneOrFail(options);
+    },
+
+    async findOneOrFailByIdWithQuestionnaireAndAllConditionRelations(
+      options: FindOneOptions<QuestionnaireInstance>
+    ): Promise<QuestionnaireInstance> {
+      addQuestionnaireRelations(options);
+      addRelationsToEvaluateConditions(options);
+      return this.findOneOrFail(options);
+    },
+
+    async findWithQuestionnaire(
+      options: FindOneOptions<QuestionnaireInstance>
+    ): Promise<QuestionnaireInstance[]> {
+      addQuestionnaireRelations(options);
+      return this.find(options);
+    },
+
+    async findOneWithAllConditionRelations(
+      options: FindOneOptions<QuestionnaireInstance>
+    ): Promise<QuestionnaireInstance | null> {
+      addQuestionnaireRelations(options);
+      addRelationsToEvaluateConditions(options);
+
+      return this.findOne(options);
+    },
+  });

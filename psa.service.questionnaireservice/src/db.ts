@@ -5,12 +5,7 @@
  */
 
 import 'reflect-metadata';
-import {
-  Connection,
-  ConnectionNotFoundError,
-  createConnections,
-  getConnection,
-} from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import { config } from './config';
 import pgPromise, { IDatabase } from 'pg-promise';
 import {
@@ -21,13 +16,11 @@ import {
 } from '@pia/lib-service-core';
 import { QuestionnaireInstance } from './entities/questionnaireInstance';
 import { Questionnaire } from './entities/questionnaire';
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { Question } from './entities/question';
 import { AnswerOption } from './entities/answerOption';
 import { Condition } from './entities/condition';
 import { Answer } from './entities/answer';
 import util from 'util';
-import { ConnectionOptions } from 'typeorm/connection/ConnectionOptions';
 import { UserFile } from './entities/userFile';
 import { RenameLabelToVariableName1668436755983 } from './migrations/1668436755983-RenameLabelToVariableName';
 import { AddCustomName1705593083327 } from './migrations/1705593083327-AddCustomName';
@@ -38,6 +31,7 @@ import { CreateQuestionnaireInstanceOrigins1723188490598 } from './migrations/17
 import { QuestionnaireInstanceOrigin } from './entities/questionnaireInstanceOrigin';
 import { QuestionnaireInstanceQueue } from './entities/questionnaireInstanceQueue';
 import { AddUseAutocompleteToAnswerOptions1721410716900 } from './migrations/1721410716900-AddUseAutocompleteToAnswerOptions';
+import { SnakeNamingStrategyWithPlural } from './util/snakeNamingStrategyWithPlural';
 
 const pgp = pgPromise({ capSQL: true, noLocking: config.isTestMode });
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -51,32 +45,17 @@ export const runTransaction: TransactionRunnerFn = createTransactionRunner(db);
 export const getDbTransactionFromOptionsOrDbConnection: DbConnectionGetterFn =
   RepositoryHelper.createDbConnectionGetter(db);
 
-export class SnakeNamingStrategyWithPlural extends SnakeNamingStrategy {
-  public tableName(className: string, customName: string): string {
-    const snakeName = super.tableName(className, customName);
-    if (customName) {
-      return snakeName;
-    } else if (snakeName.endsWith('y')) {
-      return snakeName.substring(0, snakeName.length - 1) + 'ies';
-    } else if (snakeName.endsWith('s')) {
-      return snakeName + 'es';
-    } else return snakeName + 's';
-  }
-}
-
-const exportPoolConnectionName = 'export-pool';
-
-export const getExportPoolConnection = (): Connection => {
-  return getConnection(exportPoolConnectionName);
-};
-
-const typeOrmOptions: ConnectionOptions = {
+export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
   host: config.database.host,
   port: config.database.port,
   username: config.database.user,
   password: config.database.password,
   database: config.database.database,
+  namingStrategy: new SnakeNamingStrategyWithPlural(),
+  synchronize: false,
+  migrationsRun: true,
+  logging: false,
   entities: [
     QuestionnaireInstanceQueue,
     QuestionnaireInstanceOrigin,
@@ -88,9 +67,6 @@ const typeOrmOptions: ConnectionOptions = {
     Answer,
     UserFile,
   ],
-  namingStrategy: new SnakeNamingStrategyWithPlural(),
-  synchronize: false,
-  migrationsRun: true,
   migrations: [
     RenameLabelToVariableName1668436755983,
     AddCustomName1705593083327,
@@ -100,50 +76,78 @@ const typeOrmOptions: ConnectionOptions = {
     AddUseAutocompleteToAnswerOptions1721410716900,
     CreateQuestionnaireInstanceOrigins1723188490598,
   ],
-  logging: false,
-  extra: { poolSize: 100 },
 };
+
+export const dataSource = new DataSource({
+  ...dataSourceOptions,
+  name: 'default',
+  poolSize: 10,
+  applicationName: 'questionnaireservice-default',
+  extra: {
+    poolSize: 10,
+    options: `-c statement_timeout=${defaultStatementTimeout}ms`,
+  },
+});
+export const dataSourceExport = new DataSource({
+  ...dataSourceOptions,
+  name: 'export-pool',
+  poolSize: 10,
+  applicationName: 'questionnaireservice-export',
+  migrationsRun: false,
+  extra: {
+    poolSize: 50,
+    options: `-c statement_timeout=${defaultStatementTimeout}ms`,
+  },
+});
+
+let singleDatasourceConnection: Promise<void> | undefined;
 
 export async function connectDatabase(
   retryCount = 24,
   delay = 1000
-): Promise<Connection[]> {
-  const sleep = util.promisify(setTimeout);
-  if (retryCount <= 0) throw new Error('retryCount must be greater than 0');
-  // try to get existing connection
-  try {
-    return [getConnection(), getExportPoolConnection()];
-  } catch (e) {
-    if (!(e instanceof ConnectionNotFoundError)) throw e;
+): Promise<void> {
+  if (!singleDatasourceConnection) {
+    singleDatasourceConnection = connectDataSource(retryCount, delay);
   }
-  // if no connection found try to connect
-  for (let i = 0; i <= retryCount; i++) {
-    try {
-      return await createConnections([
-        {
-          ...typeOrmOptions,
-          name: 'default',
-          extra: {
-            poolSize: 10,
-            options: `-c statement_timeout=${defaultStatementTimeout}ms`,
-          },
-        },
-        {
-          ...typeOrmOptions,
-          name: exportPoolConnectionName,
-          extra: {
-            poolSize: 50,
-            options: `-c statement_timeout=${defaultStatementTimeout}ms`,
-          },
-        },
-      ]);
-    } catch (err) {
-      console.log(err);
+  return singleDatasourceConnection;
+}
+
+async function connectDataSource(retryCount = 24, delay = 1000): Promise<void> {
+  const sleep = util.promisify(setTimeout);
+  const ignoredErrorCodes = [
+    'ECONNREFUSED',
+    '57P03', // "Could not start the server: error: the database system is starting up"
+  ];
+
+  if (retryCount <= 0) throw new Error('retryCount must be greater than 0');
+  for (
+    let i = 0;
+    i <= retryCount &&
+    (!dataSource.isInitialized || !dataSourceExport.isInitialized);
+    i++
+  ) {
+    if (i !== 0) {
       console.log(
         `Database is not yet available. Waiting for ${delay} ms before next retry.`
       );
-      if (i < retryCount) await sleep(delay);
+      await sleep(delay);
+    }
+    try {
+      await Promise.all([
+        !dataSource.isInitialized ? dataSource.initialize() : dataSource,
+        !dataSourceExport.isInitialized
+          ? dataSourceExport.initialize()
+          : dataSourceExport,
+      ]);
+    } catch (e: unknown) {
+      const errorCode = ((e ?? {}) as { code?: string }).code;
+      if (errorCode && ignoredErrorCodes.includes(errorCode)) {
+        continue;
+      }
+      console.warn(e);
     }
   }
-  throw new Error(`Could not reach database after ${retryCount} retries`);
+  if (!dataSource.isInitialized || !dataSourceExport.isInitialized) {
+    throw new Error(`Could not reach database after ${retryCount} retries`);
+  }
 }

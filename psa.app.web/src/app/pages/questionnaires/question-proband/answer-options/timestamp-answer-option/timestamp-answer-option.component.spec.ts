@@ -5,9 +5,7 @@
  */
 
 import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
-import { QuestionProbandComponent } from '../../question-proband.component';
 import { AppModule } from '../../../../../app.module';
-import { fakeAsync, tick } from '@angular/core/testing';
 import { TimestampAnswerOptionComponent } from './timestamp-answer-option.component';
 import { By } from '@angular/platform-browser';
 

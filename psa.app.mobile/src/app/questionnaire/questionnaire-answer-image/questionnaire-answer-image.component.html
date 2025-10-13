@@ -51,14 +51,6 @@
   <ion-icon slot="icon-only" name="camera"></ion-icon>
 </ion-button>
 <ion-button
-  type="button"
-  [disabled]="disabled"
-  (click)="onOpenChooser()"
-  data-unit="on-open-chooser"
->
-  <ion-icon slot="icon-only" name="folder"></ion-icon>
-</ion-button>
-<ion-button
   *ngIf="imageName"
   type="button"
   [disabled]="disabled"

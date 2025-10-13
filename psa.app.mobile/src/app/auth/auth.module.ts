@@ -14,8 +14,6 @@ import { LoginPage } from './login/login.page';
 import { AuthRoutingModule } from './auth-routing.module';
 import { SharedModule } from '../shared/shared.module';
 import { InputPasswordComponent } from './input-password/input-password.component';
-import { Market } from '@awesome-cordova-plugins/market/ngx';
-import { AppVersion } from '@awesome-cordova-plugins/app-version/ngx';
 import { LoginUsernameComponent } from './login-username/login-username.component';
 
 @NgModule({
@@ -29,6 +27,6 @@ import { LoginUsernameComponent } from './login-username/login-username.componen
     ReactiveFormsModule,
   ],
   declarations: [LoginPage, InputPasswordComponent, LoginUsernameComponent],
-  providers: [Market, AppVersion],
+  providers: [],
 })
 export class AuthModule {}

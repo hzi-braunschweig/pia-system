@@ -33,10 +33,7 @@ const conf = {
         GlobalConfig.authserver.adminTokenIntrospectionClient,
     },
   },
-  notificationTime: {
-    hours: 8, // in the time zone configured above
-    minutes: 0,
-  },
+  notificationTime: GlobalConfig.getNotificationTime(),
 };
 
 export const config: SupersetOfServiceConfig<typeof conf> = conf;

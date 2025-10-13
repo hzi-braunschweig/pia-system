@@ -20,7 +20,7 @@ export class NotificationService {
 
   constructor(public http: HttpClient) {}
 
-  postFCMToken(token): Promise<string> {
+  async postFCMToken(token): Promise<string> {
     return this.http
       .post<string>(this.apiUrl + 'fcmToken', { fcm_token: token })
       .toPromise();
@@ -30,13 +30,13 @@ export class NotificationService {
    * Sends a mail to multiple probands. Returns a list of mail addresses to which
    * the mail was successfully sent.
    */
-  sendEmail(email: EmailRequest): Promise<EmailRecipient[]> {
+  async sendEmail(email: EmailRequest): Promise<EmailRecipient[]> {
     return this.http
       .post<EmailRecipient[]>(this.apiUrl + 'email', email)
       .toPromise();
   }
 
-  sendNotification(
+  async sendNotification(
     notification: NotificationCreationRequest
   ): Promise<NotificationCreationResponse> {
     return this.http
@@ -47,7 +47,7 @@ export class NotificationService {
       .toPromise();
   }
 
-  getNotificationById(id): Promise<NotificationDto> {
+  async getNotificationById(id): Promise<NotificationDto> {
     return this.http
       .get<NotificationDto>(this.apiUrl + 'notification/' + id)
       .toPromise();

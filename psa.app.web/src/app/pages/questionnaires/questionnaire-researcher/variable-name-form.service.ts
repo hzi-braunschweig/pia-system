@@ -20,7 +20,7 @@ import { AnswerType } from '../../../psa.app.core/models/answerType';
 
 @Injectable()
 export class VariableNameFormService implements OnDestroy {
-  private stopSubscriptions = new Subject<void>();
+  private readonly stopSubscriptions = new Subject<void>();
 
   initVariableNameWarning(
     form: FormGroup<QuestionnaireForm>,

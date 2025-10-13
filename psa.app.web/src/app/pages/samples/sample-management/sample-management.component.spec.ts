@@ -151,7 +151,9 @@ describe('SampleManagementComponent', () => {
 
     for (const test of fixture) {
       const [id, expectation] = test;
-      it(`should ${expectation === null ? 'allow' : 'disallow'} ${id}`, () => {
+      it(`should ${expectation === null ? 'allow' : 'disallow'} ${
+        id as string
+      }`, () => {
         expect(component.validateSampleID(new FormControl(id))).toEqual(
           expectation
         );

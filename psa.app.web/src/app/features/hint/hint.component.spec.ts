@@ -12,11 +12,11 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-test',
   template: '<app-hint>This is the hint</app-hint>',
+  standalone: false,
 })
 class TestComponent {}
 
 describe('HintComponent', () => {
-  let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
 
   beforeEach(async () => {
@@ -26,7 +26,7 @@ describe('HintComponent', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestComponent);
-    component = fixture.componentInstance;
+    fixture.componentInstance;
     fixture.detectChanges();
   });
 

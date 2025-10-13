@@ -16,23 +16,25 @@ import { Missing } from '../../models/missing';
 import { QuestionMetaInfo } from '../../models/export/questionMetaInfo';
 import { ConditionChecker } from '../conditionChecker';
 import { ConditionType, DbCondition } from '../../models/condition';
-import { getRepository } from 'typeorm';
 import { Answer } from '../../entities/answer';
 import { AnswerOption } from '../../entities/answerOption';
 import { QuestionnaireInstance } from '../../entities/questionnaireInstance';
-import { DbQuestionnaireInstance } from '../../models/questionnaireInstance';
 import { SingleSelectMetaInfo } from '../../models/export/singleSelectMetaInfo';
 import { MultiSelectMetaInfo } from '../../models/export/multiSelectMetaInfo';
 import { SampleIdMetaInfo } from '../../models/export/sampleIdMetaInfo';
 import { ColumnMetaInfo } from '../../models/export/columnMetaInfo';
 import { ColumnMetaConditions } from '../../models/export/sharedColumnMetaInfo';
+import { QuestionnaireInstanceOrigin } from '../../entities/questionnaireInstanceOrigin';
+import { dataSource } from '../../db';
+import { In, IsNull } from 'typeorm';
+import { assert } from 'ts-essentials';
 
 export class AnswersTransform extends CsvTransform<
   AnswerExportDbRow,
   CsvAnswerRow
 > {
-  public readonly conditionCache = new Map<string, boolean>();
   public readonly fileIds = new Set<number>();
+  private readonly conditionCache = new Map<string, ConditionCheckResult>();
   private readonly baseRow: CsvAnswerRow;
   private readonly releasedStatuses: QuestionnaireInstanceStatus[] = [
     'released',
@@ -86,12 +88,24 @@ export class AnswersTransform extends CsvTransform<
       return this.createColumns(() => Missing.NotReleased);
     }
 
-    const rowConditionWasUnmet =
-      this.hasCondition(this.metaInfo) &&
-      !(await this.wasConditionMet(row, this.metaInfo.condition));
+    if (this.hasCondition(this.metaInfo)) {
+      const conditionCheckResult = await this.wasConditionMet(
+        row,
+        this.metaInfo.condition
+      );
 
-    if (rowConditionWasUnmet) {
-      return this.createColumns(() => Missing.NotApplicable);
+      // former data (before release 1.39.0) does not contain the origin relation
+      // therefore, the origin instance cannot be determined
+      if (conditionCheckResult.showErrorForOriginRelationNotFound) {
+        return this.createColumns(
+          async (columnMeta: ColumnMeta) =>
+            await this.getValue(columnMeta, row, { showError: true })
+        );
+      }
+
+      if (!conditionCheckResult.wasConditionMet) {
+        return this.createColumns(() => Missing.NotApplicable);
+      }
     }
 
     return this.createColumns(async (columnMeta: ColumnMeta) =>
@@ -105,21 +119,31 @@ export class AnswersTransform extends CsvTransform<
       | SingleSelectMetaInfo
       | MultiSelectMetaInfo
       | SampleIdMetaInfo,
-    row: AnswerExportDbRow
+    row: AnswerExportDbRow,
+    options?: { showError?: boolean }
   ): Promise<string | null> {
-    if (
-      this.hasCondition(columnMeta) &&
-      !(await this.wereConditionsMet(row, columnMeta.conditions))
-    ) {
-      return Missing.NotApplicable;
+    let showError = options?.showError ?? false;
+
+    if (this.hasCondition(columnMeta)) {
+      const conditionCheckResult = await this.wereConditionsMet(
+        row,
+        columnMeta.conditions
+      );
+
+      if (conditionCheckResult.showErrorForOriginRelationNotFound) {
+        showError = true;
+      } else if (!conditionCheckResult.wasConditionMet) {
+        return Missing.NotApplicable;
+      }
     }
 
     const answer = this.getAnswer(row, columnMeta.answerOptionId);
 
-    return (
+    const value =
       this.transformValueFromAnswer(columnMeta, answer) ??
-      (await this.determineMissing(row, columnMeta))
-    );
+      (await this.determineMissing(row, columnMeta));
+
+    return showError ? `Error (value: ${value})` : value;
   }
 
   private transformValueFromAnswer(
@@ -230,10 +254,22 @@ export class AnswersTransform extends CsvTransform<
     row: AnswerExportDbRow,
     columnMeta: ColumnMeta
   ): Promise<Missing> {
-    if (
-      this.hasCondition(columnMeta) &&
-      !(await this.wereConditionsMet(row, columnMeta.conditions))
-    ) {
+    let missingDueToConditionNotMet = false;
+    if (this.hasCondition(columnMeta)) {
+      const wereConditionsMet = await this.wereConditionsMet(
+        row,
+        columnMeta.conditions
+      );
+
+      if (
+        !wereConditionsMet.showErrorForOriginRelationNotFound &&
+        !wereConditionsMet.wasConditionMet
+      ) {
+        missingDueToConditionNotMet = true;
+      }
+    }
+
+    if (missingDueToConditionNotMet) {
       if (!columnMeta.isMandatory) {
         return Missing.Unobtainable;
       }
@@ -251,9 +287,12 @@ export class AnswersTransform extends CsvTransform<
   private async wereConditionsMet(
     row: AnswerExportDbRow,
     conditions: ColumnMetaConditions
-  ): Promise<boolean> {
+  ): Promise<ConditionCheckResult> {
     // No condition means an answer value could be available
-    let result = true;
+    let result: ConditionCheckResult = {
+      wasConditionMet: true,
+      showErrorForOriginRelationNotFound: false,
+    };
 
     // We first check for conditions on our question because they have
     // higher precedence when evaluating to FALSE
@@ -261,12 +300,20 @@ export class AnswersTransform extends CsvTransform<
       result = await this.wasConditionMet(row, conditions.question);
     }
 
-    // If a condition on a question was not given or evaluated to TRUE (result = true),
+    if (result.showErrorForOriginRelationNotFound) {
+      return result;
+    }
+    // If a condition on a question was not given or evaluated to TRUE (result.wasConditionMet = true),
     // we need to check if any condition on our answer option is FALSE.
     // Else we can skip checking the answerOption as a FALSE question condition should
     // overrule it.
-    if (result && conditions.answerOption) {
-      result = await this.wasConditionMet(row, conditions.answerOption);
+    if (result.wasConditionMet && conditions.answerOption) {
+      const resultForAnswerOption = await this.wasConditionMet(
+        row,
+        conditions.answerOption
+      );
+
+      return resultForAnswerOption;
     }
 
     return result;
@@ -275,9 +322,9 @@ export class AnswersTransform extends CsvTransform<
   private async wasConditionMet(
     row: AnswerExportDbRow,
     condition: DbCondition | null
-  ): Promise<boolean> {
+  ): Promise<ConditionCheckResult> {
     if (!condition?.condition_target_answer_option) {
-      return false;
+      return condictionNotMetForValidReasons();
     }
 
     const conditionKey = JSON.stringify(condition);
@@ -288,15 +335,31 @@ export class AnswersTransform extends CsvTransform<
       return cache;
     }
 
-    let result = false;
+    let result: ConditionCheckResult = {
+      wasConditionMet: false,
+      showErrorForOriginRelationNotFound: false,
+    };
 
     if (condition.condition_type === ConditionType.INTERNAL_THIS) {
-      result = await this.wasInternalConditionMet(row, condition);
+      result = {
+        wasConditionMet: await this.wasInternalConditionMet(row, condition),
+        showErrorForOriginRelationNotFound: false,
+      };
     } else if (condition.condition_type === ConditionType.EXTERNAL) {
       result = await this.wasExternalConditionMet(row, condition);
     }
 
     this.conditionCache.set(cacheKey, result);
+
+    const conditionCacheEntriesLogThreshold = 100000;
+    if (
+      this.conditionCache.size > 0 &&
+      this.conditionCache.size % conditionCacheEntriesLogThreshold === 0
+    ) {
+      console.log(
+        `AnswersTransform: conditionCache containes ${this.conditionCache.size} entries`
+      );
+    }
 
     return result;
   }
@@ -329,23 +392,31 @@ export class AnswersTransform extends CsvTransform<
     const columnMeta = this.getColumnMeta(answerOptionId);
 
     // can the answer value be fetched or is not available due to a condition
-    if (
-      columnMeta &&
-      this.hasCondition(columnMeta) &&
-      !(await this.wereConditionsMet(row, columnMeta.conditions))
-    ) {
+    let answerNotAvailableDueToCondition = false;
+    if (columnMeta && this.hasCondition(columnMeta)) {
+      const wereConditionsMet = await this.wereConditionsMet(
+        row,
+        columnMeta.conditions
+      );
+
+      if (
+        !wereConditionsMet.showErrorForOriginRelationNotFound &&
+        !wereConditionsMet.wasConditionMet
+      ) {
+        answerNotAvailableDueToCondition = true;
+      }
+    }
+    if (answerNotAvailableDueToCondition) {
       return null;
     }
 
     return answer;
   }
 
-  private getAnswerVersion(
-    instance: Pick<DbQuestionnaireInstance, 'id' | 'status' | 'release_version'>
-  ): number | null {
+  private getAnswerVersion(instance: QuestionnaireInstance): number | null {
     switch (instance.status) {
       case 'released':
-        return instance.release_version;
+        return instance.releaseVersion;
       case 'released_once':
         return 1;
       case 'released_twice':
@@ -403,64 +474,109 @@ export class AnswersTransform extends CsvTransform<
   private async wasExternalConditionMet(
     row: AnswerExportDbRow,
     condition: DbCondition
-  ): Promise<boolean> {
+  ): Promise<ConditionCheckResult> {
     if (!condition.condition_target_answer_option) {
-      return false;
+      return condictionNotMetForValidReasons();
     }
 
-    const targetInstance = await getRepository(QuestionnaireInstance)
-      .createQueryBuilder('qi')
-      .select(['id', 'status', 'release_version'])
-      .where(
-        `
-        questionnaire_id = :questionnaire_id AND 
-        questionnaire_version = :questionnaire_version AND
-        user_id = :user_id AND
-        status IN ('released_twice', 'released_once', 'released')
-        `,
-        {
-          questionnaire_id: condition.condition_target_questionnaire,
-          questionnaire_version:
-            condition.condition_target_questionnaire_version,
-          user_id: row.participant,
-        }
-      )
-      .addOrderBy('cycle', 'DESC')
-      .getRawOne<{
-        id: number;
-        release_version: number;
-        status: 'released_twice' | 'released_once' | 'released';
-      }>();
+    const originRelation = await dataSource
+      .getRepository(QuestionnaireInstanceOrigin)
+      .findOne({
+        where: { createdInstance: { id: row.instance_id } },
+        relations: { originInstance: true },
+      });
+
+    let showErrorForOriginRelationNotFound = true;
+    let targetInstance: QuestionnaireInstance | null;
+
+    if (originRelation) {
+      showErrorForOriginRelationNotFound = false;
+
+      targetInstance = originRelation.originInstance;
+    } else {
+      assert(
+        condition.condition_target_questionnaire,
+        'condition_target_questionnaire is not set but required'
+      );
+      targetInstance = await dataSource
+        .getRepository(QuestionnaireInstance)
+        .findOne({
+          where: {
+            questionnaire: {
+              id: condition.condition_target_questionnaire,
+              version: condition.condition_target_questionnaire_version,
+            },
+            pseudonym: row.participant,
+            status: In(['released_twice', 'released_once', 'released']),
+          },
+          relations: { questionnaire: true },
+          order: {
+            cycle: 'DESC',
+          },
+        });
+
+      // non-cyclic target questionnaires do not necessarily need the QuestionnaireInstanceOrigin relation to resolve the origin
+      if (
+        targetInstance?.questionnaire?.cycleUnit === 'once' ||
+        targetInstance?.questionnaire?.cycleUnit === 'date'
+      ) {
+        showErrorForOriginRelationNotFound = false;
+      }
+    }
 
     if (!targetInstance) {
-      return false;
+      return condictionNotMetForValidReasons();
     }
 
-    const answerOption = await getRepository(AnswerOption).findOne(
-      condition.condition_target_answer_option
-    );
+    const answerOption = await dataSource
+      .getRepository(AnswerOption)
+      .findOne({ where: { id: condition.condition_target_answer_option } });
 
     if (!answerOption) {
-      return false;
+      return condictionNotMetForValidReasons();
     }
 
     const versioning = this.getAnswerVersion(targetInstance);
-    const answer = await getRepository(Answer).findOne({
+    const answer = await dataSource.getRepository(Answer).findOne({
       where: {
-        questionnaireInstance: targetInstance.id,
-        answerOption: answerOption.id,
-        versioning,
+        questionnaireInstanceId: targetInstance.id,
+        answerOptionId: answerOption.id,
+        versioning: versioning ?? IsNull(),
       },
     });
 
     if (!answer) {
-      return false;
+      return condictionNotMetForValidReasons();
     }
 
-    return ConditionChecker.isConditionMet(
+    if (showErrorForOriginRelationNotFound) {
+      return { showErrorForOriginRelationNotFound: true };
+    }
+
+    const wasConditionMet = ConditionChecker.isConditionMet(
       answer,
       condition,
       answerOption.answerTypeId
     );
+
+    return {
+      wasConditionMet,
+      showErrorForOriginRelationNotFound: false,
+    };
   }
+}
+
+type ConditionCheckResult =
+  | {
+      wasConditionMet: boolean;
+      showErrorForOriginRelationNotFound: false;
+    }
+  | {
+      showErrorForOriginRelationNotFound: true;
+    };
+function condictionNotMetForValidReasons(): ConditionCheckResult {
+  return {
+    wasConditionMet: false,
+    showErrorForOriginRelationNotFound: false,
+  };
 }

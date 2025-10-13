@@ -19,10 +19,7 @@ const conf = {
   isTestMode: ConfigUtils.getEnvVariable('IS_TEST_MODE', 'false') === 'true',
   timeZone: GlobalConfig.timeZone,
   // the configured time is relative to the configured timezone
-  notificationTime: {
-    hours: 8,
-    minutes: 0,
-  },
+  notificationTime: GlobalConfig.getNotificationTime(),
   servers: {
     messageQueue: GlobalConfig.getMessageQueue('analyzerservice'),
   },

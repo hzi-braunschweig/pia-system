@@ -27,7 +27,7 @@ export const availableExportKeys = [
   'readme',
 ] as const;
 
-export type AvailableExportKeys = typeof availableExportKeys[number];
+export type AvailableExportKeys = (typeof availableExportKeys)[number];
 
 export const availableExportFeatures = new Map<
   AvailableExportKeys,

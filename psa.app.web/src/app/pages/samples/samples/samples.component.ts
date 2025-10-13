@@ -59,6 +59,7 @@ interface LabResultRow extends LabResult {
       useClass: MatPaginatorIntlGerman,
     },
   ],
+  standalone: false,
 })
 export class SamplesComponent implements OnInit {
   public proband: Proband;
@@ -74,11 +75,11 @@ export class SamplesComponent implements OnInit {
   public disableScanSampleButton: boolean =
     this.route.snapshot.queryParamMap.get('deactivated') === 'true';
 
-  @ViewChild('title1', { static: true }) private title1: ElementRef;
-  @ViewChild('title2', { static: true }) private title2: ElementRef;
+  @ViewChild('title1', { static: true }) private readonly title1: ElementRef;
+  @ViewChild('title2', { static: true }) private readonly title2: ElementRef;
 
-  @ViewChild('paginator1') private paginator1: MatPaginator;
-  @ViewChild('paginator2') private paginator2: MatPaginator;
+  @ViewChild('paginator1') private readonly paginator1: MatPaginator;
+  @ViewChild('paginator2') private readonly paginator2: MatPaginator;
 
   public displayedColumnsPM = [
     'proben_id',
@@ -128,14 +129,14 @@ export class SamplesComponent implements OnInit {
 
   constructor(
     public readonly user: CurrentUser,
-    private dialog: MatDialog,
-    private route: ActivatedRoute,
-    private router: Router,
-    private alertService: AlertService,
-    private authService: AuthService,
-    private sampleTrackingService: SampleTrackingService,
-    private location: Location,
-    private userService: UserService
+    private readonly dialog: MatDialog,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly alertService: AlertService,
+    private readonly authService: AuthService,
+    private readonly sampleTrackingService: SampleTrackingService,
+    private readonly location: Location,
+    private readonly userService: UserService
   ) {}
 
   private static getTranslationStringForBloodSampleCarriedOut(
@@ -253,8 +254,7 @@ export class SamplesComponent implements OnInit {
               pendingDeletionObject &&
               pendingDeletionObject.requested_for === this.user.username
             ) {
-              (labResult as LabResultRow).pendingDeletionObject =
-                pendingDeletionObject;
+              labResult.pendingDeletionObject = pendingDeletionObject;
             }
           } else if (labResult.study_status === 'deleted') {
             labResult.study_status = 'STUDIES.STATUS_DELETED';
@@ -407,8 +407,8 @@ export class SamplesComponent implements OnInit {
         rowContent.sample_id,
         { blood_sample_carried_out: newStatus }
       );
-      rowContent.remark = res['remark'];
-      rowContent.blood_sample_carried_out = res['blood_sample_carried_out'];
+      rowContent.remark = res?.remark;
+      rowContent.blood_sample_carried_out = res?.blood_sample_carried_out;
     } catch (err) {
       if (err.status === 409) {
         await this.initBlutProbenTable();
@@ -436,8 +436,8 @@ export class SamplesComponent implements OnInit {
             blood_sample_carried_out: result ? rowContent.status : null,
           }
         );
-        rowContent.remark = res['remark'];
-        rowContent.status = res['blood_sample_carried_out'];
+        rowContent.remark = res.remark;
+        rowContent.status = res.blood_sample_carried_out;
       });
   }
 
@@ -495,7 +495,7 @@ export class SamplesComponent implements OnInit {
         })
         .afterClosed()
         .pipe(filter((result) => result === 'yes'))
-        .subscribe(() =>
+        .subscribe(async () =>
           this.sampleTrackingService.putLabResult(
             this.proband.pseudonym,
             row.id,

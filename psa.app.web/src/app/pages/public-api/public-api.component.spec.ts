@@ -31,7 +31,7 @@ describe('PublicApiComponent', () => {
   let publicApiService: SpyObj<PublicApiService>;
   let alertService: SpyObj<AlertService>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     afterClosedSubject = new Subject();
     dialog = createSpyObj<MatDialog>('MatDialog', ['open']);
     dialog.open.and.returnValue({

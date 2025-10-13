@@ -13,7 +13,7 @@ import { PendingPersonalDataDeletion } from '../../models/pendingPersonalDataDel
 export class PersonalDataService {
   private readonly apiUrl = 'api/v1/personal/';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
   /**
    * Get personal data for a proband with probandID

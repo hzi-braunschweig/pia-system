@@ -9,5 +9,6 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-dialog-delete-account-health-data-permission',
   templateUrl: './dialog-delete-account-health-data-permission.component.html',
+  standalone: false,
 })
 export class DialogDeleteAccountHealthDataPermissionComponent {}

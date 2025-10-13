@@ -20,7 +20,6 @@ import { WebappServer } from './pia/deployment/webappserver';
 import { UserService } from './pia/deployment/userservice';
 import { LoggingService } from './pia/deployment/loggingservice';
 import { PersonaldataService } from './pia/deployment/personaldataservice';
-import { ModysService } from './pia/deployment/modysservice';
 import { ComplianceService } from './pia/deployment/complianceservice';
 import { QuestionnaireService } from './pia/deployment/questionnaireservice';
 import { AuthEventProxy } from './pia/deployment/autheventproxy';
@@ -113,11 +112,6 @@ export class MainChart extends Chart {
       personalDataService.internalService.port
     );
 
-    const modysService = new ModysService(this, config, {
-      userService,
-      personalDataService,
-    });
-
     const complianceService = new ComplianceService(this, config, {
       userService,
       ewpiaService,
@@ -192,7 +186,6 @@ export class MainChart extends Chart {
       userService,
       loggingService,
       personalDataService,
-      modysService,
       complianceService,
       questionnaireService,
       analyzerService,
@@ -223,7 +216,6 @@ export class MainChart extends Chart {
       userService,
       loggingService,
       personalDataService,
-      modysService,
       complianceService,
       questionnaireService,
       analyzerService,

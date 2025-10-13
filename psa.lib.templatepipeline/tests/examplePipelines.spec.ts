@@ -58,7 +58,7 @@ describe('Example Pipelines', () => {
       .pipe(new HtmlSerializer())
       .pipe(new TemplateRenderer({ hello: 'Hello World' }))
       .pipe(new PdfGenerator({ path: './tests/reports/meine.pdf' })).pdf;
-    expect(pdf).to.be.an.instanceOf(Buffer);
+    expect(pdf).to.be.an.instanceOf(Uint8Array);
   }).timeout(generatePdfTestTimeout);
 
   it('should create a HTMLDocument', async () => {
@@ -71,7 +71,7 @@ describe('Example Pipelines', () => {
       .pipe(new HtmlSerializer())
       .pipe(new TemplateRenderer({ hello: 'Hello World' })).htmlText;
     expect(htmlText).to.equal(
-      `<h1 id="hello">Hello</h1>
+      `<h1>Hello</h1>
 <p><p>Hello World</p>
 Hallo <em>italic</em> World</p>
 `

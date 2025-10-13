@@ -45,12 +45,13 @@ interface StudyWithRegistrationUrl extends Study {
       useClass: MatPaginatorIntlGerman,
     },
   ],
+  standalone: false,
 })
 export class StudiesComponent implements OnInit {
   @ViewChild(MatPaginator, { static: true })
-  private paginator: MatPaginator;
+  private readonly paginator: MatPaginator;
   @ViewChild(MatSort, { static: true })
-  private sort: MatSort;
+  private readonly sort: MatSort;
 
   public displayedColumns = [
     'name',
@@ -149,14 +150,13 @@ export class StudiesComponent implements OnInit {
       );
 
       if (
-        correspondingStudy &&
-        correspondingStudy.pendingStudyChange &&
+        correspondingStudy?.pendingStudyChange &&
         correspondingStudy.pendingStudyChange.requested_for ===
           this.user.username
       ) {
         this.studyChangeService
           .reviewPendingStudyChange(correspondingStudy)
-          .subscribe(() => this.initTable());
+          .subscribe(async () => this.initTable());
       }
     }
   }
@@ -184,7 +184,7 @@ export class StudiesComponent implements OnInit {
   addOrEditStudy(studyName?: string): void {
     this.studyChangeService
       .changeStudyAsSysAdmin(studyName)
-      .subscribe(() => this.initTable());
+      .subscribe(async () => this.initTable());
   }
 
   openDialog(name: string, type: DeletionType): void {

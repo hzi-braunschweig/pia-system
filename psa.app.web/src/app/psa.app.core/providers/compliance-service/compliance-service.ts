@@ -23,9 +23,9 @@ import { Observable, firstValueFrom } from 'rxjs';
 export class ComplianceService {
   private readonly apiUrl = 'api/v1/compliance/';
 
-  constructor(private http: HttpClient) {}
+  constructor(private readonly http: HttpClient) {}
 
-  getInternalComplianceActive(studyName: string): Promise<boolean> {
+  async getInternalComplianceActive(studyName: string): Promise<boolean> {
     return this.http
       .get<boolean>(`${this.apiUrl}${studyName}/active`)
       .toPromise();
@@ -36,7 +36,7 @@ export class ComplianceService {
    * @param studyName the given study for which the text should be loaded
    * @returns a ComplianceText object with the text and the segmented text
    */
-  getComplianceText(studyName: string): Promise<ComplianceText> {
+  async getComplianceText(studyName: string): Promise<ComplianceText> {
     return this.http
       .get<ComplianceText>(`${this.apiUrl}${studyName}/text`)
       .toPromise();
@@ -47,7 +47,7 @@ export class ComplianceService {
    * @param studyName the given study for which the text should be loaded
    * @returns a ComplianceTextInEditMode with the role where it should be filled
    */
-  getComplianceTextForEditing(
+  async getComplianceTextForEditing(
     studyName: string
   ): Promise<ComplianceTextInEditMode> {
     return this.http
@@ -62,7 +62,7 @@ export class ComplianceService {
    * @returns a ComplianceText object with the text or (if the researcher calls the method)
    * a ComplianceTextInEditMode with the role where it should be filled
    */
-  updateComplianceText(
+  async updateComplianceText(
     studyName: string,
     complianceTextObject: ComplianceTextInEditMode
   ): Promise<ComplianceTextInEditMode> {
@@ -74,7 +74,9 @@ export class ComplianceService {
       .toPromise();
   }
 
-  getGenericFields(studyName: string): Promise<GenericFieldDescription[]> {
+  async getGenericFields(
+    studyName: string
+  ): Promise<GenericFieldDescription[]> {
     return this.http
       .get<GenericFieldDescription[]>(
         `${this.apiUrl}${studyName}/questionnaire-placeholder`
@@ -82,7 +84,7 @@ export class ComplianceService {
       .toPromise();
   }
 
-  addGenericField(
+  async addGenericField(
     studyName: string,
     placeholderObject: GenericFieldDescription
   ): Promise<GenericFieldDescription[]> {
@@ -99,7 +101,7 @@ export class ComplianceService {
    * @param studyName The name of the study for that complianceData are fetched
    * @param pseudonym The name of the user for that complianceData are fetched
    */
-  getComplianceAgreementForProband(
+  async getComplianceAgreementForProband(
     studyName: string,
     pseudonym: string
   ): Promise<ComplianceDataResponse> {
@@ -118,7 +120,7 @@ export class ComplianceService {
    * @param pseudonym The name of the user for that complianceData are changed
    * @param complianceData The new complianceData without a timestamp
    */
-  createComplianceAgreementForProband(
+  async createComplianceAgreementForProband(
     studyName: string,
     pseudonym: string,
     complianceData: ComplianceDataRequest
@@ -131,7 +133,7 @@ export class ComplianceService {
       .toPromise();
   }
 
-  isComplianceNeededForProband(
+  async isComplianceNeededForProband(
     studyName: string,
     pseudonym: string
   ): Promise<boolean> {
@@ -178,7 +180,7 @@ export class ComplianceService {
       });
   }
 
-  postComplianceTextPreview(text: string): Promise<TemplateSegment[]> {
+  async postComplianceTextPreview(text: string): Promise<TemplateSegment[]> {
     return this.http
       .post<TemplateSegment[]>(`${this.apiUrl}text/preview`, {
         compliance_text: text,
@@ -186,7 +188,7 @@ export class ComplianceService {
       .toPromise();
   }
 
-  getAllCompliancesForProfessional(): Promise<ComplianceAgreement[]> {
+  async getAllCompliancesForProfessional(): Promise<ComplianceAgreement[]> {
     return this.http
       .get<ComplianceAgreement[]>(`${this.apiUrl}agree/all`)
       .toPromise()
@@ -200,7 +202,7 @@ export class ComplianceService {
       });
   }
 
-  getComplianceAgreementById(
+  async getComplianceAgreementById(
     study: string,
     id: number
   ): Promise<ComplianceDataResponse> {

@@ -67,7 +67,7 @@ class PdfGeneratorService {
    * The main method of this module that creates a PDF
    * @param {Object} i18n
    * @param {Object} complianceAgree
-   * @return {Promise<Buffer>}
+   * @return {Promise<Uint8Array>}
    */
   static async createPdf(i18n, complianceAgree) {
     const transformedComplianceAgree =

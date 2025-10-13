@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { getRepository } from 'typeorm';
 import { AnswerOption } from '../entities/answerOption';
 import { QuestionnaireInstance } from '../entities/questionnaireInstance';
 import { UserFile } from '../entities/userFile';
 import { UserFileDto } from '../models/userFile';
+import { dataSource } from '../db';
 
 const mimeTypeMagicBase64Bytes = new Map<string, string>([
   ['application/pdf', 'JVBERi0'],
@@ -28,10 +28,10 @@ export class UserFileService {
       );
     }
 
-    const repository = getRepository(UserFile);
+    const repository = dataSource.getRepository(UserFile);
     const existingFile = await repository.findOne({
       where: {
-        questionnaireInstance,
+        questionnaireInstance: { id: questionnaireInstance.id },
         answerOption,
         userId: questionnaireInstance.pseudonym,
       },

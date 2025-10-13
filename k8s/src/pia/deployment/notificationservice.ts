@@ -7,12 +7,12 @@
 import { Construct } from 'constructs';
 import { Configuration } from '../../configuration';
 import { NodeJSService } from '../generic/nodejsservice';
-import { UserService } from './userservice';
-import { QPiaService } from '../stateful/qpiaservice';
 import { MessageQueue } from '../stateful/messagequeue';
+import { QPiaService } from '../stateful/qpiaservice';
 import { Authserver } from './authserver';
 import { PersonaldataService } from './personaldataservice';
 import { QuestionnaireService } from './questionnaireservice';
+import { UserService } from './userservice';
 
 export class NotificationService extends NodeJSService {
   public constructor(
@@ -84,6 +84,10 @@ export class NotificationService extends NodeJSService {
           configuration.variables.firebaseCredential.projectId,
         FIREBASE_CLIENT_EMAIL:
           configuration.variables.firebaseCredential.clientEmail,
+
+        NOTIFICATION_HOUR: configuration.variables.notificationTime.hours,
+        NOTIFICATION_MINUTE: configuration.variables.notificationTime.minutes,
+        HTTPS_PROXY: configuration.variables.httpsProxyUrl,
       },
       {
         // is currently not scalable because its using a scheduler and listening for db events

@@ -10,6 +10,7 @@ import { QuestionnaireStatus } from '../questionnaire.model';
 @Component({
   selector: 'app-questionnaire-progress-bar',
   templateUrl: './questionnaire-progress-bar.component.html',
+  standalone: false,
 })
 export class QuestionnaireProgressBarComponent {
   @Input()

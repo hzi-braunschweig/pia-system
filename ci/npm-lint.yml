@@ -8,6 +8,9 @@ lint:
     - .no-cpu-request
   stage: test
   image: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$FOLDER-npm-install:$IMAGE_ID
+  variables:
+    KUBERNETES_MEMORY_REQUEST: 2Gi # web app needs more memory
+    KUBERNETES_MEMORY_LIMIT: 2Gi
   script:
     - ln -s $NODE_PATH $FOLDER/node_modules
     - cd $FOLDER

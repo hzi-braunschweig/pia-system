@@ -40,6 +40,7 @@ describe('MailService', () => {
     };
     createTransportStub = sandbox
       .stub(nodemailer, 'createTransport')
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       .returns(transporter as Transporter);
     useStub.returns(transporter);
   });

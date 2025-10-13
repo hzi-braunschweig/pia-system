@@ -39,8 +39,8 @@ export class BloodSamplesExport extends AbstractExportFeature {
       ])
       .leftJoin('probands', 'p', 'bs.user_id = p.pseudonym')
       .where('bs.user_id IN (:...probands)', { probands })
-      .orderBy('bs.user_id')
-      .addOrderBy('bs.sample_id')
+      .orderBy('user_id')
+      .addOrderBy('sample_id')
       .stream();
   }
 }

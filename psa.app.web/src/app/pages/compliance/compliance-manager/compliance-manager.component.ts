@@ -27,6 +27,7 @@ import { FileDownloadService } from 'src/app/_services/file-download.service';
   selector: 'app-compliance-manager',
   templateUrl: './compliance-manager.component.html',
   styleUrls: ['./compliance-manager.component.scss'],
+  standalone: false,
 })
 export class ComplianceManagerComponent implements OnInit {
   constructor(
@@ -34,7 +35,7 @@ export class ComplianceManagerComponent implements OnInit {
     private readonly complianceService: ComplianceService,
     private readonly userService: UserService,
     private readonly alertService: AlertService,
-    private fileDownloadService: FileDownloadService
+    private readonly fileDownloadService: FileDownloadService
   ) {}
 
   @ViewChild(MatPaginator, { static: true })

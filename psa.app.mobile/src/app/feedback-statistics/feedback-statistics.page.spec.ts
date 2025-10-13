@@ -22,28 +22,25 @@ describe('FeedbackStatisticsPage', () => {
   let component: FeedbackStatisticsPage;
   let fixture: ComponentFixture<FeedbackStatisticsPage>;
 
-  beforeEach(
-    waitForAsync(() => {
-      TestBed.configureTestingModule({
-        declarations: [FeedbackStatisticsPage],
-        imports: [IonicModule.forRoot(), TranslateModule.forRoot()],
-        providers: [
-          {
-            provide: FeedbackStatisticClientService,
-            useValue: {
-              getFeedbackStatistics: () =>
-                defer(() => serviceFeedbackStatistics),
-            },
+  beforeEach(waitForAsync(() => {
+    TestBed.configureTestingModule({
+      declarations: [FeedbackStatisticsPage],
+      imports: [IonicModule.forRoot(), TranslateModule.forRoot()],
+      providers: [
+        {
+          provide: FeedbackStatisticClientService,
+          useValue: {
+            getFeedbackStatistics: () => defer(() => serviceFeedbackStatistics),
           },
-        ],
-        schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      }).compileComponents();
+        },
+      ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+    }).compileComponents();
 
-      fixture = TestBed.createComponent(FeedbackStatisticsPage);
-      component = fixture.componentInstance;
-      fixture.detectChanges();
-    })
-  );
+    fixture = TestBed.createComponent(FeedbackStatisticsPage);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
 
   it('should create', () => {
     expect(component).toBeTruthy();

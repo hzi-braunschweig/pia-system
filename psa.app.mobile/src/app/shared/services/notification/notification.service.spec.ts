@@ -6,7 +6,6 @@
 
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { FirebaseX } from '@awesome-cordova-plugins/firebase-x/ngx';
 import { Platform } from '@ionic/angular';
 import SpyObj = jasmine.SpyObj;
 
@@ -15,20 +14,21 @@ import { NotificationPresenterService } from './notification-presenter.service';
 import { NotificationClientService } from './notification-client.service';
 import { AuthService } from '../../../auth/auth.service';
 import { Subject } from 'rxjs';
+import { PushNotifications } from '@capacitor/push-notifications';
 
 describe('NotificationService', () => {
   let service: NotificationService;
 
   let notificationPresenter: SpyObj<NotificationPresenterService>;
   let notificationClient: SpyObj<NotificationClientService>;
-  let fcm: SpyObj<FirebaseX>;
   let platform: SpyObj<Platform>;
   let router: SpyObj<Router>;
   let auth: SpyObj<AuthService>;
 
-  let onTokenRefreshSubject: Subject<string>;
-  let onMessageReceivedSubject: Subject<any>;
   let isAuthenticatedSubject: Subject<boolean>;
+  let registrationCallback: any;
+  let pushNotificationActionPerformedCallback: any;
+  let removeListenerSpy: jasmine.Spy;
 
   beforeEach(() => {
     notificationPresenter = jasmine.createSpyObj(
@@ -39,23 +39,42 @@ describe('NotificationService', () => {
     notificationClient = jasmine.createSpyObj('NotificationClientService', [
       'postFCMToken',
     ]);
+    removeListenerSpy = jasmine.createSpy('remove');
 
-    fcm = jasmine.createSpyObj('FCM', [
-      'hasPermission',
-      'grantPermission',
-      'getToken',
-      'onTokenRefresh',
-      'onMessageReceived',
-      'unregister',
-    ]);
-    fcm.hasPermission.and.resolveTo(true);
-    fcm.grantPermission.and.resolveTo();
-    fcm.getToken.and.resolveTo('test.token');
-    onTokenRefreshSubject = new Subject<string>();
-    fcm.onTokenRefresh.and.returnValue(onTokenRefreshSubject.asObservable());
-    onMessageReceivedSubject = new Subject<any>();
-    fcm.onMessageReceived.and.returnValue(
-      onMessageReceivedSubject.asObservable()
+    spyOn(PushNotifications, 'checkPermissions').and.callThrough();
+    spyOn(PushNotifications, 'requestPermissions').and.callThrough();
+    spyOn(PushNotifications, 'register').and.callThrough();
+    spyOn(PushNotifications, 'unregister').and.callThrough();
+    spyOn(PushNotifications, 'removeAllListeners').and.callThrough();
+    spyOn(
+      PushNotifications,
+      'removeAllDeliveredNotifications'
+    ).and.callThrough();
+
+    spyOn(PushNotifications, 'addListener').and.callFake(
+      (
+        eventName:
+          | 'registration'
+          | 'registrationError'
+          | 'pushNotificationReceived'
+          | 'pushNotificationActionPerformed',
+        listenerFunc: (token: any) => void
+      ) => {
+        switch (eventName) {
+          case 'registration':
+            listenerFunc({ value: 'test.token' });
+            registrationCallback = listenerFunc;
+            break;
+
+          case 'pushNotificationActionPerformed':
+            pushNotificationActionPerformedCallback = listenerFunc;
+            break;
+        }
+
+        return Promise.resolve({
+          remove: removeListenerSpy,
+        });
+      }
     );
 
     platform = jasmine.createSpyObj('Platform', ['is']);
@@ -74,7 +93,6 @@ describe('NotificationService', () => {
           useValue: notificationPresenter,
         },
         { provide: NotificationClientService, useValue: notificationClient },
-        { provide: FirebaseX, useValue: fcm },
         { provide: Platform, useValue: platform },
         { provide: Router, useValue: router },
         { provide: AuthService, useValue: auth },
@@ -85,11 +103,13 @@ describe('NotificationService', () => {
 
   describe('initPushNotifications', () => {
     it('should ask for permission if not already granted', async () => {
-      fcm.hasPermission.and.resolveTo(false);
+      (PushNotifications.checkPermissions as jasmine.Spy).and.resolveTo({
+        receive: 'prompt',
+      });
 
       await service.initPushNotifications('test-1234');
 
-      expect(fcm.grantPermission).toHaveBeenCalled();
+      expect(PushNotifications.requestPermissions).toHaveBeenCalled();
     });
 
     it('send the current fcm token to the backend', async () => {
@@ -104,7 +124,7 @@ describe('NotificationService', () => {
       service.initPushNotifications('test-1234');
       tick();
 
-      onTokenRefreshSubject.next('new.token');
+      registrationCallback({ value: 'new.token' });
       tick();
 
       expect(notificationClient.postFCMToken).toHaveBeenCalledWith('new.token');
@@ -114,9 +134,8 @@ describe('NotificationService', () => {
       service.initPushNotifications('test-1234');
       tick();
 
-      onMessageReceivedSubject.next({
-        tap: true,
-        id: 'test-id',
+      pushNotificationActionPerformedCallback({
+        notification: { data: { id: 'test-id' } },
       });
       tick();
 
@@ -130,16 +149,19 @@ describe('NotificationService', () => {
       isAuthenticatedSubject.next(false);
       tick();
 
-      expect(fcm.unregister).toHaveBeenCalled();
+      expect(PushNotifications.unregister).toHaveBeenCalled();
+      expect(
+        PushNotifications.removeAllDeliveredNotifications
+      ).toHaveBeenCalled();
+      expect(PushNotifications.removeAllListeners).toHaveBeenCalled();
     }));
 
     it('should present undelivered messages', fakeAsync(() => {
       auth.isAuthenticated.and.returnValue(false);
       service.initPushNotifications('test-1234');
       tick();
-      onMessageReceivedSubject.next({
-        tap: true,
-        id: 'test-id',
+      pushNotificationActionPerformedCallback({
+        notification: { data: { id: 'test-id2' } },
       });
       tick();
 
@@ -148,7 +170,9 @@ describe('NotificationService', () => {
       service.initPushNotifications('test-1234');
       tick();
 
-      expect(notificationPresenter.present).toHaveBeenCalledOnceWith('test-id');
+      expect(notificationPresenter.present).toHaveBeenCalledOnceWith(
+        'test-id2'
+      );
     }));
   });
 });

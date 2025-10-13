@@ -6,44 +6,46 @@
 
 import {
   HttpErrorResponse,
-  HttpHandler,
+  HttpHandlerFn,
   HttpHeaders,
   HttpRequest,
   HttpResponse,
 } from '@angular/common/http';
+import { TestBed } from '@angular/core/testing';
+import { of } from 'rxjs/internal/observable/of';
+import { throwError } from 'rxjs';
 
 import {
-  HttpErrorInterceptor,
+  httpErrorInterceptor,
   ToastMsgNoInternet,
   ToastMsgUnknownError,
 } from './http-error-interceptor.service';
 import { NetworkService } from '../services/network/network.service';
 import { ToastPresenterService } from '../services/toast-presenter/toast-presenter.service';
-import { of } from 'rxjs/internal/observable/of';
-import { throwError } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
-import createSpyObj = jasmine.createSpyObj;
 
-describe('HttpErrorInterceptor', () => {
-  let interceptor: HttpErrorInterceptor;
+describe('httpErrorInterceptor', () => {
   let networkSpy: SpyObj<NetworkService>;
   let toastPresenterSpy: SpyObj<ToastPresenterService>;
-  let handlerSpy: SpyObj<HttpHandler>;
+  let next: jasmine.Spy<HttpHandlerFn>;
 
   beforeEach(() => {
-    handlerSpy = jasmine.createSpyObj<SpyObj<HttpHandler>>('HttpHandler', [
-      'handle',
+    networkSpy = jasmine.createSpyObj<NetworkService>('NetworkService', [
+      'isOffline',
     ]);
-
-    handlerSpy.handle.and.returnValue(of(new HttpResponse()));
-
-    networkSpy = createSpyObj<NetworkService>('NetworkService', ['isOffline']);
-    toastPresenterSpy = createSpyObj<ToastPresenterService>(
+    toastPresenterSpy = jasmine.createSpyObj<ToastPresenterService>(
       'ToastPresenterService',
       ['presentToast']
     );
 
-    interceptor = new HttpErrorInterceptor(networkSpy, toastPresenterSpy);
+    next = jasmine.createSpy().and.returnValue(of(new HttpResponse()));
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: NetworkService, useValue: networkSpy },
+        { provide: ToastPresenterService, useValue: toastPresenterSpy },
+      ],
+    });
   });
 
   it('should do nothing when no error occurred', (done) => {
@@ -51,10 +53,12 @@ describe('HttpErrorInterceptor', () => {
       headers: new HttpHeaders(),
     });
 
-    interceptor.intercept(request, handlerSpy).subscribe(() => {
-      expect(handlerSpy.handle).toHaveBeenCalledWith(request);
-      expect(toastPresenterSpy.presentToast).not.toHaveBeenCalled();
-      done();
+    TestBed.runInInjectionContext(() => {
+      httpErrorInterceptor(request, next).subscribe(() => {
+        expect(next).toHaveBeenCalledWith(request);
+        expect(toastPresenterSpy.presentToast).not.toHaveBeenCalled();
+        done();
+      });
     });
   });
 
@@ -72,26 +76,25 @@ describe('HttpErrorInterceptor', () => {
 
         networkSpy.isOffline.and.returnValue(networkIsOffline);
 
-        let error: HttpErrorResponse;
-
-        handlerSpy.handle.and.callFake((req) => {
-          error = new HttpErrorResponse({
-            status: errorCode,
-            url: req.url,
-            error: 'fake error message',
-          });
-          return throwError(error);
+        const error = new HttpErrorResponse({
+          status: errorCode,
+          url: request.url,
+          error: 'fake error message',
         });
 
-        interceptor.intercept(request, handlerSpy).subscribe({
-          error: (e) => {
-            expect(handlerSpy.handle).toHaveBeenCalledWith(request);
-            expect(toastPresenterSpy.presentToast).toHaveBeenCalledWith(
-              expectedErrormessage
-            );
-            expect(e).toEqual(error);
-            done();
-          },
+        next.and.returnValue(throwError(() => error));
+
+        TestBed.runInInjectionContext(() => {
+          httpErrorInterceptor(request, next).subscribe({
+            error: (e) => {
+              expect(next).toHaveBeenCalledWith(request);
+              expect(toastPresenterSpy.presentToast).toHaveBeenCalledWith(
+                expectedErrormessage
+              );
+              expect(e).toEqual(error);
+              done();
+            },
+          });
         });
       });
     }
@@ -103,24 +106,23 @@ describe('HttpErrorInterceptor', () => {
         headers: new HttpHeaders(),
       });
 
-      let error: HttpErrorResponse;
-
-      handlerSpy.handle.and.callFake((req) => {
-        error = new HttpErrorResponse({
-          status: errorCode,
-          url: req.url,
-          error: 'fake error message',
-        });
-        return throwError(error);
+      const error = new HttpErrorResponse({
+        status: errorCode,
+        url: request.url,
+        error: 'fake error message',
       });
 
-      interceptor.intercept(request, handlerSpy).subscribe({
-        error: (e) => {
-          expect(handlerSpy.handle).toHaveBeenCalledWith(request);
-          expect(toastPresenterSpy.presentToast).not.toHaveBeenCalled();
-          expect(e).toEqual(error);
-          done();
-        },
+      next.and.returnValue(throwError(() => error));
+
+      TestBed.runInInjectionContext(() => {
+        httpErrorInterceptor(request, next).subscribe({
+          error: (e) => {
+            expect(next).toHaveBeenCalledWith(request);
+            expect(toastPresenterSpy.presentToast).not.toHaveBeenCalled();
+            expect(e).toEqual(error);
+            done();
+          },
+        });
       });
     });
   }

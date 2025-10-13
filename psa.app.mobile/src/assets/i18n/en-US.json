@@ -32,10 +32,11 @@
       "CONTACT": "Contact",
       "STATISTICS": "Statistics"
     },
-    "TOAST_MSG_NO_INTERNET": "The page could not be loaded. Please check your internet connection.",
-    "TOAST_MSG_UNKNOWN_ERROR": "The page could not be loaded. An unknown error appeared.",
-    "CONFIRM_LOGOUT_TITLE": "Are you sure you want to log out?",
-    "CONFIRM_LOGOUT_MSG": "If you unsubscribe, you will receive no further notifications from PIA. If you only want to stop receiving notifications, you can do so in the notification settings of your device."
+    "TOAST_MSG_NO_INTERNET": "The request could not be processed. Please check your internet connection.",
+    "TOAST_MSG_UNKNOWN_ERROR": "The request could not be processed. An unknown error has occurred.",
+    "CONFIRM_LOGOUT_TITLE": "Do you really want to log out?",
+    "CONFIRM_LOGOUT_MSG": "If you unsubscribe, you will receive no further notifications from PIA. If you only want to stop receiving notifications, you can do so in the notification settings of your device.",
+    "LOGGING_OUT": "Logging out..."
   },
   "HOME": {
     "TITLE": "Home"
@@ -48,27 +49,27 @@
     "CONNECTING_TO_SERVER": "Connecting...",
     "ENTER_BACKEND_URL": "Enter URL",
     "GIVEN_BACKEND_URL_NOT_VALID": "The specified backend URL is invalid",
-    "ALERT_MSG_INCOMPATIBLE_APP_VERSION": "You are using an old app version. Please make sure that you have installed the newest version from the store.",
+    "ALERT_MSG_INCOMPATIBLE_APP_VERSION": "You are using an outdated app version. Please make sure that you install and use the latest version from the store.",
     "ALERT_BUTTON_LABEL_GO_TO_APP_STORE": "Reload"
   },
   "COMPLIANCE": {
     "TITLE": "Consent",
     "FIRSTNAME": "First name",
     "LASTNAME": "Last name",
-    "LOCATION": "City",
+    "LOCATION": "Location",
     "DOWNLOAD_PDF": "Download as PDF",
-    "BIRTHDATE": "Birthday",
+    "BIRTHDATE": "Date of birth",
     "DATE": "Date",
-    "MSG_COMPLIANCE_FILLED_BY_RESEARCH_TEAM": "For this study, there is neither a consent form that has already been filled out, nor one that needs to be filled out here.",
-    "MSG_APP_COMPLIANCE_NEEDED": "The approval of the App is required.",
-    "TOAST_MSG_FROM_NOT_COMPLETE": "Your formular data are incomplete.",
+    "MSG_COMPLIANCE_FILLED_BY_RESEARCH_TEAM": "A consent form must first be completed for this study. Please contact your study team.",
+    "MSG_APP_COMPLIANCE_NEEDED": "Consent to use the app is required.",
+    "TOAST_MSG_FROM_NOT_COMPLETE": "Your form data is not complete.",
     "TOAST_MSG_SUCCESSFULLY_SENT": "Your consent configuration was successfully saved."
   },
   "LAB_RESULT": {
     "TITLE": "Lab Results",
     "TAKEN": "Taken",
     "ANALYSED": "Analyzed",
-    "NO_RESULTS": "No results found"
+    "NO_RESULTS": "No lab results found"
   },
   "QUESTIONNAIRE_QUESTIONS": {
     "NUMERIC_INPUT_MSG_NUMBER_BETWEEN": "Please enter a value between {{restriction_min}} and {{restriction_max}}.",
@@ -84,12 +85,12 @@
     "SAMPLE_INPUT_SCAN_BARCODE": "Scan barcode",
     "CONFIRM": "Confirm",
     "TIME_INPUT_TIMESTAMP": "Time stamp",
-    "SAVE_LEAVE": "Save questionnaire and exit",
+    "SAVE_LEAVE": "Temporarily save and exit",
     "SUMMARY": "Summary",
-    "SUMMARY_SUBTITLE_IN_PROGRESS": "Please review the questionnaire and check if you answered all questions correctly and completely. If you want to make changes please navigate to the respective question by clicking the return button.",
+    "SUMMARY_SUBTITLE_IN_PROGRESS": "Please look through the questionnaire again and check whether you have answered all the questions completely and correctly. If you would like to make changes to your answers shown here, please navigate to the relevant question using the back button.",
     "SUMMARY_SUBTITLE_RELEASED": "This questionnaire was already completed and cannot be changed.",
     "NOT_ANSWERED": "Not answered",
-    "BACKTO_SUMMARY": "Back to the summary",
+    "BACKTO_SUMMARY": "Back to summary",
     "SHARE_CHANGES": "Notify changes (final)",
     "TOAST_MSG2": "Your answers could not be saved. Please check your internet connection.",
     "ALERT_SUBTITLE_PROBE_SENT": "Sample ID sent.",
@@ -97,10 +98,11 @@
     "ALERT_SUBTITLE_ANSWER_CURRENT_QUESTION": "Please answer the current question first",
     "ALERT_SUBTITLE_ANSWERS_SENT": "Your answers have now been sent.",
     "ALERT_SUBTITLE_SENT_LAST_TIME": "Your answers have now been sent for the last time.",
-    "NO_RESULTS": "No questionnaire found",
-    "UPLOADED_IMAGE_TOO_LARGE": "Only files up to 20MB in size can be uploaded. Please check your file size.",
-    "NO_IMAGE_UPLOAD": "No file uploaded yet.",
-    "AUTOCOMPLETE_PICK": "Pick one"
+    "NO_RESULTS": "No questionnaires found",
+    "UPLOADED_IMAGE_TOO_LARGE": "Only files with a size of up to 20MB can be uploaded. Please check your file size.",
+    "NO_IMAGE_UPLOAD": "No photo uploaded yet.",
+    "AUTOCOMPLETE_PICK": "Pick one",
+    "AUTOCOMPLETE_MULTISELECT_PICK": "Pick several"
   },
   "QUESTIONNAIRES": {
     "TITLE": "Overview",
@@ -110,8 +112,8 @@
   },
   "SETTINGS": {
     "TITLE": "Settings",
-    "MANAGE_PASSWORD": "Passwort und Kontozugriff verwalten",
-    "DELETE_ACCOUNT": "Account und persönliche Daten löschen",
+    "MANAGE_PASSWORD": "Manage password and account access",
+    "DELETE_ACCOUNT": "Delete account and personal data",
     "LICENSES": "Software Licenses",
     "GROUP_TITLE_ACCOUNT": "Account",
     "GROUP_TITLE_ABOUT": "About PIA"
@@ -125,27 +127,28 @@
     "TOAST_MSG_NEW_SET_REQUESTED": "New nasal swab kit has been successfully requested!"
   },
   "DELETE_ACCOUNT": {
-    "TITLE": "Account und persönliche Daten löschen",
-    "TITLE_SHORT": "Account löschen",
-    "TEXT_KEEP_STUDY_ANSWERS": "Sie möchten Ihren PIA Account dauerhaft löschen. Wollen Sie der Studie ermöglichen, Ihre bereits über PIA eingegebenen Fragebogenantworten weiterhin auszuwerten?",
-    "TEXT_DELETE": "Hiermit löschen Sie Ihren PIA Account und Ihre in PIA gespeicherten Kontaktdaten dauerhaft und unwiderruflich. Ihre bereits eingegebenen Fragebogenantworten bleiben erhalten. Sind Sie sich sicher?",
-    "TEXT_DELETE_INCLUDING_ANSWERS": "Hiermit löschen Sie Ihren PIA Account, Ihre in PIA gespeicherten Kontaktdaten und Fragenbogenantworten dauerhaft und unwiderruflich. Sind Sie sich sicher?",
-    "TEXT_CONFIRM": "Ihr Account und Ihre Daten wurden wie gewünscht gelöscht.",
-    "TEXT_ERROR": "Fehler beim Löschen Ihres PIA Accounts. Bitte wenden Sie sich an das Studienzentrum.",
-    "BUTTON_DELETE_NOW": "Jetzt löschen",
-    "BUTTON_ALLOW": "Ja, ermöglichen",
-    "BUTTON_DENY": "Nein, alles löschen",
-    "BUTTON_LOGOUT": "Zur Anmeldung"
+    "TITLE": "Delete account and personal data",
+    "TITLE_SHORT": "Delete account",
+    "TEXT_KEEP_STUDY_ANSWERS": "You intend to delete your PIA account permanently. Do you want to allow the study to continue evaluating your previously entered questionnaire responses?",
+    "TEXT_DELETE": "You hereby permanently and irrevocably delete your PIA account and your contact data stored in PIA. The questionnaire answers you have already entered will be retained. Are you sure?",
+    "TEXT_DELETE_INCLUDING_ANSWERS": "You hereby permanently and irrevocably delete your PIA account, your contact data stored in PIA and your questionnaire answers. Are you sure?",
+    "TEXT_CONFIRM": "Your account and your data have been deleted as requested.",
+    "TEXT_ERROR": "An error has occurred while deleting your PIA account. Please contact the study center.",
+    "BUTTON_DELETE_NOW": "Delete now",
+    "BUTTON_ALLOW": "Yes, allow",
+    "BUTTON_DENY": "No, delete everything",
+    "BUTTON_LOGOUT": "Go to sign-in"
   },
   "FEEDBACK_STATISTICS": {
     "TITLE": "Statistics",
     "READ_MORE": "Read more",
     "NO_CHARTS": "There are no statistics available yet. Check back at a later time.",
-    "NO_DATA": "The graphic is not yet available. Check back at a later time."
+    "NO_DATA": "The graphic is not yet available. Check back at a later time.",
+    "CAPTION": "Data status: {{updatedAt}} (This is not quality assured raw data)"
   },
   "CHARTS": {
     "FEEDBACK_STATISTIC": {
-      "RELATIVE_FREQUENCY": "Relative Häufigkeit",
+      "RELATIVE_FREQUENCY": "Relative frequency",
       "DAY": "Day",
       "WEEK": "Week",
       "MONTH": "Month",

@@ -20,8 +20,8 @@ import {
   login,
 } from '../../support/commands';
 import { CreateProbandRequest } from '../../../src/app/psa.app.core/models/proband';
+import short from 'short-uuid';
 
-const short = require('short-uuid');
 const translator = short();
 
 let study;
@@ -31,7 +31,6 @@ let study4;
 let someRandomAnotherStudy;
 let forscher;
 let proband: CreateProbandRequest;
-let proband2: CreateProbandRequest;
 let ut;
 let pm;
 const newPassword = ',dYv3zg;r:CB';
@@ -57,7 +56,6 @@ describe('Release Test, role: "Forscher", Consents', () => {
       ],
     };
     proband = generateRandomProbandForStudy();
-    proband2 = generateRandomProbandForStudy();
 
     ut = {
       username: `e2e-ut-${translator.new()}@testpia-app.de`,

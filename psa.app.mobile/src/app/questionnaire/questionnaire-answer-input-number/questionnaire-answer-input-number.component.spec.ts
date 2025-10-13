@@ -6,24 +6,18 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
-import { Keyboard } from '@awesome-cordova-plugins/keyboard/ngx';
 
 import { QuestionnaireAnswerInputNumberComponent } from './questionnaire-answer-input-number.component';
-import SpyObj = jasmine.SpyObj;
 
 describe('QuestionnaireAnswerInputNumberComponent', () => {
   let component: QuestionnaireAnswerInputNumberComponent;
   let fixture: ComponentFixture<QuestionnaireAnswerInputNumberComponent>;
 
-  let keyboard: SpyObj<Keyboard>;
-
   beforeEach(() => {
-    keyboard = jasmine.createSpyObj('Keyboard', ['hide']);
-
     TestBed.configureTestingModule({
       declarations: [QuestionnaireAnswerInputNumberComponent],
       imports: [IonicModule.forRoot()],
-      providers: [{ provide: Keyboard, useValue: keyboard }],
+      providers: [],
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuestionnaireAnswerInputNumberComponent);

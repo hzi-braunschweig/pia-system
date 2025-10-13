@@ -11,10 +11,13 @@ import {
   OneToMany,
   OneToOne,
   PrimaryColumn,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import {
+  CustomName,
   CycleUnit,
+  Publish,
   QuestionnaireDto,
   QuestionnaireType,
 } from '../models/questionnaire';
@@ -32,13 +35,13 @@ export class Questionnaire implements QuestionnaireDto {
   /**
    * @isInt
    */
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('identity') // even though we do not use IDENTITY, the internal custom pg trigger works like this
   public id!: number;
 
   /**
    * @isInt
    */
-  @PrimaryColumn()
+  @PrimaryColumn({ default: 1 })
   public version!: number;
 
   @Column({ type: 'varchar' })
@@ -48,7 +51,7 @@ export class Questionnaire implements QuestionnaireDto {
   public name!: string;
 
   @Column({ type: 'varchar', nullable: true })
-  public customName!: string | null;
+  public customName!: CustomName | null;
 
   /**
    * @isInt
@@ -135,7 +138,7 @@ export class Questionnaire implements QuestionnaireDto {
   public type!: QuestionnaireType | null;
 
   @Column({ type: 'varchar', nullable: true })
-  public publish!: string | null;
+  public publish!: Publish | null;
 
   @Column({ type: 'boolean', nullable: true })
   public notifyWhenNotFilled!: boolean | null;

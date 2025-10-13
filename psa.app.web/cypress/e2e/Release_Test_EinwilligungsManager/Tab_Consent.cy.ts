@@ -43,7 +43,6 @@ let forscher: ProfessionalUser;
 let proband: CreateProbandRequest;
 
 let ewCredentials: UserCredentials;
-let forscherCredentials: UserCredentials;
 let probandCredentials: UserCredentials;
 
 const probandConsent = {
@@ -97,13 +96,6 @@ describe('Release Test, role: "EinwilligungsManager", Consent', () => {
 
     cy.get<UserCredentials>('@ewCred').then((cred) => {
       ewCredentials = {
-        username: cred.username,
-        password: cred.password,
-      };
-    });
-
-    cy.get<UserCredentials>('@forscherCred').then((cred) => {
-      forscherCredentials = {
         username: cred.username,
         password: cred.password,
       };

@@ -11,6 +11,7 @@ import { Proband } from '../../../psa.app.core/models/proband';
 @Component({
   selector: 'app-dialog-edit-compliance',
   templateUrl: './dialog-edit-compliance.component.html',
+  standalone: false,
 })
 export class DialogEditComplianceComponent {
   constructor(

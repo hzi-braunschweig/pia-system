@@ -1,0 +1,2 @@
+docker:
+  dockerfile: ../docker-templates/nodejs/Dockerfile

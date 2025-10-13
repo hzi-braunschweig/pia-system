@@ -6,7 +6,6 @@ psa.app.mobile/platforms
 psa.app.mobile/plugins
 
 psa.app.web/dist
-psa.app.web/pacts
 psa.app.web/out-tsc
 
 psa.lib.templatepipeline/.local-chromium
@@ -14,6 +13,7 @@ psa.lib.templatepipeline/.local-chromium
 # Common Stuff
 **/.angular
 **/.gitignore
+**/node
 **/node_modules
 **/Dockerfile
 **/.dockerignore
@@ -28,7 +28,6 @@ psa.lib.templatepipeline/.local-chromium
 # Test
 **/e2e/
 **/tests/
-**/pacts/
 **/coverage/
 **/.nyc_output/
 **/logs/

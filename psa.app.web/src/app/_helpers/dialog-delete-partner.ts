@@ -6,12 +6,7 @@
 
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from 'src/app/psa.app.core/providers/auth-service/auth-service';
 import { PersonalDataService } from 'src/app/psa.app.core/providers/personaldata-service/personaldata-service';
 import { AlertService } from '../_services/alert.service';
@@ -88,13 +83,13 @@ export interface DialogDeletePartnerResult {
               <div *ngIf="data.usernames && data.usernames.sampleId">
                 {{
                   'DIALOG.DELETE_PARTNER_SAMPLE'
-                    | translate: { sampleId: data.usernames.sampleId }
+                    | translate : { sampleId: data.usernames.sampleId }
                 }}
               </div>
               <div *ngIf="data.usernames && data.usernames.studyName">
                 {{
                   'DIALOG.DELETE_PARTNER_STUDY'
-                    | translate: { studyName: data.usernames.studyName }
+                    | translate : { studyName: data.usernames.studyName }
                 }}
               </div>
             </mat-grid-tile>
@@ -135,7 +130,7 @@ export interface DialogDeletePartnerResult {
           "
         >
           {{
-            'DIALOG.ACCEPT_DELETE_PARTNER_PROBAND' | translate: data.usernames
+            'DIALOG.ACCEPT_DELETE_PARTNER_PROBAND' | translate : data.usernames
           }}
         </div>
         <div
@@ -147,15 +142,17 @@ export interface DialogDeletePartnerResult {
         >
           {{
             'DIALOG.ACCEPT_DELETE_PARTNER_PROBAND_CONTACT'
-              | translate: data.usernames
+              | translate : data.usernames
           }}
         </div>
         <div *ngIf="acceptDelete && data.usernames.studyName">
-          {{ 'DIALOG.ACCEPT_DELETE_PARTNER_STUDY' | translate: data.usernames }}
+          {{
+            'DIALOG.ACCEPT_DELETE_PARTNER_STUDY' | translate : data.usernames
+          }}
         </div>
         <div *ngIf="acceptDelete && data.usernames.sampleId">
           {{
-            'DIALOG.ACCEPT_DELETE_PARTNER_SAMPLE' | translate: data.usernames
+            'DIALOG.ACCEPT_DELETE_PARTNER_SAMPLE' | translate : data.usernames
           }}
         </div>
       </div>
@@ -186,6 +183,7 @@ export interface DialogDeletePartnerResult {
       </button>
     </mat-dialog-actions>
   `,
+  standalone: false,
 })
 export class DialogDeletePartnerComponent implements OnInit {
   usersWithSameRole: ProfessionalAccount[];
@@ -197,15 +195,14 @@ export class DialogDeletePartnerComponent implements OnInit {
   isLoading: boolean = false;
 
   constructor(
-    private formBuilder: FormBuilder,
     public dialogRef: MatDialogRef<
       DialogDeletePartnerComponent,
       DialogDeletePartnerResult
     >,
-    private authService: AuthService,
-    private userService: UserService,
-    private personalDataService: PersonalDataService,
-    private alertService: AlertService,
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+    private readonly personalDataService: PersonalDataService,
+    private readonly alertService: AlertService,
     @Inject(MAT_DIALOG_DATA) public data: DialogDeletePartnerData
   ) {
     dialogRef.disableClose = true;

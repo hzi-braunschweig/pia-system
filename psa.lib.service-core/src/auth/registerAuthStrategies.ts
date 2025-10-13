@@ -38,7 +38,11 @@ export async function registerAuthStrategies(
     return;
   }
 
-  const userInfo = ['username', 'studies'];
+  /**
+   * @see {CredentialsExtra}
+   * @see https://www.npmjs.com/package/hapi-auth-keycloak#plugin--strategy-options
+   */
+  const userInfo = ['username', 'studies', 'locale'];
   await server.register({ plugin: authKeycloak });
 
   if (authSettings.probandTokenIntrospectionClient) {

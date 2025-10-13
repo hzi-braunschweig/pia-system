@@ -13,6 +13,7 @@ import {
 @Component({
   selector: 'app-compliance-view-list',
   templateUrl: './compliance-view-list.component.html',
+  standalone: false,
 })
 export class ComplianceViewListComponent {
   @Input()

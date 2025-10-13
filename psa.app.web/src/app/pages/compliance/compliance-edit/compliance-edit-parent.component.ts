@@ -15,7 +15,10 @@ import { Component, DoCheck } from '@angular/core';
 import { ComplianceForStudyWrapper } from './complianceForStudyWrapper';
 import { ComplianceService } from '../../../psa.app.core/providers/compliance-service/compliance-service';
 
-@Component({ template: '' })
+@Component({
+  template: '',
+  standalone: false,
+})
 export abstract class ComplianceEditParentComponent implements DoCheck {
   public study: string;
 

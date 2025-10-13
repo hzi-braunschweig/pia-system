@@ -64,7 +64,7 @@ licenses for the Docker images used.
 
 Since the licensecollector uses the currently installed `node_modules`, you should make sure that all dependencies have
 been installed beforehand. Otherwise, there is a high risk that the collected data will be outdated.
-To do this, first run `npm ci` in the root directory and then run `./node_modules/.bin/lerna --ci`.
+To do this, first run `npm ci` in the root directory and then run `npx lerna bootstrap --ci`.
 
 To run the LicenceCollector, you can then execute `npm run build && npm run license` in this directory.
 

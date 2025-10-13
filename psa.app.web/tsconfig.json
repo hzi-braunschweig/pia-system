@@ -5,18 +5,27 @@
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
-    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "strictFunctionTypes": false, // set to true if possible
+    "useUnknownInCatchVariables": false, // set to true if possible
+    "noImplicitAny": false, // set to true if possible
+    "strictNullChecks": false, // set to true if possible
+    "strictPropertyInitialization": false, // set to true if possible - depends on strictNullChecks
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false, // set to true if possible
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
-    "downlevelIteration": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
     "target": "ES2022",
     "module": "es2020",
-    "lib": ["ES2023", "dom", "dom.iterable"],
+    "lib": ["ESNext", "dom", "dom.iterable"],
     "paths": {
       "swiper_angular": ["node_modules/swiper/angular"]
     },
@@ -27,5 +36,5 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true
   },
-  "exclude": ["cypress"]
+  "exclude": ["cypress", "cypress.config.ts"]
 }

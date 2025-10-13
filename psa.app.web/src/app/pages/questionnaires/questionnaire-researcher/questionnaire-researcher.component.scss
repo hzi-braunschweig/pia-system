@@ -7,7 +7,7 @@
 @use '@angular/material' as mat;
 @use 'custom-theme' as theme;
 
-$warning-color: mat.get-color-from-palette(mat.$yellow-palette, 500);
+$warning-color: mat.m2-get-color-from-palette(mat.$m2-yellow-palette, 500);
 
 /* Structure */
 .grid-container {
@@ -31,7 +31,7 @@ $warning-color: mat.get-color-from-palette(mat.$yellow-palette, 500);
 }
 
 .card-title {
-  @include mat.typography-level(theme.$typography, 'subtitle-1');
+  @include mat.m2-typography-level(theme.$typography, 'subtitle-1');
 }
 
 .checkbox {
@@ -151,10 +151,6 @@ form {
         &__warning {
           margin-bottom: 10px;
         }
-      }
-
-      .condition-postview {
-        font-size: 1em;
       }
 
       .mat-mdc-card {
@@ -340,10 +336,6 @@ form {
   :not(:first-child) {
     margin-left: 10px;
   }
-
-  #myFileInputField {
-    display: none;
-  }
 }
 
 .button-clear {
@@ -362,11 +354,6 @@ form {
   background-color: #d9ecf5;
   margin-right: 50px;
   margin-left: 10px;
-}
-
-.import-view {
-  pointer-events: none !important;
-  cursor: none !important;
 }
 
 .markdown-container {

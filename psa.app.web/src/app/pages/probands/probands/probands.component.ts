@@ -10,6 +10,7 @@ import { CurrentUser } from '../../../_services/current-user.service';
 @Component({
   templateUrl: 'probands.component.html',
   styleUrls: ['probands.component.scss'],
+  standalone: false,
 })
 export class ProbandsComponent {
   constructor(public user: CurrentUser) {}

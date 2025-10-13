@@ -58,8 +58,8 @@ export class LabResultsExport extends AbstractExportFeature {
       .andWhere('lr.user_id IN (:...probands)', { probands })
       .andWhere('lr.date_of_sampling >= :startDate', { startDate })
       .andWhere('lr.date_of_sampling <= :endDate', { endDate })
-      .orderBy('lo.lab_result_id')
-      .addOrderBy('lo.name_id')
+      .orderBy('lab_result_id')
+      .addOrderBy('name_id')
       .stream();
   }
 }

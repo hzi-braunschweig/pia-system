@@ -1,4 +1,4 @@
-import { AuthClientSettings, AuthSettings, Connection, DatabaseConnection, HttpConnection, MailserverConnection, MessageQueueConnection } from './configModel';
+import { AuthClientSettings, AuthSettings, Connection, DatabaseConnection, HttpConnection, MailserverConnection, MessageQueueConnection, NotificationTime } from './configModel';
 export declare class GlobalAuthSettings implements AuthSettings {
     static get keycloakHttpConnection(): HttpConnection;
     static get probandTokenIntrospectionClient(): AuthClientSettings;
@@ -15,6 +15,7 @@ export declare class GlobalConfig {
     static get userservice(): HttpConnection;
     static get sampletrackingservice(): HttpConnection;
     static get timeZone(): string;
+    static get proxyUrl(): string | undefined;
     static get mailserver(): MailserverConnection;
     static get probandAppUrl(): string;
     static get adminAppUrl(): string;
@@ -22,6 +23,7 @@ export declare class GlobalConfig {
     static getPublic(serviceName: string): Connection;
     static getQPia(): DatabaseConnection;
     static getMessageQueue(serviceName: string): MessageQueueConnection;
+    static getNotificationTime(): NotificationTime;
     static isDevelopmentSystem(): boolean;
     static isTest(): boolean;
     private static getHttpConnection;

@@ -5,16 +5,18 @@
  */
 
 import { TestBed } from '@angular/core/testing';
-import { GenericFieldDescription } from '../../models/compliance';
-import { SegmentType, TemplateSegment } from '../../models/Segments';
 import {
-  HttpClientTestingModule,
   HttpTestingController,
+  provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { UserService } from './user.service';
 import { StudyAccess } from '../../models/studyAccess';
 import { ProfessionalAccount } from '../../models/professionalAccount';
 import { Study } from '../../models/study';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('UserService', () => {
   let httpMock: HttpTestingController;
@@ -22,8 +24,12 @@ describe('UserService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [UserService],
-      imports: [HttpClientTestingModule],
+      imports: [],
+      providers: [
+        UserService,
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+      ],
     });
     httpMock = TestBed.inject(HttpTestingController);
     service = TestBed.inject(UserService);

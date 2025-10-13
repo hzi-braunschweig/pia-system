@@ -26,9 +26,6 @@
     </mat-card>
 
     <form class="form-container space-y" [formGroup]="myForm" novalidate>
-      <span *ngIf="isImportedQuestionnaire">{{
-        'QUESTIONNAIRE_FORSCHER.FIRST_SAVE_QUESTIONNAIRE' | translate
-      }}</span>
       <!-- questionnaire settings -->
       <mat-card class="utility-card">
         <mat-card-content>
@@ -156,7 +153,7 @@
         <mat-card-content>
           <div class="grid-container" style="--grid-template-columns-repeat: 1">
             <ng-container
-              *ngIf="myForm.controls['type'].value != 'for_research_team'"
+              *ngIf="myForm.controls['type'].value !== 'for_research_team'"
             >
               <div
                 class="grid-container responsive"
@@ -189,9 +186,9 @@
                 </mat-form-field>
                 <mat-form-field
                   *ngIf="
-                    myForm.controls['cycle_unit'].value != 'once' &&
-                    myForm.controls['cycle_unit'].value != 'date' &&
-                    myForm.controls['cycle_unit'].value != 'spontan'
+                    myForm.controls['cycle_unit'].value !== 'once' &&
+                    myForm.controls['cycle_unit'].value !== 'date' &&
+                    myForm.controls['cycle_unit'].value !== 'spontan'
                   "
                 >
                   <mat-label
@@ -211,7 +208,7 @@
                   </mat-error>
                 </mat-form-field>
                 <mat-form-field
-                  *ngIf="myForm.controls['cycle_unit'].value == 'date'"
+                  *ngIf="myForm.controls['cycle_unit'].value === 'date'"
                 >
                   <mat-label
                     >{{ 'QUESTIONNAIRE_FORSCHER.DATEPICKER' | translate }}
@@ -239,7 +236,7 @@
 
                 <!-- cycle per day and start hour controls, only if cycle_unit=hour -->
                 <ng-container
-                  *ngIf="myForm.controls['cycle_unit'].value == 'hour'"
+                  *ngIf="myForm.controls['cycle_unit'].value === 'hour'"
                 >
                   <mat-form-field>
                     <mat-label
@@ -299,7 +296,7 @@
                 style="--grid-template-columns-repeat: 4"
               >
                 <mat-form-field
-                  *ngIf="myForm.controls['cycle_unit'].value != 'date'"
+                  *ngIf="myForm.controls['cycle_unit'].value !== 'date'"
                 >
                   <mat-label
                     >{{
@@ -336,9 +333,9 @@
 
                 <mat-form-field
                   *ngIf="
-                    myForm.controls['cycle_unit'].value != 'once' &&
-                    myForm.controls['cycle_unit'].value != 'date' &&
-                    myForm.controls['cycle_unit'].value != 'spontan'
+                    myForm.controls['cycle_unit'].value !== 'once' &&
+                    myForm.controls['cycle_unit'].value !== 'date' &&
+                    myForm.controls['cycle_unit'].value !== 'spontan'
                   "
                 >
                   <mat-label
@@ -368,7 +365,7 @@
                   >
                     {{
                       'QUESTIONNAIRE_FORSCHER.DEACTIVE_AFTER_DAYS_MIN'
-                        | translate: translationData
+                        | translate : translationData
                     }}
                   </mat-error>
                 </mat-form-field>
@@ -378,12 +375,12 @@
                 >
                   {{
                     'QUESTIONNAIRE_FORSCHER.QUESTIONNAIRE_INSTANCE_COUNT_ERROR'
-                      | translate: translationData
+                      | translate : translationData
                   }}
                 </mat-error>
 
                 <mat-form-field
-                  *ngIf="myForm.controls['cycle_unit'].value != 'spontan'"
+                  *ngIf="myForm.controls['cycle_unit'].value !== 'spontan'"
                 >
                   <mat-label
                     >{{
@@ -460,7 +457,7 @@
                 {{ 'QUESTIONNAIRE_FORSCHER.COMPLIANCE_NEEDED' | translate }}
               </mat-checkbox>
               <mat-form-field
-                *ngIf="myForm.controls['type'].value != 'for_research_team'"
+                *ngIf="myForm.controls['type'].value !== 'for_research_team'"
               >
                 <mat-label
                   >{{ 'QUESTIONNAIRE_FORSCHER.PUBLISHINGSTATE' | translate }}
@@ -533,8 +530,8 @@
       <!-- notifications -->
       <mat-card
         *ngIf="
-          myForm.controls.type.value != 'for_research_team' &&
-          myForm.controls.cycle_unit.value != 'spontan'
+          myForm.controls.type.value !== 'for_research_team' &&
+          myForm.controls.cycle_unit.value !== 'spontan'
         "
         style="--grid-template-columns: 1fr"
         class="utility-card space-y"
@@ -578,8 +575,8 @@
             <mat-form-field
               *ngIf="
                 myForm.controls['notification_tries'].value > 0 &&
-                (myForm.controls['cycle_unit'].value == 'week' ||
-                  myForm.controls['cycle_unit'].value == 'month')
+                (myForm.controls['cycle_unit'].value === 'week' ||
+                  myForm.controls['cycle_unit'].value === 'month')
               "
             >
               <mat-label
@@ -631,11 +628,11 @@
             <ng-container
               *ngIf="
                 myForm.controls['notification_tries'].value > 1 &&
-                (myForm.controls['cycle_unit'].value == 'once' ||
-                  myForm.controls['cycle_unit'].value == 'hour' ||
-                  myForm.controls['cycle_unit'].value == 'day' ||
-                  myForm.controls['cycle_unit'].value == 'week' ||
-                  myForm.controls['cycle_unit'].value == 'month')
+                (myForm.controls['cycle_unit'].value === 'once' ||
+                  myForm.controls['cycle_unit'].value === 'hour' ||
+                  myForm.controls['cycle_unit'].value === 'day' ||
+                  myForm.controls['cycle_unit'].value === 'week' ||
+                  myForm.controls['cycle_unit'].value === 'month')
               "
             >
               <mat-form-field class="field">
@@ -675,9 +672,9 @@
                 >
                   <mat-option
                     *ngIf="
-                      myForm.controls['cycle_unit'].value == 'once' ||
-                      myForm.controls['cycle_unit'].value == 'week' ||
-                      myForm.controls['cycle_unit'].value == 'month'
+                      myForm.controls['cycle_unit'].value === 'once' ||
+                      myForm.controls['cycle_unit'].value === 'week' ||
+                      myForm.controls['cycle_unit'].value === 'month'
                     "
                     value="days"
                     data-e2e="option"
@@ -777,7 +774,7 @@
               >
                 {{
                   'QUESTIONNAIRE_FORSCHER.NOTIFICATION_BODY_IN_PROGRESS_REQUIRED'
-                    | translate: translationData
+                    | translate : translationData
                 }}
               </mat-error>
             </mat-form-field>
@@ -807,10 +804,7 @@
         </mat-card-content>
       </mat-card>
 
-      <mat-card
-        class="condition-questionnaire"
-        [ngClass]="{ 'import-view': isImportedQuestionnaire }"
-      >
+      <mat-card class="condition-questionnaire">
         <mat-card-header *ngIf="showQuestionnaireCondition">
           <mat-card-title>
             {{ 'QUESTIONNAIRE_FORSCHER.CONDITION' | translate }}
@@ -828,33 +822,6 @@
                   | translate
               }}</small>
             </mat-error>
-            <br />
-            <span *ngIf="currentQuestionnaire.condition_postview">
-              {{
-                currentQuestionnaire.condition_postview
-                  .condition_target_questionnaire_name
-              }}
-              &#8594;
-              {{
-                currentQuestionnaire.condition_postview
-                  .condition_target_question_text
-              }}
-              &#8594; UF{{
-                currentQuestionnaire.condition_postview
-                  .condition_target_answer_option_pos
-              }}
-              {{ currentQuestionnaire.condition_postview.condition_operand }}
-              {{ '{'
-              }}{{ currentQuestionnaire.condition_postview.condition_value
-              }}{{ '}' }}
-              <span
-                *ngIf="currentQuestionnaire.condition_postview.condition_link"
-              >
-                {{ '{'
-                }}{{ currentQuestionnaire.condition_postview.condition_link
-                }}{{ '}' }}
-              </span>
-            </span>
           </div>
           <div
             class="wrapping-flex-container questionnaire-conditions"
@@ -1206,7 +1173,6 @@
       <mat-card
         class="questions"
         formArrayName="questions"
-        [ngClass]="{ 'import-view': isImportedQuestionnaire }"
         data-e2e="question-list"
       >
         <mat-card-content>
@@ -1441,52 +1407,6 @@
                                 | translate
                             }}
                           </mat-error>
-                          <br />
-                          <span
-                            *ngIf="
-                              currentQuestionnaire.questions[i]
-                                .condition_postview
-                            "
-                            class="condition-postview"
-                          >
-                            {{
-                              currentQuestionnaire.questions[i]
-                                .condition_postview
-                                .condition_target_questionnaire_name
-                            }}
-                            &#8594;
-                            {{
-                              currentQuestionnaire.questions[i]
-                                .condition_postview
-                                .condition_target_question_text
-                            }}
-                            &#8594; UF{{
-                              currentQuestionnaire.questions[i]
-                                .condition_postview
-                                .condition_target_answer_option_pos
-                            }}
-                            {{
-                              currentQuestionnaire.questions[i]
-                                .condition_postview.condition_operand
-                            }}
-                            {{ '{'
-                            }}{{
-                              currentQuestionnaire.questions[i]
-                                .condition_postview.condition_value
-                            }}{{ '}' }}
-                            <span
-                              *ngIf="
-                                currentQuestionnaire.questions[i]
-                                  .condition_postview.condition_link
-                              "
-                            >
-                              {{ '{'
-                              }}{{
-                                currentQuestionnaire.questions[i]
-                                  .condition_postview.condition_link
-                              }}{{ '}' }}
-                            </span>
-                          </span>
                         </div>
                       </div>
                     </div>
@@ -1520,7 +1440,7 @@
                               myForm.dirty &&
                               question.controls['condition'].controls[
                                 'condition_type'
-                              ].value != 'external'
+                              ].value !== 'external'
                             "
                             >*
                             {{
@@ -2173,55 +2093,6 @@
                                         | translate
                                     }}
                                   </mat-error>
-                                  <br />
-                                  <span
-                                    *ngIf="
-                                      currentQuestionnaire.questions[i]
-                                        .answer_options[j].condition_postview
-                                    "
-                                  >
-                                    {{
-                                      currentQuestionnaire.questions[i]
-                                        .answer_options[j].condition_postview
-                                        .condition_target_questionnaire_name
-                                    }}
-                                    &#8594;
-                                    {{
-                                      currentQuestionnaire.questions[i]
-                                        .answer_options[j].condition_postview
-                                        .condition_target_question_text
-                                    }}
-                                    &#8594; UF{{
-                                      currentQuestionnaire.questions[i]
-                                        .answer_options[j].condition_postview
-                                        .condition_target_answer_option_pos
-                                    }}
-                                    {{
-                                      currentQuestionnaire.questions[i]
-                                        .answer_options[j].condition_postview
-                                        .condition_operand
-                                    }}
-                                    {{ '{'
-                                    }}{{
-                                      currentQuestionnaire.questions[i]
-                                        .answer_options[j].condition_postview
-                                        .condition_value
-                                    }}{{ '}' }}
-                                    <span
-                                      *ngIf="
-                                        currentQuestionnaire.questions[i]
-                                          .answer_options[j].condition_postview
-                                          .condition_link
-                                      "
-                                    >
-                                      {{ '{'
-                                      }}{{
-                                        currentQuestionnaire.questions[i]
-                                          .answer_options[j].condition_postview
-                                          .condition_link
-                                      }}{{ '}' }}
-                                    </span>
-                                  </span>
                                 </div>
                               </div>
 
@@ -2246,7 +2117,7 @@
                                         myForm.dirty &&
                                         answer.controls['condition'].controls[
                                           'condition_type'
-                                        ].value != 'external'
+                                        ].value !== 'external'
                                       "
                                       >*
                                       {{
@@ -2954,8 +2825,9 @@
                                     </div>
                                   </mat-form-field>
 
-                                  @if (answer.controls["answer_type_id"].value
-                                  === 1) {
+                                  @if
+                                  ([1,2].includes(answer.controls["answer_type_id"].value))
+                                  {
                                   <mat-checkbox
                                     class="checkbox-with-suffix"
                                     formControlName="use_autocomplete"
@@ -3500,24 +3372,6 @@
             >
               {{ 'GENERAL.EXPORT' | translate }}
             </button>
-            <button
-              id="importquestionnairebutton"
-              *ngIf="canImportQuestionnaire"
-              mat-raised-button
-              (click)="onClickImportFragebogen()"
-              type="button"
-              data-e2e="e2e-import-questionnaire-button"
-            >
-              {{ 'GENERAL.IMPORT' | translate }}
-            </button>
-
-            <!-- hidden input field to open file picker dialog -->
-            <input
-              type="file"
-              id="myFileInputField"
-              accept="application/json, .json"
-              data-e2e="e2e-file-input"
-            />
           </div>
         </mat-card-content>
       </mat-card>

@@ -31,6 +31,7 @@ export interface DialogConfirmPartialDeletionResult {
 @Component({
   selector: 'app-dialog-confirm-partial-deletion',
   templateUrl: 'dialog-confirm-partial-deletion.component.html',
+  standalone: false,
 })
 export class DialogConfirmPartialDeletionComponent {
   labResults: LabResult[] = [];
@@ -39,13 +40,13 @@ export class DialogConfirmPartialDeletionComponent {
   headerData: PartialDeletionViewHeaderData;
 
   constructor(
-    private questionnaireService: QuestionnaireService,
-    private authservice: AuthService,
-    private sampleTrackingService: SampleTrackingService,
-    private alertService: AlertService,
-    private datePipe: DatePipe,
-    private translate: TranslateService,
-    private dialogRef: MatDialogRef<
+    private readonly questionnaireService: QuestionnaireService,
+    private readonly authservice: AuthService,
+    private readonly sampleTrackingService: SampleTrackingService,
+    private readonly alertService: AlertService,
+    datePipe: DatePipe,
+    translate: TranslateService,
+    private readonly dialogRef: MatDialogRef<
       DialogConfirmPartialDeletionComponent,
       DialogConfirmPartialDeletionResult
     >,

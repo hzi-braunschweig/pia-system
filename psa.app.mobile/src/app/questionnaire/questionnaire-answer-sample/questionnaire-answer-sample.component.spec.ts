@@ -6,8 +6,6 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AlertController, IonicModule } from '@ionic/angular';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
-import { Keyboard } from '@awesome-cordova-plugins/keyboard/ngx';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { MockPipe } from 'ng-mocks';
 import SpyObj = jasmine.SpyObj;
@@ -21,20 +19,16 @@ describe('QuestionnaireAnswerSampleComponent', () => {
   let fixture: ComponentFixture<QuestionnaireAnswerSampleComponent>;
 
   let sampleTrackingClient: SpyObj<SampleTrackingClientService>;
-  let barcodeScanner: SpyObj<BarcodeScanner>;
   let alertCtrl: SpyObj<AlertController>;
   let translate: SpyObj<TranslateService>;
-  let keyboard: SpyObj<Keyboard>;
   let backButton: SpyObj<BackButtonService>;
 
   beforeEach(() => {
     sampleTrackingClient = jasmine.createSpyObj('SampleTrackingClientService', [
       'putSampleAnswer',
     ]);
-    barcodeScanner = jasmine.createSpyObj('BarcodeScanner', ['scan']);
     alertCtrl = jasmine.createSpyObj('AlertController', ['create']);
     translate = jasmine.createSpyObj('TranslateService', ['instant']);
-    keyboard = jasmine.createSpyObj('Keyboard', ['hide']);
     backButton = jasmine.createSpyObj('BackButtonService', [
       'enable',
       'disable',
@@ -51,10 +45,8 @@ describe('QuestionnaireAnswerSampleComponent', () => {
           provide: SampleTrackingClientService,
           useValue: sampleTrackingClient,
         },
-        { provide: BarcodeScanner, useValue: barcodeScanner },
         { provide: AlertController, useValue: alertCtrl },
         { provide: TranslateService, useValue: translate },
-        { provide: Keyboard, useValue: keyboard },
         { provide: BackButtonService, useValue: backButton },
       ],
     }).compileComponents();

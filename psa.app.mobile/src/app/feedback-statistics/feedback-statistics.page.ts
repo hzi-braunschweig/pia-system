@@ -14,6 +14,7 @@ import { Observable } from 'rxjs';
   templateUrl: './feedback-statistics.page.html',
   styleUrls: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  standalone: false,
 })
 export class FeedbackStatisticsPage {
   public feedbackStatistics: Observable<FeedbackStatisticDto[]> =
