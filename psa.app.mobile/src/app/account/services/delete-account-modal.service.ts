@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 import { Injectable } from '@angular/core';
-import { AccountClientService } from './account-client.service';
 import { QuestionnaireClientService } from '../../questionnaire/questionnaire-client.service';
-import { ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { KeepStudyAnswersModalComponent } from '../components/keep-study-answers-modal/keep-study-answers-modal.component';
 import { DeleteAccountModalComponent } from '../components/delete-account-modal/delete-account-modal.component';
 import { DeletionType } from './deletion-type.enum';
@@ -19,7 +18,6 @@ export class DeleteAccountModalService {
 
   constructor(
     private currentUser: CurrentUser,
-    private accountClientService: AccountClientService,
     private questionnaireClientService: QuestionnaireClientService,
     private modalController: ModalController
   ) {}

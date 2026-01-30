@@ -32,6 +32,7 @@
     (swiperslidechangetransitionend)="afterSlideChange()"
     (swiperbeforeslidechangestart)="beforeSlideChange()"
     (swiperinit)="afterSlideInit()"
+    class="container-max-width"
   >
     <ng-container *ngIf="!hasQuestionnaireStatus('released_twice')">
       <ng-container
@@ -63,6 +64,7 @@
                       <ng-container [ngSwitch]="answer.answer_type_id">
                         <ng-container *ngSwitchCase="AnswerType.SingleSelect">
                           <app-questionnaire-answer-single-select
+                            data-e2e="e2e-input-type-single-select"
                             [label]="answer?.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
                             [formControl]="formControl"
                             [name]="answer.id"
@@ -73,6 +75,7 @@
                         </ng-container>
                         <ng-container *ngSwitchCase="AnswerType.MultiSelect">
                           <app-questionnaire-answer-multi-select
+                            data-e2e="e2e-input-type-multiselect"
                             [label]="answer?.text | fillDatePlaceholders:questionnaireInstance.date_of_issue"
                             [formControl]="formControl"
                             [name]="answer.id"
@@ -199,6 +202,7 @@
             </ion-card>
 
             <ion-button
+              data-e2e="e2e-save-questionnaire-and-exit"
               color="light"
               class="ion-margin-vertical"
               (click)="save(true)"
@@ -329,7 +333,11 @@
   </ion-fab>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="canGoToNext">
-    <ion-fab-button color="tertiary" (click)="slideNext()">
+    <ion-fab-button
+      color="tertiary"
+      (click)="slideNext()"
+      data-e2e="e2e-swiper-button-next"
+    >
       <ion-icon name="chevron-forward"></ion-icon>
     </ion-fab-button>
   </ion-fab>
@@ -347,7 +355,11 @@
     >
       {{ 'QUESTIONNAIRE_QUESTIONS.SHARE_CHANGES' | translate }}
     </ion-label>
-    <ion-fab-button color="tertiary" (click)="submit()">
+    <ion-fab-button
+      color="tertiary"
+      (click)="submit()"
+      data-e2e="e2e-swiper-button-send"
+    >
       <ion-icon name="save"></ion-icon>
     </ion-fab-button>
   </ion-fab>

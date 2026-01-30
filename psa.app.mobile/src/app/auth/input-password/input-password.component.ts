@@ -5,9 +5,18 @@
  */
 
 import { Component, forwardRef, Input } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 
 import { AbstractControlValueAccessor } from '../../shared/components/abstract-control-value-accessor/abstract-control-value-accessor';
+import { addIcons } from 'ionicons';
+import { eye } from 'ionicons/icons';
+import {
+  IonItem,
+  IonInput,
+  IonButton,
+  IonIcon,
+} from '@ionic/angular/standalone';
+import { NgIf } from '@angular/common';
 
 const INPUT_PASSWORD_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -20,7 +29,7 @@ const INPUT_PASSWORD_ACCESSOR = {
   templateUrl: './input-password.component.html',
   styleUrls: ['./input-password.component.scss'],
   providers: [INPUT_PASSWORD_ACCESSOR],
-  standalone: false,
+  imports: [IonItem, IonInput, ReactiveFormsModule, NgIf, IonButton, IonIcon],
 })
 export class InputPasswordComponent extends AbstractControlValueAccessor<string> {
   @Input()
@@ -28,4 +37,9 @@ export class InputPasswordComponent extends AbstractControlValueAccessor<string>
 
   @Input()
   disabled = false;
+
+  constructor() {
+    addIcons({ eye });
+    super();
+  }
 }

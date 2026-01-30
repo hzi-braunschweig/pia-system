@@ -9,13 +9,12 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { LoginUsernameComponent } from './login-username.component';
 import {
   AlertController,
-  IonicModule,
   LoadingController,
   MenuController,
   Platform,
-} from '@ionic/angular';
+} from '@ionic/angular/standalone';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MockBuilder } from 'ng-mocks';
+import { MockBuilder, MockRender } from 'ng-mocks';
 import { AuthModule } from '../auth.module';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
@@ -27,6 +26,8 @@ import { ToastPresenterService } from '../../shared/services/toast-presenter/toa
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
 import { AppLauncher } from '@capacitor/app-launcher';
+import { IonInput } from '@ionic/angular/standalone';
+import { NgIf } from '@angular/common';
 
 describe('LoginUsernameComponent', () => {
   let component: LoginUsernameComponent;
@@ -43,9 +44,10 @@ describe('LoginUsernameComponent', () => {
   let menuCtrl: SpyObj<MenuController>;
 
   beforeEach(() =>
-    MockBuilder(LoginUsernameComponent, [AuthModule, Platform, Router])
-      .keep(IonicModule)
+    MockBuilder(LoginUsernameComponent)
+      .keep(NgIf)
       .keep(ReactiveFormsModule)
+      .keep(IonInput)
       .mock(TranslatePipe, (x) => x)
       .mock(TranslateService, { instant: (x) => x })
       .mock(Platform)
@@ -56,7 +58,7 @@ describe('LoginUsernameComponent', () => {
   );
 
   beforeEach(waitForAsync(() => {
-    fixture = TestBed.createComponent(LoginUsernameComponent);
+    fixture = MockRender(LoginUsernameComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
 
@@ -91,7 +93,7 @@ describe('LoginUsernameComponent', () => {
 
   it('should create with a custom url and enable the url field', waitForAsync(() => {
     endpoint.isCustomEndpoint.and.returnValue(true);
-    fixture = TestBed.createComponent(LoginUsernameComponent);
+    fixture = MockRender(LoginUsernameComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
     expect(component).toBeTruthy();
@@ -102,7 +104,7 @@ describe('LoginUsernameComponent', () => {
     // Arrange
     const username = 'TEST-1234567890';
 
-    fixture = TestBed.createComponent(LoginUsernameComponent);
+    fixture = MockRender(LoginUsernameComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
 
@@ -123,7 +125,7 @@ describe('LoginUsernameComponent', () => {
     const username = 'TEST-1234567890';
     const url = 'http://localhost/';
 
-    fixture = TestBed.createComponent(LoginUsernameComponent);
+    fixture = MockRender(LoginUsernameComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
 
@@ -144,7 +146,7 @@ describe('LoginUsernameComponent', () => {
     const username = 'TEST-1234567890';
     const url = 'http://localhost/';
 
-    fixture = TestBed.createComponent(LoginUsernameComponent);
+    fixture = MockRender(LoginUsernameComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
 
@@ -166,7 +168,7 @@ describe('LoginUsernameComponent', () => {
     const username = 'TEST-1234567890';
     spyOn(AppLauncher, 'openUrl');
 
-    fixture = TestBed.createComponent(LoginUsernameComponent);
+    fixture = MockRender(LoginUsernameComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
 
@@ -193,7 +195,7 @@ describe('LoginUsernameComponent', () => {
     const username = 'TEST-1234567890';
 
     beforeEach(() => {
-      fixture = TestBed.createComponent(LoginUsernameComponent);
+      fixture = MockRender(LoginUsernameComponent);
       component = fixture.componentInstance;
       fixture.detectChanges();
 

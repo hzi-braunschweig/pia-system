@@ -6,6 +6,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 
+set -e
+
 while [[ $# -gt 0 ]]; do
   case $1 in
     --email)

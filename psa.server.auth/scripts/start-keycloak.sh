@@ -6,6 +6,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 
+set -e
+
 KEYCLOAK_PATH=/api/v1/auth
 
 STRICT_HTTPS=true

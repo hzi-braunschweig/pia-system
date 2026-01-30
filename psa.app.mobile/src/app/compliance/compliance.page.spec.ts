@@ -12,7 +12,7 @@ import {
 } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
-import { LoadingController, MenuController } from '@ionic/angular';
+import { LoadingController, MenuController } from '@ionic/angular/standalone';
 import { MockBuilder } from 'ng-mocks';
 
 import { CompliancePage } from './compliance.page';

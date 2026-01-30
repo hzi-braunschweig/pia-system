@@ -5,12 +5,30 @@
  */
 
 import { Component, forwardRef, Input, OnDestroy, OnInit } from '@angular/core';
-import { FormArray, FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
+import {
+  FormArray,
+  FormControl,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { filter } from 'rxjs/operators';
 import { merge, Subscription } from 'rxjs';
 import { AbstractControlValueAccessor } from '../../shared/components/abstract-control-value-accessor/abstract-control-value-accessor';
 import { FormControlValue } from '../questionnaire-form/questionnaire-form.service';
-import { InputCustomEvent } from '@ionic/angular';
+import {
+  InputCustomEvent,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonChip,
+  IonIcon,
+  IonList,
+  IonCheckbox,
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { closeCircle } from 'ionicons/icons';
+import { NgIf, NgFor } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 const QUESTIONNAIRE_ANSWER_CHECKBOX_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -22,7 +40,19 @@ const QUESTIONNAIRE_ANSWER_CHECKBOX_ACCESSOR = {
   selector: 'app-questionnaire-answer-multi-select',
   templateUrl: './questionnaire-answer-multi-select.component.html',
   providers: [QUESTIONNAIRE_ANSWER_CHECKBOX_ACCESSOR],
-  standalone: false,
+  imports: [
+    NgIf,
+    IonItem,
+    IonLabel,
+    IonInput,
+    IonChip,
+    IonIcon,
+    IonList,
+    NgFor,
+    IonCheckbox,
+    ReactiveFormsModule,
+    TranslateModule,
+  ],
 })
 export class QuestionnaireAnswerMultiSelectComponent
   extends AbstractControlValueAccessor<FormControlValue>
@@ -37,14 +67,26 @@ export class QuestionnaireAnswerMultiSelectComponent
   showAutocompleteOptions = false;
 
   /**
+   * All possible NO_ANSWER values from all supported languages.
+   * These values are matched against the questionnaire's answer values.
    * see {@link QuestionnaireAnswerMultiSelectComponent#setUpNoAnswerBehaviour}
    */
-  readonly NO_ANSWER_VALUE = 'Keine Angabe';
+  private readonly NO_ANSWER_VALUES = [
+    'Keine Angabe', // de-DE, de-CH
+    'Not specified', // en-US
+    'Pas de réponse', // fr-FR
+    'Sin respuesta', // es-ES
+  ];
 
   form: FormArray = new FormArray([]);
 
   private noAnswerSubscription: Subscription;
   private otherAnswersSubscription: Subscription;
+
+  constructor() {
+    addIcons({ closeCircle });
+    super();
+  }
 
   ngOnInit() {
     this.values.forEach(() => this.form.push(new FormControl(false)));
@@ -80,16 +122,19 @@ export class QuestionnaireAnswerMultiSelectComponent
   }
 
   /**
-   * The value "Keine Angabe" (= no information) is hard-coded with a special behaviour:
+   * The "no answer" option is hard-coded with a special behaviour:
    * As soon as it is chosen, no other option may be selected, so those will be reset.
-   * If "Keine Angabe" is currently selected and another option is chosen, "Keine Angabe"
-   * will be reset.
+   * If the "no answer" option is currently selected and another option is chosen,
+   * the "no answer" option will be reset.
    *
    * This logic has the potential of starting a change loop within the form. Thus, it has
    * to be handled carefully. This is why the logic might seem overly complex.
    */
   private setUpNoAnswerBehaviour() {
-    const noAnswerValueIndex = this.values.indexOf(this.NO_ANSWER_VALUE);
+    const noAnswerValueIndex = this.values.findIndex((value) =>
+      this.NO_ANSWER_VALUES.includes(value)
+    );
+
     if (noAnswerValueIndex !== -1) {
       const noAnswerFormControl = this.form.at(noAnswerValueIndex);
       const otherFormControls = this.form.controls.filter(
@@ -98,13 +143,17 @@ export class QuestionnaireAnswerMultiSelectComponent
       this.noAnswerSubscription = noAnswerFormControl.valueChanges
         .pipe(filter(Boolean))
         .subscribe(() =>
-          otherFormControls.forEach((control) => control.patchValue(false))
+          otherFormControls.forEach((control) =>
+            control.patchValue(false, { emitEvent: false })
+          )
         );
       this.otherAnswersSubscription = merge(
         ...otherFormControls.map((control) => control.valueChanges)
       )
         .pipe(filter(Boolean))
-        .subscribe(() => noAnswerFormControl.patchValue(false));
+        .subscribe(() =>
+          noAnswerFormControl.patchValue(false, { emitEvent: false })
+        );
     }
   }
 

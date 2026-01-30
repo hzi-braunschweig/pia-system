@@ -10,6 +10,7 @@
 @if (useAutocomplete) {
 <ion-item>
   <ion-input
+    data-e2e="e2e-input-type-autocomplete"
     type="text"
     [placeholder]="'QUESTIONNAIRE_QUESTIONS.AUTOCOMPLETE_PICK' | translate"
     [formControl]="control"
@@ -18,7 +19,6 @@
     (ionFocus)="displayAutocomplete()"
   ></ion-input>
 </ion-item>
-
 <ion-list *ngIf="showAutocompleteOptions">
   <ion-item
     *ngFor="let value of filteredValues; let index = index"

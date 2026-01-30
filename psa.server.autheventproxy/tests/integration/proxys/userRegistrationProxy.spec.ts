@@ -62,7 +62,7 @@ describe('Keycloak Registration Proxy', () => {
     mockAuthClientResponse(sandbox, username, [studyName]);
 
     publishKeycloakRegisterEvent(
-      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-web-app-client.REGISTER',
+      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-mobile-app-client.REGISTER',
       username,
       'test@localhost'
     );
@@ -81,7 +81,7 @@ describe('Keycloak Registration Proxy', () => {
     mockAuthClientResponse(sandbox);
 
     publishKeycloakRegisterEvent(
-      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-web-app-client.REGISTER',
+      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-mobile-app-client.REGISTER',
       'test-1234567890',
       'test@localhost'
     );
@@ -104,7 +104,7 @@ describe('Keycloak Registration Proxy', () => {
     mockAuthClientResponse(sandbox);
 
     publishKeycloakRegisterEvent(
-      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-web-app-client.REGISTER',
+      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-mobile-app-client.REGISTER',
       undefined,
       undefined
     );

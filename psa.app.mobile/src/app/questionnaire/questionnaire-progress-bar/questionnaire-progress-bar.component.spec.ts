@@ -5,8 +5,6 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
-
 import { QuestionnaireProgressBarComponent } from './questionnaire-progress-bar.component';
 
 describe('QuestionnaireProgressBarComponent', () => {
@@ -15,8 +13,7 @@ describe('QuestionnaireProgressBarComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [QuestionnaireProgressBarComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [QuestionnaireProgressBarComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuestionnaireProgressBarComponent);

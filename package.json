@@ -3,8 +3,7 @@
   "private": true,
   "license": "AGPL-3.0-or-later",
   "scripts": {
-    "start": "skaffold dev",
-    "start:with-local-registry": "SKAFFOLD_DEFAULT_REPO=k3d-registry.localhost:5000 skaffold dev",
+    "start": "node dev-build-deploy.js",
     "update-packages": "ncu --packageFile 'psa.*/package.json' -i -x '/@types/node$|@types/node-fetch|node-fetch|typeorm|parse5|chalk|ngx-.*|ng-.*|rxjs|jspdf.*|.*angular.*/'",
     "update-packagelock": "rm -rf psa.*/node_modules psa.*/package-lock.json && lerna exec \"npm install --ignore-scripts --package-lock-only --no-audit\"",
     "update-openapi": "REBUILD_OPENAPI=1 ./psa.utils.scripts/openapi/generate-merge-config.sh && openapi-merge-cli",

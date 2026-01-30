@@ -5,13 +5,20 @@
  */
 
 import { Component } from '@angular/core';
-import { MenuController, ViewWillEnter } from '@ionic/angular';
+import {
+  MenuController,
+  ViewWillEnter,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+} from '@ionic/angular/standalone';
+import { LoginUsernameComponent } from '../login-username/login-username.component';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
-  standalone: false,
+  imports: [IonContent, IonCard, IonCardHeader, LoginUsernameComponent],
 })
 export class LoginPage implements ViewWillEnter {
   constructor(private menuCtrl: MenuController) {}

@@ -43,6 +43,8 @@ read -p "Does the mail server require a secure TLS connection? (true|false): " m
 read -p "Mail address used by PIA when sending mails (will be visible to users): " mailServerFromAddress
 read -p "Name used by PIA when sending mails (will be visible to users): " mailServerFromName
 read -p "URL of the HTTPS proxy used by PIA to access the internet (used by notificationservice for firebase notifications): " httpsProxyUrl
+read -p "Hour at which QIs are presented and notifications are sent (0-23): " notificationHour
+read -p "Minute at which QIs are presented and notifications are sent (0-59): " notificationMinute
 
 read -p "Provide file path to a JPEG image to use as a logo (max. 100 KB) (leave empty to skip): " customizeLogoFilePath
 while [[ "$customizeLogoFilePath" != "" && ! -f $customizeLogoFilePath ]]; do
@@ -108,6 +110,9 @@ echo "$KUSTOMIZATION_TEMPLATE" | sed -e "s#{deploymentName}#$deploymentName#g" \
     -e "s#{mailServerRequireTls}#$mailServerRequireTls#g" \
     -e "s#{mailServerFromAddress}#$mailServerFromAddress#g" \
     -e "s#{mailServerFromName}#$mailServerFromName#g" \
+    -e "s#{httpsProxyUrl}#$httpsProxyUrl#g" \
+    -e "s#{notificationHour}#$notificationHour#g" \
+    -e "s#{notificationMinute}#$notificationMinute#g" \
     -e "s#{firebasePrivateKeyBase64}#$(cat tmp_fb_pkey_b64.txt)#g" \
     -e "s#{firebaseProjectId}#$firebaseProjectId#g" \
     -e "s#{firebaseClientEmail}#$firebaseClientEmail#g" > $FILE_PATH/kustomization.yaml || { echo "Failed to write to $FILE_PATH/kustomization.yaml"; exit 1; }

@@ -33,6 +33,7 @@ import { MailServer } from './pia/deployment/mailserver';
 import { Precheck } from './pia/precheck';
 import { PiaNamespace } from './pia/deployment/namespace';
 import { JobScheduler } from './pia/deployment/jobscheduler';
+import { MobileappServer } from './pia/deployment/mobileappserver';
 
 export class MainChart extends Chart {
   public allCharts: Chart[];
@@ -56,6 +57,7 @@ export class MainChart extends Chart {
     });
 
     const webappServer = new WebappServer(this, config);
+    const mobileappServer = new MobileappServer(this, config);
 
     // there are cyclic dependencies between:
     // loggingservice -> userservice -> loggingservice
@@ -182,6 +184,7 @@ export class MainChart extends Chart {
 
     const apigateway = new ApiGateway(this, config, {
       webappServer,
+      mobileappServer,
       authServer,
       userService,
       loggingService,
@@ -213,6 +216,7 @@ export class MainChart extends Chart {
       messageQueue,
       authServer,
       webappServer,
+      mobileappServer,
       userService,
       loggingService,
       personalDataService,

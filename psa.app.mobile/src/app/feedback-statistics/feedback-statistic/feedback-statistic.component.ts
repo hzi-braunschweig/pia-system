@@ -14,11 +14,29 @@ import {
   ChartFeedbackStatistic,
   FeedbackStatisticDto,
   FeedbackStatisticMapperUtility,
+  ChartsModule,
 } from '@pia-system/charts';
-import { RangeCustomEvent } from '@ionic/angular';
+import {
+  RangeCustomEvent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonCardContent,
+  IonRange,
+  IonButton,
+} from '@ionic/angular/standalone';
 import { RangeValue } from '@ionic/core/dist/types/components/range/range-interface';
-import { formatDate } from '@angular/common';
+import {
+  formatDate,
+  NgIf,
+  NgClass,
+  AsyncPipe,
+  DatePipe,
+} from '@angular/common';
 import { CurrentUser } from '../../auth/current-user.service';
+import { TranslateModule } from '@ngx-translate/core';
+import { MarkdownPipe } from 'ngx-markdown';
 
 export type RangeValueObject = Extract<
   RangeValue,
@@ -30,7 +48,22 @@ export type RangeValueObject = Extract<
   templateUrl: './feedback-statistic.component.html',
   styleUrls: ['./feedback-statistic.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardSubtitle,
+    IonCardContent,
+    NgIf,
+    ChartsModule,
+    IonRange,
+    NgClass,
+    IonButton,
+    AsyncPipe,
+    DatePipe,
+    TranslateModule,
+    MarkdownPipe,
+  ],
 })
 export class FeedbackStatisticComponent implements OnInit {
   @Input()

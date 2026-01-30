@@ -252,13 +252,22 @@ const routes: ProxyRouteConfig[] = [
     },
   },
 
+  {
+    path: '/admin',
+    upstream: {
+      host: 'webappserver',
+      path: '/admin',
+      port: ConfigUtils.getEnvVariableInt('WEBAPPSERVER_HTTP_PORT'),
+    },
+  },
+
   // catch all
   {
     path: '/',
     upstream: {
-      host: 'webappserver',
+      host: 'mobileappserver',
       path: '/',
-      port: ConfigUtils.getEnvVariableInt('WEBAPPSERVER_HTTP_PORT'),
+      port: ConfigUtils.getEnvVariableInt('MOBILEAPPSERVER_HTTP_PORT'),
     },
   },
 ];

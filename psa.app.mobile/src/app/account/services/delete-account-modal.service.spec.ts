@@ -5,12 +5,11 @@
  */
 
 import { TestBed } from '@angular/core/testing';
-import { IonicModule, ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular/standalone';
 import { DeleteAccountModalService } from './delete-account-modal.service';
 import { DeletionType } from './deletion-type.enum';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { QuestionnaireClientService } from '../../questionnaire/questionnaire-client.service';
-import { Study } from '../../questionnaire/questionnaire.model';
 import { CannotDetermineDeletionTypeError } from './cannot-determine-deletion-type.error';
 import { KeepStudyAnswersModalComponent } from '../components/keep-study-answers-modal/keep-study-answers-modal.component';
 import { DeleteAccountModalComponent } from '../components/delete-account-modal/delete-account-modal.component';
@@ -19,6 +18,7 @@ import {
   provideHttpClient,
   withInterceptorsFromDi,
 } from '@angular/common/http';
+import { MockProvider } from 'ng-mocks';
 
 describe('DeleteAccountModalService', () => {
   let service: DeleteAccountModalService;
@@ -26,18 +26,15 @@ describe('DeleteAccountModalService', () => {
   let questionnaireClientService: QuestionnaireClientService;
   let modalController: ModalController;
 
-  function mockGetStudy(study: Partial<Study>) {
-    spyOn(questionnaireClientService, 'getStudy').and.returnValue(
-      Promise.resolve(study as Study)
-    );
-  }
-
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [IonicModule.forRoot()],
+      imports: [],
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
+        MockProvider(ModalController),
+        MockProvider(QuestionnaireClientService),
+        MockProvider(CurrentUser),
       ],
     });
     service = TestBed.inject(DeleteAccountModalService);
@@ -69,15 +66,13 @@ describe('DeleteAccountModalService', () => {
   });
 
   describe('showDeleteAccountModal', () => {
-    let modalControllerCreateSpy: jasmine.Spy;
     let mockModal: Partial<HTMLIonModalElement>;
 
     beforeEach(() => {
       mockModal = {
         present: jasmine.createSpy(),
       };
-      modalControllerCreateSpy = spyOn(modalController, 'create');
-      modalControllerCreateSpy.and.returnValue(
+      (modalController.create as jasmine.Spy).and.returnValue(
         Promise.resolve(mockModal as HTMLIonModalElement)
       );
       currentUser.study = 'foobar';
@@ -110,12 +105,9 @@ describe('DeleteAccountModalService', () => {
         expectedModal: DeleteAccountModalComponent,
       },
     ].forEach(
-      (
-        { expectation, partialOpposition, keepStudyAnswers, expectedModal },
-        index
-      ) => {
+      ({ expectation, partialOpposition, keepStudyAnswers, expectedModal }) => {
         it(`should ${expectation}`, async () => {
-          mockGetStudy({
+          (questionnaireClientService.getStudy as jasmine.Spy).and.returnValue({
             has_partial_opposition: partialOpposition,
           });
 
@@ -130,7 +122,9 @@ describe('DeleteAccountModalService', () => {
 
           await service.showDeleteAccountModal();
 
-          expect(modalControllerCreateSpy).toHaveBeenCalledOnceWith({
+          expect(
+            modalController.create as jasmine.Spy
+          ).toHaveBeenCalledOnceWith({
             component: expectedModal,
           });
 

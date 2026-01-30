@@ -7,9 +7,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormArray, FormBuilder } from '@angular/forms';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
-import { AlertController, IonicModule } from '@ionic/angular';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { MockModule, MockPipe } from 'ng-mocks';
+import { AlertController } from '@ionic/angular/standalone';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { MockBuilder } from 'ng-mocks';
 import { QuestionnaireClientService } from '../questionnaire-client.service';
 import { QuestionnaireFormService } from '../questionnaire-form/questionnaire-form.service';
 import {
@@ -71,24 +71,17 @@ describe('QuestionnaireDetailPage', () => {
     questionnnaireClient.getStudy.and.resolveTo(createStudy());
     questionnnaireClient.getAnswers.and.resolveTo(createAnswers());
 
-    await TestBed.configureTestingModule({
-      declarations: [
-        QuestionnaireDetailPage,
-        MockPipe(TranslatePipe),
-        MockPipe(QuestionnaireRestrictionDaysAsDatePipe),
-        MockPipe(QuestionnaireFillDatePlaceholdersPipe),
-      ],
-      imports: [MockModule(IonicModule)],
-      providers: [
-        QuestionnaireFormService,
-        FormBuilder,
-        { provide: QuestionnaireClientService, useValue: questionnnaireClient },
-        { provide: TranslateService, useValue: translate },
-        { provide: AlertController, useValue: alertCtrl },
-        { provide: Router, useValue: router },
-        { provide: ActivatedRoute, useValue: activatedRoute },
-      ],
-    }).compileComponents();
+    await MockBuilder(QuestionnaireDetailPage)
+      .keep(QuestionnaireFormService)
+      .keep(FormBuilder)
+      .keep(TranslateModule.forRoot())
+      .mock(QuestionnaireClientService, questionnnaireClient)
+      .mock(TranslateService, translate)
+      .mock(AlertController, alertCtrl)
+      .mock(Router, router)
+      .mock(ActivatedRoute, activatedRoute)
+      .mock(QuestionnaireRestrictionDaysAsDatePipe)
+      .mock(QuestionnaireFillDatePlaceholdersPipe);
 
     fixture = TestBed.createComponent(QuestionnaireDetailPage);
     component = fixture.componentInstance;

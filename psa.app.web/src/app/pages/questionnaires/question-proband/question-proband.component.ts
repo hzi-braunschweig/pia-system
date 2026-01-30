@@ -149,8 +149,10 @@ export class QuestionProbandComponent
   public release_version: number;
   public isReleaseButtonVisible: boolean = false;
   private readonly MULTISELECT_NOT_SPECIFIED = [
-    'Keine Angabe',
-    'Not specified',
+    'Keine Angabe', // de-DE, de-CH
+    'Not specified', // en-US
+    'Pas de réponse', // fr-FR
+    'Sin respuesta', // es-ES
   ];
 
   @ViewChild('questionSwiper')
@@ -768,7 +770,7 @@ export class QuestionProbandComponent
           if (answerValueControl.value === value) {
             answerValueControl.isChecked = true;
           } else if (
-            this.MULTISELECT_NOT_SPECIFIED.includes(answerValueControl)
+            this.MULTISELECT_NOT_SPECIFIED.includes(answerValueControl.value)
           ) {
             answerValueControl.isChecked = false;
           }
@@ -1415,13 +1417,9 @@ export class QuestionProbandComponent
               isSuccess: true,
             },
           });
-          if (this.user.isProband()) {
-            this.router.navigate(['questionnaires/user']);
-          } else {
-            this.router.navigate(['/questionnaires/user/'], {
-              queryParams: { user_id: this.pseudonym },
-            });
-          }
+          this.router.navigate(['/questionnaires/user/'], {
+            queryParams: { user_id: this.pseudonym },
+          });
         })
         .catch((err) => {
           this.alertService.errorObject(err);

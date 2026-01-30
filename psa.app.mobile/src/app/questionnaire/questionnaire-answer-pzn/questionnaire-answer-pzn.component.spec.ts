@@ -5,9 +5,7 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
-import { TranslatePipe } from '@ngx-translate/core';
-import { MockPipe } from 'ng-mocks';
+import { TranslateModule } from '@ngx-translate/core';
 import SpyObj = jasmine.SpyObj;
 
 import { QuestionnaireAnswerPznComponent } from './questionnaire-answer-pzn.component';
@@ -26,8 +24,7 @@ describe('QuestionnaireAnswerPznComponent', () => {
     ]);
 
     TestBed.configureTestingModule({
-      declarations: [QuestionnaireAnswerPznComponent, MockPipe(TranslatePipe)],
-      imports: [IonicModule.forRoot()],
+      imports: [QuestionnaireAnswerPznComponent, TranslateModule.forRoot()],
       providers: [{ provide: BackButtonService, useValue: backButton }],
     }).compileComponents();
 

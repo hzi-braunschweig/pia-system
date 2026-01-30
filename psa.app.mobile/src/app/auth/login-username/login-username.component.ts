@@ -5,7 +5,13 @@
  */
 
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  FormsModule,
+} from '@angular/forms';
 import { App } from '@capacitor/app';
 import { EndpointService } from '../../shared/services/endpoint/endpoint.service';
 import {
@@ -13,14 +19,25 @@ import {
   LoadingController,
   MenuController,
   Platform,
-} from '@ionic/angular';
-import { TranslateService } from '@ngx-translate/core';
+  IonItem,
+  IonInput,
+  IonIcon,
+  IonButton,
+  IonRow,
+  IonSelectOption,
+  IonSelect,
+  IonList,
+} from '@ionic/angular/standalone';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { environment } from '../../../environments/environment';
 import { LocaleService } from '../../shared/services/locale/locale.service';
 import { ToastPresenterService } from '../../shared/services/toast-presenter/toast-presenter.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { AppLauncher } from '@capacitor/app-launcher';
+import { NgFor, NgIf } from '@angular/common';
+import { addIcons } from 'ionicons';
+import { link, close } from 'ionicons/icons';
 
 class EndpointNotCompatibleError extends Error {
   constructor() {
@@ -44,7 +61,21 @@ class EndpointUrlInvalidError extends Error {
   selector: 'app-login-username',
   templateUrl: './login-username.component.html',
   styleUrls: ['./login-username.component.scss'],
-  standalone: false,
+  imports: [
+    ReactiveFormsModule,
+    IonItem,
+    IonInput,
+    FormsModule,
+    NgFor,
+    IonIcon,
+    IonRow,
+    IonSelectOption,
+    IonSelect,
+    IonList,
+    NgIf,
+    IonButton,
+    TranslateModule,
+  ],
 })
 export class LoginUsernameComponent {
   public readonly form = new FormGroup({
@@ -71,7 +102,9 @@ export class LoginUsernameComponent {
     private translate: TranslateService,
     private router: Router,
     private menuCtrl: MenuController
-  ) {}
+  ) {
+    addIcons({ link, close });
+  }
 
   public toggleCustomEndpointField(): void {
     const customEndpointUrl = this.form.get('customEndpointUrl');

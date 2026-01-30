@@ -59,6 +59,25 @@ describe('CurrentUser', () => {
     });
   });
 
+  describe('reset()', () => {
+    it('should reset all user properties to undefined', () => {
+      // Arrange
+      jwt.decodeToken.and.returnValue(getDecodedToken());
+      currentUser.init('some.jwt.token');
+      expect(currentUser.username).toEqual('TEST-1234');
+      expect(currentUser.study).toEqual('Teststudie1');
+      expect(currentUser.locale).toEqual('de-DE');
+
+      // Act
+      currentUser.reset();
+
+      // Assert
+      expect(currentUser.username).toBeUndefined();
+      expect(currentUser.study).toBeUndefined();
+      expect(currentUser.locale).toBeUndefined();
+    });
+  });
+
   function getDecodedToken(): unknown {
     return {
       studies: ['Teststudie1', 'Teststudie2'],

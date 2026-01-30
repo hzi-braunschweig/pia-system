@@ -10,8 +10,6 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
-
 import { QuestionnaireAnswerSingleSelectComponent } from './questionnaire-answer-single-select.component';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -22,11 +20,10 @@ describe('QuestionnaireAnswerSingleSelectComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [QuestionnaireAnswerSingleSelectComponent],
       imports: [
-        IonicModule.forRoot(),
         ReactiveFormsModule,
         TranslateModule.forRoot(),
+        QuestionnaireAnswerSingleSelectComponent,
       ],
     }).compileComponents();
 

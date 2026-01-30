@@ -23,8 +23,11 @@ describe('ConsentInputTextComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ConsentInputTextComponent],
-      imports: [MockModule(TranslateModule), MockModule(ReactiveFormsModule)],
+      imports: [
+        MockModule(TranslateModule),
+        MockModule(ReactiveFormsModule),
+        ConsentInputTextComponent,
+      ],
     }).compileComponents();
   });
 

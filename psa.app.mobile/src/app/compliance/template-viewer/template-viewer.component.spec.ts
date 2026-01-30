@@ -14,7 +14,7 @@ describe('TemplateViewerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [TemplateViewerComponent],
+      imports: [TemplateViewerComponent],
     }).compileComponents();
   });
 

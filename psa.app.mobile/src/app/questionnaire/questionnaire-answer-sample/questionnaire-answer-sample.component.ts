@@ -18,9 +18,18 @@ import {
   FormControl,
   FormGroup,
   NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
 } from '@angular/forms';
-import { AlertController } from '@ionic/angular';
-import { TranslateService } from '@ngx-translate/core';
+import {
+  AlertController,
+  IonItem,
+  IonText,
+  IonLabel,
+  IonInput,
+  IonButton,
+  IonIcon,
+} from '@ionic/angular/standalone';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 import { SampleAnswer } from '../../lab-result/lab-result.model';
@@ -33,6 +42,10 @@ import {
   CapacitorBarcodeScanner,
   CapacitorBarcodeScannerTypeHintALLOption,
 } from '@capacitor/barcode-scanner';
+import { addIcons } from 'ionicons';
+import { scan, checkmark } from 'ionicons/icons';
+import { QuestionnaireAnswerErrorComponent } from '../questionnaire-answer-error/questionnaire-answer-error.component';
+import { NgIf } from '@angular/common';
 
 const QUESTIONNAIRE_ANSWER_SAMPLE_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -44,7 +57,18 @@ const QUESTIONNAIRE_ANSWER_SAMPLE_ACCESSOR = {
   selector: 'app-questionnaire-answer-sample',
   templateUrl: './questionnaire-answer-sample.component.html',
   providers: [QUESTIONNAIRE_ANSWER_SAMPLE_ACCESSOR],
-  standalone: false,
+  imports: [
+    ReactiveFormsModule,
+    QuestionnaireAnswerErrorComponent,
+    NgIf,
+    IonItem,
+    IonText,
+    IonLabel,
+    IonInput,
+    IonButton,
+    IonIcon,
+    TranslateModule,
+  ],
 })
 export class QuestionnaireAnswerSampleComponent
   implements ControlValueAccessor, OnInit, OnDestroy
@@ -85,7 +109,9 @@ export class QuestionnaireAnswerSampleComponent
     private alertCtrl: AlertController,
     private translate: TranslateService,
     private backButton: BackButtonService
-  ) {}
+  ) {
+    addIcons({ scan, checkmark });
+  }
 
   ngOnInit() {
     this.form = new FormGroup(

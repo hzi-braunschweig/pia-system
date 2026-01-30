@@ -5,8 +5,14 @@
  */
 
 import { Component, OnInit } from '@angular/core';
-import { AlertController } from '@ionic/angular';
-import { TranslateService } from '@ngx-translate/core';
+import {
+  AlertController,
+  IonContent,
+  IonList,
+  IonItem,
+  IonLabel,
+} from '@ionic/angular/standalone';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { ToastPresenterService } from '../shared/services/toast-presenter/toast-presenter.service';
 import { ContactClientService } from './contact-client.service';
 import { StudyContact } from './contact.model';
@@ -14,11 +20,22 @@ import { MaterialClientService } from './material-client.service';
 import { ComplianceService } from '../compliance/compliance-service/compliance.service';
 import { ComplianceType } from '../compliance/compliance.model';
 import { CurrentUser } from '../auth/current-user.service';
+import { HeaderComponent } from '../shared/components/header/header.component';
+import { NgFor, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-contact',
   templateUrl: './contact.page.html',
-  standalone: false,
+  imports: [
+    HeaderComponent,
+    IonContent,
+    IonList,
+    NgFor,
+    IonItem,
+    IonLabel,
+    NgIf,
+    TranslateModule,
+  ],
 })
 export class ContactPage implements OnInit {
   public hasSamplesCompliance: boolean;
@@ -43,6 +60,7 @@ export class ContactPage implements OnInit {
         ]);
       this.addresses = await this.contactClient.getStudyAddresses();
     } catch (error) {
+      console.error('in on init error');
       console.error(error);
     }
   }
@@ -57,6 +75,7 @@ export class ContactPage implements OnInit {
           role: 'cancel',
         },
         {
+          id: 'confirmButton',
           text: this.translate.instant('GENERAL.OK'),
           handler: () => {
             this.onRequestNewMaterial();

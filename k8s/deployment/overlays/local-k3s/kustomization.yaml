@@ -13,6 +13,7 @@ resources:
 
 components:
   - ../../components/local-development
+  - ../../components/custom-registry
 
 secretGenerator:
   - name: docker-registry
@@ -21,3 +22,11 @@ secretGenerator:
       disableNameSuffixHash: true
     files:
       - .dockerconfigjson
+
+patches:
+  - target:
+      kind: Deployment
+    patch: |-
+      - op: add
+        path: "/spec/replicas"
+        value: 1

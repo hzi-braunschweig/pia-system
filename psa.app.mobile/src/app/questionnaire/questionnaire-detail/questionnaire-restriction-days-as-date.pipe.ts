@@ -17,7 +17,6 @@ import { Pipe, PipeTransform } from '@angular/core';
 @Pipe({
   name: 'restrictionDaysAsDate',
   pure: true,
-  standalone: false,
 })
 export class QuestionnaireRestrictionDaysAsDatePipe implements PipeTransform {
   transform(restrictionInDays: number): Date | null {

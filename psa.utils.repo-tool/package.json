@@ -8,7 +8,6 @@
     "help": "node ./dist/index.js --help",
     "start": "PUPPETEER_SKIP_DOWNLOAD=1 REPO_DIR=../ node ./dist/index.js",
     "generate": "npm start -- generate",
-    "generate-hcl": "npm start -- generate-hcl",
     "update": "npm start -- update",
     "outdated": "npm start -- outdated",
     "audit": "npm start -- audit",

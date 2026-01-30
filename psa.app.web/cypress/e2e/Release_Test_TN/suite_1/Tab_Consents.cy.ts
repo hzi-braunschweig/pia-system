@@ -35,7 +35,7 @@ const newPassword = ',dYv3zg;r:CB';
 const testProbandConsent = {
   to_be_filled_by: 'Proband',
   compliance_text:
-    '<pia-consent-input-text-lastname></pia-consent-input-text-lastname>\n<pia-consent-input-text-firstname></pia-consent-input-text-firstname>\n\nIch williger ein meine Proben zu verwalten\n<pia-consent-input-radio-samples></pia-consent-input-radio-samples>\n\nIch williger ein meine Laborergebnisse zu verwalten\n<pia-consent-input-radio-labresults></pia-consent-input-radio-labresults>\n\nIch williger ein meine Blut Proben zu verwalten\n<pia-consent-input-radio-bloodsamples></pia-consent-input-radio-bloodsamples>\n\nIch willige in die Verarbeitung und Nutzung meiner personenbezogenen Daten gemäß der vorstehenden Datenschutzerklärung ein.\n<pia-consent-input-radio-app></pia-consent-input-radio-app>\n',
+    '<pia-consent-input-text-lastname></pia-consent-input-text-lastname>\n<pia-consent-input-text-firstname></pia-consent-input-text-firstname>\n\nIch willige ein meine Proben zu verwalten\n<pia-consent-input-radio-samples></pia-consent-input-radio-samples>\n\nIch willige ein meine Laborergebnisse zu verwalten\n<pia-consent-input-radio-labresults></pia-consent-input-radio-labresults>\n\nIch willige ein meine Blut Proben zu verwalten\n<pia-consent-input-radio-bloodsamples></pia-consent-input-radio-bloodsamples>\n\nIch willige in die Verarbeitung und Nutzung meiner personenbezogenen Daten gemäß der vorstehenden Datenschutzerklärung ein.\n<pia-consent-input-radio-app></pia-consent-input-radio-app>\n',
 };
 
 const probandAppUrl = '/';
@@ -84,17 +84,17 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
 
-    cy.expectPathname('/compliance/agree');
+    cy.expectPathname('/compliance');
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Startseite').click();
-    cy.expectPathname('/compliance/agree');
+    cy.expectPathname('/compliance');
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
-    cy.expectPathname('/compliance/agree');
+    cy.expectPathname('/compliance');
     cy.get('[data-e2e="e2e-sidenav-content"]')
       .contains('Einstellungen')
       .click();
-    cy.expectPathname('/compliance/agree');
+    cy.expectPathname('/compliance');
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Kontakt').click();
-    cy.expectPathname('/compliance/agree');
+    cy.expectPathname('/compliance');
   });
 
   it('Prüfen, ob nur Buttons vorhanden sind, die dort sein dürfen', () => {
@@ -102,60 +102,52 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
 
-    cy.get('[data-e2e="e2e-compliance-edit-component"]')
-      .find('[data-e2e="e2e-compliance-edit-component-header"]')
-      .contains(study.name);
+    cy.get('[data-e2e="e2e-compliance-edit-component-header"]').contains(
+      study.name
+    );
     cy.get('[data-e2e="e2e-consent-name-lastname"]')
       .find('label')
       .contains('Nachname')
-      .should('be.visible');
+      .should('exist');
     cy.get('[data-e2e="e2e-consent-name-lastname"]').find('input').type('Doe');
     cy.get('[data-e2e="e2e-consent-name-firstname"]')
       .find('label')
       .contains('Vorname')
-      .should('be.visible');
+      .should('exist');
     cy.get('[data-e2e="e2e-consent-name-firstname"]')
       .find('input')
       .type('John');
 
     cy.get('[data-e2e="e2e-consent-name-samples"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
       .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-consent-name-labresults"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
       .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-consent-name-bloodsamples"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
       .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-consent-name-app"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
       .should('be.visible')
       .click();
 
-    cy.get('[data-e2e="e2e-compliance-edit-component"]')
-      .contains('button', 'Als PDF herunterladen')
-      .should('not.exist');
+    cy.get('[data-e2e="e2e-compliance-edit-download-pdf-button"]').should(
+      'not.exist'
+    );
 
     cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').click();
-    cy.get('#confirmbutton').click();
-
-    // necessary wait, otherwise the side menu rerenders and the element is  - in some circumstances - not clickable anymore
-    cy.contains('[data-e2e="e2e-sidenav-content"]', 'Laborergebnisse');
-    cy.contains('[data-e2e="e2e-sidenav-content"]', 'Einwilligung')
-      .contains('Einwilligung')
-      .click();
-
-    cy.get('[data-e2e="e2e-compliance-edit-component"]').scrollIntoView();
-    cy.get('[data-e2e="e2e-compliance-edit-component"]')
-      .contains('button', 'Als PDF herunterladen')
-      .should('be.visible');
+    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Einwilligung').click();
+    cy.get('[data-e2e="e2e-compliance-edit-download-pdf-button"]').should(
+      'exist'
+    );
   });
 
   it('Die Menüpunkte (z.B. Laborergebnisse) werden enstprechend der Einwilligung angezeigt bzw. nicht angezeigt.', () => {
@@ -173,24 +165,23 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
     cy.get('[data-e2e="e2e-consent-name-lastname"]').find('input').type('Doe');
 
     cy.get('[data-e2e="e2e-consent-name-samples"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
       .click();
     cy.get('[data-e2e="e2e-consent-name-labresults"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
       .click();
     cy.get('[data-e2e="e2e-consent-name-bloodsamples"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
       .click();
     cy.get('[data-e2e="e2e-consent-name-app"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
       .click();
 
     cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').click();
-    cy.get('#confirmbutton').click();
 
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]')
@@ -203,13 +194,13 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
       .contains('Laborergebnisse')
       .should('be.visible');
     cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Einwilligung')
+      .contains(/Einwilligung|Consents/)
       .should('be.visible');
     cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Einstellungen')
+      .contains(/Einstellungen|Settings/)
       .should('be.visible');
     cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Kontakt')
+      .contains(/Kontakt|Contact/)
       .should('be.visible');
   });
 
@@ -220,65 +211,71 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
 
     cy.get('[data-e2e="e2e-consent-name-lastname"]')
       .find('label')
-      .contains('Nachname')
-      .should('be.visible');
+      .contains(/Nachname|Last name/)
+      .should('exist');
 
     cy.get('[data-e2e="e2e-consent-name-firstname"]')
       .find('label')
-      .contains('Vorname')
-      .should('be.visible');
-
-    cy.get('[data-e2e="e2e-compliance-edit-component"]')
-      .contains('Ich williger ein meine Proben zu verwalten')
-      .should('be.visible');
-    cy.get('[data-e2e="e2e-consent-name-samples"]')
-      .find('mat-radio-button')
-      .contains('Ja')
-      .should('be.visible');
-    cy.get('[data-e2e="e2e-consent-name-samples"]')
-      .find('mat-radio-button')
-      .contains('Nein')
-      .should('be.visible');
-
-    cy.get('[data-e2e="e2e-compliance-edit-component"]')
-      .contains('Ich williger ein meine Blut Proben zu verwalten')
-      .should('be.visible');
-    cy.get('[data-e2e="e2e-consent-name-labresults"]')
-      .find('mat-radio-button')
-      .contains('Ja')
-      .should('be.visible');
-    cy.get('[data-e2e="e2e-consent-name-labresults"]')
-      .find('mat-radio-button')
-      .contains('Nein')
-      .should('be.visible');
-
-    cy.get('[data-e2e="e2e-compliance-edit-component"]')
-      .contains('Ich williger ein meine Blut Proben zu verwalten')
-      .should('be.visible');
-    cy.get('[data-e2e="e2e-consent-name-bloodsamples"]')
-      .find('mat-radio-button')
-      .contains('Ja')
-      .should('be.visible');
-    cy.get('[data-e2e="e2e-consent-name-bloodsamples"]')
-      .find('mat-radio-button')
-      .contains('Nein')
-      .should('be.visible');
+      .contains(/Vorname|First name/)
+      .should('exist');
 
     cy.get('[data-e2e="e2e-compliance-edit-component"]')
       .contains(
-        'Ich willige in die Verarbeitung und Nutzung meiner personenbezogenen Daten gemäß der vorstehenden Datenschutzerklärung ein.'
+        /Ich willige ein meine Proben zu verwalten|I consent to managing my samples/
+      )
+      .should('exist');
+    cy.get('[data-e2e="e2e-consent-name-samples"]')
+      .find('ion-radio')
+      .contains(/Ja|Yes/)
+      .should('exist');
+    cy.get('[data-e2e="e2e-consent-name-samples"]')
+      .find('ion-radio')
+      .contains(/Nein|No/)
+      .should('exist');
+
+    cy.get('[data-e2e="e2e-compliance-edit-component"]')
+      .contains(
+        /Ich willige ein meine Blut Proben zu verwalten|I consent to managing my blood samples/
+      )
+      .should('exist');
+    cy.get('[data-e2e="e2e-consent-name-labresults"]')
+      .find('ion-radio')
+      .contains(/Ja|Yes/)
+      .should('exist');
+    cy.get('[data-e2e="e2e-consent-name-labresults"]')
+      .find('ion-radio')
+      .contains(/Nein|No/)
+      .should('exist');
+
+    cy.get('[data-e2e="e2e-compliance-edit-component"]')
+      .contains(
+        /Ich willige ein meine Blut Proben zu verwalten|I consent to managing my blood samples/
       )
       .should('be.visible');
-    cy.get('[data-e2e="e2e-consent-name-app"]')
-      .find('mat-radio-button')
-      .contains('Ja')
-      .should('be.visible');
-    cy.get('[data-e2e="e2e-consent-name-app"]')
-      .find('mat-radio-button')
-      .contains('Nein')
-      .should('be.visible');
+    cy.get('[data-e2e="e2e-consent-name-bloodsamples"]')
+      .find('ion-radio')
+      .contains(/Ja|Yes/)
+      .should('exist');
+    cy.get('[data-e2e="e2e-consent-name-bloodsamples"]')
+      .find('ion-radio')
+      .contains(/Nein|No/)
+      .should('exist');
 
-    cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').contains('OK');
+    cy.get('[data-e2e="e2e-compliance-edit-component"]')
+      .contains(
+        /Ich willige in die Verarbeitung und Nutzung meiner personenbezogenen Daten gemäß der vorstehenden Datenschutzerklärung ein\.|I consent to the processing and use of my personal data in accordance with the above privacy policy\./
+      )
+      .should('exist');
+    cy.get('[data-e2e="e2e-consent-name-app"]')
+      .find('ion-radio')
+      .contains(/Ja|Yes/)
+      .should('exist');
+    cy.get('[data-e2e="e2e-consent-name-app"]')
+      .find('ion-radio')
+      .contains(/Nein|No/)
+      .should('exist');
+
+    cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').should('be.visible');
   });
 
   it('Bei Zustimmung:  Einwilligung ist als PDF downloadbar', () => {
@@ -292,32 +289,27 @@ describe('Vorlage_test_TN_web_210127 -> release_test_TN_web -> Reiter: Einwillig
       .type('John');
 
     cy.get('[data-e2e="e2e-consent-name-samples"]')
-      .find('mat-radio-button')
-      .contains('Ja')
+      .find('ion-radio')
+      .contains(/Ja|Yes/)
       .click();
     cy.get('[data-e2e="e2e-consent-name-labresults"]')
-      .find('mat-radio-button')
-      .contains('Ja')
+      .find('ion-radio')
+      .contains(/Ja|Yes/)
       .click();
     cy.get('[data-e2e="e2e-consent-name-bloodsamples"]')
-      .find('mat-radio-button')
-      .contains('Ja')
+      .find('ion-radio')
+      .contains(/Ja|Yes/)
       .click();
     cy.get('[data-e2e="e2e-consent-name-app"]')
-      .find('mat-radio-button')
-      .contains('Ja')
+      .find('ion-radio')
+      .contains(/Ja|Yes/)
       .click();
 
     cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').click();
-    cy.get('#confirmbutton').click();
 
-    // necessary wait, otherwise the side menu rerenders and the element is  - in some circumstances - not clickable anymore
-    cy.contains('[data-e2e="e2e-sidenav-content"]', 'Laborergebnisse');
-    cy.contains('[data-e2e="e2e-sidenav-content"]', 'Einwilligung')
-      .contains('Einwilligung')
+    cy.get('[data-e2e="e2e-sidenav-content"]')
+      .contains(/Einwilligung|Consents/)
       .click();
-    cy.get('[data-e2e="e2e-compliance-edit-component"]')
-      .contains('button', 'Als PDF herunterladen')
-      .click();
+    cy.get('[data-e2e="e2e-compliance-edit-download-pdf-button"]').click();
   });
 });

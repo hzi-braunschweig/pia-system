@@ -22,7 +22,7 @@ const TARGET_TOPIC = MessageQueueTopic.PROBAND_EMAIL_VERIFIED;
 
 export class ProbandEmailVerifiedProxy extends EventProxy {
   public pattern =
-    'KK.EVENT.CLIENT.*.SUCCESS.pia-proband-web-app-client.VERIFY_EMAIL';
+    'KK.EVENT.CLIENT.*.SUCCESS.pia-proband-mobile-app-client.VERIFY_EMAIL';
   private _producer: Producer<ProbandEmailVerifiedMessage> | null = null;
 
   public set producer(value: Producer<ProbandEmailVerifiedMessage> | null) {

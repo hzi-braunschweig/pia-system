@@ -5,9 +5,8 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AlertController, IonicModule } from '@ionic/angular';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { MockPipe } from 'ng-mocks';
+import { AlertController } from '@ionic/angular/standalone';
+import { TranslateModule } from '@ngx-translate/core';
 import SpyObj = jasmine.SpyObj;
 
 import { QuestionnaireAnswerSampleComponent } from './questionnaire-answer-sample.component';
@@ -20,7 +19,6 @@ describe('QuestionnaireAnswerSampleComponent', () => {
 
   let sampleTrackingClient: SpyObj<SampleTrackingClientService>;
   let alertCtrl: SpyObj<AlertController>;
-  let translate: SpyObj<TranslateService>;
   let backButton: SpyObj<BackButtonService>;
 
   beforeEach(() => {
@@ -28,25 +26,19 @@ describe('QuestionnaireAnswerSampleComponent', () => {
       'putSampleAnswer',
     ]);
     alertCtrl = jasmine.createSpyObj('AlertController', ['create']);
-    translate = jasmine.createSpyObj('TranslateService', ['instant']);
     backButton = jasmine.createSpyObj('BackButtonService', [
       'enable',
       'disable',
     ]);
 
     TestBed.configureTestingModule({
-      declarations: [
-        QuestionnaireAnswerSampleComponent,
-        MockPipe(TranslatePipe),
-      ],
-      imports: [IonicModule.forRoot()],
+      imports: [QuestionnaireAnswerSampleComponent, TranslateModule.forRoot()],
       providers: [
         {
           provide: SampleTrackingClientService,
           useValue: sampleTrackingClient,
         },
         { provide: AlertController, useValue: alertCtrl },
-        { provide: TranslateService, useValue: translate },
         { provide: BackButtonService, useValue: backButton },
       ],
     }).compileComponents();

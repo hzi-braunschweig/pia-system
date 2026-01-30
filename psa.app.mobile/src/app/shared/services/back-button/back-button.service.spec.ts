@@ -5,7 +5,7 @@
  */
 
 import { TestBed } from '@angular/core/testing';
-import { Platform } from '@ionic/angular';
+import { Platform } from '@ionic/angular/standalone';
 
 import { BackButtonService } from './back-button.service';
 import { NEVER } from 'rxjs';

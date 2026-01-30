@@ -5,14 +5,31 @@
  */
 
 import { Component } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import {
+  ModalController,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonText,
+  IonButton,
+} from '@ionic/angular/standalone';
 import { DeleteAccountModalService } from '../../services/delete-account-modal.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-keep-study-answers-modal',
   templateUrl: './keep-study-answers-modal.component.html',
   styles: [],
-  standalone: false,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonText,
+    IonButton,
+    TranslateModule,
+  ],
 })
 export class KeepStudyAnswersModalComponent {
   constructor(

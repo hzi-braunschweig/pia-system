@@ -6,6 +6,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 
+set -e
+
 # add inverted variable so that it can be used in realms json
 if [ `echo "$IS_DEVELOPMENT_SYSTEM" | tr '[:upper:]' '[:lower:]'` == "true" ]; then
     export IS_NOT_DEVELOPMENT_SYSTEM=false

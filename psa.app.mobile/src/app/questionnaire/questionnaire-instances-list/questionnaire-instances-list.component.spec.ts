@@ -13,8 +13,12 @@ import {
   QuestionnaireStatus,
   CycleUnit,
 } from '../questionnaire.model';
-import { QuestionnaireModule } from '../questionnaire.module';
-import { ScrollingModule } from '@angular/cdk/scrolling';
+import {
+  CdkFixedSizeVirtualScroll,
+  CdkVirtualForOf,
+  CdkVirtualScrollViewport,
+} from '@angular/cdk/scrolling';
+import { NgFor, NgIf } from '@angular/common';
 
 interface QuestionnaireInstancesListComponentParams {
   questionnaireInstances: QuestionnaireInstance[];
@@ -27,10 +31,12 @@ describe('QuestionnaireInstancesListComponent', () => {
   >;
 
   beforeEach(async () => {
-    await MockBuilder(
-      QuestionnaireInstancesListComponent,
-      QuestionnaireModule
-    ).keep(ScrollingModule);
+    await MockBuilder(QuestionnaireInstancesListComponent)
+      .keep(CdkVirtualScrollViewport)
+      .keep(CdkFixedSizeVirtualScroll)
+      .keep(CdkVirtualForOf)
+      .keep(NgIf)
+      .keep(NgFor);
   });
 
   describe('no supplied list of questionnaire instances', () => {
@@ -44,6 +50,7 @@ describe('QuestionnaireInstancesListComponent', () => {
 
     it('should create', fakeAsync(() => {
       fixture.detectChanges();
+      expect(fixture.componentInstance).toBeTruthy();
     }));
   });
 
@@ -199,9 +206,14 @@ describe('QuestionnaireInstancesListComponent', () => {
       // Arrange
       const viewportHeight = 640;
       const topListBottomPosition = 100;
+      const bufferHeight = 15; // This matches the actual buffer height used in the component
 
-      // Set the viewport, as it is used to calculate the height of the virtual scroll viewport
-      viewport.set(320, viewportHeight);
+      // Mock the visual viewport
+      const originalVisualViewport = document.defaultView.visualViewport;
+      Object.defineProperty(document.defaultView, 'visualViewport', {
+        value: { height: viewportHeight },
+        configurable: true,
+      });
 
       // Set the listTopQuestionnaireInstances, as it is used to calculate the height of the virtual scroll viewport
       fixture.point.componentInstance.listTopQuestionnaireInstances = {
@@ -212,18 +224,42 @@ describe('QuestionnaireInstancesListComponent', () => {
         },
       };
 
+      // Mock the scrollViewport to verify the height is set correctly
+      const mockScrollViewport = {
+        elementRef: {
+          nativeElement: jasmine.createSpyObj('HTMLElement', [], {
+            style: {},
+          }),
+        },
+        checkViewportSize: jasmine.createSpy('checkViewportSize'),
+      };
+      fixture.point.componentInstance.scrollViewport =
+        mockScrollViewport as any;
+
+      // Spy on renderer.setStyle to capture the height being set
+      const rendererSpy = spyOn(
+        fixture.point.componentInstance['renderer'],
+        'setStyle'
+      );
+
       // Act: wait for the timeout used in ngAfterViewInit
       tick(105);
 
-      // Assert: the height of the virtual scroll viewport should be the remaining space of the viewport
-      const scrollViewport = fixture.nativeElement.querySelector(
-        'cdk-virtual-scroll-viewport'
-      ) as HTMLElement;
-
-      // The hardcoded value of 15 is the buffer height, used by the component
-      expect(scrollViewport.getBoundingClientRect().height).toEqual(
-        viewportHeight - topListBottomPosition - 15
+      // Assert: the renderer should have been called with the correct height
+      const expectedHeight =
+        viewportHeight - topListBottomPosition - bufferHeight;
+      expect(rendererSpy).toHaveBeenCalledWith(
+        mockScrollViewport.elementRef.nativeElement,
+        'height',
+        `${expectedHeight}px`
       );
+      expect(mockScrollViewport.checkViewportSize).toHaveBeenCalled();
+
+      // Restore the original visualViewport
+      Object.defineProperty(document.defaultView, 'visualViewport', {
+        value: originalVisualViewport,
+        configurable: true,
+      });
     }));
   });
 

@@ -21,3 +21,5 @@ openapi-merge.json
 **/.nyc_output
 **/node_modules
 **/xunit-test-report.xml
+
+.build.metadata.json

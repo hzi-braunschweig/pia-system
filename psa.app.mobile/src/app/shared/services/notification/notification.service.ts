@@ -7,12 +7,11 @@
 import { Injectable } from '@angular/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
 
 import { NotificationClientService } from './notification-client.service';
 import { NotificationPresenterService } from './notification-presenter.service';
-import { AuthService } from '../../../auth/auth.service';
 import type { PluginListenerHandle } from '@capacitor/core';
+import { AuthService } from 'src/app/auth/auth.service';
 
 @Injectable({
   providedIn: 'root',
@@ -72,20 +71,19 @@ export class NotificationService {
             this.openNotification(notification.notification.data.id);
           }
         }
-      ),
-      this.auth.isAuthenticated$
-        .pipe(filter((isAuthenticated) => !isAuthenticated))
-        .subscribe(async () => {
-          await Promise.all([
-            PushNotifications.unregister(),
-            PushNotifications.removeAllDeliveredNotifications(),
-            PushNotifications.removeAllListeners(),
-            this.unsubscribeLocalListeners(),
-          ]);
-        })
+      )
     );
 
     await PushNotifications.register();
+  }
+
+  public async onLogout() {
+    await Promise.all([
+      PushNotifications.unregister(),
+      PushNotifications.removeAllDeliveredNotifications(),
+      PushNotifications.removeAllListeners(),
+      this.unsubscribeLocalListeners(),
+    ]);
   }
 
   private async updateToken(token: string) {

@@ -94,7 +94,6 @@ describe('Release Test, role: "Proband", Tab: Contact', () => {
       .click();
     cy.expectPathname('/contact');
 
-    cy.get('[data-e2e="e2e-contact-content"]').contains('Kontakt');
     cy.get('[data-e2e="e2e-contact-content"]').contains(
       'Derzeit sind keine Kontaktinformationen für diese Studie verfügbar.'
     );
@@ -103,7 +102,7 @@ describe('Release Test, role: "Proband", Tab: Contact', () => {
     const testProbandConsent = {
       to_be_filled_by: 'Proband',
       compliance_text:
-        '<pia-consent-input-text-lastname></pia-consent-input-text-lastname>\n<pia-consent-input-text-firstname></pia-consent-input-text-firstname>\n\nIch williger ein meine Proben zu verwalten\n<pia-consent-input-radio-samples></pia-consent-input-radio-samples>\n\nIch williger ein meine Laborergebnisse zu verwalten\n<pia-consent-input-radio-labresults></pia-consent-input-radio-labresults>\n\nIch williger ein meine Blut Proben zu verwalten\n<pia-consent-input-radio-bloodsamples></pia-consent-input-radio-bloodsamples>\n\nIch willige in die Verarbeitung und Nutzung meiner personenbezogenen Daten gemäß der vorstehenden Datenschutzerklärung ein.\n<pia-consent-input-radio-app></pia-consent-input-radio-app>\n',
+        '<pia-consent-input-text-lastname></pia-consent-input-text-lastname>\n<pia-consent-input-text-firstname></pia-consent-input-text-firstname>\n\nIch willige ein meine Proben zu verwalten\n<pia-consent-input-radio-samples></pia-consent-input-radio-samples>\n\nIch willige ein meine Laborergebnisse zu verwalten\n<pia-consent-input-radio-labresults></pia-consent-input-radio-labresults>\n\nIch willige ein meine Blut Proben zu verwalten\n<pia-consent-input-radio-bloodsamples></pia-consent-input-radio-bloodsamples>\n\nIch willige in die Verarbeitung und Nutzung meiner personenbezogenen Daten gemäß der vorstehenden Datenschutzerklärung ein.\n<pia-consent-input-radio-app></pia-consent-input-radio-app>\n',
     };
 
     beforeEach(() => {
@@ -129,8 +128,6 @@ describe('Release Test, role: "Proband", Tab: Contact', () => {
 
       cy.wait('@getText');
 
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
-
       cy.get('[data-e2e="e2e-consent-name-lastname"]')
         .find('input')
         .type('John');
@@ -139,40 +136,46 @@ describe('Release Test, role: "Proband", Tab: Contact', () => {
         .type('Doe');
 
       cy.get('[data-e2e="e2e-consent-name-samples"]')
-        .find('mat-radio-button')
+        .find('ion-radio')
         .contains('Ja')
+        .should('be.visible')
         .click();
       cy.get('[data-e2e="e2e-consent-name-labresults"]')
-        .find('mat-radio-button')
+        .find('ion-radio')
         .contains('Ja')
+        .should('be.visible')
         .click();
       cy.get('[data-e2e="e2e-consent-name-bloodsamples"]')
-        .find('mat-radio-button')
+        .find('ion-radio')
         .contains('Ja')
+        .should('be.visible')
         .click();
       cy.get('[data-e2e="e2e-consent-name-app"]')
-        .find('mat-radio-button')
+        .find('ion-radio')
         .contains('Ja')
+        .should('be.visible')
         .click();
 
       cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').click();
-      cy.get('#confirmbutton').click();
 
       // necessary wait, otherwise the side menu rerenders and the element is - in some circumstances - not clickable anymore
       cy.contains('[data-e2e="e2e-sidenav-content"]', 'Laborergebnisse');
+
       cy.contains('[data-e2e="e2e-sidenav-content"]', 'Kontakt')
         .contains('Kontakt')
         .click();
 
-      cy.get('[data-e2e="request-new-material-button"]').click();
-      cy.get('[data-e2e="dialog-button-accept"]').click();
-      cy.get('#confirmbutton').click();
+      cy.get('[data-e2e="request-new-material-button"]')
+        .should('be.visible')
+        .click();
+      cy.get('#confirmButton').click();
 
       // necessary wait, otherwise the side menu rerenders and the element is  - in some circumstances - not clickable anymore
       cy.contains('[data-e2e="e2e-sidenav-content"]', 'Laborergebnisse');
       cy.get('[data-e2e="e2e-sidenav-content"]').click();
+
       cy.get('[data-e2e="e2e-logout"]').click();
-      cy.get('[data-e2e="dialog-button-accept"]').click();
+      cy.get('#confirmButton').click();
 
       expectLocation(probandAuthFormUrl);
 

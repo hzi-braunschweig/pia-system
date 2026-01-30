@@ -97,7 +97,7 @@ describe('Release Test, role: "Proband", Tab: Home', () => {
     const testProbandConsent = {
       to_be_filled_by: 'Proband',
       compliance_text:
-        '<pia-consent-input-text-lastname></pia-consent-input-text-lastname>\n<pia-consent-input-text-firstname></pia-consent-input-text-firstname>\n\nIch williger ein meine Proben zu verwalten\n<pia-consent-input-radio-samples></pia-consent-input-radio-samples>\n\nIch williger ein meine Laborergebnisse zu verwalten\n<pia-consent-input-radio-labresults></pia-consent-input-radio-labresults>\n\nIch williger ein meine Blut Proben zu verwalten\n<pia-consent-input-radio-bloodsamples></pia-consent-input-radio-bloodsamples>\n\nIch willige in die Verarbeitung und Nutzung meiner personenbezogenen Daten gemäß der vorstehenden Datenschutzerklärung ein.\n<pia-consent-input-radio-app></pia-consent-input-radio-app>\n',
+        '<pia-consent-input-text-lastname></pia-consent-input-text-lastname>\n<pia-consent-input-text-firstname></pia-consent-input-text-firstname>\n\nIch willige ein meine Proben zu verwalten\n<pia-consent-input-radio-samples></pia-consent-input-radio-samples>\n\nIch willige ein meine Laborergebnisse zu verwalten\n<pia-consent-input-radio-labresults></pia-consent-input-radio-labresults>\n\nIch willige ein meine Blut Proben zu verwalten\n<pia-consent-input-radio-bloodsamples></pia-consent-input-radio-bloodsamples>\n\nIch willige in die Verarbeitung und Nutzung meiner personenbezogenen Daten gemäß der vorstehenden Datenschutzerklärung ein.\n<pia-consent-input-radio-app></pia-consent-input-radio-app>\n',
     };
 
     beforeEach(() => {
@@ -113,18 +113,6 @@ describe('Release Test, role: "Proband", Tab: Home', () => {
 
       login(probandCredentials.username, probandCredentials.password);
       changePassword(probandCredentials.password, newPassword);
-
-      // User name should be displayed
-      cy.get('[data-e2e="e2e-username"]').contains(probandCredentials.username);
-
-      // User Role should be displayed
-      cy.get('[data-e2e="e2e-current-role"]').contains('Teilnehmer:in');
-
-      // data-e2e="e2e-compliance-edit-component"
-      cy.get('[data-e2e="e2e-compliance-probands-content"]')
-        .contains('Einwilligung')
-        .click();
-
       cy.get('[data-e2e="e2e-consent-name-lastname"]')
         .find('input')
         .type('John');
@@ -133,34 +121,35 @@ describe('Release Test, role: "Proband", Tab: Home', () => {
         .type('Doe');
 
       cy.get('[data-e2e="e2e-consent-name-samples"]')
-        .find('mat-radio-button')
+        .find('ion-radio')
         .contains('Ja')
+        .should('be.visible')
         .click();
       cy.get('[data-e2e="e2e-consent-name-labresults"]')
-        .find('mat-radio-button')
+        .find('ion-radio')
         .contains('Ja')
+        .should('be.visible')
         .click();
       cy.get('[data-e2e="e2e-consent-name-bloodsamples"]')
-        .find('mat-radio-button')
+        .find('ion-radio')
         .contains('Ja')
+        .should('be.visible')
         .click();
       cy.get('[data-e2e="e2e-consent-name-app"]')
-        .find('mat-radio-button')
+        .find('ion-radio')
         .contains('Ja')
+        .should('be.visible')
         .click();
 
       cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').click();
-      cy.get('#confirmbutton').click();
       cy.expectPathname('/home');
 
-      // necessary wait, otherwise the side menu rerenders and the element is  - in some circumstances - not clickable anymore
-      cy.contains('[data-e2e="e2e-sidenav-content"]', 'Laborergebnisse');
       cy.contains('[data-e2e="e2e-sidenav-content"]', 'Einwilligung')
         .contains('Einwilligung')
         .click();
       cy.get('[data-e2e="e2e-compliance-edit-component-header"]')
         .contains(study.name)
-        .click();
+        .should('be.visible');
     });
   });
 
@@ -198,35 +187,42 @@ describe('Release Test, role: "Proband", Tab: Home', () => {
       cy.visit(appUrl);
       login(probandCredentials.username, probandCredentials.password);
       changePassword(probandCredentials.password, newPassword);
-      cy.get('[data-e2e="e2e-android-link"]').click();
-      cy.get('[data-e2e="e2e-iOS-link"]').click();
+      cy.get('[data-e2e="e2e-android-link"]').should('be.visible');
+      cy.get('[data-e2e="e2e-iOS-link"]').should('be.visible');
     });
 
     it('should visually check the start page and correct menu items should be available', () => {
       cy.visit(appUrl);
       login(probandCredentials.username, probandCredentials.password);
       changePassword(probandCredentials.password, newPassword);
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
-      cy.contains('[data-e2e="e2e-sidenav-content"]', 'Fragebögen')
-        .contains('Fragebögen')
-        .click();
-      cy.expectPathname('/questionnaires/user');
 
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
-      cy.contains('[data-e2e="e2e-sidenav-content"]', 'Einstellungen')
+      cy.expectPathname('/home');
+      cy.get('[data-e2e="e2e-sidenav-content"]').should('be.visible');
+
+      cy.get('[data-e2e="e2e-sidenav-content"]')
+        .contains('Fragebögen')
+        .should('be.visible')
+        .click();
+      cy.expectPathname('/questionnaire');
+
+      cy.get('[data-e2e="e2e-sidenav-content"]').should('be.visible').click();
+      cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Einstellungen')
+        .should('be.visible')
         .click();
       cy.expectPathname('/settings');
 
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
-      cy.contains('[data-e2e="e2e-sidenav-content"]', 'Kontakt')
+      cy.get('[data-e2e="e2e-sidenav-content"]')
+        .should('be.visible')
         .contains('Kontakt')
+        .should('be.visible')
         .click();
       cy.expectPathname('/contact');
 
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
-      cy.contains('[data-e2e="e2e-sidenav-content"]', 'Startseite')
+      cy.get('[data-e2e="e2e-sidenav-content"]')
+        .should('be.visible')
         .contains('Startseite')
+        .should('be.visible')
         .click();
       cy.expectPathname('/home');
     });

@@ -5,8 +5,6 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
-
 import { InputPasswordComponent } from './input-password.component';
 import { By } from '@angular/platform-browser';
 
@@ -16,8 +14,7 @@ describe('InputPasswordComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [InputPasswordComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [InputPasswordComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InputPasswordComponent);

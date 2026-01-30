@@ -8,6 +8,7 @@ import { Environment } from './interfaces/environment';
 
 export const environmentBase: Environment = {
   locale: 'en-US',
+  baseUrl: window.location.origin,
   androidAppId: 'de.pia.app',
   iOSAppId: 'id1510929221',
   authServer: {

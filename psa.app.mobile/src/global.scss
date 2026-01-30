@@ -33,3 +33,9 @@
 
 /* Flag Icon Styles */
 @import 'assets/flag-icon-css/css/flag-icon.css';
+
+/* Custom Global Styles */
+.container-max-width {
+  max-width: 768px;
+  margin-inline: auto;
+}

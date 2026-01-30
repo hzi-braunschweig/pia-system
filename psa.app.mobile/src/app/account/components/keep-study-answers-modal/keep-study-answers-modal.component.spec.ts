@@ -5,17 +5,16 @@
  */
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
-
 import { KeepStudyAnswersModalComponent } from './keep-study-answers-modal.component';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { TranslateModule, TranslatePipe } from '@ngx-translate/core';
-import { MockPipe } from 'ng-mocks';
+import { TranslateModule } from '@ngx-translate/core';
 import { DeleteAccountModalService } from '../../services/delete-account-modal.service';
 import {
   provideHttpClient,
   withInterceptorsFromDi,
 } from '@angular/common/http';
+import { ModalController } from '@ionic/angular/standalone';
+import { MockProvider } from 'ng-mocks';
 
 describe('KeepStudyAnswersModalComponent', () => {
   let component: KeepStudyAnswersModalComponent;
@@ -24,11 +23,11 @@ describe('KeepStudyAnswersModalComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [KeepStudyAnswersModalComponent, MockPipe(TranslatePipe)],
-      imports: [IonicModule.forRoot(), TranslateModule],
+      imports: [TranslateModule.forRoot(), KeepStudyAnswersModalComponent],
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
+        MockProvider(ModalController),
       ],
     }).compileComponents();
 

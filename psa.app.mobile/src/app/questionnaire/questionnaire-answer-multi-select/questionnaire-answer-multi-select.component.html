@@ -10,6 +10,7 @@
 @if (useAutocomplete) {
 <ion-item>
   <ion-input
+    data-e2e="e2e-input-type-autocomplete-multiselect"
     type="text"
     [placeholder]="'QUESTIONNAIRE_QUESTIONS.AUTOCOMPLETE_PICK' | translate"
     (ionInput)="filterValues($event)"
@@ -27,11 +28,12 @@
   ></ion-icon>
 </ion-chip>
 }} @if (showAutocompleteOptions){
-<ion-list>
+<ion-list data-e2e="e2e-input-type-autocomplete-multiselect-options">
   @for (value of filteredValues; track value) {
   <ion-item button (click)="selectValue(value)">
-    <ion-label>{{ value }}</ion-label> </ion-item
-  >}
+    <ion-label>{{ value }}</ion-label>
+  </ion-item>
+  }
 </ion-list>
 } } @else {
 <ion-item *ngFor="let value of values; index as i" lines="none">

@@ -7,7 +7,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { LoginPage } from './login/login.page';
@@ -15,18 +14,35 @@ import { AuthRoutingModule } from './auth-routing.module';
 import { SharedModule } from '../shared/shared.module';
 import { InputPasswordComponent } from './input-password/input-password.component';
 import { LoginUsernameComponent } from './login-username/login-username.component';
+import {
+  IonItem,
+  IonInput,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+} from '@ionic/angular/standalone';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule,
     TranslateModule.forChild(),
     AuthRoutingModule,
     SharedModule,
     ReactiveFormsModule,
+    IonItem,
+    IonInput,
+    IonButton,
+    IonIcon,
+    IonContent,
+    IonCard,
+    IonCardHeader,
+    LoginPage,
+    InputPasswordComponent,
+    LoginUsernameComponent,
   ],
-  declarations: [LoginPage, InputPasswordComponent, LoginUsernameComponent],
   providers: [],
 })
 export class AuthModule {}

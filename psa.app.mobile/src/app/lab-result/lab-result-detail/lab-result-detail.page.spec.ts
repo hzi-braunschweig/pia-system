@@ -11,7 +11,6 @@ import {
   tick,
 } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { IonicModule } from '@ionic/angular';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 import { LabResultDetailPage } from './lab-result-detail.page';
@@ -42,8 +41,7 @@ describe('LabResultDetailPage', () => {
     });
 
     TestBed.configureTestingModule({
-      declarations: [LabResultDetailPage],
-      imports: [IonicModule.forRoot()],
+      imports: [LabResultDetailPage],
       providers: [
         { provide: ActivatedRoute, useValue: activatedRoute },
         {

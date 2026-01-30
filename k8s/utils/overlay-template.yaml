@@ -129,3 +129,8 @@ secretGenerator:
       - firebaseProjectId={firebaseProjectId}
       - firebaseClientEmail={firebaseClientEmail}
       - isSormasEnabled=false
+      - notificationHour={notificationHour}
+      - notificationMinute={notificationMinute}
+      # optional https proxy
+      # uncomment or leave empty if not used
+      - httpsProxyUrl={httpsProxyUrl}

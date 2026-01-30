@@ -9,6 +9,7 @@
 }
 
 .pia-logo-container {
+  width: 100%;
   display: flex;
   justify-content: center;
 }
@@ -16,4 +17,5 @@
 .pia-logo {
   max-height: 160px;
   max-width: 40%;
+  margin-inline: auto;
 }

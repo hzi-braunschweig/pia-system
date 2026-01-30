@@ -2,7 +2,7 @@ include:
   - local: ci/rules.yml
 
 renovate:
-  image: renovate/renovate:41.130.0@sha256:593ca15f733178beb4bc10021165cf932063fc1834de39b133f537029587a0d6
+  image: renovate/renovate:42.13.3@sha256:5cdea7e2aadccbfe7fcf3451a53d037a27bc5463be4231b6109e10a2ab822a40
   stage: deploy
   extends: .no-cpu-request
   resource_group: renovate

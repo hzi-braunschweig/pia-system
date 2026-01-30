@@ -17,8 +17,7 @@ import { environment } from '../../environments/environment';
 import { LoginFailedError } from './errors/login-failed-error';
 import { TranslateService } from '@ngx-translate/core';
 import { MockService } from 'ng-mocks';
-import { Platform } from '@ionic/angular';
-import { CurrentUser } from './current-user.service';
+import { Platform } from '@ionic/angular/standalone';
 import Keycloak from 'keycloak-js';
 import { PiaKeycloakAdapter } from './keycloak-adapter/keycloak-adapter';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -27,9 +26,9 @@ import { contentTypeInterceptor } from '../shared/interceptors/content-type-inte
 import { unauthorizedInterceptor } from '../shared/interceptors/unauthorized-interceptor';
 import { httpErrorInterceptor } from '../shared/interceptors/http-error-interceptor.service';
 import { KeycloakFactoryService } from './keycloak.factory';
-import { KeycloakEvent, KeycloakEventType } from 'keycloak-angular';
-import { signal } from '@angular/core';
 import { tokenInterceptor } from '../shared/interceptors/token-interceptor';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { CurrentUser } from './current-user.service';
 
 describe('KeycloakClientService', () => {
   const endpointUrl = 'http://localhost';
@@ -38,8 +37,9 @@ describe('KeycloakClientService', () => {
 
   let keycloak: SpyObj<Keycloak>;
   let endpoint: EndpointService;
-  let currentUser: CurrentUser;
   let mockKeycloakFactory: jasmine.SpyObj<KeycloakFactoryService>;
+  let platform: jasmine.SpyObj<Platform>;
+  let currentUser: jasmine.SpyObj<CurrentUser>;
 
   beforeEach(() => {
     mockKeycloakFactory = jasmine.createSpyObj('KeycloakFactoryService', [
@@ -55,6 +55,8 @@ describe('KeycloakClientService', () => {
         'login',
         'accountManagement',
         'logout',
+        'createLogoutUrl',
+        'createRegisterUrl',
       ],
       {
         token: 'fake-token-value',
@@ -62,7 +64,15 @@ describe('KeycloakClientService', () => {
       }
     );
     keycloak.logout.and.resolveTo();
+    keycloak.createLogoutUrl.and.returnValue('http://logout-url');
+    keycloak.updateToken.and.resolveTo();
     mockKeycloakFactory.create.and.returnValue(keycloak);
+    platform = jasmine.createSpyObj('Platform', ['ready', 'is']);
+    platform.ready.and.returnValue(Promise.resolve('ready'));
+    platform.is.and.returnValue(true);
+
+    currentUser = jasmine.createSpyObj('CurrentUser', ['init', 'reset']);
+
     TestBed.configureTestingModule({
       providers: [
         InAppBrowser,
@@ -72,11 +82,23 @@ describe('KeycloakClientService', () => {
         },
         {
           provide: Platform,
-          useValue: { ready: () => Promise.resolve() },
+          useValue: platform,
         },
         {
           provide: KeycloakFactoryService,
           useValue: mockKeycloakFactory,
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: convertToParamMap({ study: 'test-study' }),
+            },
+          },
+        },
+        {
+          provide: CurrentUser,
+          useValue: currentUser,
         },
         provideHttpClient(
           withInterceptors([
@@ -92,7 +114,6 @@ describe('KeycloakClientService', () => {
 
     service = TestBed.inject(KeycloakClientService);
     endpoint = TestBed.inject(EndpointService);
-    currentUser = TestBed.inject(CurrentUser);
 
     endpoint.setCustomEndpoint(endpointUrl);
 
@@ -101,7 +122,7 @@ describe('KeycloakClientService', () => {
   });
 
   describe('initialize', () => {
-    it('should initialize keycloak and set the initialization flag', async () => {
+    it('should initialize keycloak', async () => {
       await service.initialize();
 
       expect(keycloak).toBeDefined();
@@ -110,54 +131,13 @@ describe('KeycloakClientService', () => {
         pkceMethod: 'S256',
         checkLoginIframe: false,
       });
-      expect(service.hasBeenInitialized).toBeTrue();
     });
 
     it('should not reinitialize if already initialized', async () => {
-      service['_hasBeenInitialized'] = true;
+      service['keycloakIsInitialized'].set(true);
 
       await service.initialize();
       expect(keycloak.init).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('keycloakSignal effect', () => {
-    let keycloakSignal = signal<KeycloakEvent>({
-      type: KeycloakEventType.AuthSuccess,
-    });
-
-    beforeEach(async () => {
-      spyOn(service, 'logout').and.resolveTo();
-      spyOn(currentUser, 'init');
-      keycloak.token = 'new-token';
-      await service.initialize();
-      service['keycloakSignal'] = keycloakSignal;
-    });
-
-    it('should refresh token on TokenExpired event', () => {
-      keycloakSignal.set({ type: KeycloakEventType.TokenExpired });
-      TestBed.flushEffects();
-
-      expect(keycloak.updateToken).toHaveBeenCalledWith(30);
-      expect(keycloak.logout).not.toHaveBeenCalled();
-    });
-
-    it('should logout on AuthRefreshError event', () => {
-      keycloakSignal.set({ type: KeycloakEventType.AuthRefreshError });
-      TestBed.flushEffects();
-
-      expect(service.logout).toHaveBeenCalled();
-      expect(keycloak.updateToken).not.toHaveBeenCalled();
-    });
-
-    it('should initialize current user on AuthRefreshSuccess event', () => {
-      mockKeycloakFactory.create.and.returnValue(keycloak);
-      keycloakSignal.set({ type: KeycloakEventType.AuthRefreshSuccess });
-      TestBed.flushEffects();
-
-      expect(currentUser.init).toHaveBeenCalledWith('fake-token-value');
-      expect(keycloak.logout).not.toHaveBeenCalled();
-      expect(keycloak.updateToken).not.toHaveBeenCalled();
     });
   });
 
@@ -169,7 +149,7 @@ describe('KeycloakClientService', () => {
 
     it('should return true if authenticated', () => {
       service['keycloak'] = keycloak;
-      service['_hasBeenInitialized'] = true;
+      service['keycloakIsInitialized'].set(true);
       keycloak.authenticated = true;
       keycloak.isTokenExpired.and.returnValue(false);
 
@@ -179,7 +159,7 @@ describe('KeycloakClientService', () => {
 
     it('should return true if authenticated even if token is expired', () => {
       service['keycloak'] = keycloak;
-      service['_hasBeenInitialized'] = true;
+      service['keycloakIsInitialized'].set(true);
       keycloak.authenticated = true;
       keycloak.isTokenExpired.and.returnValue(true);
 
@@ -190,33 +170,38 @@ describe('KeycloakClientService', () => {
 
   describe('login', () => {
     const loginHint = 'test-1234567';
+    const redirectUri = 'http://localhost/redirect';
     const locale = 'de-DE';
 
     beforeEach(() => {
       service['keycloak'] = keycloak;
-      service['_hasBeenInitialized'] = true;
+      service['keycloakIsInitialized'].set(true);
       keycloak.token = 'fake-token-value';
       keycloak.login.and.resolveTo();
     });
 
-    it('should login successfully and initialize current user', async () => {
-      spyOn(currentUser, 'init');
-
-      await service.login(true, loginHint, locale);
+    it('should login successfully', async () => {
+      await service.login({
+        hidden: true,
+        username: loginHint,
+        locale,
+        redirectUri,
+      });
 
       expect(keycloak.login).toHaveBeenCalledWith({
         loginHint,
         locale,
         cordovaOptions: { hidden: 'yes' },
+        redirectUri,
       });
       expect(currentUser.init).toHaveBeenCalledWith('fake-token-value');
     });
 
     it('should throw LoginFailedError if not initialized', async () => {
-      service['_hasBeenInitialized'] = false;
+      service['keycloakIsInitialized'].set(false);
 
       await expectAsync(
-        service.login(false, loginHint, locale)
+        service.login({ hidden: false, username: loginHint, locale })
       ).toBeRejectedWith(jasmine.any(LoginFailedError));
     });
 
@@ -224,7 +209,7 @@ describe('KeycloakClientService', () => {
       keycloak.login.and.rejectWith(undefined);
 
       await expectAsync(
-        service.login(false, loginHint, locale)
+        service.login({ hidden: false, username: loginHint, locale })
       ).toBeRejectedWith(jasmine.any(LoginFailedError));
     });
   });
@@ -236,7 +221,7 @@ describe('KeycloakClientService', () => {
     });
 
     it('should initialize if not already done', async () => {
-      service['_hasBeenInitialized'] = false;
+      service['keycloakIsInitialized'].set(false);
 
       await service.logout();
 
@@ -245,12 +230,54 @@ describe('KeycloakClientService', () => {
 
     it('should call keycloak logout and remove endpoint', async () => {
       service['keycloak'] = keycloak;
-      service['_hasBeenInitialized'] = true;
+      service['keycloakIsInitialized'].set(true);
 
       await service.logout();
 
       expect(keycloak.logout).toHaveBeenCalled();
       expect(endpoint.removeLatestEndpoint).toHaveBeenCalled();
+      expect(currentUser.reset).toHaveBeenCalled();
+    });
+  });
+
+  describe('createRegisterUrl', () => {
+    beforeEach(() => {
+      keycloak.createRegisterUrl.and.returnValue(
+        'https://keycloak.example.com/register'
+      );
+      service['keycloak'] = keycloak;
+    });
+
+    it('should throw error if keycloak is not initialized', () => {
+      service['keycloak'] = undefined;
+
+      expect(() => service.createRegisterUrl('test-study')).toThrowError(
+        'Keycloak is not initialized'
+      );
+    });
+
+    it('should create registration URL with study parameter', () => {
+      const result = service.createRegisterUrl('test-study');
+
+      expect(keycloak.createRegisterUrl).toHaveBeenCalledWith({
+        redirectUri: environment.baseUrl,
+      });
+      expect(result).toContain('https://keycloak.example.com/register');
+      expect(result).toContain('study=test-study');
+    });
+  });
+
+  describe('openAccountManagement', () => {
+    beforeEach(() => {
+      service['keycloak'] = keycloak;
+      service['keycloakIsInitialized'].set(true);
+      keycloak.accountManagement.and.resolveTo();
+    });
+
+    it('should call keycloak accountManagement', async () => {
+      await service.openAccountManagement();
+
+      expect(keycloak.accountManagement).toHaveBeenCalled();
     });
   });
 });

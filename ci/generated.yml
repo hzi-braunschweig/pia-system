@@ -9,7 +9,7 @@
       psa.lib.service-core psa.lib.templatepipeline psa.server.apigateway
       psa.server.auth psa.server.autheventproxy psa.server.eventhistory
       psa.server.jobscheduler psa.server.mailserver psa.server.messagequeue
-      psa.server.publicapi psa.server.sftpserver psa.service.analyzerservice
+      psa.server.publicapi psa.service.analyzerservice
       psa.service.complianceservice psa.service.feedbackstatisticservice
       psa.service.loggingservice psa.service.notificationservice
       psa.service.personaldataservice psa.service.questionnaireservice

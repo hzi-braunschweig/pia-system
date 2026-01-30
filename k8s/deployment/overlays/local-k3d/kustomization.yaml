@@ -13,57 +13,13 @@ resources:
 
 components:
   - ../../components/local-development
+  - ../../components/custom-registry
   # - ../../components/theming-example  # Uncomment to enable theming example
 
-# To keep volumes and their data after skaffold usage, we need to manage the namespace and PVCs ourselves
 patches:
   - target:
-      version: v1
-      kind: Namespace
-      name: pia
+      kind: Deployment
     patch: |-
-      apiVersion: v1
-      kind: Namespace
-      metadata:
-        name: not-managed-by-skaffold
-      $patch: delete
-  - target:
-      version: v1
-      kind: PersistentVolumeClaim
-      name: qpiaservice
-    patch: |-
-      apiVersion: v1
-      kind: PersistentVolumeClaim
-      metadata:
-        name: not-managed-by-skaffold
-      $patch: delete
-  - target:
-      version: v1
-      kind: PersistentVolumeClaim
-      name: ewpiaservice
-    patch: |-
-      apiVersion: v1
-      kind: PersistentVolumeClaim
-      metadata:
-        name: not-managed-by-skaffold
-      $patch: delete
-  - target:
-      version: v1
-      kind: PersistentVolumeClaim
-      name: ipiaservice
-    patch: |-
-      apiVersion: v1
-      kind: PersistentVolumeClaim
-      metadata:
-        name: not-managed-by-skaffold
-      $patch: delete
-  - target:
-      version: v1
-      kind: PersistentVolumeClaim
-      name: messagequeue
-    patch: |-
-      apiVersion: v1
-      kind: PersistentVolumeClaim
-      metadata:
-        name: not-managed-by-skaffold
-      $patch: delete
+      - op: add
+        path: "/spec/replicas"
+        value: 1

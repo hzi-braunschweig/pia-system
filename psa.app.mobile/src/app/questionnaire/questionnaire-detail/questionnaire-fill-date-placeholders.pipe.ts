@@ -7,10 +7,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { addDays, format, startOfToday } from 'date-fns';
 
-@Pipe({
-  name: 'fillDatePlaceholders',
-  standalone: false,
-})
+@Pipe({ name: 'fillDatePlaceholders' })
 export class QuestionnaireFillDatePlaceholdersPipe implements PipeTransform {
   private static readonly DATE_PLACEHOLDER_REGEX = /\(dat=(.*?)\)/g;
 

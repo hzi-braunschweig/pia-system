@@ -19,7 +19,7 @@ const TARGET_TOPIC = MessageQueueTopic.PROBAND_REGISTERED;
 
 export class UserRegistrationProxy extends EventProxy {
   public pattern =
-    'KK.EVENT.CLIENT.*.SUCCESS.pia-proband-web-app-client.REGISTER';
+    'KK.EVENT.CLIENT.*.SUCCESS.pia-proband-mobile-app-client.REGISTER';
   private _producer: Producer<ProbandRegisteredMessage> | null = null;
 
   public set producer(value: Producer<ProbandRegisteredMessage> | null) {

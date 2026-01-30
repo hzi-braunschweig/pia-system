@@ -48,7 +48,6 @@ import { CollectiveSampleLettersComponent } from './features/collective-sample-l
 import { SideNavigationComponent } from './features/side-navigation/side-navigation.component';
 import { MaterialModule } from './material.module';
 import { ComplianceResearcherComponent } from './pages/compliance/compliance-researcher/compliance-researcher.component';
-import { ContactComponent } from './pages/contact/contact.component';
 import { HomeComponent } from './pages/home/home.component';
 import { InternalUsersComponent } from './pages/internal-users/internal-users.component';
 import { LaboratoryResultDetailsComponent } from './pages/laboratories/laboratory-result-details/laboratory-result-details.component';
@@ -78,7 +77,6 @@ import { QuestionnaireResearcherComponent } from './pages/questionnaires/questio
 import { QuestionnairesResearcherComponent } from './pages/questionnaires/questionnaires-researcher/questionnaires-researcher.component';
 import { SampleManagementComponent } from './pages/samples/sample-management/sample-management.component';
 import { SamplesComponent } from './pages/samples/samples/samples.component';
-import { SettingsComponent } from './pages/settings/settings.component';
 import { StudiesComponent } from './pages/studies/studies/studies.component';
 import { StudyAccessesComponent } from './pages/studies/study-accesses/study-accesses.component';
 import { StripMarkdown } from './pipes/strip-markdown.pipe';
@@ -114,7 +112,6 @@ import { ComplianceViewListEntryComponent } from './pages/compliance/compliance-
 import { ComplianceViewListComponent } from './pages/compliance/compliance-view-list/compliance-view-list.component';
 import { ComplianceExaminerComponent } from './pages/compliance/compliance-examiner/compliance-examiner.component';
 import { ComplianceEditExaminerComponent } from './pages/compliance/compliance-edit/compliance-edit-examiner/compliance-edit-examiner.component';
-import { ComplianceEditProbandComponent } from './pages/compliance/compliance-edit/compliance-edit-proband/compliance-edit-proband.component';
 import { ProbandsUntersuchungsteamComponent } from './pages/probands/probands-untersuchungsteam/probands-untersuchungsteam.component';
 import { ProbandsForscherComponent } from './pages/probands/probands-forscher/probands-forscher.component';
 import { MatOptionSelectAllModule } from './features/mat-option-select-all/mat-option-select-all.module';
@@ -130,7 +127,6 @@ import { ComplianceRadioComponent } from './pages/compliance/compliance-research
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { QuestionnaireInstancesListComponent } from './pages/questionnaire-instances/questionnaire-instances-list/questionnaire-instances-list.component';
 import { QuestionnaireInstancesListForInvestigatorComponent } from './pages/questionnaire-instances/questionnaire-instances-list-for-investigator/questionnaire-instances-list-for-investigator.component';
-import { QuestionnaireInstancesListForProbandComponent } from './pages/questionnaire-instances/questionnaire-instances-list-for-proband/questionnaire-instances-list-for-proband.component';
 import { LicenseListComponent } from './pages/license-list/license-list.component';
 import { AccessLevelPipe } from './pipes/access-level.pipe';
 import { StudyStatusPipe } from './pipes/study-status.pipe';
@@ -146,9 +142,6 @@ import { DialogNotificationComponent } from './dialogs/dialog-notification/dialo
 import { RemarkDialogComponent } from './pages/samples/sample-remark-dialog/remark-dialog.component';
 import { ScanDialogComponent } from './pages/samples/sample-scan-dialog/scan-dialog.component';
 import { UserService } from './psa.app.core/providers/user-service/user.service';
-import { DialogDeleteAccountHealthDataPermissionComponent } from './dialogs/dialog-delete-account-health-data-permission/dialog-delete-account-health-data-permission.component';
-import { DialogDeleteAccountConfirmationComponent } from './dialogs/dialog-delete-account-confirmation/dialog-delete-account-confirmation.component';
-import { DialogDeleteAccountSuccessComponent } from './dialogs/dialog-delete-account-success/dialog-delete-account-success.component';
 import { ChipAutocompleteComponent } from './pages/probands/chip-autocomplete/chip-autocomplete.component';
 import { AccountInfoComponent } from './features/account-info/account-info.component';
 import { RegistrationComponent } from './pages/registration/registration/registration.component';
@@ -211,9 +204,6 @@ registerLocaleData(localeEs, 'es', localeEsExtra);
     DialogConfirmPartialDeletionComponent,
     DialogNewUserComponent,
     DialogNewPlannedProbandsComponent,
-    DialogDeleteAccountHealthDataPermissionComponent,
-    DialogDeleteAccountConfirmationComponent,
-    DialogDeleteAccountSuccessComponent,
     DialogMarkdownEditorComponent,
     DialogMarkdownMailEditorComponent,
     DialogMarkdownLabresultEditorComponent,
@@ -235,7 +225,6 @@ registerLocaleData(localeEs, 'es', localeEsExtra);
     QuestionnaireInstancesComponent,
     StudyAccessesComponent,
     InternalUsersComponent,
-    SettingsComponent,
     SampleManagementComponent,
     PlannedProbandsComponent,
     CollectiveSampleLettersComponent,
@@ -252,7 +241,6 @@ registerLocaleData(localeEs, 'es', localeEsExtra);
     LogsDeleteSysAdminComponent,
     ScanSampleComponent,
     DialogNotificationComponent,
-    ContactComponent,
     ComplianceResearcherComponent,
     ComplianceExaminerComponent,
     SafeUrlPipe,
@@ -261,13 +249,11 @@ registerLocaleData(localeEs, 'es', localeEsExtra);
     ComplianceViewListEntryComponent,
     DialogViewComplianceComponent,
     ComplianceEditExaminerComponent,
-    ComplianceEditProbandComponent,
     DialogEditComplianceComponent,
     ComplianceTextComponent,
     ComplianceRadioComponent,
     QuestionnaireInstancesListComponent,
     QuestionnaireInstancesListForInvestigatorComponent,
-    QuestionnaireInstancesListForProbandComponent,
     LicenseListComponent,
     ChipAutocompleteComponent,
     AccountInfoComponent,

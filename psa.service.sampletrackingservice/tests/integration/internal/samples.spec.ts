@@ -18,7 +18,6 @@ import {
   StudyStatus,
 } from '../../../src/entities/labResult';
 import { Server } from '../../../src/server';
-import { LabResultImportHelper } from '../../../src/services/labResultImportHelper';
 import { mockCompliance, setupFetchMock } from '../utils/mockFetch';
 import { cleanup, setup } from './samples.spec.ts.data/setup.helper';
 
@@ -27,7 +26,6 @@ chai.use(chaiHttp);
 describe('/study/{studyName}/participants/{pseudonym}/samples', () => {
   const apiAddress = `http://localhost:${config.internal.port}`;
   const studyName = 'Study';
-  const suiteSandbox = sinon.createSandbox();
   const testSandbox = sinon.createSandbox();
   const fetchMock = fetchMocker.sandbox();
 
@@ -44,9 +42,6 @@ describe('/study/{studyName}/participants/{pseudonym}/samples', () => {
   };
 
   before(async function () {
-    suiteSandbox.stub(LabResultImportHelper, 'importHl7FromMhhSftp');
-    suiteSandbox.stub(LabResultImportHelper, 'importCsvFromHziSftp');
-
     await setup();
     await Server.init();
   });
@@ -54,7 +49,6 @@ describe('/study/{studyName}/participants/{pseudonym}/samples', () => {
   after(async function () {
     await cleanup();
     await Server.stop();
-    suiteSandbox.restore();
   });
 
   beforeEach(() => {

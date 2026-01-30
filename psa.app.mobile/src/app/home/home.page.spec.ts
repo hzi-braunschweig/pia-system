@@ -14,9 +14,9 @@ import { MockBuilder } from 'ng-mocks';
 
 import { HomePage } from './home.page';
 import { QuestionnaireClientService } from '../questionnaire/questionnaire-client.service';
-import { HomePageModule } from './home.module';
 import SpyObj = jasmine.SpyObj;
 import { CurrentUser } from '../auth/current-user.service';
+import { NgIf } from '@angular/common';
 
 describe('HomePage', () => {
   let component: HomePage;
@@ -36,9 +36,10 @@ describe('HomePage', () => {
     );
 
     // Build Base Module
-    await MockBuilder(HomePage, HomePageModule)
+    await MockBuilder(HomePage)
       .mock(QuestionnaireClientService, questionnaireClient)
-      .mock(CurrentUser, currentUser);
+      .mock(CurrentUser, currentUser)
+      .keep(NgIf);
   });
 
   beforeEach(fakeAsync(() => {

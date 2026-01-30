@@ -6,11 +6,13 @@
 
 import { Component, Input } from '@angular/core';
 import { QuestionnaireStatus } from '../questionnaire.model';
+import { NgIf } from '@angular/common';
+import { IonProgressBar, IonNote } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-questionnaire-progress-bar',
   templateUrl: './questionnaire-progress-bar.component.html',
-  standalone: false,
+  imports: [NgIf, IonProgressBar, IonNote],
 })
 export class QuestionnaireProgressBarComponent {
   @Input()

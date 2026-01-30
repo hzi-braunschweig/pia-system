@@ -66,7 +66,6 @@ describe('Release Test, role: "Proband", Tab: Settings', () => {
       cy.visit(appUrl);
       loginProband();
       changeProbandPassword();
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Einstellungen')
         .click();
@@ -98,7 +97,6 @@ describe('Release Test, role: "Proband", Tab: Settings', () => {
       loginProband();
       changeProbandPassword();
 
-      cy.get('[data-e2e="e2e-sidenav-content"]').click();
       cy.get('[data-e2e="e2e-sidenav-content"]')
         .contains('Einstellungen')
         .click();
@@ -109,9 +107,11 @@ describe('Release Test, role: "Proband", Tab: Settings', () => {
 
       cy.get('[data-e2e="delete-account-confirm-button"]').click();
 
-      cy.get('[data-e2e="delete-account-success-text"]');
+      cy.contains(
+        'Ihr Account und Ihre Daten wurden wie gewünscht gelöscht.'
+      ).should('exist');
 
-      cy.get('[data-e2e="back-to-login-button"]').click();
+      cy.get('#confirmButton').click();
 
       cy.expectPathname(
         '/api/v1/auth/realms/pia-proband-realm/protocol/openid-connect/auth'

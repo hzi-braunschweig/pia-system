@@ -7,22 +7,18 @@
 import { Inject, Injectable } from '@angular/core';
 import { KeycloakClientService } from './keycloak-client.service';
 import { DOCUMENT } from '@angular/common';
-import { Observable, Subject } from 'rxjs';
 import { BadgeService } from '../shared/services/badge/badge.service';
+import { Platform } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private readonly _isAuthenticated: Subject<boolean> = new Subject();
-
-  public readonly isAuthenticated$: Observable<boolean> =
-    this._isAuthenticated.asObservable();
-
   constructor(
     @Inject(DOCUMENT) private readonly document: Document,
     private readonly keycloakClient: KeycloakClientService,
-    private readonly badgeService: BadgeService
+    private readonly badgeService: BadgeService,
+    private readonly platform: Platform
   ) {}
 
   public isAuthenticated(): boolean {
@@ -34,16 +30,14 @@ export class AuthService {
     locale: string
   ): Promise<void> {
     await this.keycloakClient.initialize();
-    await this.keycloakClient.login(false, username, locale);
-    this._isAuthenticated.next(true);
+    await this.keycloakClient.login({ hidden: false, username, locale });
   }
 
   public async activateExistingSession(): Promise<void> {
     await this.keycloakClient.initialize();
-
-    await this.keycloakClient.login(true);
-
-    this._isAuthenticated.next(true);
+    if (this.platform.is('hybrid')) {
+      await this.keycloakClient.login({ hidden: true });
+    }
   }
 
   public async openAccountManagement(): Promise<void> {
@@ -51,10 +45,12 @@ export class AuthService {
   }
 
   public async logout(): Promise<void> {
-    this._isAuthenticated.next(false);
     await this.keycloakClient.logout();
     this.badgeService.clear();
-    this.reloadApp();
+
+    if (this.platform.is('hybrid')) {
+      this.reloadApp();
+    }
   }
 
   /**

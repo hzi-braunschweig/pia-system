@@ -12,8 +12,6 @@ const ipia = require('./setup-ipia');
 const ewpia = require('./setup-ewpia');
 const configMessagequeue = require('./config-messagequeue');
 const setupMessagequeue = require('../test.common/setup-messagequeue');
-const configSftp = require('./config-sftp');
-const setupSftp = require('../test.common/setup-sftp');
 
 // update the env by using the DOTENV_CONFIG_PATH
 env.update(env.read(process.env.DOTENV_CONFIG_PATH));
@@ -24,14 +22,12 @@ const options = {
     ipia: process.env.START_IPIA === 'true',
     ewpia: process.env.START_EWPIA === 'true',
     messagequeue: process.env.START_MESSAGEQUEUE === 'true',
-    sftp: process.env.START_SFTP === 'true',
   },
   keep: {
     qpia: process.env.KEEP_QPIA === 'true',
     ipia: process.env.KEEP_IPIA === 'true',
     ewpia: process.env.KEEP_EWPIA === 'true',
     messagequeue: process.env.KEEP_MESSAGEQUEUE === 'true',
-    sftp: process.env.KEEP_SFTP === 'true',
   },
   registry: process.env.DOCKER_REGISTRY || 'registry.gitlab.com',
 };
@@ -40,7 +36,6 @@ let qpiaConfig = qpia.configure(options);
 let ipiaConfig = ipia.configure(options);
 let ewpiaConfig = ewpia.configure(options);
 let messagequeueConfig = configMessagequeue.configure(options);
-let sftpConfig = configSftp.configure(options);
 
 // We do not want to setup the ci environment
 if (!process.env.CI) {
@@ -60,9 +55,6 @@ if (!process.env.CI) {
       if (options.start.messagequeue) {
         promises.push(await setupMessagequeue.setup(messagequeueConfig));
       }
-      if (options.start.sftp) {
-        promises.push(await setupSftp.setup(sftpConfig));
-      }
       await Promise.all(promises);
     },
     async afterAll() {
@@ -78,9 +70,6 @@ if (!process.env.CI) {
       }
       if (options.start.messagequeue && !options.keep.messagequeue) {
         await docker.rmf(messagequeueConfig.messagequeueContainer);
-      }
-      if (options.start.sftp && !options.keep.sftp) {
-        await docker.rmf(sftpConfig.sftpContainer);
       }
     },
   };

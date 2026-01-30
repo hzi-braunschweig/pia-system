@@ -61,7 +61,7 @@ describe('Keycloak EmailVerified Proxy', () => {
     mockAuthClientResponse(sandbox, username, [studyName]);
 
     publishKeycloakRegisterEvent(
-      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-web-app-client.VERIFY_EMAIL',
+      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-mobile-app-client.VERIFY_EMAIL',
       username
     );
 
@@ -97,7 +97,7 @@ describe('Keycloak EmailVerified Proxy', () => {
     mockAuthClientResponse(sandbox);
 
     publishKeycloakRegisterEvent(
-      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-web-app-client.VERIFY_EMAIL',
+      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-mobile-app-client.VERIFY_EMAIL',
       'test-1234567890'
     );
 
@@ -119,7 +119,7 @@ describe('Keycloak EmailVerified Proxy', () => {
     mockAuthClientResponse(sandbox);
 
     publishKeycloakRegisterEvent(
-      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-web-app-client.VERIFY_EMAIL',
+      'KK.EVENT.CLIENT.foo-bar.SUCCESS.pia-proband-mobile-app-client.VERIFY_EMAIL',
       undefined
     );
 

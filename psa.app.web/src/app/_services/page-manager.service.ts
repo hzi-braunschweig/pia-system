@@ -7,10 +7,8 @@
 import { Injectable } from '@angular/core';
 import { from, merge, Observable } from 'rxjs';
 import { ComplianceManager } from './compliance-manager.service';
-import { ComplianceType } from '../psa.app.core/models/compliance';
 import { CurrentUser } from './current-user.service';
 import { mergeMap } from 'rxjs/operators';
-import { FeedbackStatisticsService } from '../pages/feedback-statistics/feedback-statistics.service';
 
 export interface Page {
   name: string;
@@ -26,8 +24,7 @@ export class PageManager {
 
   constructor(
     private readonly user: CurrentUser,
-    private readonly complianceManager: ComplianceManager,
-    private readonly feedbackStatisticsService: FeedbackStatisticsService
+    private readonly complianceManager: ComplianceManager
   ) {
     this.navPages$ = merge(
       from(this.getNavigationPagesForCurrentUser()),
@@ -176,80 +173,6 @@ export class PageManager {
           subpaths: ['compliance/'],
         },
       ];
-    } else if (this.user.isProband()) {
-      pages = [];
-      pages.push({ name: 'SIDENAV.HOME', path: ['home'], subpaths: ['home'] });
-      pages.push({
-        name: 'SIDENAV.QUESTIONNAIRES',
-        path: ['questionnaires/user'],
-        subpaths: ['questionnaires/', 'questionnaire/'],
-      });
-
-      let userHasCompliances = false;
-      try {
-        userHasCompliances = await this.complianceManager.userHasCompliances([
-          ComplianceType.LABRESULTS,
-        ]);
-      } catch (e) {
-        console.error(
-          'Could not get userHasCompliances from complianceManager. Tab LABORATORY_RESULTS will be hidden. ',
-          e
-        );
-      }
-      if (userHasCompliances) {
-        pages.push({
-          name: 'SIDENAV.LABORATORY_RESULTS',
-          path: ['laboratory-results'],
-          subpaths: ['laboratory-results'],
-        });
-      }
-
-      let hasFeedbackStatisticsForProband = false;
-      try {
-        hasFeedbackStatisticsForProband =
-          await this.feedbackStatisticsService.hasFeedbackStatisticsForProband();
-      } catch (e) {
-        console.error(
-          'Could not get hasFeedbackStatisticsForProband from feedbackStatisticsService. Tab FEEDBACK_STATISTICS will be hidden. ',
-          e
-        );
-      }
-      if (hasFeedbackStatisticsForProband) {
-        pages.push({
-          name: 'SIDENAV.FEEDBACK_STATISTICS',
-          path: ['feedback-statistics'],
-          subpaths: ['feedback-statistics/'],
-        });
-      }
-
-      let isInternalComplianceActive = false;
-      try {
-        isInternalComplianceActive =
-          await this.complianceManager.isInternalComplianceActive();
-      } catch (e) {
-        console.error(
-          'Could not get isInternalComplianceActive from complianceManager. Tab COMPLIANCE will be hidden. ',
-          e
-        );
-      }
-
-      if (isInternalComplianceActive) {
-        pages.push({
-          name: 'SIDENAV.COMPLIANCE',
-          path: ['compliance/agree'],
-          subpaths: ['compliance/'],
-        });
-      }
-      pages.push({
-        name: 'SIDENAV.SETTINGS',
-        path: ['settings'],
-        subpaths: ['settings'],
-      });
-      pages.push({
-        name: 'SIDENAV.CONTACT',
-        path: ['contact'],
-        subpaths: ['contact'],
-      });
     }
     return pages;
   }

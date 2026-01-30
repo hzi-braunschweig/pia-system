@@ -146,7 +146,7 @@ Further reading: https://ionicframework.com/docs/developing/android
 
 ### Create a new Release
 
-- raise package version in `package.json`
+- raise package version in [package.json](package.json)
 - raise app version in [build.gradle](android/app/build.gradle)for android
 - raise app version in [Info.plist](ios/App/App/Info.plist) for iOS
 

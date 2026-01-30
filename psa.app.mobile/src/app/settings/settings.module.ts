@@ -7,7 +7,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { SettingsPageRoutingModule } from './settings-routing.module';
@@ -16,18 +15,43 @@ import { SharedModule } from '../shared/shared.module';
 import { LicenseListPage } from './license-list/license-list.page';
 import { AccountModule } from '../account/account.module';
 import { ScrollingModule } from '@angular/cdk/scrolling';
+import {
+  IonContent,
+  IonItemGroup,
+  IonItemDivider,
+  IonLabel,
+  IonItem,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonCardContent,
+  IonSkeletonText,
+} from '@ionic/angular/standalone';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule,
     TranslateModule.forChild(),
     SettingsPageRoutingModule,
     SharedModule,
     AccountModule,
     ScrollingModule,
+    IonContent,
+    IonItemGroup,
+    IonItemDivider,
+    IonLabel,
+    IonItem,
+    IonContent,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardSubtitle,
+    IonCardContent,
+    IonSkeletonText,
+    SettingsPage,
+    LicenseListPage,
   ],
-  declarations: [SettingsPage, LicenseListPage],
 })
 export class SettingsPageModule {}

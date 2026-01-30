@@ -63,9 +63,9 @@ export class Proband {
   @CreateDateColumn({ type: 'timestamptz' })
   public readonly createdAt!: Date;
   @Column({ type: 'timestamptz', nullable: true })
-  public deactivatedAt!: Date;
+  public deactivatedAt!: Date | null;
   @Column({ type: 'timestamptz', nullable: true })
-  public deletedAt!: Date;
+  public deletedAt!: Date | null;
 
   /**
    * ID or pseudonym which was provided by an external system (e.g. NatCoEdc)

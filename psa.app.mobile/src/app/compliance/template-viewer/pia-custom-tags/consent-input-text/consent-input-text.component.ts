@@ -6,11 +6,13 @@
 
 import { Component, Input, OnInit } from '@angular/core';
 import { ConsentInputRadioComponent } from '../consent-input-radio/consent-input-radio.component';
+import { IonItem, IonInput } from '@ionic/angular/standalone';
+import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-consent-input-text',
   templateUrl: './consent-input-text.component.html',
-  standalone: false,
+  imports: [IonItem, IonInput, ReactiveFormsModule],
 })
 export class ConsentInputTextComponent
   extends ConsentInputRadioComponent

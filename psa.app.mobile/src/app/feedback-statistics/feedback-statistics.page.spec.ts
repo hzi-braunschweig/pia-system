@@ -5,15 +5,16 @@
  */
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
-
 import { FeedbackStatisticsPage } from './feedback-statistics.page';
 import { TranslateModule } from '@ngx-translate/core';
 import { FeedbackStatisticClientService } from './services/feedback-statistic-client.service';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BehaviorSubject, defer } from 'rxjs';
-import { FeedbackStatisticDto } from '@pia-system/charts';
+import { FeedbackStatisticDto, ChartsModule } from '@pia-system/charts';
 import createFakeFeedbackStatisticDto from './utilities/create-fake-feedback-statistic-dto.spec';
+import { MarkdownModule } from 'ngx-markdown';
+import { CurrentUser } from '../auth/current-user.service';
+import { MockProvider } from 'ng-mocks';
 
 describe('FeedbackStatisticsPage', () => {
   const serviceFeedbackStatistics = new BehaviorSubject<FeedbackStatisticDto[]>(
@@ -24,8 +25,12 @@ describe('FeedbackStatisticsPage', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [FeedbackStatisticsPage],
-      imports: [IonicModule.forRoot(), TranslateModule.forRoot()],
+      imports: [
+        TranslateModule.forRoot(),
+        MarkdownModule.forRoot(),
+        ChartsModule.forRoot(),
+        FeedbackStatisticsPage,
+      ],
       providers: [
         {
           provide: FeedbackStatisticClientService,
@@ -33,6 +38,11 @@ describe('FeedbackStatisticsPage', () => {
             getFeedbackStatistics: () => defer(() => serviceFeedbackStatistics),
           },
         },
+        MockProvider(CurrentUser, {
+          username: 'TEST-1234',
+          study: 'TestStudy',
+          locale: 'en-US',
+        }),
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();

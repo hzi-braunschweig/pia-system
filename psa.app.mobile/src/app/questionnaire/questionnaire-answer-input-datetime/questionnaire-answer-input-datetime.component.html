@@ -7,6 +7,8 @@
 <ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
   <ion-label class="ion-text-wrap">{{ label }}</ion-label>
 </ion-item>
+
+@if (platform.is('hybrid')) {
 <ion-item
   fill="filled"
   mode="md"
@@ -14,6 +16,7 @@
   [id]="'open-datetime-' + name"
 >
   <ion-input
+    data-e2e="e2e-input-type-date"
     type="text"
     data-unit="display-value"
     readonly
@@ -45,3 +48,23 @@
     </ng-template>
   </ion-modal>
 </ion-item>
+} @else {
+<ion-item fill="filled" mode="md" class="ion-margin-start ion-margin-end">
+  <input
+    type="date"
+    data-e2e="e2e-input-type-date"
+    [value]="nativeDateValue"
+    (change)="onNativeDateChange($event)"
+    [disabled]="disabled"
+    [attr.min]="minDate ? minDate.toISOString().split('T')[0] : null"
+    [attr.max]="maxDate ? maxDate.toISOString().split('T')[0] : null"
+    style="
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      font-size: 16px;
+    "
+  />
+</ion-item>
+}

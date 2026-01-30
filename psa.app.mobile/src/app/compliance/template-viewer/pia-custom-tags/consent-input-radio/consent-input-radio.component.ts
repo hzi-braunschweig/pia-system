@@ -12,13 +12,32 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { Attribute, CustomTagSegment } from '../../../segment.model';
+import {
+  IonList,
+  IonRadioGroup,
+  IonItem,
+  IonRadio,
+} from '@ionic/angular/standalone';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-consent-input-radio',
   templateUrl: './consent-input-radio.component.html',
-  standalone: false,
+  imports: [
+    IonList,
+    IonRadioGroup,
+    ReactiveFormsModule,
+    IonItem,
+    IonRadio,
+    TranslateModule,
+  ],
 })
 export class ConsentInputRadioComponent implements OnInit, OnDestroy {
   @Input()

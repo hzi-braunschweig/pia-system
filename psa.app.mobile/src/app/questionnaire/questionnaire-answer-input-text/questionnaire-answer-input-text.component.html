@@ -7,7 +7,12 @@
 <ion-item *ngIf="label" class="pia-questionnaire-question" lines="none">
   <ion-label class="ion-text-wrap">{{ label }}</ion-label>
 </ion-item>
-<ion-item fill="filled" mode="md" class="ion-margin-start ion-margin-end">
+<ion-item
+  fill="filled"
+  mode="md"
+  class="ion-margin-start ion-margin-end"
+  data-e2e="e2e-input-type-text"
+>
   <ion-input
     type="text"
     [disabled]="disabled"

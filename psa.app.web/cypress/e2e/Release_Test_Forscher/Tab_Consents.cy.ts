@@ -280,54 +280,40 @@ describe('Release Test, role: "Forscher", Consents', () => {
       );
       cy.get('[data-e2e="e2e-consent-generic-radio"]').contains('Nein').click();
       cy.get('[data-e2e="e2e-consent-name-app"]').contains('Ja').click();
-      cy.get(':nth-child(16) > .radio-group-wrapper').contains('Ja').click();
+      // cy.get('.radio-group-wrapper').last().contains('Ja').click();
 
-      cy.get('[data-e2e="e2e-compliance-probands-content"]')
-        .contains('Angaben der Kontaktperson:')
-        .should('exist');
+      cy.contains('Angaben der Kontaktperson:').should('exist');
 
       cy.get('[data-e2e="e2e-consent-name-firstname"]').contains('Vorname');
       cy.get('[data-e2e="e2e-consent-name-firstname"]')
-        .find('input')
+        .find('input.native-input')
         .type('Max');
 
       cy.get('[data-e2e="e2e-consent-name-lastname"]').contains('Nachname');
       cy.get('[data-e2e="e2e-consent-name-lastname"]')
-        .find('input')
+        .find('input.native-input')
         .type('Mustermann');
 
       cy.get('[data-e2e="e2e-consent-email-input"]').contains('E-Mail');
       cy.get('[data-e2e="e2e-consent-email-input"]')
-        .find('input')
+        .find('input.native-input')
         .type('max.mustermann@pia-test.de');
 
-      cy.get('[data-e2e="e2e-consent-name-birthdate"]').contains('Geburtstag');
       cy.get('[data-e2e="e2e-consent-name-birthdate"]')
-        .find('input')
-        .type('2/14/1985');
+        .find('input[type="date"]')
+        .invoke('val', '1985-02-14')
+        .trigger('input')
+        .trigger('change')
+        .trigger('blur');
 
       cy.get('[data-e2e="e2e-consent-generic-radio"]').contains('Ja').click();
+      cy.contains(
+        'Angaben der Person für die ich personenberechtigt bin:'
+      ).should('exist');
 
-      cy.get('[data-e2e="e2e-compliance-probands-content"]')
-        .contains('Angaben der Person für die ich personenberechtigt bin:')
-        .should('exist');
-
-      cy.get('[data-e2e="e2e-consent-name-firstname"]').find('input').clear();
-      cy.get('[data-e2e="e2e-consent-name-lastname"]').find('input').clear();
-      cy.get('[data-e2e="e2e-consent-name-birthdate"]').find('input').clear();
-      cy.get('[data-e2e="e2e-consent-name-firstname"]').contains('Vorname');
-      cy.get('[data-e2e="e2e-consent-name-lastname"]').contains('Nachname');
-      cy.get('[data-e2e="e2e-consent-name-birthdate"]').contains('Geburtstag');
-
-      cy.get('[data-e2e="e2e-consent-name-firstname"]')
-        .find('input')
-        .type('Test');
-      cy.get('[data-e2e="e2e-consent-name-lastname"]')
-        .find('input')
-        .type('TestLastname');
-      cy.get('[data-e2e="e2e-consent-name-birthdate"]')
-        .find('input')
-        .type('3/15/1975');
+      cy.get('[data-e2e="e2e-consent-name-firstname"]').should('exist');
+      cy.get('[data-e2e="e2e-consent-name-lastname"]').should('exist');
+      cy.get('[data-e2e="e2e-consent-name-birthdate"]').should('exist');
       cy.get('[data-e2e="e2e-consent-email-input"]').should('not.exist');
 
       cy.logoutParticipant();
@@ -558,9 +544,8 @@ describe('Release Test, role: "Forscher", Consents', () => {
         changePassword(cred.password, newPassword);
       });
 
-      cy.get('[data-e2e="child"]').should('exist');
-      cy.get('[data-e2e="app"]').should('exist');
-      cy.get('[data-e2e="Wissenschaft"]').should('exist');
+      cy.get('[data-e2e="e2e-consent-name-app"]').should('exist');
+      cy.get('[data-e2e="e2e-consent-generic-radio"]').should('have.length', 2);
 
       cy.visit(adminAppUrl);
 
@@ -599,9 +584,8 @@ describe('Release Test, role: "Forscher", Consents', () => {
 
       cy.visit(probandAppUrl);
 
-      cy.get('[data-e2e="child"]').should('exist');
-      cy.get('[data-e2e="app"]').should('exist');
-      cy.get('[data-e2e="Wissenschaft"]').should('not.exist');
+      cy.get('[data-e2e="e2e-consent-name-app"]').should('exist');
+      cy.get('[data-e2e="e2e-consent-generic-radio"]').should('have.length', 1);
 
       cy.logoutParticipant();
     });

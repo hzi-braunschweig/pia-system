@@ -6,7 +6,7 @@
 
 import { Injectable } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { Platform } from '@ionic/angular';
+import { Platform } from '@ionic/angular/standalone';
 
 @Injectable({
   providedIn: 'root',

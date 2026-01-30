@@ -17,7 +17,7 @@ import { catchError } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/auth.service';
 
 /**
- * Logs user out and navigates back to login if backend returns unauthorized error
+ * Logs user out if backend returns unauthorized error
  */
 export const unauthorizedInterceptor: HttpInterceptorFn = (
   request: HttpRequest<unknown>,
@@ -29,7 +29,10 @@ export const unauthorizedInterceptor: HttpInterceptorFn = (
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
         console.warn('unauthorizedInterceptor: 401 error: ', error);
-        void auth.logout();
+
+        if (auth.isAuthenticated()) {
+          void auth.logout();
+        }
       }
       return throwError(() => error);
     })

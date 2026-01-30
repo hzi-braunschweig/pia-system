@@ -40,17 +40,6 @@ export class SampleTrackingService extends NodeJSService {
 
       WEBAPP_URL: configuration.variables.webappUrl,
 
-      MHH_FTPSERVICE_HOST: '',
-      MHH_FTPSERVICE_PORT: '',
-      MHH_FTPSERVICE_USER: '',
-      MHH_FTPSERVICE_PW: '',
-      MHH_FTPSERVICE_ALLOW_OLD_SSH2_KEX: '',
-      HZI_FTPSERVICE_HOST: '',
-      HZI_FTPSERVICE_PORT: '',
-      HZI_FTPSERVICE_USER: '',
-      HZI_FTPSERVICE_PW: '',
-      HZI_FTPSERVICE_ALLOW_OLD_SSH2_KEX: '',
-
       COMPLIANCESERVICE_HOST: complianceService.internalService.name,
       COMPLIANCESERVICE_INTERNAL_PORT: complianceService.internalService.port,
 

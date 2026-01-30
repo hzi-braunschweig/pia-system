@@ -9,13 +9,16 @@ import { ActivatedRoute } from '@angular/router';
 
 import { SampleTrackingClientService } from '../sample-tracking-client.service';
 import { CurrentUser } from '../../auth/current-user.service';
+import { HeaderComponent } from '../../shared/components/header/header.component';
+import { NgIf } from '@angular/common';
+import { IonProgressBar, IonContent } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-lab-result-detail',
   templateUrl: './lab-result-detail.page.html',
   styleUrls: ['./lab-result-detail.page.scss'],
   encapsulation: ViewEncapsulation.None,
-  standalone: false,
+  imports: [HeaderComponent, NgIf, IonProgressBar, IonContent],
 })
 export class LabResultDetailPage implements OnInit {
   labResultId: string =

@@ -17,13 +17,58 @@ import {
   QuestionnaireStatus,
 } from '../questionnaire.model';
 import { compareQuestionnaireInstances } from './compare-questionnaire-instances';
-import { CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
+import {
+  CdkVirtualScrollViewport,
+  CdkFixedSizeVirtualScroll,
+  CdkVirtualForOf,
+} from '@angular/cdk/scrolling';
+import { addIcons } from 'ionicons';
+import {
+  megaphone,
+  create,
+  checkmark,
+  checkmarkDone,
+  alertCircle,
+  eye,
+} from 'ionicons/icons';
+import { NgIf, NgFor, DatePipe } from '@angular/common';
+import {
+  IonList,
+  IonItemGroup,
+  IonItem,
+  IonIcon,
+  IonLabel,
+  IonItemDivider,
+  IonBadge,
+  IonNote,
+} from '@ionic/angular/standalone';
+import { RouterLink } from '@angular/router';
+import { QuestionnaireProgressBarComponent } from '../questionnaire-progress-bar/questionnaire-progress-bar.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-questionnaire-instances-list',
   templateUrl: './questionnaire-instances-list.component.html',
   styleUrls: ['./questionnaire-instances-list.component.scss'],
-  standalone: false,
+  imports: [
+    NgIf,
+    IonList,
+    IonItemGroup,
+    NgFor,
+    IonItem,
+    RouterLink,
+    IonIcon,
+    IonLabel,
+    QuestionnaireProgressBarComponent,
+    IonItemDivider,
+    CdkVirtualScrollViewport,
+    CdkFixedSizeVirtualScroll,
+    CdkVirtualForOf,
+    IonBadge,
+    IonNote,
+    DatePipe,
+    TranslateModule,
+  ],
 })
 export class QuestionnaireInstancesListComponent implements AfterViewInit {
   private static readonly order = new Map<QuestionnaireStatus, number>([
@@ -57,7 +102,9 @@ export class QuestionnaireInstancesListComponent implements AfterViewInit {
     );
   }
 
-  constructor(private renderer: Renderer2) {}
+  constructor(private readonly renderer: Renderer2) {
+    addIcons({ megaphone, create, checkmark, checkmarkDone, alertCircle, eye });
+  }
 
   ngAfterViewInit(): void {
     let countQuestionnaires =

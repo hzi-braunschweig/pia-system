@@ -37,11 +37,12 @@ RUN npm ci \
 FROM curlimages/curl@sha256:463eaf6072688fe96ac64fa623fe73e1dbe25d8ad6c34404a669ad3ce1f104b6 AS dl-keycloak-config-cli
 
 WORKDIR /dl
-RUN curl -L -o ./keycloak-config-cli.jar https://github.com/adorsys/keycloak-config-cli/releases/download/v6.4.0/keycloak-config-cli-26.1.0.jar
+RUN curl --fail -L -o ./keycloak-config-cli.jar https://github.com/adorsys/keycloak-config-cli/releases/download/v6.4.0/keycloak-config-cli-26.1.0.jar \
+    && echo "0e9facd260e0eecc6e0129ea84291493e179feb142c026f28834597d7aa6b5d1 ./keycloak-config-cli.jar" | sha256sum -c
 
 ################################################################
 
-FROM quay.io/keycloak/keycloak:26.3.4@sha256:2b32a51a31e8d780d9fa9a69a59ead69975263c61b5dd13559090e22aa26f100
+FROM quay.io/keycloak/keycloak:26.3.5@sha256:357829ec7c4693397533035092ad13b0644bcc95ded311f33a3738c4d9e9bdba
 
 ARG DIR=.
 

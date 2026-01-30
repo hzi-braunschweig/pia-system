@@ -5,7 +5,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import { ToastController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular/standalone';
 import { TranslateService } from '@ngx-translate/core';
 
 @Injectable({
@@ -28,6 +28,9 @@ export class ToastPresenterService {
       message: this.translate.instant(msg, translateParams),
       duration: ToastPresenterService.DEFAULT_DURATION,
       position: 'bottom',
+      htmlAttributes: {
+        'data-e2e': 'toast-message',
+      },
     });
   }
 }

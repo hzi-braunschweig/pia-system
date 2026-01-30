@@ -22,8 +22,6 @@ import { SelectedProbandData } from '../../psa.app.core/models/selectedProbandDa
 import { MatSidenav } from '@angular/material/sidenav';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DialogOkCancelComponent } from '../../_helpers/dialog-ok-cancel';
-import { CurrentUser } from '../../_services/current-user.service';
-import { Role } from '../../psa.app.core/models/user';
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
 
@@ -32,7 +30,6 @@ describe('SideNavigationComponent', () => {
   let component: SideNavigationComponent;
   let eventsMock: BehaviorSubject<Event>;
   let router: SpyObj<Router>;
-  let user: SpyObj<CurrentUser>;
   let auth: SpyObj<AuthenticationManager>;
   let navPagesObservableMock: BehaviorSubject<Page[]>;
   let pageManager: SpyObj<PageManager>;
@@ -43,7 +40,6 @@ describe('SideNavigationComponent', () => {
 
   beforeEach(async () => {
     // Provider and Services
-    user = createSpyObj<CurrentUser>('CurrentUser', ['isProband']);
     auth = createSpyObj<AuthenticationManager>('AuthenticationManager', [
       'logout',
     ]);
@@ -81,7 +77,6 @@ describe('SideNavigationComponent', () => {
 
     // Build Base Module
     await MockBuilder(SideNavigationComponent, AppModule)
-      .mock(CurrentUser, user)
       .mock(AuthenticationManager, auth)
       .mock(Router, router)
       .mock(PageManager, pageManager)
@@ -89,8 +84,7 @@ describe('SideNavigationComponent', () => {
       .mock(MatDialog, matDialog);
   });
 
-  function createComponent(role: Role = 'Proband'): void {
-    user.isProband.and.returnValue(role === 'Proband');
+  function createComponent(): void {
     fixture = TestBed.createComponent(SideNavigationComponent);
     component = fixture.componentInstance;
     fixture.detectChanges(); // run ngOnInit
@@ -103,30 +97,13 @@ describe('SideNavigationComponent', () => {
   }));
 
   describe('logout()', () => {
-    it('should close the side navigation', fakeAsync(() => {
+    it('should close the side navigation and call logout', fakeAsync(() => {
       createComponent();
       const sidenav = createSpyObj<MatSidenav>('sidenav', ['close']);
       component.sidenav = sidenav;
       component.logout();
       tick();
       expect(sidenav.close).toHaveBeenCalled();
-    }));
-
-    it('should call logout if it is not a proband', fakeAsync(() => {
-      createComponent('Forscher');
-      component.logout();
-      tick();
-      expect(auth.logout).toHaveBeenCalledTimes(1);
-    }));
-
-    it('should open a confirm dialog if it is a proband', fakeAsync(() => {
-      createComponent();
-      component.logout();
-      tick();
-      expect(auth.logout).not.toHaveBeenCalled();
-
-      afterClosedSubject.next('ok');
-      tick();
       expect(auth.logout).toHaveBeenCalledTimes(1);
     }));
   });

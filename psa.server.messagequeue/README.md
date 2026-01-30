@@ -8,23 +8,18 @@ The management plugin can be used to manage and monitor a RabbitMQ server instan
 
 ### Connecting to the Management plugin
 
-By default the port of the management service is not forwarded. You can start a local docker container forwarding the port with
+To access the management interface locally, use kubectl port forwarding:
 
-```
-docker run -d -p 15672:15672 registry.gitlab.com/pia-eresearch-system/pia/psa.server.messagequeue
-```
-
-Alternatively, you can find out the ip-address of a running container and connect directly to it:
-
-```
-docker inspect messagequeue |grep IPAddress
+```bash
+kubectl port-forward service/messagequeue 15672:15672 -n pia
 ```
 
-where `messagequeue` is the name of the container.
+A graphical user interface is provided on `http://localhost:15672`. Alternatively, a CLI tool can be downloaded from `http://localhost:15672/cli/rabbitmqadmin`. The CLI tool can be started by the command `python rabbitmqadmin --help`.
 
-A graphical user interface is provided on `http://{hostname}:15672`. Alternatively, a CLI tool can be downloaded from `http://{hostname}:15672/cli/rabbitmqadmin`. The CLI tool can be started by the command
-`python rabbitmqadmin --help`.
-The default login data is `admin` and `password`.
+The login credentials are:
+
+- Username: `admin`
+- Password: The value of `messagequeue_admin.password` from the [internal-secrets.yaml](/k8s/deployment/overlays/local-k3d/internal-secrets.yaml).
 
 ### Using the GUI
 

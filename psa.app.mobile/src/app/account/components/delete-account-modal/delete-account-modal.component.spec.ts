@@ -13,23 +13,18 @@ import {
 
 import { DeleteAccountModalComponent } from './delete-account-modal.component';
 import { AuthService } from '../../../auth/auth.service';
-import { User } from '../../../auth/auth.model';
 import { AccountClientService } from '../../services/account-client.service';
 import {
   AlertController,
-  IonicModule,
   LoadingController,
-} from '@ionic/angular';
+  ModalController,
+} from '@ionic/angular/standalone';
 import { DeleteAccountModalService } from '../../services/delete-account-modal.service';
 import { DeletionType } from '../../services/deletion-type.enum';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import {
-  TranslateModule,
-  TranslatePipe,
-  TranslateService,
-} from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject } from 'rxjs';
-import { MockPipe, MockProvider } from 'ng-mocks';
+import { MockProvider, MockModule } from 'ng-mocks';
 import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
 import SpyObj = jasmine.SpyObj;
 import { CurrentUser } from '../../../auth/current-user.service';
@@ -90,12 +85,12 @@ describe('DeleteAccountModalComponent', () => {
     });
 
     await TestBed.configureTestingModule({
-      declarations: [DeleteAccountModalComponent, MockPipe(TranslatePipe)],
-      imports: [IonicModule.forRoot(), TranslateModule],
+      imports: [MockModule(TranslateModule), DeleteAccountModalComponent],
       providers: [
         MockProvider(TranslateService, translate),
         MockProvider(AlertController, alertCtrl),
         MockProvider(LoadingController, loadingCtrl),
+        MockProvider(ModalController),
         MockProvider(AuthService, auth),
         MockProvider(CurrentUser, currentUser),
         provideHttpClient(withInterceptorsFromDi()),

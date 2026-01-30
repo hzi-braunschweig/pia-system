@@ -10,11 +10,10 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import { IonicModule, IonModal } from '@ionic/angular';
+import { IonModal } from '@ionic/angular/standalone';
 import { QuestionnaireAnswerImageComponent } from './questionnaire-answer-image.component';
 import { By } from '@angular/platform-browser';
-import { MockPipe } from 'ng-mocks';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { Camera } from '@capacitor/camera';
 import SpyObj = jasmine.SpyObj;
 
@@ -33,11 +32,7 @@ describe('QuestionnaireAnswerImageComponent', () => {
     modal = jasmine.createSpyObj('Modal', ['dismiss']);
 
     TestBed.configureTestingModule({
-      declarations: [
-        QuestionnaireAnswerImageComponent,
-        MockPipe(TranslatePipe, (value) => value),
-      ],
-      imports: [IonicModule.forRoot()],
+      imports: [QuestionnaireAnswerImageComponent, TranslateModule.forRoot()],
       providers: [],
     }).compileComponents();
 

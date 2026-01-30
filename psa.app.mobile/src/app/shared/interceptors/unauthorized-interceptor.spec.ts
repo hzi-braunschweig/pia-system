@@ -26,7 +26,11 @@ describe('unauthorizedInterceptor', () => {
   let next: jasmine.Spy<HttpHandlerFn>;
 
   beforeEach(() => {
-    authMock = jasmine.createSpyObj('AuthService', ['getToken', 'logout']);
+    authMock = jasmine.createSpyObj('AuthService', [
+      'getToken',
+      'logout',
+      'isAuthenticated',
+    ]);
     authMock.logout.and.returnValue(Promise.resolve());
 
     TestBed.configureTestingModule({
@@ -42,7 +46,8 @@ describe('unauthorizedInterceptor', () => {
     next = jasmine.createSpy().and.returnValue(handleSubject.asObservable());
   });
 
-  it('should log user out if a 401 response was received', fakeAsync(() => {
+  it('should log user out if a 401 response was received and user is authenticated', fakeAsync(() => {
+    authMock.isAuthenticated.and.returnValue(true);
     const error = new HttpErrorResponse({ status: 401 });
 
     let interceptorResult = undefined;
@@ -58,7 +63,30 @@ describe('unauthorizedInterceptor', () => {
     tick();
 
     expect(next).toHaveBeenCalledWith(request);
+    expect(authMock.isAuthenticated).toHaveBeenCalledTimes(1);
     expect(authMock.logout).toHaveBeenCalledTimes(1);
+    expect(interceptorResult).toEqual(error);
+  }));
+
+  it('should not log user out if a 401 response was received but user is not authenticated', fakeAsync(() => {
+    authMock.isAuthenticated.and.returnValue(false);
+    const error = new HttpErrorResponse({ status: 401 });
+
+    let interceptorResult = undefined;
+    TestBed.runInInjectionContext(() => {
+      unauthorizedInterceptor(request, next).subscribe({
+        error: (err) => {
+          interceptorResult = err;
+        },
+      });
+    });
+
+    handleSubject.error(error);
+    tick();
+
+    expect(next).toHaveBeenCalledWith(request);
+    expect(authMock.isAuthenticated).toHaveBeenCalledTimes(1);
+    expect(authMock.logout).not.toHaveBeenCalled();
     expect(interceptorResult).toEqual(error);
   }));
 

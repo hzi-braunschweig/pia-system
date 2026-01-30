@@ -9,18 +9,34 @@ import {
   AlertController,
   LoadingController,
   ModalController,
-} from '@ionic/angular';
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonText,
+  IonButton,
+} from '@ionic/angular/standalone';
 import { AccountClientService } from '../../services/account-client.service';
 import { AuthService } from '../../../auth/auth.service';
 import { DeleteAccountModalService } from '../../services/delete-account-modal.service';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { CurrentUser } from '../../../auth/current-user.service';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-delete-account-modal',
   templateUrl: './delete-account-modal.component.html',
   styles: [],
-  standalone: false,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    NgIf,
+    IonText,
+    IonButton,
+    TranslateModule,
+  ],
 })
 export class DeleteAccountModalComponent {
   public readonly willDeleteAnswers: boolean =
@@ -87,6 +103,7 @@ export class DeleteAccountModalComponent {
       header: text,
       buttons: [
         {
+          id: 'confirmButton',
           text: buttonLabel,
           handler: buttonHandler,
         },

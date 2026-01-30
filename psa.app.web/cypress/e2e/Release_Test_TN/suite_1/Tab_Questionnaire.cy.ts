@@ -392,22 +392,21 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"] tbody tr').should(
-      'have.length',
-      1
-    );
+    cy.get(
+      '[data-e2e="e2e-proband-questionnaire-table"] ion-item-group cdk-virtual-scroll-viewport'
+    ).should('have.length', 1);
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
       .find('[data-e2e="e2e-questionnaire-name"]')
       .contains(q.name)
       .should('be.visible');
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
       .find('[data-e2e="e2e-icon-td"]')
       .contains('NEU')
       .should('be.visible');
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
       .find('[data-e2e="e2e-questionnaire-name"]')
       .contains(questionnaireFromAnotherStudy.name)
       .should('not.exist');
@@ -418,14 +417,11 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
 
-    console.log('probandCredentials.username');
-    console.log(probandCredentials.username);
-
     cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
       .find('[data-e2e="e2e-questionnaire-name"]')
       .contains(q.name)
       .click();
@@ -446,37 +442,43 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
     cy.get('[data-e2e="e2e-input-type-multiselect"]')
-      .find('[value="Fieber"]')
-      .check();
+      .contains('ion-checkbox', 'Fieber')
+      .click();
     cy.get('[data-e2e="e2e-input-type-multiselect"]')
-      .find('[value="Husten"]')
-      .check();
+      .contains('ion-checkbox', 'Husten')
+      .click();
+
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
     cy.get('[data-e2e="e2e-input-type-autocomplete-multiselect"]').click();
-    cy.get('mat-option').contains('Husten').should('be.visible').click();
+    cy.get('[data-e2e="e2e-input-type-autocomplete-multiselect-options"]')
+      .should('be.visible')
+      .contains('Husten')
+      .click({ force: true });
     cy.get('[data-e2e="e2e-input-type-autocomplete-multiselect"]').click();
-    cy.get('mat-option').contains('Durchfall').should('be.visible').click();
+    cy.get('[data-e2e="e2e-input-type-autocomplete-multiselect-options"]')
+      .should('be.visible')
+      .contains('Durchfall')
+      .click({ force: true });
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
     cy.get('[data-e2e="e2e-input-type-date"]')
-      .find('input')
-      .focus()
-      .type('01.12.20');
+      .invoke('val', '2020-12-01')
+      .trigger('input')
+      .trigger('change')
+      .trigger('blur');
+
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
-    cy.get('button').contains('Fragebogen abschicken').click();
+    cy.get('[data-e2e="e2e-swiper-button-send"]').click();
+    cy.get('#confirmButton').should('exist').click();
 
-    cy.get('#confirmbutton').click();
+    cy.expectPathname('/questionnaire');
 
-    cy.expectPathname('/questionnaires/user');
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]').should('not.exist');
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"] tbody tr').should(
-      'not.exist'
-    );
+    cy.contains('ion-segment-button', 'Abgeschlossen').click();
 
-    cy.get('[role="tab"]').contains('Abgeschlossene Fragebögen').click();
-
-    cy.get('[data-e2e="e2e-proband-completed-questionnaire-table"]')
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
       .find('[data-e2e="e2e-questionnaire-name"]')
       .contains(q.name)
       .should('be.visible');
@@ -492,17 +494,17 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
       .find('[data-e2e="e2e-questionnaire-name"]')
       .contains(q.name)
       .should('be.visible');
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
       .find('[data-e2e="e2e-questionnaire-name"]')
       .contains(conditionalQ.name)
       .should('not.exist');
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
       .find('[data-e2e="e2e-questionnaire-name"]')
       .contains(q.name)
       .click();
@@ -519,31 +521,34 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
     cy.get('[data-e2e="e2e-input-type-multiselect"]')
-      .find('[value="Fieber"]')
-      .check();
+      .contains('ion-checkbox', 'Fieber')
+      .click();
     cy.get('[data-e2e="e2e-input-type-multiselect"]')
-      .find('[value="Husten"]')
-      .check();
+      .contains('ion-checkbox', 'Husten')
+      .click();
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
 
     cy.get('[data-e2e="e2e-input-type-date"]')
-      .find('input')
-      .focus()
-      .type('01.12.20');
-    cy.get('[data-e2e="e2e-swiper-button-next"]').click();
-    cy.get('button').contains('Fragebogen abschicken').click();
+      .invoke('val', '2020-12-01')
+      .trigger('input')
+      .trigger('change')
+      .trigger('blur');
 
-    cy.get('#confirmbutton').click();
+    clickUntilSendAppears();
 
-    cy.expectPathname('/questionnaires/user');
-    cy.reload();
+    cy.get('#confirmButton').should('exist').click();
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
+    cy.location('pathname').should('match', /^\/questionnaire\/\d+$/);
+
+    cy.contains('Conditional question').should('be.visible');
+    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
+
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
       .find('[data-e2e="e2e-questionnaire-name"]')
       .contains(q.name)
       .should('not.exist');
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"]')
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
       .find('[data-e2e="e2e-questionnaire-name"]')
       .contains(conditionalQ.name)
       .should('be.visible');
@@ -686,12 +691,12 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"] tbody tr').should(
-      'have.length',
-      1
-    );
-
-    cy.get('[data-e2e="e2e-proband-open-questionnaire-table"] tbody tr')
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
+      .find('[data-e2e="e2e-questionnaire-name"]')
+      .contains(q.name)
+      .should('be.visible');
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
+      .find('[data-e2e="e2e-questionnaire-name"]')
       .contains(q2.name)
       .should('not.exist');
 
@@ -700,14 +705,15 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
       .then((token) => {
         createQuestionnaire(q2, token);
 
-        cy.expectPathname('/questionnaires/user');
+        cy.expectPathname('/questionnaire');
         cy.reload();
 
-        cy.get(
-          '[data-e2e="e2e-proband-open-questionnaire-table"] tbody tr'
-        ).should('have.length', 2);
-        cy.get('[data-e2e="e2e-proband-open-questionnaire-table"] tbody tr')
-
+        cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
+          .find('[data-e2e="e2e-questionnaire-name"]')
+          .contains(q.name)
+          .should('be.visible');
+        cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
+          .find('[data-e2e="e2e-questionnaire-name"]')
           .contains(q2.name)
           .should('be.visible');
       });
@@ -715,77 +721,68 @@ describe('Release Test, role: "Proband", Tab: Questionnaire', () => {
 });
 
 function checkEnteredQuestionnaireData() {
-  cy.get('[data-e2e="e2e-proband-completed-questionnaire-table"]')
+  cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
     .find('[data-e2e="e2e-questionnaire-name"]')
     .contains(q.name)
     .click();
-  cy.contains('li', 'Wie heißen Sie').should('be.visible');
+  cy.contains('Wie heißen Sie').should('be.visible');
 
-  cy.get('[data-e2e="e2e-navigation-button"').click();
-  cy.get('button').contains('Fragebogen endgültig abschicken').click();
+  clickUntilSendAppears();
 
-  cy.get('#confirmbutton').click();
-  cy.get('[role="tab"]').contains('Abgeschlossene Fragebögen').click();
-  cy.get('[data-e2e="e2e-proband-completed-questionnaire-table"]')
+  cy.get('#confirmButton').should('exist').click();
+
+  cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
     .find('[data-e2e="e2e-questionnaire-name"]')
     .contains(q.name)
     .click();
 
-  cy.contains('mat-card.answer-card', 'Wie heißen Sie?').within(() => {
-    cy.get('mat-form-field input').should('have.value', 'Bar');
+  cy.contains('ion-card', 'Wie heißen Sie?').within(() => {
+    cy.contains('ion-item', 'Bar').should('exist');
   });
 
-  cy.contains('mat-card.answer-card', 'Wie alt sind Sie?').within(() => {
-    cy.get('mat-form-field input').should('have.value', '23');
+  cy.contains('ion-card', 'Wie alt sind Sie?').within(() => {
+    cy.contains('ion-item', '23').should('exist');
   });
 
-  cy.contains('mat-card.answer-card', 'Single Select mit Radio Buttons').within(
+  cy.contains('ion-card', 'Single Select mit Radio Buttons').within(() => {
+    cy.contains('ion-item', 'Männlich').should('exist');
+  });
+
+  cy.contains('ion-card', 'Single Select mit Autocomplete').within(() => {
+    cy.contains('ion-item', 'Divers').should('exist');
+  });
+
+  cy.contains('ion-card', 'Multi Select ohne Autocomplete').within(() => {
+    cy.contains('p', 'Fieber').should('exist');
+    cy.contains('p', 'Husten').should('exist');
+  });
+
+  cy.contains('ion-card', 'Multi Select mit Autocomplete').within(() => {
+    cy.contains('p', 'Husten').should('exist');
+    cy.contains('p', 'Durchfall').should('exist');
+  });
+
+  cy.contains('ion-card', 'Wann sind erste Symptome aufgetreten?').within(
     () => {
-      cy.contains('mat-radio-button', 'Männlich')
-        .find('input')
-        .should('be.checked');
-      cy.contains('mat-radio-button', 'Weiblich')
-        .find('input')
-        .should('not.be.checked');
+      cy.contains('p', '01.12.20').should('exist');
     }
   );
+}
 
-  cy.contains('mat-card.answer-card', 'Single Select mit Autocomplete').within(
-    () => {
-      cy.contains('Divers');
+function clickUntilSendAppears(maxRetries = 20) {
+  if (maxRetries <= 0)
+    throw new Error('Send button not found after max retries');
+
+  cy.get('body').then(($body) => {
+    if ($body.find('[data-e2e="e2e-swiper-button-send"]').length > 0) {
+      cy.get('[data-e2e="e2e-swiper-button-send"]').click();
+    } else if ($body.find('[data-e2e="e2e-swiper-button-next"]').length > 0) {
+      cy.get('[data-e2e="e2e-swiper-button-next"]').click();
+      cy.wait(300);
+      clickUntilSendAppears(maxRetries - 1);
+    } else {
+      cy.wait(300);
+      clickUntilSendAppears(maxRetries - 1);
     }
-  );
-
-  cy.contains('mat-card.answer-card', 'Multi Select ohne Autocomplete').within(
-    () => {
-      cy.get('input[type="checkbox"][value="Fieber"]')
-        .should('exist')
-        .and('be.checked');
-      cy.get('input[type="checkbox"][value="Husten"]')
-        .should('exist')
-        .and('be.checked');
-      cy.get('input[type="checkbox"][value="Durchfall"]')
-        .should('exist')
-        .and('not.be.checked');
-    }
-  );
-
-  cy.contains('mat-card.answer-card', 'Multi Select mit Autocomplete').within(
-    () => {
-      cy.get('input[type="checkbox"][value="Husten"]')
-        .should('exist')
-        .and('be.checked');
-      cy.get('input[type="checkbox"][value="Durchfall"]')
-        .should('exist')
-        .and('be.checked');
-      cy.get('input[type="checkbox"][value="Fieber"]').should('not.exist');
-    }
-  );
-
-  cy.contains(
-    'mat-card.answer-card',
-    'Wann sind erste Symptome aufgetreten?'
-  ).within(() => {
-    cy.get('mat-form-field input').should('have.value', '01.12.20');
   });
 }

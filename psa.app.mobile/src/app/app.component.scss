@@ -39,6 +39,10 @@ ion-menu.md ion-list#menu-content ion-list-header {
   min-height: 20px;
 }
 
+ion-menu ion-content ion-item {
+  cursor: pointer;
+}
+
 ion-menu.md ion-content ion-item {
   --padding-start: 10px;
   --padding-end: 10px;

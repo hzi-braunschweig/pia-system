@@ -26,6 +26,7 @@ const PIA_IMAGES: string[] = [
   'psa.server.messagequeue',
   'psa.server.auth',
   'psa.app.web',
+  'psa.app.mobile',
   'psa.service.userservice',
   'psa.service.loggingservice',
   'psa.service.personaldataservice',

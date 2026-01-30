@@ -6,7 +6,7 @@
 
 <app-header [title]="'LAB_RESULT.TITLE' | translate"></app-header>
 
-<ion-content color="primary-light">
+<ion-content color="primary-light" data-e2e="e2e-laboratory-results-component">
   <div class="pia-message-centered" *ngIf="isEmpty()">
     <p>{{ 'LAB_RESULT.NO_RESULTS' | translate }}</p>
   </div>
@@ -18,6 +18,7 @@
           button
           *ngIf="labResult.status === 'analyzed'"
           [routerLink]="[labResult.id]"
+          data-e2e="laboratory-results-details"
         >
           <ion-icon slot="start" name="flask"></ion-icon>
           <ion-label>

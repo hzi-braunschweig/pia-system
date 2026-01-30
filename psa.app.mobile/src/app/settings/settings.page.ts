@@ -7,12 +7,31 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { DeleteAccountModalService } from '../account/services/delete-account-modal.service';
+import { HeaderComponent } from '../shared/components/header/header.component';
+import {
+  IonContent,
+  IonItemGroup,
+  IonItemDivider,
+  IonLabel,
+  IonItem,
+} from '@ionic/angular/standalone';
+import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
-  standalone: false,
+  imports: [
+    HeaderComponent,
+    IonContent,
+    IonItemGroup,
+    IonItemDivider,
+    IonLabel,
+    IonItem,
+    RouterLink,
+    TranslateModule,
+  ],
 })
 export class SettingsPage {
   constructor(

@@ -78,6 +78,7 @@ export class Hcl {
           '    VERSION_INFO_GIT_HASH = "${VERSION_INFO_GIT_HASH}"',
           '    VERSION_INFO_GIT_REF = "${VERSION_INFO_GIT_REF}"',
           '  }',
+          '  attest = []',
           '}',
         ];
       }),

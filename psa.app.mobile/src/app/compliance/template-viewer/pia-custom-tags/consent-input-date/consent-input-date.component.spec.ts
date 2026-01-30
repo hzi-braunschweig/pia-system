@@ -16,64 +16,124 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MockModule } from 'ng-mocks';
 import { By } from '@angular/platform-browser';
 
+import { Platform } from '@ionic/angular/standalone';
+
 import { ConsentInputDateComponent } from './consent-input-date.component';
 import { Component, ViewChild } from '@angular/core';
 
 describe('ConsentInputDateComponent', () => {
   let component: HostWithInitialDateValueComponent;
   let fixture: ComponentFixture<HostWithInitialDateValueComponent>;
+  let platformSpy: jasmine.SpyObj<Platform>;
 
   beforeEach(async () => {
+    const spy = jasmine.createSpyObj('Platform', ['is']);
+
     await TestBed.configureTestingModule({
-      declarations: [
+      imports: [
+        MockModule(TranslateModule),
+        MockModule(ReactiveFormsModule),
         ConsentInputDateComponent,
         HostComponent,
         HostWithInitialDateValueComponent,
       ],
-      imports: [MockModule(TranslateModule), MockModule(ReactiveFormsModule)],
+      providers: [{ provide: Platform, useValue: spy }],
     }).compileComponents();
+
+    platformSpy = TestBed.inject(Platform) as jasmine.SpyObj<Platform>;
   });
 
-  it('should format the form value to a display value', fakeAsync(() => {
-    // Arrange
-    fixture = TestBed.createComponent(HostComponent);
-    component = fixture.componentInstance;
+  describe('hybrid platform', () => {
+    it('should format the form value to a display value', fakeAsync(() => {
+      // Arrange
+      platformSpy.is.and.returnValue(true);
+      fixture = TestBed.createComponent(HostComponent);
+      component = fixture.componentInstance;
 
-    fixture.detectChanges();
-    tick();
+      fixture.detectChanges();
+      tick();
 
-    // Act
-    component.consentInputDate.formControl.setValue('1965-04-01');
-    tick();
-    fixture.detectChanges();
+      // Act
+      component.consentInputDate.formControl.setValue('1965-04-01');
+      tick();
+      fixture.detectChanges();
 
-    // Assert
-    const displayValueElement = fixture.debugElement.query(
-      By.css('[data-unit="display-value"]')
-    ).nativeElement;
+      // Assert
+      const displayValueElement = fixture.debugElement.query(
+        By.css('[data-unit="display-value"]')
+      ).nativeElement;
 
-    expect(displayValueElement).not.toBeNull();
-    expect(displayValueElement.value).toEqual('01.04.1965');
-    flush();
-  }));
+      expect(displayValueElement).not.toBeNull();
+      expect(displayValueElement.value).toEqual('01.04.1965');
+      flush();
+    }));
 
-  it('should display the initially set date', fakeAsync(() => {
-    // Arrange
-    fixture = TestBed.createComponent(HostWithInitialDateValueComponent);
-    component = fixture.componentInstance;
+    it('should display the initially set date', fakeAsync(() => {
+      // Arrange
+      platformSpy.is.and.returnValue(true);
+      fixture = TestBed.createComponent(HostWithInitialDateValueComponent);
+      component = fixture.componentInstance;
 
-    fixture.detectChanges();
-    tick();
+      fixture.detectChanges();
+      tick();
 
-    // Assert
-    const displayValueElement = fixture.debugElement.query(
-      By.css('[data-unit="display-value"]')
-    ).nativeElement;
+      // Assert
+      const displayValueElement = fixture.debugElement.query(
+        By.css('[data-unit="display-value"]')
+      ).nativeElement;
 
-    expect(displayValueElement).not.toBeNull();
-    expect(displayValueElement.value).toEqual('01.04.1965');
-    flush();
-  }));
+      expect(displayValueElement).not.toBeNull();
+      expect(displayValueElement.value).toEqual('01.04.1965');
+      flush();
+    }));
+  });
+
+  describe('non-hybrid platform', () => {
+    it('should format the form value to a display value', fakeAsync(() => {
+      // Arrange
+      platformSpy.is.and.returnValue(false);
+      fixture = TestBed.createComponent(HostComponent);
+      component = fixture.componentInstance;
+
+      fixture.detectChanges();
+      tick();
+
+      // Act
+      component.consentInputDate.formControl.setValue(
+        '1965-04-01T00:00:00.000Z'
+      );
+      tick();
+      fixture.detectChanges();
+
+      // Assert
+      const dateInputElement = fixture.debugElement.query(
+        By.css('input[type="date"]')
+      ).nativeElement;
+
+      expect(dateInputElement).not.toBeNull();
+      expect(dateInputElement.value).toEqual('1965-04-01');
+      flush();
+    }));
+
+    it('should display the initially set date', fakeAsync(() => {
+      // Arrange
+      platformSpy.is.and.returnValue(false);
+      fixture = TestBed.createComponent(HostWithInitialDateValueComponent);
+      component = fixture.componentInstance;
+
+      fixture.detectChanges();
+      tick();
+
+      // Assert
+      const dateInputElement = fixture.debugElement.query(
+        By.css('input[type="date"]')
+      ).nativeElement;
+
+      expect(dateInputElement).not.toBeNull();
+      expect(dateInputElement.value).toEqual('1965-04-01');
+      flush();
+    }));
+  });
 
   const template = `<app-consent-input-date
       #component
@@ -86,7 +146,7 @@ describe('ConsentInputDateComponent', () => {
   @Component({
     selector: 'app-host',
     template,
-    standalone: false,
+    imports: [ConsentInputDateComponent],
   })
   class HostComponent {
     @ViewChild('component')
@@ -97,7 +157,7 @@ describe('ConsentInputDateComponent', () => {
   @Component({
     selector: 'app-with-initial-date-value-host',
     template,
-    standalone: false,
+    imports: [ConsentInputDateComponent],
   })
   class HostWithInitialDateValueComponent extends HostComponent {
     form: FormGroup = new FormGroup({

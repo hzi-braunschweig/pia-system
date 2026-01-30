@@ -4,6 +4,7 @@
   ~ SPDX-License-Identifier: AGPL-3.0-or-later
   -->
 
+@if (platform.is('hybrid')) {
 <ion-item
   [id]="'open-datetime-' + consentName"
   lines="full"
@@ -51,3 +52,27 @@
     </ng-template>
   </ion-modal>
 </ion-item>
+} @else {
+<ion-item
+  lines="full"
+  fill="filled"
+  mode="md"
+  class="ion-margin-start ion-margin-end"
+>
+  <input
+    type="date"
+    [value]="dateInputValue"
+    (change)="onDateInputChange($event)"
+    [disabled]="formControl.disabled"
+    style="
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      background: transparent;
+      font-size: 16px;
+      color: #000000;
+      color-scheme: light;
+    "
+  />
+</ion-item>
+}

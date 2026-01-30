@@ -5,9 +5,7 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
-import { TranslatePipe } from '@ngx-translate/core';
-import { MockPipe } from 'ng-mocks';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { QuestionnaireAnswerTimestampComponent } from './questionnaire-answer-timestamp.component';
 
@@ -17,11 +15,10 @@ describe('QuestionnaireAnswerTimestampComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [
+      imports: [
         QuestionnaireAnswerTimestampComponent,
-        MockPipe(TranslatePipe),
+        TranslateModule.forRoot(),
       ],
-      imports: [IonicModule.forRoot()],
       providers: [],
     }).compileComponents();
 

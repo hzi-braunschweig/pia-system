@@ -6,7 +6,7 @@
 
 <app-header [title]="'STUDY_CONTACT.TITLE' | translate"></app-header>
 
-<ion-content color="primary-light">
+<ion-content color="primary-light" data-e2e="e2e-contact-content">
   <ion-list>
     <ion-item class="ion-text-wrap" *ngFor="let address of addresses">
       <ion-label class="ion-text-wrap">
@@ -20,6 +20,7 @@
       >
     </ion-item>
     <ion-item
+      data-e2e="request-new-material-button"
       button
       color="primary"
       (click)="presentConfirmNewMaterial()"

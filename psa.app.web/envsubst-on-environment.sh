@@ -18,8 +18,5 @@ substitute_env_in_js_files() {
   done
 }
 
-# substitute env variables in proband app
-substitute_env_in_js_files "/usr/share/nginx/template" "/usr/share/nginx/html"
-
 # substitute env variables in admin app
 substitute_env_in_js_files "/usr/share/nginx/template/admin" "/usr/share/nginx/html/admin"

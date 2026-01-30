@@ -6,18 +6,25 @@
 
 import { Injectable } from '@angular/core';
 import { Badge } from '@capawesome/capacitor-badge';
+import { Platform } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BadgeService {
-  constructor() {}
+  constructor(private readonly platform: Platform) {}
 
   async set(count: number) {
-    await Badge.set({ count });
+    if (this.platform.is('hybrid')) {
+      await this.platform.ready();
+      await Badge.set({ count });
+    }
   }
 
   async clear() {
-    await Badge.clear();
+    if (this.platform.is('hybrid')) {
+      await this.platform.ready();
+      await Badge.clear();
+    }
   }
 }

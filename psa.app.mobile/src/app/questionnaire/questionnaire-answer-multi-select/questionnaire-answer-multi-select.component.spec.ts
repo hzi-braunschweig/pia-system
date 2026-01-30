@@ -5,8 +5,6 @@
  */
 
 import { ComponentFixture, fakeAsync, TestBed } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
-
 import { QuestionnaireAnswerMultiSelectComponent } from './questionnaire-answer-multi-select.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
@@ -17,11 +15,10 @@ describe('QuestionnaireAnswerMultiSelectComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [QuestionnaireAnswerMultiSelectComponent],
       imports: [
-        IonicModule.forRoot(),
         ReactiveFormsModule,
         TranslateModule.forRoot(),
+        QuestionnaireAnswerMultiSelectComponent,
       ],
     }).compileComponents();
 
@@ -123,6 +120,55 @@ describe('QuestionnaireAnswerMultiSelectComponent', () => {
       const radioButtons =
         fixture.nativeElement.querySelectorAll('ion-checkbox');
       expect(radioButtons.length).toBe(3);
+    });
+  });
+
+  describe('NO_ANSWER special behavior (multi-language)', () => {
+    const noAnswerValues = [
+      { language: 'German', value: 'Keine Angabe' },
+      { language: 'English', value: 'Not specified' },
+      { language: 'French', value: 'Pas de réponse' },
+      { language: 'Spanish', value: 'Sin respuesta' },
+    ];
+
+    noAnswerValues.forEach(({ language, value }) => {
+      describe(`${language}: "${value}"`, () => {
+        beforeEach(() => {
+          component.values = [value, 'Option 1', 'Option 2'];
+          component.ngOnInit();
+          fixture.detectChanges();
+        });
+
+        it(`should clear other options when "${value}" is selected`, fakeAsync(() => {
+          component.form.controls[1].setValue(true);
+          component.form.controls[2].setValue(true);
+          fixture.detectChanges();
+
+          expect(component.form.controls[1].value).toBe(true);
+          expect(component.form.controls[2].value).toBe(true);
+
+          component.form.controls[0].setValue(true);
+          fixture.detectChanges();
+
+          expect(component.form.controls[0].value).toBe(true);
+          expect(component.form.controls[1].value).toBe(false);
+          expect(component.form.controls[2].value).toBe(false);
+        }));
+
+        it(`should clear "${value}" when other options are selected`, fakeAsync(() => {
+          component.form.controls[0].setValue(true);
+          fixture.detectChanges();
+
+          expect(component.form.controls[0].value).toBe(true);
+
+          component.form.controls[1].setValue(true);
+          fixture.detectChanges();
+
+          expect(component.form.controls[0].value).toBe(false);
+          expect(component.form.controls[1].value).toBe(true);
+          expect(component.form.controls[2].value).toBe(false);
+        }));
+      });
     });
   });
 });

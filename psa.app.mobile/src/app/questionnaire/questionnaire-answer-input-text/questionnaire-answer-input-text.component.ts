@@ -5,9 +5,11 @@
  */
 
 import { Component, forwardRef } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { AbstractTextInputControlValueAccessor } from '../../shared/components/abstract-control-value-accessor/abstract-text-input-control-value-accessor';
 import { FormControlValue } from '../questionnaire-form/questionnaire-form.service';
+import { NgIf } from '@angular/common';
+import { IonItem, IonLabel, IonInput } from '@ionic/angular/standalone';
 
 const QUESTIONNAIRE_ANSWER_INPUT_TEXT_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -19,6 +21,6 @@ const QUESTIONNAIRE_ANSWER_INPUT_TEXT_ACCESSOR = {
   selector: 'app-questionnaire-answer-input-text',
   templateUrl: './questionnaire-answer-input-text.component.html',
   providers: [QUESTIONNAIRE_ANSWER_INPUT_TEXT_ACCESSOR],
-  standalone: false,
+  imports: [NgIf, IonItem, IonLabel, IonInput, ReactiveFormsModule],
 })
 export class QuestionnaireAnswerInputTextComponent extends AbstractTextInputControlValueAccessor<FormControlValue> {}

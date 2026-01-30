@@ -21,7 +21,6 @@ import { HttpClient } from '@pia-system/lib-http-clients-internal';
 import { db } from '../../src/db';
 
 import { cleanup, setup } from './laboratoryResult.spec.data/setup.helper';
-import { LabResultImportHelper } from '../../src/services/labResultImportHelper';
 import { assert } from 'ts-essentials';
 
 chai.use(chaiHttp);
@@ -206,16 +205,12 @@ const resultsProband3 = {
 };
 
 describe('/probands/{user_id}/labResults', () => {
-  const suiteSandbox = sinon.createSandbox();
   before(async function () {
-    suiteSandbox.stub(LabResultImportHelper, 'importHl7FromMhhSftp');
-    suiteSandbox.stub(LabResultImportHelper, 'importCsvFromHziSftp');
     await Server.init();
   });
 
   after(async function () {
     await Server.stop();
-    suiteSandbox.restore();
   });
 
   function mockCompliance(

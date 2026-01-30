@@ -5,9 +5,7 @@
  */
 
 export const StatusBar = {
-  async setOverlaysWebView(data: { overlay: boolean }): Promise<void> {
-    console.log('-----------------he---------------');
-  },
+  async setOverlaysWebView(data: { overlay: boolean }): Promise<void> {},
   async setStyle(data: { style: 'DARK' | 'LIGHT' }): Promise<void> {},
   async setBackgroundColor(data: { color: string }): Promise<void> {},
   async hide(): Promise<void> {},

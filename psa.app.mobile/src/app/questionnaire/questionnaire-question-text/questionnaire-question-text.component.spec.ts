@@ -3,17 +3,15 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-import { IonIcon } from '@ionic/angular';
+import { IonIcon } from '@ionic/angular/standalone';
 import { MockBuilder, MockInstance, MockRender, ngMocks } from 'ng-mocks';
 import { MarkdownComponent } from 'ngx-markdown';
 import { QuestionnaireQuestionTextComponent } from './questionnaire-question-text.component';
+import { NgIf } from '@angular/common';
 
 describe('QuestionnaireQuestionTextComponent', () => {
   beforeEach(
-    async () =>
-      await MockBuilder(QuestionnaireQuestionTextComponent)
-        .mock(MarkdownComponent)
-        .mock(IonIcon)
+    async () => await MockBuilder(QuestionnaireQuestionTextComponent).keep(NgIf)
   );
 
   it('should show help text if given', () => {

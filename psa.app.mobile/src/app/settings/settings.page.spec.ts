@@ -6,9 +6,8 @@
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { IonicModule } from '@ionic/angular';
-import { TranslatePipe, TranslateService } from '@ngx-translate/core';
-import { MockComponent, MockPipe, MockProvider, MockService } from 'ng-mocks';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { MockComponent, MockModule, MockProvider, MockService } from 'ng-mocks';
 
 import { SettingsPage } from './settings.page';
 import { HeaderComponent } from '../shared/components/header/header.component';
@@ -16,10 +15,11 @@ import { DeleteAccountModalService } from '../account/services/delete-account-mo
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
-import { KeycloakAngularModule, KeycloakService } from 'keycloak-angular';
+import { KeycloakClientService } from '../auth/keycloak-client.service';
 import { InAppBrowser } from '@awesome-cordova-plugins/in-app-browser/ngx';
 import SpyObj = jasmine.SpyObj;
 import { BadgeService } from '../shared/services/badge/badge.service';
+import { ModalController } from '@ionic/angular/standalone';
 import {
   provideHttpClient,
   withInterceptorsFromDi,
@@ -34,17 +34,18 @@ describe('SettingsPage', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [
+      imports: [
+        RouterTestingModule,
         SettingsPage,
-        MockPipe(TranslatePipe),
+        MockModule(TranslateModule),
         MockComponent(HeaderComponent),
       ],
-      imports: [IonicModule.forRoot(), RouterTestingModule],
       providers: [
         InAppBrowser,
         MockProvider(TranslateService),
         MockProvider(BadgeService, MockService(BadgeService)),
-        MockProvider(KeycloakService, MockService(KeycloakService)),
+        MockProvider(KeycloakClientService, MockService(KeycloakClientService)),
+        MockProvider(ModalController),
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),
       ],

@@ -9,11 +9,42 @@ import { Component, OnInit } from '@angular/core';
 import { CurrentUser } from '../../auth/current-user.service';
 import { SampleTrackingClientService } from '../sample-tracking-client.service';
 import { LabResult } from '../lab-result.model';
+import { addIcons } from 'ionicons';
+import { flask, eye } from 'ionicons/icons';
+import { HeaderComponent } from '../../shared/components/header/header.component';
+import {
+  IonContent,
+  IonList,
+  IonItemGroup,
+  IonItem,
+  IonIcon,
+  IonLabel,
+  IonNote,
+  IonSkeletonText,
+} from '@ionic/angular/standalone';
+import { NgIf, NgFor, DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-lab-result-list',
   templateUrl: './lab-result-list.page.html',
-  standalone: false,
+  imports: [
+    HeaderComponent,
+    IonContent,
+    NgIf,
+    IonList,
+    IonItemGroup,
+    NgFor,
+    IonItem,
+    RouterLink,
+    IonIcon,
+    IonLabel,
+    IonNote,
+    IonSkeletonText,
+    DatePipe,
+    TranslateModule,
+  ],
 })
 export class LabResultListPage implements OnInit {
   labResults: LabResult[] = null;
@@ -21,7 +52,9 @@ export class LabResultListPage implements OnInit {
   constructor(
     private currentUser: CurrentUser,
     private sampleTrackingClient: SampleTrackingClientService
-  ) {}
+  ) {
+    addIcons({ flask, eye });
+  }
 
   public async ngOnInit() {
     await this.fetchLabResults();

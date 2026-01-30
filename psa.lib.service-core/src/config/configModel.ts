@@ -37,11 +37,6 @@ export interface MessageQueueConnection extends Connection {
   serviceName: string;
 }
 
-export interface SftpServerConnection extends Connection {
-  username: string;
-  password: string;
-}
-
 export interface AuthSettings {
   probandTokenIntrospectionClient?: AuthClientSettings;
   probandManagementClient?: AuthClientSettings;
@@ -93,8 +88,6 @@ export interface ServiceConfig {
   };
   servers?: {
     mailserver?: MailserverConnection;
-    mhhftpserver?: SftpServerConnection;
-    hziftpserver?: SftpServerConnection;
     messageQueue?: MessageQueueConnection;
     authserver?: AuthSettings;
   };

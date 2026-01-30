@@ -19,6 +19,7 @@
           [segment]="segment"
           (usedFormControls)="updateUsedFormControls(i, $event)"
           groupName="consentGeneric"
+          data-e2e="e2e-consent-generic-radio"
         ></app-consent-input-radio>
         <app-consent-input-radio
           *ngSwitchCase="'pia-consent-input-radio-app'"
@@ -26,6 +27,7 @@
           (usedFormControls)="updateUsedFormControls(i, $event)"
           groupName="consentSystem"
           consentName="app"
+          data-e2e="e2e-consent-name-app"
         ></app-consent-input-radio>
         <app-consent-input-radio
           *ngSwitchCase="'pia-consent-input-radio-bloodsamples'"
@@ -33,6 +35,7 @@
           (usedFormControls)="updateUsedFormControls(i, $event)"
           groupName="consentSystem"
           consentName="bloodsamples"
+          data-e2e="e2e-consent-name-bloodsamples"
         ></app-consent-input-radio>
         <app-consent-input-radio
           *ngSwitchCase="'pia-consent-input-radio-labresults'"
@@ -40,6 +43,7 @@
           (usedFormControls)="updateUsedFormControls(i, $event)"
           groupName="consentSystem"
           consentName="labresults"
+          data-e2e="e2e-consent-name-labresults"
         ></app-consent-input-radio>
         <app-consent-input-radio
           *ngSwitchCase="'pia-consent-input-radio-samples'"
@@ -47,6 +51,7 @@
           (usedFormControls)="updateUsedFormControls(i, $event)"
           groupName="consentSystem"
           consentName="samples"
+          data-e2e="e2e-consent-name-samples"
         ></app-consent-input-radio>
         <app-consent-input-text
           *ngSwitchCase="'pia-consent-input-text-generic'"
@@ -54,6 +59,7 @@
           [segment]="segment"
           (usedFormControls)="updateUsedFormControls(i, $event)"
           groupName="textGeneric"
+          data-e2e="e2e-consent-email-input"
         ></app-consent-input-text>
         <app-consent-input-text
           *ngSwitchCase="'pia-consent-input-text-firstname'"
@@ -62,6 +68,7 @@
           groupName="textSystem"
           consentName="firstname"
           label="{{ 'COMPLIANCE.FIRSTNAME' | translate }}"
+          data-e2e="e2e-consent-name-firstname"
         ></app-consent-input-text>
         <app-consent-input-text
           *ngSwitchCase="'pia-consent-input-text-lastname'"
@@ -70,6 +77,7 @@
           groupName="textSystem"
           consentName="lastname"
           label="{{ 'COMPLIANCE.LASTNAME' | translate }}"
+          data-e2e="e2e-consent-name-lastname"
         ></app-consent-input-text>
         <app-consent-input-text
           *ngSwitchCase="'pia-consent-input-text-location'"
@@ -78,6 +86,7 @@
           groupName="textSystem"
           consentName="location"
           label="{{ 'COMPLIANCE.LOCATION' | translate }}"
+          data-e2e="e2e-consent-name-location"
         ></app-consent-input-text>
         <app-consent-input-date
           *ngSwitchCase="'pia-consent-input-text-birthdate'"
@@ -86,6 +95,7 @@
           groupName="textSystem"
           consentName="birthdate"
           label="{{ 'COMPLIANCE.BIRTHDATE' | translate }}"
+          data-e2e="e2e-consent-name-birthdate"
         ></app-consent-input-date>
         <app-consent-input-date
           *ngSwitchCase="'pia-consent-input-text-date'"
@@ -94,6 +104,7 @@
           groupName="textSystem"
           consentName="date"
           label="{{ 'COMPLIANCE.DATE' | translate }}"
+          data-e2e="e2e-consent-name-date"
         ></app-consent-input-date>
         <app-consent-switch-radio
           *ngSwitchCase="'pia-consent-switch-radio-system'"
@@ -101,6 +112,7 @@
           [segment]="segment"
           (usedFormControls)="updateUsedFormControls(i, $event)"
           groupName="consentSystem"
+          data-e2e="e2e-pia-consent-switch-radio-generic"
         ></app-consent-switch-radio>
         <app-consent-switch-radio
           *ngSwitchCase="'pia-consent-switch-radio-generic'"
@@ -108,6 +120,7 @@
           [segment]="segment"
           (usedFormControls)="updateUsedFormControls(i, $event)"
           groupName="consentGeneric"
+          data-e2e="e2e-pia-consent-switch-radio-generic2"
         ></app-consent-switch-radio>
       </ng-container>
     </ng-container>

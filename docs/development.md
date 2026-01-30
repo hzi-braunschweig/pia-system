@@ -12,8 +12,6 @@ For local development you need to have the following tools installed:
 - Local [k3d](https://k3d.io/) Kubernetes cluster to which PIA will be deployed
   - You might also use other Kubernetes distributions, however, our setup is only tested with k3d
 - [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) to control your cluster
-- [Skaffold](https://skaffold.dev/docs/install/) to deploy PIA to your cluster with one command. Please see [Tips for skaffold](#tips-for-skaffold)
-  for additional information.
 - Optional: [Android Studio](https://developer.android.com/studio) and/or [Xcode](https://developer.apple.com/xcode/) to
   build the mobile apps. For detailed instructions see the [mobile app readme](../psa.app.mobile/README.md).
 
@@ -27,7 +25,14 @@ npm install
 Also create a local cluster with k3d:
 
 ```bash
-k3d cluster create pia --port 80:80@loadbalancer --port 443:443@loadbalancer
+k3d registry create registry.localhost --port 5000
+k3d cluster create pia --port 80:80@loadbalancer --port 443:443@loadbalancer --registry-use k3d-registry.localhost:5000
+```
+
+Add the registry to your hosts file:
+
+```/etc/hosts
+127.0.0.1	k3d-registry.localhost
 ```
 
 Before you can access your local PIA, you need to also add `pia-app` and `mail-pia-app` with the IP `127.0.0.1` to your
@@ -45,17 +50,14 @@ hosts file:
 > ⚠️ This is **only for local development**. Do _not_ use this for production setups, instead check
 > the [deployment docs](../docs/deployment.md).
 
-Run `npm start` or `skaffold dev` to deploy PIA to your local cluster. This will:
+Run `npm start` to deploy PIA to your local cluster. This will:
 
 1. Build all Docker images which are needed for the deployment
 2. Create the namespace **pia** if it does not exist
 3. Generate mandatory internal secrets for your local deployment
    - This will create `k8s/deployment/overlays/local-k3d/internal-secrets.yaml` if it is not yet existing
 4. Deploy the Kubernetes manifests to your cluster using the locally built images
-5. Keep your cluster up to date after code changes (as long as the script is running)
-6. Clean up all resources after you stop the script (by pressing `Ctrl + C`)
-   - This can be skipped by starting Skaffold with `--cleanup=false`
-7. For mobile app development, you need to create and add local TLS certificate. Go to [How to add a local TLS certificate for SSL termination](#how-to-add-a-local-tls-certificate-for-ssl-termination) for more information.
+5. For mobile app development, you need to create and add local TLS certificate. Go to [How to add a local TLS certificate for SSL termination](#how-to-add-a-local-tls-certificate-for-ssl-termination) for more information.
 
 After all services are up and running, you can access:
 
@@ -98,60 +100,46 @@ Connect to the database with your favorite tool using:
 - Username: superuser
 - Password: `qpia_superuser_db.password` (or `ipia_` or `ewpia_`) from [internal-secrets.yaml (generated)](../k8s/deployment/overlays/local-k3d/internal-secrets.yaml)
 
-## Tips for skaffold
+## Using containerized BuildKit with local k3d registry
 
-> 🌈 You can opt out of skaffolds metrics collection by executing `skaffold config set --global collect-metrics false`.
+In some cases, using a containerized BuildKit is much more stable than using the docker desktop default.
 
-> 👯‍ We have limited concurrency to avoid overloading network and CPU for new developors. You can disable this limit
-> appending `--build-concurrency 0` when executing skaffold to utilize all available resources.
-
-## How to use a local image registry to speed up the development cycle
-
-Skaffold needs to copy all image to the cluster. For a local cluster in k3d it will use the k3d function (`k3d image import`). This will load the whole image and copy it to the cluster. For small changes (only the last few layers) this can take a long time, because it will only copy all layers together. To use the advantage of docker layers, you need to use a registry.
-
-If you want to use k3d with a local registry instead of loading the images through k3d, start the cluster like this and disable the skaffold k3d load feature:
+1. Create a new k3d local registry optionally with a dedicated docker volume (to explicitly remove or keep images on recreate).
 
 ```bash
-k3d registry create registry.localhost --port 5000
-k3d cluster create pia --port 80:80@loadbalancer --port 443:443@loadbalancer --registry-use k3d-registry.localhost:5000
-skaffold config set --global k3d-disable-load true
+docker volume create k3d-registry.localhost
+k3d registry create registry.localhost --port 5000 -v k3d-registry.localhost:/var/lib/registry
 ```
 
-Add the registry to your hosts file:
+2. Create a `buildkit.toml` for that registry.
 
-```/etc/hosts
-127.0.0.1	k3d-registry.localhost
+```toml
+[registry."k3d-registry.localhost:5000"]
+    http = true
 ```
 
-Then you can use `skaffold dev` with the environment variable set before: `SKAFFOLD_DEFAULT_REPO=k3d-registry.localhost:5000 skaffold dev` or `export SKAFFOLD_DEFAULT_REPO=k3d-registry.localhost:5000` and then run `skaffold dev`.
-
-## How to use Docker Desktop instead of k3d
-
-Kubernetes in Docker brings the benefit, that the built image is in the same container runtime context as the cluster. Therefore a image does not need to be copied to the cluster.
-
-> ⚠️ Even though the images don't need to be copied to the cluster, we experienced a very slow deployment performance with Kubernetes inDocker Desktop.
-
-For Kubernetes in Docker Desktop enable Kubernetes in Preferences -> Kubernetes -> Enable Kubernetes.
-Since Kubernetes in Docker Desktop is not shipped with a ingress controller, you need to install one.
-
-You can simply install the ingress nginx controller as described in the
-[official documentation](https://kubernetes.github.io/ingress-nginx/deploy/#quick-start), e.g.:
+3. Create a BuildKit builder container wired to the registry:
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.12.0-beta.0/deploy/static/provider/cloud/deploy.yaml
+# Create a new network for the buildkit
+docker network create buildkit-network
+
+# Add the k3d-registry.localhost to the buildkit-network
+docker network connect buildkit-network k3d-registry.localhost
+
+# Create and use a docker-container driver builder that:
+# - loads config from buildkit.toml (allows HTTP to the registry)
+# - connects to the buildkit-network
+# - is used as default builder
+docker buildx create \
+  --name buildkit-container \
+  --driver docker-container \
+  --buildkitd-config buildkit.toml \
+  --driver-opt "network=buildkit-network" \
+  --use
 ```
 
-And mark the ingress class as default, so that the ingress controller applies the ingress rules of pia:
-
-```bash
-kubectl -n ingress-nginx annotate ingressclasses.networking.k8s.io/nginx ingressclass.kubernetes.io/is-default-class=true
-```
-
-Docker Desktop offers a different Storage Class Name and only offers hostpath instead of local-path as k3d does. Therefore you need to use a different kustomization file. You can do so by using a skaffold profile:
-
-```bash
-skaffold dev -p local-docker-desktop
-```
+4. On using `buildx bake` set `IMAGE_REGISTRY` to `k3d-registry.localhost:5000`. It will push images directly to that registry.
 
 ## How to add a service
 

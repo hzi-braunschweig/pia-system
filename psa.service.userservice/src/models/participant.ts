@@ -68,11 +68,11 @@ export interface ParticipantDto {
   /**
    * @isDateTime
    */
-  deactivatedAt: Date;
+  deactivatedAt: Date | null;
   /**
    * @isDateTime
    */
-  deletedAt: Date;
+  deletedAt: Date | null;
 }
 
 export type CreateParticipantRequestDto = Partial<

@@ -13,7 +13,6 @@ import { userserviceClient } from '../clients/userserviceClient';
 import { LabResultStatus, StudyStatus } from '../entities/labResult';
 import { LabResult } from '../models/LabResult';
 import { User } from '../models/user';
-import { LabResultImportHelper } from '../services/labResultImportHelper';
 import postgresqlHelper from '../services/postgresqlHelper';
 
 export class LaboratoryResultsInteractor {
@@ -158,15 +157,6 @@ export class LaboratoryResultsInteractor {
     return labResult;
   }
 
-  public static async postLabResultsImport(): Promise<'success' | 'error'> {
-    const results = await Promise.all([
-      LabResultImportHelper.importHl7FromMhhSftp(),
-      LabResultImportHelper.importCsvFromHziSftp(),
-    ]);
-    return results.every((result) => result === 'success')
-      ? 'success'
-      : 'error';
-  }
   /**
    * creates one laboratory result
    * @param decodedToken the jwt of the request

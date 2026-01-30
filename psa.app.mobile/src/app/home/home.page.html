@@ -6,10 +6,45 @@
 
 <app-header [title]="'HOME.TITLE' | translate"></app-header>
 
-<ion-content color="primary-light">
-  <ion-card *ngIf="welcomeText">
-    <ion-card-content class="pia-welcome-card" unit-welcome-text>
-      <markdown>{{ welcomeText }}</markdown>
+<ion-content color="primary-light" data-e2e="e2e-home-content">
+  <ion-card>
+    <ion-card-content
+      data-e2e="e2e-home-content"
+      *ngIf="welcomeText || !platform.is('hybrid')"
+      class="pia-welcome-card"
+      unit-welcome-text
+    >
+      <markdown *ngIf="welcomeText">{{ welcomeText }}</markdown>
+      <div
+        class="store-link-container"
+        [class.margin-top]="welcomeText"
+        *ngIf="!platform.is('hybrid')"
+      >
+        <a
+          [href]="androidLink"
+          target="_blank"
+          class="store-link"
+          data-e2e="e2e-android-link"
+        >
+          <img
+            class="store-badge"
+            alt="Play Store Download"
+            src="assets/images/download-play-store.png"
+          />
+        </a>
+        <a
+          [href]="iOSLink"
+          target="_blank"
+          class="store-link"
+          data-e2e="e2e-iOS-link"
+        >
+          <img
+            class="store-badge"
+            alt="Apple Store Download"
+            src="../../../assets/images/download-apple-store.png"
+          />
+        </a>
+      </div>
     </ion-card-content>
   </ion-card>
 </ion-content>

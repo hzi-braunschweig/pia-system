@@ -13,10 +13,20 @@
         {{ 'SETTINGS.GROUP_TITLE_ACCOUNT' | translate }}
       </ion-label>
     </ion-item-divider>
-    <ion-item lines="none" button (click)="openAccountManagement()">
+    <ion-item
+      lines="none"
+      button
+      (click)="openAccountManagement()"
+      data-e2e="change-password-button"
+    >
       <ion-label>{{ 'SETTINGS.MANAGE_PASSWORD' | translate }}</ion-label>
     </ion-item>
-    <ion-item lines="none" button (click)="openDeleteAccountModal()">
+    <ion-item
+      lines="none"
+      button
+      (click)="openDeleteAccountModal()"
+      data-e2e="delete-account-button"
+    >
       <ion-label>{{ 'SETTINGS.DELETE_ACCOUNT' | translate }}</ion-label>
     </ion-item>
   </ion-item-group>

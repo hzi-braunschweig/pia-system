@@ -84,7 +84,7 @@ export function logoutParticipant(): Chainable<
 > {
   cy.contains('Abmelden').click();
   // participant logout needs confirmation
-  cy.get('[data-e2e="dialog-button-accept"]').click();
+  cy.get('#confirmButton').click();
   // wait for logout to finish with all redirects
   return cy.get('[data-e2e="login-input-username"]').should('exist');
 }

@@ -1,0 +1,78 @@
+/*
+ * SPDX-FileCopyrightText: 2025 Helmholtz-Zentrum für Infektionsforschung GmbH (HZI) <PiaPost@helmholtz-hzi.de>
+ *
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+
+import { Routes } from '@angular/router';
+import { AuthGuard } from './auth/auth.guard';
+import { ComplianceType } from './compliance/compliance.model';
+import { ComplianceGuard } from './compliance/compliance.guard';
+
+export const routes: Routes = [
+  {
+    path: '',
+    redirectTo: 'home',
+    pathMatch: 'full',
+  },
+  {
+    path: 'registration/:study',
+    loadComponent: () =>
+      import('./registration/registration.component').then(
+        (c) => c.RegistrationComponent
+      ),
+  },
+  {
+    path: 'home',
+    canActivate: [AuthGuard, ComplianceGuard],
+    loadChildren: () =>
+      import('./home/home.module').then((m) => m.HomePageModule),
+  },
+  {
+    path: 'questionnaire',
+    canActivate: [AuthGuard, ComplianceGuard],
+    loadChildren: () =>
+      import('./questionnaire/questionnaire.module').then(
+        (m) => m.QuestionnaireModule
+      ),
+  },
+  {
+    path: 'lab-result',
+    canActivate: [AuthGuard, ComplianceGuard],
+    data: { requiresCompliance: [ComplianceType.LABRESULTS] },
+    loadChildren: () =>
+      import('./lab-result/lab-result.module').then((m) => m.LabResultModule),
+  },
+  {
+    path: 'compliance',
+    canActivate: [AuthGuard],
+    loadChildren: () =>
+      import('./compliance/compliance.page.module').then(
+        (m) => m.CompliancePageModule
+      ),
+  },
+  {
+    path: 'settings',
+    canActivate: [AuthGuard, ComplianceGuard],
+    loadChildren: () =>
+      import('./settings/settings.module').then((m) => m.SettingsPageModule),
+  },
+  {
+    path: 'contact',
+    canActivate: [AuthGuard, ComplianceGuard],
+    loadChildren: () =>
+      import('./contact/contact.module').then((m) => m.ContactPageModule),
+  },
+  {
+    path: 'auth',
+    loadChildren: () => import('./auth/auth.module').then((m) => m.AuthModule),
+  },
+  {
+    path: 'feedback-statistics',
+    canActivate: [AuthGuard, ComplianceGuard],
+    loadChildren: () =>
+      import('./feedback-statistics/feedback-statistics.module').then(
+        (m) => m.FeedbackStatisticsPageModule
+      ),
+  },
+];

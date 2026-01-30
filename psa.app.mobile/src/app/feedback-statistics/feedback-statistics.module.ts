@@ -7,9 +7,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-import { IonicModule } from '@ionic/angular';
-
 import { FeedbackStatisticsPageRoutingModule } from './feedback-statistics-routing.module';
 
 import { FeedbackStatisticsPage } from './feedback-statistics.page';
@@ -18,18 +15,38 @@ import { SharedModule } from '../shared/shared.module';
 import { ChartsModule } from '@pia-system/charts';
 import { FeedbackStatisticComponent } from './feedback-statistic/feedback-statistic.component';
 import { MarkdownModule } from 'ngx-markdown';
+import {
+  IonContent,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonRange,
+  IonButton,
+} from '@ionic/angular/standalone';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
-    IonicModule,
     TranslateModule.forChild(),
     FeedbackStatisticsPageRoutingModule,
     SharedModule,
     ChartsModule.forChild(),
     MarkdownModule,
+    IonContent,
+    IonCard,
+    IonCardContent,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardSubtitle,
+    IonCardContent,
+    IonRange,
+    IonButton,
+    FeedbackStatisticsPage,
+    FeedbackStatisticComponent,
   ],
-  declarations: [FeedbackStatisticsPage, FeedbackStatisticComponent],
 })
 export class FeedbackStatisticsPageModule {}

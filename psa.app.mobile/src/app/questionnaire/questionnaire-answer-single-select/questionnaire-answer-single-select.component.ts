@@ -5,9 +5,19 @@
  */
 
 import { Component, forwardRef, Input, OnInit } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { AbstractControlValueAccessor } from '../../shared/components/abstract-control-value-accessor/abstract-control-value-accessor';
 import { FormControlValue } from '../questionnaire-form/questionnaire-form.service';
+import { NgIf, NgFor } from '@angular/common';
+import {
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonList,
+  IonRadioGroup,
+  IonRadio,
+} from '@ionic/angular/standalone';
+import { TranslateModule } from '@ngx-translate/core';
 
 const QUESTIONNAIRE_ANSWER_SINGLE_SELECT_ACCESSOR = {
   provide: NG_VALUE_ACCESSOR,
@@ -20,7 +30,18 @@ const QUESTIONNAIRE_ANSWER_SINGLE_SELECT_ACCESSOR = {
   templateUrl: './questionnaire-answer-single-select.component.html',
   providers: [QUESTIONNAIRE_ANSWER_SINGLE_SELECT_ACCESSOR],
   styleUrls: ['./questionnaire-answer-single-select.component.scss'],
-  standalone: false,
+  imports: [
+    NgIf,
+    IonItem,
+    IonLabel,
+    IonInput,
+    ReactiveFormsModule,
+    IonList,
+    NgFor,
+    IonRadioGroup,
+    IonRadio,
+    TranslateModule,
+  ],
 })
 export class QuestionnaireAnswerSingleSelectComponent
   extends AbstractControlValueAccessor<FormControlValue>

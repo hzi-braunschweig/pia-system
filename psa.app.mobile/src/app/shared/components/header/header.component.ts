@@ -5,11 +5,28 @@
  */
 
 import { Component, Input } from '@angular/core';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonMenuButton,
+  IonBackButton,
+  IonTitle,
+} from '@ionic/angular/standalone';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  standalone: false,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    NgIf,
+    IonMenuButton,
+    IonBackButton,
+    IonTitle,
+  ],
 })
 export class HeaderComponent {
   @Input()

@@ -10,7 +10,7 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import { AlertButton, AlertController } from '@ionic/angular';
+import { AlertButton, AlertController } from '@ionic/angular/standalone';
 import { TranslateService } from '@ngx-translate/core';
 import { MockBuilder } from 'ng-mocks';
 

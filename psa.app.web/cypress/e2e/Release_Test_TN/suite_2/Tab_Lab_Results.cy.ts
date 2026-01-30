@@ -37,7 +37,7 @@ const newPassword = ',dYv3zg;r:CB';
 const testProbandConsent = {
   to_be_filled_by: 'Proband',
   compliance_text:
-    '<pia-consent-input-text-lastname></pia-consent-input-text-lastname>\n<pia-consent-input-text-firstname></pia-consent-input-text-firstname>\n\nIch williger ein meine Proben zu verwalten\n<pia-consent-input-radio-samples></pia-consent-input-radio-samples>\n\nIch williger ein meine Laborergebnisse zu verwalten\n<pia-consent-input-radio-labresults></pia-consent-input-radio-labresults>\n\nIch williger ein meine Blut Proben zu verwalten\n<pia-consent-input-radio-bloodsamples></pia-consent-input-radio-bloodsamples>\n\nIch willige in die Verarbeitung und Nutzung meiner personenbezogenen Daten gemäß der vorstehenden Datenschutzerklärung ein.\n<pia-consent-input-radio-app></pia-consent-input-radio-app>\n',
+    '<pia-consent-input-text-lastname></pia-consent-input-text-lastname>\n<pia-consent-input-text-firstname></pia-consent-input-text-firstname>\n\nIch willige ein meine Proben zu verwalten\n<pia-consent-input-radio-samples></pia-consent-input-radio-samples>\n\nIch willige ein meine Laborergebnisse zu verwalten\n<pia-consent-input-radio-labresults></pia-consent-input-radio-labresults>\n\nIch willige ein meine Blut Proben zu verwalten\n<pia-consent-input-radio-bloodsamples></pia-consent-input-radio-bloodsamples>\n\nIch willige in die Verarbeitung und Nutzung meiner personenbezogenen Daten gemäß der vorstehenden Datenschutzerklärung ein.\n<pia-consent-input-radio-app></pia-consent-input-radio-app>\n',
 };
 const appUrl = '/';
 
@@ -116,46 +116,47 @@ describe('Release Test, role: "Proband", Tab: Lab Results', () => {
 
     cy.wait('@getText');
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
-
     cy.get('[data-e2e="e2e-consent-name-firstname"]')
       .find('input')
       .type('John');
     cy.get('[data-e2e="e2e-consent-name-lastname"]').find('input').type('Doe');
 
     cy.get('[data-e2e="e2e-consent-name-samples"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
+      .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-consent-name-labresults"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
+      .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-consent-name-bloodsamples"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
+      .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-consent-name-app"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
+      .should('be.visible')
       .click();
 
     cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').click();
-    cy.get('#confirmbutton').click();
 
-    cy.contains('[data-e2e="e2e-sidenav-content"]', 'Laborergebnisse')
+    cy.get('[data-e2e="e2e-sidenav-content"]')
       .contains('Laborergebnisse')
       .click();
 
     cy.get('[data-e2e="e2e-laboratory-results-component"]')
-      .contains('Es stehen Ihnen keine Laborergebnisse zur Verfügung')
+      .contains('Keine Laborergebnisse gefunden')
       .should('be.visible');
   });
+
   it('should not display "Lab Results" tab', () => {
     cy.visit(appUrl);
     login(probandCredentials.username, probandCredentials.password);
     changePassword(probandCredentials.password, newPassword);
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]')
       .contains('Laborergebnisse')
       .should('not.exist');
@@ -173,7 +174,6 @@ describe('Release Test, role: "Proband", Tab: Lab Results', () => {
     changePassword(probandCredentials.password, newPassword);
 
     cy.wait('@getText');
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
 
     cy.get('[data-e2e="e2e-consent-name-firstname"]')
       .find('input')
@@ -181,26 +181,28 @@ describe('Release Test, role: "Proband", Tab: Lab Results', () => {
     cy.get('[data-e2e="e2e-consent-name-lastname"]').find('input').type('Doe');
 
     cy.get('[data-e2e="e2e-consent-name-samples"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
+      .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-consent-name-labresults"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
+      .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-consent-name-bloodsamples"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
+      .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-consent-name-app"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
+      .should('be.visible')
       .click();
 
     cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').click();
-    cy.get('#confirmbutton').click();
 
-    cy.get('[data-e2e="e2e-sidenav-content"]').click();
     cy.get('[data-e2e="e2e-sidenav-content"]')
       .contains('Laborergebnisse')
       .click();

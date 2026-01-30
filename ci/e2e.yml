@@ -96,6 +96,7 @@ e2e:
 
     PROTOCOL: http
     WEBAPPSERVER_HTTP_PORT: '8080'
+    MOBILEAPPSERVER_HTTP_PORT: '8090'
 
     # also used inside the test.api script!
     DB_HOST: databaseservice
@@ -114,16 +115,6 @@ e2e:
     FIREBASE_PRIVATE_KEY_BASE64: 'LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUJWZ0lCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQVVBd2dnRThBZ0VBQWtFQXlUbGhkdFo0OGFteE9KZTAKMXN0aUZPWTdqdmw0YlRMSU9SMGtYREFlSXZ1SFM3ZHQwQ3ZERmVJYVl2VUhUSk02eGlFSUgrWW9rWko3VDk0MgpwTzJ2Y3dJREFRQUJBa0FOY2ZzVU1MSjJHMHVQSjN2YTJrNGNiV0hQWk5YcUhmbUk3MnlOaUYyTElyc0FwSzI1CmZCZzFqcTc2bVpvRTdGdnVCVnZxWmZUZW9Sa1dXNHNmQ2E2UkFpRUE3MytMSEVrOHhBSjhNcThsOWo1Wkw5RmkKeS9FbEJyZXhoYk5GZUZFS09Vc0NJUURYRnJxMUlvSXBBelh2ay9qamJPbENMZWFpbnNYYUZkeUljRTRQbk52eAplUUloQU85WVFGYkJYa2ZveitQN0krNEYreTJOakxXUnhkWUR5Qlo4eFVWcmY5TW5BaUVBbE5zYUpEblpzdUNSCjkxaUZLNEE0ZnFDZHVYWUFuOG41Y2tPbkFvOGdlS0VDSVFDT1MyUmx0WThla0NGOVhxWW4zamt2eTRhME8vTlgKekxMU2hQQmtFQy95RXc9PQotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg=='
     FIREBASE_PROJECT_ID: 'dummy'
     FIREBASE_CLIENT_EMAIL: 'dummy'
-
-    MHH_FTPSERVICE_HOST: sftpserver
-    MHH_FTPSERVICE_PORT: '22'
-    MHH_FTPSERVICE_USER: ftpuser
-    MHH_FTPSERVICE_PW: ftppassword
-
-    HZI_FTPSERVICE_HOST: sftpserver
-    HZI_FTPSERVICE_PORT: '22'
-    HZI_FTPSERVICE_USER: ftpuser
-    HZI_FTPSERVICE_PW: ftppassword
 
     USER_PASSWORD_LENGTH: '10'
     SORMAS_ON_PIA_USER: sormas
@@ -244,10 +235,6 @@ e2e:
     NOTIFICATION_MINUTE: '0'
 
   services:
-    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.sftpserver:$IMAGE_ID
-      alias: sftpserver
-      command: ['ftpuser:ftppassword:::upload']
-
     - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.server.mailserver:$IMAGE_ID
       alias: mailserver
 
@@ -281,6 +268,9 @@ e2e:
 
     - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.service.analyzerservice:$IMAGE_ID
       alias: analyzerservice
+
+    - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.mobile:$IMAGE_ID
+      alias: mobileappserver
 
     - name: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/psa.app.web:$IMAGE_ID
       alias: webappserver

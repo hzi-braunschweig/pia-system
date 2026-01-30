@@ -5,9 +5,7 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
-import { TranslatePipe } from '@ngx-translate/core';
-import { MockPipe } from 'ng-mocks';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { LabResultListPage } from './lab-result-list.page';
 import { AuthService } from '../../auth/auth.service';
@@ -43,8 +41,7 @@ describe('LabResultListPage', () => {
     ]);
 
     TestBed.configureTestingModule({
-      declarations: [LabResultListPage, MockPipe(TranslatePipe)],
-      imports: [IonicModule.forRoot()],
+      imports: [LabResultListPage, TranslateModule.forRoot()],
       providers: [
         { provide: CurrentUser, useValue: currentUser },
         {

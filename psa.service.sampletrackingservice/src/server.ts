@@ -15,21 +15,12 @@ import {
 import * as packageJson from '../package.json';
 import { connectDatabase, db } from './db';
 import { config } from './config';
-import { TaskScheduleHelper } from './services/taskScheduleHelper';
-import { LabResultImportHelper } from './services/labResultImportHelper';
 import { getConnection } from 'typeorm';
 import { RegisterRoutes as RegisterInternalRoutes } from './internalRoutes.generated';
-
-interface Cancelable {
-  cancel: () => void;
-}
 
 export class Server {
   private static instance: Hapi.Server;
   private static instanceInternal: Hapi.Server;
-
-  private static csvImportJob: Cancelable;
-  private static hl7ImportJob: Cancelable;
 
   public static async init(): Promise<void> {
     await connectDatabase();
@@ -70,18 +61,9 @@ export class Server {
       ['startup'],
       `InternalServer running at ${this.instanceInternal.info.uri}`
     );
-
-    // Start scheduled jobs
-    this.csvImportJob = TaskScheduleHelper.scheduleDailyHL7Import();
-    this.hl7ImportJob = TaskScheduleHelper.scheduleDailyCsvImport();
-    await LabResultImportHelper.importHl7FromMhhSftp();
-    await LabResultImportHelper.importCsvFromHziSftp();
   }
 
   public static async stop(): Promise<void> {
-    this.csvImportJob.cancel();
-    this.hl7ImportJob.cancel();
-
     await this.instance.stop();
     this.instance.log(['startup'], `Server was stopped`);
     await this.instanceInternal.stop();

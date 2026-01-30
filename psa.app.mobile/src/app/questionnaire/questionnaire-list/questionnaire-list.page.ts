@@ -12,6 +12,19 @@ import {
 import { QuestionnaireClientService } from '../questionnaire-client.service';
 import { BadgeService } from '../../shared/services/badge/badge.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HeaderComponent } from '../../shared/components/header/header.component';
+import {
+  IonContent,
+  IonSegment,
+  IonSegmentButton,
+  IonLabel,
+  IonItemGroup,
+  IonItem,
+  IonSkeletonText,
+} from '@ionic/angular/standalone';
+import { NgIf, NgFor } from '@angular/common';
+import { QuestionnaireInstancesListComponent } from '../questionnaire-instances-list/questionnaire-instances-list.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 type Status = 'open' | 'closed';
 
@@ -19,10 +32,23 @@ type Status = 'open' | 'closed';
   selector: 'app-questionnaire-list',
   templateUrl: './questionnaire-list.page.html',
   styleUrls: ['./questionnaire-list.page.scss'],
-  standalone: false,
+  imports: [
+    HeaderComponent,
+    IonContent,
+    IonSegment,
+    IonSegmentButton,
+    IonLabel,
+    NgIf,
+    QuestionnaireInstancesListComponent,
+    IonItemGroup,
+    NgFor,
+    IonItem,
+    IonSkeletonText,
+    TranslateModule,
+  ],
 })
 export class QuestionnaireListPage {
-  isLoading = true;
+  isLoading = false;
   questionnaireInstances: QuestionnaireInstance[] = [];
   selectedStatus: Status = 'open';
 
@@ -69,13 +95,13 @@ export class QuestionnaireListPage {
   }
 
   async loadQuestionnaireInstancesForStatus(status: Status): Promise<void> {
+    this.isLoading = true;
     this.selectedStatus = status;
     const qiStatus: QuestionnaireStatus[] =
       status === 'closed'
         ? ['released_once', 'released_twice']
         : ['active', 'in_progress'];
     this.questionnaireInstances = [];
-    this.isLoading = true;
     try {
       this.questionnaireInstances =
         await this.questionnnaireClient.getQuestionnaireInstances(qiStatus);
@@ -87,9 +113,13 @@ export class QuestionnaireListPage {
         );
       }
     } catch (err) {
-      console.error(err);
+      console.error(
+        'QuestionnaireListPage: Error fetching questionnaires:',
+        err
+      );
+    } finally {
+      this.isLoading = false;
+      this.changeRef.detectChanges();
     }
-    this.isLoading = false;
-    this.changeRef.detectChanges();
   }
 }

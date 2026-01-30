@@ -24,6 +24,8 @@ psa.lib.templatepipeline/.local-chromium
 **/.idea
 **/*.iml
 **/.vscode
+**/.claude
+**/.serena
 
 # Test
 **/e2e/

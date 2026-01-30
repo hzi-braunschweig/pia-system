@@ -15,7 +15,7 @@ const routes: Routes = [
   {
     path: '',
     canActivate: [canActivateAuthRole],
-    data: { authorizedRoles: ['Forscher', 'Proband'] },
+    data: { authorizedRoles: ['Forscher'] },
     component: FeedbackStatisticListComponent,
   },
   {

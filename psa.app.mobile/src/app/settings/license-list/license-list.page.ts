@@ -8,6 +8,23 @@ import { Component } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { map, shareReplay } from 'rxjs/operators';
+import { HeaderComponent } from '../../shared/components/header/header.component';
+import {
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardSubtitle,
+  IonCardContent,
+  IonSkeletonText,
+} from '@ionic/angular/standalone';
+import { NgIf, NgFor, AsyncPipe } from '@angular/common';
+import {
+  CdkVirtualScrollViewport,
+  CdkFixedSizeVirtualScroll,
+  CdkVirtualForOf,
+} from '@angular/cdk/scrolling';
+import { TranslateModule } from '@ngx-translate/core';
 
 export interface LicenseJson {
   licenses: LicenseEntry[];
@@ -23,7 +40,23 @@ export interface LicenseEntry {
   selector: 'app-license-list',
   templateUrl: './license-list.page.html',
   styleUrls: ['./license-list.page.scss'],
-  standalone: false,
+  imports: [
+    HeaderComponent,
+    IonContent,
+    NgIf,
+    CdkVirtualScrollViewport,
+    CdkFixedSizeVirtualScroll,
+    CdkVirtualForOf,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardSubtitle,
+    IonCardContent,
+    NgFor,
+    IonSkeletonText,
+    AsyncPipe,
+    TranslateModule,
+  ],
 })
 export class LicenseListPage {
   readonly licenses: Observable<LicenseEntry[]> = this.fetchLicenses();

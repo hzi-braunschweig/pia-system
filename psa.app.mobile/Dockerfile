@@ -75,6 +75,30 @@ RUN npm run build:browser
 
 ################################################################
 
-FROM busybox:1.37.0@sha256:d82f458899c9696cb26a7c02d5568f81c8c8223f8661bb2a7988b269c8b9051e AS final
+FROM nginx:1.27.3-alpine@sha256:41523187cf7d7a2f2677a80609d9caa14388bf5c1fbca9c410ba3de602aaaab4 AS final
+RUN apk --update --no-cache add bash sed
 
-COPY --from=build-browser /usr/src/node-app/www/ /assets/browser
+ARG DIR=.
+
+RUN rm -rf /usr/share/nginx/html/*
+ENV MOBILEAPPSERVER_HTTP_PORT=80 DEFAULT_LANGUAGE=en-US
+COPY $DIR/envsubst-on-environment.sh /docker-entrypoint.d/40-envsubst-on-environment.sh
+COPY $DIR/nginx-site.conf /etc/nginx/templates/default.conf.template
+COPY --from=build-browser /usr/src/node-app/www/browser/ /usr/share/nginx/html/
+COPY --from=build-browser /usr/src/node-app/www/browser/*.js /usr/share/nginx/template/
+
+ARG VERSION_INFO_PIPELINE_ID=-
+ENV VERSION_INFO_PIPELINE_ID=$VERSION_INFO_PIPELINE_ID
+
+ARG VERSION_INFO_GIT_HASH=-
+ENV VERSION_INFO_GIT_HASH=$VERSION_INFO_GIT_HASH
+
+ARG VERSION_INFO_GIT_REF=-
+ENV VERSION_INFO_GIT_REF=$VERSION_INFO_GIT_REF
+
+RUN echo "{\"PIPELINE_ID\":\"$VERSION_INFO_PIPELINE_ID\",\"GIT_HASH\":\"$VERSION_INFO_GIT_HASH\",\"GIT_REF\":\"$VERSION_INFO_GIT_REF\"}" > /usr/share/nginx/html/version
+
+COPY psa.utils.scripts/logs-masking/custom-entrypoint.sh /custom-entrypoint.sh
+RUN chmod +x /custom-entrypoint.sh
+ENTRYPOINT ["/custom-entrypoint.sh", "/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]

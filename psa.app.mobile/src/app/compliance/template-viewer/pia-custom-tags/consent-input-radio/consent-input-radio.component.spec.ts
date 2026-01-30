@@ -23,8 +23,11 @@ describe('ConsentInputRadioAppComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ConsentInputRadioComponent],
-      imports: [MockModule(TranslateModule), MockModule(ReactiveFormsModule)],
+      imports: [
+        MockModule(TranslateModule),
+        MockModule(ReactiveFormsModule),
+        ConsentInputRadioComponent,
+      ],
     }).compileComponents();
   });
 

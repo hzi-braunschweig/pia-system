@@ -13,7 +13,6 @@ import { Scanner } from './scanner';
 
 import { GitlabCI } from './generators/gitlab';
 import { Hcl } from './generators/hcl';
-import { Skaffold } from './generators/skaffold';
 
 class Program {
   public static handleError<T>(promise: Promise<T>): void {
@@ -42,9 +41,7 @@ class Program {
       });
     program
       .command('generate')
-      .description(
-        'generates ci files, docker build hcl files and skaffold.yaml'
-      )
+      .description('generates ci files and docker build hcl files')
       .action(() => {
         Program.handleError(this.generate(repoMetaData, repoDir));
       });
@@ -78,7 +75,6 @@ class Program {
 
     await GitlabCI.generate(repoMetaData, repoDir);
     await Hcl.generate(repoMetaData, repoDir);
-    await Skaffold.generate(repoMetaData, repoDir);
   }
 }
 

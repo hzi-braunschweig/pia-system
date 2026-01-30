@@ -11,19 +11,36 @@ import {
   LoadingController,
   MenuController,
   ViewWillEnter,
-} from '@ionic/angular';
-import { TranslateService } from '@ngx-translate/core';
+  IonText,
+  IonFooter,
+  IonButton,
+  IonToolbar,
+} from '@ionic/angular/standalone';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
 
 import { ComplianceService } from './compliance-service/compliance.service';
 import { ToastPresenterService } from '../shared/services/toast-presenter/toast-presenter.service';
 import { ComplianceClientService } from './compliance-client/compliance-client.service';
 import { ComplianceForStudyWrapper } from './compliance-for-study-wrapper';
 import { CurrentUser } from '../auth/current-user.service';
+import { HeaderComponent } from '../shared/components/header/header.component';
+import { NgIf } from '@angular/common';
+import { TemplateViewerComponent } from './template-viewer/template-viewer.component';
 
 @Component({
   selector: 'app-page-compliance',
   templateUrl: './compliance.page.html',
-  standalone: false,
+  imports: [
+    HeaderComponent,
+    IonContent,
+    NgIf,
+    IonText,
+    TemplateViewerComponent,
+    IonFooter,
+    IonButton,
+    TranslateModule,
+    IonToolbar,
+  ],
 })
 export class CompliancePage implements ViewWillEnter, DoCheck {
   complianceSent = false;
@@ -85,6 +102,7 @@ export class CompliancePage implements ViewWillEnter, DoCheck {
         }
       }
     } catch (error) {
+      console.log('Error while loading compliance data');
       console.error(error);
     }
     await loader.dismiss();

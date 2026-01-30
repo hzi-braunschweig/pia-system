@@ -8,13 +8,13 @@
   <ion-split-pane content-id="main-content">
     <ion-menu content-id="main-content" type="overlay">
       <ion-content>
-        <ion-list id="menu-content">
+        <ion-list id="menu-content" data-e2e="e2e-sidenav-content">
           <ion-list-header>PIA</ion-list-header>
           <ion-note>{{ piaVersion }}</ion-note>
 
           <ion-menu-toggle
             auto-hide="false"
-            *ngFor="let page of appPages; let i = index"
+            *ngFor="let page of sideMenu.appPages(); let i = index"
           >
             <ion-item
               routerDirection="root"
@@ -35,7 +35,12 @@
       </ion-content>
 
       <ion-footer>
-        <ion-item button color="primary" (click)="logout()">
+        <ion-item
+          button
+          color="primary"
+          (click)="logout()"
+          data-e2e="e2e-logout"
+        >
           <ion-icon name="log-out-outline" slot="start" color="dark"></ion-icon>
           <ion-label slot="start" color="dark">{{
             'GENERAL.LOGOUT' | translate

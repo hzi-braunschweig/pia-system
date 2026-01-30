@@ -7,6 +7,7 @@
 import {
   AfterViewChecked,
   Component,
+  CUSTOM_ELEMENTS_SCHEMA,
   ElementRef,
   OnDestroy,
   OnInit,
@@ -14,14 +15,28 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormArray, FormControl } from '@angular/forms';
+import { FormArray, FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
   AlertController,
   IonContent,
   ViewWillLeave,
   IonicSlides,
-} from '@ionic/angular';
-import { TranslateService } from '@ngx-translate/core';
+  IonProgressBar,
+  IonCard,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonList,
+  IonButton,
+  IonIcon,
+  IonLabel,
+  IonText,
+  IonItem,
+  IonThumbnail,
+  IonImg,
+  IonFab,
+  IonFabButton,
+} from '@ionic/angular/standalone';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 import { QuestionnaireClientService } from '../questionnaire-client.service';
@@ -41,13 +56,76 @@ import {
 import { QuestionnaireAnswerValidators } from '../questionnaire-form/questionnaire-answer-validators';
 import { QuestionnaireConditionChecker } from '../questionnaire-condition-checker';
 import { SwiperContainer } from 'swiper/element';
+import { addIcons } from 'ionicons';
+import { save, chevronBack, chevronForward } from 'ionicons/icons';
+import { HeaderComponent } from '../../shared/components/header/header.component';
+import {
+  NgIf,
+  NgFor,
+  NgSwitch,
+  NgSwitchCase,
+  NgSwitchDefault,
+  DatePipe,
+} from '@angular/common';
+import { QuestionnaireQuestionTextComponent } from '../questionnaire-question-text/questionnaire-question-text.component';
+import { QuestionnaireAnswerSingleSelectComponent } from '../questionnaire-answer-single-select/questionnaire-answer-single-select.component';
+import { QuestionnaireAnswerMultiSelectComponent } from '../questionnaire-answer-multi-select/questionnaire-answer-multi-select.component';
+import { QuestionnaireAnswerInputNumberComponent } from '../questionnaire-answer-input-number/questionnaire-answer-input-number.component';
+import { QuestionnaireAnswerErrorComponent } from '../questionnaire-answer-error/questionnaire-answer-error.component';
+import { QuestionnaireAnswerInputTextComponent } from '../questionnaire-answer-input-text/questionnaire-answer-input-text.component';
+import { QuestionnaireAnswerInputDatetimeComponent } from '../questionnaire-answer-input-datetime/questionnaire-answer-input-datetime.component';
+import { QuestionnaireAnswerSampleComponent } from '../questionnaire-answer-sample/questionnaire-answer-sample.component';
+import { QuestionnaireAnswerPznComponent } from '../questionnaire-answer-pzn/questionnaire-answer-pzn.component';
+import { QuestionnaireAnswerImageComponent } from '../questionnaire-answer-image/questionnaire-answer-image.component';
+import { QuestionnaireAnswerTimestampComponent } from '../questionnaire-answer-timestamp/questionnaire-answer-timestamp.component';
+import { QuestionnaireRestrictionDaysAsDatePipe } from './questionnaire-restriction-days-as-date.pipe';
+import { QuestionnaireFillDatePlaceholdersPipe } from './questionnaire-fill-date-placeholders.pipe';
 
 @Component({
   selector: 'app-questionnaire-detail',
   templateUrl: './questionnaire-detail.page.html',
   styleUrls: ['./questionnaire-detail.page.scss'],
   encapsulation: ViewEncapsulation.None,
-  standalone: false,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  imports: [
+    HeaderComponent,
+    NgIf,
+    IonProgressBar,
+    IonContent,
+    NgFor,
+    IonCard,
+    IonCardHeader,
+    IonCardSubtitle,
+    QuestionnaireQuestionTextComponent,
+    IonList,
+    NgSwitch,
+    NgSwitchCase,
+    QuestionnaireAnswerSingleSelectComponent,
+    ReactiveFormsModule,
+    QuestionnaireAnswerMultiSelectComponent,
+    QuestionnaireAnswerInputNumberComponent,
+    QuestionnaireAnswerErrorComponent,
+    QuestionnaireAnswerInputTextComponent,
+    QuestionnaireAnswerInputDatetimeComponent,
+    QuestionnaireAnswerSampleComponent,
+    QuestionnaireAnswerPznComponent,
+    QuestionnaireAnswerImageComponent,
+    QuestionnaireAnswerTimestampComponent,
+    IonButton,
+    IonIcon,
+    IonLabel,
+    IonText,
+    IonItem,
+    IonThumbnail,
+    IonImg,
+    NgSwitchDefault,
+    IonFab,
+    IonFabButton,
+    DatePipe,
+    TranslateModule,
+    QuestionnaireRestrictionDaysAsDatePipe,
+    QuestionnaireFillDatePlaceholdersPipe,
+  ],
 })
 export class QuestionnaireDetailPage
   implements OnInit, OnDestroy, ViewWillLeave, AfterViewChecked
@@ -89,7 +167,9 @@ export class QuestionnaireDetailPage
     private questionnaireForm: QuestionnaireFormService,
     private alertCtrl: AlertController,
     private router: Router
-  ) {}
+  ) {
+    addIcons({ save, chevronBack, chevronForward });
+  }
 
   async ngOnInit() {
     const questionnaireInstanceId = Number(
@@ -548,7 +628,7 @@ export class QuestionnaireDetailPage
     const alert = await this.alertCtrl.create({
       header: this.translate.instant(header),
       message: this.translate.instant(message),
-      buttons: ['OK'],
+      buttons: [{ text: 'OK', id: 'confirmButton' }],
     });
     await alert.present();
   }

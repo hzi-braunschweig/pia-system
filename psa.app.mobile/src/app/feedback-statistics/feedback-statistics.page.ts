@@ -8,13 +8,28 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FeedbackStatisticClientService } from './services/feedback-statistic-client.service';
 import { FeedbackStatisticDto } from '@pia-system/charts';
 import { Observable } from 'rxjs';
+import { HeaderComponent } from '../shared/components/header/header.component';
+import { IonContent, IonCard, IonCardContent } from '@ionic/angular/standalone';
+import { NgFor, NgIf, AsyncPipe } from '@angular/common';
+import { FeedbackStatisticComponent } from './feedback-statistic/feedback-statistic.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-feedback-statistics',
   templateUrl: './feedback-statistics.page.html',
   styleUrls: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  imports: [
+    HeaderComponent,
+    IonContent,
+    NgFor,
+    FeedbackStatisticComponent,
+    NgIf,
+    IonCard,
+    IonCardContent,
+    AsyncPipe,
+    TranslateModule,
+  ],
 })
 export class FeedbackStatisticsPage {
   public feedbackStatistics: Observable<FeedbackStatisticDto[]> =

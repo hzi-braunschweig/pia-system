@@ -7,7 +7,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { lastValueFrom, of } from 'rxjs';
 import {
   ComplianceDataRequest,
   ComplianceDataResponse,
@@ -17,6 +17,7 @@ import { EndpointService } from '../../shared/services/endpoint/endpoint.service
 import { CurrentUser } from '../../auth/current-user.service';
 import { Directory, Filesystem } from '@capacitor/filesystem';
 import { FileOpener } from '@capawesome-team/capacitor-file-opener';
+import { Platform } from '@ionic/angular';
 
 @Injectable({
   providedIn: 'root',
@@ -27,15 +28,16 @@ export class ComplianceClientService {
   }
 
   constructor(
-    private http: HttpClient,
-    private currentUser: CurrentUser,
-    private endpoint: EndpointService
+    private readonly platform: Platform,
+    private readonly http: HttpClient,
+    private readonly currentUser: CurrentUser,
+    private readonly endpoint: EndpointService
   ) {}
 
   getComplianceText(studyName: string): Promise<ComplianceText> {
-    return this.http
-      .get<ComplianceText>(`${this.getApiUrl()}${studyName}/text`)
-      .toPromise();
+    return lastValueFrom(
+      this.http.get<ComplianceText>(`${this.getApiUrl()}${studyName}/text`)
+    );
   }
 
   /**
@@ -61,12 +63,12 @@ export class ComplianceClientService {
     studyName: string,
     complianceData: ComplianceDataRequest
   ): Promise<ComplianceDataResponse> {
-    return this.http
-      .post<ComplianceDataResponse>(
+    return lastValueFrom(
+      this.http.post<ComplianceDataResponse>(
         `${this.getApiUrl()}${studyName}/agree/${this.currentUser.username}`,
         complianceData
       )
-      .toPromise();
+    );
   }
 
   /**
@@ -74,10 +76,11 @@ export class ComplianceClientService {
    * @param studyName The name of the study for that complianceData are created
    */
   getInternalComplianceActive(studyName: string): Promise<boolean> {
-    return this.http
-      .get<boolean>(`${this.getApiUrl()}${studyName}/active`)
-      .pipe(catchError(() => of(false)))
-      .toPromise();
+    return lastValueFrom(
+      this.http
+        .get<boolean>(`${this.getApiUrl()}${studyName}/active`)
+        .pipe(catchError(() => of(false)))
+    );
   }
 
   /**
@@ -85,13 +88,13 @@ export class ComplianceClientService {
    * @param studyName The name of the study for that it should be checked
    */
   getComplianceNeeded(studyName: string): Promise<boolean> {
-    return this.http
-      .get<boolean>(
+    return lastValueFrom(
+      this.http.get<boolean>(
         `${this.getApiUrl()}${studyName}/agree/${
           this.currentUser.username
         }/needed`
       )
-      .toPromise();
+    );
   }
 
   getComplianceAgreementPdfForCurrentUser(studyName: string): void {
@@ -110,15 +113,29 @@ export class ComplianceClientService {
 
   private async downloadFile(blob: Blob, fileName: string, mimeType: string) {
     try {
-      const base64Data: string = await this.blobToBase64(blob);
-      const file = await Filesystem.writeFile({
-        directory: Directory.Data,
-        path: `files/${fileName}`,
-        data: base64Data,
-        recursive: true,
-      });
+      await this.platform.ready();
 
-      FileOpener.openFile({ path: file.uri, mimeType });
+      if (this.platform.is('hybrid')) {
+        const base64Data: string = await this.blobToBase64(blob);
+        const file = await Filesystem.writeFile({
+          directory: Directory.Data,
+          path: `files/${fileName}`,
+          data: base64Data,
+          recursive: true,
+        });
+
+        await FileOpener.openFile({ path: file.uri, mimeType });
+      } else {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      }
     } catch (e) {
       console.error('Could not write or open file: ', e);
     }

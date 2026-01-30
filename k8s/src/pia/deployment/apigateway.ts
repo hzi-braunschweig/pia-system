@@ -34,6 +34,7 @@ import { SampleTrackingService } from './sampletrackingservice';
 import { FeedbackStatisticService } from './feedbackstatisticservice';
 import { SormasService } from './sormasservice';
 import { IngressWithIngressClassName } from '../../k8s/ingressWithIngressClassName';
+import { MobileappServer } from './mobileappserver';
 
 export class ApiGateway extends Chart {
   public readonly ingress: Ingress;
@@ -43,6 +44,7 @@ export class ApiGateway extends Chart {
     configuration: Configuration,
     {
       webappServer,
+      mobileappServer,
       authServer,
       userService,
       loggingService,
@@ -58,6 +60,7 @@ export class ApiGateway extends Chart {
       eventHistoryServer,
     }: {
       webappServer: WebappServer;
+      mobileappServer: MobileappServer;
       authServer: Authserver;
       userService: UserService;
       loggingService: LoggingService;
@@ -78,6 +81,7 @@ export class ApiGateway extends Chart {
 
     // assert routing names on services because they are hardcoded inside the apigateway
     assert.strictEqual(webappServer.service.name, 'webappserver');
+    assert.strictEqual(mobileappServer.service.name, 'mobileappserver');
     assert.strictEqual(authServer.service.name, 'authserver');
     assert.strictEqual(userService.service.name, 'userservice');
     assert.strictEqual(personalDataService.service.name, 'personaldataservice');
@@ -121,6 +125,7 @@ export class ApiGateway extends Chart {
           envVariables: configuration.getVariables({
             // unused...
             WEBAPPSERVER_HTTP_PORT: 80,
+            MOBILEAPPSERVER_HTTP_PORT: 80,
             USERSERVICE_PORT: userService.service.port,
             QUESTIONNAIRESERVICE_PORT: questionnaireService.service.port,
             NOTIFICATIONSERVICE_PORT: notificationService.service.port,

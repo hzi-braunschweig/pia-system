@@ -69,14 +69,6 @@ ENV NODE_OPTIONS=$nodeoptions
 
 ################################################################
 
-FROM build-base AS build-public
-
-RUN npm run build -- --output-path=./dist/out --configuration=production-proband-app
-
-# create the pre-compressed gzip files for faster serving
-RUN find /usr/src/node-app/dist/out/ | xargs gzip -k -9
-
-################################################################
 
 FROM build-base AS build-admin
 
@@ -96,9 +88,7 @@ RUN rm -rf /usr/share/nginx/html/*
 ENV WEBAPPSERVER_HTTP_PORT=80 DEFAULT_LANGUAGE=en-US
 COPY $DIR/envsubst-on-environment.sh /docker-entrypoint.d/40-envsubst-on-environment.sh
 COPY $DIR/nginx-site.conf /etc/nginx/templates/default.conf.template
-COPY --from=build-public /usr/src/node-app/dist/out/browser/ /usr/share/nginx/html
 COPY --from=build-admin /usr/src/node-app/dist/out/admin/browser/ /usr/share/nginx/html/admin
-COPY --from=build-public /usr/src/node-app/dist/out/browser/*.js /usr/share/nginx/template/
 COPY --from=build-admin /usr/src/node-app/dist/out/admin/browser/*.js /usr/share/nginx/template/admin/
 
 ARG VERSION_INFO_PIPELINE_ID=-

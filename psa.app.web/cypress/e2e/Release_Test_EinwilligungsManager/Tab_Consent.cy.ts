@@ -137,38 +137,44 @@ describe('Release Test, role: "EinwilligungsManager", Consent', () => {
       .type('Mustermann');
     cy.get('[data-e2e="e2e-consent-name-birthdate"]')
       .find('input')
-      .focus()
-      .type('01.01.1990');
+      .invoke('val', '1990-01-01')
+      .trigger('input')
+      .trigger('change')
+      .trigger('blur');
     cy.get('[data-e2e="e2e-consent-name-location"]')
       .find('input')
       .focus()
       .type('Testweg 1, 12345 Teststadt');
     cy.get('[data-e2e="e2e-consent-name-app"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
+      .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-consent-name-bloodsamples"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Nein')
+      .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-consent-name-labresults"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
+      .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-consent-name-samples"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
+      .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-consent-email-input"]')
       .find('input')
       .focus()
       .type('01.01.1990');
     cy.get('[data-e2e="e2e-consent-generic-radio"]')
-      .find('mat-radio-button')
+      .find('ion-radio')
       .contains('Ja')
+      .should('be.visible')
       .click();
     cy.get('[data-e2e="e2e-compliance-edit-ok-button"]').click();
-    cy.get('#confirmbutton').click();
 
     // download compliances.csv
     logout(true);

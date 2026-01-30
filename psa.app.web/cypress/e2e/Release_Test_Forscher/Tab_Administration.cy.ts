@@ -216,7 +216,7 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-questionnaire-name"]').contains('Test Fragebogen');
 
     cy.get('[data-e2e="e2e-logout"]').click();
-    cy.get('[data-e2e="dialog-button-accept"]').click();
+    cy.get('#confirmButton').click();
 
     const proband2 = generateRandomProbandForStudy();
 
@@ -350,19 +350,16 @@ describe('Release Test, role: "Forscher", Administration', () => {
       .focus()
       .type('22');
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
+    cy.get('[data-e2e="e2e-swiper-button-send"]').click();
 
-    cy.get('[data-e2e="e2e-release-questionnaire-1-button"]').click();
-    cy.get('#confirmbutton').click();
+    cy.get('#confirmButton').click();
 
     // Second Questionnaire will be shown after a while
     cy.contains('Bitte beschreiben sie Ihre Symptome');
 
-    cy.get('[data-e2e="e2e-sidenav-content"]')
-      .contains('Fragebögen')
-      .closest('mat-button-toggle')
-      .click();
+    cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
-    expectLocation('/questionnaires/user');
+    expectLocation('/questionnaire');
 
     cy.get('[data-e2e="e2e-questionnaire-name"]')
       .contains('Second Questionnaire')
@@ -949,7 +946,6 @@ describe('Release Test, role: "Forscher", Administration', () => {
       .type('42');
     cy.get('p').contains('How old are you?').should('exist');
     cy.get('[data-e2e="e2e-save-questionnaire-and-exit"]').click();
-    cy.get('#confirmbutton').click();
 
     // Logout
     cy.get('[data-e2e="e2e-logout"]').click();
@@ -1020,14 +1016,12 @@ describe('Release Test, role: "Forscher", Administration', () => {
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
     cy.get('[data-e2e="e2e-questionnaire-name"]').first().click();
-    cy.get('[data-e2e="e2e-navigation-button"]').click();
 
-    cy.get('[data-e2e="e2e-questionnaire-list"]')
-      .contains('How old are you?')
-      .click();
     cy.get('p').contains('How old are you?').should('exist');
+    cy.get('[data-e2e="e2e-input-type-number"]')
+      .find('input')
+      .should('have.value', '42');
     cy.get('[data-e2e="e2e-save-questionnaire-and-exit"]').click();
-    cy.get('#confirmbutton').click();
 
     // Logout
     cy.get('[data-e2e="e2e-logout"]').click();
@@ -1053,11 +1047,6 @@ describe('Release Test, role: "Forscher", Administration', () => {
           .click();
 
         cy.get('[data-e2e="e2e-questionnaire-name"]').click();
-        cy.get('[data-e2e="e2e-navigation-button"]').click();
-
-        cy.get('[data-e2e="e2e-questionnaire-list"]')
-          .contains('Are you over 18')
-          .click();
 
         cy.get('[data-e2e="e2e-input-type-single-select"]')
           .contains('Yes')
@@ -1065,8 +1054,8 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
         // Release questionnaire
         cy.get('[data-e2e="e2e-swiper-button-next"]').click();
-        cy.get('[data-e2e="e2e-release-questionnaire-1-button"]').click();
-        cy.get('#confirmbutton').click();
+        cy.get('[data-e2e="e2e-swiper-button-send"]').click();
+        cy.get('#confirmButton').click();
       });
   });
 
@@ -1120,8 +1109,9 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
-    cy.get('[data-e2e="e2e-spontaneous-questionnaire-edit-button"]').click();
-
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
+      .contains('Spontaneous Questionnaire')
+      .click();
     // The version 1 should be shown
     cy.get('p').contains('Where are you from?').should('exist');
     cy.get('[data-e2e="e2e-input-type-text"]')
@@ -1131,8 +1121,8 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
     // Release questionnaire
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
-    cy.get('[data-e2e="e2e-release-questionnaire-1-button"]').click();
-    cy.get('#confirmbutton').click();
+    cy.get('[data-e2e="e2e-swiper-button-send"]').click();
+    cy.get('#confirmButton').click();
 
     // Logout
     cy.logoutParticipant();
@@ -1172,7 +1162,9 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
-    cy.get('[data-e2e="e2e-spontaneous-questionnaire-edit-button"]').click();
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
+      .contains('Spontaneous Questionnaire')
+      .click();
 
     cy.get('[data-e2e="e2e-input-type-text"]')
       .find('input')
@@ -1182,8 +1174,8 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
     // Release questionnaire
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
-    cy.get('[data-e2e="e2e-release-questionnaire-1-button"]').click();
-    cy.get('#confirmbutton').click();
+    cy.get('[data-e2e="e2e-swiper-button-send"]').click();
+    cy.get('#confirmButton').click();
 
     // Logout
     cy.get('[data-e2e="e2e-logout"]').click();
@@ -1195,8 +1187,9 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
     cy.get('[data-e2e="e2e-sidenav-content"]').contains('Fragebögen').click();
 
-    cy.get('[data-e2e="e2e-spontaneous-questionnaire-edit-button"]').click();
-
+    cy.get('[data-e2e="e2e-proband-questionnaire-table"]')
+      .contains('Spontaneous Questionnaire')
+      .click();
     cy.get('[data-e2e="e2e-input-type-text"]')
       .find('input')
       .focus()
@@ -1205,8 +1198,8 @@ describe('Release Test, role: "Forscher", Administration', () => {
 
     // Release questionnaire
     cy.get('[data-e2e="e2e-swiper-button-next"]').click();
-    cy.get('[data-e2e="e2e-release-questionnaire-1-button"]').click();
-    cy.get('#confirmbutton').click();
+    cy.get('[data-e2e="e2e-swiper-button-send"]').click();
+    cy.get('#confirmButton').click();
   });
 
   it('should update a questionnaire', () => {

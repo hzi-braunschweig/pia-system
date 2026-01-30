@@ -5,9 +5,7 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
-import { TranslatePipe } from '@ngx-translate/core';
-import { MockPipe } from 'ng-mocks';
+import { TranslateModule } from '@ngx-translate/core';
 
 import { QuestionnaireAnswerErrorComponent } from './questionnaire-answer-error.component';
 
@@ -17,11 +15,7 @@ describe('QuestionnaireAnswerErrorComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [
-        QuestionnaireAnswerErrorComponent,
-        MockPipe(TranslatePipe),
-      ],
-      imports: [IonicModule.forRoot()],
+      imports: [QuestionnaireAnswerErrorComponent, TranslateModule.forRoot()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(QuestionnaireAnswerErrorComponent);

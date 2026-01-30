@@ -6,11 +6,13 @@
 
 import { Component, Input } from '@angular/core';
 import { AbstractControl } from '@angular/forms';
+import { NgIf } from '@angular/common';
+import { IonItem, IonText } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-questionnaire-answer-error',
   templateUrl: './questionnaire-answer-error.component.html',
-  standalone: false,
+  imports: [NgIf, IonItem, IonText],
 })
 export class QuestionnaireAnswerErrorComponent {
   @Input()

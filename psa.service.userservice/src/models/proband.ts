@@ -52,8 +52,8 @@ export interface ProbandDto extends ExternalCompliance {
   examinationWave: number | null;
   firstLoggedInAt: Date | null;
   isTestProband: boolean;
-  deactivatedAt: Date;
-  deletedAt: Date;
+  deactivatedAt: Date | null;
+  deletedAt: Date | null;
 }
 
 export interface ProbandExternalIdResponse {

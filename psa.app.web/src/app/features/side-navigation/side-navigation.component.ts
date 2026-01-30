@@ -5,15 +5,12 @@
  */
 
 import { Component, Input } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { MatSidenav } from '@angular/material/sidenav';
 import { Event, NavigationEnd, Router } from '@angular/router';
 import { RequestNewMaterialComponent } from '../../pages/laboratories/request-new-material/request-new-material.component';
-import { DialogOkCancelComponent } from '../../_helpers/dialog-ok-cancel';
 import { AuthenticationManager } from '../../_services/authentication-manager.service';
 import { Page, PageManager } from '../../_services/page-manager.service';
 import { SelectedProbandInfoService } from '../../_services/selected-proband-info.service';
-import { filter } from 'rxjs/operators';
 import { CurrentUser } from '../../_services/current-user.service';
 
 @Component({
@@ -34,7 +31,6 @@ export class SideNavigationComponent {
   constructor(
     public user: CurrentUser,
     private readonly router: Router,
-    private readonly matDialog: MatDialog,
     private readonly auth: AuthenticationManager,
     private readonly pageManager: PageManager,
     private readonly selectedProbandInfoService: SelectedProbandInfoService
@@ -94,11 +90,7 @@ export class SideNavigationComponent {
       this.sidenav.close();
     }
 
-    if (this.user.isProband()) {
-      this.openDialog();
-    } else {
-      await this.auth.logout();
-    }
+    await this.auth.logout();
   }
 
   public openPage(page: Page): void {
@@ -111,20 +103,5 @@ export class SideNavigationComponent {
         this.updateSelectedPage();
       }
     });
-  }
-
-  private openDialog(): void {
-    const dialogRef = this.matDialog.open(DialogOkCancelComponent, {
-      width: '450px',
-      data: {
-        q: 'SIDENAV.LOGOUT_DIALOG.QUESTION',
-        content: 'SIDENAV.LOGOUT_DIALOG.CONTENT',
-      },
-    });
-
-    dialogRef
-      .afterClosed()
-      .pipe(filter((result) => result === 'ok'))
-      .subscribe(async () => await this.auth.logout());
   }
 }

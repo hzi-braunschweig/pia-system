@@ -62,15 +62,6 @@ export class LaboratoryResultsHandler {
     ).catch(handleError);
   }
 
-  /**
-   * triggers labresults import from ftp server
-   */
-  public static async postLabResultsImport(this: void): Promise<unknown> {
-    return LaboratoryResultsInteractor.postLabResultsImport().catch(
-      handleError
-    );
-  }
-
   public static async createOneResult(
     this: void,
     request: Request

@@ -3,20 +3,3 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-
-.store-link-container {
-  margin-top: 80px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-
-  .store-link {
-    margin: 6px;
-
-    .store-badge {
-      width: 200px;
-    }
-  }
-}

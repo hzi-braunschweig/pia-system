@@ -10,7 +10,12 @@
   </p>
 </div>
 
-<ion-list lines="full" *ngIf="!isEmpty()">
+<ion-list
+  lines="full"
+  *ngIf="!isEmpty()"
+  class="container-max-width"
+  data-e2e="e2e-proband-questionnaire-table"
+>
   <div #listTopQuestionnaireInstances>
     <ion-item-group
       *ngIf="spontanQuestionnaireInstances.length"
@@ -53,6 +58,7 @@
         [routerLink]="['/questionnaire', qInstance.id]"
       >
         <ion-badge
+          data-e2e="e2e-icon-td"
           *ngIf="qInstance.status === 'active'"
           slot="start"
           color="tertiary"
@@ -78,7 +84,7 @@
           slot="start"
         ></ion-icon>
 
-        <ion-label>
+        <ion-label data-e2e="e2e-questionnaire-name">
           <h2>{{ qInstance.questionnaire_name }}</h2>
           <ion-note>{{
             qInstance.date_of_issue | date : 'shortDate'

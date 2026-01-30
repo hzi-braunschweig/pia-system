@@ -56,19 +56,6 @@
             "browser": "src/main.ts"
           },
           "configurations": {
-            "production-proband-app": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.proband.prod.ts"
-                }
-              ],
-              "outputHashing": "all",
-              "baseHref": "/",
-              "outputPath": {
-                "base": "./dist/out"
-              }
-            },
             "production-admin-app": {
               "fileReplacements": [
                 {
@@ -81,20 +68,6 @@
               "outputPath": {
                 "base": "./dist/out/admin"
               }
-            },
-            "development-proband-app": {
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.proband.ts"
-                }
-              ],
-              "outputHashing": "media",
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true,
-              "baseHref": "/"
             },
             "development-admin-app": {
               "fileReplacements": [
@@ -119,15 +92,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
-            "production-proband-app": {
-              "buildTarget": "psa:build:production-proband-app"
-            },
             "production-admin-app": {
               "buildTarget": "psa:build:production-admin-app"
-            },
-            "development-proband-app": {
-              "proxyConfig": "proxy.conf.json",
-              "buildTarget": "psa:build:development-proband-app"
             },
             "development-admin-app": {
               "proxyConfig": "proxy.conf.json",
@@ -172,9 +138,6 @@
             "devServerTarget": "psa:serve"
           },
           "configurations": {
-            "production-proband-app": {
-              "devServerTarget": "psa:serve:production-proband-app"
-            },
             "production-admin-app": {
               "devServerTarget": "psa:serve:production-admin-app"
             }
@@ -188,9 +151,6 @@
             "headless": false
           },
           "configurations": {
-            "production-proband-app": {
-              "devServerTarget": "psa:serve:production-proband-app"
-            },
             "production-admin-app": {
               "devServerTarget": "psa:serve:production-admin-app"
             }
@@ -204,9 +164,6 @@
             "headless": false
           },
           "configurations": {
-            "production-proband-app": {
-              "devServerTarget": "psa:serve:production-proband-app"
-            },
             "production-admin-app": {
               "devServerTarget": "psa:serve:production-admin-app"
             }

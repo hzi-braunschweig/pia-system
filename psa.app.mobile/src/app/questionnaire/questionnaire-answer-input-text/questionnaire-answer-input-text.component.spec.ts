@@ -5,8 +5,6 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IonicModule } from '@ionic/angular';
-
 import { QuestionnaireAnswerInputTextComponent } from './questionnaire-answer-input-text.component';
 
 describe('QuestionnaireAnswerInputTextComponent', () => {
@@ -15,8 +13,7 @@ describe('QuestionnaireAnswerInputTextComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [QuestionnaireAnswerInputTextComponent],
-      imports: [IonicModule.forRoot()],
+      imports: [QuestionnaireAnswerInputTextComponent],
       providers: [],
     }).compileComponents();
 

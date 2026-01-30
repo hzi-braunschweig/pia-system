@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, forwardRef, Input, OnInit } from '@angular/core';
 import {
   CustomTagSegment,
   SegmentType,
@@ -12,11 +12,13 @@ import {
 } from '../../../segment.model';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ContainerForFormControlUsageComponent } from '../../container-for-form-control-usage.component';
+import { NgFor, NgIf } from '@angular/common';
+import { TemplateViewerComponent } from '../../template-viewer.component';
 
 @Component({
   selector: 'app-consent-switch-radio',
   templateUrl: './consent-switch-radio.component.html',
-  standalone: false,
+  imports: [NgFor, NgIf, forwardRef(() => TemplateViewerComponent)],
 })
 export class ConsentSwitchRadioComponent
   extends ContainerForFormControlUsageComponent

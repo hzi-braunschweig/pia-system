@@ -10,21 +10,23 @@ import { AuthService } from './auth.service';
 import { DOCUMENT } from '@angular/common';
 import { KeycloakClientService } from './keycloak-client.service';
 import { BadgeService } from '../shared/services/badge/badge.service';
+import { Platform } from '@ionic/angular';
 import createSpyObj = jasmine.createSpyObj;
 import { MockProvider } from 'ng-mocks';
 import SpyObj = jasmine.SpyObj;
 import createSpy = jasmine.createSpy;
+import { pl } from 'date-fns/locale';
 
 describe('AuthService', () => {
   let service: AuthService;
   let document;
   let keycloakClient: SpyObj<KeycloakClientService>;
-  let badgeService: BadgeService;
+  let badgeService: SpyObj<BadgeService>;
+  let platform: SpyObj<Platform>;
 
   beforeEach(async () => {
-    // Provider and Services
     document = {
-      defaultView: { location: { href: '/not/root' } },
+      defaultView: { location: { href: '/something' } },
     };
 
     keycloakClient = createSpyObj('KeycloakClientService', [
@@ -38,9 +40,10 @@ describe('AuthService', () => {
 
     badgeService = createSpyObj('BadgeService', ['clear']);
 
-    // Build Base Module
+    platform = createSpyObj('Platform', ['ready', 'is']);
+    platform.is.and.returnValue(false);
+
     TestBed.configureTestingModule({
-      teardown: { destroyAfterEach: false }, // is needed due to document mock
       providers: [
         {
           provide: DOCUMENT,
@@ -48,54 +51,73 @@ describe('AuthService', () => {
         },
         MockProvider(KeycloakClientService, keycloakClient),
         MockProvider(BadgeService, badgeService),
+        MockProvider(Platform, platform),
       ],
     });
     service = TestBed.inject(AuthService);
   });
 
+  describe('isAuthenticated()', () => {
+    it('should return true when keycloak client is logged in', () => {
+      keycloakClient.isLoggedIn.and.returnValue(true);
+
+      const result = service.isAuthenticated();
+
+      expect(result).toBe(true);
+      expect(keycloakClient.isLoggedIn).toHaveBeenCalledOnceWith();
+    });
+
+    it('should return false when keycloak client is not logged in', () => {
+      keycloakClient.isLoggedIn.and.returnValue(false);
+
+      const result = service.isAuthenticated();
+
+      expect(result).toBe(false);
+      expect(keycloakClient.isLoggedIn).toHaveBeenCalledOnceWith();
+    });
+  });
+
   describe('loginWithUsername()', () => {
-    it('should initialize keycloak', fakeAsync(() => {
+    it('should initialize keycloak and call login', fakeAsync(() => {
+      platform.is.and.returnValue(true);
       service.loginWithUsername('TEST-0001', 'de-DE');
       tick();
 
       expect(keycloakClient.initialize).toHaveBeenCalledTimes(1);
+      expect(keycloakClient.login).toHaveBeenCalledOnceWith({
+        hidden: false,
+        username: 'TEST-0001',
+        locale: 'de-DE',
+      });
     }));
+  });
 
-    it('should login with hidden in-app browser', fakeAsync(() => {
-      service.loginWithUsername('TEST-0001', 'de-DE');
+  describe('activateExistingSession()', () => {
+    it('should initialize keycloak but not call login when not on native platform', fakeAsync(() => {
+      platform.is.and.returnValue(false);
+      service.activateExistingSession();
       tick();
 
-      expect(keycloakClient.login).toHaveBeenCalledOnceWith(
-        false,
-        'TEST-0001',
-        'de-DE'
-      );
+      expect(keycloakClient.initialize).toHaveBeenCalledTimes(1);
+      expect(keycloakClient.login).not.toHaveBeenCalled();
     }));
 
-    it('should emit isAuthenticated event on successful login', fakeAsync(() => {
-      keycloakClient.login.and.resolveTo();
-      const successSpy = createSpy();
-      service.isAuthenticated$.subscribe(successSpy);
-
-      service.loginWithUsername('TEST-0001', 'de-DE');
+    it('should initialize keycloak and login with hidden browser when on native platform', fakeAsync(() => {
+      platform.is.and.returnValue(true);
+      service.activateExistingSession();
       tick();
 
-      expect(successSpy).toHaveBeenCalledOnceWith(true);
+      expect(keycloakClient.initialize).toHaveBeenCalledTimes(1);
+      expect(keycloakClient.login).toHaveBeenCalledOnceWith({ hidden: true });
     }));
+  });
 
-    it('should not emit isAuthenticated event on login failure', fakeAsync(() => {
-      keycloakClient.login.and.rejectWith('error');
-      const successSpy = createSpy();
-      service.isAuthenticated$.subscribe(successSpy);
+  describe('openAccountManagement()', () => {
+    it('should open account management', fakeAsync(() => {
+      service.openAccountManagement();
+      tick();
 
-      try {
-        service.loginWithUsername('TEST-0001', 'de-DE');
-        tick();
-        // we want the promise to be rejected
-        expect(true).toBeFalse();
-      } catch (e) {
-        expect(successSpy).not.toHaveBeenCalled();
-      }
+      expect(keycloakClient.openAccountManagement).toHaveBeenCalledOnceWith();
     }));
   });
 
@@ -107,16 +129,6 @@ describe('AuthService', () => {
       expect(keycloakClient.logout).toHaveBeenCalledOnceWith();
     }));
 
-    it('should send isAuthenticated event', fakeAsync(() => {
-      const isAuthenticatedSpy = createSpy();
-      service.isAuthenticated$.subscribe(isAuthenticatedSpy);
-
-      service.logout();
-      tick();
-
-      expect(isAuthenticatedSpy).toHaveBeenCalledOnceWith(false);
-    }));
-
     it('should clear the badge count', fakeAsync(() => {
       service.logout();
       tick();
@@ -124,11 +136,24 @@ describe('AuthService', () => {
       expect(badgeService.clear).toHaveBeenCalledOnceWith();
     }));
 
-    it('should reload the whole app', fakeAsync(() => {
-      expect(document.defaultView.location.href).toEqual('/not/root');
+    it('should reload the whole app when platform is native', fakeAsync(() => {
+      platform.is.and.returnValue(true);
+      expect(document.defaultView.location.href).toEqual('/something');
+
       service.logout();
       tick();
+
       expect(document.defaultView.location.href).toEqual('/');
+    }));
+
+    it('should not reload the app when platform is not native', fakeAsync(() => {
+      platform.is.and.returnValue(false);
+      expect(document.defaultView.location.href).toEqual('/something');
+
+      service.logout();
+      tick();
+
+      expect(document.defaultView.location.href).toEqual('/something');
     }));
   });
 });

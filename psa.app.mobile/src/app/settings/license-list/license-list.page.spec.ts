@@ -18,15 +18,15 @@ import {
   IonCardTitle,
   IonContent,
   IonSkeletonText,
-} from '@ionic/angular';
+} from '@ionic/angular/standalone';
 
 import { LicenseJson, LicenseListPage } from './license-list.page';
 import {
   HttpTestingController,
   provideHttpClientTesting,
 } from '@angular/common/http/testing';
-import { MockComponent, MockPipe } from 'ng-mocks';
-import { TranslatePipe } from '@ngx-translate/core';
+import { MockComponent } from 'ng-mocks';
+import { TranslateModule } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { ScrollingModule } from '@angular/cdk/scrolling';
@@ -34,6 +34,7 @@ import {
   provideHttpClient,
   withInterceptorsFromDi,
 } from '@angular/common/http';
+import { NgIf, NgFor, AsyncPipe } from '@angular/common';
 
 describe('LicenseListPage', () => {
   let component: LicenseListPage;
@@ -42,12 +43,22 @@ describe('LicenseListPage', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [
+      imports: [
+        ScrollingModule,
         LicenseListPage,
-        MockPipe(TranslatePipe),
+        TranslateModule.forRoot(),
         MockComponent(HeaderComponent),
+        NgIf,
+        NgFor,
+        AsyncPipe,
+        IonCard,
+        IonCardContent,
+        IonCardHeader,
+        IonCardSubtitle,
+        IonCardTitle,
+        IonContent,
+        IonSkeletonText,
       ],
-      imports: [ScrollingModule],
       providers: [
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),

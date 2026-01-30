@@ -40,7 +40,8 @@ PIA is designed to be configurable for different environments and use cases. The
 | `firebasePrivateKeyBase64` | Firebase credential private key, to send push notifications to users. Must be provided at least as a fake. | private key, base64 encoded                     | yes      |
 | `firebaseProjectId`        | Firebase project id, to send push notifications to users. Must be provided at least as a fake.             | string                                          | yes      |
 | `firebaseClientEmail`      | Firebase client email, to send push notifications to users. Must be provided at least as a fake.           | string                                          | yes      |
-| `notificationHour`         | Hour at which QIs are presented and Notifcations are send                                                  | number                                          | yes      |
-| `notificationMinute`       | Minute at which QIs are presented and Notifcations are send                                                | number                                          | yes      |
+| `notificationHour`         | Hour at which QIs are presented and notifications are sent (defaults to 8 if omitted)                      | number                                          | yes      |
+| `notificationMinute`       | Minute at which QIs are presented and notifications are sent (defaults to 0 if omitted)                    | number                                          | yes      |
+| `httpsProxyUrl`            | HTTPS proxy URL used by services to access the internet                                                    | valid URL string                                | no       |
 
 See the [deployment documentation](deployment.md) to learn more about how to actually set up the configuration.

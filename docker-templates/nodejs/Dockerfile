@@ -121,9 +121,9 @@ RUN npm run build
 
 FROM base AS final
 
-COPY --from=convert-markdown /usr/resources ./resources
 COPY --from=install-npm-build-dependencies /usr/src/ /usr/src/
 COPY --from=install-production /usr/src/node-app/ /usr/src/node-app/
+COPY --from=convert-markdown /usr/resources ./resources
 COPY --from=build /usr/src/node-app/dist/src ./src
 
 ARG VERSION_INFO_PIPELINE_ID=-

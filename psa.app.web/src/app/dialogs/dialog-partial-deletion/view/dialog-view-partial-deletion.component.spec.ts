@@ -32,4 +32,34 @@ describe('DialogViewPartialDeletionComponent', () => {
     expect(component).toBeDefined();
     expect(component.containsData()).toBeTrue();
   });
+
+  it('should emit cancelClicked event when cancel button is clicked', () => {
+    spyOn(component.cancelClicked, 'emit');
+
+    const cancelButton = fixture.debugElement.nativeElement.querySelector(
+      'button[mat-raised-button]:not([color="warn"])'
+    );
+    expect(cancelButton).toBeTruthy();
+
+    cancelButton.click();
+
+    expect(component.cancelClicked.emit).toHaveBeenCalledWith(
+      jasmine.any(MouseEvent)
+    );
+  });
+
+  it('should emit confirmClicked event when confirm button is clicked', () => {
+    spyOn(component.confirmClicked, 'emit');
+
+    const confirmButton = fixture.debugElement.nativeElement.querySelector(
+      'button[color="warn"]'
+    );
+    expect(confirmButton).toBeTruthy();
+
+    confirmButton.click();
+
+    expect(component.confirmClicked.emit).toHaveBeenCalledWith(
+      jasmine.any(MouseEvent)
+    );
+  });
 });

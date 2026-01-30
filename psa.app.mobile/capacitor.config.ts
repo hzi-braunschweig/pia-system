@@ -12,8 +12,8 @@ const config: CapacitorConfig = {
   webDir: 'www/browser',
   cordova: {
     preferences: {
-      'android-minSdkVersion': '24',
-      'android-targetSdkVersion': '34',
+      'android-minSdkVersion': '26',
+      'android-targetSdkVersion': '35',
       ScrollEnabled: 'false',
       BackupWebStorage: 'none',
       AndroidPersistentFileLocation: 'Internal',
@@ -33,6 +33,11 @@ const config: CapacitorConfig = {
       launchFadeOutDuration: 300,
       splashFullScreen: true,
     },
+    StatusBar: {
+      overlaysWebView: false,
+      style: 'LIGHT',
+      backgroundColor: '#599118', // --ion-color-tertiary
+    },
     Badge: {
       persist: true,
       autoClear: false,
@@ -40,6 +45,9 @@ const config: CapacitorConfig = {
   },
   server: {
     iosScheme: 'ionic', // to keep local storage data on iOS after the capacitor migration (see https://capacitorjs.com/docs/cordova/migrating-from-cordova-to-capacitor#setting-scheme)
+  },
+  android: {
+    adjustMarginsForEdgeToEdge: 'auto',
   },
 };
 

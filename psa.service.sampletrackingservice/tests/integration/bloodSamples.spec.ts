@@ -12,7 +12,6 @@ import fetchMocker from 'fetch-mock';
 import { StatusCodes } from 'http-status-codes';
 
 import { cleanup, setup } from './bloodSamples.spec.data/setup.helper';
-import { LabResultImportHelper } from '../../src/services/labResultImportHelper';
 import { Server } from '../../src/server';
 import { config } from '../../src/config';
 import { HttpClient } from '@pia-system/lib-http-clients-internal';
@@ -70,8 +69,6 @@ const fetchMock = fetchMocker.sandbox();
 describe('/admin/probands/{pseudonym}/bloodSamples', () => {
   const suiteSandbox = sinon.createSandbox();
   before(async function () {
-    suiteSandbox.stub(LabResultImportHelper, 'importHl7FromMhhSftp');
-    suiteSandbox.stub(LabResultImportHelper, 'importCsvFromHziSftp');
     suiteSandbox
       .stub<typeof HttpClient, 'fetch'>(HttpClient, 'fetch')
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment

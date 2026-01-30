@@ -17,7 +17,6 @@ import { QuestionnaireInstancesComponent } from './pages/questionnaires/question
 import { StudiesComponent } from './pages/studies/studies/studies.component';
 import { StudyAccessesComponent } from './pages/studies/study-accesses/study-accesses.component';
 import { InternalUsersComponent } from './pages/internal-users/internal-users.component';
-import { SettingsComponent } from './pages/settings/settings.component';
 import { SampleManagementComponent } from './pages/samples/sample-management/sample-management.component';
 import { PlannedProbandsComponent } from './pages/planned-probands/planned-probands.component';
 import { SamplesComponent } from './pages/samples/samples/samples.component';
@@ -27,7 +26,6 @@ import { ProbandsPersonalInfoComponent } from './pages/probands/probands-persona
 import { ProbandPersonalInfoComponent } from './pages/probands/proband-personal-info/proband-personal-info.component';
 import { ContactProbandComponent } from './pages/probands/contact-proband/contact-proband.component';
 import { LogsDeleteSysAdminComponent } from './pages/logsDelete-sysAdmin/logsDelete-sysAdmin.component';
-import { ContactComponent } from './pages/contact/contact.component';
 import { ComplianceResearcherComponent } from './pages/compliance/compliance-researcher/compliance-researcher.component';
 import { NgModule } from '@angular/core';
 import { ComplianceGuard } from './_guards/compliance.guard';
@@ -36,10 +34,8 @@ import { ComplianceType } from './psa.app.core/models/compliance';
 import { ProbandsToContactComponent } from './pages/probands-to-contact/probands-to-contact.component';
 import { ComplianceManagerComponent } from './pages/compliance/compliance-manager/compliance-manager.component';
 import { ComplianceExaminerComponent } from './pages/compliance/compliance-examiner/compliance-examiner.component';
-import { QuestionnaireInstancesListForProbandComponent } from './pages/questionnaire-instances/questionnaire-instances-list-for-proband/questionnaire-instances-list-for-proband.component';
 import { QuestionnaireInstancesListForInvestigatorComponent } from './pages/questionnaire-instances/questionnaire-instances-list-for-investigator/questionnaire-instances-list-for-investigator.component';
 import { LicenseListComponent } from './pages/license-list/license-list.component';
-import { ComplianceEditProbandComponent } from './pages/compliance/compliance-edit/compliance-edit-proband/compliance-edit-proband.component';
 import { RegistrationComponent } from './pages/registration/registration/registration.component';
 import { StudyComponent } from './pages/study/study.component';
 import { canActivateAuthRole } from './_guards/auth.guard';
@@ -102,25 +98,6 @@ const routes: Routes = [
     component: ProbandsToContactComponent,
     canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['ProbandenManager'] },
-    pathMatch: 'full',
-  },
-  {
-    path: 'contact',
-    component: ContactComponent,
-    canActivate: [canActivateAuthRole, ...mapToCanActivate([ComplianceGuard])],
-    data: { authorizedRoles: ['Proband'] },
-    pathMatch: 'full',
-  },
-  {
-    path: 'extlink/questionnaires/user',
-    redirectTo: 'questionnaires/user',
-    pathMatch: 'full',
-  },
-  {
-    path: 'questionnaires/user',
-    component: QuestionnaireInstancesListForProbandComponent,
-    canActivate: [canActivateAuthRole, ...mapToCanActivate([ComplianceGuard])],
-    data: { authorizedRoles: ['Proband'] },
     pathMatch: 'full',
   },
   {
@@ -230,7 +207,7 @@ const routes: Routes = [
     component: QuestionProbandComponent,
     canActivate: [canActivateAuthRole, ...mapToCanActivate([ComplianceGuard])],
     canDeactivate: [PendingChangesGuard],
-    data: { authorizedRoles: ['Proband', 'Forscher', 'Untersuchungsteam'] },
+    data: { authorizedRoles: ['Forscher', 'Untersuchungsteam'] },
     pathMatch: 'full',
   },
   {
@@ -245,13 +222,6 @@ const routes: Routes = [
     component: InternalUsersComponent,
     canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['SysAdmin'] },
-    pathMatch: 'full',
-  },
-  {
-    path: 'compliance/agree',
-    component: ComplianceEditProbandComponent,
-    canActivate: [canActivateAuthRole],
-    data: { authorizedRoles: ['Proband'] },
     pathMatch: 'full',
   },
   {
@@ -273,13 +243,6 @@ const routes: Routes = [
     component: ComplianceExaminerComponent,
     canActivate: [canActivateAuthRole],
     data: { authorizedRoles: ['Untersuchungsteam'] },
-    pathMatch: 'full',
-  },
-  {
-    path: 'settings',
-    component: SettingsComponent,
-    canActivate: [canActivateAuthRole, ...mapToCanActivate([ComplianceGuard])],
-    data: { authorizedRoles: ['Proband'] },
     pathMatch: 'full',
   },
   {
@@ -309,7 +272,7 @@ const routes: Routes = [
     component: LaboratoryResultsComponent,
     canActivate: [canActivateAuthRole, ...mapToCanActivate([ComplianceGuard])],
     data: {
-      authorizedRoles: ['Proband', 'Forscher'],
+      authorizedRoles: ['Forscher'],
       expectedCompliances: [ComplianceType.LABRESULTS],
     },
     pathMatch: 'full',
@@ -319,7 +282,7 @@ const routes: Routes = [
     component: LaboratoryResultDetailsComponent,
     canActivate: [canActivateAuthRole, ...mapToCanActivate([ComplianceGuard])],
     data: {
-      authorizedRoles: ['Proband', 'Forscher'],
+      authorizedRoles: ['Forscher'],
       expectedCompliances: [ComplianceType.LABRESULTS],
     },
     pathMatch: 'full',
@@ -348,7 +311,7 @@ const routes: Routes = [
   {
     path: 'feedback-statistics',
     canActivate: [canActivateAuthRole],
-    data: { authorizedRoles: ['Forscher', 'Proband'] },
+    data: { authorizedRoles: ['Forscher'] },
     loadChildren: async () =>
       (await import('./pages/feedback-statistics/feedback-statistics.module'))
         .FeedbackStatisticsModule,

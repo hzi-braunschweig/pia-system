@@ -5,7 +5,7 @@
  */
 
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { IonicModule, RangeCustomEvent } from '@ionic/angular';
+import { RangeCustomEvent } from '@ionic/angular/standalone';
 
 import {
   FeedbackStatisticComponent,
@@ -24,12 +24,14 @@ import { TranslateModule } from '@ngx-translate/core';
 import { add } from 'date-fns';
 import { Component, ViewChild } from '@angular/core';
 import { RangeValue } from '@ionic/core/dist/types/components/range/range-interface';
+import { CurrentUser } from '../../auth/current-user.service';
+import { MockProvider } from 'ng-mocks';
 
 @Component({
   selector: 'app-mock',
   template:
     '<app-feedback-statistic [feedbackStatisticDto]="feedbackStatisticDto"></app-feedback-statistic>',
-  standalone: false,
+  imports: [FeedbackStatisticComponent],
 })
 class MockComponent {
   @ViewChild(FeedbackStatisticComponent)
@@ -52,12 +54,16 @@ describe('FeedbackStatisticComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [MockComponent, FeedbackStatisticComponent],
       imports: [
-        IonicModule.forRoot(),
         MarkdownModule.forRoot(),
         TranslateModule.forRoot(),
         ChartsModule.forRoot(),
+        MockComponent,
+      ],
+      providers: [
+        MockProvider(CurrentUser, {
+          locale: 'en-US',
+        }),
       ],
     }).compileComponents();
 
@@ -163,6 +169,9 @@ describe('FeedbackStatisticComponent', () => {
       it(`should select the range ${JSON.stringify(
         testCase.select
       )} => ${JSON.stringify(testCase.expect.rangeSelection)}`, () => {
+        // Ensure the child component is initialized
+        fixture.detectChanges();
+
         const event: Partial<RangeCustomEvent> = {
           detail: {
             value: testCase.select,

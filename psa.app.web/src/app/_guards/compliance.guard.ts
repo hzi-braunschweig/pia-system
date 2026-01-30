@@ -7,6 +7,7 @@
 import { Injectable } from '@angular/core';
 import {
   ActivatedRouteSnapshot,
+  CanActivate,
   Router,
   RouterStateSnapshot,
   UrlTree,
@@ -19,7 +20,7 @@ import { CurrentUser } from '../_services/current-user.service';
 @Injectable({
   providedIn: 'root',
 })
-export class ComplianceGuard {
+export class ComplianceGuard implements CanActivate {
   constructor(
     private readonly router: Router,
     private readonly user: CurrentUser,

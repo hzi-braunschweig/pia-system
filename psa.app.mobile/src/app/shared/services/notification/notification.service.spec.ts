@@ -6,14 +6,13 @@
 
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { Platform } from '@ionic/angular';
+import { Platform } from '@ionic/angular/standalone';
 import SpyObj = jasmine.SpyObj;
 
 import { NotificationService } from './notification.service';
 import { NotificationPresenterService } from './notification-presenter.service';
 import { NotificationClientService } from './notification-client.service';
 import { AuthService } from '../../../auth/auth.service';
-import { Subject } from 'rxjs';
 import { PushNotifications } from '@capacitor/push-notifications';
 
 describe('NotificationService', () => {
@@ -25,7 +24,6 @@ describe('NotificationService', () => {
   let router: SpyObj<Router>;
   let auth: SpyObj<AuthService>;
 
-  let isAuthenticatedSubject: Subject<boolean>;
   let registrationCallback: any;
   let pushNotificationActionPerformedCallback: any;
   let removeListenerSpy: jasmine.Spy;
@@ -80,14 +78,12 @@ describe('NotificationService', () => {
     platform = jasmine.createSpyObj('Platform', ['is']);
     router = jasmine.createSpyObj('Router', ['navigate']);
 
-    isAuthenticatedSubject = new Subject<boolean>();
-    auth = jasmine.createSpyObj('AuthService', ['isAuthenticated'], {
-      isAuthenticated$: isAuthenticatedSubject.asObservable(),
-    });
+    auth = jasmine.createSpyObj('AuthService', ['isAuthenticated']);
     auth.isAuthenticated.and.returnValue(true);
 
     TestBed.configureTestingModule({
       providers: [
+        NotificationService,
         {
           provide: NotificationPresenterService,
           useValue: notificationPresenter,
@@ -98,6 +94,7 @@ describe('NotificationService', () => {
         { provide: AuthService, useValue: auth },
       ],
     });
+
     service = TestBed.inject(NotificationService);
   });
 
@@ -144,9 +141,8 @@ describe('NotificationService', () => {
 
     it('should unregister if user is logged out', fakeAsync(() => {
       service.initPushNotifications('test-1234');
-      tick();
+      service.onLogout();
 
-      isAuthenticatedSubject.next(false);
       tick();
 
       expect(PushNotifications.unregister).toHaveBeenCalled();

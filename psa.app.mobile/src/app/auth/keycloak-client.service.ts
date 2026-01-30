@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-import { effect, Injectable, signal, Signal } from '@angular/core';
+import { Injectable, signal, Signal } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { EndpointService } from '../shared/services/endpoint/endpoint.service';
@@ -13,29 +13,22 @@ import { EndpointService } from '../shared/services/endpoint/endpoint.service';
 import { InAppBrowser } from '@awesome-cordova-plugins/in-app-browser/ngx';
 import { LoginFailedError } from './errors/login-failed-error';
 import { TranslateService } from '@ngx-translate/core';
-import { CurrentUser } from './current-user.service';
 import { PiaKeycloakAdapter } from './keycloak-adapter/keycloak-adapter';
-import { Platform } from '@ionic/angular';
+import { Platform } from '@ionic/angular/standalone';
 import Keycloak from 'keycloak-js';
-import {
-  createKeycloakSignal,
-  KeycloakEvent,
-  KeycloakEventType,
-} from 'keycloak-angular';
+import { createKeycloakSignal, KeycloakEvent } from 'keycloak-angular';
 import { KeycloakFactoryService } from './keycloak.factory';
+import { BehaviorSubject } from 'rxjs';
+import { CurrentUser } from './current-user.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class KeycloakClientService {
-  private _hasBeenInitialized = false;
   public keycloak: Keycloak | undefined;
-  private keycloakSignal: Signal<KeycloakEvent> | undefined;
-  private readonly keycloakReady = signal(false);
-
-  get hasBeenInitialized(): boolean {
-    return this._hasBeenInitialized;
-  }
+  public readonly keycloakReady$ = new BehaviorSubject<boolean>(false);
+  public keycloakSignal: Signal<KeycloakEvent> | undefined;
+  public readonly keycloakIsInitialized = signal(false);
 
   constructor(
     private readonly http: HttpClient,
@@ -43,84 +36,70 @@ export class KeycloakClientService {
     private readonly inAppBrowser: InAppBrowser,
     private readonly translate: TranslateService,
     private readonly platform: Platform,
-    private readonly currentUser: CurrentUser,
-    private readonly keycloakFactory: KeycloakFactoryService
-  ) {
-    effect(async () => {
-      console.log('KeycloakClientService effect triggered');
-      if (!this.keycloakReady()) {
-        return;
-      }
-      const keycloakEvent = this.keycloakSignal();
-      console.log(
-        'received keycloak event:',
-        KeycloakEventType[keycloakEvent.type]
-      );
-      if (keycloakEvent.type === KeycloakEventType.TokenExpired) {
-        console.warn('Token expired, refreshing token');
-        try {
-          await this.keycloak.updateToken(30);
-        } catch (error) {
-          console.error('Failed to refresh token:', error);
-          await this.logout();
-        }
-      }
-      if (keycloakEvent.type === KeycloakEventType.AuthRefreshError) {
-        console.warn('Auth refresh error, logging out');
-        await this.logout();
-      }
-      if (keycloakEvent.type === KeycloakEventType.AuthRefreshSuccess) {
-        const token = this.keycloak.token;
-        if (token) {
-          this.currentUser.init(token);
-        } else {
-          console.error(
-            'Keycloak Token is undefined after KeycloakEventType.AuthRefreshSuccess'
-          );
-        }
-      }
-    });
-  }
+    private readonly keycloakFactory: KeycloakFactoryService,
+    private readonly currentUser: CurrentUser
+  ) {}
 
   public async initialize(): Promise<void> {
-    if (this._hasBeenInitialized) {
+    if (this.keycloakIsInitialized()) {
       return;
     }
 
-    await this.platform.ready();
+    if (this.platform.is('hybrid')) {
+      const apiUrl = this.endpoint.getUrl() + '/api/v1/auth/';
+      this.keycloak = this.keycloakFactory.create({
+        ...environment.authServer,
+        url: apiUrl,
+      });
+      this.keycloakSignal = createKeycloakSignal(this.keycloak);
+      await this.keycloak.init({
+        adapter: new PiaKeycloakAdapter(
+          this.keycloak,
+          this.inAppBrowser,
+          this.translate,
+          this.http,
+          apiUrl + 'realms/' + environment.authServer.realm
+        ),
+        pkceMethod: 'S256',
+        checkLoginIframe: false,
+      });
+    } else {
+      const url = environment.authServer.url;
+      if (!url) {
+        throw new Error('Keycloak URL is not defined in the environment');
+      }
+      this.keycloak = this.keycloakFactory.create({
+        ...environment.authServer,
+        url,
+      });
+      this.keycloakSignal = createKeycloakSignal(this.keycloak);
+      await this.keycloak.init({
+        pkceMethod: 'S256',
+        onLoad: 'check-sso',
+        silentCheckSsoRedirectUri:
+          window.location.origin + '/assets/silent-check-sso.html',
+      });
+    }
 
-    const apiUrl = this.endpoint.getUrl() + '/api/v1/auth/';
-    this.keycloak = this.keycloakFactory.create({
-      ...environment.authServer,
-      url: apiUrl,
-    });
-    this.keycloakSignal = createKeycloakSignal(this.keycloak);
-    await this.keycloak.init({
-      adapter: new PiaKeycloakAdapter(
-        this.keycloak,
-        this.inAppBrowser,
-        this.translate,
-        this.http,
-        apiUrl + 'realms/' + environment.authServer.realm
-      ),
-      pkceMethod: 'S256',
-      checkLoginIframe: false,
-    });
-
-    this._hasBeenInitialized = true;
-    this.keycloakReady.set(true);
+    this.keycloakIsInitialized.set(true);
   }
 
   public isLoggedIn(): boolean {
-    return this._hasBeenInitialized && this.keycloak.authenticated;
+    return this.keycloakIsInitialized() && this.keycloak.authenticated;
   }
 
-  public async login(
-    hidden: boolean,
-    username: string = '',
-    locale: string = null
-  ): Promise<void> {
-    if (!this._hasBeenInitialized) {
+  public async login({
+    hidden,
+    username = '',
+    locale = null,
+    redirectUri,
+  }: {
+    hidden: boolean;
+    username?: string;
+    locale?: string;
+    redirectUri?: string;
+  }): Promise<void> {
+    if (!this.keycloakIsInitialized()) {
       throw new LoginFailedError(
         'KeycloakClientService has not been initialized'
       );
@@ -133,14 +112,11 @@ export class KeycloakClientService {
         cordovaOptions: {
           ...(hidden ? { hidden: 'yes' } : {}),
         },
+        redirectUri,
       });
-
-      const token = this.keycloak.token;
-      if (!token) {
-        console.error('Keycloak token is undefined');
-        throw new LoginFailedError('Keycloak token is undefined');
+      if (this.keycloak.token) {
+        this.currentUser.init(this.keycloak.token);
       }
-      this.currentUser.init(token);
     } catch (e) {
       console.error('Error at logging in to keycloak');
       if (e === undefined) {
@@ -156,12 +132,32 @@ export class KeycloakClientService {
   }
 
   public async logout(): Promise<void> {
-    if (!this._hasBeenInitialized) {
+    console.log('logging out');
+
+    if (!this.keycloakIsInitialized()) {
+      console.log('initializing keycloak again');
       await this.initialize();
     }
 
-    await this.keycloak.logout();
+    await this.keycloak.logout({
+      redirectUri: this.keycloak.createLogoutUrl(),
+    });
 
     this.endpoint.removeLatestEndpoint();
+    this.currentUser.reset();
+  }
+
+  public createRegisterUrl(study: string): string {
+    if (!this.keycloak) {
+      throw new Error('Keycloak is not initialized');
+    }
+    const url = new URL(
+      this.keycloak.createRegisterUrl({
+        redirectUri: environment.baseUrl,
+      })
+    );
+
+    url.searchParams.set('study', study);
+    return url.toString();
   }
 }

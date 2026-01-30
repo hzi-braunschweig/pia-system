@@ -7,7 +7,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import { IonicModule } from '@ionic/angular';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { CompliancePageRoutingModule } from './compliance-routing.module';
@@ -18,17 +17,43 @@ import { ConsentInputRadioComponent } from './template-viewer/pia-custom-tags/co
 import { ConsentInputTextComponent } from './template-viewer/pia-custom-tags/consent-input-text/consent-input-text.component';
 import { ConsentInputDateComponent } from './template-viewer/pia-custom-tags/consent-input-date/consent-input-date.component';
 import { ConsentSwitchRadioComponent } from './template-viewer/pia-custom-tags/consent-switch-radio/consent-switch-radio.component';
+import {
+  IonContent,
+  IonText,
+  IonFooter,
+  IonButton,
+  IonList,
+  IonItem,
+  IonInput,
+  IonModal,
+  IonDatetime,
+  IonRadioGroup,
+  IonRadio,
+} from '@ionic/angular/standalone';
 
 @NgModule({
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    IonicModule,
     TranslateModule.forChild(),
     CompliancePageRoutingModule,
     SharedModule,
-  ],
-  declarations: [
+    IonContent,
+    IonText,
+    IonFooter,
+    IonButton,
+    IonList,
+    IonItem,
+    IonInput,
+    IonModal,
+    IonContent,
+    IonDatetime,
+    IonList,
+    IonRadioGroup,
+    IonItem,
+    IonRadio,
+    IonItem,
+    IonInput,
     CompliancePage,
     TemplateViewerComponent,
     ConsentInputRadioComponent,

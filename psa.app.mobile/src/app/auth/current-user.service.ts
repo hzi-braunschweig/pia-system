@@ -12,9 +12,9 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class CurrentUser implements User {
-  public username: string;
-  public study: string;
-  public locale: string;
+  public username: string | undefined;
+  public study: string | undefined;
+  public locale: string | undefined;
 
   constructor(private readonly jwt: JwtService) {}
 
@@ -26,5 +26,11 @@ export class CurrentUser implements User {
     this.username = payload.username;
     this.study = payload.studies[0];
     this.locale = payload.locale ?? environment.locale;
+  }
+
+  public reset() {
+    this.username = undefined;
+    this.study = undefined;
+    this.locale = undefined;
   }
 }

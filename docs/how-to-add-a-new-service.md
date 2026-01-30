@@ -65,5 +65,3 @@ Finally, you need to run the following [`psa.utils.repo-tool`](../psa.utils.repo
 This adds necessary docker, unit-/integration-tests and linting entries to [./ci/generated.yaml](../ci/generated.yml).
 
 Also it adds an entry for your new service to all necessary build images in [./bake.hcl](../bake.hcl) and [./npm-install.hcl](../npm-install).
-
-And finally an entry for the new services is added to [./skaffold.yaml](../skaffold.yaml).

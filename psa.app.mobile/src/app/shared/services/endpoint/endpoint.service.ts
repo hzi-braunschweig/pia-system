@@ -10,6 +10,8 @@ import { map } from 'rxjs/operators';
 import { compare } from 'compare-versions';
 
 import { backendMapping } from '../../../backend-mapping';
+import { Platform } from '@ionic/angular/standalone';
+import { environment } from 'src/environments/environment';
 
 interface BackendMappingEntry {
   prefix: string;
@@ -44,11 +46,18 @@ export class EndpointService {
     return url || null;
   }
 
-  constructor(private readonly http: HttpClient) {
-    const endpoint = this.getLatestEndpoint();
-    this._endpointUrl = endpoint?.url;
-    this._isCustomEndpoint = endpoint?.isCustom;
-    console.log('EndpointService: endpoint set', endpoint);
+  constructor(
+    private readonly http: HttpClient,
+    private readonly platform: Platform
+  ) {
+    if (this.platform.is('hybrid')) {
+      const endpoint = this.getLatestEndpoint();
+      this._endpointUrl = endpoint?.url;
+      this._isCustomEndpoint = endpoint?.isCustom;
+    } else {
+      this._endpointUrl = environment.baseUrl;
+      this._isCustomEndpoint = false;
+    }
   }
 
   public getUrl(): string | null {
