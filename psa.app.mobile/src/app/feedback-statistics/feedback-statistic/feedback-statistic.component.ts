@@ -34,7 +34,7 @@ import {
   AsyncPipe,
   DatePipe,
 } from '@angular/common';
-import { CurrentUser } from '../../auth/current-user.service';
+import { LocaleService } from '../../shared/services/locale/locale.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { MarkdownPipe } from 'ngx-markdown';
 
@@ -75,7 +75,7 @@ export class FeedbackStatisticComponent implements OnInit {
 
   public interval: Interval | null = null;
 
-  public constructor(private readonly currentUser: CurrentUser) {}
+  public constructor(private readonly localeService: LocaleService) {}
 
   public ngOnInit(): void {
     this.chartFeedbackStatistic = FeedbackStatisticMapperUtility.map(
@@ -103,7 +103,7 @@ export class FeedbackStatisticComponent implements OnInit {
 
     const label =
       this.chartFeedbackStatistic.intervals[intervalIndex][dateIndex];
-    return formatDate(label, 'dd.MM.yyyy', this.currentUser.locale);
+    return formatDate(label, 'dd.MM.yyyy', this.localeService.currentLocale);
   }
 
   public selectChartInterval(event: Event) {

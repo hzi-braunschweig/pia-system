@@ -59,7 +59,7 @@
     "ngx-material-timepicker": "^13.1.1",
     "remove-markdown": "^0.5.0",
     "rxjs": "^7.5.7",
-    "swiper": "^11.1.0",
+    "swiper": "^12.1.2",
     "tslib": "^2.4.1"
   },
   "devDependencies": {

@@ -2,6 +2,10 @@
 
 This file contains notes about changes that operation teams need to be aware of when updating PIA.
 
+## 1.43.1
+
+- Keycloak admin is created on startup
+
 ## 1.43
 
 - The ionic app is now also served for participants using the web

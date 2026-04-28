@@ -43,6 +43,17 @@ describe('CurrentUser', () => {
       expect(currentUser.study).toEqual('Teststudie1');
       expect(currentUser.locale).toEqual('de-DE');
     });
+
+    it('should leave locale undefined when token has no locale claim', async () => {
+      jwt.decodeToken.and.returnValue({
+        studies: ['Teststudie1'],
+        username: 'TEST-1234',
+      });
+
+      await currentUser.init('some.jwt.token');
+
+      expect(currentUser.locale).toBeUndefined();
+    });
   });
 
   describe('get study', () => {

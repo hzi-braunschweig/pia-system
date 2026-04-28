@@ -32,7 +32,13 @@ import {
   ProbandDto,
 } from '../models/proband';
 import { SecureRandomPasswordService } from './secureRandomPasswordService';
-import { getConnection, getManager, getRepository, In } from 'typeorm';
+import {
+  EntityManager,
+  getConnection,
+  getManager,
+  getRepository,
+  In,
+} from 'typeorm';
 import { RepositoryOptions } from '@pia/lib-service-core';
 import { Proband } from '../entities/proband';
 import { Study } from '../entities/study';
@@ -70,6 +76,22 @@ export type ProbandDeletionType =
  * - 'contact' deletes the account and contact data but keeps all health data
  */
 export type ProbandSelfDeletionType = 'full' | 'contact';
+
+interface SaveProbandAndCreateAccountParams {
+  transactionEM: EntityManager;
+  temporaryPassword: boolean;
+  password: string;
+  pseudonym: string;
+  study: Study;
+  newProbandData: CreateProbandRequest;
+  existingIdsProband?: Proband;
+  usePlannedProband: boolean;
+}
+
+interface ParticipantCreatedEventData {
+  pseudonym: string;
+  studyName: string;
+}
 
 export class ProbandService {
   public static async getAllProbandsOfStudy(
@@ -221,57 +243,70 @@ export class ProbandService {
    * @throws IdsAlreadyExistsError
    * @throws ProbandSaveError
    */
+
   public static async createIDSProbandWithoutAccount(
     studyName: string,
     ids: string
   ): Promise<void> {
-    await getConnection().transaction(async (transactionEM) => {
-      const probandRepo = transactionEM.getRepository(Proband);
+    const createdParticipant = await getConnection().transaction(
+      async (transactionEM): Promise<ParticipantCreatedEventData> => {
+        const probandRepo = transactionEM.getRepository(Proband);
 
-      // Check if pseudonym already exists
-      const existingPseudonymProband = await probandRepo.findOne(ids);
-      if (existingPseudonymProband) {
-        throw new PseudonymAlreadyExistsError(
-          'The pseudonym is already assigned'
-        );
+        // Check if pseudonym already exists
+        const existingPseudonymProband = await probandRepo.findOne(ids);
+        if (existingPseudonymProband) {
+          throw new PseudonymAlreadyExistsError(
+            'The pseudonym is already assigned'
+          );
+        }
+
+        // Check if study exists
+        const study = await transactionEM
+          .getRepository(Study)
+          .findOne(studyName);
+        if (!study) {
+          throw new StudyNotFoundError(`Study "${studyName}" does not exist`);
+        }
+
+        // Check if IDS already exists
+        const existingIdsProband = await probandRepo.findOne({
+          ids: ids,
+        });
+        if (existingIdsProband) {
+          throw new IdsAlreadyExistsError('The ids is already assigned');
+        }
+
+        const pseudonym = ids.toLowerCase();
+
+        const newProband = probandRepo.create({
+          pseudonym,
+          ids: ids,
+          status: ProbandStatus.ACTIVE,
+          complianceContact: false,
+          complianceLabresults: false,
+          complianceSamples: false,
+          complianceBloodsamples: false,
+          isTestProband: false,
+          study,
+          // creating an IDS proband is only possible for investigators
+          origin: ProbandOrigin.INVESTIGATOR,
+        });
+        await probandRepo.save(newProband).catch((e) => {
+          console.error(e);
+          throw new ProbandSaveError('could not create the proband', e);
+        });
+
+        return {
+          pseudonym: newProband.pseudonym,
+          studyName: study.name,
+        };
       }
+    );
 
-      // Check if study exists
-      const study = await transactionEM.getRepository(Study).findOne(studyName);
-      if (!study) {
-        throw new StudyNotFoundError(`Study "${studyName}" does not exist`);
-      }
-
-      // Check if IDS already exists
-      const existingIdsProband = await probandRepo.findOne({
-        ids: ids,
-      });
-      if (existingIdsProband) {
-        throw new IdsAlreadyExistsError('The ids is already assigned');
-      }
-
-      const pseudonym = ids.toLowerCase();
-
-      const newProband = probandRepo.create({
-        pseudonym,
-        ids: ids,
-        status: ProbandStatus.ACTIVE,
-        complianceContact: false,
-        complianceLabresults: false,
-        complianceSamples: false,
-        complianceBloodsamples: false,
-        isTestProband: false,
-        study,
-        // creating an IDS proband is only possible for investigators
-        origin: ProbandOrigin.INVESTIGATOR,
-      });
-      await probandRepo.save(newProband).catch((e) => {
-        console.error(e);
-        throw new ProbandSaveError('could not create the proband', e);
-      });
-
-      await messageQueueService.sendProbandCreated(pseudonym, studyName);
-    });
+    await messageQueueService.sendProbandCreated(
+      createdParticipant.pseudonym,
+      createdParticipant.studyName
+    );
   }
 
   /**
@@ -285,8 +320,8 @@ export class ProbandService {
   public static async createProbandForRegistration(
     emailAsUsername: string
   ): Promise<string> {
-    const participant: Proband = await getConnection().transaction(
-      async (entityManager) => {
+    const createdParticipant = await getConnection().transaction(
+      async (entityManager): Promise<ParticipantCreatedEventData> => {
         const probandRepo = entityManager.getRepository(Proband);
         const account = await ProbandAccountService.getProbandAccount(
           emailAsUsername
@@ -318,18 +353,24 @@ export class ProbandService {
           throw new ProbandSaveError('could not save the proband', e);
         }
 
-        return newProband;
+        return {
+          pseudonym: newProband.pseudonym,
+          studyName: study.name,
+        };
       }
     );
 
     await this.logoutUser(emailAsUsername);
-    await this.updateAuthServerUsername(emailAsUsername, participant.pseudonym);
+    await this.updateAuthServerUsername(
+      emailAsUsername,
+      createdParticipant.pseudonym
+    );
     await messageQueueService.sendProbandCreated(
-      participant.pseudonym,
-      participant.study?.name ?? ''
+      createdParticipant.pseudonym,
+      createdParticipant.studyName
     );
 
-    return participant.pseudonym;
+    return createdParticipant.pseudonym;
   }
 
   /**
@@ -353,125 +394,51 @@ export class ProbandService {
     usePlannedProband: boolean,
     temporaryPassword: boolean
   ): Promise<CreateProbandResponse> {
-    return getConnection().transaction(async (transactionEM) => {
-      let password = '';
-      const probandRepo = transactionEM.getRepository(Proband);
-
-      // Check if study exists
-      const study = await transactionEM.getRepository(Study).findOne(studyName);
-      if (!study) {
-        throw new StudyNotFoundError(`Study "${studyName}" does not exist`);
-      }
-
-      if (newProbandData.pseudonym) {
-        // Check if pseudonym already exists
-        const existingPseudonymProband = await probandRepo.findOne(
-          newProbandData.pseudonym
+    const result = await getConnection().transaction(async (transactionEM) => {
+      const { study, existingIdsProband, pseudonym } =
+        await this.prepareProbandCreation(
+          transactionEM,
+          studyName,
+          newProbandData
         );
-        if (existingPseudonymProband) {
-          throw new PseudonymAlreadyExistsError(
-            'The pseudonym is already in use'
-          );
-        }
-      } else {
-        newProbandData.pseudonym = await this.generatePseudonym(study);
-      }
 
-      // Find Proband by IDS
-      let existingIdsProband: undefined | Proband = undefined;
-      if (newProbandData.ids) {
-        existingIdsProband = await probandRepo.findOne({
-          ids: newProbandData.ids,
-        });
-      }
-
-      if (usePlannedProband) {
-        const plannedProbandsRepo = transactionEM.getRepository(PlannedProband);
-        const plannedProband = await plannedProbandsRepo
-          .createQueryBuilder('plannedProband')
-          .leftJoin('plannedProband.studies', 'study')
-          .where('study.name = :studyName', { studyName: studyName })
-          .andWhere('plannedProband.pseudonym = :pseudonym', {
-            pseudonym: newProbandData.pseudonym,
-          })
-          .getOne();
-        if (!plannedProband) {
-          throw new PlannedProbandNotFoundError(
-            'Could not find a related planned proband'
-          );
-        }
-        plannedProband.activatedAt = new Date();
-        await plannedProbandsRepo.save(plannedProband);
-
-        password = plannedProband.password;
-      } else {
-        password = SecureRandomPasswordService.generate();
-      }
-
-      let probandCreated = false;
-      let newProband: Proband;
-      if (usePlannedProband && newProbandData.ids) {
-        // proband already exists so update proband with IDS
-        if (!existingIdsProband) {
-          throw new ParticipantNotFoundError(
-            'The proband could not be found by the given ids'
-          );
-        }
-        // change pseudonym from ids to pseudonym
-        await probandRepo
-          .update(existingIdsProband.pseudonym, {
-            pseudonym: newProbandData.pseudonym,
-          })
-          .catch((e) => {
-            throw new ProbandSaveError('could not update the proband', e);
-          });
-        existingIdsProband.pseudonym = newProbandData.pseudonym;
-        newProband = existingIdsProband;
-      } else {
-        // create proband
-        if (newProbandData.ids && existingIdsProband) {
-          throw new IdsAlreadyExistsError('The ids is already assigned');
-        }
-        newProband = probandRepo.create({
-          pseudonym: newProbandData.pseudonym,
-          status: ProbandStatus.ACTIVE,
-        });
-        probandCreated = true;
-      }
-
-      // Apply compliance and other data
-      newProband.complianceContact = true;
-      newProband.complianceBloodsamples =
-        newProbandData.complianceBloodsamples ?? false;
-      newProband.complianceLabresults =
-        newProbandData.complianceLabresults ?? false;
-      newProband.complianceSamples = newProbandData.complianceSamples ?? false;
-      newProband.studyCenter = newProbandData.studyCenter ?? null;
-      newProband.examinationWave = newProbandData.examinationWave ?? null;
-      newProband.ids = newProbandData.ids ?? null;
-      newProband.study = study;
-      newProband.origin = newProbandData.origin;
-      newProband.isTestProband = newProbandData.isTestProband ?? false;
-
-      await probandRepo.save(newProband).catch((e) => {
-        throw new ProbandSaveError('could not create the proband', e);
-      });
-
-      await ProbandAccountService.createProbandAccount(
-        newProband.pseudonym,
-        newProband.study.name,
-        password,
-        temporaryPassword
+      const password = await this.getOrCreatePassword(
+        transactionEM,
+        studyName,
+        pseudonym,
+        usePlannedProband
       );
 
-      if (probandCreated) {
-        await messageQueueService.sendProbandCreated(
-          newProband.pseudonym,
-          newProband.study.name
-        );
-      }
-      return { pseudonym: newProband.pseudonym, password };
+      const { probandCreated, newProband } =
+        await this.saveProbandAndCreateAccount({
+          transactionEM,
+          temporaryPassword,
+          password,
+          pseudonym,
+          study,
+          newProbandData,
+          existingIdsProband,
+          usePlannedProband,
+        });
+
+      return {
+        probandCreated,
+        pseudonym: newProband.pseudonym,
+        studyName: study.name,
+        password,
+      };
     });
+
+    if (result.probandCreated) {
+      await messageQueueService.sendProbandCreated(
+        result.pseudonym,
+        result.studyName
+      );
+    }
+    return {
+      pseudonym: result.pseudonym,
+      password: result.password,
+    };
   }
 
   public static async updateProband(
@@ -561,6 +528,160 @@ export class ProbandService {
       accountStatus: await this.getProbandAccountStatus(proband.pseudonym),
       study: proband.study.name,
     };
+  }
+
+  /**
+   * Loads and validates data required for proband creation.
+   * Ensures that the study exists, resolves the pseudonym,
+   * validates pseudonym uniqueness, and looks up an existing proband by ids.
+   */
+  private static async prepareProbandCreation(
+    transactionEM: EntityManager,
+    studyName: string,
+    newProbandData: CreateProbandRequest
+  ): Promise<{
+    study: Study;
+    existingIdsProband?: Proband;
+    pseudonym: string;
+  }> {
+    const probandRepo = transactionEM.getRepository(Proband);
+
+    // Check if study exists
+    const study = await transactionEM.getRepository(Study).findOne(studyName);
+    if (!study) {
+      throw new StudyNotFoundError(`Study "${studyName}" does not exist`);
+    }
+
+    const pseudonym =
+      newProbandData.pseudonym ?? (await this.generatePseudonym(study));
+
+    if (newProbandData.pseudonym) {
+      // Check if pseudonym already exists
+      const existingPseudonymProband = await probandRepo.findOne(pseudonym);
+      if (existingPseudonymProband) {
+        throw new PseudonymAlreadyExistsError(
+          'The pseudonym is already in use'
+        );
+      }
+    }
+
+    // Find Proband by IDS
+    let existingIdsProband: undefined | Proband = undefined;
+    if (newProbandData.ids) {
+      existingIdsProband = await probandRepo.findOne({
+        ids: newProbandData.ids,
+      });
+    }
+    return { study, existingIdsProband, pseudonym };
+  }
+
+  /**
+   * Returns the password to use for proband account creation.
+   * For planned probands, activates the matching planned proband and reuses its password.
+   * Otherwise, generates a new random password.
+   */
+  private static async getOrCreatePassword(
+    transactionEM: EntityManager,
+    studyName: string,
+    pseudonym: string,
+    usePlannedProband: boolean
+  ): Promise<string> {
+    if (usePlannedProband) {
+      const plannedProbandsRepo = transactionEM.getRepository(PlannedProband);
+      const plannedProband = await plannedProbandsRepo
+        .createQueryBuilder('plannedProband')
+        .leftJoin('plannedProband.studies', 'study')
+        .where('study.name = :studyName', { studyName: studyName })
+        .andWhere('plannedProband.pseudonym = :pseudonym', {
+          pseudonym: pseudonym,
+        })
+        .getOne();
+      if (!plannedProband) {
+        throw new PlannedProbandNotFoundError(
+          'Could not find a related planned proband'
+        );
+      }
+      plannedProband.activatedAt = new Date();
+      await plannedProbandsRepo.save(plannedProband);
+
+      return plannedProband.password;
+    }
+    return SecureRandomPasswordService.generate();
+  }
+
+  /**
+   * Creates a new proband or updates an existing one and creates the corresponding account.
+   */
+  private static async saveProbandAndCreateAccount({
+    transactionEM,
+    temporaryPassword,
+    password,
+    pseudonym,
+    study,
+    newProbandData,
+    existingIdsProband,
+    usePlannedProband,
+  }: SaveProbandAndCreateAccountParams): Promise<{
+    probandCreated: boolean;
+    newProband: Proband;
+  }> {
+    const probandRepo = transactionEM.getRepository(Proband);
+    let probandCreated = false;
+    let newProband: Proband;
+    if (usePlannedProband && newProbandData.ids) {
+      // proband already exists so update proband with IDS
+      if (!existingIdsProband) {
+        throw new ParticipantNotFoundError(
+          'The proband could not be found by the given ids'
+        );
+      }
+      // change pseudonym from ids to pseudonym
+      await probandRepo
+        .update(existingIdsProband.pseudonym, {
+          pseudonym: pseudonym,
+        })
+        .catch((e) => {
+          throw new ProbandSaveError('could not update the proband', e);
+        });
+      existingIdsProband.pseudonym = pseudonym;
+      newProband = existingIdsProband;
+    } else {
+      // create proband
+      if (newProbandData.ids && existingIdsProband) {
+        throw new IdsAlreadyExistsError('The ids is already assigned');
+      }
+      newProband = probandRepo.create({
+        pseudonym: pseudonym,
+        status: ProbandStatus.ACTIVE,
+      });
+      probandCreated = true;
+    }
+
+    // Apply compliance and other data
+    newProband.complianceContact = true;
+    newProband.complianceBloodsamples =
+      newProbandData.complianceBloodsamples ?? false;
+    newProband.complianceLabresults =
+      newProbandData.complianceLabresults ?? false;
+    newProband.complianceSamples = newProbandData.complianceSamples ?? false;
+    newProband.studyCenter = newProbandData.studyCenter ?? null;
+    newProband.examinationWave = newProbandData.examinationWave ?? null;
+    newProband.ids = newProbandData.ids ?? null;
+    newProband.study = study;
+    newProband.origin = newProbandData.origin;
+    newProband.isTestProband = newProbandData.isTestProband ?? false;
+
+    await probandRepo.save(newProband).catch((e) => {
+      throw new ProbandSaveError('could not create the proband', e);
+    });
+
+    await ProbandAccountService.createProbandAccount(
+      newProband.pseudonym,
+      newProband.study.name,
+      password,
+      temporaryPassword
+    );
+    return { probandCreated, newProband };
   }
 
   private static async getProband(

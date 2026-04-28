@@ -6,8 +6,10 @@
 
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
+import { Preferences } from '@capacitor/preferences';
 import { environment } from '../../../../environments/environment';
-import { CurrentUser } from 'src/app/auth/current-user.service';
+
+const LOCALE_PREFERENCE_KEY = 'locale';
 
 interface LanguageSettings {
   language: string;
@@ -55,22 +57,35 @@ export class LocaleService {
   };
 
   private readonly fallbackLanguage: string = 'en-US';
+  private _currentLocale: string;
 
-  constructor(
-    private readonly translate: TranslateService,
-    currentUser: CurrentUser
-  ) {
+  constructor(private readonly translate: TranslateService) {
     this.fallbackLanguage = this.findBestLocale(environment.locale);
     this.translate.addLangs(this.supportedLocales);
     this.translate.setDefaultLang(this.fallbackLanguage);
+    this._currentLocale = this.fallbackLanguage;
+  }
 
-    let locale = currentUser.locale ?? localStorage.getItem('locale');
+  async init(): Promise<void> {
+    const { value: storedLocale } = await Preferences.get({
+      key: LOCALE_PREFERENCE_KEY,
+    });
 
-    if (!locale) {
-      locale = this.translate.getBrowserCultureLang();
-      if (!this.isLocaleSupported(locale)) {
-        const browserLang = this.translate.getBrowserLang();
-        locale = this.iso6391FallbackLanguages[browserLang];
+    let locale: string | undefined | null;
+
+    if (storedLocale) {
+      locale = storedLocale;
+    } else {
+      // Migrate from localStorage if Preferences has no value yet
+      const legacyLocale = localStorage.getItem(LOCALE_PREFERENCE_KEY);
+      if (legacyLocale) {
+        locale = legacyLocale;
+      } else {
+        locale = this.translate.getBrowserCultureLang();
+        if (!this.isLocaleSupported(locale)) {
+          const browserLang = this.translate.getBrowserLang();
+          locale = this.iso6391FallbackLanguages[browserLang];
+        }
       }
     }
     this.currentLocale = locale;
@@ -97,14 +112,15 @@ export class LocaleService {
     return languageSettings.flagIcons;
   }
 
-  get currentLocale() {
-    return localStorage.getItem('locale');
+  get currentLocale(): string {
+    return this._currentLocale;
   }
 
-  set currentLocale(locale) {
+  set currentLocale(locale: string) {
     locale = this.findBestLocale(locale);
-    localStorage.setItem('locale', locale);
-    this.translate.use(locale); // this could take some ms to set the new language
+    this._currentLocale = locale;
+    this.translate.use(locale);
+    Preferences.set({ key: LOCALE_PREFERENCE_KEY, value: locale });
   }
 
   private findBestLocale(locale: string) {

@@ -26,17 +26,6 @@ COMMANDS+="ALTER USER $DB_AUTHSERVER_USER WITH ENCRYPTED PASSWORD '$DB_AUTHSERVE
 COMMANDS+="GRANT authserver_role to $DB_AUTHSERVER_USER;\n"
 COMMANDS+="ALTER ROLE $DB_AUTHSERVER_USER SET search_path TO authserver;\n"
 
-# remove current auth admin to allow new admin with updated credentials to be created
-COMMANDS+="DO \$\$\n"
-COMMANDS+="BEGIN\n"
-COMMANDS+="  IF EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = 'authserver') THEN\n"
-COMMANDS+="    DELETE FROM authserver.credential WHERE user_id IN (SELECT id FROM authserver.user_entity ue WHERE username = 'admin' AND realm_id = 'master');\n"
-COMMANDS+="    DELETE FROM authserver.user_role_mapping WHERE user_id IN (SELECT id FROM authserver.user_entity ue WHERE username = 'admin' AND realm_id = 'master');\n"
-COMMANDS+="    DELETE FROM authserver.user_entity WHERE username = 'admin' AND realm_id = 'master';\n"
-COMMANDS+="  END IF;\n"
-COMMANDS+="END;\n"
-COMMANDS+="\$\$;\n"
-
 # update the search_path for the superuser
 # "public" should be the primary search path!
 COMMANDS+="ALTER ROLE $POSTGRES_USER SET search_path TO public;\n"

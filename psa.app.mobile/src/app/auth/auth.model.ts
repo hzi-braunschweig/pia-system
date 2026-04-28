@@ -17,11 +17,11 @@ export interface AccessToken {
   username: string;
   role: Role;
   studies: string[];
-  locale: string;
+  locale?: string;
 }
 
 export interface User {
   username: string;
   study: string;
-  locale: string;
+  locale?: string;
 }

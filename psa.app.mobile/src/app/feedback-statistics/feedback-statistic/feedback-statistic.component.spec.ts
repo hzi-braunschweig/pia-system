@@ -24,7 +24,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { add } from 'date-fns';
 import { Component, ViewChild } from '@angular/core';
 import { RangeValue } from '@ionic/core/dist/types/components/range/range-interface';
-import { CurrentUser } from '../../auth/current-user.service';
+import { LocaleService } from '../../shared/services/locale/locale.service';
 import { MockProvider } from 'ng-mocks';
 
 @Component({
@@ -61,8 +61,8 @@ describe('FeedbackStatisticComponent', () => {
         MockComponent,
       ],
       providers: [
-        MockProvider(CurrentUser, {
-          locale: 'en-US',
+        MockProvider(LocaleService, {
+          currentLocale: 'en-US',
         }),
       ],
     }).compileComponents();

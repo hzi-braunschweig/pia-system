@@ -18,6 +18,7 @@ fi
 kc.sh \
     -Djava.security.egd=file:/dev/urandom \
     start \
+    --health-enabled=true \
     --hostname="${EXTERNAL_PROTOCOL}://${EXTERNAL_HOST}${KEYCLOAK_PATH}" \
     --hostname-admin="${EXTERNAL_PROTOCOL}://${EXTERNAL_HOST}${KEYCLOAK_PATH}" \
     --hostname-backchannel-dynamic=false \

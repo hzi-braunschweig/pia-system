@@ -13,6 +13,7 @@ import {
 } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { Preferences } from '@capacitor/preferences';
 
 import { LocaleService } from './locale.service';
 
@@ -21,7 +22,9 @@ describe('LocaleService', () => {
     return new TranslateHttpLoader(http);
   }
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await Preferences.clear();
+
     TestBed.configureTestingModule({
       imports: [
         TranslateModule.forRoot({
@@ -46,9 +49,9 @@ describe('LocaleService', () => {
 
   describe('setting the locale', () => {
     let service: LocaleService;
-    beforeEach((done) => {
+    beforeEach(async () => {
       service = TestBed.inject(LocaleService);
-      setTimeout(done, 100);
+      await service.init();
     });
 
     it('should apply de-DE', () => {
@@ -114,6 +117,30 @@ describe('LocaleService', () => {
     it('should apply es-ES for non existing spanish accent es-AC by ISO639-1 mapping', () => {
       service.currentLocale = 'es-AC';
       expect(service.currentLocale).toEqual('es-ES');
+    });
+
+    it('should persist locale via Preferences', async () => {
+      service.currentLocale = 'de-DE';
+      const { value } = await Preferences.get({ key: 'locale' });
+      expect(value).toEqual('de-DE');
+    });
+  });
+
+  describe('init', () => {
+    it('should restore locale from Preferences', async () => {
+      await Preferences.set({ key: 'locale', value: 'fr-FR' });
+      const service = TestBed.inject(LocaleService);
+      await service.init();
+      expect(service.currentLocale).toEqual('fr-FR');
+    });
+
+    it('should migrate from localStorage if Preferences has no value', async () => {
+      spyOn(localStorage, 'getItem').and.returnValue('es-ES');
+      const service = TestBed.inject(LocaleService);
+      await service.init();
+      expect(service.currentLocale).toEqual('es-ES');
+      const { value } = await Preferences.get({ key: 'locale' });
+      expect(value).toEqual('es-ES');
     });
   });
 });

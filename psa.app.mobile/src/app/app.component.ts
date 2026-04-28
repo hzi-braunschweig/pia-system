@@ -33,13 +33,20 @@ import { register } from 'swiper/element/bundle';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { addIcons } from 'ionicons';
 import {
+  barChartOutline,
   barChartSharp,
+  flaskOutline,
   flaskSharp,
+  homeOutline,
   homeSharp,
+  listOutline,
   listSharp,
   logOutOutline,
+  newspaperOutline,
   newspaperSharp,
+  personOutline,
   personSharp,
+  settingsOutline,
   settingsSharp,
 } from 'ionicons/icons';
 import { SideMenuService } from './shared/services/side-menu/side-menu.service';
@@ -86,12 +93,19 @@ export class AppComponent {
     addIcons({
       logOutOutline,
       homeSharp,
+      homeOutline,
       listSharp,
+      listOutline,
       barChartSharp,
+      barChartOutline,
       settingsSharp,
+      settingsOutline,
       personSharp,
+      personOutline,
       flaskSharp,
+      flaskOutline,
       newspaperSharp,
+      newspaperOutline,
     });
   }
 

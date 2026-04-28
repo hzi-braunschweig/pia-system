@@ -66,6 +66,7 @@ ion-menu.md ion-item ion-label {
 }
 
 ion-menu.ios ion-content {
+  --padding-top: env(safe-area-inset-top, 20px);
   --padding-bottom: 20px;
 }
 

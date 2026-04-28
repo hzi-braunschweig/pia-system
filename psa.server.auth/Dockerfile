@@ -42,6 +42,15 @@ RUN curl --fail -L -o ./keycloak-config-cli.jar https://github.com/adorsys/keycl
 
 ################################################################
 
+FROM curlimages/curl@sha256:463eaf6072688fe96ac64fa623fe73e1dbe25d8ad6c34404a669ad3ce1f104b6 AS dl-jq
+
+WORKDIR /dl
+RUN curl --fail -L -o ./jq https://github.com/jqlang/jq/releases/download/jq-1.8.1/jq-linux-amd64 \
+    && echo "020468de7539ce70ef1bceaf7cde2e8c4f2ca6c3afb84642aabc5c97d9fc2a0d ./jq" | sha256sum -c \
+    && chmod +x ./jq
+
+################################################################
+
 FROM quay.io/keycloak/keycloak:26.3.5@sha256:357829ec7c4693397533035092ad13b0644bcc95ded311f33a3738c4d9e9bdba
 
 ARG DIR=.
@@ -49,6 +58,7 @@ ARG DIR=.
 ENV KEYCLOAK_BACKEND_PORT=4000
 
 COPY --from=dl-keycloak-config-cli /dl/keycloak-config-cli.jar /keycloak-config-cli.jar
+COPY --from=dl-jq /dl/jq /usr/bin/
 COPY --from=theme-builder /build/themes/ /opt/keycloak/themes/
 
 WORKDIR /

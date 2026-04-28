@@ -11,9 +11,10 @@ set -m
 
 # start keycloak in the background
 ./start-keycloak.sh &
+KEYCLOAK_START_PID=$!
 
 # wait for the configuration import to succeed (requires running keycloak)
-./import.sh
+./import.sh $KEYCLOAK_START_PID
 
 # get keycloak to the foreground
 fg %1

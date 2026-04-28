@@ -85,6 +85,9 @@ export const appConfig: ApplicationConfig = {
       return initializerFn();
     }),
     provideAppInitializer(() => {
+      return inject(LocaleService).init();
+    }),
+    provideAppInitializer(() => {
       // Initialize KeycloakEventHandlingService to ensure its constructor runs
       inject(KeycloakEventHandlingService);
       return Promise.resolve();
