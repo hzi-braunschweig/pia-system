@@ -2,6 +2,10 @@
 
 This file contains notes about changes that operation teams need to be aware of when updating PIA.
 
+## 1.43.2
+
+- Nginx Security update
+
 ## 1.43.1
 
 - Keycloak admin is created on startup

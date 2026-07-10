@@ -75,7 +75,7 @@ RUN npm run build:browser
 
 ################################################################
 
-FROM nginx:1.27.3-alpine@sha256:41523187cf7d7a2f2677a80609d9caa14388bf5c1fbca9c410ba3de602aaaab4 AS final
+FROM nginx:1.31.2-alpine@sha256:81595dd77c2cc4ec66c6721daa3c13b6a1f7bb3a8a2cd3247a874e3bd5c39dd2 AS final
 RUN apk --update --no-cache add bash sed
 
 ARG DIR=.

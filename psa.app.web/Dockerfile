@@ -79,7 +79,7 @@ RUN find /usr/src/node-app/dist/out/ | xargs gzip -k -9
 
 ################################################################
 
-FROM nginx:1.29.1-alpine@sha256:42a516af16b852e33b7682d5ef8acbd5d13fe08fecadc7ed98605ba5e3b26ab8 AS final
+FROM nginx:1.31.2-alpine@sha256:81595dd77c2cc4ec66c6721daa3c13b6a1f7bb3a8a2cd3247a874e3bd5c39dd2 AS final
 RUN apk --update --no-cache add bash sed
 
 ARG DIR=.
